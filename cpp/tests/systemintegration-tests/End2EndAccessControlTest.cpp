@@ -27,6 +27,7 @@
 #include <gmock/gmock.h>
 
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
@@ -44,9 +45,11 @@ class End2EndAccessControlTest : public testing::Test
 public:
     End2EndAccessControlTest()
             : runtimeAcON(),
+              runtimeACRetry(),
               runtimeAcOFF(),
               testProvider(nullptr),
               testProxy(nullptr),
+              providerQos(),
               domain("End2EndAccessControlTest"),
               providerParticipantId(),
               semaphore(0),
@@ -55,7 +58,25 @@ public:
     {
     }
 
-    void init(std::string fileWithACCentries)
+    void registerProviderAndBuildProxy(std::shared_ptr<JoynrRuntime> providerRuntime,
+                                       std::shared_ptr<JoynrRuntime> proxyRuntime)
+    {
+        testProvider = std::make_shared<MockTestProvider>();
+        providerParticipantId = providerRuntime->registerProvider<tests::testProvider>(
+                domain, testProvider, providerQos, true, true);
+
+        // Create a proxy on proxyRuntime
+        auto testProxyBuilder = proxyRuntime->createProxyBuilder<tests::testProxy>(domain);
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
+
+        testProxy = testProxyBuilder->setMessagingQos(MessagingQos(MESSAGINGQOS_TTL))
+                            ->setDiscoveryQos(discoveryQos)
+                            ->build();
+    }
+
+    void initSeparateCcRuntimesForProxyAndProvider(std::string fileWithACCentries)
     {
         // copy access entry file to bin folder for the test so that runtimes will find and load the
         // file
@@ -70,23 +91,28 @@ public:
         runtimeAcON = JoynrRuntime::createRuntime(std::move(settings1));
         runtimeAcOFF = JoynrRuntime::createRuntime(std::move(settings2));
 
-        // Create a provider on runtimeAcON
-        types::ProviderQos providerQos;
+        // Create a provider on runtimeAcON and a proxy on runtimeAcOFF
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        this->registerProviderAndBuildProxy(runtimeAcON, runtimeAcOFF);
+    }
 
-        testProvider = std::make_shared<MockTestProvider>();
-        providerParticipantId = runtimeAcON->registerProvider<tests::testProvider>(
-                domain, testProvider, providerQos, true, true);
+    void initSingleCcRuntimeWithACRetryInterval(std::string fileWithACCentries)
+    {
+        // copy access entry file to bin folder for the test so that runtimes will find and load the
+        // file
+        joynr::test::util::copyTestResourceToCurrentDirectory(fileWithACCentries, AC_ENTRIES_FILE);
 
-        // Create a proxy on runtimeAcOFF
-        auto testProxyBuilder = runtimeAcOFF->createProxyBuilder<tests::testProxy>(domain);
-        DiscoveryQos discoveryQos;
-        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-        discoveryQos.setDiscoveryTimeoutMs(1000);
+        auto settings = std::make_unique<Settings>(
+                "test-resources/CCSettingsWithAccessControlEnabled.settings");
+        settings->set(ClusterControllerSettings::SETTING_ACL_ENTRIES_DIRECTORY(), ".");
 
-        testProxy = testProxyBuilder->setMessagingQos(MessagingQos(MESSAGINGQOS_TTL))
-                            ->setDiscoveryQos(discoveryQos)
-                            ->build();
+        settings->set(MessagingSettings::SETTING_SEND_MSG_RETRY_INTERVAL(), MESSAGINGQOS_TTL / 10);
+
+        runtimeACRetry = JoynrRuntime::createRuntime(std::move(settings));
+
+        // Create a provider on runtimeACRetry and a proxy on the same runtimeACRetry
+        providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+        this->registerProviderAndBuildProxy(runtimeACRetry, runtimeACRetry);
     }
 
     ~End2EndAccessControlTest() override
@@ -94,7 +120,11 @@ public:
         if(runtimeAcON) {
             runtimeAcON->unregisterProvider(providerParticipantId);
         }
+        if(runtimeACRetry) {
+            runtimeACRetry->unregisterProvider(providerParticipantId);
+        }
         test::util::resetAndWaitUntilDestroyed(runtimeAcON);
+        test::util::resetAndWaitUntilDestroyed(runtimeACRetry);
         test::util::resetAndWaitUntilDestroyed(runtimeAcOFF);
 
         // Delete test specific files
@@ -103,10 +133,12 @@ public:
 
 protected:
     std::shared_ptr<JoynrRuntime> runtimeAcON;
+    std::shared_ptr<JoynrRuntime> runtimeACRetry;
     std::shared_ptr<JoynrRuntime> runtimeAcOFF;
 
     std::shared_ptr<MockTestProvider> testProvider;
     std::shared_ptr<tests::testProxy> testProxy;
+    types::ProviderQos providerQos;
 
     std::string domain;
     std::string providerParticipantId;
@@ -116,9 +148,61 @@ protected:
     const std::int64_t MESSAGINGQOS_TTL;
 };
 
+TEST_F(End2EndAccessControlTest, queuedMsgsForUnavailableProviderAreAcCheckedWhenProviderIsRegisteredAgain_permissionYes)
+{
+    // consumer has permission
+    // in this method provider is registered and proxy is built
+    initSingleCcRuntimeWithACRetryInterval("AccessControlYesPermission.entries");
+    runtimeACRetry->unregisterProvider(providerParticipantId);
+
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
+
+    joynr::MessagingQos messagingQoS(MESSAGINGQOS_TTL);
+    testProxy->methodWithNoInputParametersAsync(nullptr, nullptr, messagingQoS);
+
+    // This sleep to give the proxy call chance to reach the provider
+    std::this_thread::sleep_for(std::chrono::milliseconds(MESSAGINGQOS_TTL / 2));
+    Mock::VerifyAndClearExpectations(testProvider.get());
+
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(1).WillOnce(
+                ReleaseSemaphore(&semaphore));
+
+    // registering the provider again, queued messages should be delivered
+    providerParticipantId = runtimeACRetry->registerProvider<tests::testProvider>(
+            domain, testProvider, providerQos, true, true);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
+}
+
+TEST_F(End2EndAccessControlTest, queuedMsgsForUnavailableProviderAreAcCheckedWhenProviderIsRegisteredAgain_permissionNo)
+{
+    // consumer has no permission
+    // in this method provider is registered and proxy is built
+    initSingleCcRuntimeWithACRetryInterval("AccessControlNoPermission.entries");
+    runtimeACRetry->unregisterProvider(providerParticipantId);
+
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
+
+    auto onError = [&] (const joynr::exceptions::JoynrRuntimeException& error) {
+        semaphore.notify();
+    };
+
+    joynr::MessagingQos messagingQoS(MESSAGINGQOS_TTL);
+    testProxy->methodWithNoInputParametersAsync(nullptr, onError, messagingQoS);
+
+    // Sleep some time to give the proxy call chance to reach the cluster controller and get queued
+    std::this_thread::sleep_for(std::chrono::milliseconds(MESSAGINGQOS_TTL / 2));
+
+    // registering the provider again, queued messages should be delivered
+    providerParticipantId = runtimeACRetry->registerProvider<tests::testProvider>(
+            domain, testProvider, providerQos, true, true);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
+}
+
 TEST_F(End2EndAccessControlTest, proxyDoesNotHavePermission)
 {
-    init("AccessControlNoPermission.entries");
+    initSeparateCcRuntimesForProxyAndProvider("AccessControlNoPermission.entries");
     // If AccessControl is active, the proxy cannot call methodWithNoInputParameters (see
     // AC_ENTRIES_FILE file)
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
@@ -132,7 +216,7 @@ TEST_F(End2EndAccessControlTest, proxyDoesNotHavePermission)
 
 TEST_F(End2EndAccessControlTest, proxyDoesHavePermission)
 {
-    init("AccessControlYesPermission.entries");
+    initSeparateCcRuntimesForProxyAndProvider("AccessControlYesPermission.entries");
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(1).WillOnce(
             ReleaseSemaphore(&semaphore));
     testProxy->methodWithNoInputParametersAsync();
