@@ -169,25 +169,17 @@ public class MonitorRestEndpoint {
         }
 
         // create final output
-        if (success) {
-            testEvalString = "SUCCESS\n";
-        } else {
-            testEvalString = "FAILURE\n";
-        }
+        testEvalString = format("%s%nTriggered %d pings. %d were successful, %d failed.%n",
+                                success ? "SUCCESS" : "FAILURE",
+                                numberOfPings,
+                                totalSuccessCount.get(),
+                                totalErrorCount.get());
 
-        testEvalString += format("Triggered %d pings. %d were successful, %d failed.\n",
-                                 numberOfPings,
-                                 totalSuccessCount.get(),
-                                 totalErrorCount.get());
+        testEvalString += format("Initial phase:%n%s%n", dumpResponseCounterMap(initialPhaseCountByProvider));
 
-        testEvalString += "Initial phase:\n";
-        testEvalString += dumpResponseCounterMap(initialPhaseCountByProvider) + "\n";
+        testEvalString += format("Backpressure phase:%n%s%n", dumpResponseCounterMap(backpressurePhaseCountByProvider));
 
-        testEvalString += "Backpressure phase:\n";
-        testEvalString += dumpResponseCounterMap(backpressurePhaseCountByProvider) + "\n";
-
-        testEvalString += "Final phase:\n";
-        testEvalString += dumpResponseCounterMap(finalPhaseCountByProvider);
+        testEvalString += format("Final phase:%n%s", dumpResponseCounterMap(finalPhaseCountByProvider));
 
         return testEvalString;
     }
