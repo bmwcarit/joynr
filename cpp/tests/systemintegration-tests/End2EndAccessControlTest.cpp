@@ -26,6 +26,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/ClusterControllerSettings.h"
 #include "joynr/Settings.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
@@ -64,6 +65,7 @@ public:
                 "test-resources/CCSettingsWithAccessControlEnabled.settings");
         auto settings2 = std::make_unique<Settings>(
                 "test-resources/CCSettingsWithAccessControlDisabled.settings");
+        settings1->set(ClusterControllerSettings::SETTING_ACL_ENTRIES_DIRECTORY(), ".");
 
         runtimeAcON = JoynrRuntime::createRuntime(std::move(settings1));
         runtimeAcOFF = JoynrRuntime::createRuntime(std::move(settings2));
@@ -74,9 +76,7 @@ public:
 
         testProvider = std::make_shared<MockTestProvider>();
         providerParticipantId = runtimeAcON->registerProvider<tests::testProvider>(
-                domain, testProvider, providerQos);
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                domain, testProvider, providerQos, true, true);
 
         // Create a proxy on runtimeAcOFF
         auto testProxyBuilder = runtimeAcOFF->createProxyBuilder<tests::testProxy>(domain);
@@ -91,8 +91,9 @@ public:
 
     ~End2EndAccessControlTest() override
     {
-        runtimeAcON->unregisterProvider(providerParticipantId);
-
+        if(runtimeAcON) {
+            runtimeAcON->unregisterProvider(providerParticipantId);
+        }
         test::util::resetAndWaitUntilDestroyed(runtimeAcON);
         test::util::resetAndWaitUntilDestroyed(runtimeAcOFF);
 
@@ -115,11 +116,9 @@ protected:
     const std::int64_t MESSAGINGQOS_TTL;
 };
 
-TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission)
+TEST_F(End2EndAccessControlTest, proxyDoesNotHavePermission)
 {
-
-    init("AccessControlYesPermission.entries");
-
+    init("AccessControlNoPermission.entries");
     // If AccessControl is active, the proxy cannot call methodWithNoInputParameters (see
     // AC_ENTRIES_FILE file)
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
@@ -131,16 +130,11 @@ TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesNotHavePermission)
                  exceptions::JoynrTimeOutException);
 }
 
-TEST_F(End2EndAccessControlTest, DISABLED_proxyDoesHavePermission)
+TEST_F(End2EndAccessControlTest, proxyDoesHavePermission)
 {
-
-    init("AccessControlNoPermission.entries");
-
+    init("AccessControlYesPermission.entries");
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(1).WillOnce(
             ReleaseSemaphore(&semaphore));
-
-    std::int32_t outputParameter = 0;
-    testProxy->methodWithNoInputParameters(outputParameter);
-
+    testProxy->methodWithNoInputParametersAsync();
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
 }

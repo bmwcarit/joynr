@@ -1,2 +1,5 @@
 [cluster-controller]
 ws-tls-port=4243
+
+[messaging]
+persistence-file=joynr-access-control-end2end-test-2.persist
