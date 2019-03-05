@@ -18,6 +18,7 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import javax.inject.Inject;
@@ -143,7 +144,10 @@ public class SitControllerConsumerRestEndpoint {
                                                                   .withDiscoveryQos(discoveryQos)
                                                                   .withMessagingQos(messagingQos)
                                                                   .build();
-            result.append(new String(Base64.getDecoder().decode(sitControllerJeeApp.triggerTests().getBytes())));
+            result.append(new String(Base64.getDecoder()
+                                           .decode(sitControllerJeeApp.triggerTests()
+                                                                      .getBytes(StandardCharsets.ISO_8859_1)),
+                                     StandardCharsets.UTF_8));
         } catch (Exception e) {
             String errorMsg = "SIT RESULT error: triggerTests of sit-jee-app failed: " + e;
             logger.error(errorMsg);
@@ -173,11 +177,13 @@ public class SitControllerConsumerRestEndpoint {
 
             result.append(new String(Base64.getDecoder()
                                            .decode(sitControllerJeeStatelessAsyncNode1.waitForStatelessResult(60000)
-                                                                                      .getBytes())));
+                                                                                      .getBytes(StandardCharsets.ISO_8859_1)),
+                                     StandardCharsets.UTF_8));
             result.append("\n");
             result.append(new String(Base64.getDecoder()
                                            .decode(sitControllerJeeStatelessAsyncNode2.waitForStatelessResult(60000)
-                                                                                      .getBytes())));
+                                                                                      .getBytes(StandardCharsets.ISO_8859_1)),
+                                     StandardCharsets.UTF_8));
             result.append("\n");
         } catch (Exception e) {
             String errorMsg = "SIT RESULT error: triggerTests of sit-jee-stateless-consumer failed: " + e;

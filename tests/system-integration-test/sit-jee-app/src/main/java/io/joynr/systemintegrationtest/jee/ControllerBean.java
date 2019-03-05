@@ -21,6 +21,7 @@ package io.joynr.systemintegrationtest.jee;
 import static io.joynr.systemintegrationtest.jee.JoynrConfigurationProvider.CONTROLLER_DOMAIN;
 import static io.joynr.systemintegrationtest.jee.JoynrConfigurationProvider.SIT_DOMAIN_PREFIX;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import javax.ejb.ConcurrencyManagement;
@@ -74,7 +75,7 @@ public class ControllerBean implements SitControllerSync {
         for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
             callProducer(SIT_DOMAIN_PREFIX + appendValue, result);
         }
-        return new String(Base64.getEncoder().encode(result.toString().getBytes()));
+        return Base64.getEncoder().encodeToString(result.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     private void callProducer(String domain, StringBuffer result) {

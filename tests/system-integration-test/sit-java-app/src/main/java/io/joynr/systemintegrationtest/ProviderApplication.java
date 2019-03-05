@@ -51,6 +51,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
 
     private Provider provider = null;
     private static boolean runForever = false;
+    private static boolean shutdownHookCondition = false;
     private static String localDomain;
 
     public static void main(String[] args) throws Exception {
@@ -109,6 +110,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
                 LOG.info("executing shutdown hook");
                 synchronized (this) {
                     LOG.info("notifying any waiting thread from shutdown hook");
+                    shutdownHookCondition = true;
                     notifyAll();
                 }
                 LOG.info("shutting down");
@@ -128,16 +130,22 @@ public class ProviderApplication extends AbstractJoynrApplication {
 
         runtime.registerProvider(localDomain, provider, providerQos);
 
-        try {
-            if (!runForever) {
+        if (!runForever) {
+            try {
                 Thread.sleep(30000);
-            } else {
-                synchronized (shutdownHook) {
-                    shutdownHook.wait();
+            } catch (InterruptedException e) {
+                // terminate execution by continuing
+            }
+        } else {
+            synchronized (shutdownHook) {
+                while (!shutdownHookCondition) {
+                    try {
+                        shutdownHook.wait();
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
                 }
             }
-        } catch (Exception e) {
-            // terminate execution by continuing
         }
     }
 

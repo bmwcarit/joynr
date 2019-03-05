@@ -113,7 +113,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         System.exit(0);
     }
 
-    @SuppressWarnings("checkstyle:methodlength")
+    @SuppressWarnings({ "checkstyle:methodlength", "DM_EXIT" })
     @Override
     public void run() {
         DiscoveryQos discoveryQos = new DiscoveryQos();
