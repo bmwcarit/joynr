@@ -61,10 +61,6 @@
 					<warName>performance-test-jee-provider</warName>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>net.revelc.code.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-			</plugin>
 
 			<!-- Skip deployment of war with third-party software -->
 			<plugin>
