@@ -86,6 +86,7 @@ DOMAIN_ACCESS_CONTROLLER_WAR_FILE=$(find /data/src/java/backend-services/domain-
 # generate site report
 mvn clean $GOAL jxr:aggregate site -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -DskipTests=false \
+-DshowSuccess=true \
 -Dmaven.test.failure.ignore=true \
 -Denforcer.skip=true -Dmaven.compile.fork=true \
 -Dmaven.junit.fork=true \
@@ -95,7 +96,8 @@ echo '####################################################'
 echo '# stage site'
 echo '####################################################'
 
-mvn site:stage -P no-license-and-notice,no-java-formatter,no-checkstyle,android,site-staging \
+mvn -T 1C site:stage -P no-license-and-notice,no-java-formatter,no-checkstyle,android,site-staging \
+-DshowSuccess=true \
 -DstagingDirectory=/data/src/fullsite
 
 echo '####################################################'
