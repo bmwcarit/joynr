@@ -19,11 +19,13 @@
 package io.joynr.arbitration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -50,6 +53,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -101,12 +105,13 @@ public class ArbitrationTest {
     private ArbitrationCallback arbitrationCallback;
     @Mock
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
+    @Captor
+    private ArgumentCaptor<joynr.types.DiscoveryQos> discoveryQosCaptor;
 
     public interface TestInterface {
         public static final String INTERFACE_NAME = interfaceName;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setUp() throws Exception {
         initMocks(this);
@@ -119,20 +124,21 @@ public class ArbitrationTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
                 assert (arguments[0] instanceof Callback);
-                ((Callback) arguments[0]).resolve((Object) capabilitiesList.toArray(new DiscoveryEntryWithMetaInfo[0]));
+                ((Callback<?>) arguments[0]).resolve((Object) capabilitiesList.toArray(new DiscoveryEntryWithMetaInfo[0]));
                 localDiscoveryAggregatorSemaphore.release();
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
+        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
                                                  eq(new String[]{ domain }),
                                                  eq(interfaceName),
-                                                 Mockito.<joynr.types.DiscoveryQos> any());
+                                                 discoveryQosCaptor.capture());
 
         Field discoveryEntryVersionFilterField = ArbitratorFactory.class.getDeclaredField("discoveryEntryVersionFilter");
         discoveryEntryVersionFilterField.setAccessible(true);
         discoveryEntryVersionFilterField.set(ArbitratorFactory.class, discoveryEntryVersionFilter);
 
         doAnswer(new Answer<Set<DiscoveryEntry>>() {
+            @SuppressWarnings("unchecked")
             @Override
             public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
                 return (Set<DiscoveryEntry>) invocation.getArguments()[1];
@@ -774,4 +780,34 @@ public class ArbitrationTest {
                      noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersionsForDomain(domain1));
 
     }
+
+    @Test
+    public void useRemainingDiscoveryTimeoutAsTtlForLookupRetries() throws InterruptedException {
+        discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryTimeoutMs(ARBITRATION_TIMEOUT);
+        final long retryInterval = ARBITRATION_TIMEOUT / 3 * 2;
+        discoveryQos.setRetryIntervalMs(retryInterval);
+
+        Set<String> domainsSet = new HashSet<String>(Arrays.asList(domain));
+        Arbitrator arbitrator = ArbitratorFactory.create(domainsSet,
+                                                         interfaceName,
+                                                         interfaceVersion,
+                                                         discoveryQos,
+                                                         localDiscoveryAggregator);
+        arbitrator.setArbitrationListener(arbitrationCallback);
+
+        arbitrator.scheduleArbitration();
+
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
+        assertFalse(localDiscoveryAggregatorSemaphore.tryAcquire(ARBITRATION_TIMEOUT / 2, TimeUnit.MILLISECONDS));
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(ARBITRATION_TIMEOUT, TimeUnit.MILLISECONDS));
+
+        verify(arbitrationCallback, times(1)).onError((isA(DiscoveryException.class)));
+
+        List<joynr.types.DiscoveryQos> dQosList = discoveryQosCaptor.getAllValues();
+        assertEquals(2, dQosList.size());
+        assertTrue(dQosList.get(0).getDiscoveryTimeout() > retryInterval);
+        assertTrue(dQosList.get(1).getDiscoveryTimeout() <= (ARBITRATION_TIMEOUT - retryInterval));
+    }
+
 }
