@@ -8,7 +8,8 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
-None.
+* **[Java]** Introduced overridden toString() methods in classes
+  io.joynr.arbitration.DiscoveryQos and io.joynr.messaging.MessagingQos
 
 ## Configuration property changes
 None.
