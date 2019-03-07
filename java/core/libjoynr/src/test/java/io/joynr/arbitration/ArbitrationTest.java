@@ -810,4 +810,28 @@ public class ArbitrationTest {
         assertTrue(dQosList.get(1).getDiscoveryTimeout() <= (ARBITRATION_TIMEOUT - retryInterval));
     }
 
+    @Test
+    public void doNotRetryLookupIfRetryIntervalIsLargerThanRemainingTimeout() throws InterruptedException {
+        discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryTimeoutMs(ARBITRATION_TIMEOUT);
+        final long retryInterval = ARBITRATION_TIMEOUT / 3 * 2;
+        discoveryQos.setRetryIntervalMs(retryInterval);
+
+        Set<String> domainsSet = new HashSet<String>(Arrays.asList(domain));
+        Arbitrator arbitrator = ArbitratorFactory.create(domainsSet,
+                                                         interfaceName,
+                                                         interfaceVersion,
+                                                         discoveryQos,
+                                                         localDiscoveryAggregator);
+        arbitrator.setArbitrationListener(arbitrationCallback);
+
+        Thread.sleep(ARBITRATION_TIMEOUT - retryInterval + 1);
+        arbitrator.scheduleArbitration();
+
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
+        verify(arbitrationCallback, times(1)).onError((isA(DiscoveryException.class)));
+
+        assertFalse(localDiscoveryAggregatorSemaphore.tryAcquire(ARBITRATION_TIMEOUT, TimeUnit.MILLISECONDS));
+    }
+
 }

@@ -171,6 +171,10 @@ public class Arbitrator {
 
     protected void restartArbitration() {
         retryDelay = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
+        if (System.currentTimeMillis() + retryDelay > arbitrationDeadline) {
+            arbitrationFailed();
+            return;
+        }
         logger.trace("Rescheduling arbitration with delay {}ms", retryDelay);
         scheduleArbitration();
     }
