@@ -91,7 +91,8 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 #define JOYNR_CONDITIONAL_SPDLOG(level, method, logger, ...)                                       \
     do {                                                                                           \
         joynr::LogLevel logLevel = level;                                                          \
-        if (JOYNR_LOG_LEVEL <= logLevel) {                                                         \
+        joynr::LogLevel actualLogLevel = logger.getLogLevel();                                     \
+        if (JOYNR_LOG_LEVEL <= logLevel && actualLogLevel <= logLevel) {                           \
             logger.spdlog->method(__VA_ARGS__);                                                    \
         }                                                                                          \
     } while (false)
@@ -198,7 +199,7 @@ struct Logger
         return prefix;
     }
 
-    joynr::LogLevel getLogLevel()
+    inline joynr::LogLevel getLogLevel() const
     {
         return level;
     }
