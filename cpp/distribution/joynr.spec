@@ -69,14 +69,15 @@ mv /data/build/joynr/package/RPM/tmp $RPM_BUILD_ROOT
 %preun
 
 %files
-%defattr(-,root,root,-)
+%defattr(-,root,root,755)
 /usr/bin/cluster-controller
 /etc/joynr
-/usr/share/doc
+# %dir %attr(755,root,root) /usr/share/doc/joynr
+/usr/share/doc/joynr*
 /usr/lib64/libJoynr*.so*
 
 %files devel
-%defattr(-,root,root,-)
+%defattr(-,root,root,755)
 %dir "/usr/lib64/cmake"
 /usr/lib64/cmake/joynr
 /usr/lib64/cmake/JoynrGenerator
