@@ -42,6 +42,7 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/Util.h"
 #include "libjoynrclustercontroller/include/joynr/ITransportStatus.h"
 
 namespace joynr
@@ -523,7 +524,7 @@ void AbstractMessageRouter::addToRoutingTable(
         auto oldRoutingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
         if (oldRoutingEntry) {
             const bool addressOrVisibilityOfRoutingEntryChanged =
-                    (*(oldRoutingEntry->address) != *address) ||
+                    (!oldRoutingEntry->address->equals(*address, joynr::util::MAX_ULPS)) ||
                     (oldRoutingEntry->isGloballyVisible != isGloballyVisible);
             if (addressOrVisibilityOfRoutingEntryChanged) {
                 if (!allowUpdate) {
