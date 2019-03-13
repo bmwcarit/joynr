@@ -128,7 +128,7 @@ RUN chmod -R a+rw /opt \
 # install flatbuffers
 ###################################################
 
-RUN export FLATBUFFERS_VERSION=v1.6.0 \
+RUN export FLATBUFFERS_VERSION=v1.10.0 \
         && . /etc/profile \
         && cd /tmp \
         && git clone https://github.com/google/flatbuffers.git \
@@ -136,7 +136,7 @@ RUN export FLATBUFFERS_VERSION=v1.6.0 \
         && git checkout $FLATBUFFERS_VERSION \
         && mkdir build \
         && cd build \
-        && cmake .. -DFLATBUFFERS_BUILD_TESTS=OFF \
+        && cmake .. -DFLATBUFFERS_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release \
         && make install -j"$(nproc)" \
         && rm -rf /tmp/flatbuffers
 
