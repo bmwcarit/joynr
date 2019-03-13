@@ -331,11 +331,9 @@ void LibJoynrMessageRouter::addNextHop(
         bool isGloballyVisible,
         const std::int64_t expiryDateMs,
         const bool isSticky,
-        const bool allowUpdate,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = allowUpdate;
     assert(address);
     WriteLocker lock(messageQueueRetryLock);
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);

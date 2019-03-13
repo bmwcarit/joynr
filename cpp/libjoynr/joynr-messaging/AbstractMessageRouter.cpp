@@ -509,8 +509,7 @@ void AbstractMessageRouter::addToRoutingTable(
         bool isGloballyVisible,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
         std::int64_t expiryDateMs,
-        bool isSticky,
-        bool allowUpdate)
+        bool isSticky)
 {
     if (!isValidForRoutingTable(address)) {
         JOYNR_LOG_TRACE(logger(),
@@ -527,14 +526,6 @@ void AbstractMessageRouter::addToRoutingTable(
                     (!oldRoutingEntry->address->equals(*address, joynr::util::MAX_ULPS)) ||
                     (oldRoutingEntry->isGloballyVisible != isGloballyVisible);
             if (addressOrVisibilityOfRoutingEntryChanged) {
-                if (!allowUpdate) {
-                    JOYNR_LOG_WARN(logger(),
-                                   "unable to update participantId={} in routing table, since "
-                                   "the participantId is already associated with routing entry {}",
-                                   participantId,
-                                   oldRoutingEntry->toString());
-                    return;
-                }
                 JOYNR_LOG_DEBUG(logger(),
                                 "updating participantId={} in routing table, because we trust "
                                 "the globalDiscovery although the participantId is already "

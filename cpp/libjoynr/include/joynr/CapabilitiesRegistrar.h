@@ -162,13 +162,11 @@ public:
 
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
-        const bool allowUpdate = false;
         messageRouter->addNextHop(participantId,
                                   dispatcherAddress,
                                   isGloballyVisible,
                                   expiryDateMs,
                                   isSticky,
-                                  allowUpdate,
                                   std::move(onSuccessWrapper),
                                   std::move(onError));
 

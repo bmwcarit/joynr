@@ -155,8 +155,7 @@ protected:
                            bool isGloballyVisible,
                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                            const std::int64_t expiryDateMs,
-                           const bool isSticky,
-                           const bool allowUpdate = false);
+                           const bool isSticky);
 
     void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,

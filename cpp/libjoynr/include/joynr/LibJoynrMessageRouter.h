@@ -102,7 +102,6 @@ public:
                     bool isGloballyVisible,
                     const std::int64_t expiryDateMs,
                     const bool isSticky,
-                    const bool allowUpdate,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;

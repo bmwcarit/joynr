@@ -737,8 +737,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                                                address,
                                                isGloballyVisible,
                                                expiryDateMs,
-                                               isSticky,
-                                               true);
+                                               isSticky);
         } else {
             JOYNR_LOG_FATAL(logger(),
                             "could not addNextHop {} to {} because messageRouter is not available",

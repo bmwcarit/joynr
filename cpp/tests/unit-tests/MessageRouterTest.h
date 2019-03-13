@@ -214,7 +214,6 @@ protected:
         messageRouter->route(immutableMessage);
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
     }
-    virtual void checkAllowUpdate(bool allowUpdate, bool updateExpected);
 
 private:
     std::shared_ptr<const system::RoutingTypes::Address> ownAddress;

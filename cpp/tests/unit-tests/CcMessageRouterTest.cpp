@@ -107,14 +107,12 @@ TEST_F(CcMessageRouterTest, routeMessageToHttpAddress)
     const bool isGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    const bool allowUpdate = false;
 
     this->messageRouter->addNextHop(destinationParticipantId,
                                     address,
                                     isGloballyVisible,
                                     expiryDateMs,
-                                    isSticky,
-                                    allowUpdate);
+                                    isSticky);
     this->mutableMessage.setRecipient(destinationParticipantId);
 
     EXPECT_CALL(*(this->messagingStubFactory),
@@ -133,14 +131,12 @@ TEST_F(CcMessageRouterTest, routeMessageToMqttAddress)
     const bool isGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    const bool allowUpdate = false;
 
     this->messageRouter->addNextHop(destinationParticipantId,
                                     address,
                                     isGloballyVisible,
                                     expiryDateMs,
-                                    isSticky,
-                                    allowUpdate);
+                                    isSticky);
     this->mutableMessage.setRecipient(destinationParticipantId);
 
     EXPECT_CALL(*(this->messagingStubFactory),
@@ -678,19 +674,6 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned)
                 successCallbackCalled.notify();
             });
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
-}
-
-TEST_F(CcMessageRouterTest, checkAllowUpdateTrue)
-{
-    const bool allowUpdate = true;
-    const bool updateExpected = true;
-    this->checkAllowUpdate(allowUpdate, updateExpected);
-}
-TEST_F(CcMessageRouterTest, checkAllowUpdateFalse)
-{
-    const bool allowUpdate = false;
-    const bool updateExpected = false;
-    this->checkAllowUpdate(allowUpdate, updateExpected);
 }
 
 void CcMessageRouterTest::routeMessageAndCheckQueue(const std::string& msgType,

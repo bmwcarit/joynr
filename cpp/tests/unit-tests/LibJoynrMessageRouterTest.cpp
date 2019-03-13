@@ -88,14 +88,12 @@ TEST_F(LibJoynrMessageRouterTest, routeMessageToWebSocketAddress)
     const bool isGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    const bool allowUpdate = false;
 
     this->messageRouter->addNextHop(destinationParticipantId,
                                     address,
                                     isGloballyVisible,
                                     expiryDateMs,
-                                    isSticky,
-                                    allowUpdate);
+                                    isSticky);
     this->mutableMessage.setRecipient(destinationParticipantId);
 
     EXPECT_CALL(*(this->messagingStubFactory), create(Pointee(Eq(*address)))).Times(1);
@@ -360,14 +358,12 @@ void LibJoynrMessageRouterTest::testAddNextHopCallsRoutingProxyCorrectly(
 
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    const bool allowUpdate = false;
 
     messageRouter->addNextHop(providerParticipantId,
                               providerAddress,
                               isGloballyVisible,
                               expiryDateMs,
-                              isSticky,
-                              allowUpdate);
+                              isSticky);
 }
 
 TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy)
@@ -423,19 +419,6 @@ TEST_F(LibJoynrMessageRouterTest, setToKnown_addsParentAddress)
     messageRouter->route(mutableMessage.getImmutableMessage());
 
     ASSERT_EQ(0, messageQueue->getQueueLength());
-}
-
-TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateTrue)
-{
-    const bool allowUpdate = true;
-    const bool updateExpected = false;
-    this->checkAllowUpdate(allowUpdate, updateExpected);
-}
-TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateFalse)
-{
-    const bool allowUpdate = false;
-    const bool updateExpected = false;
-    this->checkAllowUpdate(allowUpdate, updateExpected);
 }
 
 void LibJoynrMessageRouterTest::removeFromQueue(const std::string& participantId,
