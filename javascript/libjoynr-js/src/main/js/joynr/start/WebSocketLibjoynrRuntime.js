@@ -276,7 +276,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
      */
     terminateAllSubscriptions(timeout = 0) {
         this._sharedWebSocket.enableShutdownMode();
-        return super.terminateSubscriptions(timeout);
+        return super.terminateAllSubscriptions(timeout);
     }
 
     /**
