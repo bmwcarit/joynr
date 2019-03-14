@@ -250,6 +250,22 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         expect(constructors.JoynrMessage.setSigningCallback).toHaveBeenCalled();
     });
 
+    it("calls SharedWebSocket.enableShutdownMode in terminateAllSubscriptions", async () => {
+        runtime = new WebSocketLibjoynrRuntime();
+        await runtime.start(provisioning);
+        await runtime.terminateAllSubscriptions();
+        expect(mocks.SharedWebSocket.enableShutdownMode).toHaveBeenCalled();
+        await runtime.shutdown();
+    });
+
+    it("calls SubscriptionManager.terminateSubscriptions in terminateAllSubscriptions", async () => {
+        runtime = new WebSocketLibjoynrRuntime();
+        await runtime.start(provisioning);
+        await runtime.terminateAllSubscriptions();
+        expect(mocks.SubscriptionManager.terminateSubscriptions).toHaveBeenCalledWith(0);
+        await runtime.shutdown();
+    });
+
     it("terminates Subscriptions upon shutdown with default timeout", done => {
         runtime = new WebSocketLibjoynrRuntime();
         runtime
