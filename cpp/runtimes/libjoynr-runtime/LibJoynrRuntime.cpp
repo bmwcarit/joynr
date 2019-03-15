@@ -269,7 +269,7 @@ void LibJoynrRuntime::buildInternalProxies(
     const MessagingQos joynrInternalMessagingQos(messagingTtl);
     const bool isGloballyVisible = false;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
+    const bool isSticky = true;
     const std::string systemServicesDomain = systemServicesSettings.getDomain();
 
     ccRoutingProxy = std::make_shared<joynr::system::RoutingProxy>(
