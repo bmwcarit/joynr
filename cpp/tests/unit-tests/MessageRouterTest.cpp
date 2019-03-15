@@ -50,6 +50,7 @@ using ::testing::Action;
 using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::InvokeArgument;
+using ::testing::Mock;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -350,4 +351,59 @@ TYPED_TEST(MessageRouterTest, cleanupExpiredMessagesFromTransportNotAvailableQue
     auto queuedMessage2 =
             this->transportNotAvailableQueueRef->getNextMessageFor(mockTransportStatus);
     EXPECT_EQ(queuedMessage2, immutableMessage2);
+}
+
+TYPED_TEST(MessageRouterTest, addressValidation_stickyEntriesAreNotReplaced)
+{
+    Semaphore semaphore(0);
+
+    const TimePoint now = TimePoint::now();
+    this->mutableMessage.setExpiryDate(now + std::chrono::milliseconds(1024));
+    this->mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    const std::string testParticipantId = "stickyAddressUpdateParticipantId";
+    this->mutableMessage.setRecipient(testParticipantId);
+    std::shared_ptr<ImmutableMessage> immutableMessage = this->mutableMessage.getImmutableMessage();
+
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto stickyAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
+
+    const bool isParticipantGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = true;
+    this->messageRouter->addNextHop(
+                testParticipantId,
+                stickyAddress,
+                isParticipantGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    EXPECT_CALL(*this->messagingStubFactory, create(Eq(stickyAddress))).WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    this->messageRouter->route(immutableMessage);
+
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    Mock::VerifyAndClearExpectations(this->messagingStubFactory.get());
+
+    auto dispatcher2 = std::make_shared<MockDispatcher>();
+    auto skeleton2 = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher2);
+    auto newAddress = std::make_shared<const InProcessMessagingAddress>(skeleton2);
+
+    this->messageRouter->addNextHop(
+                testParticipantId,
+                newAddress,
+                isParticipantGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    EXPECT_CALL(*this->messagingStubFactory, create(Eq(stickyAddress))).WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    this->messageRouter->route(immutableMessage);
+
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
 }

@@ -525,6 +525,15 @@ void AbstractMessageRouter::addToRoutingTable(
                     (!oldRoutingEntry->address->equals(*address, joynr::util::MAX_ULPS)) ||
                     (oldRoutingEntry->isGloballyVisible != isGloballyVisible);
             if (addressOrVisibilityOfRoutingEntryChanged) {
+                if (oldRoutingEntry->isSticky) {
+                    JOYNR_LOG_ERROR(
+                            logger(),
+                            "unable to update participantId={} in routing table, since "
+                            "the participantId is already associated with STICKY routing entry {}.",
+                            participantId,
+                            oldRoutingEntry->toString());
+                    return;
+                }
                 if (!allowRoutingEntryUpdate(*oldRoutingEntry, *address)) {
                     JOYNR_LOG_WARN(logger(),
                                    "unable to update participantId={} in routing table, since "
