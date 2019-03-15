@@ -61,6 +61,8 @@ protected:
     std::string thirdKey;
     static constexpr std::int64_t expiryDateMaxMs = std::numeric_limits<std::int64_t>::max();
     static const bool isStickyFalse = false;
+    static const bool isStickyTrue = true;
+    static const bool isGloballyVisibleTrue = true;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTableTest);
@@ -68,15 +70,13 @@ private:
 
 TEST_F(RoutingTableTest, addAndContains)
 {
-    const bool isGloballyVisible = true;
-    routingTable.add(firstKey, isGloballyVisible, testValue, expiryDateMaxMs, isStickyFalse);
+    routingTable.add(firstKey, isGloballyVisibleTrue, testValue, expiryDateMaxMs, isStickyFalse);
     ASSERT_TRUE(routingTable.containsParticipantId(firstKey));
 }
 
 TEST_F(RoutingTableTest, containsNot)
 {
-    const bool isGloballyVisible = true;
-    routingTable.add(firstKey, isGloballyVisible, testValue, expiryDateMaxMs, isStickyFalse);
+    routingTable.add(firstKey, isGloballyVisibleTrue, testValue, expiryDateMaxMs, isStickyFalse);
     ASSERT_TRUE(routingTable.containsParticipantId(firstKey));
     ASSERT_FALSE(routingTable.containsParticipantId(secondKey));
 }
@@ -113,10 +113,9 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantId)
 
 TEST_F(RoutingTableTest, lookupParticipantIdsByAddress)
 {
-    const bool isGloballyVisible = true;
-    routingTable.add(firstKey, isGloballyVisible, testValue, expiryDateMaxMs, isStickyFalse);
-    routingTable.add(secondKey, isGloballyVisible, secondTestValue, expiryDateMaxMs, isStickyFalse);
-    routingTable.add(thirdKey, isGloballyVisible, testValue, expiryDateMaxMs, isStickyFalse);
+    routingTable.add(firstKey, isGloballyVisibleTrue, testValue, expiryDateMaxMs, isStickyFalse);
+    routingTable.add(secondKey, isGloballyVisibleTrue, secondTestValue, expiryDateMaxMs, isStickyFalse);
+    routingTable.add(thirdKey, isGloballyVisibleTrue, testValue, expiryDateMaxMs, isStickyFalse);
     std::unordered_set<std::string> result1 = routingTable.lookupParticipantIdsByAddress(testValue);
     bool found1 = (result1.find(firstKey) != result1.end());
     bool found2 = (result1.find(secondKey) != result1.end());
@@ -135,14 +134,33 @@ TEST_F(RoutingTableTest, lookupParticipantIdsByAddress)
 
 TEST_F(RoutingTableTest, remove)
 {
-    const bool isGloballyVisible = true;
-    routingTable.add(firstKey, isGloballyVisible, testValue, expiryDateMaxMs, isStickyFalse);
-    routingTable.add(secondKey, isGloballyVisible, secondTestValue, expiryDateMaxMs, isStickyFalse);
+    ASSERT_FALSE(routingTable.containsParticipantId(firstKey));
+    ASSERT_FALSE(routingTable.containsParticipantId(secondKey));
+
+    routingTable.add(firstKey, isGloballyVisibleTrue, testValue, expiryDateMaxMs, isStickyFalse);
+    routingTable.add(secondKey, isGloballyVisibleTrue, secondTestValue, expiryDateMaxMs, isStickyFalse);
     ASSERT_TRUE(routingTable.containsParticipantId(firstKey));
     ASSERT_TRUE(routingTable.containsParticipantId(secondKey));
+
     routingTable.remove(firstKey);
     ASSERT_FALSE(routingTable.containsParticipantId(firstKey));
     ASSERT_TRUE(routingTable.containsParticipantId(secondKey));
+}
+
+TEST_F(RoutingTableTest, removeDoesNotRemoveStickyRoutingEntry)
+{
+    ASSERT_FALSE(routingTable.containsParticipantId(firstKey));
+    ASSERT_FALSE(routingTable.containsParticipantId(secondKey));
+
+    routingTable.add(firstKey, isGloballyVisibleTrue, testValue, expiryDateMaxMs, isStickyTrue);
+    routingTable.add(secondKey, isGloballyVisibleTrue, secondTestValue, expiryDateMaxMs, isStickyFalse);
+    ASSERT_TRUE(routingTable.containsParticipantId(firstKey));
+    ASSERT_TRUE(routingTable.containsParticipantId(secondKey));
+
+    routingTable.remove(firstKey);
+    routingTable.remove(secondKey);
+    ASSERT_TRUE(routingTable.containsParticipantId(firstKey));
+    ASSERT_FALSE(routingTable.containsParticipantId(secondKey));
 }
 
 TEST_F(RoutingTableTest, lookupNonExistingKeys)
@@ -152,15 +170,14 @@ TEST_F(RoutingTableTest, lookupNonExistingKeys)
 
 TEST_F(RoutingTableTest, purge)
 {
-    const bool isGloballyVisible = true;
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                        std::chrono::system_clock::now().time_since_epoch()).count();
     const std::int64_t offsetMs = 2000;
     const bool isStickyTrue = true;
     auto expiryDateMs = now + offsetMs;
-    routingTable.add(firstKey, isGloballyVisible, testValue, expiryDateMs, isStickyFalse);
-    routingTable.add(secondKey, isGloballyVisible, secondTestValue, expiryDateMs, isStickyTrue);
-    routingTable.add(thirdKey, isGloballyVisible, secondTestValue, expiryDateMaxMs, isStickyFalse);
+    routingTable.add(firstKey, isGloballyVisibleTrue, testValue, expiryDateMs, isStickyFalse);
+    routingTable.add(secondKey, isGloballyVisibleTrue, secondTestValue, expiryDateMs, isStickyTrue);
+    routingTable.add(thirdKey, isGloballyVisibleTrue, secondTestValue, expiryDateMaxMs, isStickyFalse);
     ASSERT_TRUE(routingTable.containsParticipantId(firstKey));
     ASSERT_TRUE(routingTable.containsParticipantId(secondKey));
     ASSERT_TRUE(routingTable.containsParticipantId(thirdKey));
