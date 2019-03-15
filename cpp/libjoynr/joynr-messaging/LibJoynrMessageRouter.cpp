@@ -115,8 +115,10 @@ void LibJoynrMessageRouter::setToKnown(const std::string& participantId)
                     "LibJoynrMessageRouter::setToKnown called for participantId {}",
                     participantId);
     bool isGloballyVisible = DEFAULT_IS_GLOBALLY_VISIBLE;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
     if (parentAddress) {
-        addProvisionedNextHop(participantId, parentAddress, isGloballyVisible);
+        addToRoutingTable(participantId, isGloballyVisible, parentAddress, expiryDateMs, isSticky);
     }
 }
 
@@ -170,10 +172,15 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                                            destinationPartId);
                             WriteLocker lock(thisSharedPtr->messageQueueRetryLock);
                             // save next hop in the routing table
-                            thisSharedPtr->addProvisionedNextHop(
+                            constexpr std::int64_t expiryDateMs =
+                                    std::numeric_limits<std::int64_t>::max();
+                            const bool isSticky = false;
+                            thisSharedPtr->addToRoutingTable(
                                     destinationPartId,
+                                    thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
                                     thisSharedPtr->parentAddress,
-                                    thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE);
+                                    expiryDateMs,
+                                    isSticky);
                             thisSharedPtr->sendMessages(
                                     destinationPartId, thisSharedPtr->parentAddress, lock);
                         } else {
@@ -487,10 +494,13 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         {
             if (resolved) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    thisSharedPtr->addProvisionedNextHop(
-                            providerParticipantId,
-                            thisSharedPtr->parentAddress,
-                            thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE);
+                    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+                    const bool isSticky = false;
+                    thisSharedPtr->addToRoutingTable(providerParticipantId,
+                                                     thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
+                                                     thisSharedPtr->parentAddress,
+                                                     expiryDateMs,
+                                                     isSticky);
                     thisSharedPtr->parentRouter->addMulticastReceiverAsync(
                             multicastId,
                             subscriberParticipantId,
