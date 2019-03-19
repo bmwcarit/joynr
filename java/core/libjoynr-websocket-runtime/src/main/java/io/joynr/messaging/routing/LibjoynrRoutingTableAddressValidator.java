@@ -18,6 +18,9 @@
  */
 package io.joynr.messaging.routing;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
@@ -27,9 +30,16 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 public class LibjoynrRoutingTableAddressValidator implements RoutingTableAddressValidator {
 
+    private static final Logger logger = LoggerFactory.getLogger(LibjoynrRoutingTableAddressValidator.class);
+
     @Override
     public boolean isValidForRoutingTable(final Address address) {
-        return address instanceof WebSocketAddress || address instanceof InProcessAddress;
+        if (address instanceof WebSocketAddress || address instanceof InProcessAddress) {
+            return true;
+        }
+        logger.error("An address which is neither of type WebSocketAddress nor InProcessMessagingAddress"
+                + " will not be used for libjoynr Routing Table: {}", address);
+        return false;
     }
 
     @Override

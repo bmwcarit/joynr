@@ -119,8 +119,7 @@ public class RoutingTableImpl implements RoutingTable {
                     long expiryDateMs,
                     final boolean sticky) {
         if (!addressValidator.isValidForRoutingTable(address)) {
-            logger.debug("unable to update participantId={} in routing table since the address is not supported within this process.",
-                         participantId);
+            logger.trace("participantId={} has an unsupported address within this process.", participantId);
             return;
         }
         try {
@@ -135,7 +134,7 @@ public class RoutingTableImpl implements RoutingTable {
             final boolean routingEntryAlreadyPresent = oldRoutingEntry != null;
 
             if (!routingEntryAlreadyPresent) {
-                logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) "
+                logger.debug("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) "
                         + "successfully into routing table",
                              participantId,
                              address,
@@ -253,7 +252,7 @@ public class RoutingTableImpl implements RoutingTable {
                             routingEntry.getExpiryDateMs(),
                             routingEntry.getIsSticky());
             } else {
-                logger.trace("removing(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) "
+                logger.debug("removing(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) "
                         + "from routing table",
                              participantId,
                              routingEntry.getAddress(),

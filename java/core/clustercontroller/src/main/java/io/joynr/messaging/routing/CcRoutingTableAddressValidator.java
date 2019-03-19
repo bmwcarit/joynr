@@ -24,6 +24,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -36,6 +39,8 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 public class CcRoutingTableAddressValidator implements RoutingTableAddressValidator {
+
+    private static final Logger logger = LoggerFactory.getLogger(CcRoutingTableAddressValidator.class);
 
     private Set<Address> ownAddresses;
     private final ReentrantReadWriteLock ownAddressesLock;
@@ -75,13 +80,23 @@ public class CcRoutingTableAddressValidator implements RoutingTableAddressValida
 
     @Override
     public boolean isValidForRoutingTable(final Address address) {
+        if (address instanceof WebSocketAddress) {
+            logger.error("WebSocketAddress will not be used for CC Routing Table: {}", address);
+            return false;
+        }
         ownAddressReadLock.lock();
         try {
-            return !(address instanceof WebSocketAddress)
-                    && !ownAddresses.stream().anyMatch(ownAddress -> ownAddress.equals(address));
+            if (ownAddresses.stream().anyMatch(ownAddress -> ownAddress.equals(address))) {
+                logger.trace("Address will not be used for Routing Table since it refers to ourselves: {}", address);
+                return false;
+            }
+        } catch (Exception e) {
+            logger.error("Exception in isValidForRoutingTable", e);
+            return false;
         } finally {
             ownAddressReadLock.unlock();
         }
+        return true;
     }
 
     @Override
