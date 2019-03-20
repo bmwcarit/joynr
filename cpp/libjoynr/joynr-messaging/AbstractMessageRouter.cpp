@@ -264,7 +264,7 @@ void AbstractMessageRouter::setToKnown(const std::string& participantId)
     JOYNR_LOG_TRACE(logger(), "AbstractMessageRouter::setToKnown");
 }
 
-void AbstractMessageRouter::sendMessages(
+void AbstractMessageRouter::sendQueuedMessages(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
     JOYNR_LOG_TRACE(logger(), "sendMessages: sending messages for {}", address->toString());
@@ -276,7 +276,7 @@ void AbstractMessageRouter::sendMessages(
     if (participantIdSet.size() > 0) {
         WriteLocker lock(messageQueueRetryLock);
         for (const auto& participantId : participantIdSet) {
-            sendMessages(participantId, address, lock);
+            sendQueuedMessages(participantId, address, lock);
         }
     }
 }

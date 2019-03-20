@@ -181,7 +181,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                                     thisSharedPtr->parentAddress,
                                     expiryDateMs,
                                     isSticky);
-                            thisSharedPtr->sendMessages(
+                            thisSharedPtr->sendQueuedMessages(
                                     destinationPartId, thisSharedPtr->parentAddress, lock);
                         } else {
                             JOYNR_LOG_ERROR(logger(),
@@ -226,7 +226,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
     }
 }
 
-void LibJoynrMessageRouter::sendMessages(
+void LibJoynrMessageRouter::sendQueuedMessages(
         const std::string& destinationPartId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
         const WriteLocker& messageQueueRetryWriteLock)
@@ -398,7 +398,7 @@ void LibJoynrMessageRouter::addNextHop(
     assert(address);
     WriteLocker lock(messageQueueRetryLock);
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
-    sendMessages(participantId, address, lock);
+    sendQueuedMessages(participantId, address, lock);
     lock.unlock();
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
 }

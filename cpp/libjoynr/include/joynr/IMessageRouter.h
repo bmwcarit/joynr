@@ -81,7 +81,7 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                     onError = nullptr) = 0;
 
-    virtual void sendMessages(
+    virtual void sendQueuedMessages(
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address) = 0;
 
     virtual void setToKnown(const std::string& participantId) = 0;

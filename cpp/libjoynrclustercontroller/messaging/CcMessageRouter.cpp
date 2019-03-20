@@ -286,7 +286,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
     }
 }
 
-void CcMessageRouter::sendMessages(
+void CcMessageRouter::sendQueuedMessages(
         const std::string& destinationPartId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
         const WriteLocker& messageQueueRetryWriteLock)
@@ -492,7 +492,7 @@ void CcMessageRouter::addNextHop(
     assert(address);
     WriteLocker lock(messageQueueRetryLock);
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
-    sendMessages(participantId, address, lock);
+    sendQueuedMessages(participantId, address, lock);
     lock.unlock();
     if (onSuccess) {
         onSuccess();

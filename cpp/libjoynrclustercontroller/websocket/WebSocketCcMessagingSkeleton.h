@@ -323,7 +323,7 @@ private:
                 }
             }
 
-            messageRouter->sendMessages(std::move(clientAddress));
+            messageRouter->sendQueuedMessages(std::move(clientAddress));
         } else {
             JOYNR_LOG_ERROR(
                     logger(), "received an initial message with wrong format: \"{}\"", initMessage);
