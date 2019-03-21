@@ -50,7 +50,7 @@ RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/zaphoyd/websocketpp.git \
     && cd websocketpp \
-    && git checkout 19cad9925f83d15d7487c16f0491f4741ec9f674 \
+    && git checkout 0.8.1 \
     && mkdir build \
     && cd build \
     && cmake .. \
