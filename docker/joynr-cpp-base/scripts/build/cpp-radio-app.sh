@@ -6,6 +6,7 @@ START=$(date +%s)
 ADDITIONAL_CMAKE_ARGS=''
 DLT='ON'
 RUN_MAVEN='OFF'
+USE_NINJA='OFF'
 
 function usage
 {
@@ -13,6 +14,7 @@ function usage
         [--additionalcmakeargs <args> Default: empty string]
         [--jobs X Default $JOBS]
         [--run-maven ON|OFF Default: $RUN_MAVEN]
+        [--use-ninja ON|OFF Default: $USE_NINJA]
         [--dlt ON|OFF Default: $DLT]"
 }
 
@@ -30,6 +32,9 @@ while [ "$1" != "" ]; do
         --run-maven )           shift
                                 RUN_MAVEN=$1
                                 ;;
+        --use-ninja )           shift
+                                USE_NINJA=$1
+                                ;;
         * )                     usage
                                 exit 1
     esac
@@ -37,6 +42,7 @@ while [ "$1" != "" ]; do
 done
 
 log "CPP RADIO APP JOBS: $JOBS"
+log "USE_NINJA: $USE_NINJA"
 
 log "ENVIRONMENT"
 env
@@ -63,13 +69,24 @@ rm -rf /data/build/radio
 mkdir /data/build/radio
 cd /data/build/radio
 
-cmake -DJOYNR_ENABLE_DLT_LOGGING=$DLT \
+GENERATOR_VAR=''
+GENERATOR_SPECIFIC_ARGUMENTS=''
+if [ ${USE_NINJA} == "ON" ]; then
+    log "RUN CMAKE with ninja build system"
+    GENERATOR_VAR="-GNinja"
+else
+    log "RUN CMAKE"
+    GENERATOR_SPECIFIC_ARGUMENTS="-- -j $JOBS"
+fi
+
+cmake $GENERATOR_VAR \
+      -DJOYNR_ENABLE_DLT_LOGGING=$DLT \
       -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       -DJOYNR_SERVER=localhost:8080 \
       $ADDITIONAL_CMAKE_ARGS \
       /data/src/examples/radio-app
 
-time make -j $JOBS
+time cmake --build . --target all $GENERATOR_SPECIFIC_ARGUMENTS
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))

@@ -12,6 +12,7 @@ BUILDTYPE='Debug'
 ARCHIVEBINARIES='OFF'
 ADDITIONAL_CMAKE_ARGS=''
 RUN_MAVEN='OFF'
+USE_NINJA='OFF'
 
 TESTS=(inter-language-test performance-test robustness-test robustness-test-env system-integration-test)
 
@@ -31,7 +32,8 @@ function usage
         [--buildtype DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL Default: $BUILDTYPE]
         [--clangformatter ON|OFF Default $CLANGFORMATTER]
         [--jobs X Default $JOBS]
-        [--run-maven ON|OFF Default $RUN_MAVEN]"
+        [--use-ninja ON|OFF Default: $USE_NINJA]
+        [--run-maven ON|OFF Default: $RUN_MAVEN]"
     echo "default: jobs is $JOBS, clangformatter is $CLANGFORMATTER, buildtype is \
     $BUILDTYPE, archivebinaries is $ARCHIVEBINARIES and additionalcmakeargs is $ADDITIONAL_CMAKE_ARGS"
 }
@@ -58,6 +60,9 @@ while [ "$1" != "" ]; do
                                 ;;
         --run-maven )           shift
                                 RUN_MAVEN=$1
+                                ;;
+        --use-ninja )           shift
+                                USE_NINJA=$1
                                 ;;
         * )                     usage
                                 exit 1
@@ -95,6 +100,7 @@ fi
 
 echo "ADDITIONAL_CMAKE_ARGS: $ADDITIONAL_CMAKE_ARGS"
 echo "CPP BUILD TESTS JOBS: $JOBS"
+echo "USE_NINJA: $USE_NINJA"
 echo "MAVEN_PROJECT: $MAVEN_PROJECT"
 echo "RUN_MAVEN: $RUN_MAVEN"
 echo "SRC_FOLDER: $SRC_FOLDER"
@@ -116,6 +122,15 @@ then
     ${MAVEN_PROJECT}
 fi
 
+GENERATOR_VAR=''
+GENERATOR_SPECIFIC_ARGUMENTS=''
+if [ ${USE_NINJA} == "ON" ]; then
+    log "RUN CMAKE with ninja build system"
+    GENERATOR_VAR="-GNinja"
+else
+    log "RUN CMAKE"
+    GENERATOR_SPECIFIC_ARGUMENTS="-- -j $JOBS"
+fi
 
 # build dummyKeychain first
 DUMMYKEYCHAIN_SRC_DIR=/data/src/tests/dummyKeychain
@@ -123,28 +138,32 @@ DUMMYKEYCHAIN_BUILD_DIR=/data/build/dummyKeychain
 rm -rf $DUMMYKEYCHAIN_BUILD_DIR
 mkdir $DUMMYKEYCHAIN_BUILD_DIR
 cd $DUMMYKEYCHAIN_BUILD_DIR
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+cmake $GENERATOR_VAR \
+      -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       -DCMAKE_BUILD_TYPE=$BUILDTYPE \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
       $ADDITIONAL_CMAKE_ARGS \
       $DUMMYKEYCHAIN_SRC_DIR
-time make -j ${JOBS}
+
+time cmake --build . --target all $GENERATOR_SPECIFIC_ARGUMENTS
 
 
 # build selected test(s)
 rm -rf /data/build/tests
 mkdir /data/build/tests
 cd /data/build/tests
-cmake -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
+
+cmake $GENERATOR_VAR \
+      -DCMAKE_PREFIX_PATH=$JOYNR_INSTALL_DIR \
       -DENABLE_CLANG_FORMATTER=$CLANGFORMATTER \
       -DJOYNR_SERVER=localhost:8080 \
       -DCMAKE_BUILD_TYPE=$BUILDTYPE \
       -DCMAKE_INSTALL_PREFIX=/usr \
       $ADDITIONAL_CMAKE_ARGS \
       ${SRC_FOLDER}
-time make -j $JOBS
 
+time cmake --build . --target all $GENERATOR_SPECIFIC_ARGUMENTS
 
 if [ "all" == "${SELECTED_TEST}" ]
 then
@@ -154,7 +173,6 @@ else
     log "Archiving tests bin folder for $SELECTED_TEST"
     tar czf joynr-$SELECTED_TEST.tar.gz bin
 fi
-
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))
