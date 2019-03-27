@@ -34,6 +34,8 @@
 #include "IltHelper.h"
 #include "IltUtil.h"
 
+extern std::string globalIltProgramName;
+
 template <typename BaseClass>
 class IltAbstractConsumerTest : public BaseClass
 {
@@ -44,11 +46,10 @@ public:
         JOYNR_LOG_INFO(logger(), "Creating proxy for provider on domain {}", providerDomain);
 
         // Get the current program directory
-        std::string dir(
-                IltHelper::getAbsolutePathToExecutable(IltAbstractConsumerTest::programName));
+        std::string dir(IltHelper::getAbsolutePathToExecutable(globalIltProgramName));
 
-        // Initialise the JOYn runtime
-        std::string pathToMessagingSettings(dir + "/resources/test-app-consumer.settings");
+        // Initialize the joynr runtime
+        std::string pathToMessagingSettings(dir + "/resources/ilt-consumer.settings");
 
         runtime = joynr::JoynrRuntime::createRuntime(pathToMessagingSettings);
 
@@ -104,20 +105,12 @@ protected:
             proxyBuilder;
     static std::shared_ptr<joynr::JoynrRuntime> runtime;
     static std::string providerDomain;
-    static std::string programName;
-
     static const std::uint16_t subscriptionIdFutureTimeoutMs;
     static const std::chrono::milliseconds publicationTimeoutMs;
 
     ADD_LOGGER(IltAbstractConsumerTest)
-
 public:
     IltAbstractConsumerTest() = default;
-
-    void static setProgramName(std::string programName)
-    {
-        IltAbstractConsumerTest::programName = programName;
-    }
 };
 
 template <typename T>
@@ -133,9 +126,6 @@ std::shared_ptr<JoynrRuntime> IltAbstractConsumerTest<T>::runtime;
 
 template <typename T>
 std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-test-domain";
-
-template <typename T>
-std::string IltAbstractConsumerTest<T>::programName;
 
 template <typename T>
 const std::uint16_t IltAbstractConsumerTest<T>::subscriptionIdFutureTimeoutMs = 10000;

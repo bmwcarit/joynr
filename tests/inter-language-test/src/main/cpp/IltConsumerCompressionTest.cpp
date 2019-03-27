@@ -25,9 +25,12 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQosEffort.h"
+#include "IltHelper.h"
 #include "IltUtil.h"
 
 using namespace ::testing;
+
+extern std::string globalIltProgramName;
 
 /** Class to test the compression of joynr messages.
  */
@@ -40,8 +43,11 @@ protected:
         // Get the provider domain
         JOYNR_LOG_INFO(logger(), "Creating proxy for provider on domain {}", providerDomain);
 
-        // Initialise the JOYn runtime
-        std::string pathToMessagingSettings("resources/ilt-consumer.settings");
+        // Get the current program directory
+        std::string dir(IltHelper::getAbsolutePathToExecutable(globalIltProgramName));
+
+        // Initialize the joynr runtime
+        std::string pathToMessagingSettings(dir + "/resources/ilt-consumer.settings");
 
         runtime = joynr::JoynrRuntime::createRuntime(pathToMessagingSettings);
 
