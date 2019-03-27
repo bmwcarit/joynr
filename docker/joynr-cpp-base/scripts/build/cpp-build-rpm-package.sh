@@ -51,6 +51,11 @@ mkdir /data/build/joynr/package/RPM/joynr
 # copy RPM spec file
 cp /data/src/$RPMSPEC /data/build/joynr/package/RPM/SPECS
 RPMSPEC_BASENAME=`basename /data/src/$RPMSPEC`
+# disable generation of debug package as workaround for broken rpmbuild in
+# Fedora 27 complaining about empty %files in BUILD/debugsourcefiles.list
+# which is automatically created during build
+# see https://bugzilla.redhat.com/show_bug.cgi?id=1479198 for more info
+sed -i 's/%debug_package/%global debug_package %{nil}/' /data/build/joynr/package/RPM/SPECS/$RPMSPEC_BASENAME
 cd /data/build/joynr
 
 SRCDIR=/data/src

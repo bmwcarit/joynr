@@ -47,6 +47,11 @@ mkdir $SMRF_BUILD_DIR/package/RPM/smrf
 # copy RPM spec file
 RPMSPEC=smrf.spec
 cp $SMRF_SRCS/cpp/distribution/$RPMSPEC $SMRF_BUILD_DIR/package/RPM/SPECS
+# disable generation of debug package as workaround for broken rpmbuild in
+# Fedora 27 complaining about empty %files in BUILD/debugsourcefiles.list
+# which is automatically created during build
+# see https://bugzilla.redhat.com/show_bug.cgi?id=1479198 for more info
+sed -i 's/%debug_package/%global debug_package %{nil}/' $SMRF_BUILD_DIR/package/RPM/SPECS/$RPMSPEC
 RPMSPEC_BASENAME=`basename $SMRF_SRCS/cpp/distribution/$RPMSPEC`
 cd $SMRF_BUILD_DIR
 
