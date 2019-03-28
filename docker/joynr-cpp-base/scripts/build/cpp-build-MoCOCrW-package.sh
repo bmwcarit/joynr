@@ -14,7 +14,7 @@ env
 
 JOBS=4
 MOCOCRW_BUILD_DIR=/data/src/docker/build/MoCOCrW
-MOCOCRW_VERSION=master
+MOCOCRW_VERSION=openssl1.1
 MOCOCRW_SRCS=/tmp/MoCOCrW-$MOCOCRW_VERSION
 
 # download MoCOCrW
