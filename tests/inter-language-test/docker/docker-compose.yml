@@ -3,25 +3,25 @@ version: '2.0'
 services:
 
   hivemq:
-    image: 'peez/hivemq'
+    image: 'peez/hivemq:${HIVEMQ_IMAGE_VERSION}'
     container_name: mqttbroker
     environment:
       - HIVEMQ_DISABLE_AUTH_PLUGIN=true
 
   joynrbackend:
-    image: "joynr-backend-jee:latest"
+    image: "joynr-backend-jee:${JOYNR_BACKEND_IMAGE_VERSION}"
     container_name: joynrbackend
 
   ilt-onboard-apps-1:
-    image: "ilt-onboard-apps:latest"
+    image: "ilt-onboard-apps:${ILT_ONBOARD_APPS_IMAGE_VERSION_1}"
     container_name: ilt-onboard-apps-1
     volumes:
-      - ${HOME}/docker/build/1:/data/scripts
+      - ${HOME}/docker/build/ilt-onboard-apps-1:/data/build
     tty: true
 
   ilt-onboard-apps-2:
-    image: "ilt-onboard-apps:latest"
+    image: "ilt-onboard-apps:${ILT_ONBOARD_APPS_IMAGE_VERSION_2}"
     container_name: ilt-onboard-apps-2
     volumes:
-      - ${HOME}/docker/build/2:/data/scripts
+      - ${HOME}/docker/build/ilt-onboard-apps-2:/data/build
     tty: true
