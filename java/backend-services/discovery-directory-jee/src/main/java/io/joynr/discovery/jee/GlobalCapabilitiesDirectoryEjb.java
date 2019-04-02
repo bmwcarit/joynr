@@ -36,6 +36,7 @@ import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySubscriptionPublisher;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 import joynr.system.RoutingTypes.Address;
@@ -93,6 +94,12 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
+    public void add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public void fireGlobalDiscoveryEntryChanged() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
@@ -116,12 +123,24 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
+    public GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public GlobalDiscoveryEntry lookup(String participantId) {
         logger.debug("Looking up global discovery entry for participant ID {}", participantId);
         GlobalDiscoveryEntryPersisted queryResult = entityManager.find(GlobalDiscoveryEntryPersisted.class,
                                                                        participantId);
         logger.debug("Found entry {}", queryResult);
         return queryResult == null ? null : new GlobalDiscoveryEntry(queryResult);
+    }
+
+    @Override
+    public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
     @Override

@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.JoynrVersion;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
@@ -162,7 +163,9 @@ public class LegacyCapabilitiesProvisioning {
                 // allows anything else, typically used with mqtt:// or tcp:// or ssl://
                 address = new MqttAddress(urlForAddress, channelId);
             }
-            DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
+            JoynrVersion interfaceVersion = interfaceClass.getAnnotation(JoynrVersion.class);
+            DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(interfaceVersion.major(),
+                                                                                                interfaceVersion.minor()),
                                                                                     domain,
                                                                                     interfaceName,
                                                                                     participantId,

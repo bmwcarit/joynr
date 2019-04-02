@@ -80,6 +80,12 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
+    public Promise<DeferredVoid> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public Promise<DeferredVoid> add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
         DeferredVoid deferred = new DeferredVoid();
         for (GlobalDiscoveryEntry globalDiscoveryEntry : globalDiscoveryEntries) {
@@ -124,6 +130,12 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
+    public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public Promise<Lookup2Deferred> lookup(String forParticipantId) {
         Lookup2Deferred deferred = new Lookup2Deferred();
         logger.debug("Searching discovery entries for participantId: {}", forParticipantId);
@@ -138,10 +150,17 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
+    public Promise<Lookup2Deferred> lookup(String participantId, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public Promise<DeferredVoid> touch(String clusterControllerId) {
         DeferredVoid deferred = new DeferredVoid();
         discoveryEntryStore.touch(clusterControllerId);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
+
 }
