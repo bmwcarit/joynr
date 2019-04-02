@@ -303,10 +303,14 @@ cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     ###################################################
     COPY onboard-cc-messaging.settings /data/onboard-cc-messaging.settings
     COPY keep-container-running.sh /data/keep-container-running.sh
-    COPY run-cpp-cc.sh /data/run-cpp-cc.sh
+    COPY run-cc-cpp.sh /data/run-cc-cpp.sh
     COPY run-consumer-java-ws.sh /data/run-consumer-java-ws.sh
     COPY run-consumer-cpp-ws.sh /data/run-consumer-cpp-ws.sh
+    COPY run-consumer-js-ws.sh /data/run-consumer-js-ws.sh
     COPY run-provider-cpp-ws.sh /data/run-provider-cpp-ws.sh
+    COPY run-provider-java-ws.sh /data/run-provider-java-ws.sh
+    COPY run-provider-js-ws.sh /data/run-provider-js-ws.sh
+    COPY terminate-test.sh /data/terminate-test.sh
 
     ENTRYPOINT ["sh", "-c", "\"/data/keep-container-running.sh\""]
 EOF
