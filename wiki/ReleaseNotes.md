@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.7.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** Fixed typo in `WebSocketLibjoynrRuntime`, by using correct method
+  `terminateAllSubscriptions`.
+
+## Configuration property changes
+None.
+
 # joynr 1.7.0
 
 ## API relevant changes
