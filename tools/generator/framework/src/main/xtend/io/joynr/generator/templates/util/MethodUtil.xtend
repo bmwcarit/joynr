@@ -134,6 +134,18 @@ import org.franca.core.franca.FEnumerationType
 
 	/**
 	 * @param method the method for which the signature shall be created
+	 * @return a method signature that is unique in terms of method name, out
+	 *      parameter names, out parameter types and error types.
+	 */
+	def createMethodSignatureFromOutAndErrorParameters(FMethod method) {
+		if (method.hasErrorEnum)
+			createParameterSignatureForMethod(method.name, method.outArgs.filterNull) + method.createMethodSignatureFromErrors
+		else
+			createParameterSignatureForMethod(method.name, method.outArgs.filterNull)
+	}
+
+	/**
+	 * @param method the method for which the signature shall be created
 	 * @return a method signature that is unique in terms of method name and error types
 	 */
 	def createMethodSignatureFromErrors(FMethod method) {
