@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,26 @@ package infrastructure
 import types.* from "DiscoveryTypes.fidl"
 
 <**
-	@description: The GlobalCapabilitiesDirectory is a joynr
-	internal interface. The joynr framework uses it to register
-	providers, which are available at a global scope, with the backend.
-	A provider is registered along with parameters which will be used
-	during the arbitration process to select a suitable provider for
-	a proxy. These information are stored in GlobalDiscoveryEntry objects.
+	@description: The GlobalCapabilitiesDirectory is a joynr internal interface. The joynr framework
+		uses it to register providers, which are available at a global scope, with the selected
+		backends.
+		Such global providers can be discovered by all cluster controllers which are connected to
+		the same GlobalCapabilitiesDirectory. In contrast, a provider that is available at local
+		scope only is solely registered at its own (local) cluster controller. It can only be
+		discovered by that cluster controller and runtimes connected to that cluster controller.
+		A provider is registered along with parameters which will be used during the arbitration
+		process to select a suitable provider for a proxy. This information is stored in
+		GlobalDiscoveryEntry objects. A provider/GlobalDiscoveryEntry can be registered in multiple
+		global backends, identified by its GBIDs (Global Backend Identifier). The lookup methods
+		always return only one GlobalDiscoveryEntry, i.e. a single GBID, for a provider which is
+		registered in multiple backends. The selection is up to the implementation of the Global
+		Capabilities Directory.
+		The reference to a GBID in the address field of GlobalDiscoveryEntries is not taken into
+		account in the add methods. It is replaced with the correct GBID in the return value of the
+		lookup methods, see description of the lookup methods. To make the add and lookup methods
+		of interface version 0.1 compatible with the new ones in version 0.2, each Global
+		Capabilities Directory instance must be available in only one global backend and it has to
+		know its own GBID.
 	@see: GlobalDiscoveryEntry
 **>
 interface GlobalCapabilitiesDirectory{
@@ -34,40 +48,44 @@ interface GlobalCapabilitiesDirectory{
 	version {major 0 minor 2}
 
 	<**
-		@description: Registers several providers with the backend. The providers are registered with the same GBID
-		as the Global Capabilities Directory instance which received this call.
+		@description: Registers several providers with the backend. The providers are registered
+			only in the global backend (GBID) of the Global Capabilities Directory instance which
+			received this call.
 	**>
 	method add {
 		in {
 			<**
-				@description: A list which stores information about each provider instance
-				that shall be registered with the backend.
+				@description: A list which stores information about each provider instance that
+					shall be registered with the backend.
 				@see: GlobalDiscoveryEntry
 			**>
 			GlobalDiscoveryEntry[] globalDiscoveryEntries
 		}
 	}
 
-	<** @description: Registers a single provider with the backend. The providers are registered with the same GBID
-        as the Global Capabilities Directory instance which received this call. **>
+	<**
+		@description: Registers a single provider with the backend. The provider is registered with
+			the GBID of the Global Capabilities Directory instance which received this call.
+	**>
 	method add {
 		in {
 			<**
-				@description: Information about the provider which shall be registered with
-				the backend.
+				@description: Information about the provider which shall be registered with the
+					backend.
 				@see: GlobalDiscoveryEntry
 			**>
 			GlobalDiscoveryEntry globalDiscoveryEntry
 		}
 	}
 
-	<** @description: Registers a single provider in the defined global Backends **>
+	<**
+		@description: Registers a single provider in the defined global backends
+	**>
 	method add {
 		in {
 			<**
-				@description: Information about the provider which shall be registered with
-				the backend. The reference to the GBIDs in the address field of the Global Discovery Entry is not
-				taken into account.
+				@description: Information about the provider which shall be registered with the
+					backend.
 				@see: GlobalDiscoveryEntry
 			**>
 			GlobalDiscoveryEntry globalDiscoveryEntry
@@ -82,141 +100,172 @@ interface GlobalCapabilitiesDirectory{
 
 
 	<**
-		@description: Looks up a list of providers for a domain and an interface name. The domain
-		and interface name correspond to the attributes stored in GlobalDiscoveryEntry. The providers returned are
-		registered to the same GBID as the Global Capabilities Directory instance which received this call.
+		@description: Looks up a list of providers for a list of domains and an interface name. The
+			domain and interface name correspond to the attributes stored in GlobalDiscoveryEntry.
+			The providers returned are registered to the same GBID as the Global Capabilities
+			Directory instance which received this call.
 		@see: GlobalDiscoveryEntry
 	**>
 	method lookup {
 		in {
-			<** @description: Domain names for which providers shall be returned. **>
+			<**
+				@description: Domain names for which providers shall be returned.
+			**>
 			String[] domains
-			<** @description: The name of the requested provider interface. **>
+			<**
+				@description: The name of the requested provider interface.
+			**>
 			String interfaceName
 		}
 
 		out {
-			<** @description: Information about all providers which were found for the given
-			domain and interface name.
+			<**
+				@description: Information about all providers which were found for the given domains
+					and interface name in the backend of the Global Capabilities Directory instance.
 			**>
 			GlobalDiscoveryEntry[] result
 		}
 	}
 
 	<**
-		@description: Looks up a provider for a given participant Id. The providers returned are
-        registered to the same GBID as the Global Capabilities Directory instance which received this call.
+		@description: Looks up a list of providers for a list of domains and an interface name in
+			the selected backends. The domain and interface name correspond to the attributes stored
+			in GlobalDiscoveryEntry.
+			Only one provider per participantId is returned. In case a single provider is registered
+			in multiple backends, only one GlobalDiscoveryEntry of that provider in a single backend
+			will be returned. The references to a GBID in the address fields of the returned
+			GlobalDiscoveryEntries have to be replaced with the selected GBID for each provider.
+		@see: GlobalDiscoveryEntry
 	**>
 	method lookup {
 		in {
-			<** @description: The participant Id which identifies the requested provider. **>
-			String participantId
-		}
-		out{
-			<** @description: Information about the found provider. **>
-			GlobalDiscoveryEntry result
-		}
-	}
-
-		<**
-    		@description: Looks up a provider for a given participant Id. In case a single provider identified by the
-    		provided participantId is registered in multiple Backends, only one GlobalDiscoveryEntry of that provider
-    		in a single backend will be returned.
-    	**>
-    	method lookup {
-    		in {
-    			<** @description: The participant Id which identifies the requested provider. **>
-    			String participantId
-
-    			<**
-    				@description: Global Backend IDs for which providers should be returned. Only Providers from
-    				the provided Global Backends will be returned
-    			**>
-    			String[] gbids
-    		}
-    		out{
-    			<** @description: Information about the found provider. **>
-    			GlobalDiscoveryEntry result
-    		}
-    	}
-
-
-    <**
-        @description: Looks up a list of providers for a domain and an interface name. The domain
-        and interface name correspond to the attributes stored in GlobalDiscoveryEntry. Only one provider per
-        participantId is returned. In case a single provider is registered in multiple Backends, only one
-        GlobalDiscoveryEntry of that provider in a single backend will be returned.
-        @see: GlobalDiscoveryEntry
-	**>
-	method lookup {
-		in {
-			<** @description: Domain names for which providers shall be returned. **>
+			<**
+				@description: Domain names for which providers shall be returned.
+			**>
 			String[] domains
-			<** @description: The name of the requested provider interface. **>
+			<**
+				@description: The name of the requested provider interface.
+			**>
 			String interfaceName
 
 			<**
-				@description: Global Backend IDs for which providers should be returned. Only Providers from
-				the provided Global Backends will be returned
+				@description: Global Backend IDs for which providers should be returned. Only
+					Providers from the provided Global Backends will be returned
 			**>
 			String [] gbids
 
 		}
 
 		out {
-			<** @description: Information about all providers which were found for the given
-			domain and interface name.
+			<**
+				@description: Information about all providers which were found for the given domain
+					domain and interface name.
 			**>
 			GlobalDiscoveryEntry[] result
 		}
 	}
 
 
+	<**
+		@description: Looks up a provider for a given participant Id. The provider returned is
+			registered to the same GBID as the Global Capabilities Directory instance which
+			received this call.
+	**>
+	method lookup {
+		in {
+			<**
+				@description: The participant Id which identifies the requested provider.
+			**>
+			String participantId
+		}
+		out {
+			<**
+				@description: Information about the found provider.
+			**>
+			GlobalDiscoveryEntry result
+		}
+	}
 
 	<**
-		@description: Unregisters providers from the backend.
+		@description: Looks up a provider for a given participant Id in the selected backends.
+			In case the provider identified by the provided participantId is registered in
+			multiple backends, only one GlobalDiscoveryEntry of that provider in a single
+			backend will be returned. The references to a GBID in the address field of the
+			returned GlobalDiscoveryEntry has to be replaced with the selected GBID for the
+			provider.
+	**>
+	method lookup {
+		in {
+			<**
+				@description: The participant Id which identifies the requested provider.
+			**>
+			String participantId
+
+			<**
+				@description: Global Backend IDs for which the provider should be returned. The
+					provider is only returned if it is registered in one of the provided Global
+					Backends.
+			**>
+			String[] gbids
+		}
+		out {
+			<**
+				@description: Information about the found provider.
+			**>
+			GlobalDiscoveryEntry result
+		}
+	}
+
+
+
+	<**
+		@description: Unregisters providers from all associated backends.
 	**>
 	method remove {
 		in {
 			<**
 				@description: The participand Ids which identify the providers that shall be removed
-				from the backend.
+					from the Global Capabilities Directory. This will remove the providers from all
+					associated backends.
 			**>
 			String[] participantIds
 		}
 	}
 
 	<**
-		@description: Unregisters a provider from the backend.
+		@description: Unregisters a provider from all associated backends.
 	**>
 	method remove {
 		in {
 			<**
 				@description: The participant Id which identifies the provider that shall be removed
-				from the backend.
+					from the Global Capabilities Directory. This will remove the provider from all
+					associated backends.
 			**>
 			String participantId
 		}
 	}
 
+
+
 	<**
-		@description: Updates the last seen date for a specific cluster controller.
+		@description: Updates the last seen date of all GlobalDiscoveryEntries of a specific cluster
+			controller.
 	**>
 	method touch {
 		in {
 			<**
-				@description: Identifies the cluster controller for which the last
-				seen date shall be updated.
+				@description: Identifies the cluster controller for which the last seen date shall
+					be updated.
 			**>
 			String clusterControllerId
 		}
 	}
 
 	<**
-		@description: Event that is fired when a new global discovery
-			entry is added or an existing entry is changed or removed.
-			The event includes the affected global discovery entry as well
-			as the type of change.
+		@description: Event that is fired when a new GlobalDiscoveryEntry is added or an existing
+			entry is changed or removed.  The event includes the affected GlobalDiscoveryEntry as
+			well as the type of change.
 			MULTICAST PARTITIONS:
 			This event is broadcasted using the following partition structure:
 			<domain> / <interface>
@@ -227,4 +276,5 @@ interface GlobalCapabilitiesDirectory{
 			GlobalDiscoveryEntry globalDiscoveryEntry
 		}
 	}
+
 }
