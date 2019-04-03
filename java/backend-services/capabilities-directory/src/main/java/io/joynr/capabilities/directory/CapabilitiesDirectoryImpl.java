@@ -80,7 +80,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public Promise<DeferredVoid> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
+    public Promise<Add1Deferred> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
         // TODO
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
@@ -130,14 +130,14 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, String[] gbids) {
+    public Promise<Lookup2Deferred> lookup(String[] domains, String interfaceName, String[] gbids) {
         // TODO
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
     @Override
-    public Promise<Lookup2Deferred> lookup(String forParticipantId) {
-        Lookup2Deferred deferred = new Lookup2Deferred();
+    public Promise<Lookup3Deferred> lookup(String forParticipantId) {
+        Lookup3Deferred deferred = new Lookup3Deferred();
         logger.debug("Searching discovery entries for participantId: {}", forParticipantId);
         DiscoveryEntry discoveryEntry = discoveryEntryStore.lookup(forParticipantId,
                                                                    DiscoveryQos.NO_FILTER.getCacheMaxAgeMs());
@@ -146,11 +146,11 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         } else {
             deferred.resolve((GlobalDiscoveryEntry) discoveryEntry);
         }
-        return new Promise<Lookup2Deferred>(deferred);
+        return new Promise<Lookup3Deferred>(deferred);
     }
 
     @Override
-    public Promise<Lookup2Deferred> lookup(String participantId, String[] gbids) {
+    public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
         // TODO
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }

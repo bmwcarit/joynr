@@ -20,6 +20,35 @@ package infrastructure
 
 import types.* from "DiscoveryTypes.fidl"
 
+typeCollection GcdTypes {
+
+	<**
+		@description: Modeled error cases for the new add and lookup methods.
+	**>
+	enumeration GcdErrors {
+		<**
+			@description: GBID is not known to the Global Capabilities Directory instance.
+		**>
+		UNKNOWN_GBID
+		<**
+			@description: GBID is invalid, e.g. empty.
+		**>
+		INVALID_GBID
+		<**
+			@description: lookup: No entry for the requested participant ID.
+		**>
+		NO_ENTRY_FOR_PARTICIPANT
+		<**
+			@description: lookup: At least one matching entry is available but not for the selected backends.
+		**>
+		NO_ENTRY_FOR_SELECTED_BACKENDS
+		<**
+			@description: internal error in the Global Capabilities Directory.
+		**>
+		INTERNAL_ERROR
+	}
+}
+
 <**
 	@description: The GlobalCapabilitiesDirectory is a joynr internal interface. The joynr framework
 		uses it to register providers, which are available at a global scope, with the selected
@@ -95,6 +124,7 @@ interface GlobalCapabilitiesDirectory{
 			**>
 			String[] gbids
 		}
+		error GcdTypes.GcdErrors
 	}
 
 
@@ -122,6 +152,8 @@ interface GlobalCapabilitiesDirectory{
 			<**
 				@description: Information about all providers which were found for the given domains
 					and interface name in the backend of the Global Capabilities Directory instance.
+					If no matching providers are registered, an empty result list will be returned
+					(this is not an error).
 			**>
 			GlobalDiscoveryEntry[] result
 		}
@@ -150,19 +182,22 @@ interface GlobalCapabilitiesDirectory{
 
 			<**
 				@description: Global Backend IDs for which providers should be returned. Only
-					Providers from the provided Global Backends will be returned
+					Providers from the provided Global Backends will be returned.
 			**>
 			String [] gbids
-
 		}
-
 		out {
 			<**
 				@description: Information about all providers which were found for the given domain
-					domain and interface name.
+					and interface name in the provided backends (gbids). If none of the entries with
+					a matching domain and interface name has a matching GBID, the error
+					NO_ENTRY_FOR_SELECTED_BACKENDS will be returned.
+					If there are no matching providers at all, an empty result list will be returned
+					(this is not an error).
 			**>
 			GlobalDiscoveryEntry[] result
 		}
+		error GcdTypes.GcdErrors
 	}
 
 
@@ -180,7 +215,8 @@ interface GlobalCapabilitiesDirectory{
 		}
 		out {
 			<**
-				@description: Information about the found provider.
+				@description: Information about the found provider. If no matching provider is
+					registered, a ProviderRuntimeException will be returned.
 			**>
 			GlobalDiscoveryEntry result
 		}
@@ -210,10 +246,14 @@ interface GlobalCapabilitiesDirectory{
 		}
 		out {
 			<**
-				@description: Information about the found provider.
+				@description: Information about the found provider. If none of the entries matching
+					the participantId has a matching GBID, the error NO_ENTRY_FOR_SELECTED_BACKENDS
+					will be returned. If there is no provider for this participantId,
+					NO_ENTRY_FOR_PARTICIPANT is returned.
 			**>
 			GlobalDiscoveryEntry result
 		}
+		error GcdTypes.GcdErrors
 	}
 
 
