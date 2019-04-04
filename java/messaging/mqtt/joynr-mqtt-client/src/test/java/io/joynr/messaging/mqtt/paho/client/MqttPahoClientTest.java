@@ -130,6 +130,7 @@ public class MqttPahoClientTest {
         printWriter.println("certfile " + certfilePath.toAbsolutePath().toString());
         printWriter.println("keyfile " + keyfilePath.toAbsolutePath().toString());
         printWriter.println("require_certificate true");
+        printWriter.println("allow_anonymous false");
         printWriter.close();
 
         // create mosquitto password file with an entry for user 'joynr'
@@ -225,8 +226,12 @@ public class MqttPahoClientTest {
 
         Thread thread = new Thread(new Runnable() {
             public void run() {
-                client.start();
-                startSemaphore.release();
+                try {
+                    client.start();
+                    startSemaphore.release();
+                } catch (Exception e) {
+                    // ignore
+                }
             }
         });
         thread.start();
