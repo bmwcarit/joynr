@@ -18,6 +18,7 @@
  */
 const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
 const UtilInternal = require("../../util/UtilInternal");
+const GlobalCapabilitiesDirectoryProvider = require("../../../generated/joynr/infrastructure/GlobalCapabilitiesDirectoryProvider");
 const defaultClusterControllerSettings = function(settings) {
     const defaultSettings = {};
     defaultSettings.discoveryChannel = "discoverydirectory_channelid";
@@ -28,8 +29,8 @@ const defaultClusterControllerSettings = function(settings) {
 
     const globalCapDirCapability = {
         providerVersion: {
-            majorVersion: 0,
-            minorVersion: 1
+            majorVersion: GlobalCapabilitiesDirectoryProvider.MAJOR_VERSION,
+            minorVersion: GlobalCapabilitiesDirectoryProvider.MINOR_VERSION
         },
         domain: "io.joynr",
         interfaceName: "infrastructure/GlobalCapabilitiesDirectory",

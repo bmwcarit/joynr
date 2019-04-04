@@ -18,11 +18,13 @@
  */
 const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
 const UtilInternal = require("../../util/UtilInternal");
+const RoutingProvider = require("../../../generated/joynr/system/RoutingProvider");
+const DiscoveryProvider = require("../../../generated/joynr/system/DiscoveryProvider");
 const defaultSettings = {};
 const discoveryCapability = {
     providerVersion: {
-        majorVersion: 0,
-        minorVersion: 1
+        majorVersion: DiscoveryProvider.MAJOR_VERSION,
+        minorVersion: DiscoveryProvider.MINOR_VERSION
     },
     domain: "io.joynr",
     interfaceName: "system/Discovery",
@@ -41,8 +43,8 @@ const discoveryCapability = {
 
 const routingCapability = {
     providerVersion: {
-        majorVersion: 0,
-        minorVersion: 1
+        majorVersion: RoutingProvider.MAJOR_VERSION,
+        minorVersion: RoutingProvider.MINOR_VERSION
     },
     domain: "io.joynr",
     interfaceName: "system/Routing",
