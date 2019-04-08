@@ -46,6 +46,12 @@ public class DiscoveryQosTest {
         assertEquals(expectedDiscoveryTimeoutMs, discoveryQos.getDiscoveryTimeoutMs());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidDiscoveryTimeoutMs() {
+        long expectedDiscoveryTimeoutMs = -128;
+        discoveryQos.setDiscoveryTimeoutMs(expectedDiscoveryTimeoutMs);
+    }
+
     @Test
     public void testDefaultArbitrationStrategy() {
         assertEquals(ArbitrationStrategy.LastSeen, discoveryQos.getArbitrationStrategy());
@@ -97,6 +103,12 @@ public class DiscoveryQosTest {
     @Test
     public void testDefaultRetryIntervalMs() {
         assertEquals(io.joynr.arbitration.DiscoveryQos.NO_VALUE, discoveryQos.getRetryIntervalMs());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInvalidRetryIntervalMs() {
+        long expectedRetryIntervalMs = -64;
+        discoveryQos.setRetryIntervalMs(expectedRetryIntervalMs);
     }
 
     @Test

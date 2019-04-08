@@ -52,11 +52,11 @@ public class DiscoveryQos {
     }
 
     public DiscoveryQos() {
-        this.discoveryTimeoutMs = NO_VALUE;
+        setDiscoveryTimeoutMs(NO_VALUE);
         this.arbitrationStrategy = DEFAULT_ARBITRATIONSTRATEGY;
         this.cacheMaxAgeMs = DEFAULT_CACHEMAXAGE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
-        this.retryIntervalMs = NO_VALUE;
+        setRetryIntervalMs(NO_VALUE);
         this.discoveryScope = DEFAULT_DISCOVERYSCOPE;
     }
 
@@ -149,8 +149,8 @@ public class DiscoveryQos {
 
         this.cacheMaxAgeMs = cacheMaxAge;
         this.discoveryScope = discoveryScope;
-        this.discoveryTimeoutMs = discoveryTimeout;
-        this.retryIntervalMs = retryIntervalMs;
+        setDiscoveryTimeoutMs(discoveryTimeout);
+        setRetryIntervalMs(retryIntervalMs);
         this.arbitrationStrategy = arbitrationStrategy;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
@@ -210,11 +210,11 @@ public class DiscoveryQos {
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
         this.arbitrationStrategy = ArbitrationStrategy.Custom;
-        this.discoveryTimeoutMs = discoveryTimeout;
+        setDiscoveryTimeoutMs(discoveryTimeout);
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         this.cacheMaxAgeMs = cacheMaxAge;
         this.discoveryScope = discoveryScope;
-        this.retryIntervalMs = NO_VALUE;
+        setRetryIntervalMs(NO_VALUE);
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
@@ -253,6 +253,9 @@ public class DiscoveryQos {
      *            lookup might happen multiple times during this time span.
      */
     public void setDiscoveryTimeoutMs(long discoveryTimeoutMs) {
+        if (discoveryTimeoutMs < 0 && discoveryTimeoutMs != NO_VALUE) {
+            throw new IllegalArgumentException("Discovery timeout cannot be less than zero");
+        }
         this.discoveryTimeoutMs = discoveryTimeoutMs;
     }
 
@@ -342,6 +345,9 @@ public class DiscoveryQos {
      *            ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY).
      */
     public void setRetryIntervalMs(long retryIntervalMs) {
+        if (retryIntervalMs < 0 && retryIntervalMs != NO_VALUE) {
+            throw new IllegalArgumentException("Discovery retry interval cannot be less than zero");
+        }
         this.retryIntervalMs = retryIntervalMs;
     }
 
