@@ -23,9 +23,7 @@ import java.util.Map;
 
 /**
  * Storage class to pass all settings to an arbitrator defining the strategy and conditions for provider arbitration.
- *
  */
-
 public class DiscoveryQos {
     public static final DiscoveryQos NO_FILTER;
     public static final long NO_MAX_AGE = Long.MAX_VALUE;
@@ -49,7 +47,6 @@ public class DiscoveryQos {
     /**
      * DiscoveryQos object with default values.
      */
-
     static {
         NO_FILTER = new DiscoveryQos(Long.MAX_VALUE, ArbitrationStrategy.NotSet, Long.MAX_VALUE);
     }
@@ -144,7 +141,8 @@ public class DiscoveryQos {
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
         if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
-            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DiscoveryQos constructor");
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy"
+                    + " function to the DiscoveryQos constructor");
         }
 
         this.cacheMaxAgeMs = cacheMaxAge;
@@ -152,7 +150,6 @@ public class DiscoveryQos {
         this.discoveryTimeoutMs = discoveryTimeout;
         this.retryIntervalMs = retryIntervalMs;
         this.arbitrationStrategy = arbitrationStrategy;
-        this.retryIntervalMs = NO_VALUE;
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
@@ -186,7 +183,8 @@ public class DiscoveryQos {
      */
     public void setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy) {
         if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
-            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DiscoveryQos constructor");
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy"
+                    + " function to the DiscoveryQos constructor");
         }
         this.arbitrationStrategy = arbitrationStrategy;
     }

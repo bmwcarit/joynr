@@ -100,9 +100,20 @@ public class DiscoveryQosTest {
     }
 
     @Test
-    public void testNonDefaultRetryIntervalMs() {
+    public void testNonDefaultRetryIntervalMsViaSetter() {
         long expectedRetryIntervalMs = 1000L;
         discoveryQos.setRetryIntervalMs(expectedRetryIntervalMs);
+        assertEquals(expectedRetryIntervalMs, discoveryQos.getRetryIntervalMs());
+    }
+
+    @Test
+    public void testNonDefaultRetryIntervalMsViaConstructor() {
+        long expectedRetryIntervalMs = 1000L;
+        discoveryQos = new DiscoveryQos(DiscoveryQos.NO_VALUE,
+                                        expectedRetryIntervalMs,
+                                        ArbitrationStrategy.LastSeen,
+                                        0,
+                                        DiscoveryScope.LOCAL_AND_GLOBAL);
         assertEquals(expectedRetryIntervalMs, discoveryQos.getRetryIntervalMs());
     }
 
