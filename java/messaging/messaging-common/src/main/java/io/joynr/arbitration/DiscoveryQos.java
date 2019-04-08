@@ -118,7 +118,9 @@ public class DiscoveryQos {
      * @param discoveryTimeout
      *            Timeout for rpc calls to wait for arbitration to finish.
      * @param retryIntervalMs
-     *            Lookups for the arbitration will be repeated after this time interval if they were not successful
+     *            Lookups for the arbitration will be repeated after this time interval if they were not successful. The
+     *            actual delay may be longer, as there is a system-wide minimum delay (see
+     *            ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY).
      * @param arbitrationStrategy
      *            Strategy for choosing the appropriate provider from the list returned by the capabilities directory
      * @param cacheMaxAge
@@ -153,6 +155,25 @@ public class DiscoveryQos {
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
     }
 
+    /**
+     * @param discoveryTimeout
+     *            Timeout for rpc calls to wait for arbitration to finish.
+     * @param arbitrationStrategyFunction
+     *            function that chooses the appropriate provider from the list returned by the capabilities directory
+     * @param cacheMaxAge
+     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
+     *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+     * @param discoveryScope
+     *            determines where the discovery process will look for matching providers<br>
+     *            <ul>
+     *            <li>LOCAL_ONLY: only locally registered providers will be considered.
+     *            <li>LOCAL_THEN_GLOBAL locally registered providers are preferred. When none is found, the global
+     *            providers are included in search results.
+     *            <li>LOCAL_AND_GLOBAL: all providers registered locally, and query results from the gobal directory are
+     *            combined and returned.
+     *            <li>GLOBAL_ONLY only returns providers that are found in the global directory.
+     *            </ul>
+     */
     public DiscoveryQos(long discoveryTimeout,
                         ArbitrationStrategyFunction arbitrationStrategyFunction,
                         long cacheMaxAge,
@@ -160,6 +181,29 @@ public class DiscoveryQos {
         this(discoveryTimeout, NO_VALUE, arbitrationStrategyFunction, cacheMaxAge, discoveryScope);
     }
 
+    /**
+     * @param discoveryTimeout
+     *            Timeout for rpc calls to wait for arbitration to finish.
+     * @param retryIntervalMs
+     *            Lookups for the arbitration will be repeated after this time interval if they were not successful. The
+     *            actual delay may be longer, as there is a system-wide minimum delay (see
+     *            ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY).
+     * @param arbitrationStrategyFunction
+     *            function that chooses the appropriate provider from the list returned by the capabilities directory
+     * @param cacheMaxAge
+     *            Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the
+     *            local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+     * @param discoveryScope
+     *            determines where the discovery process will look for matching providers<br>
+     *            <ul>
+     *            <li>LOCAL_ONLY: only locally registered providers will be considered.
+     *            <li>LOCAL_THEN_GLOBAL locally registered providers are preferred. When none is found, the global
+     *            providers are included in search results.
+     *            <li>LOCAL_AND_GLOBAL: all providers registered locally, and query results from the gobal directory are
+     *            combined and returned.
+     *            <li>GLOBAL_ONLY only returns providers that are found in the global directory.
+     *            </ul>
+     */
     public DiscoveryQos(long discoveryTimeout,
                         long retryIntervalMs,
                         ArbitrationStrategyFunction arbitrationStrategyFunction,
@@ -285,7 +329,6 @@ public class DiscoveryQos {
     }
 
     /**
-     *
      * @return the interval used for retrying discovery if the previous attempt was unsuccessful
      */
     public long getRetryIntervalMs() {
@@ -294,8 +337,9 @@ public class DiscoveryQos {
 
     /**
      * @param retryIntervalMs
-     *            The time to wait between discovery retries after encountering a discovery error. The actual delay may
-     *            be longer, as there is a system-wide minimum delay.
+     *            The time to wait between discovery retries after unsuccessful discovery attempts. The actual delay may
+     *            be longer, as there is a system-wide minimum delay (see
+     *            ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY).
      */
     public void setRetryIntervalMs(long retryIntervalMs) {
         this.retryIntervalMs = retryIntervalMs;
