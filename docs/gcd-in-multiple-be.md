@@ -72,6 +72,8 @@ GlobalCapabilitiesDirectory.fidl:
     * Called by old CC runtime (old joynr).
     * Provider (participantId) gets removed only from the backend of the GCD instance which received
       the remove request.
+* Modelled errors for the new methods: see GcdErrors in
+  [GlobalCapabilitiesDirectory.fidl](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl)
 
 
 ## Implementation details
@@ -86,6 +88,8 @@ GlobalCapabilitiesDirectory.fidl:
   * Java: see [Java Configuration Guide](../wiki/JavaSettings.md)
   * C++: SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS in
     [Cluster Controller settings](../cpp/libjoynrclustercontroller/ClusterControllerSettings.cpp)
+* GCD returns the modelled errors (if applicable) in case of an error in the new methods (add,
+  lookup, remove) instead of returning a generic ProviderRuntimeException.
 
 
 ### `Add` methods
@@ -132,8 +136,11 @@ GlobalCapabilitiesDirectory.fidl:
 ### `Remove` method
 * Old `remove` methods (without GBID parameter):
   * Removes the participant only from the BE of the GCD instance which received the remove request.
+  * Returns without error if no matching provider is registered.
 * New `remove` method (with GBID parameter):
   * Removes the provider from the selected BEs.
+  * Returns error value `NO_ENTRY_FOR_PARTICIPANT` or `NO_ENTRY_FOR_SELECTED_BACKENDS` (or the other
+    modeled error values) if applicable.
 
 
 ## Examples for the GlobalCapabilitiesDirectory interface with multiple backend scenario
@@ -141,7 +148,7 @@ GlobalCapabilitiesDirectory.fidl:
 ### Adding providers
 
 #### Existing `add` methods
-* No signature change
+* No signature change (no modelled errors)
 * Called by old joynr versions without multiple backend support only
 * Change in the behavior: GCD adds provider to its own GBID.  
   In case of Mqtt, replace the brokerUri of the MqttAddress in the received GDE.
@@ -158,7 +165,7 @@ GlobalCapabilitiesDirectory.fidl:
 
 
 #### New `add` method with GBIDs
-* Signature: `add(GlobalDiscoveryEntry, GBID[])`
+* Signature: `add(GlobalDiscoveryEntry, GBID[])` (with modelled errors)
 * Example I:
   1. CC: Call `add(GlobalDiscoveryEntry, ["GBID1", "GBID2"])`
   2. GCD: Stores GlobalDiscoveryEntry with both GBIDs, regardless of the address/GBID value that was
@@ -167,12 +174,20 @@ GlobalCapabilitiesDirectory.fidl:
   1. CC: Call `add(GlobalDisoveryEntry, ["GBID1"])`
   2. GCD: Stores GlobalDiscoveryEntry with GBID1, regardless of the address/GBID value that was sent
     inside the GlobalDiscoveryEntry.
+* Example e-I:
+  1. CC: Call `add(GlobalDisoveryEntry, [])` or `add(GlobalDisoveryEntry, [""])` or
+     `add(GlobalDisoveryEntry, ["", "GBID"])`, etc.
+  2. GCD: returns error value `INVALID_GBID`
+* Example e-II:
+  1. CC: Call `add(GlobalDisoveryEntry, ["unknownGBID"])` or
+     `add(GlobalDisoveryEntry, ["GBID1", "unknownGBID"])`, etc.
+  2. GCD: returns error value `UNKNOWN_GBID`
 
 
 ### Looking up providers
 
 #### Existing `lookup` methods
-* No signature change
+* No signature change (no modelled errors)
 * Called by old joynr versions without multiple backend support only
 * Change in the behavior: GCD returns only result(s) for the GBID where the invoked GCD instance is
   located
@@ -195,6 +210,7 @@ GlobalCapabilitiesDirectory.fidl:
 #### New `lookup` with GBIDs
 * Signatures: `lookup(domain[], interfaceName, gbid[])` and `lookup(participantId, gbid[])`
 * GCD always returns only 1 GDE per provider / participantId
+* Invalid and unknown GBIDs are handled like in the new `add`method (see above)
 * Example I (Provider is registered in GBID1 and GBID2):
   * `lookup([domain1], interface1, [GBID1])`
     1. CC: Call `lookup([domain1], interface1, [GBID1])`
@@ -210,6 +226,20 @@ GlobalCapabilitiesDirectory.fidl:
     1. CC: Call `lookup(providerParticipantId, [GBID1, GBID2])`
     2. GCD: Returns GDE for one of the matching GBIDs
        * Optional GCD returns the closest, fastest connection for the given provider
+* Example II (Provider is registered in GBID2):
+  * `lookup([domain1], interface1, [GBID1])`
+    1. CC: Call `lookup([domain1], interface1, [GBID1])`
+    2. GCD: Nothing found for GBID1: returns error value `NO_ENTRY_FOR_SELECTED_BACKENDS`
+  * `lookup(providerParticipantId, [GBID1])`
+    1. CC: Call `lookup(providerParticipantId, [GBID1])`
+    2. GCD: Nothing found for GBID1: returns error value `NO_ENTRY_FOR_SELECTED_BACKENDS`
+* Example III (Provider is not registered):
+  * `lookup([domain1], interface1, [GBID1])`
+    1. CC: Call `lookup([domain1], interface1, [GBID1])`
+    2. GCD: Nothing found for any GBID: returns empty list
+  * `lookup(providerParticipantId, [GBID1])`
+    1. CC: Call `lookup(providerParticipantId, [GBID1])`
+    2. GCD: Nothing found for GBID1: returns error value `NO_ENTRY_FOR_PARTICIPANT`
 
 
 ### Removing providers
@@ -237,6 +267,9 @@ GlobalCapabilitiesDirectory.fidl:
   * `remove(participantId1, [GBID1])`
     1. CC: Call `remove(participantId1, [GBID1])`
     2. GCD: Remove provider with `participantId1` from GBID1
+  * `remove(participantId1, [GBID2])` and `remove(participantId1, [GBID1, GBID2])`
+    1. CC: Call `remove(participantId1, [GBID2])` or `remove(participantId1, [GBID1, GBID2])`
+    2. GCD: Nothing found for GBID: returns error value `NO_ENTRY_FOR_SELECTED_BACKENDS`
 * Example II (Provider is registered in GBID1 and GBID2):
   * `remove(participantId1, [GBID1])`
     1. CC: Call `remove(participantId1, [GBID1])`
@@ -244,6 +277,11 @@ GlobalCapabilitiesDirectory.fidl:
   * `remove(participantId1, [GBID1, GBID2])`
     1. CC: Call `remove(participantId1, [GBID1, GBID2])`
     2. GCD: Remove provider with `participantId1` from GBID1 and GBID2
+* Example III (Provider is not registered):
+  1. CC: Call `remove(participantId1, [GBID1])`
+  2. GCD: Nothing found for GBID1: returns error value `NO_ENTRY_FOR_PARTICIPANT`
+
+
 ### `Touch`
 
 #### Existing `touch` method
