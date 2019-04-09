@@ -836,7 +836,7 @@ the default value will be read from this property.
 * **Unit**: milliseconds
 * **Default value**: `600000`
 
-### `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS`
+### `PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`
 If a proxy is built and the corresponding provider cannot be found immediately,
 the lookup on the capabilities directory will be repeated after a certain time interval.
 The length of this interval can be specified by setting the retryIntervalMs attribute

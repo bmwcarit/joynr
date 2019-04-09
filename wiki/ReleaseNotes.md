@@ -2,6 +2,19 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.9.0
+
+## API relevant changes
+None.
+
+## Other changes
+None.
+
+## Configuration property changes
+* **[Java]** Renamed property `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS` to
+  `PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`. See
+  [Java Configuration Reference](JavaSettings.md) for more details.
+
 # joynr 1.8.0
 
 ## API relevant changes
