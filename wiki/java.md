@@ -198,8 +198,11 @@ The class ```DiscoveryQos``` configures how the search for a provider will be ha
 * **discoveryTimeoutMs**  Timeout for discovery process (milliseconds)  if no compatible
   provider was found within the given time. A timeout triggers a DiscoveryException or
   NoCompatibleProviderFoundException containing the versions of the discovered incompatible
-  providers.
-* **retryIntervalMs** The time to wait between discovery retries after encountering a discovery error.
+  providers.  
+  See also [`PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`](#property_discovery_default_timeout_ms).
+* **retryIntervalMs** The time to wait between discovery retries after encountering a discovery error.  
+  See also [`PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`](JavaSettings.md#property_discovery_default_retry_interval_ms)
+  and [`PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS`](JavaSettings.md#property_discovery_minimum_retry_interval_ms).
 * **cacheMaxAgeMs** Defines the maximum allowed age of cached entries (milliseconds), only younger
   entries will be considered. If no suitable providers are found, then depending on the
   discoveryScope, a remote global lookup may be triggered.

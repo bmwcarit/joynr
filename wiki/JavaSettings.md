@@ -170,6 +170,53 @@ for publishing and one for subscribing. This can be used to enhance throughput.
 * **User property**: `joynr.messaging.mqtt.separateconnections`
 * **Default value**: `false`
 
+### `PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`
+When a proxy is built, the max. duration of the arbitration process can be limited
+by setting the discoveryTimeoutMs attribute of a DiscoveryQos object that is
+then passed to the proxy builder. If no discovery timeout is specified this way,
+the default value will be read from this property.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.discovery.defaultTimeoutMs`
+* **Unit**: milliseconds
+* **Default value**: `600000`
+
+### `PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`
+If a proxy is built and the corresponding provider cannot be found immediately, the lookup on the
+capabilities directory will be repeated after a certain time interval. The length of this interval
+can be specified by setting the retryIntervalMs attribute of a DiscoveryQos object that is then
+passed to the proxy builder. If no retry interval is specified this way, the default value will be
+read from this property. See also
+[`PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS`](#property_discovery_minimum_retry_interval_ms).
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.discovery.defaultRetryIntervalMs`
+* **Unit**: milliseconds
+* **Default value**: `10000`
+
+### `PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS`
+Minimum value for DiscoveryQos.retryIntervalMs, see
+[`PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`](#property_discovery_default_retry_interval_ms).
+The minimum will be applied automatically if the provided value is smaller.
+
+* **OPTIONAL**
+* **Type**: long
+* **User property**: `joynr.discovery.minimumRetryIntervalMs`
+* **Unit**: milliseconds
+* **Default value**: `2000`
+
+### `PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS`
+If a provider is registered, its expiry date will be set to 'now + N'. N is
+the value of this property.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.discovery.provider.defaultexpirytimems`
+* **Unit**: milliseconds
+* **Default value**: `3628800000 (6 weeks)`
+
 ### `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`
 TTL used for adding and removing global discovery entries.
 
@@ -341,6 +388,7 @@ This property has to be provided as one line where the GBIDs are separated by co
 * **User property**: `joynr.messaging.gbids`
 * **Default value**: `joynrtestgbid`
 
+
 ## LimitAndBackpressureSettings
 
 LimitAndBackpressureSettings contains the properties that are related to incoming MQTT
@@ -417,6 +465,7 @@ lower threshold must be strictly below `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQU
 * **User property**: `joynr.messaging.backpressure.incomingmqttrequests.lowerthreshold`
 * **Default value**: `20`
 
+
 ## Access Control
 ### `PROPERTY_ACCESSCONTROL_ENABLE`
 Enables or disables access control checks.
@@ -425,6 +474,7 @@ Enables or disables access control checks.
 * **Type**: boolean
 * **User property**: `joynr.accesscontrol.enable`
 * **Default value**: `false`
+
 
 ## MessagingPropertyKeys
 
@@ -823,41 +873,6 @@ global cached discovery entries.
 * **Type**: int
 * **User property**: `joynr.cc.discovery.entry.cache.cleanup.interval`
 * **Default value**: `60`
-
-### `PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`
-When a proxy is built, the max. duration of the arbitration process can be limited
-by setting the discoveryTimeoutMs attribute of a DiscoveryQos object that is
-then passed to the proxy builder. If no discovery timeout is specified this way,
-the default value will be read from this property.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.discovery.defaultTimeoutMs`
-* **Unit**: milliseconds
-* **Default value**: `600000`
-
-### `PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`
-If a proxy is built and the corresponding provider cannot be found immediately,
-the lookup on the capabilities directory will be repeated after a certain time interval.
-The length of this interval can be specified by setting the retryIntervalMs attribute
-of a DiscoveryQos object that is then passed to the proxy builder. If no retry
-interval is specified this way, the default value will be read from this property.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.discovery.defaultRetryIntervalMs`
-* **Unit**: milliseconds
-* **Default value**: `10000`
-
-### `PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS`
-If a provider is registered, its expiry date will be set to 'now + N'. N is
-the value of this property.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.discovery.provider.defaultexpirytimems`
-* **Unit**: milliseconds
-* **Default value**: `3628800000 (6 weeks)`
 
 
 ## ShutdownNotifier
