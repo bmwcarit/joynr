@@ -56,7 +56,6 @@ public class Arbitrator {
     private static final Logger logger = LoggerFactory.getLogger(Arbitrator.class);
     static final DelayQueue<DelayableArbitration> arbitrationQueue = new DelayQueue<>();
 
-    private final long MINIMUM_ARBITRATION_RETRY_DELAY;
     protected DiscoveryQos discoveryQos;
     protected DiscoveryAsync localDiscoveryAggregator;
     protected ArbitrationResult arbitrationResult = new ArbitrationResult();
@@ -73,20 +72,16 @@ public class Arbitrator {
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
     private final Map<String, Set<Version>> discoveredVersions = new HashMap<>();
 
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public Arbitrator(final Set<String> domains,
                       final String interfaceName,
                       final Version interfaceVersion,
                       final DiscoveryQos discoveryQos,
                       DiscoveryAsync localDiscoveryAggregator,
-                      long minimumArbitrationRetryDelay,
                       ArbitrationStrategyFunction arbitrationStrategyFunction,
                       DiscoveryEntryVersionFilter discoveryEntryVersionFilter) {
-        // CHECKSTYLE:ON
         this.domains = domains;
         this.interfaceName = interfaceName;
         this.interfaceVersion = interfaceVersion;
-        MINIMUM_ARBITRATION_RETRY_DELAY = minimumArbitrationRetryDelay;
         this.discoveryQos = discoveryQos;
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
@@ -170,7 +165,7 @@ public class Arbitrator {
     }
 
     protected void restartArbitration() {
-        retryDelay = Math.max(discoveryQos.getRetryIntervalMs(), MINIMUM_ARBITRATION_RETRY_DELAY);
+        retryDelay = discoveryQos.getRetryIntervalMs();
         if (System.currentTimeMillis() + retryDelay > arbitrationDeadline) {
             arbitrationFailed();
             return;
@@ -228,7 +223,6 @@ public class Arbitrator {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (MINIMUM_ARBITRATION_RETRY_DELAY ^ (MINIMUM_ARBITRATION_RETRY_DELAY >>> 32));
         result = prime * result + (int) (arbitrationDeadline ^ (arbitrationDeadline >>> 32));
         result = prime * result + ((arbitrationResult == null) ? 0 : arbitrationResult.hashCode());
         result = prime * result + ((arbitrationStatus == null) ? 0 : arbitrationStatus.hashCode());
@@ -251,9 +245,6 @@ public class Arbitrator {
             return false;
         }
         Arbitrator other = (Arbitrator) obj;
-        if (MINIMUM_ARBITRATION_RETRY_DELAY != other.MINIMUM_ARBITRATION_RETRY_DELAY) {
-            return false;
-        }
         if (arbitrationDeadline != other.arbitrationDeadline) {
             return false;
         }

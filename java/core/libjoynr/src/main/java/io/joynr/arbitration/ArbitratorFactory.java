@@ -18,7 +18,6 @@
  */
 package io.joynr.arbitration;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY;
 import static io.joynr.messaging.routing.MessageRouter.SCHEDULEDTHREADPOOL;
 
 import java.util.Set;
@@ -38,10 +37,6 @@ import joynr.system.DiscoveryAsync;
 import joynr.types.Version;
 
 public final class ArbitratorFactory {
-
-    @Inject
-    @Named(PROPERTY_ARBITRATION_MINIMUMRETRYDELAY)
-    private static long minimumArbitrationRetryDelay;
 
     @Inject
     private static DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
@@ -108,7 +103,6 @@ public final class ArbitratorFactory {
                               interfaceVersion,
                               discoveryQos,
                               localDiscoveryAggregator,
-                              minimumArbitrationRetryDelay,
                               arbitrationStrategyFunction,
                               discoveryEntryVersionFilter);
     }

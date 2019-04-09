@@ -18,6 +18,8 @@
  */
 package io.joynr.proxy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -67,8 +69,9 @@ import joynr.types.Version;
 public class ProxyBuilderDefaultImplTest {
 
     private static final long MAX_MESSAGE_TTL = 1024L;
-    private static final long DISCOVERY_TIMEOUT_MS = 30000L;
-    private static final long RETRY_INTERVAL_MS = 2000L;
+    private static final long DEFAULT_DISCOVERY_TIMEOUT_MS = 30000L;
+    private static final long DEFAULT_RETRY_INTERVAL_MS = 5000L;
+    private static final long MINIMUM_RETRY_DELAY_MS = 2000;
 
     @JoynrVersion(major = 1, minor = 1)
     private static interface TestInterface {
@@ -112,8 +115,9 @@ public class ProxyBuilderDefaultImplTest {
                                                              shutdownNotifier,
                                                              statelessAsyncCallbackDirectory,
                                                              MAX_MESSAGE_TTL,
-                                                             DISCOVERY_TIMEOUT_MS,
-                                                             RETRY_INTERVAL_MS);
+                                                             DEFAULT_DISCOVERY_TIMEOUT_MS,
+                                                             DEFAULT_RETRY_INTERVAL_MS,
+                                                             MINIMUM_RETRY_DELAY_MS);
         Field arbitratorField = ProxyBuilderDefaultImpl.class.getDeclaredField("arbitrator");
         arbitratorField.setAccessible(true);
         arbitratorField.set(subject, arbitrator);
@@ -202,14 +206,14 @@ public class ProxyBuilderDefaultImplTest {
 
     @Test(expected = JoynrIllegalStateException.class)
     public void cantBuildForMissingStatelessAsyncCallback() throws Exception {
-        setup(new HashSet(Arrays.asList("domain")));
+        setup(new HashSet<String>(Arrays.asList("domain")));
         subject.setStatelessAsyncCallbackUseCase("invalid");
         subject.build();
     }
 
     @Test
     public void fetchesStatelessAsyncCallbackIfUseCaseSet() throws Exception {
-        setup(new HashSet(Arrays.asList("domain")));
+        setup(new HashSet<String>(Arrays.asList("domain")));
         final String useCase = "useCase";
         StatelessAsyncCallback callbackMock = mock(StatelessAsyncCallback.class);
         when(statelessAsyncCallbackDirectory.get(eq(useCase))).thenReturn(callbackMock);
@@ -217,4 +221,53 @@ public class ProxyBuilderDefaultImplTest {
         subject.build();
         verify(statelessAsyncCallbackDirectory).get(eq(useCase));
     }
+
+    @Test
+    public void setDiscoveryQosCreatesNewArbitrator() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        DiscoveryQos dQos = new DiscoveryQos();
+
+        Field oldArbitratorField = subject.getClass().getDeclaredField("arbitrator");
+        oldArbitratorField.setAccessible(true);
+        Arbitrator oldArbitrator = (Arbitrator) oldArbitratorField.get(subject);
+
+        subject.setDiscoveryQos(dQos);
+
+        Field newArbitratorField = subject.getClass().getDeclaredField("arbitrator");
+        newArbitratorField.setAccessible(true);
+        Arbitrator newArbitrator = (Arbitrator) newArbitratorField.get(subject);
+
+        assertNotEquals(oldArbitrator, newArbitrator);
+    }
+
+    @Test
+    public void setDiscoveryQosSetsDefaultValues() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        DiscoveryQos dQos = new DiscoveryQos();
+        dQos.setDiscoveryTimeoutMs(DiscoveryQos.NO_VALUE);
+        dQos.setRetryIntervalMs(DiscoveryQos.NO_VALUE);
+
+        subject.setDiscoveryQos(dQos);
+
+        Field dQosField = subject.getClass().getDeclaredField("discoveryQos");
+        dQosField.setAccessible(true);
+        DiscoveryQos newQos = (DiscoveryQos) dQosField.get(subject);
+        assertEquals(DEFAULT_DISCOVERY_TIMEOUT_MS, newQos.getDiscoveryTimeoutMs());
+        assertEquals(DEFAULT_RETRY_INTERVAL_MS, newQos.getRetryIntervalMs());
+    }
+
+    @Test
+    public void setDiscoveryQosUsesMinimumRetryInterval() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        DiscoveryQos dQos = new DiscoveryQos();
+        dQos.setRetryIntervalMs(MINIMUM_RETRY_DELAY_MS / 2);
+
+        subject.setDiscoveryQos(dQos);
+
+        Field dQosField = subject.getClass().getDeclaredField("discoveryQos");
+        dQosField.setAccessible(true);
+        DiscoveryQos newQos = (DiscoveryQos) dQosField.get(subject);
+        assertEquals(MINIMUM_RETRY_DELAY_MS, newQos.getRetryIntervalMs());
+    }
+
 }

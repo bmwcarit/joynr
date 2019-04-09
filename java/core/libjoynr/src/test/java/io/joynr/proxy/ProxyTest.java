@@ -125,8 +125,9 @@ public class ProxyTest {
 
     private static final int ONE_MINUTE_IN_MS = 60 * 1000;
     private static final long MAX_TTL_MS = 2592000000L;
-    private static long DISCOVERY_TIMEOUT_MS = 30000L;
-    private static long RETRY_INTERVAL_MS = 2000L;
+    private static final long DEFAULT_DISCOVERY_TIMEOUT_MS = 30000L;
+    private static final long DEFAULT_RETRY_INTERVAL_MS = 2000L;
+    private static final long ARBITRATION_MINIMUMRETRYDELAY = 2000L;
 
     private Semaphore testInterfaceProxyCreatedSemaphore;
     private Semaphore navigationProxyCreatedSemaphore;
@@ -286,8 +287,9 @@ public class ProxyTest {
                                                           shutdownNotifier,
                                                           injector.getInstance(StatelessAsyncCallbackDirectory.class),
                                                           MAX_TTL_MS,
-                                                          DISCOVERY_TIMEOUT_MS,
-                                                          RETRY_INTERVAL_MS);
+                                                          DEFAULT_DISCOVERY_TIMEOUT_MS,
+                                                          DEFAULT_RETRY_INTERVAL_MS,
+                                                          ARBITRATION_MINIMUMRETRYDELAY);
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override

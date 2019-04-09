@@ -45,6 +45,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private final long maxMessagingTtl;
     private final long defaultDiscoveryTimeoutMs;
     private final long defaultDiscoveryRetryIntervalMs;
+    private final long minimumArbitrationRetryDelay;
     MessagingQos messagingQos;
     Class<T> myClass;
     private DiscoveryQos discoveryQos;
@@ -70,13 +71,15 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                             StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                             long maxMessagingTtl,
                             long defaultDiscoveryTimeoutMs,
-                            long defaultDiscoveryRetryIntervalMs) {
+                            long defaultDiscoveryRetryIntervalMs,
+                            long minimumArbitrationRetryDelay) {
         // CHECKSTYLE:ON
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
         this.maxMessagingTtl = maxMessagingTtl;
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
         this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
+        this.minimumArbitrationRetryDelay = minimumArbitrationRetryDelay;
         this.shutdownNotifier = shutdownNotifier;
 
         try {
@@ -130,6 +133,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     @Override
     public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         applyDefaultValues(discoveryQos);
+        if (discoveryQos.getRetryIntervalMs() < minimumArbitrationRetryDelay) {
+            logger.warn("Provided retryIntervalMs is less than minimum arbitration retry delay, using minimum: {}",
+                        minimumArbitrationRetryDelay);
+            discoveryQos.setRetryIntervalMs(minimumArbitrationRetryDelay);
+        }
         this.discoveryQos = discoveryQos;
 
         arbitrator = ArbitratorFactory.create(domains,

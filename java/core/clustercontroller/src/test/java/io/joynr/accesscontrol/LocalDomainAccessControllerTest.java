@@ -69,8 +69,9 @@ public class LocalDomainAccessControllerTest {
     private static final String INTERFACE1 = "interface1";
     private static final String OPEARATION1 = "operation1";
     private static final long MAX_TTL = 2592000000L;
-    private static final long DISCOVERY_TIMEOUT_MS = 30000L;
-    private static final long RETRY_INTERVAL_MS = 2000L;
+    private static final long DEFAULT_DISCOVERY_TIMEOUT_MS = 30000L;
+    private static final long DEFAULT_RETRY_INTERVAL_MS = 2000L;
+    private static final long ARBITRATION_MINIMUMRETRYDELAY = 2000L;
 
     private CacheManager cacheManager;
     private DomainAccessControlStore domainAccessControlStore;
@@ -115,8 +116,9 @@ public class LocalDomainAccessControllerTest {
                                                                                                       shutdownNotifier,
                                                                                                       statelessAsyncCallbackDirectoryMock,
                                                                                                       MAX_TTL,
-                                                                                                      DISCOVERY_TIMEOUT_MS,
-                                                                                                      RETRY_INTERVAL_MS),
+                                                                                                      DEFAULT_DISCOVERY_TIMEOUT_MS,
+                                                                                                      DEFAULT_RETRY_INTERVAL_MS,
+                                                                                                      ARBITRATION_MINIMUMRETRYDELAY),
                                                                           "systemServiceDomain");
 
         // instantiate some template objects
