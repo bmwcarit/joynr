@@ -12,8 +12,13 @@ None.
 
 ## Configuration property changes
 * **[Java]** Renamed property `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS` to
-  `PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`. See
-  [Java Configuration Reference](JavaSettings.md) for more details.
+  `PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Renamed property `PROPERTY_ARBITRATION_MINIMUMRETRYDELAY` to
+  `PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS`. The new identifier is
+  `joynr.discovery.minimumretryintervalms`. This change indicates that the property
+  is related to `DiscoveryQos.retryIntervalMs`.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 1.8.0
 

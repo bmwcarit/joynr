@@ -120,7 +120,7 @@ public class DiscoveryQos {
      * @param retryIntervalMs
      *            Lookups for the arbitration will be repeated after this time interval if they were not successful. The
      *            actual delay may be longer, as there is a system-wide minimum delay (see
-     *            ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY).
+     *            ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS).
      * @param arbitrationStrategy
      *            Strategy for choosing the appropriate provider from the list returned by the capabilities directory
      * @param cacheMaxAge
@@ -187,7 +187,7 @@ public class DiscoveryQos {
      * @param retryIntervalMs
      *            Lookups for the arbitration will be repeated after this time interval if they were not successful. The
      *            actual delay may be longer, as there is a system-wide minimum delay (see
-     *            ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY).
+     *            ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS).
      * @param arbitrationStrategyFunction
      *            function that chooses the appropriate provider from the list returned by the capabilities directory
      * @param cacheMaxAge
@@ -342,7 +342,7 @@ public class DiscoveryQos {
      * @param retryIntervalMs
      *            The time to wait between discovery retries after unsuccessful discovery attempts. The actual delay may
      *            be longer, as there is a system-wide minimum delay (see
-     *            ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY).
+     *            ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS).
      */
     public void setRetryIntervalMs(long retryIntervalMs) {
         if (retryIntervalMs < 0 && retryIntervalMs != NO_VALUE) {

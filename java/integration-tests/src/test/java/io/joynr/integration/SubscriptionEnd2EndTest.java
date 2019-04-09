@@ -54,7 +54,7 @@ public class SubscriptionEnd2EndTest extends AbstractSubscriptionEnd2EndTest {
         System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION, "true");
         // keep delays and timeout low for tests
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
-        System.setProperty(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY, "200");
+        System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS, "200");
 
         provisionDiscoveryDirectoryAccessControlEntries();
         jettyServer = ServersUtil.startServers();

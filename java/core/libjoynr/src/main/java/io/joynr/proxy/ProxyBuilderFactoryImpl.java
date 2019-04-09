@@ -50,7 +50,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
                                    @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS) long defaultDiscoveryTimeoutMs,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS) long defaultDiscoveryRetryIntervalMs,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_ARBITRATION_MINIMUMRETRYDELAY) long minimumArbitrationRetryDelay) {
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS) long minimumArbitrationRetryDelay) {
         // CHECKSTYLE:ON
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;

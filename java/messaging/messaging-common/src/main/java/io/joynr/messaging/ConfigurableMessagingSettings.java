@@ -30,12 +30,12 @@ import com.google.inject.name.Named;
 public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_CC_CONNECTION_TYPE = "joynr.messaging.cc.connectiontype";
 
-    public static final String PROPERTY_ARBITRATION_MINIMUMRETRYDELAY = "joynr.arbitration.minimumretrydelay";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID = "joynr.messaging.capabilitiesdirectorychannelid";
     public static final String PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN = "joynr.messaging.discoverydirectoriesdomain";
     public static final String PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS = "joynr.discovery.defaulttimeoutms";
     public static final String PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS = "joynr.discovery.defaultretryintervalms";
+    public static final String PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS = "joynr.discovery.minimumretryintervalms";
     public static final String PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS = "joynr.discovery.provider.defaultexpirytimems";
     public static final String PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS = "joynr.discovery.globaladdandremovettlms";
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollerparticipantid";

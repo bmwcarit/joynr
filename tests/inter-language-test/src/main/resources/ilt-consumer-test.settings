@@ -8,4 +8,4 @@ joynr.messaging.cc.protocol=ws
 joynr.messaging.cc.path=
 joynr.messaging.sendMsgRetryIntervalMs=10
 joynr.discovery.requestTimeout=200
-joynr.arbitration.minimumRetryDelay=200
+joynr.discovery.minimumRetryIntervalMs=200
