@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     std::string dir(IltHelper::getAbsolutePathToExecutable(programName));
 
     // Initialise the JOYn runtime
-    std::string pathToMessagingSettings(dir + "/resources/test-app-provider.settings");
+    std::string pathToMessagingSettings(dir + "/resources/ilt-provider.settings");
     // not used
     // std::string pathToLibJoynrSettings(dir.toStdString() +
     // "/resources/test-app-provider.libjoynr.settings");
