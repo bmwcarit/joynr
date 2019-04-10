@@ -35,6 +35,7 @@
 #include "IltUtil.h"
 
 extern std::string globalIltProgramName;
+extern std::string providerDomain;
 
 template <typename BaseClass>
 class IltAbstractConsumerTest : public BaseClass
@@ -104,7 +105,6 @@ protected:
     static std::shared_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>>
             proxyBuilder;
     static std::shared_ptr<joynr::JoynrRuntime> runtime;
-    static std::string providerDomain;
     static const std::uint16_t subscriptionIdFutureTimeoutMs;
     static const std::chrono::milliseconds publicationTimeoutMs;
 
@@ -123,9 +123,6 @@ std::shared_ptr<ProxyBuilder<interlanguagetest::TestInterfaceProxy>>
 
 template <typename T>
 std::shared_ptr<JoynrRuntime> IltAbstractConsumerTest<T>::runtime;
-
-template <typename T>
-std::string IltAbstractConsumerTest<T>::providerDomain = "joynr-inter-language-test-domain";
 
 template <typename T>
 const std::uint16_t IltAbstractConsumerTest<T>::subscriptionIdFutureTimeoutMs = 10000;

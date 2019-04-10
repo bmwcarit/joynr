@@ -22,6 +22,7 @@
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
 std::string globalIltProgramName;
+std::string providerDomain;
 
 int main(int argc, char** argv)
 {
@@ -30,8 +31,9 @@ int main(int argc, char** argv)
     DLT_REGISTER_APP("JYIC", argv[0]);
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-    ::testing::InitGoogleTest(&argc, argv);
     globalIltProgramName = std::string(argv[0]);
+    providerDomain = std::string(argv[1]);
+    ::testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();
 }

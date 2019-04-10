@@ -31,6 +31,7 @@
 using namespace ::testing;
 
 extern std::string globalIltProgramName;
+extern std::string providerDomain;
 
 /** Class to test the compression of joynr messages.
  */
@@ -88,7 +89,6 @@ protected:
         runtime.reset();
     }
 
-    std::string providerDomain = "joynr-inter-language-test-domain";
     std::shared_ptr<joynr::JoynrRuntime> runtime;
     std::shared_ptr<joynr::interlanguagetest::TestInterfaceProxy> testInterfaceProxy;
     std::shared_ptr<joynr::ProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>> proxyBuilder;
