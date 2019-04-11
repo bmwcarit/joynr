@@ -144,7 +144,7 @@ RUN export FLATBUFFERS_VERSION=v1.10.0 \
 # install smrf
 ###################################################
 
-RUN export SMRF_VERSION=0.3.2 \
+RUN export SMRF_VERSION=0.3.3 \
     && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/smrf.git \
