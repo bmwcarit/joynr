@@ -323,15 +323,28 @@ void AbstractMessageRouter::scheduleMessage(
                                                                      tryCount),
                                    delay);
     } else {
-        JOYNR_LOG_WARN(logger(),
-                       "Message {} could not be sent to recipient, {}. Stub "
-                       "creation failed. => Queueing "
-                       "message.",
-                       message->getTrackingInfo(),
-                       destAddress->toString());
-        ReadLocker lock(messageQueueRetryLock);
-        // save the message for later delivery
-        queueMessage(std::move(message), lock);
+        if (message->getType() != Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
+            JOYNR_LOG_WARN(logger(),
+                           "Message {} could not be sent to recipient, {}. Stub "
+                           "creation failed. => Queueing "
+                           "message.",
+                           message->getTrackingInfo(),
+                           destAddress->toString());
+            ReadLocker lock(messageQueueRetryLock);
+
+            // save the message for later delivery
+            queueMessage(std::move(message), lock);
+        } else {
+            // do not queue a multicast message since it would get stored under
+            // the multicast participantId so that it will never be unqueued
+            // again.
+            JOYNR_LOG_TRACE(logger(),
+                            "Multicast message {} could not be sent to recipient, {}. Stub "
+                            "creation failed. => Discarding "
+                            "message.",
+                            message->getTrackingInfo(),
+                            destAddress->toString());
+        }
     }
 }
 
