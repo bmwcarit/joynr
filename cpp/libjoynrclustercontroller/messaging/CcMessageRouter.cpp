@@ -725,6 +725,37 @@ void CcMessageRouter::addMulticastReceiver(
 
 void CcMessageRouter::removeMulticastReceiver(
         const std::string& multicastId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+        const std::string& providerParticipantId)
+{
+    JOYNR_LOG_INFO(
+            logger(),
+            "removeMulticastReceiver: multicastId {}, destAddress {}, providerParticipantId {}",
+            multicastId,
+            destAddress->toString(),
+            providerParticipantId);
+
+    // we need the list of all participantIds that match this destAddress
+    std::unordered_set<std::string> multicastReceivers =
+            multicastReceiverDirectory.getReceivers(multicastId);
+    for (const auto& participantId : multicastReceivers) {
+        const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
+        if (routingEntry && destAddress == routingEntry->address) {
+            // for the time being, just do it async
+            JOYNR_LOG_INFO(logger(),
+                           "removeMulticastReceiver: calling removeMulticastReceiver "
+                           "multicastId {}, participantId {}, providerParticipantId {}",
+                           multicastId,
+                           participantId,
+                           providerParticipantId);
+            removeMulticastReceiver(
+                    multicastId, participantId, providerParticipantId, nullptr, nullptr);
+        }
+    }
+}
+
+void CcMessageRouter::removeMulticastReceiver(
+        const std::string& multicastId,
         const std::string& subscriberParticipantId,
         const std::string& providerParticipantId,
         std::function<void()> onSuccess,

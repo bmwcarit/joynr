@@ -168,6 +168,14 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     /*
+     * used by AbstractMessageRouter
+     */
+    void removeMulticastReceiver(
+            const std::string& multicastId,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+            const std::string& providerParticipantId) final;
+
+    /*
      * Implement both IMessageRouter and RoutingAbstractProvider
      */
     void removeMulticastReceiver(
