@@ -344,6 +344,7 @@ void AbstractMessageRouter::scheduleMessage(
                             "message.",
                             message->getTrackingInfo(),
                             destAddress->toString());
+            removeMulticastReceiver(message->getRecipient(), destAddress, message->getSender());
         }
     }
 }
