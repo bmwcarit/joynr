@@ -1435,8 +1435,6 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
     messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
-    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
-                "webSocketId");
     testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
     // restore oldAddress
     messageRouter->removeNextHop(testParticipantId);
@@ -1535,4 +1533,34 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAdd
 
     // cleanup
     messageRouter->removeNextHop(testParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedInRoutingTable)
+{
+    const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    const bool isGloballyVisible = true;
+    const bool isSticky = false;
+    const TimePoint now = TimePoint::now();
+    this->mutableMessage.setExpiryDate(now + std::chrono::seconds(500));
+    this->mutableMessage.setRecipient(destinationParticipantId);
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    this->messageRouter->route(immutableMessage);
+
+    EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
+
+    this->messageRouter->addNextHop(destinationParticipantId,
+                                    webSocketAddress,
+                                    isGloballyVisible,
+                                    expiryDateMs,
+                                    isSticky);
+
+    EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
+
 }

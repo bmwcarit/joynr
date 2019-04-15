@@ -141,12 +141,12 @@ TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue)
 
 TYPED_TEST(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded)
 {
-    const std::string testHttp = "TEST_HTTP";
-    const std::string testMqtt = "TEST_MQTT";
+    const std::string testFirstMessage = "TEST_INPROCESS_1";
+    const std::string testSecondMessage = "TEST_INPROCESS_2";
     const std::string brokerUri = "brokerUri";
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     ON_CALL(*(this->messagingStubFactory), create(_)).WillByDefault(Return(mockMessagingStub));
-    this->mutableMessage.setRecipient(testHttp);
+    this->mutableMessage.setRecipient(testFirstMessage);
 
     std::shared_ptr<ImmutableMessage> immutableMessage1 =
             this->mutableMessage.getImmutableMessage();
@@ -155,26 +155,23 @@ TYPED_TEST(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded)
     // this message should be added to the queue because destination is unknown
     EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
 
-    // add destination address -> message should be routed
-    auto httpAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-            brokerUri, testHttp);
+    auto firstMessageAddress = std::make_shared<InProcessMessagingAddress>( );
     const bool isGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
     this->messageRouter->addNextHop(
-            testHttp, httpAddress, isGloballyVisible, expiryDateMs, isSticky);
+            testFirstMessage, firstMessageAddress, isGloballyVisible, expiryDateMs, isSticky);
     EXPECT_EQ(this->messageQueue->getQueueLength(), 0);
 
-    this->mutableMessage.setRecipient(testMqtt);
+    this->mutableMessage.setRecipient(testSecondMessage);
     std::shared_ptr<ImmutableMessage> immutableMessage2 =
             this->mutableMessage.getImmutableMessage();
     this->messageRouter->route(immutableMessage2);
     EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
 
-    auto mqttAddress =
-            std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerUri, testMqtt);
+    auto secondMessageAddress = std::make_shared<InProcessMessagingAddress>();
     this->messageRouter->addNextHop(
-            testMqtt, mqttAddress, isGloballyVisible, expiryDateMs, isSticky);
+            testSecondMessage, secondMessageAddress, isGloballyVisible, expiryDateMs, isSticky);
     EXPECT_EQ(this->messageQueue->getQueueLength(), 0);
 }
 

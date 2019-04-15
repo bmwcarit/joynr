@@ -823,3 +823,44 @@ TEST_F(LibJoynrMessageRouterTest, DISABLED_addressValidation_allowUpdateOfMqttAd
     // cleanup
     messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
 }
+
+TEST_F(LibJoynrMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedInRoutingTable)
+{
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
+    MockRoutingProxy* mockRoutingProxyRef = mockRoutingProxy.get();
+
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
+
+    const std::string providerParticipantId = "TestProviderParticipantId";
+    const std::string consumerParticipantId("TestConsumerParticipantId");
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(Eq(providerParticipantId),_,_,_));
+
+    const TimePoint now = TimePoint::now();
+    mutableMessage.setExpiryDate(now + std::chrono::seconds(1000));
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setSender(consumerParticipantId);
+    mutableMessage.setRecipient(providerParticipantId);
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+
+    messageRouter->route(immutableMessage);
+
+    EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+
+    const bool isParticipantGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    messageRouter->addNextHop(
+                providerParticipantId,
+                webSocketClientAddress,
+                isParticipantGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
+}
