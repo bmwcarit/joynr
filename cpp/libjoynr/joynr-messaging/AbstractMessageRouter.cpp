@@ -590,6 +590,17 @@ std::chrono::milliseconds AbstractMessageRouter::createDelayWithExponentialBacko
     return std::chrono::milliseconds(retryInterval);
 }
 
+void AbstractMessageRouter::removeMulticastReceiver(
+        const std::string& multicastId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+        const std::string& providerParticipantId)
+{
+    // empty implementation
+    std::ignore = multicastId;
+    std::ignore = destAddress;
+    std::ignore = providerParticipantId;
+}
+
 /**
  * IMPLEMENTATION of MessageRunnable class
  */

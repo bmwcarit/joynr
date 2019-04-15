@@ -187,6 +187,14 @@ protected:
      */
     virtual bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const = 0;
 
+    /*
+     * AbstractMessageRouter provides default implementation and CcMessageRouter overrrides it
+     */
+    virtual void removeMulticastReceiver(
+            const std::string& multicastId,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+            const std::string& providerParticipantId);
+
     std::chrono::milliseconds createDelayWithExponentialBackoff(
             std::uint32_t sendMsgRetryIntervalMs,
             std::uint32_t tryCount) const;
