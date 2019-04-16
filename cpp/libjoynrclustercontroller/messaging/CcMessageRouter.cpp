@@ -488,14 +488,26 @@ void CcMessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = onError;
     assert(address);
     WriteLocker lock(messageQueueRetryLock);
-    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
-    sendQueuedMessages(participantId, address, lock);
-    lock.unlock();
-    if (onSuccess) {
-        onSuccess();
+    bool addToRoutingTableSuccessful =
+            addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
+
+    if (addToRoutingTableSuccessful) {
+        sendQueuedMessages(participantId, address, lock);
+
+        lock.unlock();
+
+        if (onSuccess) {
+            onSuccess();
+        }
+    } else {
+        lock.unlock();
+
+        if (onError) {
+            onError(exceptions::ProviderRuntimeException(
+                    "unable to addNextHop, as addToRoutingTable failed"));
+        }
     }
 }
 

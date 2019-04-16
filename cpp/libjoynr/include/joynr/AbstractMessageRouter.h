@@ -156,7 +156,7 @@ protected:
     virtual bool allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
                                          const system::RoutingTypes::Address& newAddress) = 0;
 
-    void addToRoutingTable(std::string participantId,
+    bool addToRoutingTable(std::string participantId,
                            bool isGloballyVisible,
                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                            const std::int64_t expiryDateMs,

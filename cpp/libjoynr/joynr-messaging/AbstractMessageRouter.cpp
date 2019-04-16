@@ -494,7 +494,7 @@ void AbstractMessageRouter::saveRoutingTable()
     }
 }
 
-void AbstractMessageRouter::addToRoutingTable(
+bool AbstractMessageRouter::addToRoutingTable(
         std::string participantId,
         bool isGloballyVisible,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
@@ -505,7 +505,7 @@ void AbstractMessageRouter::addToRoutingTable(
         JOYNR_LOG_TRACE(logger(),
                         "participantId={} has an unsupported address within this process",
                         participantId);
-        return;
+        return false;
     }
     {
         WriteLocker lock(routingTableLock);
@@ -522,7 +522,7 @@ void AbstractMessageRouter::addToRoutingTable(
                             "the participantId is already associated with STICKY routing entry {}.",
                             participantId,
                             oldRoutingEntry->toString());
-                    return;
+                    return false;
                 }
                 if (!allowRoutingEntryUpdate(*oldRoutingEntry, *address)) {
                     JOYNR_LOG_WARN(logger(),
@@ -530,7 +530,7 @@ void AbstractMessageRouter::addToRoutingTable(
                                    "the participantId is already associated with routing entry {}.",
                                    participantId,
                                    oldRoutingEntry->toString());
-                    return;
+                    return false;
                 }
                 JOYNR_LOG_TRACE(
                         logger(), "updating participantId={} in routing table", participantId);
@@ -558,6 +558,8 @@ void AbstractMessageRouter::addToRoutingTable(
     if (!inprocessAddress) {
         saveRoutingTable();
     }
+
+    return true;
 }
 
 std::uint64_t AbstractMessageRouter::getNumberOfRoutedMessages() const

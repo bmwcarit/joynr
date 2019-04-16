@@ -118,7 +118,8 @@ void LibJoynrMessageRouter::setToKnown(const std::string& participantId)
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
     if (parentAddress) {
-        addToRoutingTable(participantId, isGloballyVisible, parentAddress, expiryDateMs, isSticky);
+        (void)addToRoutingTable(
+                participantId, isGloballyVisible, parentAddress, expiryDateMs, isSticky);
     }
 }
 
@@ -175,14 +176,20 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                             constexpr std::int64_t expiryDateMs =
                                     std::numeric_limits<std::int64_t>::max();
                             const bool isSticky = false;
-                            thisSharedPtr->addToRoutingTable(
+                            bool addToRoutingTableSuccessful = thisSharedPtr->addToRoutingTable(
                                     destinationPartId,
                                     thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
                                     thisSharedPtr->parentAddress,
                                     expiryDateMs,
                                     isSticky);
-                            thisSharedPtr->sendQueuedMessages(
-                                    destinationPartId, thisSharedPtr->parentAddress, lock);
+                            if (addToRoutingTableSuccessful) {
+                                thisSharedPtr->sendQueuedMessages(
+                                        destinationPartId, thisSharedPtr->parentAddress, lock);
+                            } else {
+                                JOYNR_LOG_ERROR(logger(),
+                                                "Failed to add participant {} to routing table",
+                                                destinationPartId);
+                            }
                         } else {
                             JOYNR_LOG_ERROR(logger(),
                                             "Failed to resolve next hop for participant {}",
@@ -397,10 +404,26 @@ void LibJoynrMessageRouter::addNextHop(
 {
     assert(address);
     WriteLocker lock(messageQueueRetryLock);
-    addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
-    sendQueuedMessages(participantId, address, lock);
-    lock.unlock();
-    addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
+
+    bool addToRoutingTableSuccessful =
+            addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
+    if (addToRoutingTableSuccessful) {
+        sendQueuedMessages(participantId, address, lock);
+        lock.unlock();
+
+        addNextHopToParent(
+                participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
+    } else {
+        JOYNR_LOG_WARN(logger(),
+                       "Unable to addNextHop for participant {}, as addToRoutingTable "
+                       "failed. Removing from routing table.");
+
+        if (onError) {
+            onError(exceptions::ProviderRuntimeException(
+                    "unable to addNextHop, as addToRoutingTable failed"));
+        }
+        lock.unlock();
+    }
 }
 
 void LibJoynrMessageRouter::removeNextHop(
@@ -522,17 +545,26 @@ void LibJoynrMessageRouter::addMulticastReceiver(
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
                     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
                     const bool isSticky = false;
-                    thisSharedPtr->addToRoutingTable(providerParticipantId,
-                                                     thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
-                                                     thisSharedPtr->parentAddress,
-                                                     expiryDateMs,
-                                                     isSticky);
-                    thisSharedPtr->parentRouter->addMulticastReceiverAsync(
-                            multicastId,
-                            subscriberParticipantId,
+                    bool addToRoutingTableSuccessful = thisSharedPtr->addToRoutingTable(
                             providerParticipantId,
-                            std::move(onSuccessWrapper),
-                            std::move(onErrorWrapper));
+                            thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
+                            thisSharedPtr->parentAddress,
+                            expiryDateMs,
+                            isSticky);
+                    if (addToRoutingTableSuccessful) {
+                        thisSharedPtr->parentRouter->addMulticastReceiverAsync(
+                                multicastId,
+                                subscriberParticipantId,
+                                providerParticipantId,
+                                std::move(onSuccessWrapper),
+                                std::move(onErrorWrapper));
+                    } else {
+                        exceptions::ProviderRuntimeException exception(
+                                "addToRoutingTable failed for providerParticipantId:"
+                                "providerParticipantId");
+
+                        onErrorWrapper(exception);
+                    }
                 } else {
                     exceptions::ProviderRuntimeException exception(
                             "No routing entry for multicast provider (providerParticipantId=" +
