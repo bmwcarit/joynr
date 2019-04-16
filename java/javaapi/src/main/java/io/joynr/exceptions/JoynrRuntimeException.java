@@ -18,6 +18,9 @@
  */
 package io.joynr.exceptions;
 
+import javax.ejb.ApplicationException;
+
+@ApplicationException
 public class JoynrRuntimeException extends RuntimeException implements JoynrException {
     private static final long serialVersionUID = 1L;
 
