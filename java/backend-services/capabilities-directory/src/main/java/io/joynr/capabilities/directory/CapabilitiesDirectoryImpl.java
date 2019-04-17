@@ -105,6 +105,12 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     @Override
+    public Promise<Remove1Deferred> remove(String participantId, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public Promise<DeferredVoid> remove(String[] participantIds) {
         DeferredVoid deferred = new DeferredVoid();
         discoveryEntryStore.remove(Arrays.asList(participantIds));

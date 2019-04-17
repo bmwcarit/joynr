@@ -36,6 +36,7 @@ import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySubscriptionPublisher;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
@@ -157,6 +158,12 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public void remove(String participantId) {
         remove(new String[]{ participantId });
+    }
+
+    @Override
+    public void remove(String participantId, String[] gbids) throws ApplicationException {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
     @Override

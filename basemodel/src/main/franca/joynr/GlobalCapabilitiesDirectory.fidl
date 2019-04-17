@@ -23,7 +23,7 @@ import types.* from "DiscoveryTypes.fidl"
 typeCollection GcdTypes {
 
 	<**
-		@description: Modeled error cases for the new add and lookup methods.
+		@description: Modeled error cases for the new add, lookup and remove methods.
 	**>
 	enumeration GcdErrors {
 		<**
@@ -35,11 +35,12 @@ typeCollection GcdTypes {
 		**>
 		INVALID_GBID
 		<**
-			@description: lookup: No entry for the requested participant ID.
+			@description: No entry for the requested participant ID (lookup, remove).
 		**>
 		NO_ENTRY_FOR_PARTICIPANT
 		<**
-			@description: lookup: At least one matching entry is available but not for the selected backends.
+			@description: At least one matching entry is available but not for the selected backends
+				(lookup, remove).
 		**>
 		NO_ENTRY_FOR_SELECTED_BACKENDS
 		<**
@@ -259,31 +260,55 @@ interface GlobalCapabilitiesDirectory{
 
 
 	<**
-		@description: Unregisters providers from all associated backends.
+		@description: Unregisters providers from the backend of the Global Capabilities Directory
+			instance which received this call.
 	**>
 	method remove {
 		in {
 			<**
 				@description: The participand Ids which identify the providers that shall be removed
-					from the Global Capabilities Directory. This will remove the providers from all
-					associated backends.
+					from the Global Capabilities Directory. This will remove the providers only from
+					the backend of the Global Capabilities Directory instance which received this
+					call.
 			**>
 			String[] participantIds
 		}
 	}
 
 	<**
-		@description: Unregisters a provider from all associated backends.
+		@description: Unregisters a provider from the backend of the Global Capabilities Directory
+			instance which received this call.
 	**>
 	method remove {
 		in {
 			<**
 				@description: The participant Id which identifies the provider that shall be removed
-					from the Global Capabilities Directory. This will remove the provider from all
-					associated backends.
+					from the Global Capabilities Directory. This will remove the provider only from
+					the backend of the Global Capabilities Directory instance which received this
+					call.
 			**>
 			String participantId
 		}
+	}
+
+	<**
+		@description: Unregisters a provider from the selected backends.
+	**>
+	method remove {
+		in {
+			<**
+				@description: The participant Id which identifies the provider that shall be removed
+					from the Global Capabilities Directory. This will remove the provider from the
+					backends selected by the gbids parameter.
+			**>
+			String participantId
+
+			<**
+				@description: Global Backend IDs for which the selected provider shall be removed.
+			**>
+			String[] gbids
+		}
+		error GcdTypes.GcdErrors
 	}
 
 
