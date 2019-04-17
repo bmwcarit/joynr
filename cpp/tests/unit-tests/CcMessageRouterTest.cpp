@@ -322,6 +322,204 @@ TEST_F(CcMessageRouterTest,
     multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
 }
 
+TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
+{
+    const std::string subscriberParticipantId1("subscriberPartId1");
+    const std::string subscriberParticipantId2("subscriberPartId2");
+    const std::string subscriberParticipantId3("subscriberPartId3");
+    const std::string providerParticipantId("providerParticipantId");
+    const std::string multicastNameAndPartitions("multicastName/partition0");
+    const std::string multicastId(providerParticipantId + "/" + multicastNameAndPartitions);
+    const std::string consumerRuntimeWebSocketClientAddressString1(
+            "ConsumerRuntimeWebSocketAddress1");
+    const std::string consumerRuntimeWebSocketClientAddressString2(
+            "ConsumerRuntimeWebSocketAddress2");
+
+    // create a new pointer representing the multicast address
+    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> multicastAddress(
+            new joynr::system::RoutingTypes::MqttAddress(*globalTransport));
+    multicastAddress->setTopic(multicastId);
+
+    auto expectedAddress1 =
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
+                    consumerRuntimeWebSocketClientAddressString1);
+    auto expectedAddress3 =
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
+                    consumerRuntimeWebSocketClientAddressString2);
+    auto providerAddress =
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
+                    "ProviderRuntimeWebSocketAddress");
+
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    const bool isProviderGloballyVisible = false;
+
+    messageRouter->addNextHop(
+                subscriberParticipantId1,
+                expectedAddress1,
+                DEFAULT_IS_GLOBALLY_VISIBLE,
+                expiryDateMs,
+                isSticky);
+    messageRouter->addNextHop(
+                subscriberParticipantId2,
+                expectedAddress1,
+                DEFAULT_IS_GLOBALLY_VISIBLE,
+                expiryDateMs,
+                isSticky);
+    messageRouter->addNextHop(
+                subscriberParticipantId3,
+                expectedAddress3,
+                DEFAULT_IS_GLOBALLY_VISIBLE,
+                expiryDateMs,
+                isSticky);
+    messageRouter->addNextHop(
+                providerParticipantId,
+                providerAddress,
+                isProviderGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
+    multicastMessagingSkeletonDirectory
+            ->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(skeleton);
+
+    messageRouter->addMulticastReceiver(
+            multicastId,
+            subscriberParticipantId1,
+            providerParticipantId,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
+
+    messageRouter->addMulticastReceiver(
+            multicastId,
+            subscriberParticipantId2,
+            providerParticipantId,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
+
+    messageRouter->addMulticastReceiver(
+            multicastId,
+            subscriberParticipantId3,
+            providerParticipantId,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
+
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
+    mutableMessage.setSender(providerParticipantId);
+    mutableMessage.setRecipient(multicastId);
+
+    auto mockMessagingStub1 = std::make_shared<MockMessagingStub>();
+    auto mockMessagingStub2 = std::make_shared<MockMessagingStub>();
+
+    // since participantIds of both websocket runtimes are subscribed for the broadcast
+    // exactly one WebSocketMessagingStub will be created for each runtime. The message would
+    // then be distributed again on lower level within that runtime if there are
+    // multiple subscribers in the same runtime (e.g. subscriberParticipantId1 and
+    // subscriberParticipantId2).
+
+    EXPECT_CALL(
+            *messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
+                                    Eq(consumerRuntimeWebSocketClientAddressString1)))))))
+            .Times(1)
+            .WillRepeatedly(Return(mockMessagingStub1));
+
+    EXPECT_CALL(
+            *messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
+                                    Eq(consumerRuntimeWebSocketClientAddressString2)))))))
+            .Times(1)
+            .WillRepeatedly(Return(mockMessagingStub2));
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+
+    // now the first runtime becomes unreachable, so the creation of a WebSocketMessagingStub fails;
+    // the factory returns an empty IMessagingStub in this case
+
+    EXPECT_CALL(
+            *messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
+                                    Eq(consumerRuntimeWebSocketClientAddressString1)))))))
+            .Times(1)
+            .WillRepeatedly(Return(std::shared_ptr<IMessagingStub>()));
+
+    EXPECT_CALL(
+            *messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
+                                    Eq(consumerRuntimeWebSocketClientAddressString2)))))))
+            .Times(1)
+            .WillRepeatedly(Return(mockMessagingStub2));
+
+    // the CcMessageRouter should then automatically remove the participantIds realated to
+    // the unreachable runtime from the multicastReceiverDirectory
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+
+    // when the next publication is routed, the factory is no longer asked to create a 
+    // WebSocketMessagingStub for the first runtime, since there are no subscribers
+    // left related to this runtime
+
+    EXPECT_CALL(
+            *messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
+                                    Eq(consumerRuntimeWebSocketClientAddressString1)))))))
+            .Times(0);
+
+    EXPECT_CALL(
+            *messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
+                                    Eq(consumerRuntimeWebSocketClientAddressString2)))))))
+            .Times(1)
+            .WillRepeatedly(Return(mockMessagingStub2));
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+
+    // cleanup
+
+    // remove only subscriberParticipantId3 since the other ones have already been
+    // removed automatically by the test
+    messageRouter->removeMulticastReceiver(
+            multicastId,
+            subscriberParticipantId3,
+            providerParticipantId,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
+
+    messageRouter->removeNextHop(subscriberParticipantId1);
+    messageRouter->removeNextHop(subscriberParticipantId2);
+    messageRouter->removeNextHop(subscriberParticipantId3);
+    messageRouter->removeNextHop(providerParticipantId);
+}
+
 void invokeConsumerPermissionCallbackWithPermissionYes(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
