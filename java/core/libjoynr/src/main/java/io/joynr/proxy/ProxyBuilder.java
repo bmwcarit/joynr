@@ -120,8 +120,9 @@ public interface ProxyBuilder<T> {
      * Passes a callback to {@link build} that is called when the proxy is finished
      *
      * @param callback callback for asynchronous handling
-     * @return Returns a dynamic proxy object, implementing all methods of the interfaces passed in when the
-     *         proxyBuilder was created.
+     * @return A dynamic proxy object, implementing all methods of the interfaces passed in when the proxyBuilder was
+     *         created.<br>
+     *         Returns <code>null</code> if an exception was thrown. The exception will be reported via the callback.
      */
     T build(ProxyCreatedCallback<T> callback);
 

@@ -195,7 +195,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
      */
     @Override
     public T build() {
-        return build(new ProxyCreatedCallback<T>() {
+        JoynrRuntimeException[] errorHolder = new JoynrRuntimeException[]{ null };
+        T proxy = build(new ProxyCreatedCallback<T>() {
 
             @Override
             public void onProxyCreationFinished(T result) {
@@ -204,12 +205,17 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
+                errorHolder[0] = error;
                 logger.error("error creating proxy: interface: {} domains: {}, error: {}",
                              interfaceName,
                              domains,
                              error.getMessage());
             }
         });
+        if (errorHolder[0] != null) {
+            throw errorHolder[0];
+        }
+        return proxy;
     }
 
     @Override
@@ -241,7 +247,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         } catch (JoynrRuntimeException e) {
             logger.debug("error building proxy", e);
             callback.onProxyCreationError(e);
-            throw e;
+            return null;
         }
     }
 
