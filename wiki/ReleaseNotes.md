@@ -11,8 +11,9 @@ None.
 * **[Java]** Introduced overridden toString() methods in classes
   io.joynr.arbitration.DiscoveryQos and io.joynr.messaging.MessagingQos
 * **[Build]** Dockerfiles with included scripts for building joynr have been updated to use
-  Fedora 27 with openssl 1.1.0, MoCOCrW branch openssl1.1, flatbuffers 1.10.0, smrf 0.3.2
+  Fedora 27 with openssl 1.1.0, MoCOCrW branch openssl1.1, flatbuffers 1.10.0, smrf 0.3.3
   and websocketpp 0.8.1.
+* **[C++, Java, JS]** Updated smrf version to 0.3.3
 
 ## Configuration property changes
 None.
@@ -40,6 +41,7 @@ None.
 * **[Generator, Java]** The flag `addVersionTo` now also appends version information at file system
   level to generated types. See [Generator Documentation](generator.md) for additional information.
   The feature has been tested to work in Java, expected to work also in C++ and JS.
+* **[C++, Java, JS]** Updated smrf version to 0.3.1
 
 ## Configuration property changes
   None.
@@ -647,7 +649,7 @@ None.
   * `messaging/mqtt-exponential-backoff-enabled`
 
 ## Other changes
-None.
+* **[C++, Java, JS]** Updated smrf version to 0.2.2
 
 # joynr 0.30.1
 
@@ -811,7 +813,7 @@ None.
 * **[Java, Properties]** Changed default values of joynr.messaging.mqtt.keepalivetimersec (new value: 30s) and
  joynr.messaging.mqtt.connectiontimeoutsec (new value: 60s)
 * **[JS]** Updated wscpp version to 0.2.4
-* **[C++, Java, JS]** Updated smrf version ot 0.2.1
+* **[C++, Java, JS]** Updated smrf version to 0.2.1
 * **[C++]** Add cluster-controller property for MQTT CA certificate folder path.
 * **[C++, Java]** Always log MQTT client ID.
 
