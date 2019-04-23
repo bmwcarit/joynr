@@ -50,6 +50,7 @@ class IMulticastAddressCalculator;
 class IPlatformSecurityManager;
 class MulticastMessagingSkeletonDirectory;
 class ClusterControllerSettings;
+class IMessageSender;
 
 namespace system
 {
@@ -198,6 +199,7 @@ public:
      */
     bool publishToGlobal(const ImmutableMessage& message) final;
     void setAccessController(std::weak_ptr<IAccessController> accessController);
+    void setMessageSender(std::weak_ptr<IMessageSender> messageSender);
     void saveMulticastReceiverDirectory() const;
     void loadMulticastReceiverDirectory(std::string filename);
     std::shared_ptr<joynr::system::MessageNotificationProvider> getMessageNotificationProvider()
@@ -246,6 +248,7 @@ private:
     ClusterControllerSettings& clusterControllerSettings;
     const bool multicastReceiverDirectoryPersistencyEnabled;
     const system::RoutingTypes::Address& ownGlobalAddress;
+    std::weak_ptr<IMessageSender> messageSender;
 };
 
 } // namespace joynr

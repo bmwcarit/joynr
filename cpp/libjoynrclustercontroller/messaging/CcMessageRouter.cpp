@@ -27,6 +27,7 @@
 #include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/ImmutableMessage.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/InProcessMessagingAddress.h"
@@ -150,7 +151,8 @@ CcMessageRouter::CcMessageRouter(
           clusterControllerSettings(clusterControllerSettings),
           multicastReceiverDirectoryPersistencyEnabled(
                   clusterControllerSettings.isMulticastReceiverDirectoryPersistencyEnabled()),
-          ownGlobalAddress(ownAddress)
+          ownGlobalAddress(ownAddress),
+          messageSender()
 {
     messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
@@ -163,6 +165,11 @@ CcMessageRouter::~CcMessageRouter()
 void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> accessController)
 {
     this->accessController = std::move(accessController);
+}
+
+void CcMessageRouter::setMessageSender(std::weak_ptr<IMessageSender> messageSender)
+{
+    this->messageSender = std::move(messageSender);
 }
 
 void CcMessageRouter::saveMulticastReceiverDirectory() const
