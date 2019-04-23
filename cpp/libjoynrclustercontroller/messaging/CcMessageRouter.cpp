@@ -35,6 +35,8 @@
 #include "joynr/MessageQueue.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MulticastReceiverDirectory.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionStop.h"
 #include "joynr/Util.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -742,7 +744,46 @@ void CcMessageRouter::addMulticastReceiver(
 
 void CcMessageRouter::stopSubscription(std::shared_ptr<ImmutableMessage> message)
 {
-    std::ignore = message;
+    // since there currently is no subscriptionId field available via SMRF header
+    // it is only possible to extract the subscriptionId out of an unencrypted
+    // message payload containing a publication
+    if (message->isEncrypted()) {
+        JOYNR_LOG_TRACE(logger(),
+                        "stopSubscription: cannot get subscriptionId since message is encrypted.");
+        return;
+    }
+
+    SubscriptionPublication publication;
+    try {
+        joynr::serializer::deserializeFromJson(publication, message->getUnencryptedBody());
+    } catch (const std::invalid_argument& e) {
+        JOYNR_LOG_ERROR(
+                logger(),
+                "Unable to deserialize subscription publication object from: {} - error: {}",
+                message->toLogMessage(),
+                e.what());
+        return;
+    }
+
+    const std::string& subscriptionId = publication.getSubscriptionId();
+
+    if (auto messageSenderSharedPtr = messageSender.lock()) {
+        SubscriptionStop subscriptionStop;
+        subscriptionStop.setSubscriptionId(subscriptionId);
+        joynr::MessagingQos qos;
+        qos.setTtl(120000);
+        const std::string& recipient = message->getRecipient();
+        const std::string& sender = message->getSender();
+        JOYNR_LOG_TRACE(logger(),
+                        "stopSubscription: trying to send SubscriptionStop proxy {}, provider {}, "
+                        "subscriptionId {}",
+                        recipient,
+                        sender,
+                        subscriptionId);
+        messageSenderSharedPtr->sendSubscriptionStop(recipient, sender, qos, subscriptionStop);
+    } else {
+        JOYNR_LOG_TRACE(logger(), "stopSubscription: messageSender not available");
+    }
 }
 
 void CcMessageRouter::removeMulticastReceiver(
