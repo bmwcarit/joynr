@@ -323,18 +323,7 @@ void AbstractMessageRouter::scheduleMessage(
                                                                      tryCount),
                                    delay);
     } else {
-        if (message->getType() != Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
-            JOYNR_LOG_WARN(logger(),
-                           "Message {} could not be sent to recipient, {}. Stub "
-                           "creation failed. => Queueing "
-                           "message.",
-                           message->getTrackingInfo(),
-                           destAddress->toString());
-            ReadLocker lock(messageQueueRetryLock);
-
-            // save the message for later delivery
-            queueMessage(std::move(message), lock);
-        } else {
+        if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
             // do not queue a multicast message since it would get stored under
             // the multicast participantId so that it will never be unqueued
             // again.
@@ -345,6 +334,25 @@ void AbstractMessageRouter::scheduleMessage(
                             message->getTrackingInfo(),
                             destAddress->toString());
             removeMulticastReceiver(message->getRecipient(), destAddress, message->getSender());
+        } else if (message->getType() == Message::VALUE_MESSAGE_TYPE_PUBLICATION()) {
+            JOYNR_LOG_TRACE(logger(),
+                            "Publication message {} could not be sent to recipient, {}. Stub "
+                            "creation failed. => Discarding "
+                            "message & attempting to stop publication.",
+                            message->getTrackingInfo(),
+                            destAddress->toString());
+            stopSubscription(message);
+        } else {
+            JOYNR_LOG_WARN(logger(),
+                           "Message {} could not be sent to recipient, {}. Stub "
+                           "creation failed. => Queueing "
+                           "message.",
+                           message->getTrackingInfo(),
+                           destAddress->toString());
+            ReadLocker lock(messageQueueRetryLock);
+
+            // save the message for later delivery
+            queueMessage(std::move(message), lock);
         }
     }
 }
