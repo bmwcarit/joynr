@@ -82,5 +82,5 @@ This project has following dependencies:
       │        └─ ultron (1.1.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ultron/package.json
       ├─ nanoid (2.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ nanoid/package.json
       ├─ smrf (0.3.3) ── Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0, http://www.opensource.org/licenses/Apache-2.0) ── node_modules/joynr ~ smrf/package.json
-      │  └─ flatbuffers (1.9.0) ── see license in license.txt ── node_modules/joynr ~ flatbuffers/package.json
+      │  └─ flatbuffers (1.10.0) ── see license in license.txt ── node_modules/joynr ~ flatbuffers/package.json
       └─ ws (4.0.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ ws/package.json
