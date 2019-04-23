@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
+import io.joynr.capabilities.directory.util.Utilities;
+import io.joynr.capabilities.directory.util.Utilities.ValidateGBIDsEnum;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
@@ -49,6 +51,8 @@ import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 
 @Stateless
@@ -57,7 +61,9 @@ import joynr.types.GlobalDiscoveryEntry;
 public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirectoryService {
     private static final Logger logger = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryEjb.class);
     private EntityManager entityManager;
+    @SuppressWarnings("unused")
     private GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher;
+
     private String gcdGbId;
 
     @Inject
@@ -99,14 +105,25 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         logger.debug("Adding global discovery entry {}", globalDiscoveryEntry);
+        addInternal(globalDiscoveryEntry, gcdGbId);
+    }
+
+    private void addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) {
+        assert (gbids.length > 0);
         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
-        String clusterControllerId;
+        String clusterControllerId = "";
         if (address instanceof MqttAddress) {
             clusterControllerId = ((MqttAddress) address).getTopic();
+            ((MqttAddress) address).setBrokerUri(gbids[0]);
+            globalDiscoveryEntry.setAddress(RoutingTypesUtil.toAddressString(address));
         } else if (address instanceof ChannelAddress) {
             clusterControllerId = ((ChannelAddress) address).getChannelId();
         } else {
-            clusterControllerId = String.valueOf(address);
+            logger.error("Error adding DiscoveryEntry: " + globalDiscoveryEntry.getParticipantId()
+                    + ". Unknown address type: " + globalDiscoveryEntry.getAddress());
+            throw new ProviderRuntimeException("Unable to add DiscoveryEntry for "
+                    + globalDiscoveryEntry.getParticipantId() + ". Unknown address type: "
+                    + globalDiscoveryEntry.getAddress());
         }
         GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
                                                                                  clusterControllerId);
@@ -120,9 +137,20 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    public void add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) throws ApplicationException {
+        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        case INVALID:
+            throw new ApplicationException(DiscoveryError.INVALID_GBID);
+        case UNKNOWN:
+            throw new ApplicationException(DiscoveryError.UNKNOWN_GBID);
+        case OK:
+            try {
+                addInternal(globalDiscoveryEntry, gbids);
+            } catch (ProviderRuntimeException e) {
+                logger.error("Error adding DiscoveryEntry: {}", e);
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -149,9 +177,19 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    public GlobalDiscoveryEntry[] lookup(String[] domains,
+                                         String interfaceName,
+                                         String[] gbids) throws ApplicationException {
+        GlobalDiscoveryEntry[] globalDiscoveryEntries = null;
+        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        case INVALID:
+            throw new ApplicationException(DiscoveryError.INVALID_GBID);
+        case UNKNOWN:
+            throw new ApplicationException(DiscoveryError.UNKNOWN_GBID);
+        case OK:
+            globalDiscoveryEntries = lookup(domains, interfaceName);
+        }
+        return globalDiscoveryEntries;
     }
 
     @Override
@@ -164,9 +202,21 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
+        GlobalDiscoveryEntry globalDiscoveryEntry = null;
+        try {
+            switch (Utilities.validateGbids(gbids, gcdGbId)) {
+            case INVALID:
+                throw new ApplicationException(ValidateGBIDsEnum.INVALID);
+            case UNKNOWN:
+                throw new ApplicationException(ValidateGBIDsEnum.UNKNOWN);
+            case OK:
+                globalDiscoveryEntry = lookup(participantId);
+            }
+        } catch (ProviderRuntimeException e) {
+            logger.error("Error multiple backends isn't supported for now {}", e);
+        }
+        return globalDiscoveryEntry;
     }
 
     @Override
