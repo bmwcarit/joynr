@@ -402,6 +402,7 @@ void JoynrClusterControllerRuntime::init()
             std::make_shared<Dispatcher>(messageSender, singleThreadIOService->getIOService());
     messageSender->registerDispatcher(joynrDispatcher);
     messageSender->setReplyToAddress(globalClusterControllerAddress);
+    ccMessageRouter->setMessageSender(messageSender);
 
     /* CC */
     libJoynrMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
