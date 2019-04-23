@@ -174,6 +174,7 @@ public:
             const std::string& multicastId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
             const std::string& providerParticipantId) final;
+    void stopSubscription(std::shared_ptr<ImmutableMessage> message) final;
 
     /*
      * Implement both IMessageRouter and RoutingAbstractProvider

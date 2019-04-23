@@ -733,6 +733,11 @@ void CcMessageRouter::addMulticastReceiver(
     }
 }
 
+void CcMessageRouter::stopSubscription(std::shared_ptr<ImmutableMessage> message)
+{
+    std::ignore = message;
+}
+
 void CcMessageRouter::removeMulticastReceiver(
         const std::string& multicastId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
