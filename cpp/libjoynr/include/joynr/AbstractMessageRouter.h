@@ -194,6 +194,7 @@ protected:
             const std::string& multicastId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
             const std::string& providerParticipantId);
+    virtual void stopSubscription(std::shared_ptr<ImmutableMessage> message);
 
     std::chrono::milliseconds createDelayWithExponentialBackoff(
             std::uint32_t sendMsgRetryIntervalMs,

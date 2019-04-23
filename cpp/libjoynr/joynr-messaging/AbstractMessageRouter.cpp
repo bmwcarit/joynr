@@ -604,6 +604,12 @@ void AbstractMessageRouter::removeMulticastReceiver(
     std::ignore = providerParticipantId;
 }
 
+void AbstractMessageRouter::stopSubscription(std::shared_ptr<ImmutableMessage> message)
+{
+    // empty implementation
+    std::ignore = message;
+}
+
 /**
  * IMPLEMENTATION of MessageRunnable class
  */
