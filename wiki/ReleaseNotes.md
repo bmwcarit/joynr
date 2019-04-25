@@ -16,6 +16,8 @@ None.
 * **[C++, Java, JS]** Updated smrf version to 0.3.3
 * **[C++]** The JOYNR_DEFAULT_RUNTIME_LOG_LEVEL for Release builds has been changed to
   "DEBUG" to support message tracking.
+* **[FIDL]** Introduce support for multiple backends in GlobalCapabilitiesDirectory FIDL. See
+  `docs/gcd-in-multiple-be.md` for additional documentation.
 
 ## Configuration property changes
 None.
