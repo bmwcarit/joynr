@@ -11,8 +11,6 @@ function usage
 {
     echo "usage: create-js-license-files.sh --joynrsourcedir <sourcedir> --version <joynrversion> [--setup]"
     echo "Use the --setup option to install the licensecheck tool. Sudo may be required"
-    echo "Use only with a clean git repository. Otherwise package.json files of installed"
-    echo "depenendices will be evaluated as well."
     echo "joynrversion must match the current version. For example: 0.00.0-SNAPSHOT"
 }
 
@@ -61,17 +59,29 @@ then
     npm -g install licensecheck
 fi
 
-# List all available package.json files. Do this before the mvn install
-# call in order to prevent enumerating the package.json files of the installed
-# dependencies.
-PACKAGE_JSON_DIRECTORIES=$(find $JOYNR_SOURCE_DIR -name package.json -printf '%h\n')
+# List all available package.json files.
+# Update this list with the following command if new package.json are included
+# the repository.
+#PACKAGE_JSON_DIRECTORIES=$(find $JOYNR_SOURCE_DIR -name package.json -printf '%h\n')
+declare -a PACKAGE_JSON_DIRECTORIES=(
+  "$JOYNR_SOURCE_DIR/tests/robustness-test"
+  "$JOYNR_SOURCE_DIR/tests/performance-test"
+  "$JOYNR_SOURCE_DIR/tests/test-base"
+  "$JOYNR_SOURCE_DIR/tests/system-integration-test/sit-node-app"
+  "$JOYNR_SOURCE_DIR/examples/radio-node"
+  "$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/main/js"
+  #"$JOYNR_SOURCE_DIR/tests/inter-language-test"
+  #"$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/test/resources/node/shutdown"
+  #"$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/main/browserify"
+  #"$JOYNR_SOURCE_DIR/javascript/libjoynr-js"
+)
 
 (
 cd $JOYNR_SOURCE_DIR
 mvn install -P javascript
 )
 
-for PACKAGE_JSON_DIRECTORY in $PACKAGE_JSON_DIRECTORIES
+for PACKAGE_JSON_DIRECTORY in "${PACKAGE_JSON_DIRECTORIES[@]}"
 do
     (
         echo "### Installing in $PACKAGE_JSON_DIRECTORY ###"
@@ -79,7 +89,7 @@ do
         npm install
 
         cat ${JOYNR_SOURCE_DIR}tools/NOTICE-JS-PREFIX.txt > ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
-        licensecheck --opt --dev >> ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
+        licensecheck >> ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
 
         removeVersion "joynr" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
         removeVersion "radio-node" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
@@ -93,7 +103,6 @@ do
         then
             # Add a separator
             echo "" >> ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
-
             cat ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS-manual >> ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
         fi
     )
