@@ -39,7 +39,9 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 
 /**
@@ -64,28 +66,41 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public Promise<DeferredVoid> add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         DeferredVoid deferred = new DeferredVoid();
         Promise<DeferredVoid> promise = new Promise<DeferredVoid>(deferred);
-        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
-        String clusterControllerId;
-        if (address instanceof MqttAddress) {
-            clusterControllerId = ((MqttAddress) address).getTopic();
-        } else if (address instanceof ChannelAddress) {
-            clusterControllerId = ((ChannelAddress) address).getChannelId();
-        } else {
-            deferred.reject(new ProviderRuntimeException(""));
-            return promise;
+        try {
+            addInternal(globalDiscoveryEntry, gcdGbId);
+            deferred.resolve();
+        } catch (ProviderRuntimeException e) {
+            logger.error("Error adding DiscoveryEntry: {}", e);
+            deferred.reject(e);
         }
-        GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
-                                                                                         clusterControllerId);
-        logger.debug("registered discovery entry: {}", discoveryEntry);
-        discoveryEntryStore.add(discoveryEntry);
-        deferred.resolve();
         return promise;
     }
 
     @Override
     public Promise<Add1Deferred> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        Add1Deferred deferred = new Add1Deferred();
+        Promise<Add1Deferred> promise = new Promise<Add1Deferred>(deferred);
+        if (gbids.length == 0) {
+            logger.error("INVALID_GBID: provided list of GBIDs is empty.");
+            deferred.reject(DiscoveryError.INVALID_GBID);
+        } else if (gbids.length > 1) {
+            deferred.reject(new ProviderRuntimeException("MULTIPLE GBIDs ARE NOT PERMITTED FOR THE MOMENT"));
+        } else if (gbids[0] == null || gbids[0].isEmpty()) {
+            logger.error("INVALID_GBID: provided GBID is null or empty: {}.", gbids[0]);
+            deferred.reject(DiscoveryError.INVALID_GBID);
+        } else if (!gcdGbId.equals(gbids[0])) {
+            logger.error("UNKNOWN_GBID: {}", gbids[0]);
+            deferred.reject(DiscoveryError.UNKNOWN_GBID);
+        } else {
+            try {
+                addInternal(globalDiscoveryEntry, gbids);
+                deferred.resolve();
+            } catch (ProviderRuntimeException e) {
+                logger.error("Error adding DiscoveryEntry: {}", e);
+                deferred.reject(e);
+            }
+        }
+        return promise;
     }
 
     @Override
@@ -96,6 +111,28 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         }
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
+    }
+
+    private void addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) {
+        assert (gbids.length > 0);
+        String clusterControllerId = "";
+        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+        if (address instanceof MqttAddress) {
+            // not always the clusterControllerId. If a unicast topic prefix is set, this clusterControllerId is a part of the topic
+            clusterControllerId = ((MqttAddress) address).getTopic();
+            ((MqttAddress) address).setBrokerUri(gbids[0]);
+            globalDiscoveryEntry.setAddress(RoutingTypesUtil.toAddressString(address));
+        } else if (address instanceof ChannelAddress) {
+            clusterControllerId = ((ChannelAddress) address).getChannelId();
+        } else {
+            throw new ProviderRuntimeException("Unable to add DiscoveryEntry for "
+                    + globalDiscoveryEntry.getParticipantId() + ". Unknown address type: "
+                    + globalDiscoveryEntry.getAddress());
+        }
+        GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
+                                                                                         clusterControllerId);
+        logger.debug("registered discovery entry: {}", discoveryEntry);
+        discoveryEntryStore.add(discoveryEntry);
     }
 
     @Override
