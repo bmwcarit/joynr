@@ -18,9 +18,9 @@
  */
 package io.joynr.capabilities;
 
-import joynr.types.DiscoveryEntryWithMetaInfo;
-
 import javax.annotation.CheckForNull;
+
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * Callback interface used by arbitrators to generate callbacks for capability

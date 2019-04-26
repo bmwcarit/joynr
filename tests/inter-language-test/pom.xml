@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tests</artifactId>
-		<version>1.7.1</version>
+		<version>1.8.0</version>
 	</parent>
 
 	<dependencies>
@@ -62,12 +62,6 @@
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 
-		<!-- Console I/O framework used in the interlanguage app -->
-		<dependency>
-			<groupId>jline</groupId>
-			<artifactId>jline</artifactId>
-		</dependency>
-
 		<!--
 			The following dependencies allow to run a jetty server that
 			contains the minimum backend
@@ -96,10 +90,6 @@
 		</resources>
 
 		<plugins>
-			<plugin>
-				<groupId>net.revelc.code.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

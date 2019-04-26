@@ -18,11 +18,12 @@
  */
 package io.joynr.examples.statelessasync.carsim;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CarSimApplication extends AbstractJoynrApplication {
 

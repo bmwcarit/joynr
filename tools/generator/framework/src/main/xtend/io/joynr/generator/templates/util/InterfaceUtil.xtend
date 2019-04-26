@@ -112,6 +112,15 @@ class InterfaceUtil {
 		return false
 	}
 
+	def hasWritableAttributeOfTypeArrayOrByteBuffer (FInterface fInterface) {
+		for (attribute : getAttributes(fInterface)) {
+			if ((isArray(attribute) || isByteBuffer(attribute.type)) && attribute.writable) {
+				return true
+			}
+		}
+		return false
+	}
+
 	def getAllTypes(FInterface fInterface) {
 		val typeList = new HashMap<String, Object>()
 		for (method : getMethods(fInterface)) {

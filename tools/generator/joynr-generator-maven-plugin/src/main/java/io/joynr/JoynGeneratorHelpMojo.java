@@ -18,9 +18,9 @@
  */
 package io.joynr;
 
-import io.joynr.generator.GeneratorTask;
-
 import java.io.IOException;
+
+import io.joynr.generator.GeneratorTask;
 
 /**
  * Goal which generates the joynr interfaces and implementations.

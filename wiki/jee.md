@@ -7,8 +7,10 @@ The features supported are:
 * Expose session beans as joynr providers via the `@ServiceProvider` annotation
 * Inject a `ServiceLocator` in order to obtain consumer proxies for calling
 other services
-* Internally uses EE container managed thread pools
-* Uses the EE container's JAX RS to receive joynr messages via HTTP(s)
+* Internally use EE container managed thread pools
+* Provide mqtt based cluster-aware communication abilities
+* Use the EE container's JAX RS to receive joynr messages via HTTP(s)
+* Provide joynr configuration via an EJB
 
 There is also an example application based on the Radio App example. See the end of this
 document for a description of the example.
@@ -169,6 +171,37 @@ corepoolsize =
 
 Typically there is one joynr runtime per deployed application (WAR file).
 
+#### Payara Micro
+
+When deploying to a Payara Micro instance, you can package the configuration in a separate
+text file, e.g. `post-boot.txt`, and then have Payara Micro execute this automatically by
+specifying the command line option `--postbootcommandfile post-boot.txt`.
+
+With the postboot command file, you don't specify the `asadmin` command explicitely, as
+each line is executed as if called with it. Hence, the content of the file will be:
+
+    create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor
+
+When using the `payara-micro-maven-plugin`, specify the command line options as:
+
+	<commandLineOptions>
+		<option>
+			<key>--postbootcommandfile</key>
+			<value>${basedir}/post-boot.txt</value>
+		</option>
+	</commandLineOptions>
+
+Lastly, if you are using Docker to create a container with your Payara Micro application, then
+specify the `ENTRYPOINT` as:
+
+    ENTRYPOINT ["java", "-jar", "/app.jar", "--postbootcommandfile", "/post-boot.txt"]
+
+Where `/app.jar` is the name of the uberjar you created with Payara Micro and your application.
+
+To see a full example of this have a look at the
+[custom-headers example project](../examples/custom-headers/README.md).
+
+
 ### Generating the interfaces
 
 When generating the interfaces for use in a JEE environment, you have to
@@ -320,14 +353,14 @@ for a working example.
 #### Injecting a RawMessagingPreprocessor
 
 if you need to inspect or modify incoming joynr messages, you can provide a producer of
-@JoynrRawMessagingPreprocessor, whose process method will be called for each incoming MQTT
+`@JoynrRawMessagingPreprocessor`, whose process method will be called for each incoming MQTT
 message.
 
 For example:
 
 	@Produces
 	@JoynrRawMessagingPreprocessor
-	RawMessagingPreprocessor rawMessagingPreprocessor() {
+	public RawMessagingPreprocessor rawMessagingPreprocessor() {
 		return new RawMessagingPreprocessor() {
 			@Override
 			public String process(String rawMessage, @Nonnull Map<String, Serializable> context) {
@@ -413,12 +446,12 @@ ServiceLocator, as the operation of creating a proxy is expensive.
 
 #### Stateless Async
 
-If you want to call a service in a stateless fashion, that is any node in a cluster
+If you want to call a service in a stateless fashion, i.e. any node in a cluster
 can handle the reply, then you need to provide a `@CallbackHandler` bean and
-request the `*StatelessAsync` instead of the `@Sync` interface from the
+request the `*StatelessAsync` instead of the `*Sync` interface from the
 `ServiceLocator`.
 
-The methods in the `*StatelessAsync` interface have a `MessageIdCallaback` as the
+The methods in the `*StatelessAsync` interface have a `MessageIdCallback` as the
 last parameter, which is a consumer of a String value. This value is the unique
 ID of the request being sent out, and when the reply arrives, that same ID will
 accompany the result data as part of the `ReplyContext` passed in as last parameter.
@@ -431,7 +464,7 @@ data for the message IDs returned, it may also want to run periodic clean-up job
 to see if there are any stale entries due to messages not being transmitted
 successfully.
 
-The handling of the replies is done be a bean implementing the `*StatelessAsyncCallback`
+The handling of the replies is done by a bean implementing the `*StatelessAsyncCallback`
 interface corresponding to the `*StatelessAsync` interface which is called for
 making the request, and which is additionally annotated with `@CallbackHandler`.  
 These are automatically discovered at startup time, and registered as stateless async
@@ -509,7 +542,8 @@ API:
 The joynr JEE integration currently supports two forms of enabling clustering.
 We recommend using the 'shared subscription' model, as this provides the most
 functionality and best performance. It does, however, rely on a proprietary
-feature from the [HiveMQ](http://www.hivemq.com) MQTT broker.
+feature from the [HiveMQ](http://www.hivemq.com) MQTT broker for MQTT versions
+prior to v5.
 
 The other alternative is to use the so-called 'HTTP Bridge' mode. This requires
 implementing a plugin for an MQTT broker which forwards incoming messages
@@ -524,8 +558,9 @@ separately.
 
 ### Shared Subscriptions
 
-This solution offers load balancing on incoming messages via HiveMQ shared
-subscriptions across all nodes in the cluster, and enables reply messages
+This solution offers load balancing on incoming messages via shared
+subscriptions (part of MQTT v5 and proprietary to the HiveMQ broker prior thereto)
+across all nodes in the cluster, and enables reply messages
 for requests originating from inside the cluster to be routed directly
 to the correct node.
 
@@ -558,7 +593,7 @@ which require a restart of an instance. In order to access this information,
 inject an object of type ```JoynrStatusMetrics```. See the documentation of
 ```JoynrStatusMetrics``` for more information.
 
-	import io.joynr.jeeintegration;;
+	import io.joynr.jeeintegration;
 
 	@Stateless
 	public class MyHealthCheck {
@@ -576,6 +611,8 @@ inject an object of type ```JoynrStatusMetrics```. See the documentation of
 	}
 
 ## Overriding Jackson library used at runtime
+
+The following information only applies to Glassfish / Payara 4.1.
 
 ### glassfish-web.xml
 
@@ -644,8 +681,8 @@ relevant getters of your class.
 Here are some references:
 
 * [Moxy in general](https://blogs.oracle.com/theaquarium/entry/moxy_is_the_new_default)
-* [Jersey configuration reference](https://jersey.java.net/documentation/latest/appendix-properties.html)
-* [Jersey deployment reference](https://jersey.java.net/documentation/latest/deployment.html)
+* [Jersey configuration reference](https://jersey.github.io/documentation/latest/appendix-properties.html)
+* [Jersey deployment reference](https://jersey.github.io/documentation/latest/deployment.html)
 * [Payara blog re. JEE Microservices](http://blog.payara.fish/building-restful-java-ee-microservices-with-payara-embedded)
 
 ## Message Processors
@@ -710,13 +747,13 @@ you must use two MQTT connections, which can be activated using the
 ## <a name="message_persistence"></a> Message Persistence
 
 If you need to persist joynr messages in order to reduce the risk of message loss, you can provide a
-producer of @JoynrMessagePersister.
+producer of `@JoynrMessagePersister`.
 
 For example:
 
 	@Produces
 	@JoynrMessagePersister
-	MessagePersister getMessagePersister() {
+	public MessagePersister getMessagePersister() {
 		return new MessagePersister() {
 			@Override
 			...

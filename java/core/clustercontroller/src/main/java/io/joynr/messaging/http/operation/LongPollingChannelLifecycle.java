@@ -18,14 +18,6 @@
  */
 package io.joynr.messaging.http.operation;
 
-import io.joynr.exceptions.JoynrChannelMissingException;
-import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.MessageArrivedListener;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingSettings;
-import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.runtime.JoynrThreadFactory;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -52,6 +44,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import io.joynr.exceptions.JoynrChannelMissingException;
+import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.runtime.JoynrThreadFactory;
 
 /**
  * The channel lifecycle callable is started in a new thread and loops infinitely until an exception is thrown:

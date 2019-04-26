@@ -18,22 +18,23 @@
  */
 package io.joynr.test.interlanguage.jee;
 
-import io.joynr.ilt.testresults.TestResult;
-import io.joynr.ilt.testresults.TestSuiteResult;
-import io.joynr.ilt.testresults.TestCaseResult;
-import io.joynr.ilt.testresults.TestCaseFailure;
-import org.junit.runner.notification.RunListener;
-import org.junit.runner.Description;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.Result;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.regex.Pattern;
+import java.util.Map;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.junit.runner.Description;
+import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
+import org.junit.runner.notification.RunListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.ilt.testresults.TestCaseFailure;
+import io.joynr.ilt.testresults.TestCaseResult;
+import io.joynr.ilt.testresults.TestResult;
+import io.joynr.ilt.testresults.TestSuiteResult;
 
 public class IltConsumerJUnitListener extends RunListener {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerJUnitListener.class);

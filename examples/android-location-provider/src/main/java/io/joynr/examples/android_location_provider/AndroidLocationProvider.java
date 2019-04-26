@@ -18,19 +18,19 @@
  */
 package io.joynr.examples.android_location_provider;
 
-import io.joynr.examples.android_location_provider.MyLocation.LocationResult;
-import io.joynr.provider.Deferred;
-import io.joynr.provider.Promise;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import android.content.Context;
+import android.location.Location;
+
+import io.joynr.examples.android_location_provider.MyLocation.LocationResult;
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.vehicle.DefaultGpsProvider;
-import android.content.Context;
-import android.location.Location;
 
 public class AndroidLocationProvider extends DefaultGpsProvider {
 

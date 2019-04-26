@@ -18,14 +18,15 @@
  */
 package io.joynr.tests.gracefulshutdown;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,33 +68,44 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
         EchoAsync echoService = proxyBuilder.build();
         int numberOfThreads = 3;
+        ArrayList<Future<?>> futureList = new ArrayList<Future<?>>();
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         IntStream.range(0, numberOfThreads).forEach(threadCounter -> {
-            executorService.submit(() -> {
+            futureList.add(executorService.submit(() -> {
                 while (true) {
                     sendMessage(echoService);
                     sleep(50);
                 }
-            });
+            }));
             sleep(100);
         });
-        while (true) {
-            sleep(10);
+        sleep(86400000);
+        // following code is just for sanity, it will not be reached during real test
+        // since this program is getting forcibly killed from outside while running
+        for (Future<?> future : futureList) {
+            future.cancel(false);
         }
+        logger.info("ConsumerApplication ended");
     }
 
     private void sendMessage(EchoAsync echoService) {
         if (!providerPreparingForShutdown.get()) {
             try {
-                semaphore.tryAcquire(5, TimeUnit.SECONDS);
+                if (!semaphore.tryAcquire(5, TimeUnit.SECONDS)) {
+                    throw new TimeoutException("unable to acquire semaphore in time");
+                }
                 echoService.echoString(new Callback<String>() {
                     @Override
-                    public void onSuccess(@CheckForNull String result) {
-                        logger.info("Got echo back: {}", result);
-                        if (result.contains("Unable to transform")) {
-                            providerPreparingForShutdown.set(true);
+                    public void onSuccess(String result) {
+                        if (result != null) {
+                            logger.info("Got echo back: {}", result);
+                            if (result.contains("Unable to transform")) {
+                                providerPreparingForShutdown.set(true);
+                            }
+                            semaphore.release();
+                        } else {
+                            logger.info("Got echo back: null");
                         }
-                        semaphore.release();
                     }
 
                     @Override
@@ -102,7 +114,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                         semaphore.release();
                     }
                 }, "Test " + System.currentTimeMillis());
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | TimeoutException e) {
                 logger.error("Unable to acquire semaphore for sending message in time.");
             }
         } else {
@@ -116,7 +128,5 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         } catch (InterruptedException e) {
             logger.error("Interrupted while sleeping.");
         }
-
     }
-
 }

@@ -18,13 +18,13 @@
  */
 package io.joynr.messaging.bounceproxy.modules;
 
+import com.google.inject.AbstractModule;
+
 import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
 import io.joynr.messaging.bounceproxy.service.DefaultBounceProxyChannelServiceImpl;
 import io.joynr.messaging.service.ChannelService;
 import io.joynr.messaging.system.SystemTimeProvider;
 import io.joynr.messaging.system.TimestampProvider;
-
-import com.google.inject.AbstractModule;
 
 /**
  * Default bindings for any bounceproxy implementation. This module should be

@@ -54,6 +54,7 @@ import java.util.HashSet;
 import io.joynr.subtypes.JoynrType;
 import io.joynr.ProvidesJoynrTypesInfo;
 
+import io.joynr.JoynrVersion;
 «FOR datatype: getRequiredIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
@@ -65,6 +66,7 @@ import io.joynr.ProvidesJoynrTypesInfo;
 import java.util.TreeSet;
 @ProvidesJoynrTypesInfo(interfaceClass = «interfaceName».class, interfaceName = "«francaIntf.fullyQualifiedName»")
 @SuppressWarnings("unused")
+@JoynrVersion(major = «majorVersion», minor = «minorVersion»)
 public interface «className» {
 	public static String INTERFACE_NAME = "«francaIntf.fullyQualifiedName»";
 

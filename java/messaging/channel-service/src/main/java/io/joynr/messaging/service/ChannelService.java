@@ -19,14 +19,14 @@
  */
 package io.joynr.messaging.service;
 
-import io.joynr.messaging.info.Channel;
-import io.joynr.messaging.info.ChannelInformation;
-
 import java.util.List;
 
 import javax.annotation.CheckForNull;
 
 import org.atmosphere.jersey.Broadcastable;
+
+import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ChannelInformation;
 
 /**
  * Interface for channel service implementation.

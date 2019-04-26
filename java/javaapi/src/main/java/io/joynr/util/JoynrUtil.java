@@ -18,8 +18,6 @@
  */
 package io.joynr.util;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,9 +30,12 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -45,8 +46,11 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.exceptions.JoynrRuntimeException;
+
 public class JoynrUtil {
     private static final Logger logger = LoggerFactory.getLogger(JoynrUtil.class);
+    private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder().withoutPadding();
 
     public enum OS {
         LINUX, WIN32, TEST, UNDEFINED
@@ -328,5 +332,13 @@ public class JoynrUtil {
                 private static final long serialVersionUID = 1L;
             };
         }
+    }
+
+    public static String createUuidString() {
+        UUID uuid = UUID.randomUUID();
+        ByteBuffer uuidBytes = ByteBuffer.wrap(new byte[16]);
+        uuidBytes.putLong(uuid.getMostSignificantBits());
+        uuidBytes.putLong(uuid.getLeastSignificantBits());
+        return base64Encoder.encodeToString(uuidBytes.array());
     }
 }

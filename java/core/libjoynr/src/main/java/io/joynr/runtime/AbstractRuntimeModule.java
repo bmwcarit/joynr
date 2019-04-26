@@ -34,6 +34,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
@@ -92,6 +93,7 @@ import io.joynr.statusmetrics.DefaultStatusReceiver;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 abstract class AbstractRuntimeModule extends AbstractModule {
 
@@ -104,6 +106,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     protected void configure() {
         requestStaticInjection(CapabilityUtils.class,
                                RpcUtils.class,
+                               RoutingTypesUtil.class,
                                ArbitratorFactory.class,
                                JoynrDelayMessageException.class,
                                JoynrAppenderManagerFactory.class);

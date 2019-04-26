@@ -18,12 +18,13 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
-import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.junit.After;
@@ -40,6 +41,8 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.JoynrVersion;
+import io.joynr.ProvidesJoynrTypesInfo;
+import io.joynr.Sync;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -56,11 +59,7 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.test;
-import joynr.tests.testAsync;
-import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProvider;
-import joynr.tests.testSubscriptionInterface;
-import joynr.tests.testSync;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -74,10 +73,19 @@ public class ProxyErrorsTest {
     private static final long CONST_DEFAULT_TEST_TIMEOUT = 3000;
 
     // Dummy interface with a major version incompatible to the provider's version
+    @Sync
+    @ProvidesJoynrTypesInfo(interfaceClass = test.class, interfaceName = "tests/test")
     @JoynrVersion(major = 2, minor = 0)
-    public interface TestProxyWrongVersion
-            extends testAsync, testSync, testSubscriptionInterface, testBroadcastInterface {
+    public interface TestProxyWrongVersion {
         public static String INTERFACE_NAME = "tests/test";
+
+        public static Set<Class<?>> getDataTypes() {
+            Set<Class<?>> set = new HashSet<>();
+            set.add(joynr.tests.testTypes.TestEnum.class);
+            return set;
+        }
+
+        void setEnumAttribute(TestEnum enumAttribute);
     }
 
     @JoynrInterface(provider = TestProviderWrongVersion.class, provides = test.class, name = "tests/test")
@@ -111,8 +119,8 @@ public class ProxyErrorsTest {
         // the error callback and NoCompatibleProviderFoundException will each increment the permits.
         // The test will wait until 2 permits are available, or fail in the junit test timeout time.
         waitOnExceptionAndErrorCallbackSemaphore = new Semaphore(-1, true);
-        domain = "domain-" + UUID.randomUUID().toString();
-        domain2 = "domain2-" + UUID.randomUUID().toString();
+        domain = "domain-" + createUuidString();
+        domain2 = "domain2-" + createUuidString();
         Properties joynrConfig = new Properties();
         joynrConfig.setProperty(MessagingPropertyKeys.CHANNELID, "discoverydirectory_channelid");
 

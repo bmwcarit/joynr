@@ -18,10 +18,10 @@
  */
 package io.joynr.util;
 
+import java.util.Random;
+
 import io.joynr.dispatching.DestinationAddress;
 import io.joynr.dispatching.InterfaceAddress;
-
-import java.util.Random;
 
 public class MessagingTestsUtil {
     private static Random random = new Random();

@@ -18,26 +18,25 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.ehcache;
 
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.BounceProxyStatusInformation;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.distribution.CacheManagerPeerProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.BounceProxyStatusInformation;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.distribution.CacheManagerPeerProvider;
 
 /**
  * {@link BounceProxyDirectory} implementation which uses Ehcache to store

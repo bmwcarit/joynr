@@ -18,24 +18,22 @@
  */
 package io.joynr.dispatching.subscription;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.provider.Promise;
-import io.joynr.provider.ProviderContainer;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.annotation.Nonnull;
 
-import joynr.exceptions.MethodInvocationException;
-import joynr.exceptions.ProviderRuntimeException;
-
-import io.joynr.JoynrVersion;
-import io.joynr.util.AnnotationUtil;
-import joynr.types.Version;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.JoynrVersion;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.provider.Promise;
+import io.joynr.provider.ProviderContainer;
+import io.joynr.util.AnnotationUtil;
+import joynr.exceptions.MethodInvocationException;
+import joynr.exceptions.ProviderRuntimeException;
+import joynr.types.Version;
 
 public class AttributePollInterpreter {
 

@@ -18,6 +18,7 @@
  */
 package io.joynr.serialize;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -27,8 +28,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.RejectedExecutionException;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -36,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PersistedSubscriptionRequest;
@@ -89,11 +96,6 @@ import joynr.types.TestTypes.TStruct;
 import joynr.types.TestTypes.Vowel;
 import joynr.types.TestTypes.Word;
 import joynr.types.Version;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This test sends two messages in each direction, containing different TTL values. One with a very high TTL value to
@@ -223,7 +225,7 @@ public class SerializationTest {
 
     @Test
     public void serializeDeserializeSubscriptionRequests() throws Exception {
-        String persistenceFileName = "target/test_persistenceSubscriptionRequests_" + UUID.randomUUID().toString();
+        String persistenceFileName = "target/test_persistenceSubscriptionRequests_" + createUuidString();
         String proxyPid = "proxyPid";
         String providerPid = "providerPid";
         String subscriptionId = "subscriptionId";
@@ -348,7 +350,7 @@ public class SerializationTest {
                 new GpsLocation(3.0d, 4.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0),
                 new GpsLocation(5.0d, 6.0d, 0d, GpsFixEnum.MODE2D, 0d, 0d, 0d, 0d, 0l, 0l, 0) };
 
-        Reply reply = new Reply(UUID.randomUUID().toString(), (Object) GpsLocations);
+        Reply reply = new Reply(createUuidString(), (Object) GpsLocations);
 
         String valueAsString = objectMapper.writeValueAsString(reply);
 
@@ -550,7 +552,7 @@ public class SerializationTest {
     public void serializeReply() throws JsonGenerationException, JsonMappingException, IOException {
 
         Object response = new GpsPosition(49.0065, 11.65);
-        Reply reply = new Reply(UUID.randomUUID().toString(), response);
+        Reply reply = new Reply(createUuidString(), response);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -573,7 +575,7 @@ public class SerializationTest {
                                                                                expiryDateMs,
                                                                                publicKeyId,
                                                                                "channelId") };
-        Reply reply = new Reply(UUID.randomUUID().toString(), response);
+        Reply reply = new Reply(createUuidString(), response);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
 
@@ -598,7 +600,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrApplicationException() throws IOException {
 
         ApplicationException error = new ApplicationException(TestEnum.ONE, "detail message");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -611,7 +613,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrApplicationExceptionWithoutMessage() throws IOException {
 
         ApplicationException error = new ApplicationException(TestEnum.TWO);
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -624,7 +626,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrIllegalAccessException() throws IOException {
 
         IllegalAccessException error = new IllegalAccessException("detail message: JoynrIllegalAccessException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -637,7 +639,7 @@ public class SerializationTest {
     public void serializeReplyWithMethodInvocationException() throws IOException {
 
         MethodInvocationException error = new MethodInvocationException("detail message: MessageInvocationException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -650,7 +652,7 @@ public class SerializationTest {
     public void serializeReplyWithProviderRuntimenException() throws IOException {
 
         ProviderRuntimeException error = new ProviderRuntimeException("detail message: ProviderRuntimeException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -663,7 +665,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrRuntimeException() throws IOException {
 
         JoynrRuntimeException error = new JoynrRuntimeException("detail message: JoynrRuntimeException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -676,7 +678,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrRuntimeExceptionWithoutMessage() throws IOException {
 
         JoynrRuntimeException error = new JoynrRuntimeException();
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
 
@@ -691,7 +693,7 @@ public class SerializationTest {
                                                                 new IOException("cause message"));
         System.out.println("error: " + error);
         System.out.println("cause: " + ((Throwable) error).getCause());
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
 
@@ -703,7 +705,7 @@ public class SerializationTest {
     public void serializeReplyWithDiscoveryException() throws IOException {
 
         DiscoveryException error = new DiscoveryException("detail message: DiscoveryException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
 
@@ -716,7 +718,7 @@ public class SerializationTest {
 
         JoynrChannelNotAssignableException error = new JoynrChannelNotAssignableException("detail message: JoynrChannelNotAssignableException",
                                                                                           "CCID");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
 
@@ -728,7 +730,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrCommunicationException() throws IOException {
 
         JoynrCommunicationException error = new JoynrCommunicationException("detail message: JoynrCommunicationException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -741,7 +743,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrCommunicationExceptionWithoutMessage() throws IOException {
 
         JoynrCommunicationException error = new JoynrCommunicationException();
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -754,7 +756,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrChannelMissingException() throws IOException {
 
         JoynrChannelMissingException error = new JoynrChannelMissingException("detail message: JoynrChannelMissingException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -767,7 +769,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrHttpException() throws IOException {
 
         JoynrHttpException error = new JoynrHttpException(404, "detail message: JoynrHttpException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -780,7 +782,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrIllegalStateException() throws IOException {
 
         JoynrIllegalStateException error = new JoynrIllegalStateException("detail message: JoynrIllegalStateException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -793,7 +795,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrMessageNotSentException() throws IOException {
 
         JoynrMessageNotSentException error = new JoynrMessageNotSentException("detail message: JoynrMessageNotSentException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -806,7 +808,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrRequestInterruptedException() throws IOException {
 
         JoynrRequestInterruptedException error = new JoynrRequestInterruptedException("detail message: JoynrRequestInterruptedException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -819,7 +821,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrSendBufferFullException() throws IOException {
 
         JoynrSendBufferFullException error = new JoynrSendBufferFullException(new RejectedExecutionException("cause message"));
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -832,7 +834,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrShutdownException() throws IOException {
 
         JoynrShutdownException error = new JoynrShutdownException("detail message: JoynrShutdownException");
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -845,7 +847,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrTimeoutException() throws IOException {
 
         JoynrTimeoutException error = new JoynrTimeoutException(42);
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
         System.out.println(writeValueAsString);
@@ -858,7 +860,7 @@ public class SerializationTest {
     public void serializeReplyWithJoynrWaitExpiredException() throws IOException {
 
         JoynrWaitExpiredException error = new JoynrWaitExpiredException();
-        Reply reply = new Reply(UUID.randomUUID().toString(), error);
+        Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
 

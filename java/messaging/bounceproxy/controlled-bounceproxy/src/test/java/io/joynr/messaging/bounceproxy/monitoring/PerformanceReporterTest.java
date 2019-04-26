@@ -20,8 +20,6 @@
 package io.joynr.messaging.bounceproxy.monitoring;
 
 import static org.mockito.Matchers.any;
-import io.joynr.guice.PropertyLoadingModule;
-import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -53,6 +51,9 @@ import org.mockito.stubbing.Answer;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PerformanceReporterTest {

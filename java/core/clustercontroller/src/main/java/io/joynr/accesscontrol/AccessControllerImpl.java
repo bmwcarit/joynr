@@ -18,6 +18,15 @@
  */
 package io.joynr.accesscontrol;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -26,23 +35,12 @@ import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.runtime.SystemServicesSettings;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 public class AccessControllerImpl implements AccessController {
     private static final Logger logger = LoggerFactory.getLogger(AccessControllerImpl.class);

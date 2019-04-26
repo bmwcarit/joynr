@@ -130,6 +130,7 @@ public class MqttPahoClientTest {
         printWriter.println("certfile " + certfilePath.toAbsolutePath().toString());
         printWriter.println("keyfile " + keyfilePath.toAbsolutePath().toString());
         printWriter.println("require_certificate true");
+        printWriter.println("allow_anonymous false");
         printWriter.close();
 
         // create mosquitto password file with an entry for user 'joynr'
@@ -174,6 +175,8 @@ public class MqttPahoClientTest {
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, joynrPassword);
         serializedMessage = new byte[10];
     }
 
@@ -223,8 +226,12 @@ public class MqttPahoClientTest {
 
         Thread thread = new Thread(new Runnable() {
             public void run() {
-                client.start();
-                startSemaphore.release();
+                try {
+                    client.start();
+                    startSemaphore.release();
+                } catch (Exception e) {
+                    // ignore
+                }
             }
         });
         thread.start();
@@ -382,14 +389,12 @@ public class MqttPahoClientTest {
     public void mqttClientTestWithWrongUserAndSomePassword() throws Exception {
         boolean expectException = true;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, "wronguser");
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, joynrPassword);
         mqttClientTestWithCredentials(expectException);
     }
 
     @Test
     public void mqttClientTestWithCorrectUserButWrongPassword() throws Exception {
         boolean expectException = true;
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, "wrongpassword");
         mqttClientTestWithCredentials(expectException);
     }
@@ -397,8 +402,6 @@ public class MqttPahoClientTest {
     @Test
     public void mqttClientTestWithCorrectUserAndCorrectPassword() throws Exception {
         boolean expectException = false;
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, joynrPassword);
         mqttClientTestWithCredentials(expectException);
     }
 
@@ -406,13 +409,13 @@ public class MqttPahoClientTest {
     public void mqttClientTestWithEmptyUser() throws Exception {
         final boolean isSecureConnection = false;
         properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, "");
+        thrown.expect(JoynrIllegalStateException.class);
         mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
     }
 
     @Test
     public void mqttClientTestWithCorrectUserButEmptyPassword() throws Exception {
         final boolean isSecureConnection = false;
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, "");
         thrown.expect(JoynrIllegalStateException.class);
         mqttClientTestWithDisabledMessageSizeCheck(isSecureConnection);
@@ -620,8 +623,8 @@ public class MqttPahoClientTest {
         boolean cleanSession = true;
         final boolean isReceiver = true;
         final boolean separateConnections = false;
-        String username = null;
-        String password = null;
+        String username = joynrUser;
+        String password = joynrPassword;
 
         joynrMqttClient = new MqttPahoClient(new MqttAddress(brokerUri, "sometopic"),
                                              clientId,

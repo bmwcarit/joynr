@@ -19,6 +19,7 @@
 package io.joynr.proxy;
 
 import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -27,19 +28,18 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-import joynr.exceptions.ApplicationException;
-import joynr.exceptions.ProviderRuntimeException;
-import joynr.types.Localisation.GetTripErrors;
-import joynr.types.Localisation.Trip;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
+import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.Reply;
+import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
+import joynr.types.Localisation.GetTripErrors;
+import joynr.types.Localisation.Trip;
 import joynr.vehicle.Navigation;
 import joynr.vehicle.NavigationStatelessAsync;
 import joynr.vehicle.NavigationStatelessAsyncCallback;
@@ -140,7 +140,7 @@ public class StatelessAsyncReplyCallerTest {
     @Test(expected = JoynrRuntimeException.class)
     public void testMethodNotFound() throws Exception {
         StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
-        Reply reply = new Reply(UUID.randomUUID().toString());
+        Reply reply = new Reply(createUuidString());
         reply.setStatelessAsyncCallbackId(STATELESS_CALLBACK_ID);
         reply.setStatelessAsyncCallbackMethodId("0");
         subject.messageCallBack(reply);
@@ -149,7 +149,7 @@ public class StatelessAsyncReplyCallerTest {
     @Test(expected = JoynrRuntimeException.class)
     public void testMethodNameWrong() throws Exception {
         StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
-        Reply reply = new Reply(UUID.randomUUID().toString());
+        Reply reply = new Reply(createUuidString());
         reply.setStatelessAsyncCallbackId(STATELESS_CALLBACK_ID);
         reply.setStatelessAsyncCallbackMethodId(INVALID);
         subject.messageCallBack(reply);
@@ -187,7 +187,7 @@ public class StatelessAsyncReplyCallerTest {
                           Function<String, Reply> replyGenerator,
                           Function<String, String> requestReplyIdKeyMapper) {
         StatelessAsyncReplyCaller subject = new StatelessAsyncReplyCaller(STATELESS_CALLBACK_ID, callback);
-        String requestReplyId = UUID.randomUUID().toString();
+        String requestReplyId = createUuidString();
         Reply reply = replyGenerator.apply(requestReplyId);
         reply.setStatelessAsyncCallbackId(STATELESS_CALLBACK_ID);
         reply.setStatelessAsyncCallbackMethodId(statelessCallbackCorrelation.value());

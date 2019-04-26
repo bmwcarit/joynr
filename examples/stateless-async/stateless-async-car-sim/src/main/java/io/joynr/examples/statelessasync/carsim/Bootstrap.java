@@ -18,19 +18,21 @@
  */
 package io.joynr.examples.statelessasync.carsim;
 
+import static io.joynr.runtime.AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL;
+
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
-
-import static io.joynr.runtime.AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL;
 
 public class Bootstrap {
 

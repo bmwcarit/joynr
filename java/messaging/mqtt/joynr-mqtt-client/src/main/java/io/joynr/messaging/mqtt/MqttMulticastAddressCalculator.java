@@ -20,6 +20,7 @@ package io.joynr.messaging.mqtt;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;

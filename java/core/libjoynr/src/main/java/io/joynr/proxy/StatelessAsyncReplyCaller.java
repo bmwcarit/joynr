@@ -18,6 +18,14 @@
  */
 package io.joynr.proxy;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.exceptions.JoynrException;
@@ -25,13 +33,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.util.AnnotationUtil;
 import joynr.Reply;
 import joynr.exceptions.ApplicationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.regex.Pattern;
 
 public class StatelessAsyncReplyCaller implements ReplyCaller {
 

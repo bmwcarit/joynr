@@ -22,11 +22,11 @@ package io.joynr.messaging.service;
 import static com.jayway.restassured.RestAssured.given;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,8 +37,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.SimpleType;
@@ -263,7 +263,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
         MutableMessage message = new MutableMessage();
 
         message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
-        message.setPayload(("payload-" + UUID.randomUUID().toString()).getBytes(StandardCharsets.UTF_8));
+        message.setPayload(("payload-" + createUuidString()).getBytes(StandardCharsets.UTF_8));
         message.setTtlAbsolute(true);
         message.setTtlMs(expiryDate.getValue());
         message.setSender("");

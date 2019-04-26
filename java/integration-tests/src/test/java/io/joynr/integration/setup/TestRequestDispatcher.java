@@ -18,8 +18,6 @@
  */
 package io.joynr.integration.setup;
 
-import io.joynr.messaging.util.Utilities;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,6 +34,8 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.messaging.util.Utilities;
 
 /**
  * Request dispatcher for testing purposes.<br>

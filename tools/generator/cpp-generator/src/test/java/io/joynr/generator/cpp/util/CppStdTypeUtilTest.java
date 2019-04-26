@@ -18,13 +18,7 @@
  */
 package io.joynr.generator.cpp.util;
 
-import io.joynr.generator.loading.ModelLoader;
-import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
-import io.joynr.generator.templates.util.NamingUtil;
-
 import java.net.URL;
-
-import junit.framework.TestCase;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.franca.core.franca.FCompoundType;
@@ -39,6 +33,11 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
+
+import io.joynr.generator.loading.ModelLoader;
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
+import io.joynr.generator.templates.util.NamingUtil;
+import junit.framework.TestCase;
 
 public class CppStdTypeUtilTest extends TestCase {
 

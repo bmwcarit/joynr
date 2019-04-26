@@ -23,8 +23,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 import org.junit.Test;
+
+import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 
 public class GenerateMultiReturnValuesContainerTest extends AbstractJoynrJavaGeneratorTest {
 

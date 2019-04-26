@@ -29,7 +29,6 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
-import io.joynr.proxy.StatelessAsyncIdCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +47,7 @@ import io.joynr.messaging.MessagingQosEffort;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.ProviderCallback;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.smrf.EncodingException;
 import joynr.ImmutableMessage;
 import joynr.Message;

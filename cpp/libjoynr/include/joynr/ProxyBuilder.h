@@ -270,7 +270,6 @@ void ProxyBuilder<T>::buildAsync(
         bool isGloballyVisible = !discoverEntry.getIsLocal();
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
-        const bool allowUpdate = false;
         auto onSuccessAddNextHop = [onSuccess, proxy]() { onSuccess(std::move(proxy)); };
         auto onErrorAddNextHop = [onError](
                 const joynr::exceptions::ProviderRuntimeException& providerRuntimeException) {
@@ -281,12 +280,12 @@ void ProxyBuilder<T>::buildAsync(
             }
         };
 
+        messageRouter->setToKnown(discoverEntry.getParticipantId());
         messageRouter->addNextHop(proxy->getProxyParticipantId(),
                                   dispatcherAddress,
                                   isGloballyVisible,
                                   expiryDateMs,
                                   isSticky,
-                                  allowUpdate,
                                   onSuccessAddNextHop,
                                   onErrorAddNextHop);
     };

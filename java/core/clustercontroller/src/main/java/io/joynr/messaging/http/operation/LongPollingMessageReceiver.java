@@ -18,20 +18,13 @@
  */
 package io.joynr.messaging.http.operation;
 
-import io.joynr.exceptions.JoynrShutdownException;
-import io.joynr.messaging.MessageArrivedListener;
-import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.MessagingSettings;
-import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.runtime.JoynrThreadFactory;
-
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
-import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +33,13 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.ReceiverStatusListener;
+import io.joynr.runtime.JoynrThreadFactory;
 
 /**
  * The HTTP Communication Manager is responsible for opening and closing channels, managing long polls, and making HTTP

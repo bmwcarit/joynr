@@ -72,7 +72,7 @@ public:
             testInterfaceProxy = proxyBuilder->setMessagingQos(joynr::MessagingQos(qosMsgTtl))
                                          ->setDiscoveryQos(discoveryQos)
                                          ->build();
-            ASSERT_TRUE(testInterfaceProxy);
+            ASSERT_TRUE(testInterfaceProxy != nullptr);
         });
 
         JOYNR_LOG_INFO(logger(), "***********************");

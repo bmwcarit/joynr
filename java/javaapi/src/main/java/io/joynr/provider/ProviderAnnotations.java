@@ -18,10 +18,10 @@
  */
 package io.joynr.provider;
 
+import java.lang.annotation.Annotation;
+
 import io.joynr.JoynrVersion;
 import io.joynr.util.AnnotationUtil;
-
-import java.lang.annotation.Annotation;
 
 public class ProviderAnnotations {
 

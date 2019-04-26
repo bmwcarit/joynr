@@ -18,13 +18,12 @@
  */
 package io.joynr.accesscontrol;
 
-import io.joynr.proxy.Callback;
-import io.joynr.proxy.Future;
-
 import java.util.List;
 
 import javax.annotation.CheckForNull;
 
+import io.joynr.proxy.Callback;
+import io.joynr.proxy.Future;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;

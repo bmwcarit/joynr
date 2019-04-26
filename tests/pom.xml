@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.7.1</version>
+		<version>1.8.0</version>
 	</parent>
 
 	<modules>
@@ -41,6 +41,27 @@
 		<module>graceful-shutdown-test</module>
 		<module>joynr-hivemq-shared-subscriptions</module>
 	</modules>
+
+	<profiles>
+		<profile>
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-annotations</artifactId>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<pluginManagement>
@@ -91,5 +112,12 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
 	</build>
 </project>

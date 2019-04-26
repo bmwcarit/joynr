@@ -95,7 +95,8 @@ public:
               mockMessageSender(new MockTransportMessageSender()),
               messagingStubFactory(std::make_shared<MessagingStubFactory>()),
               singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              messageRouter()
+              messageRouter(),
+              ownAddress()
     {
         const std::string globalCCAddress("globalAddress");
         const std::string messageNotificationProviderParticipantId(
@@ -116,7 +117,8 @@ public:
                 enablePersistency,
                 std::vector<std::shared_ptr<ITransportStatus>>{},
                 std::make_unique<MessageQueue<std::string>>(),
-                std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
+                std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(),
+                ownAddress);
         messageRouter->init();
         qos.setTtl(10000);
     }
@@ -203,7 +205,7 @@ public:
         // MessageSender should not receive the message
         EXPECT_CALL(*mockMessageSender, sendMessage(_, _, _)).Times(0);
 
-        EXPECT_CALL(*mockMessageReceiver, getGlobalClusterControllerAddress()).Times(0);
+        EXPECT_CALL(*mockMessageReceiver, getSerializedGlobalClusterControllerAddress()).Times(0);
 
         auto messagingSkeletonEndpointAddr =
                 std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
@@ -273,8 +275,8 @@ public:
                 .Times(2)
                 .WillRepeatedly(ReleaseSemaphore(&semaphore));
 
-        EXPECT_CALL(*mockMessageReceiver, getGlobalClusterControllerAddress())
-                .WillRepeatedly(ReturnRefOfCopy(globalClusterControllerAddress));
+        EXPECT_CALL(*mockMessageReceiver, getSerializedGlobalClusterControllerAddress())
+                .WillRepeatedly(Return(globalClusterControllerAddress));
 
         auto messagingSkeletonEndpointAddr =
                 std::make_shared<InProcessMessagingAddress>(inProcessMessagingSkeleton);
@@ -299,4 +301,5 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessagingTest);
+    const system::RoutingTypes::Address ownAddress;
 };

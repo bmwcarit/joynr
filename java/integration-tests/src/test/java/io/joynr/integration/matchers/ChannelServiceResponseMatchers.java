@@ -18,8 +18,6 @@
  */
 package io.joynr.integration.matchers;
 
-import io.joynr.messaging.util.Utilities;
-
 import java.util.List;
 
 import org.hamcrest.BaseMatcher;
@@ -27,6 +25,8 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
 import com.jayway.restassured.path.json.JsonPath;
+
+import io.joynr.messaging.util.Utilities;
 
 public class ChannelServiceResponseMatchers {
 

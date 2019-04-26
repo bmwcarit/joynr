@@ -28,7 +28,6 @@ import javax.enterprise.inject.Produces;
 
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
-
 import io.joynr.messaging.MessagingPropertyKeys;
 
 /**

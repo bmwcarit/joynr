@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,7 @@ const SubscriptionRequest = require("../../../../main/js/joynr/dispatching/types
 const SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/SubscriptionReply");
 const SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
 const MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
-const uuid = require("uuid/v4");
+const nanoid = require("nanoid");
 
 const providerId = "providerId";
 const providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
@@ -84,8 +84,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
     let dispatcher, dispatcherWithTtlUplift;
     let clusterControllerMessagingStub, securityManager;
     let requestReplyManager, subscriptionManager, publicationManager, messageRouter;
-    const subscriptionId = `mySubscriptionId-${uuid()}`;
-    const multicastId = `multicastId-${uuid()}`;
+    const subscriptionId = `mySubscriptionId-${nanoid()}`;
+    const multicastId = `multicastId-${nanoid()}`;
 
     let ttl, messagingQos, expiryDateMs, expiryDateWithTtlUplift;
     let publicationTtlMs, subscriptionQos;

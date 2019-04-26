@@ -532,12 +532,12 @@ void MessagingSettings::setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryInt
     settings.set(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS(), expiryIntervalMs);
 }
 
-int MessagingSettings::getSendMsgRetryInterval() const
+std::uint32_t MessagingSettings::getSendMsgRetryInterval() const
 {
-    return settings.get<int>(SETTING_SEND_MSG_RETRY_INTERVAL());
+    return settings.get<std::uint32_t>(SETTING_SEND_MSG_RETRY_INTERVAL());
 }
 
-void MessagingSettings::setSendMsgRetryInterval(const int& retryInterval)
+void MessagingSettings::setSendMsgRetryInterval(const std::uint32_t& retryInterval)
 {
     settings.set(SETTING_SEND_MSG_RETRY_INTERVAL(), retryInterval);
 }

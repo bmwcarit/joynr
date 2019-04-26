@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import joynr.infrastructure.DacTypes.DomainRoleEntry;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +29,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import joynr.infrastructure.DacTypes.DomainRoleEntry;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 
 public class StaticDomainAccessControlProvisioning implements DomainAccessControlProvisioning {
     public static final String PROPERTY_PROVISIONED_DOMAIN_ROLES = "joynr.accesscontrol.provisioned.domainroles";

@@ -18,13 +18,13 @@
  */
 package io.joynr.logging;
 
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.runtime.JoynrRuntime;
-
 import java.util.Properties;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.runtime.JoynrRuntime;
 
 public class JoynrAppenderManagerFactory {
 

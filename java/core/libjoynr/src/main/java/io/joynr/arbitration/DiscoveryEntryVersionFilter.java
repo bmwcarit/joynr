@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.inject.Inject;
-
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;

@@ -31,7 +31,11 @@ import javax.ejb.EJBException;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Injector;
+
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.api.ServiceProvider;
@@ -50,8 +54,6 @@ import io.joynr.provider.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class wraps an EJB which is decorated with {@link io.joynr.jeeintegration.api.ServiceProvider} and has a valid

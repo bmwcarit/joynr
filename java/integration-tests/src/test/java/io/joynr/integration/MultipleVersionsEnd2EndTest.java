@@ -27,18 +27,18 @@ import java.util.HashSet;
 import org.junit.Test;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.AnonymousVersionedStruct2;
+import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.DefaultMultipleVersionsInterface1Provider;
 import joynr.tests.DefaultMultipleVersionsInterface2Provider;
 import joynr.tests.DefaultMultipleVersionsInterfaceProvider;
-import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.InterfaceVersionedStruct2;
+import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.MultipleVersionsInterface1Proxy;
 import joynr.tests.MultipleVersionsInterface2Proxy;
 import joynr.tests.MultipleVersionsInterfaceProxy;
-import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
+import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 
 public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2EndTest {
 
@@ -49,7 +49,7 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
     * one provider (unversioned) and communicate with this without mutual interference.
     */
     @Test
-    public void proxiesOfDifferentVersioningTypesVsUnversionedProvider() throws Exception {
+    public void proxiesOfDifferentVersioningTypesVsUnversionedProviderInSingleRuntime() throws Exception {
         // register provider
         DefaultMultipleVersionsInterfaceProvider unversionedProvider = new DefaultMultipleVersionsInterfaceProvider();
 
@@ -85,7 +85,7 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
             assertEquals((byte) value3, 50);
 
             // unregister provider
-            runtime.unregisterProvider(domain, unversionedProvider);
+            providerRuntime.unregisterProvider(domain, unversionedProvider);
         } catch (JoynrRuntimeException e) {
             fail(UNREGISTERING_FAILED_MESSAGE + e);
         }
@@ -122,8 +122,8 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
 
         // unregister providers
         try {
-            runtime.unregisterProvider(domain, provider1);
-            runtime.unregisterProvider(domain, provider2);
+            providerRuntime.unregisterProvider(domain, provider1);
+            providerRuntime.unregisterProvider(domain, provider2);
         } catch (JoynrRuntimeException e) {
             fail(UNREGISTERING_FAILED_MESSAGE + e);
         }
@@ -160,8 +160,8 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
 
         // unregister providers
         try {
-            runtime.unregisterProvider(domain, provider1);
-            runtime.unregisterProvider(domain, provider2);
+            providerRuntime.unregisterProvider(domain, provider1);
+            providerRuntime.unregisterProvider(domain, provider2);
         } catch (JoynrRuntimeException e) {
             fail(UNREGISTERING_FAILED_MESSAGE + e);
         }
@@ -234,7 +234,21 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
     }
 
     @Test
+    public void packageVersionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
+        registerPackageVersionedProvider();
+        testPackageVersionedTypes();
+    }
+
+    @Test
     public void nameVersionedProxy_nameVersionedProvider_singleRuntime() throws Exception {
+        registerNameVersionedProvider();
+        testNameVersionedTypes();
+    }
+
+    @Test
+    public void nameVersionedProxy_nameVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
         registerNameVersionedProvider();
         testNameVersionedTypes();
     }
@@ -244,4 +258,12 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         registerUnversionedProvider();
         testUnversionedTypes();
     }
+
+    @Test
+    public void unversionedProxy_UnversionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
+        registerUnversionedProvider();
+        testUnversionedTypes();
+    }
+
 }

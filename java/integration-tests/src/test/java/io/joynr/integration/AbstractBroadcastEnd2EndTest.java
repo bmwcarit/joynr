@@ -18,17 +18,28 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Module;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -49,23 +60,14 @@ import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
-import joynr.tests.testBroadcastInterface;
 import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
+import joynr.tests.testBroadcastInterface;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.ProviderQos;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractBroadcastEnd2EndTest.class);
@@ -127,12 +129,11 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private void setupProviderRuntime(String methodName) throws InterruptedException, ApplicationException {
         Properties factoryPropertiesProvider;
 
-        String channelIdProvider = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Provider-BroadcastEnd2EndTest-" + methodName;
+        String channelIdProvider = "JavaTest-" + createUuidString() + "-Provider-BroadcastEnd2EndTest-" + methodName;
 
         factoryPropertiesProvider = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
-        factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        factoryPropertiesProvider.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         factoryPropertiesProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, domain);
         providerRuntime = getRuntime(factoryPropertiesProvider,
                                      getSubscriptionPublisherFactoryModule(),
@@ -145,14 +146,13 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,
                                                          InterruptedException {
-        String channelIdConsumer = "JavaTest-" + UUID.randomUUID().getLeastSignificantBits()
-                + "-Consumer-BroadcastEnd2EndTest-" + methodName;
+        String channelIdConsumer = "JavaTest-" + createUuidString() + "-Consumer-BroadcastEnd2EndTest-" + methodName;
 
         Properties factoryPropertiesB = PropertyLoader.loadProperties("testMessaging.properties");
         factoryPropertiesB.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
-        factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        factoryPropertiesB.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         factoryPropertiesB.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                               "ClientDomain-" + methodName + "-" + UUID.randomUUID().toString());
+                               "ClientDomain-" + methodName + "-" + createUuidString());
 
         consumerRuntime = getRuntime(factoryPropertiesB, getSubscriptionPublisherFactoryModule());
 
@@ -287,7 +287,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         broadcastReceived.acquire();
 
         //unsubscribe incorrect subscription -> now, a firing broadcast shall still be received
-        proxy.unsubscribeFromEmptyBroadcastBroadcast(UUID.randomUUID().toString());
+        proxy.unsubscribeFromEmptyBroadcastBroadcast(createUuidString());
         provider.fireEmptyBroadcast();
         broadcastReceived.acquire();
 
@@ -320,7 +320,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
         broadcastReceived.acquire();
 
         //unsubscribe correct subscription -> now, no more broadcast shall be received
-        proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(UUID.randomUUID().toString());
+        proxy.unsubscribeFromLocationUpdateWithSpeedBroadcast(createUuidString());
         provider.fireLocationUpdateWithSpeed(expectedLocation, expectedSpeed);
         broadcastReceived.acquire();
 

@@ -18,6 +18,7 @@
  */
 package io.joynr.proxy;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -30,7 +31,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -173,8 +173,8 @@ public class RpcStubbingTest {
         when(testMock.takesTwoSimpleParams(any(Integer.class),
                                            any(String.class))).thenReturn(new Promise<DeferredVoid>(deferredVoid));
 
-        fromParticipantId = UUID.randomUUID().toString();
-        toParticipantId = UUID.randomUUID().toString();
+        fromParticipantId = createUuidString();
+        toParticipantId = createUuidString();
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
 

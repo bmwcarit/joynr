@@ -21,8 +21,8 @@ package io.joynr.dispatching;
 import java.util.Set;
 
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
-import io.joynr.provider.ProviderCallback;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.ProviderCallback;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;

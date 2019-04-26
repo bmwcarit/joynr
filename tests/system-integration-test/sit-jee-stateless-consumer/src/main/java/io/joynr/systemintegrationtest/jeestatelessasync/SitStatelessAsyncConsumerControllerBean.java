@@ -22,6 +22,7 @@ import static io.joynr.systemintegrationtest.jeestatelessasync.JoynrConfiguratio
 import static io.joynr.systemintegrationtest.jeestatelessasync.JoynrConfigurationProvider.SIT_DOMAIN_PREFIX;
 import static io.joynr.systemintegrationtest.jeestatelessasync.SitStatelessAsyncCallback.USE_CASE;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -79,7 +80,8 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
     public String waitForStatelessResult(Integer timeoutMs) {
         logger.info("waitForStatelessResult called");
         try {
-            return new String(Base64.getEncoder().encode(resultQueue.getResult(timeoutMs).getBytes()));
+            return Base64.getEncoder()
+                         .encodeToString(resultQueue.getResult(timeoutMs).getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             String errorMsg = "SIT RESULT error: stateless async JEE consumer -> " + e.toString();
             logger.error(errorMsg);

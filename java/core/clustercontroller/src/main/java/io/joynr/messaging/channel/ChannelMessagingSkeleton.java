@@ -18,7 +18,13 @@
  */
 package io.joynr.messaging.channel;
 
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
+
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -28,11 +34,6 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.ImmutableMessage;
-
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingMulticastSubscriber {
     private final MessageRouter messageRouter;

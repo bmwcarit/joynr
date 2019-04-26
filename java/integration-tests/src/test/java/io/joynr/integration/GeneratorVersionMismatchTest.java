@@ -18,12 +18,12 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -33,16 +33,16 @@ import org.junit.Test;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import joynr.exceptions.MethodInvocationException;
-import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.AnonymousVersionedStruct2;
+import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.DefaultMultipleVersionsInterface1Provider;
-import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.InterfaceVersionedStruct2;
+import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.MultipleVersionsInterface1Proxy;
 import joynr.tests.MultipleVersionsInterface2Proxy;
 import joynr.tests.MultipleVersionsInterfaceProxy;
-import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
+import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 
 public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2EndTest {
 
@@ -53,10 +53,10 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     @After
     public void tearDown() {
         if (packageVersionedProviderV1 != null) {
-            runtime.unregisterProvider(domain, packageVersionedProviderV1);
+            providerRuntime.unregisterProvider(domain, packageVersionedProviderV1);
         }
         if (NameVersionedProviderV1 != null) {
-            runtime.unregisterProvider(domain, NameVersionedProviderV1);
+            providerRuntime.unregisterProvider(domain, NameVersionedProviderV1);
         }
 
         super.tearDown();
@@ -232,7 +232,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testMultiDomainNoCompatibleProviderFound() throws Exception {
         registerPackageVersionedProviderV1();
-        final String domain2 = "domain2-" + UUID.randomUUID().toString();
+        final String domain2 = "domain2-" + createUuidString();
         registerPackageVersionedProviderV1(domain2);
 
         final joynr.tests.v2.MultipleVersionsInterfaceProxy proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
@@ -247,7 +247,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
 
         checkProxy(proxy);
 
-        runtime.unregisterProvider(domain2, packageVersionedProviderV1);
+        providerRuntime.unregisterProvider(domain2, packageVersionedProviderV1);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
@@ -344,7 +344,21 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     }
 
     @Test
+    public void packageVersionedProxy_nameVersionedProvider_separateRuntimes() throws Exception {
+        useGlobalCommunication();
+        registerNameVersionedProvider();
+        testPackageVersionedTypes();
+    }
+
+    @Test
     public void packageVersionedProxy_unversionedProvider_singleRuntime() throws Exception {
+        registerUnversionedProvider();
+        testPackageVersionedTypes();
+    }
+
+    @Test
+    public void packageVersionedProxy_unversionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
         registerUnversionedProvider();
         testPackageVersionedTypes();
     }
@@ -356,7 +370,21 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     }
 
     @Test
+    public void nameVersionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
+        registerPackageVersionedProvider();
+        testNameVersionedTypes();
+    }
+
+    @Test
     public void nameVersionedProxy_unversionedProvider_singleRuntime() throws Exception {
+        registerUnversionedProvider();
+        testNameVersionedTypes();
+    }
+
+    @Test
+    public void nameVersionedProxy_unversionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
         registerUnversionedProvider();
         testNameVersionedTypes();
     }
@@ -368,7 +396,21 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     }
 
     @Test
+    public void unversionedProxy_nameVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
+        registerNameVersionedProvider();
+        testUnversionedTypes();
+    }
+
+    @Test
     public void unversionedProxy_packageVersionedProvider_singleRuntime() throws Exception {
+        registerPackageVersionedProvider();
+        testUnversionedTypes();
+    }
+
+    @Test
+    public void unversionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
+        useGlobalCommunication();
         registerPackageVersionedProvider();
         testUnversionedTypes();
     }

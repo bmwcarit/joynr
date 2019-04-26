@@ -21,16 +21,18 @@ package io.joynr.messaging.routing;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AddressManager {
     private static final Logger logger = LoggerFactory.getLogger(AddressManager.class);

@@ -21,15 +21,14 @@ package io.joynr.test.interlanguage;
 import java.io.IOException;
 import java.util.Arrays;
 
-import joynr.interlanguagetest.TestInterfaceBroadcastInterface;
-import joynr.interlanguagetest.TestInterfaceBroadcastWithFilteringBroadcastFilter;
-import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
-import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import joynr.interlanguagetest.TestInterfaceBroadcastInterface;
+import joynr.interlanguagetest.TestInterfaceBroadcastWithFilteringBroadcastFilter;
+import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
+import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 
 public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilteringBroadcastFilter {
     private static final Logger LOG = LoggerFactory.getLogger(IltStringBroadcastFilter.class);

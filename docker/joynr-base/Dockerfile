@@ -1,7 +1,7 @@
-FROM fedora:24
+FROM fedora:27
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2018-10-25
+ENV REFRESHED_AT 2019-03-15
 
 ###################################################
 # create data directories and volumes
@@ -56,6 +56,7 @@ RUN dnf update -y \
     git \
     glibc.i686 \
     icecream \
+    iputils \
     libcurl \
     libcurl-devel \
     libstdc++.i686 \
@@ -65,10 +66,13 @@ RUN dnf update -y \
     libX11-devel \
     libXi-devel \
     libXrender-devel \
+    net-tools \
     openssl \
     openssl-devel \
     patch \
     perl-version \
+    python \
+    strace \
     tar \
     unzip \
     wget \
@@ -111,7 +115,7 @@ RUN asadmin start-domain && \
     asadmin --user admin set-log-levels io.joynr.dispatching=FINE && \
     asadmin --user admin set-log-levels io.joynr.jeeintegration=FINE && \
     asadmin --user admin set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-1.enabled=false && \
-    asadmin --user admin stop-domain
+    asadmin --user admin stop-domain --kill=true
 
 RUN chmod -R 777 /opt/payara41
 

@@ -46,7 +46,7 @@ TEST_F(MessagingPropertiesPersistenceTest, createChannelId)
     std::string channelId = persist.getChannelId();
 
     // Check that the channel Id looks like a UUID
-    ASSERT_TRUE(channelId.size() > 32);
+    ASSERT_TRUE(channelId.size() > 21);
 }
 
 // Test that the channelId is persisted

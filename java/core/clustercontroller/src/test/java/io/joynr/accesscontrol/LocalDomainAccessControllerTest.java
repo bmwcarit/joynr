@@ -31,6 +31,13 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
@@ -38,9 +45,9 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
-import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
+import io.joynr.runtime.ShutdownNotifier;
 import joynr.MulticastSubscriptionQos;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -51,13 +58,8 @@ import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.infrastructure.GlobalDomainRoleControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
 import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.types.GlobalDiscoveryEntry;
+
 import net.sf.ehcache.CacheManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDomainAccessControllerTest {

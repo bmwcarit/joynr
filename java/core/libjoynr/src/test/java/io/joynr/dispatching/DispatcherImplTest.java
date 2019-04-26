@@ -21,6 +21,7 @@ package io.joynr.dispatching;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -37,7 +38,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -178,7 +178,7 @@ public class DispatcherImplTest {
             public Boolean call() throws Exception {
 
                 try {
-                    String requestReplyId = UUID.randomUUID().toString();
+                    String requestReplyId = createUuidString();
                     RequestCaller requestCaller = mock(RequestCaller.class);
                     AbstractSubscriptionPublisher subscriptionPublisher = mock(AbstractSubscriptionPublisher.class);
                     int majorVersion = 42;
@@ -336,7 +336,7 @@ public class DispatcherImplTest {
         MessagingQos messagingQos = new MessagingQos(1000L);
         messagingQos.setCompress(compress);
 
-        String requestReplyId = UUID.randomUUID().toString();
+        String requestReplyId = createUuidString();
         Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
         final String providerParticipantId = "toParticipantId";
 
@@ -410,7 +410,7 @@ public class DispatcherImplTest {
         Mockito.reset(messageSenderMock);
         MessagingQos messagingQos = new MessagingQos(1000L, effort);
 
-        String requestReplyId = UUID.randomUUID().toString();
+        String requestReplyId = createUuidString();
         Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
         final String providerParticipantId = "toParticipantId";
 
@@ -451,7 +451,7 @@ public class DispatcherImplTest {
     public void testRequestWithInvalidEffort_replyUsesDefaultEffort() throws Exception {
         MessagingQos messagingQos = new MessagingQos(1000L);
 
-        String requestReplyId = UUID.randomUUID().toString();
+        String requestReplyId = createUuidString();
         Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
         final String providerParticipantId = "toParticipantId";
 
@@ -481,10 +481,10 @@ public class DispatcherImplTest {
         String requestReplyId = String.format("123%s%s", REQUEST_REPLY_ID_SEPARATOR, methodId);
         when(statelessAsyncIdCalculator.extractMethodIdFromRequestReplyId(eq(requestReplyId))).thenReturn(methodId);
         Reply reply = new Reply(requestReplyId);
-        String statelessAsyncParticipantId = UUID.randomUUID().toString();
+        String statelessAsyncParticipantId = createUuidString();
         String statelessAsyncCallbackId = String.format("interface%suseCase", USE_CASE_SEPARATOR);
         when(statelessAsyncIdCalculator.fromParticipantUuid(eq(statelessAsyncParticipantId))).thenReturn(statelessAsyncCallbackId);
-        MutableMessage mutableMessage = messageFactory.createReply(UUID.randomUUID().toString(),
+        MutableMessage mutableMessage = messageFactory.createReply(createUuidString(),
                                                                    statelessAsyncParticipantId,
                                                                    reply,
                                                                    new MessagingQos(1000L));

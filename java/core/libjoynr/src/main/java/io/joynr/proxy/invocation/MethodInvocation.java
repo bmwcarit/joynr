@@ -18,9 +18,9 @@
  */
 package io.joynr.proxy.invocation;
 
-import io.joynr.proxy.Future;
-
 import java.lang.reflect.Method;
+
+import io.joynr.proxy.Future;
 
 /**
  * MethodInvocation contains the queuable information for a proxy method call

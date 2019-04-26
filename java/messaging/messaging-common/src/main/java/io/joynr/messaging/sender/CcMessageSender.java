@@ -18,14 +18,14 @@
  */
 package io.joynr.messaging.sender;
 
+import static joynr.system.RoutingTypes.RoutingTypesUtil.toAddressString;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
-
-import static joynr.system.RoutingTypes.RoutingTypesUtil.toAddressString;
 
 @Singleton
 public class CcMessageSender extends AbstractMessageSender {

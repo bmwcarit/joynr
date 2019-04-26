@@ -21,6 +21,7 @@ package io.joynr.proxy;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.CHANNEL_SEPARATOR;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -30,11 +31,11 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
+import io.joynr.exceptions.JoynrIllegalStateException;
 
 public class DefaultStatelessAsyncIdCalculatorImplTest {
 
@@ -111,7 +112,7 @@ public class DefaultStatelessAsyncIdCalculatorImplTest {
 
     @Test(expected = JoynrIllegalStateException.class)
     public void testCannotGetStatelessCallbackIdForUnknownParticipant() {
-        subject.fromParticipantUuid(UUID.randomUUID().toString());
+        subject.fromParticipantUuid(createUuidString());
     }
 
     private interface TestInterface extends StatelessAsyncCallback {

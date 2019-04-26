@@ -29,8 +29,6 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import io.joynr.integration.setup.BounceProxyServerSetup;
-import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -39,6 +37,9 @@ import org.junit.Test;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
+import io.joynr.integration.setup.testrunner.BounceProxyServerContext;
 
 //@RunWith(MultipleBounceProxySetupsTestRunner.class)
 //@BounceProxyServerSetups(value = { ControlledBounceProxyCluster.class })

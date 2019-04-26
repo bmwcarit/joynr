@@ -18,17 +18,18 @@
  */
 package io.joynr.examples.statelessasync;
 
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.api.CallbackHandler;
 import io.joynr.proxy.ReplyContext;
 import joynr.examples.statelessasync.VehicleConfiguration;
 import joynr.examples.statelessasync.VehicleState;
 import joynr.examples.statelessasync.VehicleStateStatelessAsyncCallback;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ejb.Stateless;
-import javax.inject.Inject;
 
 @Stateless
 @CallbackHandler

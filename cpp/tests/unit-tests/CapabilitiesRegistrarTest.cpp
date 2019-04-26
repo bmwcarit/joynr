@@ -173,14 +173,13 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
     EXPECT_CALL(*mockDiscovery, addAsyncMock(_, _, _, _, _)).Times(2).WillRepeatedly(
             DoAll(InvokeArgument<2>(), Return(mockFuture)));
 
-    ON_CALL(*mockMessageRouter, addNextHop(_, _, _, _, _, _, _, _))
-            .WillByDefault(InvokeArgument<6>());
+    ON_CALL(*mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .WillByDefault(InvokeArgument<5>());
     bool expectedIsGloballyVisible = true;
     EXPECT_CALL(*mockMessageRouter,
                 addNextHop(Eq(expectedParticipantId),
                            Eq(dispatcherAddress),
                            Eq(expectedIsGloballyVisible),
-                           _,
                            _,
                            _,
                            _,
@@ -204,7 +203,6 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
                 addNextHop(Eq(expectedParticipantId),
                            Eq(dispatcherAddress),
                            Eq(expectedIsGloballyVisible),
-                           _,
                            _,
                            _,
                            _,

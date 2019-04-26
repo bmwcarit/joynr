@@ -18,9 +18,6 @@
  */
 package io.joynr.messaging.http.operation;
 
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingSettings;
-
 import java.util.Properties;
 
 import org.apache.http.HttpHost;
@@ -29,6 +26,9 @@ import org.apache.http.client.config.RequestConfig;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingSettings;
 
 /**
  * Factory class to build a RequestConfig

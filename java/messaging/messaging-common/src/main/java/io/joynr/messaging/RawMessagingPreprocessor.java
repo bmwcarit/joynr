@@ -20,6 +20,7 @@ package io.joynr.messaging;
 
 import java.io.Serializable;
 import java.util.Map;
+
 import javax.annotation.Nonnull;
 
 public abstract class RawMessagingPreprocessor {

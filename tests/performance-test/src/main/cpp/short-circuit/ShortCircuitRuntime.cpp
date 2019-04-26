@@ -32,6 +32,7 @@
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/Settings.h"
 #include "joynr/SubscriptionManager.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
@@ -46,6 +47,7 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
         : JoynrRuntimeImpl(*settings),
           keyChain(std::move(keyChain)),
           clusterControllerSettings(*settings),
+          ownAddress(),
           enablePersistency(true)
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
@@ -75,7 +77,8 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
             enablePersistency,
             std::vector<std::shared_ptr<ITransportStatus>>{},
             std::make_unique<MessageQueue<std::string>>(),
-            std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
+            std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(),
+            ownAddress);
 
     messageSender = std::make_shared<MessageSender>(messageRouter, keyChain);
     joynrDispatcher =

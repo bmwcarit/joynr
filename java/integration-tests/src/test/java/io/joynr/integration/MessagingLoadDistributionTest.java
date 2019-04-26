@@ -19,6 +19,7 @@
 package io.joynr.integration;
 
 import static io.joynr.integration.matchers.MessagingServiceResponseMatchers.containsPayload;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -26,7 +27,6 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,10 +57,10 @@ public class MessagingLoadDistributionTest {
     @Before
     public void setUp() throws Exception {
 
-        String trackingId1 = "trackingId-" + UUID.randomUUID().toString();
+        String trackingId1 = "trackingId-" + createUuidString();
         bpMock1 = new BounceProxyCommunicationMock(configuration.getBounceProxyControllerUrl(), trackingId1);
 
-        String trackingId2 = "trackingId-" + UUID.randomUUID().toString();
+        String trackingId2 = "trackingId-" + createUuidString();
         bpMock2 = new BounceProxyCommunicationMock(configuration.getBounceProxyControllerUrl(), trackingId2);
     }
 
@@ -68,10 +68,10 @@ public class MessagingLoadDistributionTest {
     @Ignore("Ignore until servers are started in a separate JVM. Guice static problem")
     public void testMessagePostsToCorrectInstances() throws Exception {
 
-        String uuid1 = UUID.randomUUID().toString();
+        String uuid1 = createUuidString();
         String channelId1 = "channel-" + uuid1;
 
-        String uuid2 = UUID.randomUUID().toString();
+        String uuid2 = createUuidString();
         String channelId2 = "channel-" + uuid2;
 
         // create channels; use extra method as we don't know which location to expect

@@ -18,14 +18,14 @@
  */
 package io.joynr.android.test;
 
-import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
-import io.joynr.proxy.ProxyBuilder;
-
 import java.util.Properties;
 
 import android.content.Context;
 
 import com.google.inject.Module;
+
+import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
+import io.joynr.proxy.ProxyBuilder;
 
 public class JoynrAndroidRobolectricRuntime extends JoynrAndroidRuntime {
     public JoynrAndroidRobolectricRuntime(Context applicationContext) {

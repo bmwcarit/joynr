@@ -19,9 +19,9 @@
  */
 package io.joynr.integration.util;
 
-import io.joynr.runtime.JoynrApplicationModule;
-
 import java.util.Properties;
+
+import io.joynr.runtime.JoynrApplicationModule;
 
 public class DummyJoynrApplicationModule extends JoynrApplicationModule {
 

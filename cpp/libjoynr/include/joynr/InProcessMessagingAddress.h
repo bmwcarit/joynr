@@ -42,6 +42,24 @@ public:
     {
     }
 
+    bool equals(const joynr::system::RoutingTypes::Address& other,
+                std::size_t maxUlps) const override
+    {
+        if (typeid(*this) != typeid(other)) {
+            return false;
+        }
+        return this->equalsInternal(other, maxUlps);
+    }
+
+protected:
+    bool equalsInternal(const joynr::system::RoutingTypes::Address& otherBase,
+                        std::size_t maxUlps) const override
+    {
+        const InProcessMessagingAddress& other =
+                static_cast<const InProcessMessagingAddress&>(otherBase);
+        return this->skeleton == other.skeleton && Address::equalsInternal(other, maxUlps);
+    }
+
 private:
     std::shared_ptr<InProcessMessagingSkeleton> skeleton;
 };

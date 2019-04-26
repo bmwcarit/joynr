@@ -323,7 +323,7 @@ private:
                 }
             }
 
-            messageRouter->sendMessages(std::move(clientAddress));
+            messageRouter->sendQueuedMessages(std::move(clientAddress));
         } else {
             JOYNR_LOG_ERROR(
                     logger(), "received an initial message with wrong format: \"{}\"", initMessage);
@@ -344,7 +344,11 @@ private:
             return;
         }
 
-        JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+        if (logger().getLogLevel() == LogLevel::Debug) {
+            JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->getTrackingInfo());
+        } else {
+            JOYNR_LOG_TRACE(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+        }
 
         if (!preprocessIncomingMessage(immutableMessage)) {
             JOYNR_LOG_ERROR(logger(), "Dropping message {}", immutableMessage->getTrackingInfo());

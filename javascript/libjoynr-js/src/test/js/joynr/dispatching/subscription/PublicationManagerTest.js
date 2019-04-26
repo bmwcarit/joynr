@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,7 +36,7 @@ const SubscriptionPublication = require("../../../../../main/js/joynr/dispatchin
 const SubscriptionUtil = require("../../../../../main/js/joynr/dispatching/subscription/util/SubscriptionUtil");
 const SubscriptionException = require("../../../../../main/js/joynr/exceptions/SubscriptionException");
 const LongTimer = require("../../../../../main/js/joynr/util/LongTimer");
-const uuid = require("uuid/v4");
+const nanoid = require("nanoid");
 const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 const LocalStorage = require("../../../../../test/js/global/LocalStorageNodeTests");
@@ -94,13 +94,13 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         if (isAttribute) {
             request = new SubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: subscribeToName,
                 qos: qosSettings
             });
         } else {
             request = new BroadcastSubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: subscribeToName,
                 qos: qosSettings,
                 filterParameters: {}
@@ -124,7 +124,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
     function handleMulticastSubscriptionRequest() {
         const request = new MulticastSubscriptionRequest({
-            subscriptionId: `subscriptionId${uuid()}`,
+            subscriptionId: `subscriptionId${nanoid()}`,
             multicastId: SubscriptionUtil.createMulticastId(providerId, testNonSelectiveBroadcastName, []),
             subscribedToName: testNonSelectiveBroadcastName,
             qos: new OnChangeSubscriptionQos()
@@ -135,9 +135,9 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
     function prepareTests(done) {
         callbackDispatcher = jasmine.createSpy("callbackDispatcher");
-        proxyId = `proxy${uuid()}`;
-        providerId = `provider${uuid()}`;
-        joynrInstanceId = uuid();
+        proxyId = `proxy${nanoid()}`;
+        providerId = `provider${nanoid()}`;
+        joynrInstanceId = nanoid();
         fakeTime = 123456789;
         testAttributeName = "testAttribute";
         testBroadcastName = "testBroadcast";
@@ -1738,7 +1738,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects attribute subscription if expiryDateMs lies in the past", done => {
             const request = new SubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: testAttributeName,
                 qos: new OnChangeSubscriptionQos({
                     expiryDateMs: Date.now() - 10000
@@ -1771,7 +1771,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects attribute subscription if attribute does not exist", done => {
             const request = new SubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: "nonExistingAttribute",
                 qos: new OnChangeSubscriptionQos()
             });
@@ -1802,7 +1802,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects attribute subscription if attribute is not notifiable", done => {
             const request = new SubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: testAttributeNotNotifiableName,
                 qos: new OnChangeSubscriptionQos()
             });
@@ -1841,7 +1841,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
             qosSettings.periodMs = PeriodicSubscriptionQos.MIN_PERIOD_MS - 1;
 
             const request = new SubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: testAttributeName,
                 qos: qosSettings
             });
@@ -1872,7 +1872,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects broadcast subscription if expiryDateMs lies in the past", done => {
             const request = new BroadcastSubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: testBroadcastName,
                 qos: new OnChangeSubscriptionQos({
                     expiryDateMs: Date.now() - 10000
@@ -1906,7 +1906,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects broadcast subscription if filter parameters are wrong", done => {
             const request = new BroadcastSubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: testBroadcastName,
                 qos: new OnChangeSubscriptionQos(),
                 filterParameters: {
@@ -2007,7 +2007,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
 
         it("rejects broadcast subscription if broadcast does not exist", done => {
             const request = new BroadcastSubscriptionRequest({
-                subscriptionId: `subscriptionId${uuid()}`,
+                subscriptionId: `subscriptionId${nanoid()}`,
                 subscribedToName: "nonExistingBroadcast",
                 qos: new OnChangeSubscriptionQos(),
                 filterParameters: {}

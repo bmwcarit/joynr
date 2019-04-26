@@ -18,12 +18,11 @@
  */
 package io.joynr.dispatching.subscription;
 
-import io.joynr.provider.Deferred;
-import io.joynr.provider.Promise;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import io.joynr.provider.Deferred;
+import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.tests.DefaulttestProvider;
 import joynr.types.Localisation.GpsFixEnum;

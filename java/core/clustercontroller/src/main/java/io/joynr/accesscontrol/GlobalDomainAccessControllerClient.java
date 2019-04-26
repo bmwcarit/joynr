@@ -40,9 +40,9 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorProxy;
 import joynr.infrastructure.GlobalDomainAccessControllerProxy;
 import joynr.infrastructure.GlobalDomainRoleControllerProxy;
-import joynr.infrastructure.GlobalDomainAccessControlListEditorProxy;
 
 public class GlobalDomainAccessControllerClient {
 

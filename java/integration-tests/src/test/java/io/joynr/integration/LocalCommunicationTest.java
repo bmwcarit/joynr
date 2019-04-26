@@ -18,13 +18,14 @@
  */
 package io.joynr.integration;
 
+import java.util.Properties;
+
 import com.google.inject.Injector;
+
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-
-import java.util.Properties;
 
 public class LocalCommunicationTest extends AbstractLocalCommunicationTest {
 

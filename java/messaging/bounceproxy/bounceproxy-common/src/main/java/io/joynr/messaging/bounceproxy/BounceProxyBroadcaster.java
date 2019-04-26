@@ -18,9 +18,6 @@
  */
 package io.joynr.messaging.bounceproxy;
 
-import io.joynr.messaging.bounceproxy.filter.ExpirationFilter;
-import io.joynr.messaging.bounceproxy.filter.MessageSerializationFilter;
-
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +28,9 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.util.SimpleBroadcaster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.messaging.bounceproxy.filter.ExpirationFilter;
+import io.joynr.messaging.bounceproxy.filter.MessageSerializationFilter;
 
 public class BounceProxyBroadcaster extends SimpleBroadcaster {
     private static final Logger logger = LoggerFactory.getLogger(BounceProxyBroadcaster.class);

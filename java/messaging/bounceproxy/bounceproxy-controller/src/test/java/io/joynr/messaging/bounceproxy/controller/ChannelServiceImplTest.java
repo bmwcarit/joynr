@@ -20,12 +20,6 @@
 package io.joynr.messaging.bounceproxy.controller;
 
 import static org.junit.Assert.assertEquals;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
-import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
-import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
-import io.joynr.messaging.info.Channel;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 import java.net.URI;
 
@@ -39,6 +33,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
+import io.joynr.messaging.bounceproxy.controller.exception.JoynrProtocolException;
+import io.joynr.messaging.bounceproxy.controller.strategy.ChannelAssignmentStrategy;
+import io.joynr.messaging.info.Channel;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ChannelServiceImplTest {

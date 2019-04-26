@@ -35,14 +35,14 @@ import org.slf4j.LoggerFactory;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
+import joynr.interlanguagetest.TestInterface.MethodWithAnonymousErrorEnumErrorEnum;
+import joynr.interlanguagetest.TestInterface.MethodWithExtendedErrorEnumErrorEnum;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultipleArrayParametersReturned;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultipleEnumParametersReturned;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultiplePrimitiveParametersReturned;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultipleStructParametersReturned;
 import joynr.interlanguagetest.TestInterfaceSync.OverloadedMethodOverloadedMethod1Returned;
 import joynr.interlanguagetest.TestInterfaceSync.OverloadedMethodWithSelectorOverloadedMethodWithSelector1Returned;
-import joynr.interlanguagetest.TestInterface.MethodWithAnonymousErrorEnumErrorEnum;
-import joynr.interlanguagetest.TestInterface.MethodWithExtendedErrorEnumErrorEnum;
 import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedBaseStruct;
@@ -129,7 +129,7 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
         callProxyMethodWithParameterAndAssertResult("methodWithSinglePrimitiveParameters",
                                                     shortArg,
                                                     (Short arg,
-                                                     String res) -> res.equals(new Integer(Short.toUnsignedInt(arg)).toString()));
+                                                     String res) -> res.equals(Integer.toString(Short.toUnsignedInt(arg))));
         LOG.info(name.getMethodName() + " - OK");
     }
 
@@ -534,7 +534,7 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String[] stringArray = { "Hello", "World" };
 
             ExtendedBaseStruct extendedBaseStruct = IltUtil.createExtendedBaseStruct();
-            if (result.doubleOut != 1.1d || (!result.extendedBaseStructOut.equals(extendedBaseStruct))
+            if (!IltUtil.cmpDouble(result.doubleOut, 1.1d) || (!result.extendedBaseStructOut.equals(extendedBaseStruct))
                     || (!Arrays.equals(stringArray, result.stringArrayOut))) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
                 return;

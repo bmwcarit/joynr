@@ -19,10 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.service;
 
-import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.Channel;
-
 import java.net.URI;
 
 import org.junit.Assert;
@@ -36,6 +32,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.messaging.bounceproxy.LongPollingMessagingDelegate;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.Channel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultBounceProxyChannelServiceImplTest {

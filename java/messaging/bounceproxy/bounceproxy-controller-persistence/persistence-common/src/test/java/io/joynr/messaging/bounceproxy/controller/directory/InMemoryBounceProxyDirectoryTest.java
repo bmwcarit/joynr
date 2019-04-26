@@ -23,13 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryBounceProxyDirectory;
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-import io.joynr.messaging.info.PerformanceMeasures;
-import io.joynr.messaging.info.PerformanceMeasures.Key;
-import io.joynr.messaging.system.TimestampProvider;
 
 import java.net.URI;
 import java.util.List;
@@ -49,6 +42,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryBounceProxyDirectory;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.info.PerformanceMeasures.Key;
+import io.joynr.messaging.info.PerformanceMeasures;
+import io.joynr.messaging.system.TimestampProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InMemoryBounceProxyDirectoryTest {

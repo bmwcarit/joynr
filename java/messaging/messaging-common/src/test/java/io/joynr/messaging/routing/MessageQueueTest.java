@@ -18,23 +18,24 @@
  */
 package io.joynr.messaging.routing;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyBoolean;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +57,7 @@ import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageQueueTest {
@@ -94,7 +96,6 @@ public class MessageQueueTest {
     private MessageQueue subject;
 
     private final long shutdownMaxTimeout = 50;
-    private final long routingTableGracePeriodMs = 42;
     private final String sender = "fromParticipantId";
     private final String brokerUri = "testBrokerUri";
     private final String topic = "testTopic";
@@ -102,7 +103,7 @@ public class MessageQueueTest {
 
     @Before
     public void setup() throws Exception {
-        generatedMessageQueueId = UUID.randomUUID().toString();
+        generatedMessageQueueId = createUuidString();
 
         // configure mocks
         when(maxTimeoutHolderMock.getTimeout()).thenReturn(shutdownMaxTimeout);
@@ -123,6 +124,9 @@ public class MessageQueueTest {
         when(mockImmutableMessage3_request.getTtlMs()).thenReturn(42l);
         when(mockImmutableMessage3_request.getSender()).thenReturn(sender);
 
+        Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
+        objectMapperField.setAccessible(true);
+        objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
         // create test subject
         subject = new MessageQueue(delayQueue,
                                    maxTimeoutHolderMock,
@@ -291,18 +295,8 @@ public class MessageQueueTest {
         // ... and one routing entry was added (replyTo address of mockDelayableMessage3_request)
         verify(mockImmutableMessage2_multicast, times(0)).getReplyTo();
         verify(mockImmutableMessage3_request).getReplyTo();
-        verify(routingTableMock).put(anyString(),
-                                     Mockito.any(Address.class),
-                                     anyBoolean(),
-                                     anyLong(),
-                                     anyBoolean(),
-                                     anyBoolean());
-        verify(routingTableMock).put(sender,
-                                     replyToAddress,
-                                     true,
-                                     mockImmutableMessage3_request.getTtlMs(),
-                                     false,
-                                     false);
+        verify(routingTableMock).put(anyString(), Mockito.any(Address.class), anyBoolean(), anyLong());
+        verify(routingTableMock).put(sender, replyToAddress, true, mockImmutableMessage3_request.getTtlMs());
     }
 
     @Test

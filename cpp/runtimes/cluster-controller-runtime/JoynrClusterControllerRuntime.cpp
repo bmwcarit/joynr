@@ -70,6 +70,7 @@
 #include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/system/MessageNotificationProvider.h"
 #include "joynr/system/RoutingProvider.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -148,7 +149,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
                   "providerReregistrationController_participantId"),
           messageNotificationProviderParticipantId(),
           accessControlListEditorProviderParticipantId(),
-          isShuttingDown(false)
+          isShuttingDown(false),
+          dummyGlobalAddress()
 {
 }
 
@@ -345,7 +347,8 @@ void JoynrClusterControllerRuntime::init()
             libjoynrSettings.isMessageRouterPersistencyEnabled(),
             std::move(transportStatuses),
             std::move(messageQueue),
-            std::move(transportStatusQueue));
+            std::move(transportStatusQueue),
+            getGlobalClusterControllerAddress());
 
     ccMessageRouter->init();
     if (libjoynrSettings.isMessageRouterPersistencyEnabled()) {
@@ -993,7 +996,27 @@ void JoynrClusterControllerRuntime::deleteChannel()
     // Nothing to do for MQTT
 }
 
-std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerAddress()
+std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerAddress() const
+{
+    if (doMqttMessaging) {
+        return mqttMessageReceiver->getSerializedGlobalClusterControllerAddress();
+    }
+    if (doHttpMessaging) {
+        return httpMessageReceiver->getSerializedGlobalClusterControllerAddress();
+    }
+    JOYNR_LOG_ERROR(logger(),
+                    "Cannot obtain globalClusterControllerAddress, as doMqttMessaging is: {} and "
+                    "doHttpMessaging is: {}",
+                    doMqttMessaging,
+                    doHttpMessaging);
+    // in order to at least allow local communication in case global transport
+    // is not correctly configured, a dummy address must be provided since
+    // otherwise LibJoynrRuntime cannot be started
+    return "global-transport-not-available";
+}
+
+const system::RoutingTypes::Address& JoynrClusterControllerRuntime::
+        getGlobalClusterControllerAddress() const
 {
     if (doMqttMessaging) {
         return mqttMessageReceiver->getGlobalClusterControllerAddress();
@@ -1009,6 +1032,6 @@ std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerA
     // in order to at least allow local communication in case global transport
     // is not correctly configured, a dummy address must be provided since
     // otherwise LibJoynrRuntime cannot be started
-    return "global-transport-not-available";
+    return dummyGlobalAddress;
 }
 } // namespace joynr

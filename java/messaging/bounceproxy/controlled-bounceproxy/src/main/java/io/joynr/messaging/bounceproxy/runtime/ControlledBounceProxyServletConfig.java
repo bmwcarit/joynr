@@ -19,17 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.runtime;
 
-import io.joynr.guice.PropertyLoadingModule;
-import io.joynr.guice.servlet.AbstractGuiceServletConfig;
-import io.joynr.guice.servlet.AbstractJoynrServletModule;
-import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
-import io.joynr.messaging.bounceproxy.filter.SessionFilter;
-import io.joynr.messaging.bounceproxy.modules.AbstractBounceProxyJerseyModule;
-import io.joynr.messaging.bounceproxy.modules.AtmosphereModule;
-import io.joynr.messaging.bounceproxy.modules.DefaultBounceProxyModule;
-import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
-import io.joynr.runtime.PropertyLoader;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +31,17 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
+import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.guice.servlet.AbstractGuiceServletConfig;
+import io.joynr.guice.servlet.AbstractJoynrServletModule;
+import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
+import io.joynr.messaging.bounceproxy.filter.SessionFilter;
+import io.joynr.messaging.bounceproxy.modules.AbstractBounceProxyJerseyModule;
+import io.joynr.messaging.bounceproxy.modules.AtmosphereModule;
+import io.joynr.messaging.bounceproxy.modules.DefaultBounceProxyModule;
+import io.joynr.messaging.bounceproxy.monitoring.MonitoringServiceClient;
+import io.joynr.runtime.PropertyLoader;
 
 /**
  * Servlet configuration for controlled bounceproxy servlet.

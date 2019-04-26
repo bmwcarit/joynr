@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,6 +199,13 @@ public class MessagingQos {
 
     public Map<String, String> getCustomMessageHeaders() {
         return customHeaders;
+    }
+
+    @Override
+    public String toString() {
+        return "MessagingQos [" + "compress=" + this.compress + ", " + "customHeaders=" + this.customHeaders.toString()
+                + ", " + "effort=" + this.effort.toString() + ", " + "encrypt=" + this.encrypt + ", " + "ttl_ms="
+                + this.ttl_ms + "]";
     }
 
     /**

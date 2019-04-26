@@ -18,17 +18,18 @@
  */
 package io.joynr.examples.statelessasync;
 
-import io.joynr.jeeintegration.api.ServiceLocator;
-import joynr.examples.statelessasync.VehicleStateStatelessAsync;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.jeeintegration.api.ServiceLocator;
+import joynr.examples.statelessasync.VehicleStateStatelessAsync;
 
 @Singleton
 @Startup

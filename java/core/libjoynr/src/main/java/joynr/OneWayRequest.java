@@ -26,6 +26,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.JoynrIllegalStateException;
 

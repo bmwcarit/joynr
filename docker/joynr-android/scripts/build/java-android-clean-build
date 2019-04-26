@@ -82,12 +82,23 @@ DOMAIN_ACCESS_CONTROLLER_WAR_FILE=$(find /data/src/java/backend-services/domain-
 # also assume that it is safe to remove and recreate WAR files once payara got
 # started and WAR files have been deployed
 
-# 2nd run; now including test execution which requires mosquitto / payara
-mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+# 2nd run; now including test execution which requires mosquitto / payara and
+# generate site report
+mvn clean $GOAL jxr:aggregate site -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -DskipTests=false \
+-DshowSuccess=true \
 -Dmaven.test.failure.ignore=true \
 -Denforcer.skip=true -Dmaven.compile.fork=true \
--Dmaven.junit.fork=true
+-Dmaven.junit.fork=true \
+--fail-at-end
+
+echo '####################################################'
+echo '# stage site'
+echo '####################################################'
+
+mvn -T 1C site:stage -P no-license-and-notice,no-java-formatter,no-checkstyle,android,site-staging \
+-DshowSuccess=true \
+-DstagingDirectory=/data/src/fullsite
 
 echo '####################################################'
 echo '# stop services'
@@ -97,4 +108,5 @@ echo '####################################################'
 
 kill -TERM $MOSQUITTO_PID
 wait $MOSQUITTO_PID
+
 exit 0

@@ -21,10 +21,11 @@ package io.joynr.capabilities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Test;
+
 import io.joynr.JoynrVersion;
 import io.joynr.ProvidedBy;
 import io.joynr.provider.JoynrInterface;
-import org.junit.Test;
 
 public class ParticipantIdKeyUtilTest {
 

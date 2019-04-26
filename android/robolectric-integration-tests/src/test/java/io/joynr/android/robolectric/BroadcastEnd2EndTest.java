@@ -18,8 +18,19 @@
  */
 package io.joynr.android.robolectric;
 
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
 import com.google.inject.Injector;
 import com.google.inject.Module;
+
 import io.joynr.android.test.TestActivity;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -35,16 +46,6 @@ import io.joynr.servlet.ServletUtil;
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
-import java.util.Properties;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = "./src/test/AndroidManifest.xml")

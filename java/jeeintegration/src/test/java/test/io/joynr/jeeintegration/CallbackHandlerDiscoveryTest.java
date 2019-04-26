@@ -43,6 +43,7 @@ import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.api.CallbackHandler;
 import io.joynr.proxy.StatelessAsyncCallback;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsyncCallback;
+
 import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
 
 @RunWith(MockitoJUnitRunner.class)

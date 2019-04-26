@@ -18,8 +18,9 @@
  */
 package io.joynr.proxy;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
+
 import java.util.Set;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +88,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         interfaceVersion = VersionUtil.getVersionFromAnnotation(interfaceClass);
 
         myClass = interfaceClass;
-        this.proxyParticipantId = UUID.randomUUID().toString();
+        this.proxyParticipantId = createUuidString();
 
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.domains = domains;

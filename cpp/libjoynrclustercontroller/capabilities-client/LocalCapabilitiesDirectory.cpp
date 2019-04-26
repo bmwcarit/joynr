@@ -511,7 +511,8 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
 }
 
 void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
-                                        std::shared_ptr<ILocalCapabilitiesCallback> callback)
+                                        std::shared_ptr<ILocalCapabilitiesCallback> callback,
+                                        bool useGlobalCapabilitiesDirectory)
 {
     joynr::types::DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
@@ -520,6 +521,13 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
 
     // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
+        if (!useGlobalCapabilitiesDirectory) {
+            // invoke error on callback as no local capabilities were found
+            callback->onError(joynr::exceptions::JoynrRuntimeException(fmt::format(
+                    "No local capabilities found for participantId {}", participantId)));
+            return;
+        }
+
         // search for global entires in the global capabilities directory
         auto onSuccess = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
@@ -729,8 +737,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
                                                address,
                                                isGloballyVisible,
                                                expiryDateMs,
-                                               isSticky,
-                                               true);
+                                               isSticky);
         } else {
             JOYNR_LOG_FATAL(logger(),
                             "could not addNextHop {} to {} because messageRouter is not available",

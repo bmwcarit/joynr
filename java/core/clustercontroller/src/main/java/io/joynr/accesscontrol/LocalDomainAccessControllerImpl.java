@@ -27,9 +27,13 @@ import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import io.joynr.accesscontrol.broadcastlistener.LdacDomainRoleEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMasterAccessControlEntryChangedBroadcastListener;
 import io.joynr.accesscontrol.broadcastlistener.LdacMediatorAccessControlEntryChangedBroadcastListener;
@@ -57,8 +61,6 @@ import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.Discovery;
 import joynr.system.Routing;
 import joynr.types.GlobalDiscoveryEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 public class LocalDomainAccessControllerImpl implements LocalDomainAccessController {

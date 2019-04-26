@@ -33,6 +33,7 @@
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
+#include "joynr/types/CustomParameter.h"
 #include "joynr/WebSocketSettings.h"
 
 class JoynrClusterControllerRuntimeTest;
@@ -69,6 +70,14 @@ namespace infrastructure
 class ChannelUrlDirectoryProxy;
 class GlobalDomainAccessControllerProxy;
 } // namespace infrastructure
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+} // namespace RoutingTypes
+} // namespace system
 
 class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
         : public JoynrRuntimeImpl,
@@ -181,7 +190,10 @@ private:
                 domain, interfaceName, T::MAJOR_VERSION, participantId);
 
         joynr::types::ProviderQos systemProviderQos;
-        systemProviderQos.setCustomParameters(std::vector<joynr::types::CustomParameter>());
+        std::vector<joynr::types::CustomParameter> customParameters;
+        customParameters.push_back(joynr::types::CustomParameter(
+                std::string("___CC.InternalProvider___"), std::string("true")));
+        systemProviderQos.setCustomParameters(customParameters);
         systemProviderQos.setPriority(1);
         systemProviderQos.setScope(joynr::types::ProviderScope::LOCAL);
         systemProviderQos.setSupportsOnChangeSubscriptions(false);
@@ -195,7 +207,8 @@ private:
     void startLocalCommunication();
     std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
     createGlobalDomainAccessControllerProxy();
-    std::string getSerializedGlobalClusterControllerAddress();
+    std::string getSerializedGlobalClusterControllerAddress() const;
+    const system::RoutingTypes::Address& getGlobalClusterControllerAddress() const;
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
@@ -217,6 +230,7 @@ private:
     std::string messageNotificationProviderParticipantId;
     std::string accessControlListEditorProviderParticipantId;
     bool isShuttingDown;
+    const system::RoutingTypes::Address dummyGlobalAddress;
 };
 
 } // namespace joynr

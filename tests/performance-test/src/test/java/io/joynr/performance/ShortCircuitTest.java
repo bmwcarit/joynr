@@ -18,11 +18,11 @@
  */
 package io.joynr.performance;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 import java.util.Random;
-import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,16 +30,16 @@ import org.junit.Test;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Modules;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
-import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -101,7 +101,7 @@ public class ShortCircuitTest {
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void roundTripString() throws Exception {
-        String sendString = UUID.randomUUID().toString();
+        String sendString = createUuidString();
         long start = System.nanoTime();
         for (int i = 0; i < times; i++) {
             String data = sendString + i;
@@ -123,7 +123,7 @@ public class ShortCircuitTest {
     public void roundTripStruct() throws Exception {
         Random random = new Random();
         Long num64 = random.nextLong();
-        String str = UUID.randomUUID().toString();
+        String str = createUuidString();
         Byte[] byteArray = randomByteArray(10);
         Integer num32 = 0;
         long start = System.nanoTime();

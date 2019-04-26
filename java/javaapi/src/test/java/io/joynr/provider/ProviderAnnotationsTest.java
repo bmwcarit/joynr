@@ -20,12 +20,13 @@ package io.joynr.provider;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import joynr.tests.DefaulttestProvider;
-import joynr.tests.testProvider;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProviderAnnotationsTest {

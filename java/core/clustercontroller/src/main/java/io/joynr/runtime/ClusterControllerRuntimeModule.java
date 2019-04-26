@@ -18,9 +18,7 @@
  */
 package io.joynr.runtime;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
@@ -30,8 +28,10 @@ import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryModule;
 import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.routing.CcMessageRouter;
+import io.joynr.messaging.routing.CcRoutingTableAddressValidator;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingProviderImpl;
+import io.joynr.messaging.routing.RoutingTableAddressValidator;
 import io.joynr.messaging.sender.CcMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import joynr.system.RoutingProvider;
@@ -49,10 +49,9 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
 
         bind(MessageSender.class).to(CcMessageSender.class);
         bind(MessageRouter.class).to(CcMessageRouter.class).in(Singleton.class);
+        bind(RoutingTableAddressValidator.class).to(CcRoutingTableAddressValidator.class);
 
-        ThreadFactory namedThreadFactory = new JoynrThreadFactory("joynr.scheduler.capabilities.freshness", true);
-        ScheduledExecutorService capabilitiesFreshnessUpdateExecutor = Executors.newSingleThreadScheduledExecutor(namedThreadFactory);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))
-                                            .toInstance(capabilitiesFreshnessUpdateExecutor);
+                                            .toProvider(DefaultScheduledExecutorServiceProvider.class);
     }
 }

@@ -22,6 +22,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Field;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Before;
@@ -33,6 +34,8 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
@@ -74,7 +77,11 @@ public class RoutingProviderImplTest {
     private Semaphore replyToAddressChangedSemaphore;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
+        objectMapperField.setAccessible(true);
+        objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
+
         expectedMqttAddress = new MqttAddress("mqtt://test-broker-uri", "test-topic");
         expectedMqttAddressString = RoutingTypesUtil.toAddressString(expectedMqttAddress);
         expectedChannelAddress = new ChannelAddress("http://test-bounceproxy-url", "test-channelId");

@@ -18,16 +18,18 @@
  */
 package io.joynr.examples.statelessasync;
 
-import joynr.examples.statelessasync.VehicleConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
-import java.util.Optional;
-import java.util.function.Consumer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import joynr.examples.statelessasync.VehicleConfiguration;
 
 @Stateless
 public class WaitForGetResultBean {

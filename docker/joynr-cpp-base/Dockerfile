@@ -50,7 +50,7 @@ RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/zaphoyd/websocketpp.git \
     && cd websocketpp \
-    && git checkout 19cad9925f83d15d7487c16f0491f4741ec9f674 \
+    && git checkout 0.8.1 \
     && mkdir build \
     && cd build \
     && cmake .. \
@@ -90,7 +90,7 @@ RUN dnf update -y \
 # install MoCOCrW
 ###################################################
 
-RUN export MoCOCrW_VERSION=master \
+RUN export MoCOCrW_VERSION=openssl1.1 \
     && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/MoCOCrW.git \
@@ -107,7 +107,7 @@ RUN export MoCOCrW_VERSION=master \
 # install flatbuffers
 ###################################################
 
-RUN export FLATBUFFERS_VERSION=v1.6.0 \
+RUN export FLATBUFFERS_VERSION=v1.10.0 \
         && . /etc/profile \
         && cd /tmp \
         && git clone https://github.com/google/flatbuffers.git \
@@ -115,7 +115,7 @@ RUN export FLATBUFFERS_VERSION=v1.6.0 \
         && git checkout $FLATBUFFERS_VERSION \
         && mkdir build \
         && cd build \
-        && cmake .. -DFLATBUFFERS_BUILD_TESTS=OFF \
+        && cmake .. -DFLATBUFFERS_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release \
         && make install -j"$(nproc)" \
         && rm -rf /tmp/flatbuffers
 

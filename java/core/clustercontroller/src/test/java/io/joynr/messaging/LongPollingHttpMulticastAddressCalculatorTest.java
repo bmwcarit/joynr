@@ -20,12 +20,13 @@ package io.joynr.messaging;
 
 import static org.junit.Assert.assertTrue;
 
-import joynr.ImmutableMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import joynr.ImmutableMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LongPollingHttpMulticastAddressCalculatorTest {

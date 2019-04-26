@@ -24,11 +24,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import io.joynr.jeeintegration.api.ServiceLocator;
-import io.joynr.ilt.testresults.TestResult;
 import org.junit.runner.JUnitCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.ilt.testresults.TestResult;
+import io.joynr.jeeintegration.api.ServiceLocator;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)

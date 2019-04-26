@@ -18,22 +18,11 @@
  */
 package io.joynr.integration;
 
-import io.joynr.provider.ProviderAnnotations;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
-import com.google.inject.Module;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
-import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.PropertyLoader;
-import joynr.test.JoynrTestLoggingRule;
-import joynr.tests.DefaulttestProvider;
-import joynr.tests.testProxy;
-import joynr.types.ProviderQos;
+
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -44,8 +33,22 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-import java.util.UUID;
+import com.google.inject.Module;
+
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.provider.ProviderAnnotations;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.PropertyLoader;
+import joynr.test.JoynrTestLoggingRule;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProxy;
+import joynr.types.ProviderQos;
 
 public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
 
@@ -79,24 +82,22 @@ public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
         provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(DefaulttestProvider.class));
 
         // use channelNames = test name
-        String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-end2endTestProvider";
-        String channelIdConsumer = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-end2endConsumer";
+        String channelIdProvider = "JavaTest-" + methodName + createUuidString() + "-end2endTestProvider";
+        String channelIdConsumer = "JavaTest-" + methodName + createUuidString() + "-end2endConsumer";
 
         Properties joynrConfigProvider = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                                "localdomain." + UUID.randomUUID().toString());
+                                "localdomain." + createUuidString());
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
-        joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
 
         providerRuntime = getRuntime(joynrConfigProvider, new StaticDomainAccessControlProvisioningModule());
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                                "localdomain." + UUID.randomUUID().toString());
+                                "localdomain." + createUuidString());
         joynrConfigConsumer.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
-        joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
 
         consumerRuntime = getRuntime(joynrConfigConsumer);
 

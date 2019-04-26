@@ -62,7 +62,7 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 				if (!methodNameToIndex.containsKey(method.name)) {
 					methodNameToIndex.put(method.name, 0);
 				}
-				val methodSignature = createMethodSignatureFromOutParameters(method);
+				val methodSignature = createMethodSignatureFromOutAndErrorParameters(method);
 				if (!uniqueMethodSignatureToPromiseName.containsKey(methodSignature)) {
 					var Integer index = methodNameToIndex.get(method.name);
 					index++;

@@ -18,11 +18,13 @@
  */
 package joynr;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageSerializer;
 import io.joynr.smrf.MessageSerializerImpl;
@@ -50,7 +52,7 @@ public class MutableMessage extends Message {
     private transient boolean statelessAsync;
 
     public MutableMessage() {
-        id = UUID.randomUUID().toString();
+        id = createUuidString();
     }
 
     public ImmutableMessage getImmutableMessage() throws SecurityException, EncodingException,

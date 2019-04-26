@@ -21,26 +21,28 @@ package io.joynr.capabilities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.name.Names;
-import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingPropertyKeys;
-import joynr.tests.test;
-import joynr.types.GlobalDiscoveryEntry;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Properties;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
+
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
+import joynr.tests.test;
+import joynr.types.GlobalDiscoveryEntry;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ParticipantIdStorageTest {

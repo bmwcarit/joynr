@@ -19,16 +19,16 @@
  */
 package io.joynr.messaging.bounceproxy.runtime;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
-import io.joynr.runtime.PropertyLoader;
-
 import java.util.Properties;
 
 import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
+import io.joynr.runtime.PropertyLoader;
 
 /**
  * Property loader for properties that are set as system properties or in a file

@@ -18,9 +18,9 @@
  */
 package io.joynr.proxy;
 
-import io.joynr.messaging.MessagingQos;
-
 import java.lang.reflect.Proxy;
+
+import io.joynr.messaging.MessagingQos;
 
 public final class ProxyFactory {
 

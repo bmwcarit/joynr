@@ -18,15 +18,15 @@
  */
 package io.joynr.examples.android_location_provider;
 
-import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
-
 import java.util.Properties;
-import joynr.types.ProviderQos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.app.Application;
+
+import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
+import joynr.types.ProviderQos;
 
 public class JoynrAndroidLocationProviderApplication extends Application {
     @SuppressWarnings("unused")

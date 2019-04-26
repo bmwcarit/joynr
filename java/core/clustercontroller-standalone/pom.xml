@@ -20,7 +20,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>io.joynr.java</groupId>
-		<version>1.7.1</version>
+		<version>1.8.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -37,11 +37,6 @@
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
 			<artifactId>joynr-mqtt-client</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<!-- Console I/O framework used in the demo app -->
-		<dependency>
-			<groupId>jline</groupId>
-			<artifactId>jline</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

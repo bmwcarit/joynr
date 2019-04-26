@@ -18,6 +18,7 @@
  */
 package io.joynr.integration;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -33,11 +34,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Module;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -76,8 +89,8 @@ import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapte
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
 import joynr.tests.testTypes.AnotherDerivedStruct;
-import joynr.tests.testTypes.ComplexTestType;
 import joynr.tests.testTypes.ComplexTestType2;
+import joynr.tests.testTypes.ComplexTestType;
 import joynr.tests.testTypes.DerivedStruct;
 import joynr.tests.testTypes.ErrorEnumBase;
 import joynr.tests.testTypes.TestEnum;
@@ -87,17 +100,6 @@ import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.Trip;
 import joynr.types.ProviderQos;
 import joynr.types.TestTypes.TStringKeyMap;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest {
     private static final String MAX_MESSAGE_SIZE = "4000000";
@@ -202,16 +204,14 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         provisionPermissiveAccessControlEntry(domainAsync, ProviderAnnotations.getInterfaceName(TestProvider.class));
 
         // use channelNames = test name
-        String channelIdProvider = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-end2endTestProvider";
-        String channelIdConsumer = "JavaTest-" + methodName + UUID.randomUUID().getLeastSignificantBits()
-                + "-end2endConsumer";
+        String channelIdProvider = "JavaTest-" + methodName + createUuidString() + "-end2endTestProvider";
+        String channelIdConsumer = "JavaTest-" + methodName + createUuidString() + "-end2endConsumer";
 
         Properties joynrConfigProvider = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigProvider.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                                "localdomain." + UUID.randomUUID().toString());
+                                "localdomain." + createUuidString());
         joynrConfigProvider.put(MessagingPropertyKeys.CHANNELID, channelIdProvider);
-        joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
         providerRuntime = getRuntime(joynrConfigProvider,
@@ -224,9 +224,9 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         Properties joynrConfigConsumer = PropertyLoader.loadProperties("testMessaging.properties");
         joynrConfigConsumer.put(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL,
-                                "localdomain." + UUID.randomUUID().toString());
+                                "localdomain." + createUuidString());
         joynrConfigConsumer.put(MessagingPropertyKeys.CHANNELID, channelIdConsumer);
-        joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, UUID.randomUUID().toString());
+        joynrConfigConsumer.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         joynrConfigConsumer.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
         consumerRuntime = getRuntime(joynrConfigConsumer, getSubscriptionPublisherFactoryModule());

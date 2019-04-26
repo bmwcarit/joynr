@@ -18,32 +18,31 @@
  */
 package io.joynr.integration;
 
-import io.joynr.provider.ProviderAnnotations;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
-import io.joynr.dispatching.subscription.SubscriptionTestsPublisher;
-import io.joynr.provider.AbstractSubscriptionPublisher;
-import io.joynr.provider.JoynrProvider;
-import io.joynr.provider.SubscriptionPublisherFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.Permission;
-import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.tests.testProvider;
 
 import org.mockito.Mockito;
 import org.mockito.internal.matchers.InstanceOf;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
+
+import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
+import io.joynr.dispatching.subscription.SubscriptionTestsPublisher;
+import io.joynr.provider.AbstractSubscriptionPublisher;
+import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.ProviderAnnotations;
+import io.joynr.provider.SubscriptionPublisherFactory;
+import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.Permission;
+import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
+import joynr.tests.testProvider;
 
 public class JoynrEnd2EndTest {
 

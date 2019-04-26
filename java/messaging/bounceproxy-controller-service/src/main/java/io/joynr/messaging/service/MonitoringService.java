@@ -19,11 +19,11 @@
  */
 package io.joynr.messaging.service;
 
+import java.util.List;
+
 import io.joynr.messaging.info.BounceProxyStatus;
 import io.joynr.messaging.info.BounceProxyStatusInformation;
 import io.joynr.messaging.info.PerformanceMeasures;
-
-import java.util.List;
 
 /**
  * Interface for monitoring service implementation.

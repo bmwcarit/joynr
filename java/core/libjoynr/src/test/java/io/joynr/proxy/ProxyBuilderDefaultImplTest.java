@@ -36,7 +36,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -52,6 +51,7 @@ import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;

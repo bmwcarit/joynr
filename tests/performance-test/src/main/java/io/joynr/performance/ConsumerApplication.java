@@ -25,8 +25,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -48,13 +54,12 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import jline.internal.Log;
 import joynr.exceptions.ApplicationException;
 import joynr.tests.performance.EchoProxy;
 import joynr.tests.performance.Types.ComplexStruct;
 
 public class ConsumerApplication extends AbstractJoynrApplication {
-
+    private static final Logger LOG = LoggerFactory.getLogger(ConsumerApplication.class);
     private static final String STATIC_PERSISTENCE_FILE = "java-consumer.persistence_file";
     private static final int ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS = 10; // 10 milliseconds
 
@@ -62,6 +67,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
     private int exitCode = 0;
 
+    @SuppressWarnings("DM_EXIT")
     public static void main(String[] args) {
 
         try {
@@ -72,8 +78,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             consumerApp.run();
             consumerApp.shutdown();
         } catch (Exception exception) {
-            Log.error("Unexpected exception: " + exception);
-            exception.printStackTrace(Log.getOutput());
+            LOG.error("Unexpected exception: ", exception);
             System.exit(1);
         }
     }
@@ -114,7 +119,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         try {
             echoProxy = createEchoProxy();
         } catch (Exception e) {
-            Log.error("Proxy creation failed: " + e);
+            LOG.error("Proxy creation failed: ", e);
             exitCode = 1;
             return;
         }
@@ -131,7 +136,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 performSyncSendByteArrayTest(echoProxy);
                 break;
             default:
-                Log.error("Unknown test type used");
+                LOG.error("Unknown test type used");
                 exitCode = 1;
                 break;
             }
@@ -147,12 +152,12 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 performAsyncSendByteArrayTest(echoProxy);
                 break;
             default:
-                Log.error("Unknown test type used");
+                LOG.error("Unknown test type used");
                 exitCode = 1;
                 break;
             }
         } else {
-            Log.error("Unknown communication mode used");
+            LOG.error("Unknown communication mode used");
             exitCode = 1;
         }
     }
@@ -203,7 +208,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         }
     }
 
-    private class EchoRunnable implements Runnable {
+    private static class EchoRunnable implements Runnable {
         private EchoProxy proxy;
         private AtomicLong sentRequests;
         private final int runs;
@@ -250,7 +255,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         if (invocationParameters.constantNumberOfPendingRequests()) {
             int pendingRequests = invocationParameters.getNumberOfPendingRequests();
             int numThreads = invocationParameters.getNumberOfThreads();
-            System.err.format("CNR runs: %d, pending: %d, threads: %d \n", runs, pendingRequests, numThreads);
+            System.err.format("CNR runs: %d, pending: %d, threads: %d%n", runs, pendingRequests, numThreads);
 
             startTime = System.currentTimeMillis();
             for (int i = 0; i < iterations; i++) {
@@ -291,7 +296,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             proxy.echoString(responseCallback, inputString);
         }
 
-        responseCallback.waitForNumberOfResponses((int) runs, ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS);
+        responseCallback.waitForNumberOfResponses(runs, ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS);
 
         responseCallback.release(numThreads);
         executorService.shutdown();
@@ -417,7 +422,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     private Byte[] createInputByteArray(int size, byte value) {
         Byte[] result = new Byte[size];
 
-        Arrays.fill(result, new Byte(value));
+        Arrays.fill(result, Byte.valueOf(value));
 
         return result;
     }
@@ -431,11 +436,10 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
     private void printTestResult(long endTime, long startTime) {
         long timeDeltaMilliseconds = endTime - startTime;
-        System.err.format("Test case took %d ms. %.2f Msgs/s transmitted\n startTime: %d, endTime: %d, runs: %d, iterations: %d \n",
+        System.err.format("Test case took %d ms. %.2f Msgs/s transmitted%n startTime: %d, endTime: %d, runs: %d, iterations: %d%n",
                           timeDeltaMilliseconds,
-                          ((double) (invocationParameters.getNumberOfRuns()
-                                  * invocationParameters.getNumberOfIterations()))
-                                  / (((double) timeDeltaMilliseconds) / 1000.0d),
+                          (invocationParameters.getNumberOfRuns() * invocationParameters.getNumberOfIterations())
+                                  / ((timeDeltaMilliseconds) / 1000.0d),
                           startTime,
                           endTime,
                           invocationParameters.getNumberOfRuns(),
@@ -445,10 +449,11 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     private <type> void printFailureStatistic(int numFailures, int numRuns, int iterations) {
         if (numFailures > 0) {
             exitCode = 1;
-            System.err.format("%d out of %d transmissions failed\n", numFailures, numRuns * iterations);
+            System.err.format("%d out of %d transmissions failed%n", numFailures, numRuns * iterations);
         }
     }
 
+    @SuppressWarnings("DM_EXIT")
     @Override
     public void shutdown() {
         runtime.shutdown(true);

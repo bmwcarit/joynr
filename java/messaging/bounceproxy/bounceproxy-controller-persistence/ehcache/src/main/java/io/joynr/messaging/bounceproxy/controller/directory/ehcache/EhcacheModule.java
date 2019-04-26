@@ -23,15 +23,15 @@ import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.ehcache.CacheManager;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryChannelDirectory;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryChannelDirectory;
+import net.sf.ehcache.CacheManager;
 
 public class EhcacheModule extends AbstractModule {
 

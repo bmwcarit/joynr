@@ -19,6 +19,7 @@
 package io.joynr.capabilities;
 
 import com.google.inject.Provider;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;

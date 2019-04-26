@@ -18,13 +18,6 @@
  */
 package io.joynr;
 
-import io.joynr.dispatcher.ServletMessageReceiver;
-import io.joynr.runtime.AbstractJoynrInjectorFactory;
-import io.joynr.runtime.AcceptsMessageReceiver;
-import io.joynr.runtime.JoynrApplication;
-import io.joynr.runtime.JoynrApplicationModule;
-import io.joynr.runtime.MessageReceiverType;
-
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +33,13 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 import com.google.inject.Module;
+
+import io.joynr.dispatcher.ServletMessageReceiver;
+import io.joynr.runtime.AbstractJoynrInjectorFactory;
+import io.joynr.runtime.AcceptsMessageReceiver;
+import io.joynr.runtime.JoynrApplication;
+import io.joynr.runtime.JoynrApplicationModule;
+import io.joynr.runtime.MessageReceiverType;
 
 /**
  * Used to start joynr applications using a common injector

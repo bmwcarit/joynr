@@ -18,9 +18,11 @@
  */
 package io.joynr.messaging.routing;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -43,11 +45,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -90,6 +92,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
@@ -115,6 +118,7 @@ import joynr.SubscriptionReply;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
@@ -122,17 +126,16 @@ import joynr.system.RoutingTypes.WebSocketProtocol;
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest {
 
-    private String channelId = "MessageSchedulerTest_" + UUID.randomUUID().toString();
+    private String channelId = "MessageSchedulerTest_" + createUuidString();
     private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
     private final int maximumParallelSends = 1;
     private final long routingTableGracePeriodMs = 30000;
 
-    private RoutingTable routingTable = spy(new RoutingTableImpl(42));
+    @Mock
+    private RoutingTableAddressValidator addressValidatorMock;
+    private RoutingTable routingTable;
     InMemoryMulticastReceiverRegistry multicastReceiverRegistry = new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory());
-    private AddressManager addressManager = spy(new AddressManager(routingTable,
-                                                                   new AddressManager.PrimaryGlobalTransportHolder(null),
-                                                                   new HashSet<MulticastAddressCalculator>(),
-                                                                   multicastReceiverRegistry));
+    private AddressManager addressManager;
 
     @Mock
     private ChannelMessagingStubFactory middlewareMessagingStubFactoryMock;
@@ -168,11 +171,17 @@ public class CcMessageRouterTest {
 
     @Before
     public void setUp() throws Exception {
+        doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
+        routingTable = spy(new RoutingTableImpl(42, addressValidatorMock));
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder(),
-                                            UUID.randomUUID().toString(),
+                                            createUuidString(),
                                             messagePersisterMock,
                                             routingTable));
+        addressManager = spy(new AddressManager(routingTable,
+                                                new AddressManager.PrimaryGlobalTransportHolder(null),
+                                                new HashSet<MulticastAddressCalculator>(),
+                                                multicastReceiverRegistry));
 
         when(middlewareMessagingStubFactoryMock.create(any(ChannelAddress.class))).thenReturn(messagingStubMock);
 
@@ -185,6 +194,7 @@ public class CcMessageRouterTest {
 
             @Override
             protected void configure() {
+                requestStaticInjection(RoutingTypesUtil.class);
                 bind(MessageRouter.class).to(CcMessageRouter.class);
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(AddressManager.class).toInstance(addressManager);
@@ -199,7 +209,7 @@ public class CcMessageRouterTest {
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
                                 .toInstance(routingTableCleanupIntervalMs);
                 bind(String.class).annotatedWith(Names.named(MessageQueue.MESSAGE_QUEUE_ID))
-                                  .toInstance(UUID.randomUUID().toString());
+                                  .toInstance(createUuidString());
 
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
@@ -246,7 +256,8 @@ public class CcMessageRouterTest {
             }
         };
 
-        testModule = Modules.override(mockModule).with(new TestGlobalAddressModule());
+        testModule = Modules.override(new JsonMessageSerializerModule()).with(mockModule,
+                                                                              new TestGlobalAddressModule());
 
         injector = Guice.createInjector(Modules.override(testModule).with(new AbstractModule() {
             @Override
@@ -262,8 +273,7 @@ public class CcMessageRouterTest {
         final boolean isGloballyVisible = true; // toParticipantId is globally visible
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = true;
-        final boolean allowUpdate = false;
-        routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+        routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky);
 
         Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
 
@@ -320,20 +330,8 @@ public class CcMessageRouterTest {
 
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = false;
-        final boolean allowUpdate = false;
-        routingTable.put(receiverParticipantId1,
-                         receiverAddress1,
-                         isGloballyVisible,
-                         expiryDateMs,
-                         isSticky,
-                         allowUpdate);
-        routingTable.put(receiverParticipantId2,
-                         receiverAddress2,
-                         isGloballyVisible,
-                         expiryDateMs,
-                         isSticky,
-                         allowUpdate);
+        routingTable.put(receiverParticipantId1, receiverAddress1, isGloballyVisible, expiryDateMs);
+        routingTable.put(receiverParticipantId2, receiverAddress2, isGloballyVisible, expiryDateMs);
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
@@ -944,7 +942,7 @@ public class CcMessageRouterTest {
 
         messageRouter.route(immutableMessage);
 
-        verify(routingTable).put(fromParticipantId, replyToAddress, true, joynrMessage.getTtlMs(), false, false);
+        verify(routingTable).put(fromParticipantId, replyToAddress, true, joynrMessage.getTtlMs(), false);
     }
 
     @Test
@@ -962,11 +960,18 @@ public class CcMessageRouterTest {
 
         messageRouter.route(immutableMessage);
 
-        verify(routingTable, times(0)).put(eq(fromParticipantId),
-                                           eq(replyToAddress),
-                                           anyBoolean(),
-                                           anyLong(),
-                                           anyBoolean(),
-                                           anyBoolean());
+        verify(routingTable, times(0)).put(eq(fromParticipantId), eq(replyToAddress), anyBoolean(), anyLong());
+        verify(routingTable,
+               times(0)).put(eq(fromParticipantId), eq(replyToAddress), anyBoolean(), anyLong(), anyBoolean());
+    }
+
+    @Test
+    public void setToKnownDoesNotChangeRoutingTable() {
+        final String participantId = "setToKnownParticipantId";
+        messageRouter.setToKnown(participantId);
+        verify(routingTable, times(0)).put(eq(participantId), any(Address.class), anyBoolean(), anyLong());
+        verify(routingTable,
+               times(0)).put(eq(participantId), any(Address.class), anyBoolean(), anyLong(), anyBoolean());
+        assertFalse(routingTable.containsKey(participantId));
     }
 }

@@ -18,14 +18,14 @@
  */
 package io.joynr.accesscontrol.global.jee;
 
+import javax.ejb.Local;
+
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.GlobalDomainAccessControllerSync;
-
-import javax.ejb.Local;
 
 @Local
 public interface GlobalDomainAccessControllerLocal extends GlobalDomainAccessControllerSync {

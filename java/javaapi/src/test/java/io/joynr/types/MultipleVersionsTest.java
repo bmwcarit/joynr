@@ -23,15 +23,15 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.AnonymousVersionedStruct1;
 import joynr.tests.AnonymousVersionedStruct2;
-import joynr.tests.InterfaceVersionedStruct;
+import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.InterfaceVersionedStruct1;
 import joynr.tests.InterfaceVersionedStruct2;
-import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
+import joynr.tests.InterfaceVersionedStruct;
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct1;
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
+import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 
 public class MultipleVersionsTest {
 

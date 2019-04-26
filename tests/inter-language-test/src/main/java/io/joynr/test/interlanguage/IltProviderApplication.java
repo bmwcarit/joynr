@@ -18,7 +18,19 @@
  */
 package io.joynr.test.interlanguage;
 
-import io.joynr.provider.ProviderAnnotations;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -26,6 +38,7 @@ import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
@@ -33,24 +46,10 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-
-import java.util.Properties;
-
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.ProviderQos;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
-import com.google.inject.Inject;
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class IltProviderApplication extends AbstractJoynrApplication {
     private static final Logger LOG = LoggerFactory.getLogger(IltProviderApplication.class);

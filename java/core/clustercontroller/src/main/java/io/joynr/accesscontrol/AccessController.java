@@ -18,8 +18,8 @@
  */
 package io.joynr.accesscontrol;
 
-import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.ImmutableMessage;
+import joynr.infrastructure.DacTypes.TrustLevel;
 
 /**
  * Checks incoming messages permissions

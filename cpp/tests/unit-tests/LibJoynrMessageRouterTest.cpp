@@ -19,29 +19,34 @@
 
 #include "MessageRouterTest.h"
 
+#include <chrono>
 #include <memory>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 #include "joynr/InProcessMessagingAddress.h"
-#include "joynr/system/RoutingProxy.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/BrowserAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/LibjoynrSettings.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 #include "tests/mock/MockDispatcher.h"
-#include "tests/mock/MockTestRequestCaller.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
-#include "tests/mock/MockRoutingProxy.h"
 #include "tests/mock/MockJoynrRuntime.h"
-#include "tests/mock/MockTestProvider.h"
+#include "tests/mock/MockMessagingStub.h"
+#include "tests/mock/MockRoutingProxy.h"
 
+using ::testing::_;
 using ::testing::DoAll;
-using ::testing::InvokeArgument;
+using ::testing::Eq;
 using ::testing::InSequence;
+using ::testing::InvokeArgument;
+using ::testing::Mock;
 using ::testing::Pointee;
 using ::testing::Return;
-using ::testing::Eq;
 
 using namespace joynr;
 
@@ -61,13 +66,47 @@ public:
         runtime.reset();
     }
 
+    void removeFromQueue(const std::string& participantId,
+                         std::function<void(const bool& resolved)> onSuccess = nullptr,
+                         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError = nullptr,
+                         boost::optional<joynr::MessagingQos> qos = boost::none);
+
 protected:
     void testAddNextHopCallsRoutingProxyCorrectly(
             const bool isGloballyVisible,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress);
+    void addressIsNotAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address);
+    void addressIsAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address);
+    void addNewRoutingEntry(MockRoutingProxy* mockRoutingProxyRef,
+                           const std::string providerParticipantId,
+                           const std::shared_ptr<const system::RoutingTypes::Address> address);
+    void testRoutingEntryUpdate(const std::string& participantId,
+                                std::shared_ptr<const system::RoutingTypes::Address> newAddress,
+                                std::shared_ptr<const system::RoutingTypes::Address> expectedAddress);
     const bool isGloballyVisible = false;
     std::shared_ptr<MockJoynrRuntime> runtime;
+    MockRoutingProxy * setParentRouter();
 };
+
+TEST_F(LibJoynrMessageRouterTest, routeMessageToWebSocketAddress)
+{
+    const std::string destinationParticipantId = "TEST_routeMessageToWebSocketAddress";
+    auto address = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
+    const bool isGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+
+    this->messageRouter->addNextHop(destinationParticipantId,
+                                    address,
+                                    isGloballyVisible,
+                                    expiryDateMs,
+                                    isSticky);
+    this->mutableMessage.setRecipient(destinationParticipantId);
+
+    EXPECT_CALL(*(this->messagingStubFactory), create(Pointee(Eq(*address)))).Times(1);
+
+    this->routeMessageToAddress();
+}
 
 TEST_F(LibJoynrMessageRouterTest,
        routeMulticastMessageFromLocalProvider_multicastMsgIsSentToAllMulticastReceivers)
@@ -267,38 +306,6 @@ TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouter)
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 }
 
-TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForWebSocketProvider_callsParentRouter)
-{
-    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
-    auto mockRoutingProxyRef = mockRoutingProxy.get();
-
-    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
-    messageRouter->setParentRouter(std::move(mockRoutingProxy));
-
-    const std::string multicastId("multicastId");
-    const std::string subscriberParticipantId("subscriberParticipantId");
-
-    const std::string providerParticipantId("providerParticipantId");
-    auto providerAddress =
-            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, isGloballyVisible);
-
-    EXPECT_CALL(*mockRoutingProxyRef,
-                addMulticastReceiverAsyncMock(
-                        multicastId, subscriberParticipantId, providerParticipantId, _, _, _))
-            .Times(1)
-            .WillOnce(DoAll(InvokeArgument<3>(), Return(nullptr)));
-
-    Semaphore successCallbackCalled;
-    messageRouter->addMulticastReceiver(
-            multicastId,
-            subscriberParticipantId,
-            providerParticipantId,
-            [&successCallbackCalled]() { successCallbackCalled.notify(); },
-            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
-    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
-}
-
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiverForInProcessProvider_DoesNotCallParentRouter)
 {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
@@ -358,14 +365,12 @@ void LibJoynrMessageRouterTest::testAddNextHopCallsRoutingProxyCorrectly(
 
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    const bool allowUpdate = false;
 
     messageRouter->addNextHop(providerParticipantId,
                               providerAddress,
                               isGloballyVisible,
                               expiryDateMs,
-                              isSticky,
-                              allowUpdate);
+                              isSticky);
 }
 
 TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy)
@@ -383,15 +388,438 @@ TEST_F(LibJoynrMessageRouterTest, addNextHop_callsAddNextHopInRoutingProxy)
     testAddNextHopCallsRoutingProxyCorrectly(isGloballyVisible, providerAddress2);
 }
 
-TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateTrue)
+TEST_F(LibJoynrMessageRouterTest, setToKnown_addsParentAddress)
 {
-    const bool allowUpdate = true;
-    const bool updateExpected = false;
-    this->checkAllowUpdate(allowUpdate, updateExpected);
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
+    MockRoutingProxy* mockRoutingProxyRef = mockRoutingProxy.get();
+    ON_CALL(*mockRoutingProxy, resolveNextHopAsyncMock(_,_,_,_))
+            .WillByDefault(
+                DoAll(
+                    Invoke(this, &LibJoynrMessageRouterTest::removeFromQueue),
+                    InvokeArgument<1>(false),
+                    Return(nullptr)));
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
+
+    const std::string providerParticipantId = "providerParticipantId";
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setSender("sender");
+    mutableMessage.setRecipient(providerParticipantId);
+
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(providerParticipantId,_,_,_));
+    EXPECT_CALL(*messagingStubFactory, create(_)).Times(0);
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+
+    ASSERT_EQ(0, messageQueue->getQueueLength());
+
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(mockRoutingProxyRef);
+
+    messageRouter->setToKnown(providerParticipantId);
+
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(Eq(providerParticipantId),_,_,_))
+            .Times(0);
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    EXPECT_CALL(*messagingStubFactory, create(Eq(localTransport))).WillOnce(Return(mockMessagingStub));
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+
+    ASSERT_EQ(0, messageQueue->getQueueLength());
 }
-TEST_F(LibJoynrMessageRouterTest, checkAllowUpdateFalse)
+
+void LibJoynrMessageRouterTest::removeFromQueue(const std::string& participantId,
+                     std::function<void(const bool& resolved)> onSuccess,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+                     boost::optional<joynr::MessagingQos> qos)
 {
-    const bool allowUpdate = false;
-    const bool updateExpected = false;
-    this->checkAllowUpdate(allowUpdate, updateExpected);
+    std::ignore = onSuccess;
+    std::ignore = onRuntimeError;
+    std::ignore = qos;
+
+    ASSERT_EQ(1, messageQueue->getQueueLength());
+    messageQueue->getNextMessageFor(participantId);
+    ASSERT_EQ(0, messageQueue->getQueueLength());
+}
+
+void LibJoynrMessageRouterTest::addressIsNotAddedToRoutingTable(
+        const std::shared_ptr<const system::RoutingTypes::Address> address)
+{
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
+    MockRoutingProxy* mockRoutingProxyRef = mockRoutingProxy.get();
+    ON_CALL(*mockRoutingProxy, resolveNextHopAsyncMock(_,_,_,_))
+            .WillByDefault(DoAll(Invoke(this, &LibJoynrMessageRouterTest::removeFromQueue), InvokeArgument<1>(false), Return(nullptr)));
+
+    messageRouter->setParentAddress(std::string("parentParticipantId"), localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
+
+    const std::string consumerParticipantId("consumerParticipantId");
+    const std::string providerParticipantId("providerParticipantId");
+    const bool isRecipientGloballyVisible = true;
+
+    const TimePoint now = TimePoint::now();
+    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(1000));
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setSender(consumerParticipantId);
+    mutableMessage.setRecipient(providerParticipantId);
+
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(Eq(providerParticipantId),_,_,_));
+    EXPECT_CALL(*messagingStubFactory, create(_)).Times(0);
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    ASSERT_EQ(0, messageQueue->getQueueLength());
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(mockRoutingProxyRef);
+
+    messageRouter->addProvisionedNextHop(
+            providerParticipantId, address, isRecipientGloballyVisible);
+
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(Eq(providerParticipantId),_,_,_));
+    EXPECT_CALL(*messagingStubFactory, create(_)).Times(0);
+
+    messageRouter->route(mutableMessage.getImmutableMessage());
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    ASSERT_EQ(0, messageQueue->getQueueLength());
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(mockRoutingProxyRef);
+}
+
+MockRoutingProxy * LibJoynrMessageRouterTest::setParentRouter()
+{
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(runtime);
+    MockRoutingProxy* mockRoutingProxyRef = mockRoutingProxy.get();
+
+    const std::string parentParticipantId = "parentParticipantId";
+    messageRouter->setParentAddress(parentParticipantId, localTransport);
+    messageRouter->setParentRouter(std::move(mockRoutingProxy));
+
+    return mockRoutingProxyRef;
+}
+
+void LibJoynrMessageRouterTest::addNewRoutingEntry(
+        MockRoutingProxy* mockRoutingProxyRef,
+        const std::string providerParticipantId,
+        const std::shared_ptr<const system::RoutingTypes::Address> address)
+{
+    Semaphore semaphore(0);
+    ON_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(_,_,_,_))
+            .WillByDefault(DoAll(Invoke(this, &LibJoynrMessageRouterTest::removeFromQueue), InvokeArgument<1>(false), Return(nullptr)));
+
+    const TimePoint now = TimePoint::now();
+    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(1024));
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setRecipient(providerParticipantId);
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(Eq(providerParticipantId),_,_,_));
+    EXPECT_CALL(*messagingStubFactory, create(_)).Times(0);
+
+    messageRouter->route(immutableMessage);
+
+    ASSERT_EQ(0, messageQueue->getQueueLength());
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(mockRoutingProxyRef);
+
+    const bool isParticipantGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    messageRouter->addNextHop(
+                providerParticipantId,
+                address,
+                isParticipantGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    EXPECT_CALL(*mockRoutingProxyRef, resolveNextHopAsyncMock(Eq(providerParticipantId),_,_,_))
+            .Times(0);
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    EXPECT_CALL(*messagingStubFactory, create(Eq(address))).WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    messageRouter->route(immutableMessage);
+
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_EQ(0, messageQueue->getQueueLength());
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(mockRoutingProxyRef);
+}
+
+void LibJoynrMessageRouterTest::addressIsAddedToRoutingTable(const std::shared_ptr<const system::RoutingTypes::Address> address)
+{
+    MockRoutingProxy* mockRoutingProxyRef = setParentRouter();
+    const std::string providerParticipantId("providerParticipantId");
+
+    addNewRoutingEntry(mockRoutingProxyRef, providerParticipantId, address);
+
+    // cleanup
+    messageRouter->removeNextHop(providerParticipantId, nullptr, nullptr);
+}
+
+TEST_F(LibJoynrMessageRouterTest,
+       addressValidation_inProcessAndWebSocketAddressTypesAreAddedToRoutingTable)
+{
+    // see also addressValidation_otherAddressTypesAreNotAddedToRoutingTable
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>();
+    addressIsAddedToRoutingTable(webSocketAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    addressIsAddedToRoutingTable(inProcessAddress);
+}
+
+TEST_F(LibJoynrMessageRouterTest, addressValidation_otherAddressTypesAreNotAddedToRoutingTable)
+{
+    // see also addressValidation_inProcessAndWebSocketAddressTypesAreAddedToRoutingTable
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>();
+    addressIsNotAddedToRoutingTable(mqttAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>();
+    addressIsNotAddedToRoutingTable(channelAddress);
+
+    auto browserAddress = std::make_shared<const system::RoutingTypes::BrowserAddress>();
+    addressIsNotAddedToRoutingTable(browserAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
+    addressIsNotAddedToRoutingTable(webSocketClientAddress);
+}
+
+void LibJoynrMessageRouterTest::testRoutingEntryUpdate(const std::string& participantId,
+        std::shared_ptr<const system::RoutingTypes::Address> newAddress,
+        std::shared_ptr<const system::RoutingTypes::Address> expectedAddress)
+{
+    Semaphore semaphore(0);
+    const TimePoint now = TimePoint::now();
+    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(1024));
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setRecipient(participantId);
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+
+    const bool isParticipantGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    messageRouter->addNextHop(
+                participantId,
+                newAddress,
+                isParticipantGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    EXPECT_CALL(*messagingStubFactory, create(expectedAddress))
+            .WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    messageRouter->route(immutableMessage);
+
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+}
+
+TEST_F(LibJoynrMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
+{
+    // inProcessAddress can only be replaced with InProcessAddress
+    // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress > MqttAddress/ChannelAddress
+    const std::string testParticipantId = "allowInProcessUpdateParticipantId";
+    auto dispatcher = std::make_shared<MockDispatcher>();
+    auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
+    auto oldAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
+
+    MockRoutingProxy* mockRoutingProxyRef = setParentRouter();
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>();
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>();
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>();
+    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+}
+
+TEST_F(LibJoynrMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketClientAddress)
+{
+    // Disabled: WebSocketClientAddress is not allowed in LibJoynrMessageRouter
+    // Precedence cannot be tested without refactoring MessageRouter and RoutingTable, e.g. like in Java
+
+    // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress > MqttAddress/ChannelAddress
+    const std::string testParticipantId = "allowWebSocketClientUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "testWebSocketId");
+
+    MockRoutingProxy* mockRoutingProxyRef = setParentRouter();
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, webSocketAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+}
+
+TEST_F(LibJoynrMessageRouterTest, addressValidation_allowUpdateOfWebSocketAddress)
+{
+    // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress > MqttAddress/ChannelAddress
+    const std::string testParticipantId = "allowWebSocketUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WSS, "testHost", 23, "testPath");
+
+    MockRoutingProxy* mockRoutingProxyRef = setParentRouter();
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, webSocketAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+}
+
+TEST_F(LibJoynrMessageRouterTest, DISABLED_addressValidation_allowUpdateOfChannelAddress)
+{
+    // Disabled: ChannelAddress is not allowed in LibJoynrMessageRouter
+    // Precedence cannot be tested without refactoring MessageRouter and RoutingTable, e.g. like in Java
+
+    // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress > MqttAddress/ChannelAddress
+    const std::string testParticipantId = "allowChannelUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "testEndpointUrl", "testChannelId");
+
+    MockRoutingProxy* mockRoutingProxyRef = setParentRouter();
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, webSocketAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+}
+
+TEST_F(LibJoynrMessageRouterTest, DISABLED_addressValidation_allowUpdateOfMqttAddress)
+{
+    // Disabled: MqttAddress is not allowed in LibJoynrMessageRouter
+    // Precedence cannot be tested without refactoring MessageRouter and RoutingTable, e.g. like in Java
+
+    // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress > MqttAddress/ChannelAddress
+    const std::string testParticipantId = "allowMqttUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "testbrokerUri", "testTopic");
+
+    MockRoutingProxy* mockRoutingProxyRef = setParentRouter();
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, webSocketAddress);
+    // restore oldAddress
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
+    addNewRoutingEntry(mockRoutingProxyRef, testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    messageRouter->removeNextHop(testParticipantId, nullptr, nullptr);
 }

@@ -49,7 +49,11 @@ void WebSocketMessagingStub::transmit(
         return;
     }
 
-    JOYNR_LOG_DEBUG(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());
+    if (logger().getLogLevel() == LogLevel::Debug) {
+        JOYNR_LOG_DEBUG(logger(), ">>> OUTGOING >>> {}", message->getTrackingInfo());
+    } else {
+        JOYNR_LOG_TRACE(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());
+    }
     smrf::ByteArrayView serializedMessageView(message->getSerializedMessage());
     webSocket->send(serializedMessageView, onFailure);
 }

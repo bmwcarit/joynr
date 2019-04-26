@@ -35,6 +35,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
 
 /**

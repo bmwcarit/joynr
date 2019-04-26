@@ -19,10 +19,10 @@
  */
 package io.joynr.messaging.bounceproxy.runtime;
 
-import io.joynr.exceptions.JoynrRuntimeException;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import io.joynr.exceptions.JoynrRuntimeException;
 
 public class BounceProxySystemPropertyLoaderTest {
 

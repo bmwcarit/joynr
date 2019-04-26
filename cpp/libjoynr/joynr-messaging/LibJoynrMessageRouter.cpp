@@ -109,6 +109,19 @@ void LibJoynrMessageRouter::setParentRouter(
                        std::move(onError));
 }
 
+void LibJoynrMessageRouter::setToKnown(const std::string& participantId)
+{
+    JOYNR_LOG_TRACE(logger(),
+                    "LibJoynrMessageRouter::setToKnown called for participantId {}",
+                    participantId);
+    bool isGloballyVisible = DEFAULT_IS_GLOBALLY_VISIBLE;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    if (parentAddress) {
+        addToRoutingTable(participantId, isGloballyVisible, parentAddress, expiryDateMs, isSticky);
+    }
+}
+
 /**
   * Q (RDZ): What happens if the message cannot be forwarded? Exception? Log file entry?
   * Q (RDZ): When are messagingstubs removed? They are stored indefinitely in the factory
@@ -159,11 +172,16 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                                            destinationPartId);
                             WriteLocker lock(thisSharedPtr->messageQueueRetryLock);
                             // save next hop in the routing table
-                            thisSharedPtr->addProvisionedNextHop(
+                            constexpr std::int64_t expiryDateMs =
+                                    std::numeric_limits<std::int64_t>::max();
+                            const bool isSticky = false;
+                            thisSharedPtr->addToRoutingTable(
                                     destinationPartId,
+                                    thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
                                     thisSharedPtr->parentAddress,
-                                    thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE);
-                            thisSharedPtr->sendMessages(
+                                    expiryDateMs,
+                                    isSticky);
+                            thisSharedPtr->sendQueuedMessages(
                                     destinationPartId, thisSharedPtr->parentAddress, lock);
                         } else {
                             JOYNR_LOG_ERROR(logger(),
@@ -205,6 +223,25 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
     // If this point is reached, the message can be sent without delay
     for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
         scheduleMessage(message, destAddress, tryCount);
+    }
+}
+
+void LibJoynrMessageRouter::sendQueuedMessages(
+        const std::string& destinationPartId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        const WriteLocker& messageQueueRetryWriteLock)
+{
+    assert(messageQueueRetryWriteLock.owns_lock());
+    JOYNR_LOG_TRACE(logger(),
+                    "sendMessages: sending messages for destinationPartId {} and {}",
+                    destinationPartId,
+                    address->toString());
+    while (true) {
+        std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
+        if (!item) {
+            break;
+        }
+        scheduleMessage(item, address);
     }
 }
 
@@ -300,21 +337,68 @@ void LibJoynrMessageRouter::addNextHopToParent(
     }
 }
 
+bool LibJoynrMessageRouter::isValidForRoutingTable(
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+{
+    if (typeid(*address) == typeid(system::RoutingTypes::WebSocketAddress) ||
+        typeid(*address) == typeid(InProcessMessagingAddress)) {
+        return true;
+    }
+    JOYNR_LOG_ERROR(logger(),
+                    "An address which is neither of type WebSocketAddress nor "
+                    "InProcessMessagingAddress will not be used for libjoynr Routing Table: {}",
+                    address->toString());
+    return false;
+}
+
+bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                                    const system::RoutingTypes::Address& newAddress)
+{
+    // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress >
+    // MqttAddress/ChannelAddress
+    if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
+        return true;
+    }
+    if (typeid(*oldEntry.address) != typeid(InProcessMessagingAddress)) {
+        if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
+            return true;
+        } else if (typeid(*oldEntry.address) != typeid(system::RoutingTypes::WebSocketAddress)) {
+            // old address is WebSocketClientAddress or MqttAddress/ChannelAddress
+            if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
+                return true;
+            } else if (typeid(*oldEntry.address) !=
+                       typeid(system::RoutingTypes::WebSocketClientAddress)) {
+                // old address is MqttAddress or ChannelAddress
+                if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
+                    typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool LibJoynrMessageRouter::canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const
+{
+    // No need for ACL check in LibJoynrMessageRouter
+    std::ignore = message;
+    return true;
+}
+
 void LibJoynrMessageRouter::addNextHop(
         const std::string& participantId,
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
         bool isGloballyVisible,
         const std::int64_t expiryDateMs,
         const bool isSticky,
-        const bool allowUpdate,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = allowUpdate;
     assert(address);
     WriteLocker lock(messageQueueRetryLock);
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
-    sendMessages(participantId, address, lock);
+    sendQueuedMessages(participantId, address, lock);
     lock.unlock();
     addNextHopToParent(participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
 }
@@ -436,10 +520,13 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         {
             if (resolved) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    thisSharedPtr->addProvisionedNextHop(
-                            providerParticipantId,
-                            thisSharedPtr->parentAddress,
-                            thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE);
+                    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+                    const bool isSticky = false;
+                    thisSharedPtr->addToRoutingTable(providerParticipantId,
+                                                     thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
+                                                     thisSharedPtr->parentAddress,
+                                                     expiryDateMs,
+                                                     isSticky);
                     thisSharedPtr->parentRouter->addMulticastReceiverAsync(
                             multicastId,
                             subscriberParticipantId,

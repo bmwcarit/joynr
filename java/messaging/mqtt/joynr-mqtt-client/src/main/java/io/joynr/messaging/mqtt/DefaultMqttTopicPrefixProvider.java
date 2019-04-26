@@ -18,9 +18,9 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static io.joynr.messaging.MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST;
 import static io.joynr.messaging.MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO;
 import static io.joynr.messaging.MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST;
-import static io.joynr.messaging.MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;

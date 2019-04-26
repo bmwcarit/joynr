@@ -18,10 +18,10 @@
  */
 package io.joynr.examples.android_example;
 
-import android.os.AsyncTask;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import android.os.AsyncTask;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.pubsub.SubscriptionQos;

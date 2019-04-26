@@ -19,11 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.jdbc;
 
-import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities.BounceProxyInformationEntity;
-import io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities.ChannelEntity;
-import io.joynr.messaging.info.Channel;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,6 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+
+import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities.BounceProxyInformationEntity;
+import io.joynr.messaging.bounceproxy.controller.directory.jdbc.entities.ChannelEntity;
+import io.joynr.messaging.info.Channel;
 
 /**
  * Access layer that stores and retrieves channels to and from a relational

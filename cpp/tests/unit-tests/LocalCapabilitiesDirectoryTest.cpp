@@ -333,14 +333,12 @@ protected:
                            _,
                            _,
                            _,
-                           _,
                            _)).Times(1);
         EXPECT_CALL(*mockMessageRouter,
                     addNextHop(participantId,
                                AnyOf(Not(Pointee(A<const joynr::system::RoutingTypes::Address>())),
                                      Not(pointerToAddressWithSerializedAddress(
                                              addressType, serializedAddress))),
-                               _,
                                _,
                                _,
                                _,

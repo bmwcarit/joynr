@@ -114,8 +114,9 @@ public:
      * Returns a capability entry for a given participant ID or an empty list
      * if it cannot be found.
      */
-    void lookup(const std::string& participantId,
-                std::shared_ptr<ILocalCapabilitiesCallback> callback);
+    virtual void lookup(const std::string& participantId,
+                        std::shared_ptr<ILocalCapabilitiesCallback> callback,
+                        bool useGlobalCapabilitiesDirectory = true);
 
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used

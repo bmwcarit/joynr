@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import com.google.inject.Singleton;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**

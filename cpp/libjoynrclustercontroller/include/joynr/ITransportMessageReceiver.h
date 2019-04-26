@@ -26,6 +26,13 @@
 
 namespace joynr
 {
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+} // namespace RoutingTypes
+} // namespace system
 
 /**
   * @class ITransportMessageReceiver
@@ -44,7 +51,12 @@ public:
     /**
       * Returns the serialized (json) receive address
       */
-    virtual const std::string& getGlobalClusterControllerAddress() const = 0;
+    virtual const std::string getSerializedGlobalClusterControllerAddress() const = 0;
+
+    /**
+      * Returns the receive address
+      */
+    virtual const system::RoutingTypes::Address& getGlobalClusterControllerAddress() const = 0;
 
     /**
       * Starts processing incomming messages. This method must be called

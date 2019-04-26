@@ -18,12 +18,12 @@
  */
 package io.joynr.messaging.bounceproxy.filter;
 
-import joynr.ImmutableMessage;
-
-import org.atmosphere.cpr.BroadcastFilter;
 import org.atmosphere.cpr.BroadcastFilter.BroadcastAction.ACTION;
+import org.atmosphere.cpr.BroadcastFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import joynr.ImmutableMessage;
 
 public class ExpirationFilter implements BroadcastFilter {
 

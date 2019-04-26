@@ -24,8 +24,6 @@ import static io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode.BOUN
 import static io.joynr.messaging.datatypes.JoynrBounceProxyControlErrorCode.BOUNCEPROXY_UNKNOWN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.PerformanceMeasures;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +36,9 @@ import com.google.inject.servlet.ServletModule;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.PerformanceMeasures;
 
 /**
  * Tests the sequences of the sequence diagram "BounceProxy Instance Life Cycle"

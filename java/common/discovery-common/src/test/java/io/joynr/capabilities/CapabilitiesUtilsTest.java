@@ -32,9 +32,8 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;

@@ -83,6 +83,7 @@ public:
     void addProvisionedNextHop(std::string participantId,
                                std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                                bool isGloballyVisible);
+    virtual void setToKnown(const std::string& participantId) override;
 
     virtual void init();
     void saveRoutingTable();
@@ -141,18 +142,30 @@ protected:
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
-    void sendMessages(const std::string& destinationPartId,
-                      std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-                      const WriteLocker& messageQueueRetryWriteLock);
+    virtual void sendQueuedMessages(
+            const std::string& destinationPartId,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+            const WriteLocker& messageQueueRetryWriteLock) = 0;
 
-    void sendMessages(std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+    void sendQueuedMessages(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+
+    virtual bool isValidForRoutingTable(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) = 0;
+
+    virtual bool allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                         const system::RoutingTypes::Address& newAddress) = 0;
 
     void addToRoutingTable(std::string participantId,
                            bool isGloballyVisible,
                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                            const std::int64_t expiryDateMs,
-                           const bool isSticky,
-                           const bool allowUpdate = false);
+                           const bool isSticky);
+
+    virtual void doAccessControlCheckOrScheduleMessage(
+            std::shared_ptr<ImmutableMessage> message,
+            std::shared_ptr<const system::RoutingTypes::Address> destAddress,
+            std::uint32_t tryCount = 0);
 
     void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
                          std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
@@ -169,7 +182,22 @@ protected:
 
     virtual void queueMessage(std::shared_ptr<ImmutableMessage> message,
                               const ReadLocker& messageQueueRetryReadLock);
+    /*
+     * return always true in libjoynr and result accessControlChecked for the CCMessageRouter
+     */
+    virtual bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const = 0;
 
+    /*
+     * AbstractMessageRouter provides default implementation and CcMessageRouter overrrides it
+     */
+    virtual void removeMulticastReceiver(
+            const std::string& multicastId,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+            const std::string& providerParticipantId);
+
+    std::chrono::milliseconds createDelayWithExponentialBackoff(
+            std::uint32_t sendMsgRetryIntervalMs,
+            std::uint32_t tryCount) const;
     RoutingTable routingTable;
     ReadWriteLock routingTableLock;
     MulticastReceiverDirectory multicastReceiverDirectory;
@@ -203,6 +231,7 @@ private:
     AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
     std::atomic<bool> isShuttingDown;
     std::atomic<std::uint64_t> numberOfRoutedMessages;
+    const std::uint64_t maxAclRetryIntervalMs;
 };
 
 /**

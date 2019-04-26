@@ -18,10 +18,8 @@
  */
 package io.joynr.examples.statelessasync;
 
-import joynr.examples.statelessasync.KeyValue;
-import joynr.examples.statelessasync.VehicleConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -32,8 +30,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import joynr.examples.statelessasync.KeyValue;
+import joynr.examples.statelessasync.VehicleConfiguration;
 
 @Path("/control")
 @Produces(MediaType.APPLICATION_JSON)

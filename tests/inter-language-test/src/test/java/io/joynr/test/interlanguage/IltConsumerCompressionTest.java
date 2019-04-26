@@ -18,18 +18,18 @@
  */
 package io.joynr.test.interlanguage;
 
-import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultiplePrimitiveParametersReturned;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultiplePrimitiveParametersReturned;
 
 public class IltConsumerCompressionTest extends IltConsumerTest {
     private static final Logger LOG = LoggerFactory.getLogger(IltConsumerCompressionTest.class);

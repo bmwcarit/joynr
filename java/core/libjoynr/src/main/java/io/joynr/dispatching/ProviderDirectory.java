@@ -18,13 +18,13 @@
  */
 package io.joynr.dispatching;
 
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.provider.ProviderContainer;
-
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.provider.ProviderContainer;
 
 @Singleton
 public class ProviderDirectory extends Directory<ProviderContainer> {

@@ -34,7 +34,6 @@ public:
             const bool& isGloballyVisible,
             const std::int64_t expiryDateMs,
             const bool isSticky,
-            const bool allowUpdate,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
         if (onSuccess) {
@@ -55,7 +54,7 @@ public:
         using ::testing::_;
         EXPECT_CALL(
                 *this,
-                addNextHop(_,_,_,_,_,_,_,_)
+                addNextHop(_,_,_,_,_,_,_)
         )
                 .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
         EXPECT_CALL(
@@ -76,13 +75,12 @@ public:
                                                  std::function<void()> onSuccess,
                                                  std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError));
 
-    MOCK_METHOD8(addNextHop, void(
+    MOCK_METHOD7(addNextHop, void(
             const std::string& participantId,
             const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
             bool isGloballyVisible,
             const std::int64_t expiryDateMs,
             const bool isSticky,
-            const bool allowUpdate,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
@@ -106,7 +104,8 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
     MOCK_METHOD1(queueMessage, void(std::shared_ptr<joynr::ImmutableMessage> message));
-    MOCK_METHOD1(sendMessages, void(std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
+    MOCK_METHOD1(sendQueuedMessages, void(std::shared_ptr<const joynr::system::RoutingTypes::Address> address));
+    MOCK_METHOD1(setToKnown, void(const std::string& participantId));
 };
 
 #endif // TESTS_MOCK_MOCKMESSAGEROUTER_H

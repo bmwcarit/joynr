@@ -18,13 +18,13 @@
  */
 package io.joynr.examples.statelessasync;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import joynr.examples.statelessasync.VehicleConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static io.joynr.util.JoynrUtil.createUuidString;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -33,12 +33,15 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import joynr.examples.statelessasync.VehicleConfiguration;
 
 @Stateless
 @Transactional
@@ -55,7 +58,7 @@ public class DataAccess {
 
     public void addKnownConfiguration(String messageId, String configurationId) {
         KnownVehicleConfiguration newConfig = new KnownVehicleConfiguration();
-        newConfig.setTechnicalId(UUID.randomUUID().toString());
+        newConfig.setTechnicalId(createUuidString());
         newConfig.setMessageId(messageId);
         newConfig.setVehicleConfigurationId(configurationId);
         entityManager.persist(newConfig);
@@ -77,7 +80,7 @@ public class DataAccess {
 
     public void addGetResult(String messageId) {
         GetResult getResult = new GetResult();
-        getResult.setTechnicalId(UUID.randomUUID().toString());
+        getResult.setTechnicalId(createUuidString());
         getResult.setMessageId(messageId);
         entityManager.persist(getResult);
     }

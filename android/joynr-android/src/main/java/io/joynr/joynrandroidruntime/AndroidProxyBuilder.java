@@ -18,13 +18,6 @@
  */
 package io.joynr.joynrandroidruntime;
 
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.runtime.JoynrRuntime;
-
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +25,13 @@ import java.util.concurrent.TimeoutException;
 
 import android.os.AsyncTask;
 import android.util.Log;
+
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.JoynrRuntime;
 
 public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> implements ProxyBuilder<T> {
 

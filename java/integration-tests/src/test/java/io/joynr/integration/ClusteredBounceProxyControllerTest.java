@@ -21,19 +21,13 @@ package io.joynr.integration;
 import static com.jayway.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.distribution.CacheManagerPeerProvider;
-
-import org.junit.Assert;
-
-import io.joynr.integration.util.ServersUtil;
-import io.joynr.messaging.MessagingPropertyKeys;
 
 import org.eclipse.jetty.server.Server;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -42,6 +36,11 @@ import org.junit.Test;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+
+import io.joynr.integration.util.ServersUtil;
+import io.joynr.messaging.MessagingPropertyKeys;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.distribution.CacheManagerPeerProvider;
 
 public class ClusteredBounceProxyControllerTest {
 

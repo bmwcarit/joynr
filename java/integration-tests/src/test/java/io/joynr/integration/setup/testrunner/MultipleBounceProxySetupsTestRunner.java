@@ -18,8 +18,6 @@
  */
 package io.joynr.integration.setup.testrunner;
 
-import io.joynr.integration.setup.BounceProxyServerSetup;
-
 import java.lang.annotation.Annotation;
 
 import org.junit.runner.Description;
@@ -27,6 +25,8 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
 
 /**
  * Special JUnit test runner that allows to run a single test class with

@@ -18,12 +18,12 @@
  */
 package io.joynr.messaging.bounceproxy.controller.runtime;
 
-import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryModule;
-
 import java.util.LinkedList;
 import java.util.List;
 
 import com.google.inject.AbstractModule;
+
+import io.joynr.messaging.bounceproxy.controller.directory.inmemory.InMemoryModule;
 
 /**
  * Servlet configuration for non-clustered bounceproxy controller servlet.

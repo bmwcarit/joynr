@@ -20,8 +20,14 @@ package io.joynr.integration;
 
 import java.util.Properties;
 
+import org.eclipse.jetty.server.Server;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.integration.util.DummyJoynrApplication;
@@ -31,10 +37,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import org.eclipse.jetty.server.Server;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 
 @Ignore("HTTP does not support binary messages (SMRF)")
 public class HTTPProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {

@@ -102,7 +102,6 @@ public:
                     bool isGloballyVisible,
                     const std::int64_t expiryDateMs,
                     const bool isSticky,
-                    const bool allowUpdate,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
@@ -130,6 +129,8 @@ public:
             std::string parentParticipantId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress);
 
+    void setToKnown(const std::string& participantId) override;
+
     /*
      * Method specific to LibJoynrMessageRouter
      */
@@ -153,18 +154,28 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrMessageRouter);
     ADD_LOGGER(LibJoynrMessageRouter)
 
+    void sendQueuedMessages(const std::string& destinationPartId,
+                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                            const WriteLocker& messageQueueRetryWriteLock) final;
+
     bool isParentMessageRouterSet();
     void addNextHopToParent(std::string participantId,
                             bool isGloballyVisible,
                             std::function<void(void)> onSuccess = nullptr,
                             std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                                     onError = nullptr);
+    bool isValidForRoutingTable(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+    bool allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                 const system::RoutingTypes::Address& newAddress) final;
 
     std::shared_ptr<joynr::system::RoutingProxy> parentRouter;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress;
     std::unordered_set<std::string> runningParentResolves;
     mutable std::mutex parentResolveMutex;
+
+    bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const final;
 
     void removeRunningParentResolvers(const std::string& destinationPartId);
 

@@ -21,14 +21,16 @@ package io.joynr.messaging;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
+
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.TransportReadyListener;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LongPollingHttpMulticastAddressCalculator implements MulticastAddressCalculator {
 

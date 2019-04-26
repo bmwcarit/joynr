@@ -24,7 +24,6 @@ import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
-import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +40,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import joynr.MethodMetaInformation;
 import joynr.OneWayRequest;

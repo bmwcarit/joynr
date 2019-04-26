@@ -20,13 +20,14 @@
 package io.joynr.messaging.bounceproxy.controller.directory;
 
 import static org.junit.Assert.assertEquals;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 import java.net.URI;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
 
 public class BounceProxyRecordTest {
 

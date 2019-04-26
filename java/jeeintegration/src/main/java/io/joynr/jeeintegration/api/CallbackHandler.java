@@ -18,13 +18,14 @@
  */
 package io.joynr.jeeintegration.api;
 
-import javax.inject.Qualifier;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import javax.inject.Qualifier;
 
 /**
  * Used to mark a bean as a handler for stateless async callback replies. A bean annotated with this qualifier must

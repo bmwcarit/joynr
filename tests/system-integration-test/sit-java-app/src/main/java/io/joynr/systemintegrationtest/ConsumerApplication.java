@@ -18,28 +18,10 @@
  */
 package io.joynr.systemintegrationtest;
 
-import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.proxy.ProxyBuilder;
-import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
-import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.JoynrApplication;
-import io.joynr.runtime.JoynrApplicationModule;
-import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-
-import joynr.test.SystemIntegrationTestProxy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +31,23 @@ import com.google.inject.Module;
 import com.google.inject.name.Named;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.runtime.AbstractJoynrApplication;
+import io.joynr.runtime.JoynrApplication;
+import io.joynr.runtime.JoynrApplicationModule;
+import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import joynr.test.SystemIntegrationTestProxy;
 
 public class ConsumerApplication extends AbstractJoynrApplication {
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerApplication.class);
@@ -114,7 +113,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         System.exit(0);
     }
 
-    @SuppressWarnings("checkstyle:methodlength")
+    @SuppressWarnings({ "checkstyle:methodlength", "DM_EXIT" })
     @Override
     public void run() {
         DiscoveryQos discoveryQos = new DiscoveryQos();

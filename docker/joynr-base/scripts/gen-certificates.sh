@@ -45,4 +45,5 @@ openssl req -nodes -keyout private/server.key.pem -new -days 7300 -subj '/C=DE/S
 openssl x509 -req -days 7300 -CA certs/ca.cert.pem -CAkey private/ca.key.pem -set_serial 01 -in certs/server.csr.pem -out certs/server.cert.pem
 openssl req -nodes -keyout private/client.key.pem -new -days 7300 -subj '/C=DE/ST=Bavaria/L=Munich/CN=client' -out certs/client.csr.pem
 openssl x509 -req -days 7300 -CA certs/ca.cert.pem -CAkey private/ca.key.pem -set_serial 01 -in certs/client.csr.pem -out certs/client.cert.pem
+chmod 644 certs/*.pem private/*.pem
 )

@@ -18,6 +18,10 @@
  */
 package io.joynr.capabilities.directory;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.name.Named;
+
 import io.joynr.capabilities.CustomParameterPersisted;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.DiscoveryEntryStorePersisted;
@@ -31,10 +35,6 @@ import joynr.system.RoutingTypes.Address;
 import joynr.types.CustomParameter;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.name.Named;
 
 public class CapabilitiesDirectoryModule extends AbstractModule {
 

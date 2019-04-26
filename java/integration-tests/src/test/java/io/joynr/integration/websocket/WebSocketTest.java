@@ -18,6 +18,7 @@
  */
 package io.joynr.integration.websocket;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -29,7 +30,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -117,7 +117,7 @@ public class WebSocketTest {
                                                                       new WebSocketMessagingSkeleton.MainTransportFlagBearer(),
                                                                       messageProcessor);
 
-        ownAddress = new WebSocketClientAddress(UUID.randomUUID().toString());
+        ownAddress = new WebSocketClientAddress(createUuidString());
         webSocketJettyClientFactory = new WebSocketJettyClientFactory(ownAddress,
                                                                       maxMessageSize,
                                                                       reconnectDelay,

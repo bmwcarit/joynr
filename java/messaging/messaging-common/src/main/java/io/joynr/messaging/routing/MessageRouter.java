@@ -20,7 +20,6 @@
 package io.joynr.messaging.routing;
 
 import joynr.ImmutableMessage;
-
 import joynr.system.RoutingTypes.Address;
 
 public interface MessageRouter {
@@ -28,14 +27,11 @@ public interface MessageRouter {
 
     public void route(ImmutableMessage message);
 
+    public void setToKnown(final String participantId);
+
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible);
 
-    public void addToRoutingTable(String participantId,
-                                  Address address,
-                                  boolean isGloballyVisible,
-                                  long expiryDateMs,
-                                  boolean isSticky,
-                                  boolean allowUpdate);
+    public void addToRoutingTable(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs);
 
     public void shutdown();
 

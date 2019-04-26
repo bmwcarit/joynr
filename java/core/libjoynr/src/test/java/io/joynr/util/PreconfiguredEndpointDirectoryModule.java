@@ -18,10 +18,10 @@
  */
 package io.joynr.util;
 
-import io.joynr.messaging.routing.RoutingTable;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+
+import io.joynr.messaging.routing.RoutingTable;
 
 public class PreconfiguredEndpointDirectoryModule extends AbstractModule {
     RoutingTable routingTable;

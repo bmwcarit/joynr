@@ -19,14 +19,14 @@
  */
 package io.joynr.messaging.service;
 
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.info.Channel;
-
 import java.net.URI;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.info.Channel;
 
 @RunWith(MockitoJUnitRunner.class)
 public abstract class AbstractChannelSetUpTest extends AbstractServiceInterfaceTest {

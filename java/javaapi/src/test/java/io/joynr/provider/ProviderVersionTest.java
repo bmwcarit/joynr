@@ -20,12 +20,12 @@ package io.joynr.provider;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import io.joynr.JoynrVersion;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.JoynrVersion;
 import joynr.tests.TestWithoutVersionProvider;
 import joynr.tests.testProvider;
 

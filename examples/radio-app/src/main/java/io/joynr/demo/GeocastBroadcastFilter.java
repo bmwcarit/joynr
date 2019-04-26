@@ -20,15 +20,14 @@ package io.joynr.demo;
 
 import java.io.IOException;
 
-import joynr.vehicle.GeoPosition;
-import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
-import joynr.vehicle.RadioNewStationDiscoveredBroadcastFilter;
-import joynr.vehicle.RadioStation;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import joynr.vehicle.GeoPosition;
+import joynr.vehicle.RadioBroadcastInterface.NewStationDiscoveredBroadcastFilterParameters;
+import joynr.vehicle.RadioNewStationDiscoveredBroadcastFilter;
+import joynr.vehicle.RadioStation;
 
 public class GeocastBroadcastFilter extends RadioNewStationDiscoveredBroadcastFilter {
     private static final Logger LOG = LoggerFactory.getLogger(GeocastBroadcastFilter.class);

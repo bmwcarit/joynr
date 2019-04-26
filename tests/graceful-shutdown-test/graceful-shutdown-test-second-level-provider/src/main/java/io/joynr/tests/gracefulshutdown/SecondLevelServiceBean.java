@@ -18,11 +18,11 @@
  */
 package io.joynr.tests.gracefulshutdown;
 
-import io.joynr.jeeintegration.api.ServiceProvider;
-import joynr.tests.graceful.shutdown.SecondLevelServiceSync;
-
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+
+import io.joynr.jeeintegration.api.ServiceProvider;
+import joynr.tests.graceful.shutdown.SecondLevelServiceSync;
 
 @Stateless
 @ServiceProvider(serviceInterface = SecondLevelServiceSync.class)

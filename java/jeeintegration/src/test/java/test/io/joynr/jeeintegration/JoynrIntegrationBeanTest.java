@@ -31,7 +31,16 @@ import java.util.Set;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
 import com.google.inject.Guice;
+
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.JoynrRuntimeFactory;
@@ -42,13 +51,6 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 /**
  * Unit tests for the {@link JoynrIntegrationBean}.

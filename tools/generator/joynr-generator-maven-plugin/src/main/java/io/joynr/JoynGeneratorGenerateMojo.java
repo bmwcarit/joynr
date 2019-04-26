@@ -18,12 +18,12 @@
  */
 package io.joynr;
 
-import io.joynr.generator.GeneratorTask;
-import io.joynr.generator.util.InvocationArguments;
-
 import java.io.IOException;
 
 import org.apache.maven.plugin.MojoExecutionException;
+
+import io.joynr.generator.GeneratorTask;
+import io.joynr.generator.util.InvocationArguments;
 
 /**
  * Goal which generates the joynr interfaces and implementations.

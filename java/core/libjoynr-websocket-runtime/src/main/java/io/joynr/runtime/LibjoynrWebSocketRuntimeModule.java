@@ -18,9 +18,15 @@
  */
 package io.joynr.runtime;
 
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
+import io.joynr.messaging.routing.LibjoynrRoutingTableAddressValidator;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.RoutingTableAddressValidator;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -28,14 +34,9 @@ import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMulticastAddressCalculator;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientModule;
-
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
-
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 /**
  *  Use this module if you want to start a lib joynr instance which connects to a cluster controller by websockets
@@ -49,6 +50,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         bind(JoynrRuntime.class).to(LibjoynrRuntime.class).in(Singleton.class);
         bind(MessageRouter.class).to(LibJoynrMessageRouter.class);
         bind(MessageSender.class).to(LibJoynrMessageSender.class);
+        bind(RoutingTableAddressValidator.class).to(LibjoynrRoutingTableAddressValidator.class);
         bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
                            .toInstance(Boolean.TRUE);
 

@@ -37,13 +37,22 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
+
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
@@ -55,13 +64,6 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StaticCapabilitiesProvisioningTest {

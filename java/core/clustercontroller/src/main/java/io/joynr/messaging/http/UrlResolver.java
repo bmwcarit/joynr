@@ -18,11 +18,6 @@
  */
 package io.joynr.messaging.http;
 
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.http.operation.HttpConstants;
-import io.joynr.messaging.util.Utilities;
-import io.joynr.runtime.PropertyLoader;
-
 import java.net.URL;
 import java.util.Properties;
 
@@ -33,6 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.name.Named;
+
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.http.operation.HttpConstants;
+import io.joynr.messaging.util.Utilities;
+import io.joynr.runtime.PropertyLoader;
 
 public class UrlResolver {
 

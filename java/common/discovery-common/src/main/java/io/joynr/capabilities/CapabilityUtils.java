@@ -36,11 +36,11 @@ import com.google.inject.Inject;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.system.RoutingTypes.Address;
+import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
-import joynr.types.DiscoveryEntry;
-import joynr.types.DiscoveryEntryWithMetaInfo;
 
 /**
  * Conversion helpers for CapabilityInformation, CapabilityEntry and DiscoveryEntry

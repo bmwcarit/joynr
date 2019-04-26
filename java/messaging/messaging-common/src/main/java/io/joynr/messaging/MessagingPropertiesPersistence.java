@@ -18,17 +18,18 @@
  */
 package io.joynr.messaging;
 
-import io.joynr.messaging.routing.MessageQueue;
-import io.joynr.runtime.PropertyLoader;
+import static io.joynr.util.JoynrUtil.createUuidString;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.messaging.routing.MessageQueue;
+import io.joynr.runtime.PropertyLoader;
 
 public class MessagingPropertiesPersistence {
     private static final Logger LOG = LoggerFactory.getLogger(MessagingPropertiesPersistence.class);
@@ -92,7 +93,7 @@ public class MessagingPropertiesPersistence {
 
     private void generateIfAbsent(String propertyName) {
         if (!storage.containsKey(propertyName)) {
-            String propertyValue = UUID.randomUUID().toString();
+            String propertyValue = createUuidString();
             storage.put(propertyName, propertyValue);
         }
     }

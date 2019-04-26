@@ -19,11 +19,11 @@
  */
 package io.joynr.messaging.bounceproxy.controller.directory.jdbc;
 
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.persist.jpa.JpaPersistModule;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.ChannelDirectory;
 
 /**
  * Module to bind all directories to databases.<br>

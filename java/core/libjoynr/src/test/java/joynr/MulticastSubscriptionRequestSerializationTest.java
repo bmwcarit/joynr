@@ -21,11 +21,13 @@ package joynr;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.joynr.pubsub.SubscriptionQos;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.joynr.pubsub.SubscriptionQos;
 
 public class MulticastSubscriptionRequestSerializationTest {
 

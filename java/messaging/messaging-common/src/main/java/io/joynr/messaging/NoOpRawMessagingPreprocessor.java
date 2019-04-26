@@ -18,8 +18,8 @@
  */
 package io.joynr.messaging;
 
-import java.util.Map;
 import java.io.Serializable;
+import java.util.Map;
 
 public class NoOpRawMessagingPreprocessor extends RawMessagingPreprocessor {
 

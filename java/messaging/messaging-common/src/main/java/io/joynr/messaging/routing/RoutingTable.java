@@ -24,22 +24,21 @@ public interface RoutingTable {
     Address get(String participantId);
 
     /**
-     * Adds a new routing entry. If a routing entry for the provided participantId already exists, only the expiryDate and the sticky-flag
-     * are updated unless allowUpdate is set to true.
+     * Adds a new routing entry. If a routing entry for the provided participantId already exists, only the expiryDate
+     * and the sticky-flag are updated unless the update is allowed (See RoutingTableAddressValidator).
      *
      * @param participantId participant id for which a routing entry shall be created
      * @param address Address which shall be associated with the participant id
      * @param isGloballyVisible States whether the endpoint is globally visible or not
      * @param expiryDateMs Expiry date of the routing entry in milliseconds
-     * @param isSticky If set to true, the routing entry never expires
-     * @param allowUpdate If set to false, the address won't be changed if a routing entry for the provided participantId already exists.
+     * @param isSticky If set to true, the routing entry never expires and cannot be replaced
      */
-    void put(String participantId,
-             Address address,
-             boolean isGloballyVisible,
-             long expiryDateMs,
-             boolean isSticky,
-             boolean allowUpdate);
+    void put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky);
+
+    /**
+     * Overload of put method with isSticky set to false.
+     */
+    void put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs);
 
     boolean containsKey(String participantId);
 
@@ -65,16 +64,6 @@ public interface RoutingTable {
      * @return The routing entry's sticky state.
      */
     boolean getIsSticky(String participantId);
-
-    /**
-     * Sets the isSticky attribute of the Routing Entry for the participantId.
-     * If true, the routing entry will not be get purged from routing table
-     * by the cleanup thread.
-     * @param participantId
-     * @param isSticky
-     * @throws JoynrRuntimeException if no entry exists for the given participantId
-     */
-    void setIsSticky(String participantId, boolean isSticky);
 
     void remove(String participantId);
 

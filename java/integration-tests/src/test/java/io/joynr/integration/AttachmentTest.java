@@ -19,13 +19,13 @@
 package io.joynr.integration;
 
 import static com.jayway.restassured.RestAssured.given;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Future;
 
 import javax.annotation.Nullable;
@@ -62,7 +62,7 @@ public class AttachmentTest {
     @BounceProxyServerContext
     public BounceProxyServerSetup configuration;
 
-    private String receiverId = "channelservicestest-" + UUID.randomUUID().toString();
+    private String receiverId = "channelservicestest-" + createUuidString();
 
     private BounceProxyCommunicationMock bpMock;
 
@@ -75,7 +75,7 @@ public class AttachmentTest {
 
     @Test
     public void testSendAttachedByteArray() throws Exception {
-        String channelId = "AttachmentTest_" + UUID.randomUUID().toString();
+        String channelId = "AttachmentTest_" + createUuidString();
         try {
             bpMock.createChannel(channelId);
         } catch (Exception e) {
@@ -110,7 +110,7 @@ public class AttachmentTest {
 
     @Test
     public void testSendAndDownload() throws Exception {
-        String channelId = "AttachmentTest_" + UUID.randomUUID().toString();
+        String channelId = "AttachmentTest_" + createUuidString();
 
         bpMock.createChannel(channelId);
 

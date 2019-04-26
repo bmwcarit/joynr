@@ -18,14 +18,14 @@
  */
 package io.joynr.android.test;
 
-import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
-
 import java.util.Properties;
 
 import android.app.Activity;
 import android.os.Bundle;
 
 import com.google.inject.Module;
+
+import io.joynr.joynrandroidruntime.JoynrAndroidRuntime;
 
 // An activity that creates Joynr runtimes
 public class TestActivity extends Activity {

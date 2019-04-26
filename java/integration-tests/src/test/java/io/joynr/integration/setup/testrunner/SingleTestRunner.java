@@ -18,14 +18,14 @@
  */
 package io.joynr.integration.setup.testrunner;
 
-import io.joynr.integration.setup.BounceProxyServerSetup;
-
 import java.lang.reflect.Field;
 
 import org.junit.runner.Description;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+
+import io.joynr.integration.setup.BounceProxyServerSetup;
 
 /**
  * Test runner that runs a test class for a single bounce proxy server setup.

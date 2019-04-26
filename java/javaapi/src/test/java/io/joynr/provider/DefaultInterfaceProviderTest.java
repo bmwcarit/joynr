@@ -19,13 +19,13 @@
 package io.joynr.provider;
 
 import static org.mockito.Mockito.mock;
-import io.joynr.pubsub.publication.BroadcastFilterImpl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testSubscriptionPublisher;
 

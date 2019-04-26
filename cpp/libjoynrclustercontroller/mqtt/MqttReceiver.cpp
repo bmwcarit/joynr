@@ -20,7 +20,6 @@
 
 #include "joynr/MessagingSettings.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
@@ -31,17 +30,15 @@ MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnect
                            const MessagingSettings& settings,
                            const std::string& channelIdForMqttTopic,
                            const std::string& unicastTopicPrefix)
-        : channelIdForMqttTopic(channelIdForMqttTopic),
-          globalClusterControllerAddress(),
-          mosquittoConnection(std::move(mosquittoConnection))
+        : mosquittoConnection(std::move(mosquittoConnection))
 {
-    std::string brokerUri =
+    const std::string brokerUri =
             "tcp://" + settings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost() + ":" +
             std::to_string(settings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
 
-    std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
-    system::RoutingTypes::MqttAddress receiveMqttAddress(brokerUri, unicastChannelIdForMqttTopic);
-    globalClusterControllerAddress = joynr::serializer::serializeToJson(receiveMqttAddress);
+    const std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
+    globalClusterControllerAddress =
+            system::RoutingTypes::MqttAddress(brokerUri, unicastChannelIdForMqttTopic);
     this->mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
 }
 
@@ -59,7 +56,11 @@ void MqttReceiver::stopReceiveQueue()
     JOYNR_LOG_DEBUG(logger(), "stopReceiveQueue");
 }
 
-const std::string& MqttReceiver::getGlobalClusterControllerAddress() const
+const std::string MqttReceiver::getSerializedGlobalClusterControllerAddress() const
+{
+    return joynr::serializer::serializeToJson(globalClusterControllerAddress);
+}
+const system::RoutingTypes::MqttAddress& MqttReceiver::getGlobalClusterControllerAddress() const
 {
     return globalClusterControllerAddress;
 }

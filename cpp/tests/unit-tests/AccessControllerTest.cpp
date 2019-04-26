@@ -26,6 +26,7 @@
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
+#include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Request.h"
 #include "joynr/Settings.h"
@@ -51,7 +52,7 @@ class MockConsumerPermissionCallback
         : public joynr::IAccessController::IHasConsumerPermissionCallback
 {
 public:
-    MOCK_METHOD1(hasConsumerPermission, void(bool hasPermission));
+    MOCK_METHOD1(hasConsumerPermission, void(IAccessController::Enum hasPermission));
 };
 
 template <typename... Ts>
@@ -124,7 +125,7 @@ public:
                       clusterControllerSettings,
                       messageRouter,
                       singleThreadedIOService->getIOService())),
-              accessController(localCapabilitiesDirectoryMock, localDomainAccessControllerMock),
+              accessController(std::make_shared<AccessController>(localCapabilitiesDirectoryMock, localDomainAccessControllerMock)),
               messagingQos(MessagingQos(5000))
     {
         singleThreadedIOService->start();
@@ -139,11 +140,24 @@ public:
 
     void invokeOnSuccessCallbackFct(
             std::string participantId,
-            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            std::shared_ptr<joynr::ILocalCapabilitiesCallback> callback,
+            bool useGlobalCapabilitiesDirectory)
     {
         std::ignore = participantId;
-        onSuccess(discoveryEntry);
+        ASSERT_FALSE(useGlobalCapabilitiesDirectory);
+        std::vector<types::DiscoveryEntryWithMetaInfo> capabilitiesReceived;
+        capabilitiesReceived.push_back(discoveryEntry);
+        callback->capabilitiesReceived(capabilitiesReceived);
+    }
+
+    void invokeOnErrorCallbackFct(
+            std::string participantId,
+            std::shared_ptr<joynr::ILocalCapabilitiesCallback> callback,
+            bool useGlobalCapabilitiesDirectory)
+    {
+        ASSERT_FALSE(useGlobalCapabilitiesDirectory);
+        callback->onError(joynr::exceptions::JoynrRuntimeException(fmt::format(
+                "No local capabilities found for participantId {}", participantId)));
     }
 
     std::shared_ptr<ImmutableMessage> getImmutableMessage()
@@ -180,19 +194,28 @@ public:
         EXPECT_CALL(
                 *localCapabilitiesDirectoryMock,
                 lookup(toParticipantId,
-                       A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
-                       A<std::function<
-                               void(const joynr::exceptions::ProviderRuntimeException&)>>()))
+                       A<std::shared_ptr<joynr::ILocalCapabilitiesCallback>>(),
+                       A<bool>()
+                ))
                 .Times(1)
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeOnSuccessCallbackFct));
     }
 
-    void testPermission(Permission::Enum testPermission, bool expectedPermission)
+    void prepareConsumerTestInRetryErrorCase()
+    {
+        EXPECT_CALL(
+                *localCapabilitiesDirectoryMock,
+                lookup(toParticipantId,
+                       A<std::shared_ptr<joynr::ILocalCapabilitiesCallback>>(),
+                       A<bool>()
+                ))
+                .Times(1)
+                .WillOnce(Invoke(this, &AccessControllerTest::invokeOnErrorCallbackFct));
+    }
+
+    void testPermission(Permission::Enum testPermission, IAccessController::Enum expectedPermission)
     {
         prepareConsumerTest();
-        std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
-        immutableMessage->setCreator(DUMMY_USERID);
-
         ConsumerPermissionCallbackMaker makeCallback(testPermission);
         EXPECT_CALL(*localDomainAccessControllerMock,
                     getConsumerPermission(
@@ -201,8 +224,10 @@ public:
                         &makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
         EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(expectedPermission)).Times(1);
 
+        std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+        immutableMessage->setCreator(DUMMY_USERID);
         // pass the immutable message to hasConsumerPermission
-        accessController.hasConsumerPermission(
+        accessController->hasConsumerPermission(
                 immutableMessage,
                 std::static_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                         accessControllerCallback));
@@ -216,7 +241,7 @@ protected:
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;
     std::shared_ptr<MockMessageRouter> messageRouter;
     std::shared_ptr<MockLocalCapabilitiesDirectory> localCapabilitiesDirectoryMock;
-    AccessController accessController;
+    std::shared_ptr<AccessController> accessController;
     MutableMessageFactory messageFactory;
     MutableMessage mutableMessage;
     MessagingQos messagingQos;
@@ -259,9 +284,9 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl)
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
 
-    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(true)).Times(1);
+    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(IAccessController::Enum::YES)).Times(1);
 
-    accessController.hasConsumerPermission(
+    accessController->hasConsumerPermission(
             getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                     accessControllerCallback));
@@ -285,9 +310,9 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl)
                     DUMMY_USERID, TEST_DOMAIN, TEST_INTERFACE, TEST_OPERATION, TrustLevel::HIGH))
             .WillOnce(Return(permissionYes));
 
-    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(true)).Times(1);
+    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(IAccessController::Enum::YES)).Times(1);
 
-    accessController.hasConsumerPermission(
+    accessController->hasConsumerPermission(
             getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                     accessControllerCallback));
@@ -303,14 +328,29 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::operationNeeded));
 
-    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(false)).Times(1);
+    EXPECT_CALL(*accessControllerCallback, hasConsumerPermission(IAccessController::Enum::NO)).Times(1);
 
     std::string payload("invalid serialization of Request object");
     mutableMessage.setPayload(payload);
 
-    accessController.hasConsumerPermission(
+    accessController->hasConsumerPermission(
             getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
+                    accessControllerCallback));
+}
+
+TEST_F(AccessControllerTest, retryAccessControlCheckIfNoDiscoveryEntry) {
+    prepareConsumerTestInRetryErrorCase();
+    EXPECT_CALL(*accessControllerCallback,
+                hasConsumerPermission(IAccessController::Enum::RETRY)).Times(1);
+
+    std::shared_ptr<ImmutableMessage> immutableMessage =
+            mutableMessage.getImmutableMessage();
+    immutableMessage->setCreator(DUMMY_USERID);
+    // pass the immutable message to hasConsumerPermission
+    accessController->hasConsumerPermission(
+            immutableMessage,
+            std::static_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                     accessControllerCallback));
 }
 
@@ -321,7 +361,7 @@ TEST_F(AccessControllerTest, hasProviderPermission)
     EXPECT_CALL(*localDomainAccessControllerMock, getProviderPermission(_, _, _, _))
             .Times(1)
             .WillOnce(Return(permissionYes));
-    bool retval = accessController.hasProviderPermission(
+    bool retval = accessController->hasProviderPermission(
             DUMMY_USERID, TrustLevel::HIGH, TEST_DOMAIN, TEST_INTERFACE);
     EXPECT_TRUE(retval);
 }
@@ -333,7 +373,7 @@ TEST_F(AccessControllerTest, hasNoProviderPermission)
     EXPECT_CALL(*localDomainAccessControllerMock, getProviderPermission(_, _, _, _))
             .Times(1)
             .WillOnce(Return(permissionNo));
-    bool retval = accessController.hasProviderPermission(
+    bool retval = accessController->hasProviderPermission(
             DUMMY_USERID, TrustLevel::HIGH, TEST_DOMAIN, TEST_INTERFACE);
     EXPECT_FALSE(retval);
 }
@@ -389,11 +429,9 @@ TYPED_TEST_CASE(AccessControllerSubscriptionTest, SubscriptionTypes);
 TYPED_TEST(AccessControllerSubscriptionTest, hasNoConsumerPermission)
 {
     const Permission::Enum permissionNo = Permission::NO;
-    const bool expectedPermissionFalse = false;
+    const IAccessController::Enum expectedPermissionFalse = IAccessController::Enum::NO;
 
     this->createMutableMessage();
-
-    std::shared_ptr<ImmutableMessage> immutableMessage = this->mutableMessage.getImmutableMessage();
 
     this->testPermission(permissionNo, expectedPermissionFalse);
 }
@@ -401,11 +439,9 @@ TYPED_TEST(AccessControllerSubscriptionTest, hasNoConsumerPermission)
 TYPED_TEST(AccessControllerSubscriptionTest, hasConsumerPermission)
 {
     const Permission::Enum permissionNo = Permission::YES;
-    const bool expectedPermissionFalse = true;
+    const IAccessController::Enum expectedPermissionFalse = IAccessController::Enum::YES;
 
     this->createMutableMessage();
-
-    std::shared_ptr<ImmutableMessage> immutableMessage = this->mutableMessage.getImmutableMessage();
 
     this->testPermission(permissionNo, expectedPermissionFalse);
 }

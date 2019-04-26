@@ -18,23 +18,26 @@
  */
 package io.joynr.joynrandroidruntime;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
+
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.runtime.PropertyLoader;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
 
 public class InitRuntimeTask extends AsyncTask<Object, String, JoynrRuntime> {
 

@@ -67,7 +67,11 @@ void WebSocketLibJoynrMessagingSkeleton::onMessageReceived(smrf::ByteVector&& me
         immutableMessage->setReceivedFromGlobal(true);
     }
 
-    JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+    if (logger().getLogLevel() == LogLevel::Debug) {
+        JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->getTrackingInfo());
+    } else {
+        JOYNR_LOG_TRACE(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+    }
 
     auto onFailure = [messageId = immutableMessage->getId()](
             const exceptions::JoynrRuntimeException& e)

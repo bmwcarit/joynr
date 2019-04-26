@@ -21,14 +21,6 @@ package io.joynr.messaging.bounceproxy.monitoring;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
-import io.joynr.guice.PropertyLoadingModule;
-import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
-import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
-import io.joynr.messaging.bounceproxy.info.BounceProxyInformationProvider;
-import io.joynr.messaging.bounceproxy.service.DefaultBounceProxyChannelServiceImpl;
-import io.joynr.messaging.info.BounceProxyInformation;
-import io.joynr.messaging.service.ChannelService;
-import io.joynr.messaging.system.TimestampProvider;
 
 import java.io.IOException;
 import java.net.URI;
@@ -60,6 +52,15 @@ import org.mockito.stubbing.Answer;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.guice.PropertyLoadingModule;
+import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
+import io.joynr.messaging.bounceproxy.ControlledBounceProxyModule;
+import io.joynr.messaging.bounceproxy.info.BounceProxyInformationProvider;
+import io.joynr.messaging.bounceproxy.service.DefaultBounceProxyChannelServiceImpl;
+import io.joynr.messaging.info.BounceProxyInformation;
+import io.joynr.messaging.service.ChannelService;
+import io.joynr.messaging.system.TimestampProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MonitoringServiceClientTest {

@@ -77,8 +77,9 @@ void RoutingTable::add(const std::string& participantId,
     if (!result.second) {
         multiIndexContainer.replace(result.first, routingEntry);
         JOYNR_LOG_INFO(logger(),
-                       "Replaced routing entry: {}, #entries: {}",
+                       "Replaced routing entry: new: {}, old: {}, #entries: {}",
                        routingEntry.toString(),
+                       result.first->toString(),
                        multiIndexContainer.size());
     } else {
         JOYNR_LOG_INFO(logger(),
@@ -90,6 +91,17 @@ void RoutingTable::add(const std::string& participantId,
 
 void RoutingTable::remove(const std::string& participantId)
 {
+    const auto routingEntry = lookupRoutingEntryByParticipantId(participantId);
+    if (routingEntry && routingEntry->isSticky) {
+        JOYNR_LOG_WARN(logger(),
+                       "Cannot remove sticky routing entry (participantId={}, address={}, "
+                       "isGloballyVisible={}, expiryDateMs={}) from routing table",
+                       participantId,
+                       routingEntry->address->toString(),
+                       routingEntry->isGloballyVisible,
+                       routingEntry->expiryDateMs);
+        return;
+    }
     JOYNR_LOG_INFO(logger(),
                    "Removing routing entry for participantId: {}, #entries before removal: {}",
                    participantId,

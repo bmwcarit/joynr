@@ -18,6 +18,14 @@
  */
 package io.joynr.dispatching.subscription;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -26,18 +34,9 @@ import io.joynr.provider.PromiseListener;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 import io.joynr.pubsub.SubscriptionQos;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.TimerTask;
-
 import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.exceptions.ProviderRuntimeException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Timer object to handle periodic subscriptions

@@ -26,11 +26,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.RoutingTable;
@@ -42,9 +46,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Loads a set of JSON encoded {@link GlobalDiscoveryEntry discovery entries} from the file referenced by the property
@@ -90,13 +91,11 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                 boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
                 final long expiryDateMs = Long.MAX_VALUE;
                 final boolean isSticky = true;
-                final boolean allowUpdate = false;
                 routingTable.put(globalDiscoveryEntry.getParticipantId(),
                                  CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
                                  isGloballyVisible,
                                  expiryDateMs,
-                                 isSticky,
-                                 allowUpdate);
+                                 isSticky);
             }
         }
     }

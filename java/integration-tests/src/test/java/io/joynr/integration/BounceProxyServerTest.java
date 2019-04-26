@@ -18,13 +18,13 @@
  */
 package io.joynr.integration;
 
-import io.joynr.integration.util.ServersUtil;
-
 import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import com.jayway.restassured.RestAssured;
+
+import io.joynr.integration.util.ServersUtil;
 
 public class BounceProxyServerTest extends AbstractBounceProxyServerTest {
 

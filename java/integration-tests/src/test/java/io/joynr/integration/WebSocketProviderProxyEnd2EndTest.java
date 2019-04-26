@@ -22,12 +22,16 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
+
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
@@ -43,9 +47,6 @@ import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.servlet.ServletUtil;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.tests.testProxy;
-
-import org.junit.Before;
-import org.junit.Test;
 
 public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
 

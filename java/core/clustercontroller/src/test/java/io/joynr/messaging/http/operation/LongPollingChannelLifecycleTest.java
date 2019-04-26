@@ -18,21 +18,10 @@
  */
 package io.joynr.messaging.http.operation;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Singleton;
-import io.joynr.capabilities.DummyDiscoveryModule;
-import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessageArrivedListener;
-import io.joynr.messaging.JsonMessageSerializerModule;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.MessagingSettings;
-import io.joynr.messaging.ReceiverStatusListener;
+import static io.joynr.util.JoynrUtil.createUuidString;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -52,7 +41,19 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Singleton;
+
+import io.joynr.capabilities.DummyDiscoveryModule;
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.JsonMessageSerializerModule;
+import io.joynr.messaging.MessageArrivedListener;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingSettings;
+import io.joynr.messaging.ReceiverStatusListener;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LongPollingChannelLifecycleTest {
@@ -63,7 +64,7 @@ public class LongPollingChannelLifecycleTest {
     private static final String CHANNELPATH = BOUNCEPROXYPATH + "channels/";
 
     private String bounceProxyUrl;
-    private String channelId = "LongPollingCallableTest_" + UUID.randomUUID().toString();
+    private String channelId = "LongPollingCallableTest_" + createUuidString();
 
     private String serviceAddress;
 

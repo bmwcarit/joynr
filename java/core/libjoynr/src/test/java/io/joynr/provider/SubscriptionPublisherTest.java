@@ -22,8 +22,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import io.joynr.pubsub.publication.BroadcastFilter;
-import io.joynr.pubsub.publication.BroadcastListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +30,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.pubsub.publication.BroadcastFilter;
+import io.joynr.pubsub.publication.BroadcastListener;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionPublisherTest {

@@ -18,9 +18,10 @@
  */
 package io.joynr.tests.gracefulshutdown;
 
-import javax.ejb.Singleton;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import javax.ejb.Singleton;
 
 @Singleton
 public class FailureLogBean {

@@ -19,6 +19,7 @@
 package io.joynr.runtime;
 
 import javax.inject.Named;
+
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,27 +28,23 @@ import java.util.Map;
 
 public class DiscoveryQos {
     public static final DiscoveryQos NO_FILTER;
+    public static final long NO_MAX_AGE = Long.MAX_VALUE;
     public static final long NO_VALUE = -1L;
 
-    private long discoveryTimeoutMs;
+    private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.LastSeen;
+    private static final long DEFAULT_CACHEMAXAGE = 0L;
+    private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
+    private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
+
+    long cacheMaxAgeMs;
 
     private ArbitrationStrategy arbitrationStrategy;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
-    private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.LastSeen;
-
-    long cacheMaxAgeMs;
-    private static final long DEFAULT_CACHEMAXAGE = 0L;
-    public static final long NO_MAX_AGE = Long.MAX_VALUE;
-
-    private boolean providerMustSupportOnChange;
-    private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
-
-    private long retryIntervalMs;
-
-    private DiscoveryScope discoveryScope;
-    private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
-
     private HashMap<String, String> customParameters = new HashMap<>();
+    private DiscoveryScope discoveryScope;
+    private long discoveryTimeoutMs;
+    private boolean providerMustSupportOnChange;
+    private long retryIntervalMs;
 
     /**
      * DiscoveryQos object with default values.
@@ -148,7 +144,7 @@ public class DiscoveryQos {
                         long cacheMaxAge,
                         DiscoveryScope discoveryScope) {
         if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
-            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DiscoveryQos constructor");
         }
 
         this.cacheMaxAgeMs = cacheMaxAge;
@@ -190,7 +186,7 @@ public class DiscoveryQos {
      */
     public void setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy) {
         if (arbitrationStrategy.equals(ArbitrationStrategy.Custom)) {
-            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DisocveryQos constructor");
+            throw new IllegalStateException("A Custom strategy can only be set by passing an arbitration strategy function to the DiscoveryQos constructor");
         }
         this.arbitrationStrategy = arbitrationStrategy;
     }
@@ -346,5 +342,19 @@ public class DiscoveryQos {
 
     public Map<String, String> getCustomParameters() {
         return customParameters;
+    }
+
+    /**
+      * Stringifies the class excluding arbitrationStrategyFunction
+      *
+      * @return stringified class content excluding arbitrationStrategyFunction
+      */
+    @Override
+    public String toString() {
+        return "DiscoveryQos [" + "arbitrationStrategy=" + this.arbitrationStrategy + ", " + "cacheMaxAgeMs="
+                + this.cacheMaxAgeMs + ", " + "customParameters=" + this.customParameters.toString() + ", "
+                + "discoveryScope=" + this.discoveryScope + ", " + "discoveryTimeoutMs=" + this.discoveryTimeoutMs
+                + ", " + "providerMustSupportOnChange=" + this.providerMustSupportOnChange + ", " + "retryIntervalMs="
+                + this.retryIntervalMs + "]";
     }
 }

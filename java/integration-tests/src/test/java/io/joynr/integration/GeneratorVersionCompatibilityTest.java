@@ -36,7 +36,7 @@ public class GeneratorVersionCompatibilityTest extends AbstractMultipleVersionsE
 
         buildProxy(proxyClass, new HashSet<String>(Arrays.asList(domain)), true);
 
-        runtime.unregisterProvider(domain, provider_packageVersion);
+        providerRuntime.unregisterProvider(domain, provider_packageVersion);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
@@ -60,7 +60,7 @@ public class GeneratorVersionCompatibilityTest extends AbstractMultipleVersionsE
 
         buildProxy(proxyClass, new HashSet<String>(Arrays.asList(domain)), true);
 
-        runtime.unregisterProvider(domain, provider_nameVersion);
+        providerRuntime.unregisterProvider(domain, provider_nameVersion);
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)

@@ -18,6 +18,28 @@
  */
 package io.joynr.messaging.http;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
+
+import javax.inject.Inject;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.client.config.RequestConfig.Builder;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.joynr.exceptions.JoynrChannelMissingException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrDelayMessageException;
@@ -34,28 +56,6 @@ import io.joynr.messaging.http.operation.HttpRequestFactory;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.RoutingTypes.ChannelAddress;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-
-import javax.inject.Inject;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.config.RequestConfig.Builder;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HttpMessageSender implements ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);

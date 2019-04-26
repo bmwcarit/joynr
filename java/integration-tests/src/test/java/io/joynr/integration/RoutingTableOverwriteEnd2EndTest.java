@@ -22,8 +22,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -35,16 +37,24 @@ import com.google.inject.util.Modules;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
-import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.ProviderAnnotations;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import io.joynr.servlet.ServletUtil;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
@@ -56,37 +66,80 @@ public class RoutingTableOverwriteEnd2EndTest {
     @Rule
     public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
+    private static final long CONST_DEFAULT_TEST_TIMEOUT = 10000;
     private static int mqttBrokerPort = 1883;
+    private Properties webSocketConfig;
+    private Properties mqttConfig;
+    String providerDomain;
 
-    protected JoynrRuntime createRuntime(String runtimeId, Properties additionalProperties) {
-        Properties properties = new Properties();
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
-        properties.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-        properties.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:" + mqttBrokerPort);
+    @Before
+    public void setUp() throws IOException {
+        webSocketConfig = new Properties();
+        final int port = ServletUtil.findFreePort();
+        webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+        webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + port);
+        webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+        webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+
+        mqttConfig = new Properties();
+        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:" + mqttBrokerPort);
+
+        providerDomain = "testDomain" + System.currentTimeMillis();
+    }
+
+    private JoynrRuntime createCcRuntimeInternal(String runtimeId,
+                                                 Module module,
+                                                 Properties properties,
+                                                 Properties additionalProperties) {
         properties.put(MessagingPropertyKeys.CHANNELID, runtimeId);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX, runtimeId);
+        properties.putAll(mqttConfig);
 
         if (additionalProperties != null) {
             properties.putAll(additionalProperties);
         }
 
-        Module module = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
-        DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(properties,
-                                                                                             module).createApplication(DummyJoynrApplication.class);
-
-        return application.getRuntime();
+        return new JoynrInjectorFactory(properties, module).getInjector().getInstance(JoynrRuntime.class);
     }
 
-    protected ProviderQos createProviderQos() {
+    private JoynrRuntime createCcRuntime(String runtimeId, Properties additionalProperties) {
+        Module module = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
+        return createCcRuntimeInternal(runtimeId, module, new Properties(), additionalProperties);
+    }
+
+    private JoynrRuntime createCcWsRuntime(String runtimeId, Properties additionalProperties) {
+        Properties properties = new Properties();
+        properties.putAll(webSocketConfig);
+
+        Module module = Modules.override(new CCWebSocketRuntimeModule()).with(new MqttPahoModule());
+        return createCcRuntimeInternal(runtimeId, module, new Properties(), additionalProperties);
+    }
+
+    private JoynrRuntime createWsRuntime(Properties additionalProperties) {
+        Properties properties = new Properties();
+        properties.putAll(webSocketConfig);
+
+        if (additionalProperties != null) {
+            properties.putAll(additionalProperties);
+        }
+
+        return new JoynrInjectorFactory(properties,
+                                        new LibjoynrWebSocketRuntimeModule()).getInjector()
+                                                                             .getInstance(JoynrRuntime.class);
+    }
+
+    private ProviderQos createProviderQos(ProviderScope scope) {
         final ProviderQos providerQos = new ProviderQos();
-        providerQos.setScope(ProviderScope.GLOBAL);
+        providerQos.setScope(scope);
         providerQos.setPriority(System.currentTimeMillis());
         return providerQos;
     }
 
-    protected Properties createFixedParticipantIdProperties(String domain,
-                                                            @SuppressWarnings("rawtypes") Class clazz,
-                                                            String participantId) {
+    private Properties createFixedParticipantIdProperties(String domain,
+                                                          Class<? extends AbstractJoynrProvider> clazz,
+                                                          String participantId) {
         Properties result = new Properties();
         String interfaceName = ProviderAnnotations.getInterfaceName(clazz);
         int majorVersion = ProviderAnnotations.getMajorVersion(clazz);
@@ -95,12 +148,11 @@ public class RoutingTableOverwriteEnd2EndTest {
         return result;
     }
 
-    @Test
-    public void testProviderAddressCanBeOverwrittenAfterDiscovery() throws Exception {
-        // Tests that if a provider's address is changed in the discovery directory and a new proxy is
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testGlobalAddressCanBeOverwrittenByGlobalAddress() throws Exception {
+        // Tests that if a provider's address is changed in the global capabilities directory and a new proxy is
         // created for the provider, the routing table of the proxy's runtime will also be updated as long as
-        // a new arbitration (cache max age = 0) is performed.
-        final String providerDomain = "testDomain";
+        // a new global lookup (cache max age = 0) is performed.
         final Properties fixedParticipantIdProperty = createFixedParticipantIdProperties(providerDomain,
                                                                                          DefaulttestProvider.class,
                                                                                          "fixedParticipantId");
@@ -109,27 +161,129 @@ public class RoutingTableOverwriteEnd2EndTest {
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
         discoveryQos.setCacheMaxAgeMs(0);
 
-        JoynrRuntime runtimeProxy = createRuntime("proxy", null);
+        JoynrRuntime runtimeProxy = createCcRuntime("proxy", null);
 
-        JoynrRuntime runtimeProvider1 = createRuntime("provider_initial", fixedParticipantIdProperty);
+        JoynrRuntime runtimeProvider1 = createCcRuntime("provider_initial", fixedParticipantIdProperty);
         DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
         boolean awaitGlobalRegistration = true;
-        runtimeProvider1.registerProvider(providerDomain, provider1, createProviderQos(), awaitGlobalRegistration)
+        runtimeProvider1.registerProvider(providerDomain,
+                                          provider1,
+                                          createProviderQos(ProviderScope.GLOBAL),
+                                          awaitGlobalRegistration)
                         .get();
 
-        testProxy proxy1 = runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
-                                       .setMessagingQos(new MessagingQos(2000))
-                                       .setDiscoveryQos(discoveryQos)
-                                       .build();
+        Future<testProxy> proxy1Future = new Future<>();
+        runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
+                    .setMessagingQos(new MessagingQos(2000))
+                    .setDiscoveryQos(discoveryQos)
+                    .build(new ProxyCreatedCallback<testProxy>() {
+
+                        @Override
+                        public void onProxyCreationFinished(testProxy result) {
+                            proxy1Future.resolve(result);
+                        }
+
+                        @Override
+                        public void onProxyCreationError(JoynrRuntimeException error) {
+                            proxy1Future.onFailure(error);
+                        }
+                    });
+        testProxy proxy1 = proxy1Future.get();
 
         proxy1.addNumbers(1, 2, 3);
         verify(provider1).addNumbers(1, 2, 3);
         reset(provider1);
 
-        JoynrRuntime runtimeProvider2 = createRuntime("provider_override", fixedParticipantIdProperty);
+        JoynrRuntime runtimeProvider2 = createCcRuntime("provider_override", fixedParticipantIdProperty);
         DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
-        runtimeProvider2.registerProvider(providerDomain, provider2, createProviderQos(), awaitGlobalRegistration)
+        runtimeProvider2.registerProvider(providerDomain,
+                                          provider2,
+                                          createProviderQos(ProviderScope.GLOBAL),
+                                          awaitGlobalRegistration)
                         .get();
+
+        Future<testProxy> proxy2Future = new Future<>();
+        runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
+                    .setMessagingQos(new MessagingQos(2000))
+                    .setDiscoveryQos(discoveryQos)
+                    .build(new ProxyCreatedCallback<testProxy>() {
+
+                        @Override
+                        public void onProxyCreationFinished(testProxy result) {
+                            proxy2Future.resolve(result);
+                        }
+
+                        @Override
+                        public void onProxyCreationError(JoynrRuntimeException error) {
+                            proxy2Future.onFailure(error);
+                        }
+                    });
+        testProxy proxy2 = proxy2Future.get();
+
+        proxy2.addNumbers(1, 2, 3);
+        verify(provider1, never()).addNumbers(1, 2, 3);
+        verify(provider2).addNumbers(1, 2, 3);
+
+        // cleanup
+        runtimeProvider1.unregisterProvider(providerDomain, provider1);
+        runtimeProvider2.unregisterProvider(providerDomain, provider2);
+        // wait grace period for the unregister (remove) message to get
+        // sent to global discovery
+        Thread.sleep(1000);
+        runtimeProvider1.shutdown(true);
+        runtimeProvider2.shutdown(true);
+        runtimeProxy.shutdown(true);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testWebSocketClientAddressCanBeOverwrittenByWebSocketClientAddress() throws Exception {
+        // Tests that after a WebSocketClient provider's address is changed in the local cluster controller,
+        // the proxy communicates only with the new provider
+        final Properties fixedParticipantIdProperty = createFixedParticipantIdProperties(providerDomain,
+                                                                                         DefaulttestProvider.class,
+                                                                                         "fixedParticipantId");
+
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+        discoveryQos.setCacheMaxAgeMs(0);
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
+
+        JoynrRuntime runtimeProxy = createCcWsRuntime("proxy", webSocketConfig);
+
+        JoynrRuntime runtimeProvider1 = createWsRuntime(fixedParticipantIdProperty);
+        DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
+        runtimeProvider1.registerProvider(providerDomain, provider1, createProviderQos(ProviderScope.LOCAL)).get();
+
+        Future<testProxy> proxy1Future = new Future<>();
+        runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
+                    .setMessagingQos(new MessagingQos(2000))
+                    .setDiscoveryQos(discoveryQos)
+                    .build(new ProxyCreatedCallback<testProxy>() {
+
+                        @Override
+                        public void onProxyCreationFinished(testProxy result) {
+                            proxy1Future.resolve(result);
+                        }
+
+                        @Override
+                        public void onProxyCreationError(JoynrRuntimeException error) {
+                            proxy1Future.onFailure(error);
+                        }
+                    });
+        testProxy proxy1 = proxy1Future.get();
+
+        proxy1.addNumbers(1, 2, 3);
+        verify(provider1).addNumbers(1, 2, 3);
+        reset(provider1);
+
+        JoynrRuntime runtimeProvider2 = createWsRuntime(fixedParticipantIdProperty);
+        DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
+        runtimeProvider2.registerProvider(providerDomain, provider2, createProviderQos(ProviderScope.LOCAL)).get();
+
+        proxy1.addNumbers(1, 2, 3);
+        verify(provider1, never()).addNumbers(1, 2, 3);
+        verify(provider2).addNumbers(1, 2, 3);
+        reset(provider2);
 
         testProxy proxy2 = runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
                                        .setMessagingQos(new MessagingQos(2000))
@@ -138,5 +292,176 @@ public class RoutingTableOverwriteEnd2EndTest {
         proxy2.addNumbers(1, 2, 3);
         verify(provider1, never()).addNumbers(1, 2, 3);
         verify(provider2).addNumbers(1, 2, 3);
+
+        // cleanup
+        runtimeProvider1.unregisterProvider(providerDomain, provider1);
+        runtimeProvider2.unregisterProvider(providerDomain, provider2);
+        // wait grace period for the unregister (remove) message to get
+        // sent to global discovery
+        Thread.sleep(1000);
+        runtimeProvider1.shutdown(true);
+        runtimeProvider2.shutdown(true);
+        runtimeProxy.shutdown(true);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testWebSocketClientAddressCanNotBeOverwrittenByGlobalAddress() throws Exception {
+        // Tests that after a WebSocketClient provider has registered globally
+        // - its address in the cc is not overwritten by a global lookup for that provider which would result in a
+        //   message loop between the cc and the broker
+        // - its address in the cc is not overwritten by another globally registered provider with the same participantId
+        final Properties fixedParticipantIdProperty = createFixedParticipantIdProperties(providerDomain,
+                                                                                         DefaulttestProvider.class,
+                                                                                         "fixedParticipantId");
+
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+        discoveryQos.setCacheMaxAgeMs(0);
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+
+        JoynrRuntime runtimeProxy = createCcWsRuntime("proxy", webSocketConfig);
+
+        JoynrRuntime runtimeProvider1 = createWsRuntime(fixedParticipantIdProperty);
+        DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
+        boolean awaitGlobalRegistration = true;
+        runtimeProvider1.registerProvider(providerDomain,
+                                          provider1,
+                                          createProviderQos(ProviderScope.GLOBAL),
+                                          awaitGlobalRegistration)
+                        .get();
+
+        Future<testProxy> proxy1Future = new Future<>();
+        runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
+                    .setMessagingQos(new MessagingQos(2000))
+                    .setDiscoveryQos(discoveryQos)
+                    .build(new ProxyCreatedCallback<testProxy>() {
+
+                        @Override
+                        public void onProxyCreationFinished(testProxy result) {
+                            proxy1Future.resolve(result);
+                        }
+
+                        @Override
+                        public void onProxyCreationError(JoynrRuntimeException error) {
+                            proxy1Future.onFailure(error);
+                        }
+                    });
+        testProxy proxy1 = proxy1Future.get();
+
+        proxy1.addNumbers(1, 2, 3);
+        verify(provider1).addNumbers(1, 2, 3);
+        reset(provider1);
+
+        JoynrRuntime runtimeProvider2 = createCcRuntime("provider2", fixedParticipantIdProperty);
+        DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
+        runtimeProvider2.registerProvider(providerDomain,
+                                          provider2,
+                                          createProviderQos(ProviderScope.GLOBAL),
+                                          awaitGlobalRegistration)
+                        .get();
+
+        proxy1.addNumbers(1, 2, 3);
+        verify(provider2, never()).addNumbers(1, 2, 3);
+        verify(provider1).addNumbers(1, 2, 3);
+        reset(provider1);
+
+        testProxy proxy2 = runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
+                                       .setMessagingQos(new MessagingQos(2000))
+                                       .setDiscoveryQos(discoveryQos)
+                                       .build();
+        proxy2.addNumbers(1, 2, 3);
+        verify(provider2, never()).addNumbers(1, 2, 3);
+        verify(provider1).addNumbers(1, 2, 3);
+
+        // cleanup
+        runtimeProvider1.unregisterProvider(providerDomain, provider1);
+        runtimeProvider2.unregisterProvider(providerDomain, provider2);
+        // wait grace period for the unregister (remove) message to get
+        // sent to global discovery
+        Thread.sleep(1000);
+        runtimeProvider1.shutdown(true);
+        runtimeProvider2.shutdown(true);
+        runtimeProxy.shutdown(true);
+    }
+
+    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
+    public void testInProcessAddressCanNotBeOverwrittenByGlobalAddress() throws Exception {
+        // Tests that after a InProcess provider has registered globally
+        // - its address in the cc is not overwritten by a global lookup for that provider which would result in a
+        //   message loop between the cc and the broker
+        // - its address in the cc is not overwritten by another globally registered provider with the same participantId
+        final Properties fixedParticipantIdProperty = createFixedParticipantIdProperties(providerDomain,
+                                                                                         DefaulttestProvider.class,
+                                                                                         "fixedParticipantId");
+
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+        discoveryQos.setCacheMaxAgeMs(0);
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+
+        Properties propertiesProxyAndProvider1 = new Properties();
+        propertiesProxyAndProvider1.putAll(webSocketConfig);
+        propertiesProxyAndProvider1.putAll(fixedParticipantIdProperty);
+        JoynrRuntime runtimeProxyAndProvider1 = createCcWsRuntime("proxyAndProvider1", propertiesProxyAndProvider1);
+
+        DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
+        boolean awaitGlobalRegistration = true;
+        runtimeProxyAndProvider1.registerProvider(providerDomain,
+                                                  provider1,
+                                                  createProviderQos(ProviderScope.GLOBAL),
+                                                  awaitGlobalRegistration)
+                                .get();
+
+        Future<testProxy> proxy1Future = new Future<>();
+        runtimeProxyAndProvider1.getProxyBuilder(providerDomain, testProxy.class)
+                                .setMessagingQos(new MessagingQos(2000))
+                                .setDiscoveryQos(discoveryQos)
+                                .build(new ProxyCreatedCallback<testProxy>() {
+
+                                    @Override
+                                    public void onProxyCreationFinished(testProxy result) {
+                                        proxy1Future.resolve(result);
+                                    }
+
+                                    @Override
+                                    public void onProxyCreationError(JoynrRuntimeException error) {
+                                        proxy1Future.onFailure(error);
+                                    }
+                                });
+        testProxy proxy1 = proxy1Future.get();
+
+        proxy1.addNumbers(1, 2, 3);
+        verify(provider1).addNumbers(1, 2, 3);
+        reset(provider1);
+
+        JoynrRuntime runtimeProvider2 = createCcRuntime("provider2", fixedParticipantIdProperty);
+        DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
+        runtimeProvider2.registerProvider(providerDomain,
+                                          provider2,
+                                          createProviderQos(ProviderScope.GLOBAL),
+                                          awaitGlobalRegistration)
+                        .get();
+
+        proxy1.addNumbers(1, 2, 3);
+        verify(provider2, never()).addNumbers(1, 2, 3);
+        verify(provider1).addNumbers(1, 2, 3);
+        reset(provider1);
+
+        testProxy proxy2 = runtimeProxyAndProvider1.getProxyBuilder(providerDomain, testProxy.class)
+                                                   .setMessagingQos(new MessagingQos(2000))
+                                                   .setDiscoveryQos(discoveryQos)
+                                                   .build();
+        proxy2.addNumbers(1, 2, 3);
+        verify(provider2, never()).addNumbers(1, 2, 3);
+        verify(provider1).addNumbers(1, 2, 3);
+
+        // cleanup
+        runtimeProxyAndProvider1.unregisterProvider(providerDomain, provider1);
+        runtimeProvider2.unregisterProvider(providerDomain, provider2);
+        // wait grace period for the unregister (remove) message to get
+        // sent to global discovery
+        Thread.sleep(1000);
+        runtimeProxyAndProvider1.shutdown(true);
+        runtimeProvider2.shutdown(true);
     }
 }

@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-1.7.1)
+project(joynr-1.8.0)
 set(JOYNR_MAJOR_VERSION 1)
-set(JOYNR_MINOR_VERSION 7)
-set(JOYNR_PATCH_VERSION 1)
+set(JOYNR_MINOR_VERSION 8)
+set(JOYNR_PATCH_VERSION 0)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
@@ -473,14 +473,14 @@ link_directories(
 # JOYNR_MAX_LOG_LEVEL_DEBUG
 # JOYNR_MAX_LOG_LEVEL_TRACE
 
-# for every other build type than debug we limit log messages to level ERROR
+# for every other build type than debug we limit log messages to level DEBUG
 string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_TOLOWER)
 if(CMAKE_BUILD_TYPE_TOLOWER MATCHES debug)
     set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
     set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level evaluated at runtime")
 else()
     set(JOYNR_MAX_LOG_LEVEL "TRACE" CACHE STRING "joynr max log level")
-    set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "ERROR" CACHE STRING "joynr max log level evaluated at runtime")
+    set(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL "DEBUG" CACHE STRING "joynr max log level evaluated at runtime")
 endif()
 
 macro(CREATE_LOG_LEVEL_PROPERTY name)
@@ -510,6 +510,11 @@ endif(JOYNR_ENABLE_STDOUT_LOGGING)
 if(JOYNR_ENABLE_DLT_LOGGING)
     add_definitions(-DJOYNR_ENABLE_DLT_LOGGING)
 endif(JOYNR_ENABLE_DLT_LOGGING)
+
+if(EXISTS "/etc/fedora-release")
+    message(STATUS "Fedora release detected, eNULL cipher not available - disabling.")
+    add_definitions(-DJOYNR_WS_TLS_DISABLE_UNENCRYPTED_TRAFFIC)
+endif()
 
 ######## DEFAULT COMPILER FLAGS #############
 
@@ -729,7 +734,7 @@ endif(USE_PLATFORM_MOCOCRW)
 include(CheckMOCOCRWImportTargets)
 
 ### Add smrf ############################################################
-set(JOYNR_SMRF_REQUIRED_VERSION 0.3.1)
+set(JOYNR_SMRF_REQUIRED_VERSION 0.3.3)
 if (USE_PLATFORM_SMRF)
     find_package(smrf ${JOYNR_SMRF_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)

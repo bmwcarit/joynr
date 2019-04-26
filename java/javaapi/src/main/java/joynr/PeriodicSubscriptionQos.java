@@ -18,10 +18,10 @@
  */
 package joynr;
 
-import io.joynr.pubsub.HeartbeatSubscriptionInformation;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.pubsub.HeartbeatSubscriptionInformation;
 
 /**
  * Class representing the quality of service settings for subscriptions based on

@@ -32,8 +32,8 @@ import com.google.inject.Provider;
 import io.joynr.context.JoynrMessageScope;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
-import io.joynr.messaging.JoynrMessageMetaInfo;
 import io.joynr.messaging.JoynrMessageCreator;
+import io.joynr.messaging.JoynrMessageMetaInfo;
 import joynr.OneWayRequest;
 import joynr.tests.DefaulttestProvider;
 

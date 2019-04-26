@@ -25,9 +25,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import org.junit.Before;
 import org.junit.Test;
+
+import io.joynr.exceptions.JoynrIllegalStateException;
 
 public class MulticastWildcardRegexFactoryTest {
 

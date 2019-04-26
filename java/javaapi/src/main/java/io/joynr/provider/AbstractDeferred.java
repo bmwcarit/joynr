@@ -18,14 +18,14 @@
  */
 package io.joynr.provider;
 
-import io.joynr.exceptions.JoynrException;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import io.joynr.exceptions.JoynrException;
 import joynr.exceptions.ProviderRuntimeException;
 
 public abstract class AbstractDeferred {

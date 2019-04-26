@@ -34,17 +34,19 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Injector;
+
+import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderQosFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
-import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.AnnotationUtil;
 import joynr.types.ProviderQos;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Singleton EJB which will create and keep the Joynr runtime and also shut it down when the app server shuts down as

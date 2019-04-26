@@ -18,20 +18,6 @@
  */
 package io.joynr.proxy;
 
-import io.joynr.dispatching.rpc.ReplyCaller;
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
-import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.messaging.routing.MessageRouter;
-import joynr.system.RoutingTypes.Address;
-import joynr.vehicle.NavigationStatelessAsyncCallback;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import static io.joynr.proxy.StatelessAsyncIdCalculator.USE_CASE_SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -41,6 +27,21 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.dispatching.rpc.ReplyCaller;
+import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.messaging.routing.MessageRouter;
+import joynr.system.RoutingTypes.Address;
+import joynr.vehicle.NavigationStatelessAsyncCallback;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StatelessAsyncCallbackDirectoryTest {

@@ -97,10 +97,8 @@ public class MessageQueue {
             // (the transient flag isReceivedFromGlobal is not persisted)
             final boolean isGloballyVisible = true;
             final long expiryDateMs = message.getTtlMs();
-            final boolean isSticky = false;
-            final boolean allowUpdate = false;
 
-            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs, isSticky, allowUpdate);
+            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs);
         }
     }
 

@@ -18,15 +18,13 @@
  */
 package io.joynr.runtime;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 
-import io.joynr.proxy.StatelessAsyncCallback;
-import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.ProvidesJoynrTypesInfo;
+import io.joynr.UsedBy;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -48,9 +48,9 @@ import io.joynr.provider.JoynrInterface;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
-import io.joynr.ProvidesJoynrTypesInfo;
+import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.util.AnnotationUtil;
-import io.joynr.UsedBy;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
 import joynr.Request;

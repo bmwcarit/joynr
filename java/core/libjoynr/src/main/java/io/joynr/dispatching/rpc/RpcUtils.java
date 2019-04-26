@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 

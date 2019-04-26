@@ -18,18 +18,6 @@
  */
 package io.joynr.proxy;
 
-import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
-import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrRuntimeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
-import io.joynr.messaging.MessagingPropertyKeys;
-
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -37,6 +25,18 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.MessagingPropertyKeys;
 
 @Singleton
 public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCalculator {

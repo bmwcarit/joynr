@@ -27,12 +27,13 @@ import static org.mockito.Mockito.when;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InMemoryMulticastReceiverRegistryTest {

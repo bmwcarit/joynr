@@ -18,17 +18,17 @@
  */
 package io.joynr.caching;
 
-import io.joynr.qos.QualityOfService;
-import io.joynr.qos.TimeComparisonCompatibility;
-import io.joynr.qos.compatibility.QoSCacheEntryTimeToLiveCompatibility;
-import io.joynr.qos.compatibility.QoSDataFreshnessCompatibility;
-
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 
 import com.google.inject.Inject;
+
+import io.joynr.qos.QualityOfService;
+import io.joynr.qos.TimeComparisonCompatibility;
+import io.joynr.qos.compatibility.QoSCacheEntryTimeToLiveCompatibility;
+import io.joynr.qos.compatibility.QoSDataFreshnessCompatibility;
 
 public class ClientHashMapCache implements ClientCache {
 

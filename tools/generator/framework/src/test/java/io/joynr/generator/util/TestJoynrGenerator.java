@@ -19,8 +19,6 @@
  */
 package io.joynr.generator.util;
 
-import io.joynr.generator.IJoynrGenerator;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +27,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 
 import com.google.inject.Module;
+
+import io.joynr.generator.IJoynrGenerator;
 
 public class TestJoynrGenerator implements IJoynrGenerator {
 

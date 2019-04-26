@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country
 const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
 const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
 const ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
-const uuid = require("../../../../main/js/joynr/util/uuid");
+const nanoid = require("nanoid");
 const TestWithVersionProvider = require("../../../generated/joynr/tests/TestWithVersionProvider");
 const TestWithoutVersionProvider = require("../../../generated/joynr/tests/TestWithoutVersionProvider");
 describe("libjoynr-js.joynr.provider.Provider", () => {
@@ -32,7 +32,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
         ProviderAttribute,
         ProviderOperation,
         ProviderEvent,
-        uuid
+        nanoid
     };
 
     beforeEach(() => {

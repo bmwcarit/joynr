@@ -19,7 +19,6 @@
 package io.joynr.messaging.inprocess;
 
 import io.joynr.messaging.FailureAction;
-
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;

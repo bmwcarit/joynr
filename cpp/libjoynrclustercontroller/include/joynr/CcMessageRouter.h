@@ -92,7 +92,8 @@ public:
                     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
                     std::unique_ptr<MessageQueue<std::string>> messageQueue,
                     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
-                            transportNotAvailableQueue);
+                            transportNotAvailableQueue,
+                    const system::RoutingTypes::Address& ownGlobalAddress);
 
     ~CcMessageRouter() override;
 
@@ -106,7 +107,6 @@ public:
                     bool isGloballyVisible,
                     const std::int64_t expiryDateMs,
                     const bool isSticky,
-                    const bool allowUpdate = false,
                     std::function<void()> onSuccess = nullptr,
                     std::function<void(const joynr::exceptions::ProviderRuntimeException&)>
                             onError = nullptr) final;
@@ -168,6 +168,14 @@ public:
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
     /*
+     * used by AbstractMessageRouter
+     */
+    void removeMulticastReceiver(
+            const std::string& multicastId,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+            const std::string& providerParticipantId) final;
+
+    /*
      * Implement both IMessageRouter and RoutingAbstractProvider
      */
     void removeMulticastReceiver(
@@ -197,6 +205,11 @@ public:
     friend class ConsumerPermissionCallback;
 
 private:
+    bool isValidForRoutingTable(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+    bool allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
+                                 const system::RoutingTypes::Address& newAddress) final;
+
     void reestablishMulticastSubscriptions();
     void registerMulticastReceiver(
             const std::string& multicastId,
@@ -206,8 +219,18 @@ private:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
 
+    void sendQueuedMessages(const std::string& destinationPartId,
+                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                            const WriteLocker& messageQueueRetryWriteLock) final;
+
+    void doAccessControlCheckOrScheduleMessage(
+            std::shared_ptr<ImmutableMessage> message,
+            std::shared_ptr<const system::RoutingTypes::Address> destAddress,
+            std::uint32_t tryCount = 0) final;
     void queueMessage(std::shared_ptr<ImmutableMessage> message,
                       const ReadLocker& messageQueueRetryReadLock) final;
+
+    bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const;
 
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
     ADD_LOGGER(CcMessageRouter)
@@ -221,6 +244,7 @@ private:
     const std::string messageNotificationProviderParticipantId;
     ClusterControllerSettings& clusterControllerSettings;
     const bool multicastReceiverDirectoryPersistencyEnabled;
+    const system::RoutingTypes::Address& ownGlobalAddress;
 };
 
 } // namespace joynr

@@ -25,8 +25,8 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.messaging.routing.GlobalAddressFactory;
+import io.joynr.messaging.routing.TransportReadyListener;
 import joynr.system.RoutingTypes.Address;
 
 public class GlobalAddressProvider implements Provider<Address> {

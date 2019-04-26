@@ -21,10 +21,6 @@ package io.joynr.generator.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import io.joynr.generator.loading.ModelLoader;
-import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
-import io.joynr.generator.templates.util.NamingUtil;
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions;
 
 import java.util.Iterator;
 
@@ -41,6 +37,11 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
+
+import io.joynr.generator.loading.ModelLoader;
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
+import io.joynr.generator.templates.util.NamingUtil;
+import io.joynr.generator.util.JoynrJavaGeneratorExtensions;
 
 public class JoynrJavaGeneratorExtensionsTest {
 

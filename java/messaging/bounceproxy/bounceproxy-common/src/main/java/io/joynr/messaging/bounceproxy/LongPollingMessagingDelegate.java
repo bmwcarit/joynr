@@ -21,23 +21,16 @@ package io.joynr.messaging.bounceproxy;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTFOUND;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
+import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATEEXPIRED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_EXPIRYDATENOTSET;
-import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED;
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_RELATIVE_TTL_UNSPORTED;
-import io.joynr.communications.exceptions.JoynrHttpException;
-import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
-import io.joynr.messaging.info.ChannelInformation;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.ws.rs.core.Response.Status;
-
-import joynr.ImmutableMessage;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -46,6 +39,13 @@ import org.atmosphere.cpr.BroadcasterFactory;
 import org.atmosphere.jersey.Broadcastable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.communications.exceptions.JoynrHttpException;
+import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
+import io.joynr.messaging.info.ChannelInformation;
+import io.joynr.smrf.EncodingException;
+import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.ImmutableMessage;
 
 /**
  * Class that implements long poll messaging routines to be used by bounce

@@ -19,13 +19,6 @@
  */
 package io.joynr.messaging.bounceproxy.controller;
 
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
-import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
-import io.joynr.messaging.info.BounceProxyStatus;
-import io.joynr.messaging.info.ControlledBounceProxyInformation;
-import io.joynr.messaging.info.PerformanceMeasures;
-import io.joynr.messaging.info.PerformanceMeasures.Key;
-
 import java.net.URI;
 
 import org.junit.Assert;
@@ -40,6 +33,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyDirectory;
+import io.joynr.messaging.bounceproxy.controller.directory.BounceProxyRecord;
+import io.joynr.messaging.info.BounceProxyStatus;
+import io.joynr.messaging.info.ControlledBounceProxyInformation;
+import io.joynr.messaging.info.PerformanceMeasures.Key;
+import io.joynr.messaging.info.PerformanceMeasures;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MonitoringServiceImplTest {

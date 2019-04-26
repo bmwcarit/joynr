@@ -18,11 +18,11 @@
  */
 package io.joynr.util;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.io.Serializable;
 
 public class MultiMap<K, V> implements Serializable {
     private final Map<K, Set<V>> storage = new HashMap<>();

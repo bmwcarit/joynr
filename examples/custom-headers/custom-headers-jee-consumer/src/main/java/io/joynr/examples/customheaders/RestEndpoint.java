@@ -18,7 +18,7 @@
  */
 package io.joynr.examples.customheaders;
 
-import java.util.UUID;
+import static io.joynr.util.JoynrUtil.createUuidString;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -43,7 +43,7 @@ public class RestEndpoint {
     @GET
     @Path("/trigger")
     public String trigger() {
-        String customHeaderValue = CustomHeaderUtils.APP_CUSTOM_HEADER_VALUE_PREFIX + UUID.randomUUID().toString();
+        String customHeaderValue = CustomHeaderUtils.APP_CUSTOM_HEADER_VALUE_PREFIX + createUuidString();
         LOG.info("Calling header ping service with application custom header: {}.", customHeaderValue);
         MessagingQos messagingQos = new MessagingQos();
         messagingQos.getCustomMessageHeaders().put(CustomHeaderUtils.APP_CUSTOM_HEADER_KEY, customHeaderValue);

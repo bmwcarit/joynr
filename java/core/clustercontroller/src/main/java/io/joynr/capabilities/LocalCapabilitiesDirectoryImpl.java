@@ -562,16 +562,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             if (ce.getParticipantId() != null && ce.getAddress() != null) {
                 Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(ce);
                 final boolean isGloballyVisible = (ce.getQos().getScope() == ProviderScope.GLOBAL);
-                final boolean isSticky = false;
                 final long expiryDateMs = Long.MAX_VALUE;
-                final boolean allowUpdate = true; // Always trust the discovery directory.
 
-                messageRouter.addToRoutingTable(ce.getParticipantId(),
-                                                address,
-                                                isGloballyVisible,
-                                                expiryDateMs,
-                                                isSticky,
-                                                allowUpdate);
+                messageRouter.addToRoutingTable(ce.getParticipantId(), address, isGloballyVisible, expiryDateMs);
             }
         }
     }
@@ -651,7 +644,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
-        freshnessUpdateScheduler.shutdownNow();
         if (unregisterAllRegisteredCapabilities) {
             Set<DiscoveryEntry> allDiscoveryEntries = localDiscoveryEntryStore.getAllDiscoveryEntries();
 

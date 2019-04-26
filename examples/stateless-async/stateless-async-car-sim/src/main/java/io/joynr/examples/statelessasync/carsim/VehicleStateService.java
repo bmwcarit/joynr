@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
-import joynr.exceptions.ProviderRuntimeException;
 import joynr.examples.statelessasync.DefaultVehicleStateProvider;
 import joynr.examples.statelessasync.VehicleConfiguration;
 import joynr.examples.statelessasync.VehicleState;
+import joynr.exceptions.ProviderRuntimeException;
 
 public class VehicleStateService extends DefaultVehicleStateProvider {
 

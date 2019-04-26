@@ -23,13 +23,14 @@ import java.util.Set;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
+import org.apache.commons.lang.math.RandomUtils;
+
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import joynr.exceptions.ApplicationException;
 import joynr.vehicle.RadioStation;
 import joynr.vehicle.RadioSubscriptionPublisher;
 import joynr.vehicle.RadioSync;
-import org.apache.commons.lang.math.RandomUtils;
 
 /**
  * Sample implementation of the {@link RadioSync} interface.

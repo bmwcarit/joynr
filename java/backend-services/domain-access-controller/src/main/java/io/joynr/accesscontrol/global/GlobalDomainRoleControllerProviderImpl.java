@@ -18,16 +18,15 @@
  */
 package io.joynr.accesscontrol.global;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import io.joynr.accesscontrol.DomainAccessControlStore;
 import io.joynr.provider.Promise;
-
-import joynr.infrastructure.GlobalDomainRoleControllerAbstractProvider;
 import joynr.infrastructure.DacTypes.ChangeType;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.Role;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import joynr.infrastructure.GlobalDomainRoleControllerAbstractProvider;
 
 /**
  * Manages the Role Control Lists for all providers.

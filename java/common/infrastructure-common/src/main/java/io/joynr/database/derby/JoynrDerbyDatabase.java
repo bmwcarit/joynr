@@ -18,8 +18,6 @@
  */
 package io.joynr.database.derby;
 
-import io.joynr.database.JoynrEmbeddedDatabase;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -29,6 +27,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+
+import io.joynr.database.JoynrEmbeddedDatabase;
 
 public class JoynrDerbyDatabase extends JoynrEmbeddedDatabase {
     private static final String dbUrl_prefix = "jdbc:derby";

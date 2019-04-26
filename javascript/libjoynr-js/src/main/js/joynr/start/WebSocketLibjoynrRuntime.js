@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ const RoutingProxy = require("../../generated/joynr/system/RoutingProxy");
 const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
 const DiscoveryEntryWithMetaInfo = require("../../generated/joynr/types/DiscoveryEntryWithMetaInfo");
 const UtilInternal = require("../util/UtilInternal");
-const uuid = require("uuid/v4");
+const nanoid = require("nanoid");
 const loggingManager = require("../system/LoggingManager");
 const defaultWebSocketSettings = require("./settings/defaultWebSocketSettings");
 const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
@@ -139,7 +139,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
         }
 
         const localAddress = new WebSocketClientAddress({
-            id: uuid()
+            id: nanoid()
         });
 
         this._sharedWebSocket = new SharedWebSocket({
@@ -167,7 +167,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime {
 
         const messageRouterSettings = {
             initialRoutingTable,
-            joynrInstanceId: uuid(),
+            joynrInstanceId: nanoid(),
             messagingStubFactory,
             multicastAddressCalculator: new WebSocketMulticastAddressCalculator({
                 globalAddress: ccAddress

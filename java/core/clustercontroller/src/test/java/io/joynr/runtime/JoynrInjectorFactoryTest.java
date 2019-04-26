@@ -21,11 +21,6 @@ package io.joynr.runtime;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import io.joynr.common.JoynrPropertiesModule;
-import io.joynr.guice.IApplication;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.test.TestApplicationModule;
-import io.joynr.test.TestJoynrApplication;
 
 import java.util.Properties;
 
@@ -38,6 +33,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.google.inject.CreationException;
+
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.guice.IApplication;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.test.TestApplicationModule;
+import io.joynr.test.TestJoynrApplication;
 
 public class JoynrInjectorFactoryTest {
 

@@ -24,9 +24,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import org.junit.Test;
+
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import org.junit.Test;
 
 public class JoynrConfigurationProviderTest {
 

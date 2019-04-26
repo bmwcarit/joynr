@@ -20,18 +20,20 @@ package io.joynr.accesscontrol;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import net.sf.ehcache.CacheManager;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import net.sf.ehcache.CacheManager;
 
 public class DomainAccessControlStoreTest {
 

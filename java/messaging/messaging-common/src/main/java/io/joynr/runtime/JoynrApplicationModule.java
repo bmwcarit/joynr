@@ -18,8 +18,6 @@
  */
 package io.joynr.runtime;
 
-import io.joynr.guice.ApplicationModule;
-
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -27,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
+
+import io.joynr.guice.ApplicationModule;
 
 /**
  * This class uses joynr specific properties to configure the Guice InjectorFactory when creating

@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging;
 
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -25,7 +26,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.UUID;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -115,7 +115,7 @@ public class LibJoynrMessageRouterTest {
 
         messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                         new MessageQueue.MaxTimeoutHolder(),
-                                        UUID.randomUUID().toString(),
+                                        createUuidString(),
                                         messagePersisterMock,
                                         routingTableMock);
 
@@ -148,14 +148,7 @@ public class LibJoynrMessageRouterTest {
         Thread.sleep(100);
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = false;
-        final boolean allowUpdate = false;
-        verify(routingTable).put(eq(unknownParticipantId),
-                                 eq(parentAddress),
-                                 eq(isGloballyVisible),
-                                 eq(expiryDateMs),
-                                 eq(isSticky),
-                                 eq(allowUpdate));
+        verify(routingTable).put(eq(unknownParticipantId), eq(parentAddress), eq(isGloballyVisible), eq(expiryDateMs));
     }
 
     @Test
@@ -229,5 +222,12 @@ public class LibJoynrMessageRouterTest {
         verify(messageRouterParent).removeMulticastReceiver(eq(multicastId),
                                                             eq(subscriberParticipantId),
                                                             eq(providerParticipantId));
+    }
+
+    @Test
+    public void setToKnownAddsCcAddressToRoutingTable() {
+        final String participantId = "setToKnownParticipantId";
+        messageRouter.setToKnown(participantId);
+        verify(routingTable).put(participantId, parentAddress, false, Long.MAX_VALUE);
     }
 }

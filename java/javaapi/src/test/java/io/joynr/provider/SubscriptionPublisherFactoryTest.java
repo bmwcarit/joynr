@@ -23,17 +23,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import joynr.test.NonInstantiable;
-import joynr.tests.DefaulttestProvider;
-import joynr.tests.test;
-import joynr.tests.testProvider;
-import joynr.tests.testSubscriptionPublisherImpl;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import joynr.test.NonInstantiable;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.test;
+import joynr.tests.testProvider;
+import joynr.tests.testSubscriptionPublisherImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionPublisherFactoryTest {

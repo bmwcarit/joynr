@@ -37,6 +37,7 @@
 #include "tests/mock/MockTransportMessageReceiver.h"
 #include "tests/utils/PtrUtils.h"
 
+using namespace ::testing;
 using namespace joynr;
 
 class SystemServicesDiscoveryTest : public ::testing::Test
@@ -71,7 +72,10 @@ public:
               discoveryProxy(nullptr),
               lastSeenDateMs(-1),
               expiryDateMs(-1),
-              publicKeyId("")
+              publicKeyId(""),
+              globalMqttTopic("mqtt_SystemServicesDiscoveryTest.topic"),
+              globalMqttBrokerUrl("mqtt_SystemServicesDiscoveryTest.brokerUrl"),
+              mqttGlobalAddress(globalMqttBrokerUrl, globalMqttTopic)
     {
         SystemServicesSettings systemSettings(*settings);
         systemSettings.printSettings();
@@ -85,25 +89,26 @@ public:
 
         std::string httpChannelId("http_SystemServicesDiscoveryTest.ChannelId");
         std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");
-        std::string mqttTopic("mqtt_SystemServicesRoutingTest.topic");
-        std::string mqttBrokerUrl("mqtt_SystemServicesRoutingTest.brokerUrl");
 
         using system::RoutingTypes::ChannelAddress;
-        using system::RoutingTypes::MqttAddress;
 
         std::string serializedChannelAddress =
                 joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
         std::string serializedMqttAddress =
-                joynr::serializer::serializeToJson(MqttAddress(mqttBrokerUrl, mqttTopic));
+                joynr::serializer::serializeToJson(mqttGlobalAddress);
 
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(
                               mockMessageReceiverHttp).get()),
-                    getGlobalClusterControllerAddress())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedChannelAddress));
+                    getSerializedGlobalClusterControllerAddress())
+                .WillRepeatedly(Return(serializedChannelAddress));
+        EXPECT_CALL(
+                *(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)),
+                getSerializedGlobalClusterControllerAddress())
+                .WillRepeatedly(Return(serializedMqttAddress));
         EXPECT_CALL(
                 *(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)),
                 getGlobalClusterControllerAddress())
-                .WillRepeatedly(::testing::ReturnRefOfCopy(serializedMqttAddress));
+                .WillRepeatedly(ReturnRef(mqttGlobalAddress));
 
         // runtime can only be created, after MockCommunicationManager has been told to return
         // a channelId for getReceiveChannelId.
@@ -145,6 +150,9 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SystemServicesDiscoveryTest);
+    const std::string globalMqttTopic;
+    const std::string globalMqttBrokerUrl;
+    const system::RoutingTypes::MqttAddress mqttGlobalAddress;
 };
 
 TEST_F(SystemServicesDiscoveryTest, discoveryProviderIsAvailable)

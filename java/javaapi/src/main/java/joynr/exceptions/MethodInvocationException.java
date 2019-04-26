@@ -18,10 +18,10 @@
  */
 package joynr.exceptions;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.types.Version;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Joynr exception class to report error during method invocations (RPC) at a provider

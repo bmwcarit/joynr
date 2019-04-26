@@ -22,11 +22,14 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
+
 import io.joynr.exceptions.JoynrSerializationException;
 
 public class RoutingTypesUtil {
 
-    static ObjectMapper objectMapper = new ObjectMapper();
+    @Inject
+    private static ObjectMapper objectMapper;
 
     public static String toAddressString(Address address) {
         try {

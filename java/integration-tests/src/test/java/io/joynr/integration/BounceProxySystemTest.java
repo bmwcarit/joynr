@@ -18,7 +18,7 @@
  */
 package io.joynr.integration;
 
-import io.joynr.messaging.util.Utilities;
+import static io.joynr.util.JoynrUtil.createUuidString;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,7 +29,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -43,6 +42,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.joynr.messaging.util.Utilities;
 
 /**
  * Bounce proxy test for an already running bounce proxy server, that prints out
@@ -83,8 +84,8 @@ public class BounceProxySystemTest {
         logger.info("=== Bounce Proxy System Test ===");
         logger.info("================================");
 
-        String channelId = "channel-" + UUID.randomUUID().toString();
-        String trackingId = "trackingId-" + UUID.randomUUID().toString();
+        String channelId = "channel-" + createUuidString();
+        String trackingId = "trackingId-" + createUuidString();
 
         logger.info("1) Channel Creation");
         String channelUrl = createChannel(channelId, trackingId);
@@ -220,7 +221,7 @@ public class BounceProxySystemTest {
 
         return "{ \"_typeName\": \"joynr.JoynrMessage\", \"type\": \"request\", \"header\": { \"expiryDate\": \""
                 + System.currentTimeMillis() + 100000l + "\", \"msgId\": \"" + msgId
-                + "\" }, \"payload\": \"payload199-" + UUID.randomUUID().toString() + "\" }";
+                + "\" }, \"payload\": \"payload199-" + createUuidString() + "\" }";
     }
 
     private void printBody(HttpEntity entity) {
