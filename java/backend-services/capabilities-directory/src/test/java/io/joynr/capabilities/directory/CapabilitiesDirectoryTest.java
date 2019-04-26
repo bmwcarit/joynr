@@ -20,9 +20,12 @@ package io.joynr.capabilities.directory;
 
 import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,10 +33,13 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.PromiseKeeper;
+import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CustomParameter;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -56,6 +62,10 @@ public class CapabilitiesDirectoryTest {
     String interface2 = "interface2";
     String interface3 = "Interface3";
     String interface4 = "Interface4";
+    String participantId1 = "testParticipantId1_" + createUuidString();
+    String participantId2 = "testParticipantId2_" + createUuidString();
+    String participantId3 = "testParticipantId3_" + createUuidString();
+    String participantId4 = "testParticipantId4_" + createUuidString();
 
     ProviderQos providerQos = new ProviderQos(CUSTOM_PARAMETERS, 1L, ProviderScope.GLOBAL, true);
     GlobalDiscoveryEntry discoveryEntry1;
@@ -73,10 +83,6 @@ public class CapabilitiesDirectoryTest {
     @Before
     public void setUp() throws Exception {
         channelAddresSerialized = new ObjectMapper().writeValueAsString(channelAddres);
-        String participantId1 = "testParticipantId1_" + createUuidString();
-        String participantId2 = "testParticipantId2_" + createUuidString();
-        String participantId3 = "testParticipantId3_" + createUuidString();
-        String participantId4 = "testParticipantId4_" + createUuidString();
         String publicKeyId = "publicKeyId";
         String publicKeyIdFromAnotherNodeInCluster = "publicKeyIdAnotherNode";
 
@@ -135,8 +141,13 @@ public class CapabilitiesDirectoryTest {
         return CapabilitiesDirectoryLauncher.getCapabilitiesDirectory();
     }
 
+    @After
+    public void tearDown() {
+        capabilitiesDirectory.remove(new String[]{ participantId1, participantId2, participantId3, participantId4 });
+    }
+
     @AfterClass
-    public static void tearDown() {
+    public static void stop() {
         CapabilitiesDirectoryLauncher.stop();
     }
 
@@ -159,6 +170,37 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
+    public void registerCapabilityWithGBIDs() throws InterruptedException {
+        String[] gbids = { "joynrdefaultgbid" };
+        PromiseKeeper addPromiseKeeper = new PromiseKeeper();
+        capabilitiesDirectory.add(discoveryEntry1, gbids).then(addPromiseKeeper);
+        assertTrue(addPromiseKeeper.isFulfilled());
+        PromiseKeeper lookupCapInfo = new PromiseKeeper();
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupCapInfo);
+        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry1 },
+                          (GlobalDiscoveryEntry[]) lookupCapInfo.getValues()[0]);
+
+        capabilitiesDirectory.remove(participantId1, gbids);
+
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupCapInfo);
+        assertArrayEquals(new GlobalDiscoveryEntry[]{}, (GlobalDiscoveryEntry[]) lookupCapInfo.getValues()[0]);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void registerCapabilityWithWrongGBIDs() throws InterruptedException {
+        String gbids[] = { "WRONG-GBID" };
+        PromiseKeeper addPromiseKeeper = new PromiseKeeper();
+        PromiseKeeper lookupCapInfo = new PromiseKeeper();
+        capabilitiesDirectory.add(discoveryEntry1, gbids).then(addPromiseKeeper);
+        assertTrue(addPromiseKeeper.isRejected());
+        JoynrException error = addPromiseKeeper.getError();
+        assertTrue(error instanceof ApplicationException);
+        assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException)error).getError());
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupCapInfo);
+        assertArrayEquals(new GlobalDiscoveryEntry[]{}, (GlobalDiscoveryEntry[]) lookupCapInfo.getValues()[0]);
+    }
+
+    @Test
     public void registerProviderAndRequestChannels() throws Exception {
         capabilitiesDirectory.add(discoveryEntry1);
 
@@ -167,7 +209,6 @@ public class CapabilitiesDirectoryTest {
         lookupCapInfo1.waitForSettlement();
         assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry1 },
                           (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);
-
     }
 
     @Test
