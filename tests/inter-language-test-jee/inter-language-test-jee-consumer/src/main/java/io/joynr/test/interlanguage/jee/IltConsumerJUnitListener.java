@@ -110,7 +110,7 @@ public class IltConsumerJUnitListener extends RunListener {
     }
 
     public String getFormattedDuration(long duration) {
-        float floatDuration = (float) duration / 1000.0f;
+        float floatDuration = duration / 1000.0f;
         return String.format("%.4f", floatDuration);
     }
 
@@ -130,6 +130,7 @@ public class IltConsumerJUnitListener extends RunListener {
 
     // called when an atomic test flags that it assumes a condition
     // that is false
+    @Override
     public void testAssumptionFailure(Failure failure) {
         LOG.info(">>> testAssumptionFailure called");
         Description description = failure.getDescription();
@@ -141,10 +142,8 @@ public class IltConsumerJUnitListener extends RunListener {
     }
 
     // called when an atomic test fails
+    @Override
     public void testFailure(Failure failure) {
-        String fullTestClassName;
-        String baseTestClassName;
-
         LOG.info(">>> testFailure called");
 
         Description description = failure.getDescription();
@@ -182,6 +181,7 @@ public class IltConsumerJUnitListener extends RunListener {
     }
 
     // called when an atomic test is to be started
+    @Override
     public void testStarted(Description description) {
         // A Description describes a test which is to be run or has been run. Descriptions can be atomic (a single test) or compound (containing children tests).
         LOG.info(">>> testStarted called");
@@ -196,6 +196,7 @@ public class IltConsumerJUnitListener extends RunListener {
     }
 
     // called when a test has finished, whether the test succeeds or fails
+    @Override
     public void testFinished(Description description) {
         LOG.info(">>> testFinished called");
         printDescription(description, 1);
@@ -240,6 +241,7 @@ public class IltConsumerJUnitListener extends RunListener {
     }
 
     // called when a test will not run due to annotation @Ignore
+    @Override
     public void testIgnored(Description description) {
         LOG.info(">>> testIgnored called");
         printDescription(description, 1);
@@ -265,6 +267,7 @@ public class IltConsumerJUnitListener extends RunListener {
     }
 
     // called when all tests are finished
+    @Override
     public void testRunFinished(Result result) {
         ArrayList<TestSuiteResult> testSuiteResults = new ArrayList<TestSuiteResult>();
 
@@ -292,6 +295,7 @@ public class IltConsumerJUnitListener extends RunListener {
     }
 
     // called before any tests have been run
+    @Override
     public void testRunStarted(Description description) {
         LOG.info(">>> testRunStarted called");
         printDescription(description, 1);
