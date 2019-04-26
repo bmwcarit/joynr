@@ -210,7 +210,7 @@ GlobalCapabilitiesDirectory.fidl:
 #### New `lookup` with GBIDs
 * Signatures: `lookup(domain[], interfaceName, gbid[])` and `lookup(participantId, gbid[])`
 * GCD always returns only 1 GDE per provider / participantId
-* Invalid and unknown GBIDs are handled like in the new `add`method (see above)
+* Invalid and unknown GBIDs are handled like in the new `add` method (see above)
 * Example I (Provider is registered in GBID1 and GBID2):
   * `lookup([domain1], interface1, [GBID1])`
     1. CC: Call `lookup([domain1], interface1, [GBID1])`
@@ -289,4 +289,3 @@ GlobalCapabilitiesDirectory.fidl:
 * Update the last seen date of all registrations for all GBIDs of the given clusterControllerId  
   (The clusterControllerId is part of the address of a GDE, in case of an MqttAddress, it is part
   of the topic)
-
