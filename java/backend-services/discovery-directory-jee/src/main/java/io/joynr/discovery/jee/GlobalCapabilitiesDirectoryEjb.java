@@ -37,7 +37,6 @@ import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
 import io.joynr.capabilities.directory.util.Utilities;
-import io.joynr.capabilities.directory.util.Utilities.ValidateGBIDsEnum;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
@@ -204,30 +203,31 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
-        try {
-            switch (Utilities.validateGbids(gbids, gcdGbId)) {
-            case INVALID:
-                throw new ApplicationException(ValidateGBIDsEnum.INVALID);
-            case UNKNOWN:
-                throw new ApplicationException(ValidateGBIDsEnum.UNKNOWN);
-            case OK:
-                globalDiscoveryEntry = lookup(participantId);
-            }
-        } catch (ProviderRuntimeException e) {
-            logger.error("Error multiple backends isn't supported for now {}", e);
+        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        case INVALID:
+            throw new ApplicationException(DiscoveryError.INVALID_GBID);
+        case UNKNOWN:
+            throw new ApplicationException(DiscoveryError.UNKNOWN_GBID);
+        case OK:
+            globalDiscoveryEntry = lookup(participantId);
         }
         return globalDiscoveryEntry;
     }
 
     @Override
     public void remove(String[] participantIds) {
+        int deletedCount = removeInternal(participantIds);
+        logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
+    }
+
+    private int removeInternal(String... participantIds) {
         logger.debug("Removing global discovery entries with IDs {}", Arrays.toString(participantIds));
         String queryString = "delete from GlobalDiscoveryEntryPersisted gdep where gdep.participantId in :participantIds";
         int deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
                                         .setParameter("participantIds",
                                                       new HashSet<String>(Arrays.asList(participantIds)))
                                         .executeUpdate();
-        logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
+        return deletedCount;
     }
 
     @Override
@@ -237,8 +237,22 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void remove(String participantId, String[] gbids) throws ApplicationException {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        case INVALID:
+            logger.error("Unable to remove participantId {}: INVALID GBIDs: {}", participantId, Arrays.toString(gbids));
+            throw new ApplicationException(DiscoveryError.INVALID_GBID);
+        case UNKNOWN:
+            logger.error("Unable to remove participantId {}: UNKNOWN_GBID: {}", participantId, Arrays.toString(gbids));
+            throw new ApplicationException(DiscoveryError.UNKNOWN_GBID);
+        case OK:
+            int deletedCount = removeInternal(participantId);
+            if (deletedCount == 0) {
+                logger.error("Participant is not registered, NO_ENTRY_FOR_PARTICIPANT {} to be removed", participantId);
+                throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+            } else {
+                logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
+            }
+        }
     }
 
     @Override
