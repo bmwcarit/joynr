@@ -135,16 +135,38 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<DeferredVoid> remove(String participantId) {
         DeferredVoid deferred = new DeferredVoid();
-        logger.debug("removed discovery entry with participantId: {}", participantId);
-        discoveryEntryStore.remove(participantId);
+        removeInternal(participantId, gcdGbId);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
 
+    private boolean removeInternal(String participantId, String... gbids) {
+        assert (gbids.length > 0);
+        logger.debug("removing discovery entry with participantId: {} in backends {}",
+                     participantId,
+                     Arrays.toString(gbids));
+        return discoveryEntryStore.remove(participantId);
+    }
+
     @Override
     public Promise<Remove1Deferred> remove(String participantId, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        Remove1Deferred deferred = new Remove1Deferred();
+        Promise<Remove1Deferred> promise = new Promise<Remove1Deferred>(deferred);
+        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        case INVALID:
+            deferred.reject(DiscoveryError.INVALID_GBID);
+            break;
+        case UNKNOWN:
+            deferred.reject(DiscoveryError.UNKNOWN_GBID);
+            break;
+        case OK:
+            if (removeInternal(participantId, gbids)) {
+                deferred.resolve();
+            } else {
+                deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+            }
+        }
+        return promise;
     }
 
     @Override
