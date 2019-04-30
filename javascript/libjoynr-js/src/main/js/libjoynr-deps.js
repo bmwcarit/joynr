@@ -113,8 +113,8 @@ for (i = 0; i < libjoynrExports.length; ++i) {
         if (nsElems.length) {
             value = nsContext[nsElem] || {};
         } else {
-            // make all members of the module read-only
-            value = Object.freeze(require(libjoynrExports[i]));
+            // don't freeze modules, as it kills the logic of LongTimer
+            value = require(libjoynrExports[i]);
         }
         // export namespace fragment or module read-only to the parent namespace
         Object.defineProperty(nsContext, nsElem, {
