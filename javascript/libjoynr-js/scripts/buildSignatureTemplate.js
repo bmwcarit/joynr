@@ -18,4 +18,5 @@
  * limitations under the License.
  * #L%
  */
+// prettier-ignore
 module.exports = "buildSignature";

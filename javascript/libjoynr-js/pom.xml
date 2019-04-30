@@ -376,7 +376,8 @@
 						<exclude>src/main/js/lib/JsonParser.js</exclude>
 						<exclude>src/test/resources/node/shutdown/package.json</exclude>
 						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
-						<exclude>scripts/prettier.config.json</exclude>
+						<exclude>tsconfig.json</exclude>
+						<exclude>jest.config.js</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

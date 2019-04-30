@@ -1,4 +1,4 @@
-{
+module.exports = {
   "tabWidth": 4,
   "printWidth": 120,
   "useTabs": false,
@@ -9,4 +9,4 @@
   "jsxBracketSameLine": false,
   "requirePragma": false,
   "insertPragma": false
-}
+};
