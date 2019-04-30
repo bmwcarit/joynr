@@ -16,193 +16,162 @@
  * limitations under the License.
  * #L%
  */
-const LongTimer = require("./LongTimer");
-const util = require("util");
+import LongTimer from "./LongTimer";
+import util from "util";
 
-/**
- * @name UtilInternal
- * @class
- * @classdesc extends the Util class by additional methods
- */
-const UtilInternal = {};
-
-function extend(to, from, deep) {
+function extendInternal<T, U>(to: any, from: U, deep: boolean): T & U {
     if (from) {
         for (const key in from) {
             if (from.hasOwnProperty(key)) {
                 if (deep && typeof from[key] === "object") {
-                    if (Array.isArray(from[key]) && !Array.isArray(to[key])) {
-                        to[key] = [];
-                    } else if (typeof to[key] !== "object") {
-                        to[key] = {};
+                    if (Array.isArray(from[key]) && !Array.isArray((to as any)[key])) {
+                        (to as any)[key] = [];
+                    } else if (typeof (to as any)[key] !== "object") {
+                        (to as any)[key] = {};
                     }
-                    extend(to[key], from[key], deep);
+                    extendInternal((to as any)[key], from[key], deep);
                 } else if (from[key] !== undefined) {
-                    to[key] = from[key];
+                    (to as any)[key] = from[key];
                 }
             }
         }
     }
-    return to;
+    return to as any;
 }
 
 /**
  * Copies all attributes to a given out parameter from optional in parameters
  * @function UtilInternal#extend
  */
-UtilInternal.extend = function(out) {
-    // calling using prototype because slice is not available on
-    // special arguments array
-    const args = Array.prototype.slice.call(arguments, 1);
+export function extend(out: any, ...args: any[]): any {
     for (let i = 0; i < args.length; i++) {
-        extend(out, args[i], false);
+        extendInternal(out, args[i], false);
     }
     return out;
-};
+}
 
 /**
  * Forwards all methods from provider to receiver and thus creating privacy
  * @param receiver
  * @param provider
- * @returns {*}
+ * @returns
  */
-UtilInternal.forward = function forward(receiver, provider) {
+export function forward(receiver: any, provider: any): any {
     let methodName;
     for (methodName in provider) {
         if (provider.hasOwnProperty(methodName) && typeof provider[methodName] === "function") {
             receiver[methodName] = provider[methodName].bind(provider);
         }
     }
-
     return receiver;
-};
+}
 
 /**
  * Deeply copies all attributes to a given out parameter from optional in parameters
  * @function UtilInternal#extendDeep
  */
-UtilInternal.extendDeep = function(out) {
-    // calling using prototype because slice is not available on
-    // special arguments array
-    const args = Array.prototype.slice.call(arguments, 1);
+export function extendDeep<T>(out: T, ...args: any[]): T {
     for (let i = 0; i < args.length; i++) {
-        extend(out, args[i], true);
+        extendInternal(out, args[i], true);
     }
     return out;
-};
+}
 
 /**
  * Transforms the incoming array "from" according to the transformFunction
  * @function UtilInternal#transform
  */
-UtilInternal.transform = function transform(from, transformFunction) {
+export function transform(from: any[], transformFunction: Function): any[] {
     const transformedArray = [];
     for (let i = 0; i < from.length; i++) {
         const value = from[i];
         transformedArray.push(transformFunction(value, i));
     }
     return transformedArray;
-};
+}
 
 /**
  * Checks explicitly if value is null or undefined, use if you don't want !!"" to become false,
  * but !UtilInternal.checkNullUndefined("") to be true
- * @function UtilInternal#checkNullUndefined
  *
- * @param {?}
- *            value the value to be checked for null or undefined
- * @returns {Boolean} if the value is null or undefined
+ * @param value the value to be checked for null or undefined
+ * @returns if the value is null or undefined
  */
-UtilInternal.checkNullUndefined = function checkNullUndefined(value) {
+export function checkNullUndefined(value: any): boolean {
     return value === null || value === undefined;
-};
+}
 
 /**
  * Converts the first character of the string to lower case
  * @function UtilInternal#firstLower
  *
- * @param {String}
- *            str the string to be converted
- * @returns {String} the converted string
- * @throws {TypeError}
- *             on nullable input (null, undefined)
+ * @param str the string to be converted
+ * @returns the converted string
+ * @throws {TypeError} on nullable input (null, undefined)
  */
-UtilInternal.firstLower = function firstLower(str) {
+export function firstLower(str: string): string {
     return str.substr(0, 1).toLowerCase() + str.substr(1);
-};
+}
 
 /**
  * Capitalizes the first letter
  * @function UtilInternal#firstUpper
  *
- * @param {String}
- *            str the string to be converted
- * @returns {String} the converted string
- * @throws {TypeError}
- *             on nullable input (null, undefined)
+ * @param str the string to be converted
+ * @returns the converted string
+ * @throws {TypeError} on nullable input (null, undefined)
  */
-UtilInternal.firstUpper = function firstUpper(str) {
+export function firstUpper(str: string): string {
     return str.substr(0, 1).toUpperCase() + str.substr(1);
-};
+}
 
 /**
  * Checks if the provided argument is an A+ promise object
- * @function UtilInternal#isPromise
  *
- * @param {object} arg
- *            the argument to be evaluated
- * @returns true if provided argument is a promise, otherwise falses
+ * @param arg the argument to be evaluated
+ * @returns true if provided argument is a promise, otherwise false
  */
-UtilInternal.isPromise = function isPromise(arg) {
+export function isPromise(arg: any): boolean {
     return arg !== undefined && typeof arg.then === "function" && typeof arg.catch === "function";
-};
+}
 
 /**
  * Shorthand function for Object.defineProperty
- * @function UtilInternal#objectDefineProperty
  *
- * @param {Object}
- *            object
- * @param {String}
- *            memberName
- * @param {?}
- *            [value] default value is undefined
- * @param {Boolean}
- *            [writable] default value is false
- * @param {Boolean}
- *            [enumerable] default value is true
- * @param {Boolean}
- *            [configurable] default value is false
+ * @param object
+ * @param memberName
+ * @param value default value is undefined
+ * @param writable default value is false
+ * @param enumerable default value is true
+ * @param configurable default value is false
  */
-UtilInternal.objectDefineProperty = function objectDefineProperty(
-    object,
-    memberName,
-    value,
-    writable,
-    enumerable,
-    configurable
-) {
+export function objectDefineProperty(
+    object: object,
+    memberName: string,
+    value: any,
+    writable: boolean,
+    enumerable: boolean,
+    configurable: boolean
+): void {
     Object.defineProperty(object, memberName, {
         value,
         writable: writable === undefined ? false : writable,
         enumerable: enumerable === undefined ? true : enumerable,
         configurable: configurable === undefined ? false : configurable
     });
-};
+}
 
 /**
  * Returns the byte length of the provided string encoded in UTF-8
- * @function UtilInternal#getLengthInBytes
  *
- * @param {String}
- *            text as UTF-8 encoded string
- * @returns {Number} the length in bytes
+ * @param text as UTF-8 encoded string
+ * @returns the length in bytes
  */
-UtilInternal.getLengthInBytes = function getLengthInBytes(text) {
+export function getLengthInBytes(text: string): number {
     // blob is twice as fast, and unescape is actually deprecated
     //return new Blob([text]).size;
     return unescape(encodeURIComponent(text)).length;
-};
+}
 
 /**
  * Returns the max supported long value. According to the ECMA spec this is 2^53 -1 See
@@ -212,88 +181,92 @@ UtilInternal.getLengthInBytes = function getLengthInBytes(text) {
  * instead of 9223372036854775808, which is larger than Long.MAX_VALUE of 2^63-1 and wraps
  * around to negative values in Java and will cause problems in C++ too
  *
- * @function UtilInternal#getMaxLongValue
  */
-UtilInternal.getMaxLongValue = function getMaxLongValue() {
+export function getMaxLongValue(): number {
     return Math.pow(2, 53) - 1;
-};
+}
 
 /**
  * Removes item from array
- * @function UtilInternal#removeElementFromArray
- * @param {Array}
- *          array to be edited
- * @param {Object}
- *          item to be removed
+ * @param array to be edited
+ * @param item to be removed
  */
-UtilInternal.removeElementFromArray = function removeElementFromArray(array, item) {
+export function removeElementFromArray(array: any[], item: any): void {
     const i = array.indexOf(item);
     if (i > -1) {
         array.splice(i, 1);
     }
-};
+}
 
 /**
  * Invokes all callbacks with the provided data
- * @function UtilInternal#fire
- * @param {Array}
- *          callbacks to be invoked
- * @param {Object}
- *          data provided as callback argument
- * @param {Object}
- *          data.broadcastOutputParameters broadcasts output params
- * @param {Object}
- *          data.filters filter array provided as callback argument
+ * @param callbacks to be invoked
+ * @param data provided as callback argument
+ * @param data.broadcastOutputParameters broadcasts output params
+ * @param data.filters filter array provided as callback argument
  */
-UtilInternal.fire = function fire(callbacks, data) {
+export function fire(callbacks: Function[], data: any): void {
     let callbackFct;
     for (callbackFct in callbacks) {
         if (callbacks.hasOwnProperty(callbackFct)) {
             callbacks[callbackFct](data);
         }
     }
-};
+}
 
-function timeoutPromiseHelper(promise, timeoutMs, callback) {
-    const timeout = LongTimer.setTimeout(() => {
-        callback(new Error(`Promise timeout after ${timeoutMs} ms`));
+function timeoutPromiseHelper(
+    promise: Promise<any>,
+    timeoutMs: number,
+    callback: (err: Error, result: any) => void
+): void {
+    const timeout = LongTimer.setTimeout((): void => {
+        callback(new Error(`Promise timeout after ${timeoutMs} ms`), undefined);
     }, timeoutMs);
 
     promise
-        .then((...args) => {
-            LongTimer.clearTimeout(timeout);
-            callback(undefined, ...args);
-        })
-        .catch(callback);
+        .then(
+            (...args): void => {
+                LongTimer.clearTimeout(timeout);
+                // eslint-disable-next-line promise/no-callback-in-promise
+                callback(undefined as any, ...args);
+            }
+        )
+        // eslint-disable-next-line promise/no-callback-in-promise
+        .catch(callback as any);
 }
 
-UtilInternal.timeoutPromise = util.promisify(timeoutPromiseHelper);
+export const timeoutPromise = util.promisify(timeoutPromiseHelper);
+export interface Deferred {
+    resolve: Function;
+    reject: Function;
+    promise: Promise<void>;
+}
 
-function defer(resolve, reject) {
+function defer(this: Deferred, resolve: Function, reject: Function): void {
     this.resolve = resolve;
     this.reject = reject;
 }
 
-UtilInternal.createDeferred = function() {
-    const deferred = {};
+export function createDeferred(): Deferred {
+    const deferred: Deferred = {} as any;
     /*eslint-disable promise/avoid-new */
     deferred.promise = new Promise(defer.bind(deferred));
     /*eslint-enable promise/avoid-new */
     return deferred;
-};
+}
 
 /**
  *
  * Create an ES6 Proxy Object to facilitate access of nested properties.
  *
- * @param {Object} config
- * @returns {Proxy} an ES6 Proxy object
+ * @param config
+ * @returns an ES6 Proxy object
  */
-UtilInternal.augmentConfig = function(config) {
-    let parts = [];
-    const proxy = new Proxy(
-        () => {
-            let level = config;
+export function augmentConfig<T>(config: T): T {
+    let parts: string[] = [];
+    const proxy: T = new Proxy(
+        (): any => {
+            let level: any = config;
             for (let i = 0; i < parts.length; i++) {
                 if (level === undefined) {
                     parts = [];
@@ -305,17 +278,17 @@ UtilInternal.augmentConfig = function(config) {
             return level;
         },
         {
-            has() {
+            has(): true {
                 return true;
             },
 
-            get(object, prop) {
+            get(_, prop: string): T {
                 parts.push(prop);
                 return proxy;
             },
 
-            set(object, prop, value) {
-                let level = config;
+            set(_, prop: string, value: any): boolean {
+                let level: any = config;
                 for (let i = 0; i < parts.length; i++) {
                     if (!level.hasOwnProperty([parts[i]])) {
                         level[parts[i]] = {};
@@ -324,11 +297,11 @@ UtilInternal.augmentConfig = function(config) {
                 }
                 parts = [];
                 level[prop] = value;
+                return true;
             }
         }
-    );
+    ) as any;
     return proxy;
-};
+}
 
-UtilInternal.emptyFunction = function() {};
-module.exports = UtilInternal;
+export function emptyFunction(): void {}

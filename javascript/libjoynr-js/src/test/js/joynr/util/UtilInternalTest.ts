@@ -17,27 +17,14 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
-const Util = require("../../../../main/js/joynr/util/Util");
-const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
-const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
-
-describe("libjoynr-js.joynr.Util", () => {
-    it("is defined and of correct type", () => {
-        expect(Util).toBeDefined();
-        expect(Util).not.toBeNull();
-        expect(typeof Util === "object").toBeTruthy();
-    });
-});
+/* eslint-disable @typescript-eslint/no-var-requires*/
+import * as UtilInternal from "../../../../main/js/joynr/util/UtilInternal";
 
 describe("libjoynr-js.joynr.UtilInternal.extend", () => {
     it("extends objects", () => {
-        const merged = {};
+        const merged: any = {};
 
-        const message = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
-        });
+        const message: any = { headers: { t: "rq", id: "AgU5PELoXaG-4l0UfNMuz_0" } };
         message.payload = {
             payload1: 1,
             payload2: 2
@@ -75,7 +62,7 @@ describe("libjoynr-js.joynr.UtilInternal.extend", () => {
         expect(typeof merged.bool === "boolean").toBeTruthy();
     });
     it("deep extends objects", () => {
-        const merged = {};
+        const merged: any = {};
 
         const from = {
             subobject: {
@@ -121,8 +108,8 @@ describe("libjoynr-js.joynr.UtilInternal.transform", () => {
         origin.push(element);
 
         // now, let's transform
-        const transformed = UtilInternal.transform(origin, (element, key) => {
-            const result = {};
+        const transformed = UtilInternal.transform(origin, (element: any) => {
+            const result: any = {};
             for (const id in element) {
                 if (element.hasOwnProperty(id)) {
                     const member = element[id];
@@ -153,10 +140,10 @@ describe("libjoynr-js.joynr.UtilInternal.firstLower", () => {
 
     it("throws on nullable input", () => {
         expect(() => {
-            UtilInternal.firstLower(null);
+            UtilInternal.firstLower(null as any);
         }).toThrow();
         expect(() => {
-            UtilInternal.firstLower(undefined);
+            UtilInternal.firstLower(undefined as any);
         }).toThrow();
     });
 });
@@ -177,10 +164,10 @@ describe("libjoynr-js.joynr.UtilInternal.firstUpper", () => {
 
     it("throws on nullable input", () => {
         expect(() => {
-            UtilInternal.firstLower(null);
+            UtilInternal.firstLower(null as any);
         }).toThrow();
         expect(() => {
-            UtilInternal.firstLower(undefined);
+            UtilInternal.firstLower(undefined as any);
         }).toThrow();
     });
 });
@@ -190,85 +177,35 @@ describe("libjoynr-js.joynr.UtilInternal.isPromise", () => {
         expect(UtilInternal.isPromise(Promise.resolve())).toBe(true);
         expect(UtilInternal.isPromise("")).toBe(false);
         expect(UtilInternal.isPromise(true)).toBe(false);
-        expect(UtilInternal.isPromise()).toBe(false);
-    });
-});
-
-describe("libjoynr-js.joynr.Util.ensureTypedValues", () => {
-    it("types untyped objects", () => {
-        let returnValue = null;
-        const untypedValue = {
-            name: "radioStationName",
-            _typeName: "joynr.vehicle.radiotypes.RadioStation",
-            byteBuffer: []
-        };
-
-        returnValue = Util.ensureTypedValues(untypedValue);
-        expect(returnValue.name === untypedValue.name).toBe(true);
-    });
-
-    it("types untyped arrays", () => {
-        let returnValue = null;
-        const untypedArray = [
-            {
-                name: "radioStationName1",
-                _typeName: "joynr.vehicle.radiotypes.RadioStation",
-                byteBuffer: []
-            },
-            {
-                name: "radioStationName2",
-                _typeName: "joynr.vehicle.radiotypes.RadioStation",
-                byteBuffer: []
-            }
-        ];
-
-        returnValue = Util.ensureTypedValues(untypedArray);
-        expect(returnValue[0].name === untypedArray[0].name).toBe(true);
-        expect(returnValue[1].name === untypedArray[1].name).toBe(true);
-    });
-
-    it("accepts primitive types", () => {
-        let returnValue = null;
-        const numberValue = 1;
-        const booleanValue = true;
-        const stringValue = "string";
-
-        returnValue = Util.ensureTypedValues(numberValue);
-        expect(typeof returnValue === "number").toBe(true);
-
-        returnValue = Util.ensureTypedValues(booleanValue);
-        expect(typeof returnValue === "boolean").toBe(true);
-
-        returnValue = Util.ensureTypedValues(stringValue);
-        expect(typeof returnValue === "string").toBe(true);
+        expect(UtilInternal.isPromise(undefined)).toBe(false);
     });
 });
 
 describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
     beforeEach(() => {
-        jasmine.clock().install();
+        jest.useFakeTimers();
     });
     afterEach(() => {
-        jasmine.clock().uninstall();
+        jest.useRealTimers();
     });
     it("resolves Promise normally when Promise finished before timeout", done => {
-        const promise = new Promise((resolve, reject) => {
+        const promise = new Promise(resolve => {
             setTimeout(resolve, 100);
         });
         UtilInternal.timeoutPromise(promise, 200)
             .then(done)
             .catch(fail);
-        jasmine.clock().tick(101);
+        jest.advanceTimersByTime(101);
     });
 
     it("timeouts after before the promise resolves", done => {
-        const promise = new Promise((resolve, reject) => {
+        const promise = new Promise(resolve => {
             setTimeout(resolve, 200);
         });
         UtilInternal.timeoutPromise(promise, 100)
             .then(fail)
             .catch(() => done());
-        jasmine.clock().tick(101);
+        jest.advanceTimersByTime(101);
     });
 });
 
@@ -281,8 +218,8 @@ describe("libjoynr-js.joynr.UtilInternal.createDeferred", () => {
 });
 
 describe("libjoynr-js.joynr.UtilInternal.augmentConfig", () => {
-    let config;
-    let proxy;
+    let config: any;
+    let proxy: any;
 
     const value1 = "value1";
     const value2 = "value2";
