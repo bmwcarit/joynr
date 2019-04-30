@@ -30,8 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.capabilities.ParticipantIdKeyUtil;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.PropertyLoader;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
@@ -81,7 +83,18 @@ public class JoynrConfigurationProvider {
                            ParticipantIdKeyUtil.getProviderParticipantIdKey(getJoynrLocalDomain(),
                                                                             GlobalCapabilitiesDirectoryProvider.class),
                            readCapabilitiesDirectoryParticipantIdFromProperties());
+        readAndSetProperty(joynrProperties, ConfigurableMessagingSettings.PROPERTY_GBIDS, readDefaultGbidsProperty());
         return joynrProperties;
+    }
+
+    private String readDefaultGbidsProperty() {
+        Properties joynrDefaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
+        if (!joynrDefaultProperties.containsKey(ConfigurableMessagingSettings.PROPERTY_GBIDS)) {
+            logger.error("No GBIDs found in default properties: " + joynrDefaultProperties);
+            throw new JoynrIllegalStateException("No GBIDs found in default properties.");
+        }
+
+        return joynrDefaultProperties.getProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS).split(",")[0].trim();
     }
 
     private String readCapabilitiesDirectoryParticipantIdFromProperties() {

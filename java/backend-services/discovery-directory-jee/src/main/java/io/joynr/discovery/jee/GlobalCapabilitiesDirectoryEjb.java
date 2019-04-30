@@ -21,6 +21,7 @@ package io.joynr.discovery.jee;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
@@ -34,8 +35,13 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
+import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySubscriptionPublisher;
@@ -52,12 +58,31 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     private static final Logger logger = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryEjb.class);
     private EntityManager entityManager;
     private GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher;
+    private String gcdGbId;
 
     @Inject
     public GlobalCapabilitiesDirectoryEjb(EntityManager entityManager,
                                           @SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher) {
         this.entityManager = entityManager;
         this.gcdSubPublisher = gcdSubPublisher;
+        Properties envPropertiesAll = new Properties();
+        envPropertiesAll.putAll(System.getenv());
+        String gcdGbid = PropertyLoader.getPropertiesWithPattern(envPropertiesAll, CapabilitiesDirectoryImpl.GCD_GBID)
+                                       .getProperty(CapabilitiesDirectoryImpl.GCD_GBID);
+        if (gcdGbid == null) {
+            gcdGbid = readDefaultGbidFromDefaultMessagingProperties();
+        }
+        this.gcdGbId = gcdGbid;
+    }
+
+    private String readDefaultGbidFromDefaultMessagingProperties() {
+        Properties joynrDefaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
+        if (!joynrDefaultProperties.containsKey(ConfigurableMessagingSettings.PROPERTY_GBIDS)) {
+            logger.error("No GBIDs found in default properties: " + joynrDefaultProperties);
+            throw new JoynrIllegalStateException("No GBIDs found in default properties.");
+        }
+
+        return joynrDefaultProperties.getProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS).split(",")[0].trim();
     }
 
     @Override

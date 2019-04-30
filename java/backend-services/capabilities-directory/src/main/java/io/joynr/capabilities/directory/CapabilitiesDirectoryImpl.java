@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityUtils;
@@ -47,12 +48,16 @@ import joynr.types.GlobalDiscoveryEntry;
 @Singleton
 public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryImpl.class);
+    public static final String GCD_GBID = "joynr.gcd.gbid";
 
     private DiscoveryEntryStore discoveryEntryStore;
+    private String gcdGbId;
 
     @Inject
-    public CapabilitiesDirectoryImpl(@Persisted DiscoveryEntryStore discoveryEntryStore) {
+    public CapabilitiesDirectoryImpl(@Persisted DiscoveryEntryStore discoveryEntryStore,
+                                     @Named(GCD_GBID) String gcdGbId) {
         this.discoveryEntryStore = discoveryEntryStore;
+        this.gcdGbId = gcdGbId;
     }
 
     @Override
