@@ -43,7 +43,7 @@ public class JoynrConfigurationProvider {
     private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
     static final String CONTROLLER_DOMAIN = CONTROLLER_DOMAIN_PREFIX + ".jee-stateless-consumer";
     private static final String CONTROLLER_PARTICIPANT_ID = "sit-controller." + System.getenv("RECEIVER_ID");
-    private static final String MQTT_BROKER_URI = "tcp://mqttbroker:1883";
+    private static final String MQTT_BROKER_URIS = "tcp://mqttbroker:1883";
 
     @Produces
     @JoynrProperties
@@ -53,7 +53,7 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
         LOG.debug("Using RECEIVER_ID: " + RECEIVER_ID);
         joynrProperties.setProperty(MessagingPropertyKeys.RECEIVERID, RECEIVER_ID);
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, MQTT_BROKER_URI);
+        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URIS);
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
         joynrProperties.setProperty(ParticipantIdKeyUtil.getProviderParticipantIdKey(CONTROLLER_DOMAIN,
                                                                                      SitControllerSync.class),

@@ -19,6 +19,7 @@
 package io.joynr.messaging;
 
 public final class MessagingPropertyKeys {
+    //NOTE: all property identifiers must be lower-case only.
     public static final String CHANNELID = "joynr.messaging.channelid"; //NOT USUALLY SET BY THE APPLICATION!
     public static final String DISCOVERYDIRECTORYURL = "joynr.messaging.discoverydirectoryurl";
     public static final String DOMAINACCESSCONTROLLERURL = "joynr.messaging.domainaccesscontrollerurl";
@@ -33,7 +34,6 @@ public final class MessagingPropertyKeys {
 
     public static final String JOYNR_PROPERTIES = "joynr.properties";
 
-    //NOTE: all property identifiers must be lower-case only.
     public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
     public static final String PROPERTY_SERVLET_SHUTDOWN_TIMEOUT = "joynr.servlet.shutdown.timeout";
     public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
@@ -44,6 +44,7 @@ public final class MessagingPropertyKeys {
     public static final String MQTT_TOPIC_PREFIX_REPLYTO = "joynr.messaging.mqtt.topicprefix.sharedsubscriptionsreplyto";
     public static final String MQTT_TOPIC_PREFIX_UNICAST = "joynr.messaging.mqtt.topicprefix.unicast";
     public static final String MQTT_TOPIC_PREFIX_MULTICAST = "joynr.messaging.mqtt.topicprefix.multicast";
+    public static final String GBID_ARRAY = "joynr.internal.messaging.gbidArray";
 
     private MessagingPropertyKeys() {
         throw new AssertionError();

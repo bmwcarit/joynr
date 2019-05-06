@@ -37,7 +37,7 @@ public class MqttOnlyJoynrConfigurationProvider {
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883");
         return joynrProperties;
     }
 

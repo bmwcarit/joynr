@@ -67,6 +67,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS = "joynr.messaging.maxDelayWithExponentialBackoffMs";
     public static final long DEFAULT_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF = -1;
 
+    public static final String PROPERTY_GBIDS = "joynr.messaging.gbids";
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
     private final long deleteChannelRetryIntervalMs;

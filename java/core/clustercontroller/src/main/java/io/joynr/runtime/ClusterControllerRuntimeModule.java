@@ -18,14 +18,20 @@
  */
 package io.joynr.runtime;
 
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
+
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.inject.Named;
+
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
 import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryModule;
+import io.joynr.messaging.GbidArrayFactory;
 import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.messaging.routing.CcRoutingTableAddressValidator;
@@ -53,5 +59,12 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
 
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))
                                             .toProvider(DefaultScheduledExecutorServiceProvider.class);
+    }
+
+    @Provides
+    @Singleton
+    @Named(GBID_ARRAY)
+    public String[] provideGbidArray(GbidArrayFactory gbidArrayFactory) {
+        return gbidArrayFactory.create();
     }
 }

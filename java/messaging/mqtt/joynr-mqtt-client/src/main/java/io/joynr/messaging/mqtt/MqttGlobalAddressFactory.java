@@ -29,21 +29,21 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class MqttGlobalAddressFactory extends GlobalAddressFactory<MqttAddress> {
     private static final String SUPPORTED_TRANSPORT_MQTT = "mqtt";
     private String localChannelId;
-    private String brokerUri;
+    private String[] brokerUris;
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Inject
-    public MqttGlobalAddressFactory(@Named(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI) String brokerUri,
+    public MqttGlobalAddressFactory(@Named(MqttModule.MQTT_BROKER_URI_ARRAY) String[] brokerUris,
                                     @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
                                     MqttTopicPrefixProvider mqttTopicPrefixProvider) {
-        this.brokerUri = brokerUri;
+        this.brokerUris = brokerUris.clone();
         this.localChannelId = localChannelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
     }
 
     @Override
     public MqttAddress create() {
-        return new MqttAddress(brokerUri, mqttTopicPrefixProvider.getUnicastTopicPrefix() + localChannelId);
+        return new MqttAddress(brokerUris[0], mqttTopicPrefixProvider.getUnicastTopicPrefix() + localChannelId);
     }
 
     @Override

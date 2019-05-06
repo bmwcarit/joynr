@@ -82,7 +82,7 @@ public class RoutingTableOverwriteEnd2EndTest {
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
 
         mqttConfig = new Properties();
-        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
+        mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:" + mqttBrokerPort);
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:" + mqttBrokerPort);
 

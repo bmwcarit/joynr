@@ -25,6 +25,7 @@ import javax.enterprise.inject.Produces;
 
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 
@@ -38,9 +39,10 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/messaging");
         joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.examples.customheaders.jee.consumer");
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://mqttbroker:1883");
+        joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, "joynrtestgbid");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://mqttbroker:1883");
+        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "jee-consumer-joynr.properties");
 
         return joynrProperties;

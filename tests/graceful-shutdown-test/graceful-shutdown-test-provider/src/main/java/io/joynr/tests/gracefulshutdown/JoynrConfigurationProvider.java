@@ -38,9 +38,9 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/messaging");
         joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.tests.gracefulshutdown.jee.provider");
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://mqttbroker:1883");
+        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "jee-provider-joynr.properties");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
 

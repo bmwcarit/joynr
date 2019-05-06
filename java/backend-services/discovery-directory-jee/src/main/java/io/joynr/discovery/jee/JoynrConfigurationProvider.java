@@ -33,7 +33,6 @@ import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.runtime.PropertyLoader;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 
@@ -53,7 +52,8 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
  * <p>
  *     Values which you will most likely want to override to match your deployment setup are:
  *     <ul>
- *         <li>{@link MqttModule#PROPERTY_KEY_MQTT_BROKER_URI}</li>
+ *         <li>{@link ConfigurableMessagingSettings#PROPERTY_GBIDS}</li>
+ *         <li>{@link MqttModule#PROPERTY_MQTT_BROKER_URIS}</li>
  *         <li>{@link MessagingPropertyKeys#PROPERTY_SERVLET_CONTEXT_ROOT}</li>
  *         <li>{@link MessagingPropertyKeys#PROPERTY_SERVLET_HOST_PATH}</li>
  *     </ul>
@@ -68,7 +68,6 @@ public class JoynrConfigurationProvider {
     @JoynrProperties
     public Properties getJoynrProperties() {
         Properties joynrProperties = new Properties();
-        readAndSetProperty(joynrProperties, MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         readAndSetProperty(joynrProperties, MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         readAndSetProperty(joynrProperties,
                            MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,

@@ -51,7 +51,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
         mqttConfig = new Properties();
-        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, MQTT_BROKER_URL);
+        mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URL);
         // test is using 2 global address typs, so need to set one of them as primary
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, MQTT_BROKER_URL);

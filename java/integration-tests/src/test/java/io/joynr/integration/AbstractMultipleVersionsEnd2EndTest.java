@@ -87,7 +87,7 @@ public class AbstractMultipleVersionsEnd2EndTest {
 
     private JoynrRuntime getCcRuntime() {
         Properties mqttConfig = new Properties();
-        mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, MQTT_BROKER_URL);
+        mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URL);
         mqttConfig.put(MessagingPropertyKeys.CHANNELID, createUuidString());
         mqttConfig.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());

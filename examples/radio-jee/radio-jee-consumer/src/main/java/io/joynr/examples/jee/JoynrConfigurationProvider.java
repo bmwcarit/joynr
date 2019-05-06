@@ -27,6 +27,7 @@ import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 
 @Singleton
 public class JoynrConfigurationProvider {
@@ -36,7 +37,8 @@ public class JoynrConfigurationProvider {
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.examples.jee.consumer");
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+        joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, "joynrtestgbid");
+        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8383/bounceproxy/");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:1883");

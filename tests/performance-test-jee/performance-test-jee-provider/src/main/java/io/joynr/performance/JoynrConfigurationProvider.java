@@ -35,7 +35,6 @@ public class JoynrConfigurationProvider {
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.performancetest.jee");
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "performance-test-jee-provider.properties");

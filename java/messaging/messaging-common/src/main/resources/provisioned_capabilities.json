@@ -1,7 +1,7 @@
 [
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_MQTT_PORT}\",\"topic\":\"discoverydirectory_channelid\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"joynrtestgbid\",\"topic\":\"discoverydirectory_channelid\"}",
         "domain": "io.joynr",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "infrastructure/GlobalCapabilitiesDirectory",
@@ -23,7 +23,7 @@
     },
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_MQTT_PORT}\",\"topic\":\"domainaccesscontroller_channelid\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"joynrtestgbid\",\"topic\":\"domainaccesscontroller_channelid\"}",
         "domain": "io.joynr",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "infrastructure/GlobalDomainAccessController",
@@ -45,7 +45,7 @@
     },
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_MQTT_PORT}\",\"topic\":\"domainaccesscontroller_channelid\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"joynrtestgbid\",\"topic\":\"domainaccesscontroller_channelid\"}",
         "domain": "io.joynr",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "infrastructure/GlobalDomainAccessControlListEditor",
@@ -67,7 +67,7 @@
     },
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://${JOYNR_SERVER_HOST}:${JOYNR_SERVER_MQTT_PORT}\",\"topic\":\"domainaccesscontroller_channelid\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"joynrtestgbid\",\"topic\":\"domainaccesscontroller_channelid\"}",
         "domain": "io.joynr",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "infrastructure/GlobalDomainRoleController",

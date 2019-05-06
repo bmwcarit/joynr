@@ -18,11 +18,14 @@
  */
 package io.joynr.runtime;
 
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
+
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
+import io.joynr.messaging.GbidArrayFactory;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.LibjoynrRoutingTableAddressValidator;
 import io.joynr.messaging.routing.MessageRouter;
@@ -68,5 +71,12 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
                                              @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT) int port,
                                              @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH) String path) {
         return new WebSocketAddress(WebSocketProtocol.valueOf(protocol.toUpperCase()), host, port, path);
+    }
+
+    @Provides
+    @Singleton
+    @Named(GBID_ARRAY)
+    public String[] provideGbidArray(GbidArrayFactory gbidArrayFactory) {
+        return gbidArrayFactory.create();
     }
 }

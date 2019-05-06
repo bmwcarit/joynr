@@ -18,8 +18,14 @@
  */
 package io.joynr.jeeintegration.messaging;
 
+import static io.joynr.messaging.mqtt.MqttModule.MQTT_BROKER_URI_ARRAY;
+import static io.joynr.messaging.mqtt.MqttModule.MQTT_GBID_TO_BROKERURI_MAP;
+import static io.joynr.messaging.mqtt.MqttModule.MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY;
+import static io.joynr.messaging.mqtt.MqttModule.MQTT_CONNECTION_TIMEOUT_SEC_ARRAY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
+
+import java.util.HashMap;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -34,6 +40,7 @@ import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.DefaultMqttTopicPrefixProvider;
+import io.joynr.messaging.mqtt.MqttMultipleBackendPropertyProvider;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
@@ -59,10 +66,6 @@ import joynr.system.RoutingTypes.MqttAddress;
  * cluster.
  */
 public class JeeMqttMessageSendingModule extends AbstractModule {
-
-    // property key
-    public static final String PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS = "joynr.messaging.mqtt.reconnect.sleepms";
-    public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.brokeruri";
     private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
     private MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
 
@@ -82,6 +85,30 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS)
     public MqttAddress provideMqttOwnAddress(MqttReplyToAddressFactory replyToAddressFactory) {
         return replyToAddressFactory.create();
+    }
+
+    @Provides
+    @Named(MQTT_GBID_TO_BROKERURI_MAP)
+    public HashMap<String, String> provideGbidToBrokerUriMap(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideGbidToBrokerUriMap();
+    }
+
+    @Provides
+    @Named(MQTT_BROKER_URI_ARRAY)
+    public String[] provideMqttBrokerUriArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideBrokerUris();
+    }
+
+    @Provides
+    @Named(MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY)
+    public int[] provideKeepAliveTimerSecArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideKeepAliveTimers();
+    }
+
+    @Provides
+    @Named(MQTT_CONNECTION_TIMEOUT_SEC_ARRAY)
+    public int[] provideConnectionTimeoutSecArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideConnectionTimeoutTimers();
     }
 
     @Override

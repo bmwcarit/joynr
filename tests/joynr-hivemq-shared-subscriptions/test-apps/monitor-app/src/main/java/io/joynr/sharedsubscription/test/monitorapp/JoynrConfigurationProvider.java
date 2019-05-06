@@ -50,9 +50,9 @@ public class JoynrConfigurationProvider {
             logger.error("Environment variable MQTT_BROKER_URL has not been set!");
         } else {
             logger.info("Environment variable MQTT_BROKER_URL has been set to: {}", brokerUri);
-            joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, brokerUri);
             joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, brokerUri);
             joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, brokerUri);
+            joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, brokerUri);
 
             // secure ssl connection
             if (brokerUri.startsWith("ssl:")) {

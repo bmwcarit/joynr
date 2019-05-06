@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging.mqtt;
 
+import java.util.HashMap;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
@@ -52,12 +54,13 @@ public class MqttModule extends AbstractModule {
 
     // property key
     public static final String PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS = "joynr.messaging.mqtt.reconnect.sleepms";
-    public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.brokeruri";
+    public static final String PROPERTY_MQTT_BROKER_URIS = "joynr.messaging.mqtt.brokeruris";
+    public static final String MQTT_BROKER_URI_ARRAY = "joynr.internal.messaging.mqtt.brokeruriarray";
     public static final String PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX = "joynr.messaging.mqtt.clientidprefix";
     public static final String PROPERTY_MQTT_GLOBAL_ADDRESS = "property_mqtt_global_address";
     public static final String PROPERTY_MQTT_REPLY_TO_ADDRESS = "property_mqtt_reply_to_address";
-    public static final String PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC = "joynr.messaging.mqtt.keepalivetimersec";
-    public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC = "joynr.messaging.mqtt.connectiontimeoutsec";
+    public static final String PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC = "joynr.messaging.mqtt.keepalivetimerssec";
+    public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC = "joynr.messaging.mqtt.connectiontimeoutssec";
     public static final String PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS = "joynr.messaging.mqtt.timetowaitms";
     public static final String PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES = "joynr.messaging.mqtt.maxmqttmessagesizebytes";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_PATH = "joynr.messaging.mqtt.ssl.keystore";
@@ -69,14 +72,17 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS = "joynr.messaging.mqtt.separateconnections";
     public static final String PROPERTY_KEY_MQTT_USERNAME = "joynr.messaging.mqtt.username";
     public static final String PROPERTY_KEY_MQTT_PASSWORD = "joynr.messaging.mqtt.password";
+    public static final String MQTT_GBID_TO_BROKERURI_MAP = "joynr.internal.messaging.mqtt.gbidtobrokerurimap";
+    public static final String MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY = "joynr.internal.messaging.mqtt.keepalivetimersecarray";
+    public static final String MQTT_CONNECTION_TIMEOUT_SEC_ARRAY = "joynr.internal.messaging.mqtt.connectiontimeoutsecarray";
 
     /**
      * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared
      * subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That
      * is, only one subscriber receives a message, rather than all subscribers. This feature can be used to load balance
      * incoming messages on MQTT. This feature is useful if you want to run a cluster of JEE nodes while using only MQTT
-     * for communication (an alternative is to use the {@link JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP bridge}
-     * configuration).
+     * for communication (an alternative is to use the
+     * {@link JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP bridge} configuration).
      */
     public static final String PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS = "joynr.messaging.mqtt.enable.sharedsubscriptions";
     public static final String PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT = "joynr.messaging.mqtt.maxmsgsinflight";
@@ -92,6 +98,30 @@ public class MqttModule extends AbstractModule {
     @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS)
     public MqttAddress provideMqttOwnAddress(MqttReplyToAddressFactory replyToAddressFactory) {
         return replyToAddressFactory.create();
+    }
+
+    @Provides
+    @Named(MQTT_GBID_TO_BROKERURI_MAP)
+    public HashMap<String, String> provideGbidToBrokerUriMap(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideGbidToBrokerUriMap();
+    }
+
+    @Provides
+    @Named(MQTT_BROKER_URI_ARRAY)
+    public String[] provideMqttBrokerUriArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideBrokerUris();
+    }
+
+    @Provides
+    @Named(MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY)
+    public int[] provideKeepAliveTimerSecArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideKeepAliveTimers();
+    }
+
+    @Provides
+    @Named(MQTT_CONNECTION_TIMEOUT_SEC_ARRAY)
+    public int[] provideConnectionTimeoutSecArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideConnectionTimeoutTimers();
     }
 
     @Override

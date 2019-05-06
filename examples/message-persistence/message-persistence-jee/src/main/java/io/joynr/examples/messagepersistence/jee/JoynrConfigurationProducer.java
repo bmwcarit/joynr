@@ -27,7 +27,6 @@ import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.MqttModule;
 
 @Singleton
 public class JoynrConfigurationProducer {
@@ -39,7 +38,6 @@ public class JoynrConfigurationProducer {
         joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/messaging");
         joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.examples.messagepersistence.jee");
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "jee-messagepersistence-joynr.properties");
         // limit parallel processing of requests
         joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS, "2");

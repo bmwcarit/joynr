@@ -19,6 +19,8 @@
 package io.joynr.messaging.mqtt.paho.client;
 
 import static com.google.inject.util.Modules.override;
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
+import static io.joynr.messaging.mqtt.MqttModule.MQTT_BROKER_URI_ARRAY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -159,8 +161,8 @@ public class MqttPahoClientTest {
         properties = new Properties();
 
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC, "60");
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC, "30");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "60");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "30");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS, "-1");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
@@ -174,7 +176,7 @@ public class MqttPahoClientTest {
         properties.put(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD, "20");
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "false");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
+        properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:" + mqttBrokerPort);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, joynrPassword);
         serializedMessage = new byte[10];
@@ -216,12 +218,11 @@ public class MqttPahoClientTest {
     private JoynrMqttClient createMqttClientWithoutSubscription(boolean isSecureConnection,
                                                                 final MqttStatusReceiver mqttStatusReceiver) {
         if (isSecureConnection) {
-            properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "ssl://localhost:" + mqttSecureBrokerPort);
+            properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "ssl://localhost:" + mqttSecureBrokerPort);
         } else {
-            properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
+            properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:" + mqttBrokerPort);
         }
         JoynrMqttClient client = createMqttClientInternal(mqttStatusReceiver);
-
         final Semaphore startSemaphore = new Semaphore(0);
 
         Thread thread = new Thread(new Runnable() {
@@ -279,6 +280,7 @@ public class MqttPahoClientTest {
                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
                 Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
                 });
+                bind(String[].class).annotatedWith(Names.named(GBID_ARRAY)).toInstance(new String[]{ "test" });
             }
         });
 
@@ -589,7 +591,7 @@ public class MqttPahoClientTest {
 
     @Test
     public void mqttClientTestResubscriptionWithCleanRestartEnabled() throws Exception {
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:" + mqttBrokerPort);
+        properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:" + mqttBrokerPort);
         injector = Guice.createInjector(new MqttPahoModule(),
                                         new JoynrPropertiesModule(properties),
                                         new AbstractModule() {
@@ -603,6 +605,8 @@ public class MqttPahoClientTest {
                                                 Multibinder.newSetBinder(binder(),
                                                                          new TypeLiteral<JoynrMessageProcessor>() {
                                                                          });
+                                                bind(String[].class).annotatedWith(Names.named(GBID_ARRAY))
+                                                                    .toInstance(new String[]{ "test" });
                                             }
                                         });
 
@@ -696,7 +700,7 @@ public class MqttPahoClientTest {
 
     @Test
     public void mqttClientTestShutdownIfDisconnectFromMQTT() throws Exception {
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1111");
+        properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1111");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS, "100");
         // create and start client
         final JoynrMqttClient client = createMqttClientInternal(mock(MqttStatusReceiver.class));

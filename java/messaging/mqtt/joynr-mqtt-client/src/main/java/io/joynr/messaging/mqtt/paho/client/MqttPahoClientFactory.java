@@ -46,8 +46,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     private JoynrMqttClient receivingMqttClient;
     private JoynrMqttClient sendingMqttClient;
     private int reconnectSleepMs;
-    private int keepAliveTimerSec;
-    private int connectionTimeoutSec;
+    private int[] keepAliveTimersSec;
+    private int[] connectionTimeoutsSec;
     private int timeToWaitMs;
     private int maxMsgsInflight;
     private int maxMsgSizeBytes;
@@ -93,8 +93,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs,
-                                 @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimerSec,
-                                 @Named(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC) int connectionTimeoutSec,
+                                 @Named(MqttModule.MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY) int[] keepAliveTimersSec,
+                                 @Named(MqttModule.MQTT_CONNECTION_TIMEOUT_SEC_ARRAY) int[] connectionTimeoutsSec,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS) int timeToWaitMs,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT) int maxMsgsInflight,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES) int maxMsgSizeBytes,
@@ -109,8 +109,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
         this.scheduledExecutorService = scheduledExecutorService;
         this.clientIdProvider = mqttClientIdProvider;
         this.mqttStatusReceiver = mqttStatusReceiver;
-        this.keepAliveTimerSec = keepAliveTimerSec;
-        this.connectionTimeoutSec = connectionTimeoutSec;
+        this.keepAliveTimersSec = keepAliveTimersSec.clone();
+        this.connectionTimeoutsSec = connectionTimeoutsSec.clone();
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
         this.maxMsgSizeBytes = maxMsgSizeBytes;
@@ -173,8 +173,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                             clientId,
                                             scheduledExecutorService,
                                             reconnectSleepMs,
-                                            keepAliveTimerSec,
-                                            connectionTimeoutSec,
+                                            keepAliveTimersSec[0],
+                                            connectionTimeoutsSec[0],
                                             timeToWaitMs,
                                             maxMsgsInflight,
                                             maxMsgSizeBytes,

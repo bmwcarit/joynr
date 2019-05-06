@@ -142,7 +142,7 @@ public class AccessControllerEnd2EndTest {
     private JoynrRuntime createRuntime() {
         Properties properties = new Properties();
 
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI, "tcp://localhost:1883");
+        properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883");
         properties.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
 
         Module module = Modules.override(new CCInProcessRuntimeModule()).with(new AbstractModule() {
