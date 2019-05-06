@@ -98,7 +98,7 @@ INPUTDATA_STRINGLENGTH=100
 # If a test case has to transmit a byte array, the length will be determined by this constant
 INPUTDATA_BYTEARRAYSIZE=100
 
-MQTT_BROKER_URI="tcp://localhost:1883"
+MQTT_BROKER_URIS="tcp://localhost:1883"
 
 
 # Process IDs for processes which must be terminated later
@@ -299,7 +299,7 @@ function startJavaPerformanceTestProvider {
     PROVIDER_STDERR=$PERFORMANCETESTS_RESULTS_DIR/provider_stderr.txt
 
     PROVIDERCLASS="io.joynr.performance.EchoProviderApplication"
-    PROVIDERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URI"
+    PROVIDERARGS="-d $DOMAINNAME -s GLOBAL -r IN_PROCESS_CC  -b MQTT -mbu $MQTT_BROKER_URIS"
 
     cd $PERFORMANCETESTS_SOURCE_DIR
 
