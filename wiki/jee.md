@@ -59,13 +59,17 @@ Additionally, the method must be annotated with
 `javax.enterprise.inject.Produces`.
 
 #### Mandatory Properties
+See Java Configuration Reference for more details on the available properties.
 
-* `MessagingpropertyKeys.CHANNELID` - this property should be set to the
+* `MessagingPropertyKeys.CHANNELID` - this property should be set to the
 application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
 so that all nodes of the cluster are identified by the same channel ID.
-* `MqttModule.PROPERTY_KEY_MQTT_BROKER_URI` - use this to configure the URL for
-connecting to the MQTT broker being used for communication.
-E.g. `tcp://mqtt.mycompany.net:1883`.
+* `ConfigurableMessagingSettings.PROPERTY_GBIDS` - use this to configure the GBIDs for
+the backends to be used, e.g. `joynrtestgbid1,joynrtestgbid2`.
+* `MqttModule.PROPERTY_MQTT_BROKER_URIS` - use this to configure the URLs for
+the backends identified by `ConfigurableMessagingModule.PROPERTY_GBIDS`.
+If used, the number of configured broker-uris must be equal to the number of configured gbids.
+E.g. `tcp://mqtt.mycompany.net:1883,tcp://mqtt.othercompany.net:1883`.
 
 #### Conditionally required Properties in case of HTTP based communication
 
@@ -90,9 +94,6 @@ this property needs to
 point to the endpoint registration service's URL with which the
 JEE Integration will register itself for its channel's topic.
 E.g. `http://endpointregistry.mycompany.net:8080`.
-* `MessagingPropertyKeys.DISCOVERYDIRECTORYURL` and
-`MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL` - configure the addresses for the
-discovery directory and domain access control services.
 * `MessagingPropertyKeys.PERSISTENCE_FILE` - if you are deploying multiple joynr-enabled
 applications to the same container instance, then you will need to set a different filename
 for this property for each application. E.g.: `"my-app-joynr.properties"` for one and
@@ -122,12 +123,10 @@ An example of a configuration EJB is:
 			"provider.domain");
 		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
 			Boolean.TRUE.toString());
-		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
+                joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS,
+                        "joynrtestgbid");
+		joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS,
 			"tcp://mqttbroker.com:1883");
-		joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
-			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
-		joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL,
-			"http://joynrbackend/discovery/channels/discoverydirectory_channelid/");
 		joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
 			"http://joynrbackend/bounceproxy/");
 

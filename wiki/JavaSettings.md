@@ -66,7 +66,9 @@ the channel ID.
 When shared subscriptions are enabled for MQTT the receiver ID identifies a node within a cluster.
 If no receiver ID is specified a random UUID will be used as the receiver ID.
 
-### `PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID`
+### Properties to override the DiscoveryEntries of the joynr backend services
+
+#### `PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID`
 The channel ID of the global capabilities directory (backend). To be able to connect to the global
 capabilities directory a disovery entry is created in the local capabilities directory as well as an
 appropriate routing table entry.
@@ -76,7 +78,17 @@ appropriate routing table entry.
 * **User property**: `joynr.messaging.capabilitiesdirectorychannelid`
 * **Default value**: `discoverydirectory_channelid`
 
-### `PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID`
+#### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID`
+The channel ID of the global domain access controller (backend). To be able to connect to the global
+domain access controller a disovery entry is created in the local capabilities directory as well as
+an appropriate routing table entry.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.domainaccesscontrollerchannelid`
+* **Default value**: `domainaccesscontroller_channelid`
+
+#### `PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID`
 The participant ID of the global capabilities directory (backend). To be able to connect to the
 global capabilities directory a disovery entry is created in the local capabilities directory as
 well as an appropriate routing table entry.
@@ -85,6 +97,69 @@ well as an appropriate routing table entry.
 * **Type**: String
 * **User property**: `joynr.messaging.capabilitiesdirectoryparticipantid`
 * **Default value**: `capabilitiesdirectory_participantid`
+
+#### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID`
+The participant ID of the global domain access controller (backend). To be able to connect to the
+global domain access controller a disovery entry is created in the local capabilities directory as
+well as an appropriate routing table entry.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.domainaccesscontrollerparticipantid`
+* **Default value**: `domainaccesscontroller_participantid`
+
+#### `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL`
+The GBID (Mqtt) or URL (Http) of the receive channel (incoming message queue) of the global capabilities directory backend
+service. To connect to the global capabilities directory the cluster controller creates an
+appropriate entry in the local capabilities directory.
+
+If the capabilities directory is using MQTT as its primary transport, then the value you set here
+is the GBID of the backend where the capabilities directory you want to use is located, e.g.
+`gbid2`. By default, the first (default) GBID of `PROPERTY_GBIDS` is used.
+
+If the capabilities directory is using HTTP (longpolling) as its primary transport, then the URL
+you set here is that of the capabilities directory's channel
+(channelId=discoverydirectory_channelid) at the Bounceproxy. E.g.
+`http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
+
+See also the static capabilities provisioning documentation below.
+
+* **REQUIRED if using a non default backend or HTTP to connect to the GCD**
+* **Type**: String
+* **User property**: `joynr.messaging.gcd.url`
+* **Default value**: `tcp://localhost:1883`
+
+#### `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL`
+The GBID (Mqtt) or URL (Http) of the receive channel (incoming message queue) of the global domain access
+controller service. To connect to the global domain access controller directory
+the cluster controller creates an appropriate entry in the local capabilities directory.
+
+If the domain access controller is using MQTT as its primary transport, then the value you set here
+is the GBID of the backend where the domain access controller you want to use is located, e.g.
+`gbid2`. By default, the first (default) GBID of `PROPERTY_GBIDS` is used.
+
+If the domain access controller is using HTTP (longpolling) as its primary transport, then the URL
+you set here is that of the domain access controller's channel
+(channelId=domainaccesscontroller_channelid) at the Bounceproxy. E.g.
+`http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/`
+
+See also the `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` documentation above and
+the static capabilities provisioning documentation below.
+
+* **REQUIRED if using a non default backend or HTTP to connect to the GDAC**
+* **Type**: String
+* **User property**: `joynr.messaging.gdac.url`
+* **Default value**: `tcp://localhost:1883`
+
+#### `PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN`
+The domain of the discovery services (backend). To be able to connect to the global discovery
+directories (capability directory, channel url directory, access controller) a disovery entry is
+created in the local capabilities directory.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.discoverydirectoriesdomain`
+* **Default value**: `io.joynr`
 
 ### `PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS`
 This property allows establishing two mqtt connections in parallel. One is used
@@ -95,16 +170,6 @@ for publishing and one for subscribing. This can be used to enhance throughput.
 * **User property**: `joynr.messaging.mqtt.separateconnections`
 * **Default value**: `false`
 
-### `PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN`
-The domain of the discovery services (backend). To be able to connect to the global discovery
-directories (capability directory, channel url directory, access controller) a disovery entry is
-created in the local capabilities directory.
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.messaging.discoverydirectoriesdomain`
-* **Default value**: `io.joynr`
-
 ### `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`
 TTL used for adding and removing global discovery entries.
 
@@ -112,26 +177,6 @@ TTL used for adding and removing global discovery entries.
 * **Type**: long
 * **User property**: `joynr.discovery.globaladdandremovettlms`
 * **Default value**: `2592000000` (30 days)
-
-### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID`
-The channel ID of the global domain access controller (backend). To be able to connect to the global
-domain access controller a disovery entry is created in the local capabilities directory as well as
-an appropriate routing table entry.
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.messaging.domainaccesscontrollerchannelid`
-* **Default value**: `domainaccesscontroller_channelid`
-
-### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID`
-The participant ID of the global domain access controller (backend). To be able to connect to the
-global domain access controller a disovery entry is created in the local capabilities directory as
-well as an appropriate routing table entry.
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.messaging.domainaccesscontrollerparticipantid`
-* **Default value**: `domainaccesscontroller_participantid`
 
 ### `PROPERTY_HOSTS_FILENAME`
 File used by the HTTP messaging stub to map URLs. It uses the Java properties file format. The key
@@ -149,7 +194,7 @@ hostname-to-replace=host-replacement:port-replacement:path-search-term:path-repl
 
 This entry will apply to all URLs with hostname `hostname-to-replace`. The original hostname and
 port are replaced by `host-replacement` and `port-replacement`, respectively. Furthermore, the
-original path is searched for `path-search-term` and the first occurance is relaced by
+original path is searched for `path-search-term` and the first occurance is replaced by
 `path-replacement`.
 
 * **OPTIONAL**
@@ -273,6 +318,28 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **Type**: long
 * **User property**: `joynr.capabilities.freshnessupdateintervalms`
 * **Default value**: `3600000`
+
+### `PROPERTY_GBIDS`
+
+The GBIDs (Global Backend IDentifiers) of the backends for the cluster controller to connect to.
+A GBID identifies a single backend independently of its address. This is necessary for multiple
+backends, since the URI/URL of a backend can differ depending on external circumstances. In case of
+MQTT, a backend (GBID) consists of all joynr participants (consumers and providers) which are
+connected to the same MQTT broker, i.e. all participants that can be reached via this broker.
+
+The first defined GBID is used as default for the global capabilities directory and provider registration.
+The GBIDs are mapped to transport specific URLs. In case of MQTT, a Broker-Uri has to be defined for each
+GBID in the Property MqttModule.PROPERTY_MQTT_BROKER_URIS.
+
+Currently, only MQTT is supported for multiple backends.
+
+This property has to be provided as one line where the GBIDs are separated by commas. This also means that
+',' is an invalid character for a GBID.
+
+* **REQUIRED for cluster controller runtime with enabled global transport.**
+* **Type**: String
+* **User property**: `joynr.messaging.gbids`
+* **Default value**: `joynrtestgbid`
 
 ## LimitAndBackpressureSettings
 
@@ -416,39 +483,6 @@ Set the mqtt prefix to be prepended to multicast topics.
 * **User property**: `joynr.messaging.mqtt.topicprefix.multicast`
 * **Default value**: ``
 
-### `DISCOVERYDIRECTORYURL`
-The URL of the receive channel (incoming message queue) of the global capabilities directory backend
-service. To connect to the global capabilities directory the cluster controller creates an
-appropriate entry in the local capabilities directory.
-If the capabilities directory is using MQTT as its primary transport, then the URL you set here
-is that of the MQTT broker configured for the capabilities directory. E.g.
-`tcp://mqttbroker:1883`.
-If the capabilities directory is using HTTP (longpolling) as its primary transport, then the URL
-you set here is that of the capabilities directory's channel
-(channelId=discoverydirectory_channelid) at the Bounceproxy. E.g.
-`http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
-See also the static capabilities provisioning documentation below.
-
-* **OPTIONAL** (see static capabilities provisioning)
-* **Type**: String
-* **User property**: `joynr.messaging.discoverydirectoryurl`
-* **Default value**: `tcp://localhost:1883`
-
-### `DOMAINACCESSCONTROLLERURL`
-The URL of the receive channel (incoming message queue) of the global domain access
-controller service. To connect to the global domain access controller directory
-the cluster controller creates an appropriate entry in the local capabilities directory.
-If the domain access controller is using HTTP (longpolling) as its primary transport, then the URL
-you set here is that of the domain access controller's channel
-(channelId=domainaccesscontroller_channelid) at the Bounceproxy. E.g.
-`http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/`
-See also the static capabilities provisioning documentation below and DISCOVERYDIRECTORYURL above.
-
-* **OPTIONAL** (see static capabilities provisioning)
-* **Type**: String
-* **User property**: `joynr.messaging.domainaccesscontrollerurl`
-* **Default value**: `tcp://localhost:1883`
-
 ### `PROPERTY_SERVLET_HOST_PATH`
 If a joynr application is deployed into a servlet on an application server, the servlet host path is
 used to register provider with the global capabilities and channel URL directories. Hence, this must
@@ -515,15 +549,18 @@ methods in `MessagePersister` in order to identify which queue is reading or wri
 
 ## MqttModule
 
-### `PROPERTY_KEY_MQTT_BROKER_URI`
-The URI of the MQTT broker backend service the cluster controller connects to.
+### `PROPERTY_MQTT_BROKER_URIS`
+List of URIs of the MQTT broker backend services for the cluster controller to connect to.
 
+The amount of Broker-Uris has to be equal to the amount of defined GBIDs, defined in
+ConfigurableMessagingSettings.PROPERTY_GBIDS.
+  
 * `tcp://HOST:PORT`: use insecure connection
 * `ssl://HOST:PORT`: use secure connection, for this you will have to provide keystore and truststore
 
 * **REQUIRED if using the MQTTModule**
 * **Type**: String
-* **User property**: `joynr.messaging.mqtt.brokeruri`
+* **User property**: `joynr.messaging.mqtt.brokeruris`
 * **Default value**:
 
 ### `PROPERTY_KEY_MQTT_USERNAME`
@@ -604,24 +641,28 @@ trying to connect again.
 * **User property**: `joynr.messaging.mqtt.reconnect.sleepms`
 * **Default value**: `1000`
 
-### `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC`
+### `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC`
 Sets the "keep alive" interval measured in seconds. If no message is transmitted during this period,
 the client sends a ping message which is acknowledged by the server. This allows a client to detect
 disconnects without using TCP/IP mechanisms. A value of 0 disables the "keep alive" mechanism.
+For multiple backends, a value has to be provided for each specified GBID. The values must be passed as
+a string of int values separated by commas, e.g. 60,30,0...
 
 * **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.messaging.mqtt.keepalivetimersec`
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.keepalivetimerssec`
 * **Default value**: `30`
 
-### `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC`
+### `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC`
 Sets the connection timeout measured in seconds. This value states how long a client will wait until
 a network connection to the server is established. A value of 0 means that a client will wait until
 the network connection is established successfully or fails.
+For multiple backends, a value has to be provided for each specified GBID. The values must be passed as
+a string of int values separated by commas, e.g. 60,30,0...
 
 * **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.messaging.mqtt.connectiontimeoutsec`
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.connectiontimeoutssec`
 * **Default value**: `60`
 
 ### `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`
@@ -871,8 +912,8 @@ This property can be used to determine the name, URI or path of a file / resourc
 can be read from either a remote URI, the local file system, or if not found there the
 classpath and contains the capabilities to be statically provisioned for the runtime.
 
-By default the global capabilities directory and global domain access control directory
-are statically provisioned. But you are not limited to just provisioning those.
+By default the global capabilities directory and global domain access directory are
+statically provisioned. But you are not limited to just provisioning those.
 
 The content of the file is a JSON serialised array of GlobalDiscoveryEntry objects. The
 default file is `provisioned_capabilities.json` and is read from the classpath from the
@@ -888,10 +929,17 @@ fail to start if either one is lacking or duplicate entries have been provisione
 If you want to change either one of those entries from the default, you don't have to
 do so using the JSON format. You can override the entries from the JSON by using the
 properties listed in the `ConfigurableMessagingSettings` section above.
-Generally you will simply specifiy one of `DISCOVERYDIRECTORYURL` and/or
-`DOMAINACCESSCONTROLLERURL`, although it is also possible to override all other parts
-of the entry if necessary. Specifying an incomplete entry by, e.g., setting the
-participant ID to an empty value will result in the system failing to start.
+Generally you will simply specifiy one of `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL`
+and/or `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL` to use another than the default
+backend for these services. It is also possible to override all other parts of the entry
+if necessary. Specifying an incomplete entry by, e.g., setting the participant ID to an
+empty value will result in the system failing to start.
+Be aware, that joynr ignores the GBID value of the statically provisioned capabilities for
+the internal backend services (capabilities directory, domain access control directory, etc.).
+It always used the default Backend (first specified GBID of `PROPERTY_GBIDS`) to contact
+these services (this is a trade off to reduce the amount of required properties).
+To use another backend for the internal backend services, reorder `PROPERTY_GBIDS`
+or use the properties mentioned above.
 
 * **OPTIONAL**
 * **Type**: String

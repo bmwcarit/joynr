@@ -56,9 +56,18 @@ Additionally, the method must be annotated with
 * `MessagingpropertyKeys.CHANNELID` - this property should be set to the
   application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
   so that all nodes of the cluster are identified by the same channel ID.
-* `MqttModule.PROPERTY_KEY_MQTT_BROKER_URI` - use this to configure the URL for
-  connecting to the MQTT broker being used for communication.
-  E.g. `tcp://mqtt.mycompany.net:1883`.
+* `ConfigurableMessagingSettings.PROPERTY_GBIDS` - use this to configure the GBIDs for
+  connecting to the MQTT brokers being used for communication.
+  E.g. `joynrtestgbid1,joynrtestgbid2`.
+        * A GBID (Global Backend IDentifier) identifies a single backend independently of its uri.
+          This is necessary for multiple backends, since the broker-uri of a backend can differ
+          depending on location.
+  This property is required if Mqtt is configured to be used as global transport.
+* `MqttModule.PROPERTY_MQTT_BROKER_URIS` - use this to configure the URLs for
+  connecting to the MQTT brokers identified by `ConfigurableMessagingModule.PROPERTY_GBIDS`.
+  If used, the number of configured broker-uris must be equal to the number of configured gbids.
+  E.g. `tcp://mqtt.mycompany.net:1883,tcp://mqtt.othercompany.net:1883`.
+
 
 #### Optional Properties
 
@@ -76,8 +85,8 @@ Additionally, the method must be annotated with
   this property needs to point to the endpoint registration service's URL with which the
   JEE Integration will register itself for its channel's topic.
   E.g. `http://endpointregistry.mycompany.net:8080`.
-* `MessagingPropertyKeys.DISCOVERYDIRECTORYURL` and
-  `MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL` - configure the addresses for the
+* `MessagingPropertyKeys.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` and
+  `MessagingPropertyKeys.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL` - configure the addresses for the
   discovery directory and domain access control services.
 * `MessagingPropertyKeys.PERSISTENCE_FILE` - if you are deploying multiple joynr-enabled
   applications to the same container instance, then you will need to set a different filename
@@ -108,15 +117,17 @@ public class JoynrConfigurationProvider {
         "http://localhost:8080");
     joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
         "io.joynr.test.interlanguage.jee.provider");
-    joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_BROKER_URI,
+    joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS,
+        "joynrtestgbid");
+    joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS,
         "tcp://localhost:1883");
     joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
         "http://localhost:8383/bounceproxy/");
     joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT,
          "servlet");
-    joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL,
+    joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL,
         "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
-    joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL,
+    joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL,
         "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
 
     return joynrProperties;
