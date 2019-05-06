@@ -123,7 +123,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
         }, new TypeLiteral<IMessagingSkeletonFactory>() {
-        }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
+        }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETON_FACTORIES));
         messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeletonFactory.class);
 
         // other address types must be added to the Multibinder to support global addressing. Created here to make

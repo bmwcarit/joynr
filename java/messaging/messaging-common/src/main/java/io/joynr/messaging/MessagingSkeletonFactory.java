@@ -41,7 +41,7 @@ public class MessagingSkeletonFactory implements ShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MessagingSkeletonFactory.class);
 
-    public static final String MIDDLEWARE_MESSAGING_SKELETONS = "MIDDLEWARE_MESSAGING_SKELETONS";
+    public static final String MIDDLEWARE_MESSAGING_SKELETON_FACTORIES = "MIDDLEWARE_MESSAGING_SKELETON_FACTORIES";
     private Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactories;
     private ScheduledExecutorService scheduler;
 
@@ -59,7 +59,7 @@ public class MessagingSkeletonFactory implements ShutdownListener {
      * @param scheduler ExecutorService that schedules all messaging communication
      */
     @Inject
-    public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETONS) Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletons,
+    public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETON_FACTORIES) Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletons,
                                     @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                     ShutdownNotifier shutdownNotifier) {
         this.messagingSkeletonFactories = messagingSkeletons;
