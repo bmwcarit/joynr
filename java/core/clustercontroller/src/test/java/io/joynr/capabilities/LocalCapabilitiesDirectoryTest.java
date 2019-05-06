@@ -100,6 +100,7 @@ public class LocalCapabilitiesDirectoryTest {
     private static final long defaultDiscoveryRetryIntervalMs = 2000L;
     private Long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
     private String publicKeyId = "publicKeyId";
+    private String[] gbids = { "testgbid1", "testgbid2" };
 
     @Mock
     JoynrRuntime runtime;
@@ -224,7 +225,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         3600000,
                                                                         capabilitiesFreshnessUpdateExecutor,
                                                                         defaultDiscoveryRetryIntervalMs,
-                                                                        shutdownNotifier);
+                                                                        shutdownNotifier,
+                                                                        gbids);
         verify(expiredDiscoveryEntryCacheCleaner).scheduleCleanUpForCaches(Mockito.<ExpiredDiscoveryEntryCacheCleaner.CleanupAction> any(),
                                                                            argThat(new DiscoveryEntryStoreVarargMatcher(globalDiscoveryEntryCacheMock,
                                                                                                                         localDiscoveryEntryStoreMock)));

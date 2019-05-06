@@ -197,6 +197,8 @@ public class LocalDiscoveryTest {
 
     private final long defaultDiscoveryRetryIntervalMs = 2000L;
 
+    private final String[] defaultGbids = { "testgbid1", "testgbid2" };
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -212,7 +214,8 @@ public class LocalDiscoveryTest {
                                                                                                              3600000,
                                                                                                              capabilitiesFreshnessUpdateExecutorMock,
                                                                                                              defaultDiscoveryRetryIntervalMs,
-                                                                                                             shutdownNotifier);
+                                                                                                             shutdownNotifier,
+                                                                                                             defaultGbids);
 
         Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule(),
                                                                                   new AbstractModule() {
