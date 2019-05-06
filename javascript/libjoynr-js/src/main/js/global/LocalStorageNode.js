@@ -79,6 +79,7 @@ LocalStorageWrapper.prototype = {
         await this._promiseChain;
     },
     _wrapFunction(cb, ...args) {
+        // eslint-disable-next-line promise/no-callback-in-promise
         this._promiseChain = this._promiseChain.then(() => cb(...args)).catch(e => {
             log.error(`failure executing ${cb} with args ${JSON.stringify(args)} error: ${e}`);
         });
