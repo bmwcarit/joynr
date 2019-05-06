@@ -180,8 +180,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // 1) Set them programmatically at compile time using the joynr configuration properties at the
         // JoynInjectorFactory. E.g. uncomment the following lines to set a certain joynr server
         // instance.
-        // joynrConfig.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8080/bounceproxy/");
-        // joynrConfig.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "http://localhost:8080/discovery/channels/discoverydirectory_channelid/");
+        // joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, "joynrtestgbid");
+        // joynrConfig.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883/");
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "radioapp_consumer_local_domain");
 
         // 2) Or set them in the static persistence file (default: joynr.properties in working dir) at
@@ -191,12 +191,12 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // NOTE: This application uses a custom static persistence file consumer-joynr.properties.
         // Copy the following lines to the custom persistence file to set a certain joynr server
         // instance.
-        // joynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy/
-        // joynr.messaging.discoverydirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
+        // joynr.messaging.gbids=joynrtestgbid
+        // joynr.messaging.mqtt.brokeruris=tcp://localhost:1883/
 
         // 3) Or set them in Java System properties.
-        // -Djoynr.messaging.bounceProxyUrl=http://localhost:8080/bounceproxy/
-        // -Djoynr.messaging.capabilitiesDirectoryUrl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
+        // -Djoynr.messaging.gbids=joynrtestgbid
+        // -Djoynr.messaging.mqtt.brokeruris=tcp://localhost:1883/
 
         // NOTE:
         // Programmatically set configuration properties override properties set in the static persistence file.
