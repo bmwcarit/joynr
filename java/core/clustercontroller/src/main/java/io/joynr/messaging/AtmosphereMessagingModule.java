@@ -24,7 +24,7 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
-import io.joynr.messaging.channel.ChannelMessagingSkeleton;
+import io.joynr.messaging.channel.ChannelMessagingSkeletonFactory;
 import io.joynr.messaging.http.operation.LongPollingMessageReceiver;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
@@ -38,11 +38,11 @@ public class AtmosphereMessagingModule extends AbstractModule {
     @Override
     protected void configure() {
         install(new HttpMessagingModule());
-        MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+        MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<IMessagingSkeleton>() {
+        }, new TypeLiteral<IMessagingSkeletonFactory>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
-        messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeleton.class);
+        messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeletonFactory.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
         globalAddresses = Multibinder.newSetBinder(binder(),

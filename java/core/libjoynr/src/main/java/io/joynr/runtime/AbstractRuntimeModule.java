@@ -61,7 +61,7 @@ import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
@@ -70,7 +70,7 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
@@ -98,7 +98,7 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
 abstract class AbstractRuntimeModule extends AbstractModule {
 
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
-    MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+    MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
     @SuppressWarnings("URF_UNREAD_FIELD")
     Multibinder<MulticastAddressCalculator> multicastAddressCalculators;
 
@@ -122,9 +122,9 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         messagingStubFactory.addBinding(InProcessAddress.class).to(InProcessMessagingStubFactory.class);
 
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<IMessagingSkeleton>() {
+        }, new TypeLiteral<IMessagingSkeletonFactory>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
-        messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeleton.class);
+        messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeletonFactory.class);
 
         // other address types must be added to the Multibinder to support global addressing. Created here to make
         // sure the Set exists, even if empty.

@@ -31,10 +31,10 @@ import com.google.inject.name.Names;
 import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessageReceiver;
-import io.joynr.messaging.channel.ChannelMessagingSkeleton;
+import io.joynr.messaging.channel.ChannelMessagingSkeletonFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.http.ServletHttpGlobalAddressFactory;
 import io.joynr.messaging.http.operation.ApacheHttpRequestFactory;
@@ -57,10 +57,10 @@ import joynr.system.RoutingTypes.ChannelAddress;
  */
 public class JeeHttpMessagingModule extends AbstractModule {
 
-    private MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+    private MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
     private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
 
-    public JeeHttpMessagingModule(MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory,
+    public JeeHttpMessagingModule(MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory,
                                   MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory) {
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.messagingStubFactory = messagingStubFactory;
@@ -68,7 +68,7 @@ public class JeeHttpMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeleton.class);
+        messagingSkeletonFactory.addBinding(ChannelAddress.class).to(ChannelMessagingSkeletonFactory.class);
         messagingStubFactory.addBinding(ChannelAddress.class).to(ChannelMessagingStubFactory.class);
 
         Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;

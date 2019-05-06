@@ -42,7 +42,7 @@ public class MessagingSkeletonFactory implements ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(MessagingSkeletonFactory.class);
 
     public static final String MIDDLEWARE_MESSAGING_SKELETONS = "MIDDLEWARE_MESSAGING_SKELETONS";
-    private Map<Class<? extends Address>, IMessagingSkeleton> messagingSkeletons;
+    private Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactories;
     private ScheduledExecutorService scheduler;
 
     /**
@@ -52,32 +52,32 @@ public class MessagingSkeletonFactory implements ShutdownListener {
      *      new TypeLiteral {@code<Class<? extends Address>>}() {},
      *      new TypeLiteral {@code<IMessagingSkeleton>()} {},
      *      Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
-     *  messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessMessagingSkeleton.class);
+     *  messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessMessagingSkeletonFactory.class);
      * </pre>
      *
      * @param messagingSkeletons a map of all skeletons (message receivers) that are to be started
      * @param scheduler ExecutorService that schedules all messaging communication
      */
     @Inject
-    public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETONS) Map<Class<? extends Address>, IMessagingSkeleton> messagingSkeletons,
+    public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETONS) Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletons,
                                     @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                     ShutdownNotifier shutdownNotifier) {
-        this.messagingSkeletons = messagingSkeletons;
+        this.messagingSkeletonFactories = messagingSkeletons;
         this.scheduler = scheduler;
         shutdownNotifier.registerForShutdown(this);
     }
 
     public void start() {
-        for (final IMessagingSkeleton messagingSkeleton : messagingSkeletons.values()) {
+        for (final IMessagingSkeletonFactory messagingSkeletonFactory : messagingSkeletonFactories.values()) {
             scheduler.schedule(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        messagingSkeleton.init();
+                        messagingSkeletonFactory.init();
                     } catch (Exception e) {
                         logger.error("unable to start skeleton: {}. Reason: {}",
-                                     messagingSkeleton.getClass().getSimpleName(),
+                                     messagingSkeletonFactory.getClass().getSimpleName(),
                                      e.getMessage());
                     }
                 }
@@ -87,7 +87,7 @@ public class MessagingSkeletonFactory implements ShutdownListener {
 
     @Override
     public void shutdown() {
-        for (IMessagingSkeleton messagingSkeleton : messagingSkeletons.values()) {
+        for (IMessagingSkeletonFactory messagingSkeleton : messagingSkeletonFactories.values()) {
             messagingSkeleton.shutdown();
         }
     }
@@ -95,7 +95,7 @@ public class MessagingSkeletonFactory implements ShutdownListener {
     @CheckForNull
     public IMessagingSkeleton getSkeleton(Address address) {
         if (address != null) {
-            return messagingSkeletons.get(address.getClass());
+            return messagingSkeletonFactories.get(address.getClass()).getSkeleton(address);
         }
         return null;
     }

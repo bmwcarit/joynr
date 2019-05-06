@@ -90,6 +90,7 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
@@ -97,6 +98,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.channel.ChannelMessagingSkeleton;
+import io.joynr.messaging.channel.ChannelMessagingSkeletonFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
@@ -150,7 +152,7 @@ public class CcMessageRouterTest {
     @Mock
     private AbstractMiddlewareMessagingStubFactory<IMessagingStub, InProcessAddress> inProcessMessagingStubFactoryMock;
     @Mock
-    private ChannelMessagingSkeleton messagingSkeletonMock;
+    private ChannelMessagingSkeletonFactory messagingSkeletonFactoryMock;
     @Mock
     private StatusReceiver statusReceiver;
     @Mock
@@ -231,14 +233,14 @@ public class CcMessageRouterTest {
                 messagingStubFactory.addBinding(MqttAddress.class).toInstance(mqttMessagingStubFactoryMock);
                 messagingStubFactory.addBinding(InProcessAddress.class).toInstance(inProcessMessagingStubFactoryMock);
 
-                MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+                MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
                 messagingSkeletonFactory = MapBinder.newMapBinder(binder(),
                                                                   new TypeLiteral<Class<? extends Address>>() {
                                                                   },
-                                                                  new TypeLiteral<IMessagingSkeleton>() {
+                                                                  new TypeLiteral<IMessagingSkeletonFactory>() {
                                                                   },
-                                                                  Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
-                messagingSkeletonFactory.addBinding(ChannelAddress.class).toInstance(messagingSkeletonMock);
+                                                                  Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETON_FACTORIES));
+                messagingSkeletonFactory.addBinding(ChannelAddress.class).toInstance(messagingSkeletonFactoryMock);
 
                 Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
                 });

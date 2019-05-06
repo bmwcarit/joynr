@@ -30,7 +30,7 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.DefaultMqttTopicPrefixProvider;
@@ -64,9 +64,9 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS = "joynr.messaging.mqtt.reconnect.sleepms";
     public static final String PROPERTY_KEY_MQTT_BROKER_URI = "joynr.messaging.mqtt.brokeruri";
     private MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
-    private MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+    private MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
 
-    public JeeMqttMessageSendingModule(MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory,
+    public JeeMqttMessageSendingModule(MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory,
                                        MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory) {
         this.messagingSkeletonFactory = messagingSkeletonFactory;
         this.messagingStubFactory = messagingStubFactory;

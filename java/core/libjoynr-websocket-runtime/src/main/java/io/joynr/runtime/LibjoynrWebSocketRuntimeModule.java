@@ -32,6 +32,7 @@ import io.joynr.messaging.sender.MessageSender;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMulticastAddressCalculator;
+import io.joynr.messaging.websocket.WebsocketMessagingSkeletonFactory;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientModule;
 import joynr.system.RoutingTypes.Address;
@@ -54,7 +55,7 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
                            .toInstance(Boolean.TRUE);
 
-        messagingSkeletonFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingSkeleton.class);
+        messagingSkeletonFactory.addBinding(WebSocketAddress.class).to(WebsocketMessagingSkeletonFactory.class);
         messagingStubFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingStubFactory.class);
         multicastAddressCalculators.addBinding().to(WebSocketMulticastAddressCalculator.class);
     }

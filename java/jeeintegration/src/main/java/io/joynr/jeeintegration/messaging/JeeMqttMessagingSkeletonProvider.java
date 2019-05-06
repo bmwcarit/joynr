@@ -37,7 +37,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
@@ -96,9 +96,9 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     }
 
     @Override
-    public IMessagingSkeleton get() {
+    public IMessagingSkeletonFactory get() {
         if (httpBridgeEnabled) {
-            return new NoOpMqttMessagingSkeleton(mqttClientFactory);
+            return new NoOpMqttMessagingSkeletonFactory(mqttClientFactory);
         } else {
             return super.get();
         }

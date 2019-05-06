@@ -33,7 +33,7 @@ import io.joynr.jeeintegration.messaging.JeeHttpMessagingModule;
 import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingSkeletonFactory;
@@ -75,9 +75,9 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
                                             .toInstance(scheduledExecutorService);
         bind(ExecutorService.class).toInstance(scheduledExecutorService);
 
-        MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+        MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<IMessagingSkeleton>() {
+        }, new TypeLiteral<IMessagingSkeletonFactory>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
 
         MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;

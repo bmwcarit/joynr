@@ -27,7 +27,7 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.statusmetrics.DefaultMqttStatusReceiver;
@@ -102,9 +102,9 @@ public class MqttModule extends AbstractModule {
         }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
         messagingStubFactory.addBinding(MqttAddress.class).to(MqttMessagingStubFactory.class);
 
-        MapBinder<Class<? extends Address>, IMessagingSkeleton> messagingSkeletonFactory;
+        MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-        }, new TypeLiteral<IMessagingSkeleton>() {
+        }, new TypeLiteral<IMessagingSkeletonFactory>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETONS));
         messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(MqttMessagingSkeletonProvider.class);
 

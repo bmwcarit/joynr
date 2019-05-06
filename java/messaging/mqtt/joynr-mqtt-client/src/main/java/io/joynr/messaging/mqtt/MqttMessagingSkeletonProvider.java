@@ -36,7 +36,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
-import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
@@ -44,12 +44,12 @@ import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
- * A provider for {@link IMessagingSkeleton} instances which checks with the property configured under
+ * A provider for {@link IMessagingSkeletonFactory} instances which checks with the property configured under
  * {@link io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} If shared subscriptions are
  * enabled, it returns an instance of {@link SharedSubscriptionsMqttMessagingSkeleton}. Otherwise (default behaviour),
  * it returns an instance of the normal {@link MqttMessagingSkeleton}.
  */
-public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleton> {
+public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeletonFactory> {
 
     private final static Logger logger = LoggerFactory.getLogger(MqttMessagingSkeletonProvider.class);
 
@@ -103,30 +103,30 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     }
 
     @Override
-    public IMessagingSkeleton get() {
+    public IMessagingSkeletonFactory get() {
         if (sharedSubscriptionsEnabled) {
-            return new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
-                                                                maxIncomingMqttRequests,
-                                                                backpressureEnabled,
-                                                                backpressureIncomingMqttRequestsUpperThreshold,
-                                                                backpressureIncomingMqttRequestsLowerThreshold,
-                                                                replyToAddress,
-                                                                messageRouter,
-                                                                mqttClientFactory,
-                                                                channelId,
-                                                                mqttTopicPrefixProvider,
-                                                                rawMessagingPreprocessor,
-                                                                messageProcessors,
-                                                                mqttStatusReceiver);
+            return new SharedSubscriptionsMqttMessagingSkeletonFactory(ownAddress,
+                                                                       maxIncomingMqttRequests,
+                                                                       backpressureEnabled,
+                                                                       backpressureIncomingMqttRequestsUpperThreshold,
+                                                                       backpressureIncomingMqttRequestsLowerThreshold,
+                                                                       replyToAddress,
+                                                                       messageRouter,
+                                                                       mqttClientFactory,
+                                                                       channelId,
+                                                                       mqttTopicPrefixProvider,
+                                                                       rawMessagingPreprocessor,
+                                                                       messageProcessors,
+                                                                       mqttStatusReceiver);
         }
-        return new MqttMessagingSkeleton(ownAddress,
-                                         maxIncomingMqttRequests,
-                                         messageRouter,
-                                         mqttClientFactory,
-                                         mqttTopicPrefixProvider,
-                                         rawMessagingPreprocessor,
-                                         messageProcessors,
-                                         mqttStatusReceiver);
+        return new MqttMessagingSkeletonFactory(ownAddress,
+                                                maxIncomingMqttRequests,
+                                                messageRouter,
+                                                mqttClientFactory,
+                                                mqttTopicPrefixProvider,
+                                                rawMessagingPreprocessor,
+                                                messageProcessors,
+                                                mqttStatusReceiver);
     }
 
 }
