@@ -139,17 +139,17 @@ public class LegacyCapabilitiesProvisioning {
                                          String interfaceName,
                                          String channelId,
                                          String participantId,
-                                         String urlForAddress,
+                                         String uriForAddress,
                                          String localChannelId,
                                          String domain) {
-        boolean hasUrl = isPresent(urlForAddress);
+        boolean hasUrl = isPresent(uriForAddress);
         boolean hasParticipantId = isPresent(participantId);
         if (hasUrl && !hasParticipantId) {
             throw new IllegalArgumentException(format("When configuring the discovery directory or domain access controller "
                     + "via properties, you must provide both a URL and a participant ID per service.%n"
                     + "You provided the URL '%s' and the participant ID '%s' for the service %s.%n"
                     + "Please complete the configuration and restart the application.",
-                                                      urlForAddress,
+                                                      uriForAddress,
                                                       participantId,
                                                       interfaceName));
         }
@@ -157,11 +157,11 @@ public class LegacyCapabilitiesProvisioning {
             Address address;
             if (localChannelId.equals(channelId)) {
                 address = new InProcessAddress();
-            } else if (urlForAddress.startsWith("http") || urlForAddress.startsWith("https")) {
-                address = new ChannelAddress(urlForAddress, channelId);
+            } else if (uriForAddress.startsWith("http") || uriForAddress.startsWith("https")) {
+                address = new ChannelAddress(uriForAddress, channelId);
             } else {
-                // allows anything else, typically used with mqtt:// or tcp:// or ssl://
-                address = new MqttAddress(urlForAddress, channelId);
+                // allows anything else, which is expected to be a GBID
+                address = new MqttAddress(uriForAddress, channelId);
             }
             JoynrVersion interfaceVersion = interfaceClass.getAnnotation(JoynrVersion.class);
             DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(interfaceVersion.major(),
