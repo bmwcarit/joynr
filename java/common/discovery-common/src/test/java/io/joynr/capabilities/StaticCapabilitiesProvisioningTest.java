@@ -24,7 +24,6 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVER
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
-import static io.joynr.messaging.MessagingPropertyKeys.DISCOVERYDIRECTORYURL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -53,7 +52,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
 
-import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
@@ -265,10 +264,10 @@ public class StaticCapabilitiesProvisioningTest {
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID))
                                   .toInstance(provisioningProperties.domainAccessControllerParticipantId);
                 bind(String.class).annotatedWith(Names.named(CHANNELID)).toInstance(provisioningProperties.channelId);
-                bind(String.class).annotatedWith(Names.named(DISCOVERYDIRECTORYURL))
-                                  .toInstance(provisioningProperties.discoveryDirectoryUrl);
-                bind(String.class).annotatedWith(Names.named(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL))
-                                  .toInstance(provisioningProperties.domainAccessControllerUrl);
+                bind(String.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL))
+                                  .toInstance(provisioningProperties.discoveryDirectoryUri);
+                bind(String.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL))
+                                  .toInstance(provisioningProperties.domainAccessControllerUri);
 
                 bind(ObjectMapper.class).toInstance(objectMapper);
                 bind(RoutingTable.class).toInstance(routingTable);

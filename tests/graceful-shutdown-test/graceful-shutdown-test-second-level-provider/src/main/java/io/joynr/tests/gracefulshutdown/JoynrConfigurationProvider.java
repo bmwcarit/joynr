@@ -41,8 +41,6 @@ public class JoynrConfigurationProvider {
                                     "io.joynr.tests.gracefulshutdown.jee.secondlevel.provider");
         joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://joynrbackend:8080/bounceproxy/");
-        joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://mqttbroker:1883");
-        joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
                                     "jee-second-level-provider-joynr.properties");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");

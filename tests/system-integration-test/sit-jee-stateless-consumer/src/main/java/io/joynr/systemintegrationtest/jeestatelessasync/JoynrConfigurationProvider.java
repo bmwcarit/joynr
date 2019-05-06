@@ -58,8 +58,6 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(ParticipantIdKeyUtil.getProviderParticipantIdKey(CONTROLLER_DOMAIN,
                                                                                      SitControllerSync.class),
                                     CONTROLLER_PARTICIPANT_ID);
-        joynrProperties.setProperty(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, MQTT_BROKER_URI);
-        joynrProperties.setProperty(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, MQTT_BROKER_URI);
 
         return joynrProperties;
     }

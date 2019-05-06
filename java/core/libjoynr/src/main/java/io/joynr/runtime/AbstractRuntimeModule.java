@@ -170,4 +170,5 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     Address getDispatcherAddress() {
         return new InProcessAddress();
     }
+
 }

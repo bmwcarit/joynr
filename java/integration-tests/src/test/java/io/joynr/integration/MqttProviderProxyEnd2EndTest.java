@@ -32,6 +32,7 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
@@ -54,8 +55,8 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URL);
         // test is using 2 global address typs, so need to set one of them as primary
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-        mqttConfig.put(MessagingPropertyKeys.DISCOVERYDIRECTORYURL, MQTT_BROKER_URL);
-        mqttConfig.put(MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, MQTT_BROKER_URL);
+        mqttConfig.put(ConfigurableMessagingSettings.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL, MQTT_BROKER_URL);
+        mqttConfig.put(ConfigurableMessagingSettings.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL, MQTT_BROKER_URL);
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");

@@ -78,7 +78,6 @@ public class JoynrConfigurationProvider {
                            "/domain-access-controller-jee/messaging");
         readAndSetProperty(joynrProperties, MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         readAndSetProperty(joynrProperties, MessagingPropertyKeys.CHANNELID, "domainaccesscontroller_channelid");
-        readAndSetProperty(joynrProperties, MessagingPropertyKeys.DISCOVERYDIRECTORYURL, "tcp://localhost:1883");
         readAndSetProperty(joynrProperties,
                            MessagingPropertyKeys.PERSISTENCE_FILE,
                            "domain-access-controller-joynr.properties");

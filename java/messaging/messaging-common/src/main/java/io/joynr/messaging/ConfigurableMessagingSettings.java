@@ -68,6 +68,10 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final long DEFAULT_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF = -1;
 
     public static final String PROPERTY_GBIDS = "joynr.messaging.gbids";
+
+    public static final String PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL = "joynr.messaging.gdac.url";
+    public static final String PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL = "joynr.messaging.gcd.url";
+
     private final BounceProxyUrl bounceProxyUrl;
     private final long createChannelRetryIntervalMs;
     private final long deleteChannelRetryIntervalMs;

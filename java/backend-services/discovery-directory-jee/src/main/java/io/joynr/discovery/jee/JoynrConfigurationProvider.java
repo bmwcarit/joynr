@@ -81,7 +81,6 @@ public class JoynrConfigurationProvider {
                            ParticipantIdKeyUtil.getProviderParticipantIdKey(getJoynrLocalDomain(),
                                                                             GlobalCapabilitiesDirectoryProvider.class),
                            readCapabilitiesDirectoryParticipantIdFromProperties());
-        readAndSetProperty(joynrProperties, MessagingPropertyKeys.DOMAINACCESSCONTROLLERURL, "tcp://localhost:1883");
         return joynrProperties;
     }
 

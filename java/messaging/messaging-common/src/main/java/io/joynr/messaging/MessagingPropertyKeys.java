@@ -21,8 +21,6 @@ package io.joynr.messaging;
 public final class MessagingPropertyKeys {
     //NOTE: all property identifiers must be lower-case only.
     public static final String CHANNELID = "joynr.messaging.channelid"; //NOT USUALLY SET BY THE APPLICATION!
-    public static final String DISCOVERYDIRECTORYURL = "joynr.messaging.discoverydirectoryurl";
-    public static final String DOMAINACCESSCONTROLLERURL = "joynr.messaging.domainaccesscontrollerurl";
     public static final String BOUNCE_PROXY_URL = "joynr.messaging.bounceproxyurl";
     public static final String RECEIVERID = "joynr.messaging.receiverid"; //NEVER SET BY THE APPLICATION!
     public static final String PERSISTENCE_FILE = "joynr.messaging.persistence_file";
