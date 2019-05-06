@@ -48,6 +48,7 @@ import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
@@ -100,6 +101,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private List<QueuedDiscoveryEntry> queuedDiscoveryEntries = new ArrayList<QueuedDiscoveryEntry>();
 
+    private final String[] gbids;
+
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
         private DeferredVoid deferred;
@@ -138,7 +141,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS) long freshnessUpdateIntervalMs,
                                           @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler,
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_RETRY_INTERVAL_MS) long defaultDiscoveryRetryInterval,
-                                          ShutdownNotifier shutdownNotifier) {
+                                          ShutdownNotifier shutdownNotifier,
+                                          @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids) {
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.defaultDiscoveryRetryInterval = defaultDiscoveryRetryInterval;
@@ -146,6 +150,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
+        this.gbids = gbids.clone();
         this.globalDiscoveryEntryCache.add(capabilitiesProvisioning.getDiscoveryEntries());
         expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(new ExpiredDiscoveryEntryCacheCleaner.CleanupAction() {
             @Override

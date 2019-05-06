@@ -23,6 +23,9 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILI
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID;
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -69,6 +72,12 @@ public class StaticCapabilitiesProvisioningTest {
 
     private static final Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioningTest.class);
 
+    private static final String DEFAULT_GBID = "testgbid1";
+    private static final String TEST_GBID = "testgbid42";
+    private static final String DEFAULT_BROKER_URI = "brokerUri";
+    private static final String GCD_PARTICIPANT_ID = "capdir_participant_id";
+    private static final String GDAC_PARTICIPANT_ID = "acl_participant_id";
+
     private ObjectMapper objectMapper;
 
     @Mock
@@ -90,7 +99,7 @@ public class StaticCapabilitiesProvisioningTest {
         Long lastSeenDateMs = 0L;
         Long expiryDateMs = 0L;
         String publicKeyId = "publicKeyId";
-        Address address = new MqttAddress("brokerUri", "topic");
+        Address address = new MqttAddress(DEFAULT_BROKER_URI, "topic");
         for (String interfaceName : interfaceNames) {
             GlobalDiscoveryEntry entry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                                  domain,
@@ -128,14 +137,14 @@ public class StaticCapabilitiesProvisioningTest {
 
     private LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder createLegacyProvisioningPropertiesHolder() {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
-        properties.discoveryDirectoryUrl = "http://localhost:8080";
-        properties.domainAccessControllerUrl = "http://localhost:9090";
+        properties.discoveryDirectoryUri = TEST_GBID;
+        properties.domainAccessControllerUri = TEST_GBID;
         properties.capabilitiesDirectoryChannelId = "capdir_channel_id";
-        properties.capabilitiesDirectoryParticipantId = "capdir_participant_id";
+        properties.capabilitiesDirectoryParticipantId = GCD_PARTICIPANT_ID;
         properties.channelId = "local_channel_id";
         properties.discoveryDirectoriesDomain = "io.joynr";
         properties.domainAccessControllerChannelId = "acl_channel_id";
-        properties.domainAccessControllerParticipantId = "acl_participant_id";
+        properties.domainAccessControllerParticipantId = GDAC_PARTICIPANT_ID;
         return properties;
     }
 
@@ -174,11 +183,13 @@ public class StaticCapabilitiesProvisioningTest {
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                properties.capabilitiesDirectoryParticipantId,
-                               properties.discoveryDirectoryUrl);
+                               null,
+                               properties.discoveryDirectoryUri);
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalDomainAccessController.INTERFACE_NAME,
                                properties.domainAccessControllerParticipantId,
-                               properties.domainAccessControllerUrl);
+                               null,
+                               properties.domainAccessControllerUri);
     }
 
     @Test(expected = CreationException.class)
@@ -200,17 +211,30 @@ public class StaticCapabilitiesProvisioningTest {
     private void assertContainsEntryFor(Collection<DiscoveryEntry> entries,
                                         String interfaceName,
                                         String participantId,
-                                        String url) {
+                                        String channelAddressUri) {
+        assertContainsEntryFor(entries, interfaceName, participantId, channelAddressUri, null);
+    }
+
+    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries,
+                                        String interfaceName,
+                                        String participantId,
+                                        String channelAddressUri,
+                                        String mqttAddressUri) {
         boolean found = false;
         for (DiscoveryEntry entry : entries) {
             if (entry instanceof GlobalDiscoveryEntry) {
                 GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) entry;
                 if (globalDiscoveryEntry.getInterfaceName().equals(interfaceName)
                         && (participantId == null || participantId.equals(globalDiscoveryEntry.getParticipantId()))) {
-                    if (url != null) {
+                    if (channelAddressUri != null) {
                         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
                         assertTrue(address instanceof ChannelAddress);
-                        assertEquals(url, ((ChannelAddress) address).getMessagingEndpointUrl());
+                        assertEquals(channelAddressUri, ((ChannelAddress) address).getMessagingEndpointUrl());
+                    }
+                    if (mqttAddressUri != null) {
+                        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+                        assertTrue(address instanceof MqttAddress);
+                        assertEquals(mqttAddressUri, ((MqttAddress) address).getBrokerUri());
                     }
                     found = true;
                 }
@@ -229,13 +253,13 @@ public class StaticCapabilitiesProvisioningTest {
     private Injector createInjectorForJsonValue(final String jsonValue) throws IOException {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder propertiesHolder = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
         propertiesHolder.domainAccessControllerParticipantId = "";
-        propertiesHolder.capabilitiesDirectoryParticipantId = "";
+        propertiesHolder.capabilitiesDirectoryParticipantId = GCD_PARTICIPANT_ID;
         propertiesHolder.domainAccessControllerChannelId = "";
         propertiesHolder.discoveryDirectoriesDomain = "";
         propertiesHolder.channelId = "";
         propertiesHolder.capabilitiesDirectoryChannelId = "";
-        propertiesHolder.discoveryDirectoryUrl = "";
-        propertiesHolder.domainAccessControllerUrl = "";
+        propertiesHolder.discoveryDirectoryUri = "";
+        propertiesHolder.domainAccessControllerUri = "";
         return createInjectorForJsonValue(jsonValue, propertiesHolder);
     }
 
@@ -268,6 +292,12 @@ public class StaticCapabilitiesProvisioningTest {
                                   .toInstance(provisioningProperties.discoveryDirectoryUri);
                 bind(String.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL))
                                   .toInstance(provisioningProperties.domainAccessControllerUri);
+                bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID))
+                                  .toInstance("");
+                bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID))
+                                  .toInstance("");
+                bind(String[].class).annotatedWith(Names.named(GBID_ARRAY))
+                                    .toInstance(new String[]{ DEFAULT_GBID, "testgbid2" });
 
                 bind(ObjectMapper.class).toInstance(objectMapper);
                 bind(RoutingTable.class).toInstance(routingTable);

@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.mqtt.paho.client;
 
+import java.util.HashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -56,6 +57,7 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     private MqttStatusReceiver mqttStatusReceiver;
     private boolean cleanSession;
     private boolean separateConnections;
+    private HashMap<String, String> mqttGbidToBrokerUriMap;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -103,7 +105,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                  MqttClientIdProvider mqttClientIdProvider,
                                  MqttStatusReceiver mqttStatusReceiver,
-                                 ShutdownNotifier shutdownNotifier) {
+                                 ShutdownNotifier shutdownNotifier,
+                                 @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap) {
         this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
         this.scheduledExecutorService = scheduledExecutorService;
@@ -117,6 +120,7 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
         this.cleanSession = cleanSession;
         this.separateConnections = separateConnections;
         shutdownNotifier.registerForShutdown(this);
+        this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
     }
 
     @Override

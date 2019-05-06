@@ -36,6 +36,8 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
@@ -60,17 +62,32 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     public static final String PROPERTY_PROVISIONED_CAPABILITIES_FILE = "joynr.capabilities.provisioned.file";
     private static Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioning.class);
     private final ResourceContentProvider resourceContentProvider;
+    private final String[] gbids;
+    private final HashSet<String> internalParticipantIds;
 
     private Collection<DiscoveryEntry> discoveryEntries;
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public StaticCapabilitiesProvisioning(@Named(PROPERTY_PROVISIONED_CAPABILITIES_FILE) String provisionedCapabilitiesFile,
                                           @Named(CHANNELID) String localChannelId,
                                           ObjectMapper objectMapper,
                                           RoutingTable routingTable,
                                           LegacyCapabilitiesProvisioning legacyCapabilitiesProvisioning,
-                                          ResourceContentProvider resourceContentProvider) {
+                                          ResourceContentProvider resourceContentProvider,
+                                          @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryPaticipantId,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID) String domainAccessControlListeditorParticipantId,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID) String domainRoleControllerParticipantId) {
+        // CHECKSTYLE:ON
+        internalParticipantIds = new HashSet<String>();
+        internalParticipantIds.add(capabilitiesDirectoryPaticipantId);
+        internalParticipantIds.add(domainRoleControllerParticipantId);
+        internalParticipantIds.add(domainAccessControlListeditorParticipantId);
+        internalParticipantIds.add(domainRoleControllerParticipantId);
         discoveryEntries = new HashSet<DiscoveryEntry>();
+        this.gbids = gbids.clone();
         this.resourceContentProvider = resourceContentProvider;
         addEntriesFromJson(provisionedCapabilitiesFile, objectMapper, localChannelId);
         logger.trace("{} provisioned discovery entries loaded from JSON: {}",
