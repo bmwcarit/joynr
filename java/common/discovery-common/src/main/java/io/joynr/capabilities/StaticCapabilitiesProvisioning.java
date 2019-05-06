@@ -157,6 +157,11 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
             for (GlobalDiscoveryEntry globalDiscoveryEntry : newEntries) {
                 globalDiscoveryEntry.setLastSeenDateMs(System.currentTimeMillis());
                 Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+                if (internalParticipantIds.contains(globalDiscoveryEntry.getParticipantId())
+                        && address instanceof MqttAddress) {
+                    ((MqttAddress) address).setBrokerUri(gbids[0]);
+                    globalDiscoveryEntry.setAddress(CapabilityUtils.serializeAddress(address));
+                }
                 substituteInProcessAddressIfLocal(objectMapper, localChannelId, globalDiscoveryEntry, address);
                 discoveryEntries.add(globalDiscoveryEntry);
             }

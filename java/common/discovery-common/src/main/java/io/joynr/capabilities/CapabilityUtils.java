@@ -115,7 +115,7 @@ public class CapabilityUtils {
         return result;
     }
 
-    private static String serializeAddress(Address globalAddress) {
+    public static String serializeAddress(Address globalAddress) {
         String serializedAddress;
         try {
             serializedAddress = objectMapper.writeValueAsString(globalAddress);
