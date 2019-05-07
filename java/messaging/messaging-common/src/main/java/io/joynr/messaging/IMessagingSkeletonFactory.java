@@ -20,11 +20,7 @@ package io.joynr.messaging;
 
 import joynr.system.RoutingTypes.Address;
 
-public interface IMessagingSkeletonFactory {
-
-    void init();
-
-    void shutdown();
+public interface IMessagingSkeletonFactory extends IMessagingSkeleton {
 
     IMessagingSkeleton getSkeleton(Address address);
 }
