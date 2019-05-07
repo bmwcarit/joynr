@@ -29,6 +29,8 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FMapType
 import org.franca.core.franca.FMethod
+import org.franca.core.franca.FTypeRef
+import org.franca.core.franca.FStructType
 
 @Singleton
 class InterfaceUtil {
@@ -221,7 +223,7 @@ class InterfaceUtil {
 
 		if (selector.transitiveTypes){
 			var returnValue = new HashSet<Object>()
-			getAllReferredDatatypes(typeList, returnValue)
+			getAllRecursiveDatatypes(typeList, returnValue)
 			return returnValue
 		}
 		else{
@@ -263,6 +265,26 @@ class InterfaceUtil {
 				}
 				if (element instanceof FMapType){
 					getAllReferredDatatypes(newArrayList(element.keyType, element.valueType), cache)
+				}
+			}
+		}
+	}
+
+	def private void getAllRecursiveDatatypes(Iterable<Object> list, HashSet<Object> cache) {
+		for(element : list){
+			if (!cache.contains(element)){
+				cache.add(element)
+				if (element instanceof FStructType && (element as FStructType).base!==null) {
+					getAllReferredDatatypes(newArrayList((element as FStructType).base), cache);
+				}
+				if (element instanceof FCompoundType){
+					getAllReferredDatatypes(element.members.map[e | e.type.datatype], cache)
+				}
+				if (element instanceof FMapType){
+					getAllReferredDatatypes(newArrayList(element.keyType, element.valueType), cache)
+				}
+				if (element instanceof FTypeRef){
+					getAllReferredDatatypes(newArrayList(element.derived), cache)
 				}
 			}
 		}
