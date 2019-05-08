@@ -43,9 +43,7 @@ import joynr.types.GlobalDiscoveryEntry;
 
 /**
  * The capabilities directory implementation for server-side capabilities querying.
- * Capability informations are stored in a concurrentHashMap. Using a in memory database could be possible optimization.
  */
-
 @Singleton
 public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryImpl.class);
