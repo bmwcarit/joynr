@@ -18,8 +18,6 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,9 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
@@ -66,17 +61,19 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private final Set<String> incomingMqttRequests;
     private final AtomicLong droppedMessagesCount;
     private final MqttStatusReceiver mqttStatusReceiver;
+    @SuppressWarnings("unused")
+    private final String ownGbid;
 
-    @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
-    public MqttMessagingSkeleton(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                 @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    public MqttMessagingSkeleton(MqttAddress ownAddress,
+                                 int maxIncomingMqttRequests,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors,
-                                 MqttStatusReceiver mqttStatusReceiver) {
+                                 MqttStatusReceiver mqttStatusReceiver,
+                                 String ownGbid) {
         this.ownAddress = ownAddress;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
@@ -88,6 +85,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         this.droppedMessagesCount = new AtomicLong();
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
         this.mqttStatusReceiver = mqttStatusReceiver;
+        this.ownGbid = ownGbid;
     }
 
     @Override

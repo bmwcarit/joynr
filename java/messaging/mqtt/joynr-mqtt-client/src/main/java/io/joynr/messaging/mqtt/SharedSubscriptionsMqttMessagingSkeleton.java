@@ -18,9 +18,6 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
@@ -32,11 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
@@ -62,21 +55,21 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private final int unsubscribeThreshold;
     private final int resubscribeThreshold;
 
-    @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
-    public SharedSubscriptionsMqttMessagingSkeleton(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                                    @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
-                                                    @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
-                                                    @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
-                                                    @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
-                                                    @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    public SharedSubscriptionsMqttMessagingSkeleton(MqttAddress ownAddress,
+                                                    int maxIncomingMqttRequests,
+                                                    boolean backpressureEnabled,
+                                                    int backpressureIncomingMqttRequestsUpperThreshold,
+                                                    int backpressureIncomingMqttRequestsLowerThreshold,
+                                                    MqttAddress replyToAddress,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
-                                                    @Named(MessagingPropertyKeys.CHANNELID) String channelId,
+                                                    String channelId,
                                                     MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                     RawMessagingPreprocessor rawMessagingPreprocessor,
                                                     Set<JoynrMessageProcessor> messageProcessors,
-                                                    MqttStatusReceiver mqttStatusReceiver) {
+                                                    MqttStatusReceiver mqttStatusReceiver,
+                                                    String ownGbid) {
         super(ownAddress,
               maxIncomingMqttRequests,
               messageRouter,
@@ -84,7 +77,8 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors,
-              mqttStatusReceiver);
+              mqttStatusReceiver,
+              ownGbid);
         this.replyToAddress = replyToAddress;
         this.channelId = channelId;
         this.sharedSubscriptionsTopic = createSharedSubscriptionsTopic();

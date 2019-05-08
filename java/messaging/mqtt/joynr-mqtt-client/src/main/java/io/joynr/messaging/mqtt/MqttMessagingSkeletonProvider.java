@@ -19,6 +19,7 @@
 package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
@@ -67,10 +68,12 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
     private MqttStatusReceiver mqttStatusReceiver;
+    protected final String[] gbids;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public MqttMessagingSkeletonProvider(@Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
+    public MqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
+                                         @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                          @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                          @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
@@ -98,6 +101,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.mqttStatusReceiver = mqttStatusReceiver;
+        this.gbids = gbids.clone();
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}",
                      new Object[]{ sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
@@ -105,7 +109,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     @Override
     public IMessagingSkeletonFactory get() {
         if (sharedSubscriptionsEnabled) {
-            return new SharedSubscriptionsMqttMessagingSkeletonFactory(ownAddress,
+            return new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
+                                                                       ownAddress,
                                                                        maxIncomingMqttRequests,
                                                                        backpressureEnabled,
                                                                        backpressureIncomingMqttRequestsUpperThreshold,
@@ -119,7 +124,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                        messageProcessors,
                                                                        mqttStatusReceiver);
         }
-        return new MqttMessagingSkeletonFactory(ownAddress,
+        return new MqttMessagingSkeletonFactory(gbids,
+                                                ownAddress,
                                                 maxIncomingMqttRequests,
                                                 messageRouter,
                                                 mqttClientFactory,

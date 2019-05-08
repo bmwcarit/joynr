@@ -77,6 +77,8 @@ public class DefaultMqttClientIdProviderTest {
                 bind(MessageRouter.class).toInstance(mockMessageRouter);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(Executors.newScheduledThreadPool(10));
+                bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                    .toInstance(new String[]{ "testGbid" });
             }
         });
 

@@ -58,6 +58,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     private int backpressureIncomingMqttRequestsUpperThreshold = 80;
     private int backpressureIncomingMqttRequestsLowerThreshold = 20;
 
+    private String ownGbid = "testOwnGbid";
+
     @Mock
     private MqttClientFactory mqttClientFactory;
 
@@ -100,7 +102,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
                                                                new HashSet<JoynrMessageProcessor>(),
-                                                               mqttStatusReceiver);
+                                                               mqttStatusReceiver,
+                                                               ownGbid);
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share/"));
     }

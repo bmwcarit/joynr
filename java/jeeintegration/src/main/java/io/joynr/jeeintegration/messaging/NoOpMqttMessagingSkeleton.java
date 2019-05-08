@@ -21,8 +21,6 @@ package io.joynr.jeeintegration.messaging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
@@ -38,10 +36,12 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
 
     private MqttClientFactory mqttClientFactory;
     private JoynrMqttClient mqttClient;
+    @SuppressWarnings("unused")
+    private final String ownGbid;
 
-    @Inject
-    public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory) {
+    public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory, String ownGbid) {
         this.mqttClientFactory = mqttClientFactory;
+        this.ownGbid = ownGbid;
     }
 
     @Override

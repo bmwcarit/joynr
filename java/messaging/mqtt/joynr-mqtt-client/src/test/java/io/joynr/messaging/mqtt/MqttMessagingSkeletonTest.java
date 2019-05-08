@@ -68,6 +68,8 @@ public class MqttMessagingSkeletonTest {
 
     private MqttMessagingSkeleton subject;
 
+    private String ownGbid = "testOwnGbid";
+
     @Mock
     private MqttAddress ownAddress;
 
@@ -95,7 +97,8 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mqttStatusReceiver);
+                                            mqttStatusReceiver,
+                                            ownGbid);
         when(mqttClientFactory.createReceiver()).thenReturn(mqttClient);
         when(mqttClientFactory.createSender()).thenReturn(mqttClient);
         subject.init();
@@ -158,7 +161,8 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             preprocessor,
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mqttStatusReceiver);
+                                            mqttStatusReceiver,
+                                            ownGbid);
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
@@ -183,7 +187,8 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(Arrays.asList(processorMock)),
-                                            mqttStatusReceiver);
+                                            mqttStatusReceiver,
+                                            ownGbid);
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
@@ -297,7 +302,8 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mqttStatusReceiver);
+                                            mqttStatusReceiver,
+                                            ownGbid);
         subject.init();
 
         // number of incoming messages is arbitrarily selected

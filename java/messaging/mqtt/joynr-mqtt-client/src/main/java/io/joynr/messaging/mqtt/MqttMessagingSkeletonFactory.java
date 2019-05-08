@@ -18,12 +18,7 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
-
 import java.util.Set;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import io.joynr.messaging.AbstractMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -34,10 +29,11 @@ import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttMessagingSkeletonFactory extends AbstractMessagingSkeletonFactory {
-    @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
-    public MqttMessagingSkeletonFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                        @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
+
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    public MqttMessagingSkeletonFactory(String[] gbids,
+                                        MqttAddress ownAddress,
+                                        int maxIncomingMqttRequests,
                                         MessageRouter messageRouter,
                                         MqttClientFactory mqttClientFactory,
                                         MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -52,7 +48,8 @@ public class MqttMessagingSkeletonFactory extends AbstractMessagingSkeletonFacto
                                                                          mqttTopicPrefixProvider,
                                                                          rawMessagingPreprocessor,
                                                                          messageProcessors,
-                                                                         mqttStatusReceiver);
+                                                                         mqttStatusReceiver,
+                                                                         gbids[0]);
         messagingSkeletonList.add(messagingSkeleton);
     }
 }

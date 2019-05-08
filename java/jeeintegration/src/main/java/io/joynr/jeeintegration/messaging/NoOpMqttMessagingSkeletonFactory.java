@@ -27,9 +27,9 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
 public class NoOpMqttMessagingSkeletonFactory extends AbstractMessagingSkeletonFactory {
 
     @Inject
-    public NoOpMqttMessagingSkeletonFactory(MqttClientFactory mqttClientFactory) {
+    public NoOpMqttMessagingSkeletonFactory(MqttClientFactory mqttClientFactory, String[] gbids) {
         super();
-        IMessagingSkeleton messagingSkeleton = new NoOpMqttMessagingSkeleton(mqttClientFactory);
+        IMessagingSkeleton messagingSkeleton = new NoOpMqttMessagingSkeleton(mqttClientFactory, gbids[0]);
         messagingSkeletonList.add(messagingSkeleton);
     }
 }

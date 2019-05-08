@@ -20,6 +20,7 @@ package io.joynr.jeeintegration.messaging;
 
 import static io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
@@ -59,8 +60,9 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     private boolean httpBridgeEnabled;
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 2 LINES
-    public JeeMqttMessagingSkeletonProvider(@Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) boolean enableHttpBridge,
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    public JeeMqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
+                                            @Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) boolean enableHttpBridge,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                             @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
@@ -75,8 +77,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             RawMessagingPreprocessor rawMessagingPreprocessor,
                                             Set<JoynrMessageProcessor> messageProcessors,
                                             JoynrStatusMetricsAggregator jeeJoynrStatusMetrics) {
-        // CHECKSTYLE:ON
-        super(enableSharedSubscriptions,
+        super(gbids,
+              enableSharedSubscriptions,
               ownAddress,
               maxIncomingMqttRequests,
               backpressureEnabled,
@@ -98,7 +100,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     @Override
     public IMessagingSkeletonFactory get() {
         if (httpBridgeEnabled) {
-            return new NoOpMqttMessagingSkeletonFactory(mqttClientFactory);
+            return new NoOpMqttMessagingSkeletonFactory(mqttClientFactory, gbids);
         } else {
             return super.get();
         }
