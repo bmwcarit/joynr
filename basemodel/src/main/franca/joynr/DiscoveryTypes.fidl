@@ -176,4 +176,31 @@ typeCollection {
 			**>
 			REMOVE
 	}
+	
+	<**
+		@description: Modeled error cases for the new add, lookup and remove methods.
+	**>
+	enumeration DiscoveryError {
+		<**
+			@description: GBID is not known to the Global Capabilities Directory instance.
+		**>
+		UNKNOWN_GBID
+		<**
+			@description: GBID is invalid, e.g. empty.
+		**>
+		INVALID_GBID
+		<**
+			@description: No entry for the requested participant ID (lookup, remove).
+		**>
+		NO_ENTRY_FOR_PARTICIPANT
+		<**
+			@description: At least one matching entry is available but not for the selected backends
+				(lookup, remove).
+		**>
+		NO_ENTRY_FOR_SELECTED_BACKENDS
+		<**
+			@description: internal error in the Global Capabilities Directory.
+		**>
+		INTERNAL_ERROR
+	}
 }
