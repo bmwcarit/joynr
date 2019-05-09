@@ -20,8 +20,8 @@ package io.joynr.jeeintegration.messaging;
 
 import static io.joynr.messaging.mqtt.MqttModule.MQTT_BROKER_URI_ARRAY;
 import static io.joynr.messaging.mqtt.MqttModule.MQTT_GBID_TO_BROKERURI_MAP;
-import static io.joynr.messaging.mqtt.MqttModule.MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY;
-import static io.joynr.messaging.mqtt.MqttModule.MQTT_CONNECTION_TIMEOUT_SEC_ARRAY;
+import static io.joynr.messaging.mqtt.MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP;
+import static io.joynr.messaging.mqtt.MqttModule.MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 
@@ -40,12 +40,12 @@ import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.DefaultMqttTopicPrefixProvider;
-import io.joynr.messaging.mqtt.MqttMultipleBackendPropertyProvider;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.MqttMulticastAddressCalculator;
+import io.joynr.messaging.mqtt.MqttMultipleBackendPropertyProvider;
 import io.joynr.messaging.mqtt.MqttReplyToAddressFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
@@ -100,15 +100,15 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     }
 
     @Provides
-    @Named(MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY)
-    public int[] provideKeepAliveTimerSecArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
-        return mqttMultipleBackendPropertyProvider.provideKeepAliveTimers();
+    @Named(MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP)
+    public HashMap<String, Integer> provideGbidTpKeepAliveTimerSecMap(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideGbidToKeepAliveTimerSecMap();
     }
 
     @Provides
-    @Named(MQTT_CONNECTION_TIMEOUT_SEC_ARRAY)
-    public int[] provideConnectionTimeoutSecArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
-        return mqttMultipleBackendPropertyProvider.provideConnectionTimeoutTimers();
+    @Named(MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP)
+    public HashMap<String, Integer> provideGbidToConnectionTimeoutSecMap(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideGbidToConnectionTimeoutSecMap();
     }
 
     @Override

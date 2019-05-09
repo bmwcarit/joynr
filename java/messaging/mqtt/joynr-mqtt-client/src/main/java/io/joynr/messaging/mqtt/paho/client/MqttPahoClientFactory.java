@@ -46,17 +46,17 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     private HashMap<String, JoynrMqttClient> receivingMqttClients; // gbid to client
     private HashMap<String, JoynrMqttClient> sendingMqttClients; // gbid to client
     private int reconnectSleepMs;
-    private int[] keepAliveTimersSec;
-    private int[] connectionTimeoutsSec;
+    private HashMap<String, String> mqttGbidToBrokerUriMap;
+    private HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap;
+    private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
     private int timeToWaitMs;
     private int maxMsgsInflight;
     private int maxMsgSizeBytes;
+    private boolean cleanSession;
+    private boolean separateConnections;
     private ScheduledExecutorService scheduledExecutorService;
     private MqttClientIdProvider clientIdProvider;
     private MqttStatusReceiver mqttStatusReceiver;
-    private boolean cleanSession;
-    private boolean separateConnections;
-    private HashMap<String, String> mqttGbidToBrokerUriMap;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -93,8 +93,9 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs,
-                                 @Named(MqttModule.MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY) int[] keepAliveTimersSec,
-                                 @Named(MqttModule.MQTT_CONNECTION_TIMEOUT_SEC_ARRAY) int[] connectionTimeoutsSec,
+                                 @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap,
+                                 @Named(MqttModule.MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP) HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap,
+                                 @Named(MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP) HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS) int timeToWaitMs,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT) int maxMsgsInflight,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES) int maxMsgSizeBytes,
@@ -103,21 +104,20 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                  MqttClientIdProvider mqttClientIdProvider,
                                  MqttStatusReceiver mqttStatusReceiver,
-                                 ShutdownNotifier shutdownNotifier,
-                                 @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap) {
+                                 ShutdownNotifier shutdownNotifier) {
         this.reconnectSleepMs = reconnectSleepMs;
-        this.scheduledExecutorService = scheduledExecutorService;
-        this.clientIdProvider = mqttClientIdProvider;
-        this.mqttStatusReceiver = mqttStatusReceiver;
-        this.keepAliveTimersSec = keepAliveTimersSec.clone();
-        this.connectionTimeoutsSec = connectionTimeoutsSec.clone();
+        this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
+        this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
+        this.mqttGbidToConnectionTimeoutSecMap = mqttGbidToConnectionTimeoutSecMap;
         this.timeToWaitMs = timeToWaitMs;
         this.maxMsgsInflight = maxMsgsInflight;
         this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
         this.separateConnections = separateConnections;
+        this.scheduledExecutorService = scheduledExecutorService;
+        this.clientIdProvider = mqttClientIdProvider;
+        this.mqttStatusReceiver = mqttStatusReceiver;
         shutdownNotifier.registerForShutdown(this);
-        this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
         sendingMqttClients = new HashMap<>(); // gbid to client
         receivingMqttClients = new HashMap<>(); // gbid to client
     }
@@ -187,8 +187,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                             clientId,
                                             scheduledExecutorService,
                                             reconnectSleepMs,
-                                            keepAliveTimersSec[0],
-                                            connectionTimeoutsSec[0],
+                                            mqttGbidToKeepAliveTimerSecMap.get(gbid),
+                                            mqttGbidToConnectionTimeoutSecMap.get(gbid),
                                             timeToWaitMs,
                                             maxMsgsInflight,
                                             maxMsgSizeBytes,

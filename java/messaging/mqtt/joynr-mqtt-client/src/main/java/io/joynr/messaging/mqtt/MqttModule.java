@@ -56,11 +56,14 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS = "joynr.messaging.mqtt.reconnect.sleepms";
     public static final String PROPERTY_MQTT_BROKER_URIS = "joynr.messaging.mqtt.brokeruris";
     public static final String MQTT_BROKER_URI_ARRAY = "joynr.internal.messaging.mqtt.brokeruriarray";
+    public static final String MQTT_GBID_TO_BROKERURI_MAP = "joynr.internal.messaging.mqtt.gbidtobrokerurimap";
     public static final String PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX = "joynr.messaging.mqtt.clientidprefix";
     public static final String PROPERTY_MQTT_GLOBAL_ADDRESS = "property_mqtt_global_address";
     public static final String PROPERTY_MQTT_REPLY_TO_ADDRESS = "property_mqtt_reply_to_address";
     public static final String PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC = "joynr.messaging.mqtt.keepalivetimerssec";
+    public static final String MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP = "joynr.internal.messaging.mqtt.gbidtokeepalivetimersecmap";
     public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC = "joynr.messaging.mqtt.connectiontimeoutssec";
+    public static final String MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP = "joynr.internal.messaging.mqtt.gbidtoconnectiontimeoutsecmap";
     public static final String PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS = "joynr.messaging.mqtt.timetowaitms";
     public static final String PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES = "joynr.messaging.mqtt.maxmqttmessagesizebytes";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_PATH = "joynr.messaging.mqtt.ssl.keystore";
@@ -72,9 +75,6 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS = "joynr.messaging.mqtt.separateconnections";
     public static final String PROPERTY_KEY_MQTT_USERNAME = "joynr.messaging.mqtt.username";
     public static final String PROPERTY_KEY_MQTT_PASSWORD = "joynr.messaging.mqtt.password";
-    public static final String MQTT_GBID_TO_BROKERURI_MAP = "joynr.internal.messaging.mqtt.gbidtobrokerurimap";
-    public static final String MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY = "joynr.internal.messaging.mqtt.keepalivetimersecarray";
-    public static final String MQTT_CONNECTION_TIMEOUT_SEC_ARRAY = "joynr.internal.messaging.mqtt.connectiontimeoutsecarray";
 
     /**
      * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared
@@ -113,15 +113,15 @@ public class MqttModule extends AbstractModule {
     }
 
     @Provides
-    @Named(MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY)
-    public int[] provideKeepAliveTimerSecArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
-        return mqttMultipleBackendPropertyProvider.provideKeepAliveTimers();
+    @Named(MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP)
+    public HashMap<String, Integer> provideGbidTpKeepAliveTimerSecMap(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideGbidToKeepAliveTimerSecMap();
     }
 
     @Provides
-    @Named(MQTT_CONNECTION_TIMEOUT_SEC_ARRAY)
-    public int[] provideConnectionTimeoutSecArray(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
-        return mqttMultipleBackendPropertyProvider.provideConnectionTimeoutTimers();
+    @Named(MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP)
+    public HashMap<String, Integer> provideGbidToConnectionTimeoutSecMap(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
+        return mqttMultipleBackendPropertyProvider.provideGbidToConnectionTimeoutSecMap();
     }
 
     @Override

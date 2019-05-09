@@ -53,10 +53,11 @@ public class MqttPahoClientFactoryTest {
 
     private final String[] gbids = new String[]{ "testGbid1", "testGbid2", "testGbid3" };
     private HashMap<String, String> mqttGbidToBrokerUriMap;
-    private final int[] keepAliveTimersSec = new int[]{ 129, 130, 131 };
-    private final int[] connectionTimeoutsSec = new int[]{ 132, 133, 134 };
+    private HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap;
+    private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
 
     private ScheduledExecutorService executorService;
+
     @Mock
     private MqttClientIdProvider mqttClientIdProvider;
     @Mock
@@ -76,6 +77,16 @@ public class MqttPahoClientFactoryTest {
             mqttGbidToBrokerUriMap.put(gbid, "ws://" + gbid + ".URI");
         }
 
+        mqttGbidToKeepAliveTimerSecMap = new HashMap<>();
+        for (int i = 0; i < gbids.length; i++) {
+            mqttGbidToKeepAliveTimerSecMap.put(gbids[i], i);
+        }
+
+        mqttGbidToConnectionTimeoutSecMap = new HashMap<>();
+        for (int i = 0; i < gbids.length; i++) {
+            mqttGbidToConnectionTimeoutSecMap.put(gbids[i], i + 10);
+        }
+
         String name = "TEST.joynr.scheduler.messaging.mqtt.paho.client";
         ThreadFactory joynrThreadFactory = new JoynrThreadFactory(name, true);
         executorService = Executors.newScheduledThreadPool(4, joynrThreadFactory);
@@ -92,8 +103,9 @@ public class MqttPahoClientFactoryTest {
 
     private void createFactory(boolean separateConnections) {
         subject = new MqttPahoClientFactory(reconnectSleepMs,
-                                            keepAliveTimersSec,
-                                            connectionTimeoutsSec,
+                                            mqttGbidToBrokerUriMap,
+                                            mqttGbidToKeepAliveTimerSecMap,
+                                            mqttGbidToConnectionTimeoutSecMap,
                                             timeToWaitMs,
                                             maxMsgsInflight,
                                             maxMsgSizeBytes,
@@ -102,8 +114,7 @@ public class MqttPahoClientFactoryTest {
                                             executorService,
                                             mqttClientIdProvider,
                                             mqttStatusReceiver,
-                                            shutdownNotifier,
-                                            mqttGbidToBrokerUriMap);
+                                            shutdownNotifier);
     }
 
     private void createSendersAndReceivers() {

@@ -49,11 +49,11 @@ public class MqttMultipleBackendPropertyProviderTest {
                                                                                                                           validKeepAliveTimers,
                                                                                                                           validConnectionTimeouts);
         assertEquals(mqttMultipleBackendPropertyProvider.provideBrokerUris().length, gbids.split(",").length);
-        assertEquals(mqttMultipleBackendPropertyProvider.provideConnectionTimeoutTimers().length,
+        assertEquals(mqttMultipleBackendPropertyProvider.provideGbidToConnectionTimeoutSecMap().size(),
                      gbids.split(",").length);
-        assertEquals(mqttMultipleBackendPropertyProvider.provideKeepAliveTimers().length, gbids.split(",").length);
-        assertEquals(mqttMultipleBackendPropertyProvider.provideGbidToBrokerUriMap().values().size(),
+        assertEquals(mqttMultipleBackendPropertyProvider.provideGbidToKeepAliveTimerSecMap().size(),
                      gbids.split(",").length);
+        assertEquals(mqttMultipleBackendPropertyProvider.provideGbidToBrokerUriMap().size(), gbids.split(",").length);
     }
 
     @Test(expected = JoynrIllegalStateException.class)

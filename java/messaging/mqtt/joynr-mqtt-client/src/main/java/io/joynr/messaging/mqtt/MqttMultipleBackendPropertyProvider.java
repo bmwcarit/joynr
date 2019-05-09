@@ -40,9 +40,9 @@ public class MqttMultipleBackendPropertyProvider {
     private static final Logger logger = LoggerFactory.getLogger(MqttMultipleBackendPropertyProvider.class);
 
     private String[] brokerUriArray;
-    private int[] keepAliveTimerSecArray;
-    private int[] connectionTimeoutTimerSecArray;
     private final HashMap<String, String> gbidToBrokerUriMap;
+    private final HashMap<String, Integer> gbidToKeepAliveTimerSecMap;
+    private final HashMap<String, Integer> gbidToConnectionTimeoutSecMap;
 
     @Inject
     public MqttMultipleBackendPropertyProvider(@Named(PROPERTY_MQTT_BROKER_URIS) String brokerUris,
@@ -50,6 +50,7 @@ public class MqttMultipleBackendPropertyProvider {
                                                @Named(PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC) String keepAliveTimersSec,
                                                @Named(PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC) String connectionTimeoutsSec) {
         String[] gbidArray = Arrays.stream(gbids.split(",")).map(a -> a.trim()).toArray(String[]::new);
+
         brokerUriArray = Arrays.stream(brokerUris.split(",")).map(a -> a.trim()).toArray(String[]::new);
         if (brokerUriArray.length != gbidArray.length) {
             logger.error("The amount of defined BrokerUris is not equal to the amount of defined GBIDs!");
@@ -60,6 +61,8 @@ public class MqttMultipleBackendPropertyProvider {
             logger.error("BrokerUri must not be empty: {}!", brokerUris);
             throw new JoynrIllegalStateException("BrokerUri must not be empty: " + brokerUris + "!");
         }
+
+        Integer[] keepAliveTimerSecArray;
         try {
             keepAliveTimerSecArray = stringArrayToIntArray(keepAliveTimersSec.replaceAll("\\s", "").split(","));
         } catch (NumberFormatException e) {
@@ -70,6 +73,8 @@ public class MqttMultipleBackendPropertyProvider {
             logger.error("The amount of defined MQTT keep alive times is not equal to the amount of defined GBIDs!");
             throw new JoynrIllegalStateException("The amount of defined MQTT keep alive times is not equal to the amount of defined GBIDs!");
         }
+
+        Integer[] connectionTimeoutTimerSecArray;
         try {
             connectionTimeoutTimerSecArray = stringArrayToIntArray(connectionTimeoutsSec.replaceAll("\\s", "")
                                                                                         .split(","));
@@ -81,19 +86,22 @@ public class MqttMultipleBackendPropertyProvider {
             logger.error("The amount of defined MQTT connection timeout times is not equal to the amount of defined GBIDs!");
             throw new JoynrIllegalStateException("The amount of defined MQTT connection timeout times is not equal to the amount of defined GBIDs!");
         }
-        gbidToBrokerUriMap = stringArraysToHashMap(gbidArray, brokerUriArray);
+
+        gbidToBrokerUriMap = arraysToHashMap(gbidArray, brokerUriArray);
+        gbidToConnectionTimeoutSecMap = arraysToHashMap(gbidArray, connectionTimeoutTimerSecArray);
+        gbidToKeepAliveTimerSecMap = arraysToHashMap(gbidArray, connectionTimeoutTimerSecArray);
     }
 
-    private int[] stringArrayToIntArray(String[] stringArray) {
-        int[] intArray = new int[stringArray.length];
+    private static Integer[] stringArrayToIntArray(String[] stringArray) {
+        Integer[] intArray = new Integer[stringArray.length];
         for (int i = 0; i < intArray.length; i++) {
             intArray[i] = Integer.parseInt(stringArray[i]);
         }
         return intArray;
     }
 
-    private HashMap<String, String> stringArraysToHashMap(String[] keyArray, String[] valueArray) {
-        HashMap<String, String> hashMap = new HashMap<>();
+    private static <T> HashMap<String, T> arraysToHashMap(String[] keyArray, T[] valueArray) {
+        HashMap<String, T> hashMap = new HashMap<>();
         for (int i = 0; i < keyArray.length; i++) {
             hashMap.put(keyArray[i], valueArray[i]);
         }
@@ -104,16 +112,16 @@ public class MqttMultipleBackendPropertyProvider {
         return brokerUriArray.clone();
     }
 
-    public int[] provideKeepAliveTimers() {
-        return keepAliveTimerSecArray.clone();
-    }
-
-    public int[] provideConnectionTimeoutTimers() {
-        return connectionTimeoutTimerSecArray.clone();
-    }
-
     public HashMap<String, String> provideGbidToBrokerUriMap() {
         return gbidToBrokerUriMap;
+    }
+
+    public final HashMap<String, Integer> provideGbidToKeepAliveTimerSecMap() {
+        return gbidToKeepAliveTimerSecMap;
+    }
+
+    public final HashMap<String, Integer> provideGbidToConnectionTimeoutSecMap() {
+        return gbidToConnectionTimeoutSecMap;
     }
 
 }
