@@ -154,6 +154,10 @@ describe("libjoynr-js.joynr.LongTimer.Interval", () => {
         jest.clearAllTimers();
     });
 
+    it(`clearInterval won't throw if there's no interval`, () => {
+        expect(() => LongTimer.clearInterval(17)).not.toThrow();
+    });
+
     it("provides an intervalId", () => {
         const intervalId = LongTimer.setInterval(() => {}, 0);
         expect(intervalId).toBeDefined();
