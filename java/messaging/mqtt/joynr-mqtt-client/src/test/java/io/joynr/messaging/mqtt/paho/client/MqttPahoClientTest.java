@@ -19,8 +19,6 @@
 package io.joynr.messaging.mqtt.paho.client;
 
 import static com.google.inject.util.Modules.override;
-import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
-import static io.joynr.messaging.mqtt.MqttModule.MQTT_BROKER_URI_ARRAY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -87,6 +85,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttPahoClientTest {
 
+    private static final String[] gbids = new String[]{ "testGbid" };
     private static int mqttBrokerPort;
     private static int mqttSecureBrokerPort;
     private static final String joynrUser = "joynr";
@@ -258,7 +257,7 @@ public class MqttPahoClientTest {
         // always create a new Factory because the factory caches its client.
         createMqttClientFactory(mqttStatusReceiver);
 
-        JoynrMqttClient client = mqttClientFactory.createSender();
+        JoynrMqttClient client = mqttClientFactory.createSender(gbids[0]);
         client.setMessageListener(mockReceiver);
         return client;
     }
@@ -280,7 +279,7 @@ public class MqttPahoClientTest {
                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
                 Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
                 });
-                bind(String[].class).annotatedWith(Names.named(GBID_ARRAY)).toInstance(new String[]{ "test" });
+                bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY)).toInstance(gbids);
             }
         });
 
@@ -296,8 +295,8 @@ public class MqttPahoClientTest {
         createMqttClientFactory(mqttStatusReceiver);
         ownTopic = injector.getInstance((Key.get(MqttAddress.class,
                                                  Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
-        JoynrMqttClient clientSender = mqttClientFactory.createSender();
-        JoynrMqttClient clientReceiver = mqttClientFactory.createReceiver();
+        JoynrMqttClient clientSender = mqttClientFactory.createSender(gbids[0]);
+        JoynrMqttClient clientReceiver = mqttClientFactory.createReceiver(gbids[0]);
         assertNotEquals(clientSender, clientReceiver);
 
         clientReceiver.setMessageListener(mockReceiver);
@@ -323,8 +322,8 @@ public class MqttPahoClientTest {
         final MqttStatusReceiver mqttStatusReceiver = mock(MqttStatusReceiver.class);
         createMqttClientFactory(mqttStatusReceiver);
 
-        JoynrMqttClient clientSender = mqttClientFactory.createSender();
-        JoynrMqttClient clientReceiver = mqttClientFactory.createReceiver();
+        JoynrMqttClient clientSender = mqttClientFactory.createSender(gbids[0]);
+        JoynrMqttClient clientReceiver = mqttClientFactory.createReceiver(gbids[0]);
 
         assertEquals(clientSender, clientReceiver);
 
@@ -605,8 +604,8 @@ public class MqttPahoClientTest {
                                                 Multibinder.newSetBinder(binder(),
                                                                          new TypeLiteral<JoynrMessageProcessor>() {
                                                                          });
-                                                bind(String[].class).annotatedWith(Names.named(GBID_ARRAY))
-                                                                    .toInstance(new String[]{ "test" });
+                                                bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                                                    .toInstance(gbids);
                                             }
                                         });
 

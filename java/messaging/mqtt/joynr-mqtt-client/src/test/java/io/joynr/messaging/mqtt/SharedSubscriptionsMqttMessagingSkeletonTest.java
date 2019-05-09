@@ -85,8 +85,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Before
     public void setup() {
-        when(mqttClientFactory.createReceiver()).thenReturn(mqttClient);
-        when(mqttClientFactory.createSender()).thenReturn(mqttClient);
+        when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClient);
+        when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClient);
     }
 
     private void createAndInitSkeleton(String channelId) {

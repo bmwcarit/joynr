@@ -65,6 +65,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
     private final int maxIncomingMqttRequests = 20;
+    private final String ownTopic = "testOwnTopic";
 
     private MqttMessagingSkeleton subject;
 
@@ -80,7 +81,9 @@ public class MqttMessagingSkeletonTest {
     private MqttClientFactory mqttClientFactory;
 
     @Mock
-    private JoynrMqttClient mqttClient;
+    private JoynrMqttClient mqttClientReceiver;
+    @Mock
+    private JoynrMqttClient mqttClientSender;
 
     @Mock
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
@@ -90,6 +93,7 @@ public class MqttMessagingSkeletonTest {
 
     @Before
     public void setup() {
+        when(ownAddress.getTopic()).thenReturn(ownTopic);
         subject = new MqttMessagingSkeleton(ownAddress,
                                             maxIncomingMqttRequests,
                                             messageRouter,
@@ -99,11 +103,24 @@ public class MqttMessagingSkeletonTest {
                                             new HashSet<JoynrMessageProcessor>(),
                                             mqttStatusReceiver,
                                             ownGbid);
-        when(mqttClientFactory.createReceiver()).thenReturn(mqttClient);
-        when(mqttClientFactory.createSender()).thenReturn(mqttClient);
+        when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClientReceiver);
+        when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClientSender);
         subject.init();
-        verify(mqttClient).subscribe(anyString());
-        reset(mqttClient);
+    }
+
+    @Test
+    public void testSkeletonCreatesAndStartsSenderAndReceiverForItsOwnGbid() {
+        verify(mqttClientFactory).createReceiver(ownGbid);
+        verify(mqttClientFactory).createSender(ownGbid);
+
+        verify(mqttClientReceiver).start();
+        verify(mqttClientSender).start();
+    }
+
+    @Test
+    public void testSkeletonSubscribesToOwnTopic() {
+        verify(mqttClientReceiver).subscribe(ownTopic + "/#");
+        verify(mqttClientSender, times(0)).subscribe(anyString());
     }
 
     @Test
@@ -118,10 +135,10 @@ public class MqttMessagingSkeletonTest {
         when(mqttTopicPrefixProvider.getMulticastTopicPrefix()).thenReturn(expectedPrefix);
 
         subject.registerMulticastSubscription(multicastId);
-        verify(mqttClient).subscribe(expectedPrefix + multicastId);
+        verify(mqttClientReceiver).subscribe(expectedPrefix + multicastId);
 
         subject.unregisterMulticastSubscription(multicastId);
-        verify(mqttClient).unsubscribe(expectedPrefix + multicastId);
+        verify(mqttClientReceiver).unsubscribe(expectedPrefix + multicastId);
     }
 
     @Test
@@ -130,11 +147,11 @@ public class MqttMessagingSkeletonTest {
         String multicastId = "multicastId";
 
         subject.registerMulticastSubscription(multicastId);
-        verify(mqttClient).subscribe(eq(multicastId));
-        reset(mqttClient);
+        verify(mqttClientReceiver).subscribe(eq(multicastId));
+        reset(mqttClientReceiver);
 
         subject.registerMulticastSubscription(multicastId);
-        verify(mqttClient, never()).subscribe(anyString());
+        verify(mqttClientReceiver, never()).subscribe(anyString());
     }
 
     @Test
@@ -143,10 +160,10 @@ public class MqttMessagingSkeletonTest {
         String multicastId = "one/two/*";
 
         subject.registerMulticastSubscription(multicastId);
-        verify(mqttClient).subscribe(eq("one/two/#"));
+        verify(mqttClientReceiver).subscribe(eq("one/two/#"));
 
         subject.unregisterMulticastSubscription(multicastId);
-        verify(mqttClient).unsubscribe("one/two/#");
+        verify(mqttClientReceiver).unsubscribe("one/two/#");
     }
 
     @SuppressWarnings("unchecked")

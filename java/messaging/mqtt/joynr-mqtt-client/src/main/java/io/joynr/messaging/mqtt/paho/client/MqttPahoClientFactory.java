@@ -124,7 +124,7 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     }
 
     @Override
-    public synchronized JoynrMqttClient createReceiver() {
+    public synchronized JoynrMqttClient createReceiver(String gbid) {
         if (receivingMqttClient == null) {
             if (separateConnections) {
                 receivingMqttClient = createInternal(true, "Sub");
@@ -136,7 +136,7 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     }
 
     @Override
-    public synchronized JoynrMqttClient createSender() {
+    public synchronized JoynrMqttClient createSender(String gbid) {
         if (sendingMqttClient == null) {
             if (separateConnections) {
                 sendingMqttClient = createInternal(false, "Pub");

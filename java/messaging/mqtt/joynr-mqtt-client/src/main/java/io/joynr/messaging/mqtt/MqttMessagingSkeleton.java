@@ -61,7 +61,6 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private final Set<String> incomingMqttRequests;
     private final AtomicLong droppedMessagesCount;
     private final MqttStatusReceiver mqttStatusReceiver;
-    @SuppressWarnings("unused")
     private final String ownGbid;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -94,10 +93,10 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
         messageRouter.registerMessageProcessedListener(this);
 
-        mqttClient = mqttClientFactory.createReceiver();
+        mqttClient = mqttClientFactory.createReceiver(ownGbid);
         mqttClient.setMessageListener(this);
         mqttClient.start();
-        mqttClientFactory.createSender().start();
+        mqttClientFactory.createSender(ownGbid).start();
         subscribe();
     }
 

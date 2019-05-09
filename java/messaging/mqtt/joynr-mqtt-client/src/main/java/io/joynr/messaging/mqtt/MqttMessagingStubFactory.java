@@ -18,7 +18,10 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
+
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -28,8 +31,8 @@ public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFac
     private JoynrMqttClient mqttClient;
 
     @Inject
-    public MqttMessagingStubFactory(MqttClientFactory mqttClientFactory) {
-        this.mqttClient = mqttClientFactory.createSender();
+    public MqttMessagingStubFactory(MqttClientFactory mqttClientFactory, @Named(GBID_ARRAY) String[] gbids) {
+        this.mqttClient = mqttClientFactory.createSender(gbids[0]);
     }
 
     @Override

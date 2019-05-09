@@ -36,7 +36,6 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
 
     private MqttClientFactory mqttClientFactory;
     private JoynrMqttClient mqttClient;
-    @SuppressWarnings("unused")
     private final String ownGbid;
 
     public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory, String ownGbid) {
@@ -51,7 +50,7 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
 
     @Override
     public void init() {
-        mqttClient = mqttClientFactory.createReceiver();
+        mqttClient = mqttClientFactory.createReceiver(ownGbid);
         mqttClient.setMessageListener(this);
         mqttClient.start();
     }
