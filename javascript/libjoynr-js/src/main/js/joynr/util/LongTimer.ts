@@ -62,13 +62,7 @@ class LongTimer {
             args
         };
 
-        // start timeout
-        if (timeout === 0) {
-            setTimeout(this.timeoutPortion, 0, timeoutId);
-        } else {
-            this.timeoutPortion(timeoutId);
-        }
-        // return id to
+        this.timeoutPortion(timeoutId);
         return timeoutId;
     }
 
