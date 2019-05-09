@@ -19,6 +19,8 @@
 import LongTimer from "./LongTimer";
 import util from "util";
 
+/* istanbul ignore file */
+
 function extendInternal<T, U>(to: any, from: U, deep: boolean): T & U {
     if (from) {
         for (const key in from) {
