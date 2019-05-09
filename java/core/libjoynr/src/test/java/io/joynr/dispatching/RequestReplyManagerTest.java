@@ -79,7 +79,7 @@ import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import io.joynr.proxy.StatelessAsyncIdCalculator;
-import io.joynr.runtime.JoynrThreadFactory;
+import io.joynr.util.JoynrThreadFactory;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;

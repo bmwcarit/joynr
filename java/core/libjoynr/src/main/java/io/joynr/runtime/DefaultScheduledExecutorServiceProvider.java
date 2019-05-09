@@ -33,6 +33,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.util.JoynrThreadFactory;
 
 @Singleton
 public class DefaultScheduledExecutorServiceProvider implements Provider<ScheduledExecutorService>, ShutdownListener {

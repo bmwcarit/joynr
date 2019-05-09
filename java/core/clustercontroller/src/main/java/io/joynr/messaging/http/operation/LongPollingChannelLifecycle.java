@@ -51,7 +51,7 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.runtime.JoynrThreadFactory;
+import io.joynr.util.JoynrThreadFactory;
 
 /**
  * The channel lifecycle callable is started in a new thread and loops infinitely until an exception is thrown:

@@ -39,7 +39,7 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.runtime.JoynrThreadFactory;
+import io.joynr.util.JoynrThreadFactory;
 
 /**
  * The HTTP Communication Manager is responsible for opening and closing channels, managing long polls, and making HTTP

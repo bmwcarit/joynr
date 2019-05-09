@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.runtime;
+package io.joynr.util;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;

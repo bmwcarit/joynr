@@ -51,9 +51,9 @@ import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.datatypes.JoynrMessagingError;
 import io.joynr.messaging.datatypes.JoynrMessagingErrorCode;
 import io.joynr.messaging.util.Utilities;
-import io.joynr.runtime.JoynrThreadFactory;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
+import io.joynr.util.JoynrThreadFactory;
 import joynr.ImmutableMessage;
 
 /**
