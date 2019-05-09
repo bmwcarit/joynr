@@ -39,11 +39,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.After;
@@ -68,6 +70,7 @@ import com.google.inject.name.Names;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -178,6 +181,8 @@ public class MqttPahoClientTest {
         properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:" + mqttBrokerPort);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_USERNAME, joynrUser);
         properties.put(MqttModule.PROPERTY_KEY_MQTT_PASSWORD, joynrPassword);
+        properties.put(ConfigurableMessagingSettings.PROPERTY_GBIDS,
+                       Arrays.stream(gbids).collect(Collectors.joining(",")));
         serializedMessage = new byte[10];
     }
 

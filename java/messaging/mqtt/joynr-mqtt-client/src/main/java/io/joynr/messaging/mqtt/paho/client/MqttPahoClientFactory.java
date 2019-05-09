@@ -29,6 +29,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
@@ -37,15 +38,13 @@ import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
-import joynr.system.RoutingTypes.MqttAddress;
 
 @Singleton
 public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttPahoClientFactory.class);
-    private MqttAddress ownAddress;
-    private JoynrMqttClient receivingMqttClient;
-    private JoynrMqttClient sendingMqttClient;
+    private HashMap<String, JoynrMqttClient> receivingMqttClients; // gbid to client
+    private HashMap<String, JoynrMqttClient> sendingMqttClients; // gbid to client
     private int reconnectSleepMs;
     private int[] keepAliveTimersSec;
     private int[] connectionTimeoutsSec;
@@ -93,8 +92,7 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                 @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs,
+    public MqttPahoClientFactory(@Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS) int reconnectSleepMs,
                                  @Named(MqttModule.MQTT_KEEP_ALIVE_TIMER_SEC_ARRAY) int[] keepAliveTimersSec,
                                  @Named(MqttModule.MQTT_CONNECTION_TIMEOUT_SEC_ARRAY) int[] connectionTimeoutsSec,
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS) int timeToWaitMs,
@@ -107,7 +105,6 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                  MqttStatusReceiver mqttStatusReceiver,
                                  ShutdownNotifier shutdownNotifier,
                                  @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap) {
-        this.ownAddress = ownAddress;
         this.reconnectSleepMs = reconnectSleepMs;
         this.scheduledExecutorService = scheduledExecutorService;
         this.clientIdProvider = mqttClientIdProvider;
@@ -121,59 +118,72 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
         this.separateConnections = separateConnections;
         shutdownNotifier.registerForShutdown(this);
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
+        sendingMqttClients = new HashMap<>(); // gbid to client
+        receivingMqttClients = new HashMap<>(); // gbid to client
     }
 
     @Override
     public synchronized JoynrMqttClient createReceiver(String gbid) {
-        if (receivingMqttClient == null) {
+        if (!receivingMqttClients.containsKey(gbid)) {
             if (separateConnections) {
-                receivingMqttClient = createInternal(true, "Sub");
+                receivingMqttClients.put(gbid, createInternal(gbid, true, "Sub"));
             } else {
-                createCombinedClient();
+                createCombinedClient(gbid);
             }
         }
-        return receivingMqttClient;
+        return receivingMqttClients.get(gbid);
     }
 
     @Override
     public synchronized JoynrMqttClient createSender(String gbid) {
-        if (sendingMqttClient == null) {
+        if (!sendingMqttClients.containsKey(gbid)) {
             if (separateConnections) {
-                sendingMqttClient = createInternal(false, "Pub");
+                sendingMqttClients.put(gbid, createInternal(gbid, false, "Pub"));
             } else {
-                createCombinedClient();
+                createCombinedClient(gbid);
             }
         }
-        return sendingMqttClient;
+        return sendingMqttClients.get(gbid);
     }
 
     @Override
     public synchronized void prepareForShutdown() {
         if (separateConnections) {
-            receivingMqttClient.shutdown();
+            for (JoynrMqttClient client : receivingMqttClients.values()) {
+                client.shutdown();
+            }
         }
     }
 
     @Override
     public synchronized void shutdown() {
-        sendingMqttClient.shutdown();
-        if (separateConnections && !receivingMqttClient.isShutdown()) {
-            receivingMqttClient.shutdown();
+        for (JoynrMqttClient client : sendingMqttClients.values()) {
+            client.shutdown();
+        }
+        if (separateConnections) {
+            for (JoynrMqttClient client : receivingMqttClients.values()) {
+                if (!client.isShutdown()) {
+                    client.shutdown();
+                }
+            }
         }
     }
 
-    private void createCombinedClient() {
-        sendingMqttClient = createInternal(true, "");
-        receivingMqttClient = sendingMqttClient;
+    private void createCombinedClient(String gbid) {
+        sendingMqttClients.put(gbid, createInternal(gbid, true, ""));
+        receivingMqttClients.put(gbid, sendingMqttClients.get(gbid));
     }
 
-    private JoynrMqttClient createInternal(boolean isReceiver, String clientIdSuffix) {
-
+    private JoynrMqttClient createInternal(String gbid, boolean isReceiver, String clientIdSuffix) {
+        String brokerUri = mqttGbidToBrokerUriMap.get(gbid);
+        if (brokerUri == null) {
+            throw new JoynrIllegalStateException("BrokerUri for GBID \"" + gbid + "\" is missing.");
+        }
         MqttPahoClient pahoClient = null;
         try {
             String clientId = clientIdProvider.getClientId() + clientIdSuffix;
             logger.info("Creating MQTT Paho client using MQTT client ID: {}", clientId);
-            pahoClient = new MqttPahoClient(ownAddress.getBrokerUri(),
+            pahoClient = new MqttPahoClient(brokerUri,
                                             clientId,
                                             scheduledExecutorService,
                                             reconnectSleepMs,
