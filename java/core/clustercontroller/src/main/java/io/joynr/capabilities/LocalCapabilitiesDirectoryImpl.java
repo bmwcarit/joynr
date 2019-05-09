@@ -23,9 +23,11 @@ import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRES
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -90,6 +92,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private DiscoveryEntryStore localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore globalDiscoveryEntryCache;
+    private final Map<String, Set<String>> globalProviderParticipantIdToGbidSetMap;
     private final long defaultDiscoveryRetryInterval;
 
     private MessageRouter messageRouter;
@@ -143,6 +146,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS) long defaultDiscoveryRetryInterval,
                                           ShutdownNotifier shutdownNotifier,
                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids) {
+        globalProviderParticipantIdToGbidSetMap = new HashMap<>();
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.defaultDiscoveryRetryInterval = defaultDiscoveryRetryInterval;
@@ -163,6 +167,22 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.freshnessUpdateScheduler = freshnessUpdateScheduler;
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
         shutdownNotifier.registerForShutdown(this);
+    }
+
+    private void mapGbidsToGlobalProviderParticipantId(String participantId, String[] gbids) {
+        if (globalProviderParticipantIdToGbidSetMap.containsKey(participantId)) {
+            for (String gbid : gbids) {
+                if (!globalProviderParticipantIdToGbidSetMap.get(participantId).contains(gbid)) {
+                    globalProviderParticipantIdToGbidSetMap.get(participantId).add(gbid);
+                }
+            }
+        } else {
+            Set<String> gbidSetForParticipantId = new HashSet<String>();
+            for (String gbid : gbids) {
+                gbidSetForParticipantId.add(gbid);
+            }
+            globalProviderParticipantIdToGbidSetMap.put(participantId, gbidSetForParticipantId);
+        }
     }
 
     private void setUpPeriodicFreshnessUpdate(final long freshnessUpdateIntervalMs) {
@@ -198,12 +218,18 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         final DeferredVoid deferred = new DeferredVoid();
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
-            if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
-                    || globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
-                                                        DiscoveryQos.NO_MAX_AGE) != null) {
+            if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)) {
                 // in this case, no further need for global registration is required. Registration completed.
                 deferred.resolve();
                 return new Promise<>(deferred);
+            }
+            synchronized (globalDiscoveryEntryCache) {
+                if (globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
+                                                     DiscoveryQos.NO_MAX_AGE) != null) {
+                    mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), new String[]{ gbids[0] });
+                    deferred.resolve();
+                    return new Promise<>(deferred);
+                }
             }
             // in the other case, the global registration needs to be done
         } else {
@@ -277,7 +303,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
                             + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
                             + " completed");
-                    globalDiscoveryEntryCache.add(globalDiscoveryEntry);
+                    synchronized (globalDiscoveryEntryCache) {
+                        mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(),
+                                                              new String[]{ gbids[0] });
+                        globalDiscoveryEntryCache.add(globalDiscoveryEntry);
+                    }
                     deferred.resolve();
                 }
 
@@ -306,7 +336,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onSuccess(Void result) {
-                    globalDiscoveryEntryCache.remove(discoveryEntry.getParticipantId());
+                    synchronized (globalDiscoveryEntryCache) {
+                        globalDiscoveryEntryCache.remove(discoveryEntry.getParticipantId());
+                        globalProviderParticipantIdToGbidSetMap.remove(discoveryEntry.getParticipantId());
+                    }
                 }
 
                 @Override
