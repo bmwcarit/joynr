@@ -45,7 +45,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -89,7 +88,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
@@ -97,7 +95,6 @@ import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
-import io.joynr.messaging.channel.ChannelMessagingSkeleton;
 import io.joynr.messaging.channel.ChannelMessagingSkeletonFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -174,7 +171,8 @@ public class CcMessageRouterTest {
     @Before
     public void setUp() throws Exception {
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
-        routingTable = spy(new RoutingTableImpl(42, addressValidatorMock));
+        final String[] gbidsArray = { "joynrtestgbid1", "joynrtestgbid2" };
+        routingTable = spy(new RoutingTableImpl(42, gbidsArray, addressValidatorMock));
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder(),
                                             createUuidString(),

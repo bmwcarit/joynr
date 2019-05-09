@@ -19,7 +19,9 @@
 package io.joynr.messaging.routing;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS;
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,8 +34,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 
 @Singleton
 public class RoutingTableImpl implements RoutingTable {
@@ -42,25 +46,63 @@ public class RoutingTableImpl implements RoutingTable {
 
     private ConcurrentMap<String, RoutingEntry> hashMap = new ConcurrentHashMap<>();
     private final long routingTableGracePeriodMs;
+    private final String[] gbidsArray;
+    private String gcdParticipantId;
     private final RoutingTableAddressValidator addressValidator;
 
     @Inject
     public RoutingTableImpl(@Named(PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS) long routingTableGracePeriodMs,
+                            @Named(GBID_ARRAY) String[] gbidsArray,
                             final RoutingTableAddressValidator addressValidator) {
         this.routingTableGracePeriodMs = routingTableGracePeriodMs;
+        this.gbidsArray = gbidsArray.clone();
+        // GcdParticipantId will be set to the correct value via setGcdParticipantId(String) during
+        // joynr startup, before the GCD address is added to the routing table
+        // (in the constructor of StaticCapabilitiesProvisioning).
+        this.gcdParticipantId = "";
         this.addressValidator = addressValidator;
     }
 
     @Override
+    public void setGcdParticipantId(final String gcdParticipantId) {
+        if (gcdParticipantId != null) {
+            this.gcdParticipantId = gcdParticipantId;
+        } else {
+            throw new JoynrIllegalStateException("The provided gcdParticipantId is null.");
+        }
+    };
+
+    @Override
     public Address get(String participantId) {
-        logger.trace("entering get(participantId={})", participantId);
+        return getInternal(participantId);
+    }
+
+    @Override
+    public Address get(String participantId, String gbid) {
+        Address address = getInternal(participantId);
+        if (address != null && gcdParticipantId.equals(participantId)) {
+            if (!(Arrays.asList(gbidsArray).contains(gbid))) {
+                logger.error("The provided gbid {} for the participatId {} is unknown", gbid, participantId);
+                address = null;
+            } else if (address instanceof MqttAddress) {
+                MqttAddress mqttAddress = new MqttAddress((MqttAddress) address);
+                mqttAddress.setBrokerUri(gbid);
+                address = mqttAddress;
+            }
+        }
+        logger.trace("leaving get(participantId={}, gbid={}) = {}", participantId, gbid, address);
+        return address;
+    }
+
+    private Address getInternal(String participantId) {
+        logger.trace("entering getInternal(participantId={})", participantId);
         dumpRoutingTableEntry();
         RoutingEntry routingEntry = hashMap.get(participantId);
         if (routingEntry == null) {
-            logger.trace("leaving get(participantId={}) = null", participantId);
+            logger.trace("leaving getInternal(participantId={}) = null", participantId);
             return null;
         }
-        logger.trace("leaving get(participantId={}) = {}", participantId, routingEntry.getAddress());
+        logger.trace("leaving getInternal(participantId={}) = {}", participantId, routingEntry.getAddress());
         return routingEntry.getAddress();
     }
 

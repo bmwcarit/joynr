@@ -21,7 +21,33 @@ package io.joynr.messaging.routing;
 import joynr.system.RoutingTypes.Address;
 
 public interface RoutingTable {
+    /**
+     * @param participantId participantId for which an Address will be returned from the
+     * routing table
+     * @return Address the stored address for the given participantId (unmodified, see {@link #get(String, String)}
+     */
     Address get(String participantId);
+
+    /**
+     * @param participantId participantId for which an Address will be returned from the
+     * routing table
+     * @param gbid name of the backend (evaluated for gcdParticipantId only):
+     * selects the backend specific address of GCD (if participantId is the participantId of the GCD)
+     * @return Address the stored address for the given participantId<br>
+     * - in case of gcdParticipantId, the gbid is evaluated to adapt the stored address for the selected
+     *   backend before it is returned (this allows communication with GCD instances in different backends<br>
+     *   even though there is only one address per participantId<br>
+     *   return null if the gbid is unknown (not part of the configured list of
+     *   GBIDs {@link io.joynr.messaging.ConfigurableMessagingSettings#PROPERTY_GBIDS}<br>
+     * - return unmodified address otherwise
+     */
+    Address get(String participantId, String gbid);
+
+    /**
+     * Sets the participantId of the Global Capabilities Directory (GCD) before adding it to the routing table
+     * @param gcdParticipantId the participantId of the GCD
+     */
+    public void setGcdParticipantId(final String gcdParticipantId);
 
     /**
      * Adds a new routing entry. If a routing entry for the provided participantId already exists, only the expiryDate

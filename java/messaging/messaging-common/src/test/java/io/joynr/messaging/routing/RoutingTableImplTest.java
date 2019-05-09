@@ -53,6 +53,7 @@ public class RoutingTableImplTest {
 
     private RoutingTableImpl subject;
     private final long routingTableGracePeriod = 42;
+    private final String[] gbidsArray = { "joynrtestgbid1", "joynrtestgbid2" };
 
     @Mock
     private RoutingTableAddressValidator addressValidatorMock;
@@ -60,7 +61,7 @@ public class RoutingTableImplTest {
     @Before
     public void setup() {
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
-        subject = new RoutingTableImpl(routingTableGracePeriod, addressValidatorMock);
+        subject = new RoutingTableImpl(routingTableGracePeriod, gbidsArray, addressValidatorMock);
     }
 
     @Test

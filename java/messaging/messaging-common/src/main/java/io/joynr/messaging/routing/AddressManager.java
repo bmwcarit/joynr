@@ -19,6 +19,7 @@
 package io.joynr.messaging.routing;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -93,8 +94,8 @@ public class AddressManager {
      * multicast address calculated from the header content of the message.
      *
      * @param message the message for which we want to find an address to send it to.
-     * @return the address to send the message to. Will not be null, because if an address can't be determined an exception is thrown.
-     * @throws JoynrMessageNotSentException if no address can be determined / found for the given message.
+     * @return set of addresses to send the message to. Will not be null, because if an address
+     * can't be determined, the returned set of addresses will be empty.
      */
     public Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result = new HashSet<>();
@@ -102,7 +103,14 @@ public class AddressManager {
         if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             handleMulticastMessage(message, result);
         } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
-            Address address = routingTable.get(toParticipantId);
+            Map<String, String> customHeader = message.getCustomHeaders();
+            final String gbidVal = customHeader.get("gb");
+            Address address = null;
+            if (gbidVal == null) {
+                address = routingTable.get(toParticipantId);
+            } else {
+                address = routingTable.get(toParticipantId, gbidVal);
+            }
             if (address != null) {
                 result.add(address);
             }

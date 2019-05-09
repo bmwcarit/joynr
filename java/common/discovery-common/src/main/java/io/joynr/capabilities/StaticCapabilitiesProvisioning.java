@@ -105,6 +105,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
         for (DiscoveryEntry discoveryEntry : discoveryEntries) {
             if (discoveryEntry instanceof GlobalDiscoveryEntry) {
                 GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) discoveryEntry;
+                routingTable.setGcdParticipantId(globalDiscoveryEntry.getParticipantId());
                 boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
                 final long expiryDateMs = Long.MAX_VALUE;
                 final boolean isSticky = true;
