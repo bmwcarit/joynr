@@ -95,7 +95,7 @@ public class MqttPahoClientTest {
     private static Process mosquittoProcess;
     private Injector injector;
     private MqttClientFactory mqttClientFactory;
-    private MqttAddress ownTopic;
+    private String ownTopic;
     @Mock
     private IMqttMessagingSkeleton mockReceiver;
     @Mock
@@ -206,8 +206,9 @@ public class MqttPahoClientTest {
         joynrMqttClient = createMqttClientWithoutSubscription(isSecureConnection, null);
 
         ownTopic = injector.getInstance((Key.get(MqttAddress.class,
-                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
-        joynrMqttClient.subscribe(ownTopic.getTopic());
+                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))))
+                           .getTopic();
+        joynrMqttClient.subscribe(ownTopic);
     }
 
     private JoynrMqttClient createMqttClientWithoutSubscription() {
@@ -294,7 +295,8 @@ public class MqttPahoClientTest {
         properties.put(MqttModule.PROPERTY_MQTT_CLEAN_SESSION, "true");
         createMqttClientFactory(mqttStatusReceiver);
         ownTopic = injector.getInstance((Key.get(MqttAddress.class,
-                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
+                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))))
+                           .getTopic();
         JoynrMqttClient clientSender = mqttClientFactory.createSender(gbids[0]);
         JoynrMqttClient clientReceiver = mqttClientFactory.createReceiver(gbids[0]);
         assertNotEquals(clientSender, clientReceiver);
@@ -306,9 +308,9 @@ public class MqttPahoClientTest {
         verify(mqttStatusReceiver,
                times(2)).notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
 
-        clientReceiver.subscribe(ownTopic.getTopic());
+        clientReceiver.subscribe(ownTopic);
 
-        clientSender.publishMessage(ownTopic.getTopic(), serializedMessage);
+        clientSender.publishMessage(ownTopic, serializedMessage);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.shutdown();
@@ -339,7 +341,7 @@ public class MqttPahoClientTest {
     }
 
     private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
-        joynrMqttClient.publishMessage(ownTopic.getTopic(), serializedMessage);
+        joynrMqttClient.publishMessage(ownTopic, serializedMessage);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
@@ -357,7 +359,7 @@ public class MqttPahoClientTest {
         thrown.expectMessage("MQTT Publish failed: maximum allowed message size of " + maxMessageSize
                 + " bytes exceeded, actual size is " + largeSerializedMessage.length + " bytes");
 
-        joynrMqttClient.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
+        joynrMqttClient.publishMessage(ownTopic, largeSerializedMessage);
     }
 
     private void mqttClientTestWithDisabledMessageSizeCheck(boolean isSecureConnection) throws Exception {
@@ -610,7 +612,8 @@ public class MqttPahoClientTest {
                                         });
 
         ownTopic = injector.getInstance((Key.get(MqttAddress.class,
-                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))));
+                                                 Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS))))
+                           .getTopic();
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(10);
         MqttClientIdProvider mqttClientIdProvider = injector.getInstance(MqttClientIdProvider.class);
@@ -629,7 +632,7 @@ public class MqttPahoClientTest {
         String username = joynrUser;
         String password = joynrPassword;
 
-        joynrMqttClient = new MqttPahoClient(new MqttAddress(brokerUri, "sometopic"),
+        joynrMqttClient = new MqttPahoClient(brokerUri,
                                              clientId,
                                              scheduledExecutorService,
                                              reconnectSleepMs,
@@ -653,7 +656,7 @@ public class MqttPahoClientTest {
 
         joynrMqttClient.start();
         joynrMqttClient.setMessageListener(mockReceiver);
-        joynrMqttClient.subscribe(ownTopic.getTopic());
+        joynrMqttClient.subscribe(ownTopic);
 
         // manually call disconnect and connectionLost
 

@@ -173,7 +173,7 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
         try {
             String clientId = clientIdProvider.getClientId() + clientIdSuffix;
             logger.info("Creating MQTT Paho client using MQTT client ID: {}", clientId);
-            pahoClient = new MqttPahoClient(ownAddress,
+            pahoClient = new MqttPahoClient(ownAddress.getBrokerUri(),
                                             clientId,
                                             scheduledExecutorService,
                                             reconnectSleepMs,

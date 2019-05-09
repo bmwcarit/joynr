@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -50,7 +49,6 @@ import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttMessagingStub;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
-import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
@@ -83,12 +81,12 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     private AtomicBoolean shutdown = new AtomicBoolean(false);
 
-    private MqttAddress ownAddress;
+    private String brokerUri;
     private String clientId;
     private ScheduledExecutorService scheduledExecutorService;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public MqttPahoClient(MqttAddress ownAddress,
+    public MqttPahoClient(String brokerUri,
                           String clientId,
                           ScheduledExecutorService scheduledExecutorService,
                           int reconnectSleepMS,
@@ -110,7 +108,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           String password,
                           MqttStatusReceiver mqttStatusReceiver) throws MqttException {
 
-        this.ownAddress = ownAddress;
+        this.brokerUri = brokerUri;
         this.clientId = clientId;
         this.scheduledExecutorService = scheduledExecutorService;
         this.reconnectSleepMs = reconnectSleepMS;
@@ -248,8 +246,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     private MqttClient createMqttClient() throws MqttException {
-        logger.info("Create Mqtt Client. Address: {}", ownAddress);
-        return new MqttClient(ownAddress.getBrokerUri(), clientId, new MemoryPersistence(), scheduledExecutorService);
+        logger.info("Create Mqtt Client. brokerUri: {}", brokerUri);
+        return new MqttClient(brokerUri, clientId, new MemoryPersistence(), scheduledExecutorService);
     }
 
     private void reestablishSubscriptions() {
