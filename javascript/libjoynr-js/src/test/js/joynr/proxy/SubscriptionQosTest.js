@@ -575,14 +575,15 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
                 break;
             default:
                 // no constructor call should throw an exception
+                /* eslint-disable no-new */
                 expect(() => {
-                    SubscriptionQos({ expiryDateMs, publicationTtlMs });
+                    new SubscriptionQos({ expiryDateMs, publicationTtlMs });
                 }).not.toThrow();
                 expect(() => {
-                    MulticastSubscriptionQos({ expiryDateMs, publicationTtlMs });
+                    new MulticastSubscriptionQos({ expiryDateMs, publicationTtlMs });
                 }).not.toThrow();
                 expect(() => {
-                    PeriodicSubscriptionQos({
+                    new PeriodicSubscriptionQos({
                         expiryDateMs,
                         publicationTtlMs,
                         alertAfterIntervalMs,
@@ -590,14 +591,14 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
                     });
                 }).not.toThrow();
                 expect(() => {
-                    OnChangeSubscriptionQos({
+                    new OnChangeSubscriptionQos({
                         expiryDateMs,
                         publicationTtlMs,
                         minIntervalMs
                     });
                 }).not.toThrow();
                 expect(() => {
-                    OnChangeWithKeepAliveSubscriptionQos({
+                    new OnChangeWithKeepAliveSubscriptionQos({
                         expiryDateMs,
                         publicationTtlMs,
                         alertAfterIntervalMs,
