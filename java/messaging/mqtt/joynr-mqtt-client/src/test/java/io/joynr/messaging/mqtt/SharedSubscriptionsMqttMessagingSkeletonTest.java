@@ -39,14 +39,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
-import io.joynr.messaging.mqtt.JoynrMqttClient;
-import io.joynr.messaging.mqtt.MqttClientFactory;
-import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
-import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.Message;
-import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * Unit tests for {@link SharedSubscriptionsMqttMessagingSkeleton}.
@@ -66,11 +61,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     @Mock
     private JoynrMqttClient mqttClient;
 
-    @Mock
-    private MqttAddress ownAddress;
-
-    @Mock
-    private MqttAddress replyToAddress;
+    private final String ownTopic = "testOwnTopic";
+    private final String replyToTopic = "testReplyToTopic";
 
     @Mock
     private MessageRouter messageRouter;
@@ -90,12 +82,12 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     }
 
     private void createAndInitSkeleton(String channelId) {
-        subject = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+        subject = new SharedSubscriptionsMqttMessagingSkeleton(ownTopic,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
                                                                backpressureIncomingMqttRequestsUpperThreshold,
                                                                backpressureIncomingMqttRequestsLowerThreshold,
-                                                               replyToAddress,
+                                                               replyToTopic,
                                                                messageRouter,
                                                                mqttClientFactory,
                                                                channelId,
@@ -141,13 +133,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void testSubscribesToSharedSubscription() {
-        when(ownAddress.getTopic()).thenReturn("ownTopic");
-        final String replyToAddressTopic = "replyToAddressTopic";
-        when(replyToAddress.getTopic()).thenReturn(replyToAddressTopic);
-
         createAndInitSkeleton("channelId");
-        verify(mqttClient).subscribe(eq("$share/channelId/ownTopic/#"));
-        verify(mqttClient).subscribe(eq(replyToAddressTopic + "/#"));
+        verify(mqttClient).subscribe(eq("$share/channelId/" + ownTopic + "/#"));
+        verify(mqttClient).subscribe(eq(replyToTopic + "/#"));
     }
 
     @Test

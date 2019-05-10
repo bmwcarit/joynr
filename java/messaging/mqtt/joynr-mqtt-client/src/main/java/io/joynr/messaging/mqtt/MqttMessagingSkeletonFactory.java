@@ -41,7 +41,7 @@ public class MqttMessagingSkeletonFactory extends AbstractMessagingSkeletonFacto
                                         Set<JoynrMessageProcessor> messageProcessors,
                                         MqttStatusReceiver mqttStatusReceiver) {
         super();
-        IMessagingSkeleton messagingSkeleton = new MqttMessagingSkeleton(ownAddress,
+        IMessagingSkeleton messagingSkeleton = new MqttMessagingSkeleton(ownAddress.getTopic(),
                                                                          maxIncomingMqttRequests,
                                                                          messageRouter,
                                                                          mqttClientFactory,

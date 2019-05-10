@@ -60,7 +60,6 @@ import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.ImmutableMessage;
 import joynr.Message;
-import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
@@ -70,9 +69,6 @@ public class MqttMessagingSkeletonTest {
     private MqttMessagingSkeleton subject;
 
     private String ownGbid = "testOwnGbid";
-
-    @Mock
-    private MqttAddress ownAddress;
 
     @Mock
     private MessageRouter messageRouter;
@@ -93,8 +89,7 @@ public class MqttMessagingSkeletonTest {
 
     @Before
     public void setup() {
-        when(ownAddress.getTopic()).thenReturn(ownTopic);
-        subject = new MqttMessagingSkeleton(ownAddress,
+        subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
                                             mqttClientFactory,
@@ -171,7 +166,7 @@ public class MqttMessagingSkeletonTest {
     public void testMessageRouterIsCalled() throws Exception {
         RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
         when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
-        subject = new MqttMessagingSkeleton(ownAddress,
+        subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
                                             mqttClientFactory,
@@ -197,7 +192,7 @@ public class MqttMessagingSkeletonTest {
 
         when(processorMock.processIncoming(any(ImmutableMessage.class))).then(returnsFirstArg());
 
-        subject = new MqttMessagingSkeleton(ownAddress,
+        subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
                                             mqttClientFactory,
@@ -312,7 +307,7 @@ public class MqttMessagingSkeletonTest {
     public void testNoMessagesAreDroppedWhenNoMaxForIncomingMqttRequestsIsSet() throws Exception {
         final int maxIncomingMqttRequestsNoLimit = 0;
 
-        subject = new MqttMessagingSkeleton(ownAddress,
+        subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequestsNoLimit,
                                             messageRouter,
                                             mqttClientFactory,

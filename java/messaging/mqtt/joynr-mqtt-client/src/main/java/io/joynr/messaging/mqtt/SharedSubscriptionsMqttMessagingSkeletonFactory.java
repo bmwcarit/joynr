@@ -46,12 +46,12 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMes
                                                            Set<JoynrMessageProcessor> messageProcessors,
                                                            MqttStatusReceiver mqttStatusReceiver) {
         super();
-        IMessagingSkeleton messagingSkeleton = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress,
+        IMessagingSkeleton messagingSkeleton = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress.getTopic(),
                                                                                             maxIncomingMqttRequests,
                                                                                             backpressureEnabled,
                                                                                             backpressureIncomingMqttRequestsUpperThreshold,
                                                                                             backpressureIncomingMqttRequestsLowerThreshold,
-                                                                                            replyToAddress,
+                                                                                            replyToAddress.getTopic(),
                                                                                             messageRouter,
                                                                                             mqttClientFactory,
                                                                                             channelId,

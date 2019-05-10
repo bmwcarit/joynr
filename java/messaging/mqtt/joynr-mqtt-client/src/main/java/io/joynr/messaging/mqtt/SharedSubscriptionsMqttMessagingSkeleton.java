@@ -33,7 +33,6 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
-import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * Overrides the standard {@link MqttMessagingSkeleton} in order to customise the topic subscription strategy in the
@@ -48,7 +47,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private final String channelId;
     private final String sharedSubscriptionsTopic;
     private final AtomicBoolean subscribedToSharedSubscriptionsTopic;
-    private final MqttAddress replyToAddress;
+    private final String replyToTopic;
     private boolean backpressureEnabled;
     private final int backpressureIncomingMqttRequestsUpperThreshold;
     private final int backpressureIncomingMqttRequestsLowerThreshold;
@@ -56,12 +55,12 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private final int resubscribeThreshold;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public SharedSubscriptionsMqttMessagingSkeleton(MqttAddress ownAddress,
+    public SharedSubscriptionsMqttMessagingSkeleton(String ownTopic,
                                                     int maxIncomingMqttRequests,
                                                     boolean backpressureEnabled,
                                                     int backpressureIncomingMqttRequestsUpperThreshold,
                                                     int backpressureIncomingMqttRequestsLowerThreshold,
-                                                    MqttAddress replyToAddress,
+                                                    String replyToTopic,
                                                     MessageRouter messageRouter,
                                                     MqttClientFactory mqttClientFactory,
                                                     String channelId,
@@ -70,7 +69,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     Set<JoynrMessageProcessor> messageProcessors,
                                                     MqttStatusReceiver mqttStatusReceiver,
                                                     String ownGbid) {
-        super(ownAddress,
+        super(ownTopic,
               maxIncomingMqttRequests,
               messageRouter,
               mqttClientFactory,
@@ -79,7 +78,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
               messageProcessors,
               mqttStatusReceiver,
               ownGbid);
-        this.replyToAddress = replyToAddress;
+        this.replyToTopic = replyToTopic;
         this.channelId = channelId;
         this.sharedSubscriptionsTopic = createSharedSubscriptionsTopic();
         this.subscribedToSharedSubscriptionsTopic = new AtomicBoolean(false);
@@ -142,7 +141,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         LOG.info("Subscribing to shared topic: {}", sharedSubscriptionsTopic);
         getClient().subscribe(sharedSubscriptionsTopic);
         subscribedToSharedSubscriptionsTopic.set(true);
-        String topic = replyToAddress.getTopic() + "/#";
+        String topic = replyToTopic + "/#";
         LOG.info("Subscribing to reply-to topic: {}", topic);
         getClient().subscribe(topic);
     }
@@ -181,7 +180,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         StringBuilder sb = new StringBuilder("$share/");
         sb.append(sanitiseChannelIdForUseAsTopic());
         sb.append("/");
-        sb.append(getOwnAddress().getTopic());
+        sb.append(getOwnTopic());
         sb.append("/#");
         return sb.toString();
     }

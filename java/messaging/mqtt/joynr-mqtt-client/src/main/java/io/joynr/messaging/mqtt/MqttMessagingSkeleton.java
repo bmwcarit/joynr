@@ -41,7 +41,6 @@ import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
 import joynr.Message;
-import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * Connects to the MQTT broker
@@ -53,7 +52,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private final MessageRouter messageRouter;
     private JoynrMqttClient mqttClient;
     private final MqttClientFactory mqttClientFactory;
-    private final MqttAddress ownAddress;
+    private final String ownTopic;
     private final ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount;
     private final MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private final RawMessagingPreprocessor rawMessagingPreprocessor;
@@ -64,7 +63,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     private final String ownGbid;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public MqttMessagingSkeleton(MqttAddress ownAddress,
+    public MqttMessagingSkeleton(String ownTopic,
                                  int maxIncomingMqttRequests,
                                  MessageRouter messageRouter,
                                  MqttClientFactory mqttClientFactory,
@@ -73,7 +72,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
                                  Set<JoynrMessageProcessor> messageProcessors,
                                  MqttStatusReceiver mqttStatusReceiver,
                                  String ownGbid) {
-        this.ownAddress = ownAddress;
+        this.ownTopic = ownTopic;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
         this.mqttClientFactory = mqttClientFactory;
@@ -106,7 +105,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
      * replies.
      */
     protected void subscribe() {
-        mqttClient.subscribe(ownAddress.getTopic() + "/#");
+        mqttClient.subscribe(ownTopic + "/#");
     }
 
     @Override
@@ -214,8 +213,8 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         return mqttClient;
     }
 
-    protected MqttAddress getOwnAddress() {
-        return ownAddress;
+    protected String getOwnTopic() {
+        return ownTopic;
     }
 
     private String getSubscriptionTopic(String multicastId) {
