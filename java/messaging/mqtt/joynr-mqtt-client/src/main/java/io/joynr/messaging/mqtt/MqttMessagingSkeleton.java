@@ -243,4 +243,5 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     protected void requestProcessed(String messageId) {
         LOG.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
     }
+
 }

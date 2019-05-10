@@ -20,15 +20,13 @@ package io.joynr.messaging.mqtt;
 
 import java.util.Set;
 
-import io.joynr.messaging.AbstractMessagingSkeletonFactory;
-import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
-public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMessagingSkeletonFactory {
+public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonFactory {
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SharedSubscriptionsMqttMessagingSkeletonFactory(String[] gbids,
@@ -46,21 +44,24 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMes
                                                            Set<JoynrMessageProcessor> messageProcessors,
                                                            MqttStatusReceiver mqttStatusReceiver) {
         super();
-        IMessagingSkeleton messagingSkeleton = new SharedSubscriptionsMqttMessagingSkeleton(ownAddress.getTopic(),
-                                                                                            maxIncomingMqttRequests,
-                                                                                            backpressureEnabled,
-                                                                                            backpressureIncomingMqttRequestsUpperThreshold,
-                                                                                            backpressureIncomingMqttRequestsLowerThreshold,
-                                                                                            replyToAddress.getTopic(),
-                                                                                            messageRouter,
-                                                                                            mqttClientFactory,
-                                                                                            channelId,
-                                                                                            mqttTopicPrefixProvider,
-                                                                                            rawMessagingPreprocessor,
-                                                                                            messageProcessors,
-                                                                                            mqttStatusReceiver,
-                                                                                            gbids[0]);
-        messagingSkeletonList.add(messagingSkeleton);
+        for (String gbid : gbids) {
+            mqttMessagingSkeletons.put(gbid,
+                                       new SharedSubscriptionsMqttMessagingSkeleton(ownAddress.getTopic(),
+                                                                                    maxIncomingMqttRequests,
+                                                                                    backpressureEnabled,
+                                                                                    backpressureIncomingMqttRequestsUpperThreshold,
+                                                                                    backpressureIncomingMqttRequestsLowerThreshold,
+                                                                                    replyToAddress.getTopic(),
+                                                                                    messageRouter,
+                                                                                    mqttClientFactory,
+                                                                                    channelId,
+                                                                                    mqttTopicPrefixProvider,
+                                                                                    rawMessagingPreprocessor,
+                                                                                    messageProcessors,
+                                                                                    mqttStatusReceiver,
+                                                                                    gbid));
+        }
+        messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }
 
 }

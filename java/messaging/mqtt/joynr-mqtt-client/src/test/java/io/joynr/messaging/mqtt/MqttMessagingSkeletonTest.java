@@ -124,6 +124,12 @@ public class MqttMessagingSkeletonTest {
     }
 
     @Test
+    public void testSkeletonRegistersItselfAsMessageListener() {
+        verify(mqttClientReceiver).setMessageListener(subject);
+        verify(mqttClientSender, times(0)).setMessageListener(any(IMqttMessagingSkeleton.class));
+    }
+
+    @Test
     public void testSubscribeToMulticastWithTopicPrefix() {
         final String expectedPrefix = "testMulticastPrefix";
         final String multicastId = "multicastId";
