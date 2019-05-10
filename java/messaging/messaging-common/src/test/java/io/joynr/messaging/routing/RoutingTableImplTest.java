@@ -20,6 +20,7 @@ package io.joynr.messaging.routing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -29,12 +30,15 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Field;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
@@ -54,6 +58,8 @@ public class RoutingTableImplTest {
     private RoutingTableImpl subject;
     private final long routingTableGracePeriod = 42;
     private final String[] gbidsArray = { "joynrtestgbid1", "joynrtestgbid2" };
+    private final String participantId = "participantId";
+    private final String gcdParticipantId = "gcdParticipantId";
 
     @Mock
     private RoutingTableAddressValidator addressValidatorMock;
@@ -61,13 +67,36 @@ public class RoutingTableImplTest {
     @Before
     public void setup() {
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
-        subject = new RoutingTableImpl(routingTableGracePeriod, gbidsArray, addressValidatorMock);
+        subject = getRoutingTable();
+        subject.setGcdParticipantId(gcdParticipantId);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testSetGcdParticipantIdWithNull() {
+        subject.setGcdParticipantId(null);
+    }
+
+    @Test
+    public void testSetGcdParticipantIdMethod() throws NoSuchFieldException, SecurityException,
+                                                IllegalArgumentException, IllegalAccessException {
+        RoutingTableImpl routingTable1 = getRoutingTable();
+
+        Class<?> reflectClass = routingTable1.getClass();
+        Field field = reflectClass.getDeclaredField("gcdParticipantId");
+        field.setAccessible(true);
+        assertEquals("", field.get(routingTable1));
+
+        routingTable1.setGcdParticipantId(gcdParticipantId);
+        assertEquals(gcdParticipantId, field.get(routingTable1));
+    }
+
+    private RoutingTableImpl getRoutingTable() {
+        return new RoutingTableImpl(routingTableGracePeriod, gbidsArray, addressValidatorMock);
     }
 
     @Test
     public void testPutAndGet() {
         Address address = new Address();
-        String participantId = "participantId";
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
         subject.put(participantId, address, isGloballyVisible, expiryDateMs);
@@ -80,13 +109,156 @@ public class RoutingTableImplTest {
     }
 
     @Test
+    public void testPutAndGetForGcdParticipantId_ChannelAddress() {
+        ChannelAddress address = new ChannelAddress();
+        ChannelAddress expectedAddress = new ChannelAddress(address);
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        subject.put(gcdParticipantId, address, isGloballyVisible, expiryDateMs);
+
+        Address result = subject.get(gcdParticipantId);
+        assertNotNull(result);
+        assertEquals(expectedAddress, result);
+    }
+
+    @Test
+    public void testPutAndGetForGcdParticipantId_WebSocketAddress() {
+        WebSocketAddress address = new WebSocketAddress();
+        WebSocketAddress expectedAddress = new WebSocketAddress(address);
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        subject.put(gcdParticipantId, address, isGloballyVisible, expiryDateMs);
+
+        Address result = subject.get(gcdParticipantId);
+        assertNotNull(result);
+        assertEquals(expectedAddress, result);
+
+    }
+
+    @Test
+    public void testPutAndGetForGcdParticipantId_MqttAddress() {
+        MqttAddress address = new MqttAddress();
+        MqttAddress expectedAddress = new MqttAddress(address);
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        subject.put(gcdParticipantId, address, isGloballyVisible, expiryDateMs);
+
+        Address result = subject.get(gcdParticipantId);
+        assertNotNull(result);
+        assertEquals(expectedAddress, result);
+
+    }
+
+    @Test
+    public void testPutAndGetWithGBIDForGcdParticipantId_mqttAddress() {
+        MqttAddress gcdAddress = new MqttAddress();
+        MqttAddress expectedGcdAddress = new MqttAddress(gcdAddress);
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        subject.put(gcdParticipantId, gcdAddress, isGloballyVisible, expiryDateMs);
+
+        Address result = subject.get(gcdParticipantId, "");
+        assertNull(result);
+
+        result = subject.get(gcdParticipantId, "wrongGbid");
+        assertNull(result);
+
+        result = subject.get(gcdParticipantId, gbidsArray[0]);
+        expectedGcdAddress.setBrokerUri(gbidsArray[0]);
+        assertEquals(expectedGcdAddress, result);
+        assertEquals(gbidsArray[0], ((MqttAddress) result).getBrokerUri());
+        assertNotEquals(gcdAddress, result);
+
+        result = subject.get(gcdParticipantId, gbidsArray[1]);
+        expectedGcdAddress.setBrokerUri(gbidsArray[1]);
+        assertEquals(expectedGcdAddress, result);
+        assertEquals(gbidsArray[1], ((MqttAddress) result).getBrokerUri());
+        assertNotEquals(gcdAddress, result);
+    }
+
+    @Test
+    public void testPutAndGetWithGBIDForParticipantId_mqttAddress() {
+        MqttAddress address = new MqttAddress();
+        MqttAddress expectedAddress = new MqttAddress(address);
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        subject.put(participantId, address, isGloballyVisible, expiryDateMs);
+
+        Address result = subject.get(participantId, "");
+        assertEquals(expectedAddress, result);
+        assertEquals(expectedAddress, address);
+
+        result = subject.get(participantId, gbidsArray[0]);
+        assertEquals(expectedAddress, result);
+        assertEquals(expectedAddress, address);
+
+        result = subject.get(participantId, "wrongGbid");
+        assertEquals(expectedAddress, result);
+        assertEquals(expectedAddress, address);
+
+        // calling the old get API
+        result = subject.get(participantId);
+        assertEquals(expectedAddress, result);
+        assertEquals(expectedAddress, address);
+    }
+
+    @Test
+    public void testPutAndGetWithGBIDForGcdParticipantId_ChannelAddress() {
+        ChannelAddress channelAddress = new ChannelAddress();
+        ChannelAddress expectedChannelAddress = new ChannelAddress(channelAddress);
+
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        subject.put(gcdParticipantId, channelAddress, isGloballyVisible, expiryDateMs);
+
+        ChannelAddress actualChannelAddress = (ChannelAddress) subject.get(gcdParticipantId, gbidsArray[0]);
+        assertEquals(expectedChannelAddress, actualChannelAddress);
+
+        // different gbid
+        actualChannelAddress = (ChannelAddress) subject.get(gcdParticipantId, gbidsArray[1]);
+        assertEquals(expectedChannelAddress, actualChannelAddress);
+
+        // unknown gbid
+        actualChannelAddress = (ChannelAddress) subject.get(gcdParticipantId, "UnknownGbId");
+        assertNull(actualChannelAddress);
+
+        // empty gbid
+        ChannelAddress actualChannelAddressForEmptyGbId = (ChannelAddress) subject.get(gcdParticipantId, "");
+        assertNull(actualChannelAddressForEmptyGbId);
+    }
+
+    @Test
+    public void testPutAndGetWithGBIDForGcdParticipantId_WebSocketAddress() {
+        WebSocketAddress gcdWebSocketAddress = new WebSocketAddress();
+        WebSocketAddress expectedGcdWebSocketAddress = new WebSocketAddress(gcdWebSocketAddress);
+
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        subject.put(gcdParticipantId, gcdWebSocketAddress, isGloballyVisible, expiryDateMs);
+
+        WebSocketAddress actualgcdWebSocketAddress = (WebSocketAddress) subject.get(gcdParticipantId, gbidsArray[0]);
+        assertEquals(expectedGcdWebSocketAddress, actualgcdWebSocketAddress);
+
+        // different gbid
+        actualgcdWebSocketAddress = (WebSocketAddress) subject.get(gcdParticipantId, gbidsArray[1]);
+        assertEquals(expectedGcdWebSocketAddress, actualgcdWebSocketAddress);
+
+        // unknown gbid
+        actualgcdWebSocketAddress = (WebSocketAddress) subject.get(gcdParticipantId, "UnknownGbId");
+        assertNull(actualgcdWebSocketAddress);
+
+        // empty gbid
+        actualgcdWebSocketAddress = (WebSocketAddress) subject.get(gcdParticipantId, "");
+        assertNull(actualgcdWebSocketAddress);
+    }
+
+    @Test
     public void testNonExistingEntry() {
         assertFalse(subject.containsKey("participantId"));
     }
 
     @Test
     public void testContainsKeyForExistingEntry() {
-        String participantId = "participantId";
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
         subject.put(participantId, new Address(), isGloballyVisible, expiryDateMs);
@@ -96,7 +268,6 @@ public class RoutingTableImplTest {
     @Test
     public void testPutAddsRoutingTableGracePeriod() {
         Address address = new Address();
-        String participantId = "participantId";
         final boolean isGloballyVisible = false;
         final long expiryDateMs = 1024;
         subject.put(participantId, address, isGloballyVisible, expiryDateMs);
@@ -109,7 +280,6 @@ public class RoutingTableImplTest {
     @Test
     public void testPutAddsRoutingTableGracePeriodWithOverflow() {
         Address address = new Address();
-        String participantId = "participantId";
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE - (routingTableGracePeriod / 2);
         subject.put(participantId, address, isGloballyVisible, expiryDateMs);
@@ -121,7 +291,6 @@ public class RoutingTableImplTest {
 
     @Test
     public void testOnlyPutOnce() {
-        String participantId = "participantId";
         assertFalse(subject.containsKey(participantId));
 
         Address address1 = new Address();
@@ -144,7 +313,6 @@ public class RoutingTableImplTest {
 
     @Test
     public void testGetIsGloballyVisible() {
-        String participantId = "participantId";
         try {
             subject.getIsGloballyVisible(participantId); // empty routing table
             fail("Expected exception was not thrown");
@@ -175,7 +343,6 @@ public class RoutingTableImplTest {
     @Test
     public void testPurge() throws Exception {
         Address address = new Address();
-        String participantId = "participantId";
         String participantId2 = "participantId2";
         final boolean isGloballyVisible = false;
         long expiryDateMs = System.currentTimeMillis() + 1000;
@@ -214,7 +381,6 @@ public class RoutingTableImplTest {
         boolean isGloballyVisible = false;
         long expiryDateMs1 = 1;
         long expiryDateMs2 = 2;
-        String participantId = "participantId";
 
         subject.put(participantId, address, isGloballyVisible, expiryDateMs1);
         assertEquals(subject.getExpiryDateMs(participantId), expiryDateMs1 + routingTableGracePeriod);
@@ -234,7 +400,6 @@ public class RoutingTableImplTest {
         boolean isNotSticky = false;
         boolean isSticky = true;
         long expiryDateMs = 0;
-        String participantId = "participantId";
 
         subject.put(participantId, address, isGloballyVisible, expiryDateMs, isNotSticky);
         assertEquals(subject.getIsSticky(participantId), isNotSticky);

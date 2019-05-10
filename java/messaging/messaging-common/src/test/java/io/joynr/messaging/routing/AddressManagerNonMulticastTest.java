@@ -20,24 +20,31 @@ package io.joynr.messaging.routing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Parameterized;
 import org.mockito.Mock;
 
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(Parameterized.class)
 public class AddressManagerNonMulticastTest {
@@ -87,12 +94,36 @@ public class AddressManagerNonMulticastTest {
     }
 
     @Test
-    public void testGetAddressFromRoutingTable() {
+    public void testGetAddressFromRoutingTableForMessageWithoutGbidHeader() {
         when(routingTable.containsKey(PARTICIPANT_ID)).thenReturn(true);
         when(routingTable.get(PARTICIPANT_ID)).thenReturn(address);
         when(joynrMessage.getRecipient()).thenReturn(PARTICIPANT_ID);
 
         Set<Address> result = subject.getAddresses(joynrMessage);
+        verify(routingTable).get(PARTICIPANT_ID);
+        verify(routingTable, times(0)).get(eq(PARTICIPANT_ID), anyString());
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(address, result.iterator().next());
+    }
+
+    @Test
+    public void testGetAddressFromRoutingTableForMessageWithGbidHeader() {
+        final String gbidVal = "gbidVal";
+        MqttAddress address = new MqttAddress();
+        when(routingTable.containsKey(PARTICIPANT_ID)).thenReturn(true);
+        when(routingTable.get(PARTICIPANT_ID, gbidVal)).thenReturn(address);
+        when(joynrMessage.getRecipient()).thenReturn(PARTICIPANT_ID);
+
+        Map<String, String> customHeader = new HashMap<>();
+        customHeader.put("gb", gbidVal);
+        when(joynrMessage.getCustomHeaders()).thenReturn(customHeader);
+
+        Set<Address> result = subject.getAddresses(joynrMessage);
+        verify(routingTable, times(0)).get(PARTICIPANT_ID);
+        verify(routingTable, times(1)).get(PARTICIPANT_ID, gbidVal);
+
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(address, result.iterator().next());
