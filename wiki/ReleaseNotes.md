@@ -19,25 +19,6 @@ None.
   `joynr.discovery.minimumretryintervalms`. This change indicates that the property
   is related to `DiscoveryQos.retryIntervalMs`.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
-
-# joynr 1.8.0
-
-## API relevant changes
-None.
-
-## Other changes
-* **[Java]** Introduced overridden toString() methods in classes
-  io.joynr.arbitration.DiscoveryQos and io.joynr.messaging.MessagingQos
-* **[Build]** Dockerfiles with included scripts for building joynr have been updated to use
-  Fedora 27 with openssl 1.1.0, MoCOCrW branch openssl1.1, flatbuffers 1.10.0, smrf 0.3.3
-  and websocketpp 0.8.1.
-* **[C++, Java, JS]** Updated smrf version to 0.3.3
-* **[C++]** The JOYNR_DEFAULT_RUNTIME_LOG_LEVEL for Release builds has been changed to
-  "DEBUG" to support message tracking.
-* **[FIDL]** Introduce support for multiple backends in GlobalCapabilitiesDirectory FIDL. See
-  `docs/gcd-in-multiple-be.md` for additional documentation.
-
-## Configuration property changes
 * **[Java]** DISCOVERYDIRECTORYURL renamed to PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL and
   joynr.messaging.discoverydirectoryurl changed to joynr.messaging.gcd.url.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
@@ -58,6 +39,26 @@ None.
   joynr.messaging.mqtt.connectiontimeoutssec changed to joynr.messaging.mqtt.connectiontimeoutssec.
   Now, multiple connection timeouts can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
+
+# joynr 1.8.0
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Introduced overridden toString() methods in classes
+  io.joynr.arbitration.DiscoveryQos and io.joynr.messaging.MessagingQos
+* **[Build]** Dockerfiles with included scripts for building joynr have been updated to use
+  Fedora 27 with openssl 1.1.0, MoCOCrW branch openssl1.1, flatbuffers 1.10.0, smrf 0.3.3
+  and websocketpp 0.8.1.
+* **[C++, Java, JS]** Updated smrf version to 0.3.3
+* **[C++]** The JOYNR_DEFAULT_RUNTIME_LOG_LEVEL for Release builds has been changed to
+  "DEBUG" to support message tracking.
+* **[FIDL]** Introduce support for multiple backends in GlobalCapabilitiesDirectory FIDL. See
+  `docs/gcd-in-multiple-be.md` for additional documentation.
+
+## Configuration property changes
+None.
 
 # joynr 1.7.0
 
