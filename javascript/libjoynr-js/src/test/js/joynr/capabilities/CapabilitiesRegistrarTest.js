@@ -82,7 +82,10 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         );
         domain = "testdomain";
         participantId = "myParticipantId";
-        participantIdStorageSpy = jasmine.createSpyObj("participantIdStorage", ["getParticipantId"]);
+        participantIdStorageSpy = jasmine.createSpyObj("participantIdStorage", [
+            "getParticipantId",
+            "setParticipantId"
+        ]);
         participantIdStorageSpy.getParticipantId.and.returnValue(participantId);
         requestReplyManagerSpy = jasmine.createSpyObj("RequestReplyManager", [
             "addRequestCaller",
@@ -246,10 +249,11 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     });
 
     it("uses passed-in participantId", done => {
-        const myParticipantId = "myParticipantId";
+        const myParticipantId = "myFixedParticipantId";
+        const myDomain = "myDomain";
         capabilitiesRegistrar
             .register({
-                domain: "domain",
+                domain: myDomain,
                 provider,
                 providerQos,
                 participantId: myParticipantId
@@ -260,6 +264,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             .catch(() => {
                 return null;
             });
+        expect(participantIdStorageSpy.setParticipantId).toHaveBeenCalledWith(myDomain, provider, myParticipantId);
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(myParticipantId, provider);
         done();

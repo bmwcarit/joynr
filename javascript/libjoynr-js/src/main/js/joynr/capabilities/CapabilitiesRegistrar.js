@@ -158,9 +158,12 @@ CapabilitiesRegistrar.prototype.registerProvider = async function registerProvid
         );
     }
 
-    // retrieve participantId if not passed in
     if (participantId === undefined || participantId === null) {
+        // retrieve participantId if not passed in
         participantId = this._participantIdStorage.getParticipantId(domain, provider);
+    } else {
+        // store provided participantId
+        this._participantIdStorage.setParticipantId(domain, provider, participantId);
     }
 
     if (loggingContext !== undefined) {
