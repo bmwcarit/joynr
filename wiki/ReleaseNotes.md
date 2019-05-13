@@ -8,7 +8,8 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
-None.
+* **[JS]** Fixed a bug where fixed participantIds used for provider registrations
+  were not getting stored causing provider unregistration to fail.
 
 ## Configuration property changes
 * **[Java]** Renamed property `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS` to
