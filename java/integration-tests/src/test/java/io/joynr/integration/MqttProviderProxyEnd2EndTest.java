@@ -137,7 +137,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         Thread.sleep(500);
 
         provider.fireEmptyBroadcast();
-        semaphore.acquire();
+        assertTrue(semaphore.tryAcquire(1, 60, TimeUnit.SECONDS));
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -155,7 +155,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         Thread.sleep(500);
 
         provider.fireEmptyBroadcast("one", "two", "three");
-        semaphore.acquire();
+        assertTrue(semaphore.tryAcquire(1, 60, TimeUnit.SECONDS));
         if (errors.size() > 0) {
             fail("Got errors. " + errors);
         }
@@ -185,7 +185,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two"); // match
         provider.fireEmptyBroadcast("one", "two", "three"); // match
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six"); // match
-        semaphore.acquire(4);
+        assertTrue(semaphore.tryAcquire(4, 60, TimeUnit.SECONDS));
         if (errors.size() > 0) {
             fail("Got errors. " + errors);
         }
@@ -213,7 +213,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two");
         provider.fireEmptyBroadcast("one", "two", "three"); // match
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six");
-        semaphore.acquire(1);
+        assertTrue(semaphore.tryAcquire(1, 60, TimeUnit.SECONDS));
 
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(futureOfWildCard.get());
     }
@@ -236,7 +236,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two"); // match
         provider.fireEmptyBroadcast("one", "two", "three");
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six");
-        semaphore.acquire(1);
+        assertTrue(semaphore.tryAcquire(1, 60, TimeUnit.SECONDS));
 
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfWildCard.get());
     }
