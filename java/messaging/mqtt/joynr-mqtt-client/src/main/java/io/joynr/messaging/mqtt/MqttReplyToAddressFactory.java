@@ -27,6 +27,7 @@ import javax.inject.Named;
 
 import com.google.inject.Inject;
 
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -36,12 +37,13 @@ public class MqttReplyToAddressFactory extends GlobalAddressFactory<MqttAddress>
     private String brokerUri;
 
     @Inject
-    public MqttReplyToAddressFactory(@Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress,
+    public MqttReplyToAddressFactory(@Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids,
+                                     @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress,
                                      @Named(CHANNELID) String localChannelId,
                                      @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
                                      @Named(RECEIVERID) String receiverId,
                                      MqttTopicPrefixProvider mqttTopicPrefixProvider) {
-        this.brokerUri = globalAddress.getBrokerUri();
+        this.brokerUri = gbids[0];
         if (Boolean.valueOf(enableSharedSubscriptions)) {
             replyToTopic = mqttTopicPrefixProvider.getSharedSubscriptionsReplyToTopicPrefix() + localChannelId + "/"
                     + receiverId;
