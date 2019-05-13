@@ -19,24 +19,30 @@
 package io.joynr.integration;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -45,6 +51,7 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testProxy;
 
 public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTest {
+    private static final Logger logger = LoggerFactory.getLogger(MqttProviderProxyEnd2EndTest.class);
     private static final String MQTT_BROKER_URL = "tcp://localhost:1883";
 
     private Properties mqttConfig;
@@ -53,7 +60,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
         mqttConfig = new Properties();
         mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URL);
-        // test is using 2 global address typs, so need to set one of them as primary
+        // test is using 2 global address types, so need to set one of them as primary
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         mqttConfig.put(ConfigurableMessagingSettings.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL, MQTT_BROKER_URL);
         mqttConfig.put(ConfigurableMessagingSettings.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL, MQTT_BROKER_URL);
@@ -71,11 +78,26 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         return application.getRuntime();
     }
 
-    private testProxy buildTestProxy() {
-        return consumerRuntime.getProxyBuilder(domain, testProxy.class)
-                              .setMessagingQos(messagingQos)
-                              .setDiscoveryQos(discoveryQos)
-                              .build();
+    private testProxy buildTestProxy() throws InterruptedException {
+        Semaphore proxyCreatedSemaphore = new Semaphore(0);
+        testProxy proxy = consumerRuntime.getProxyBuilder(domain, testProxy.class)
+                                         .setMessagingQos(messagingQos)
+                                         .setDiscoveryQos(discoveryQos)
+                                         .build(new ProxyCreatedCallback<testProxy>() {
+
+                                             @Override
+                                             public void onProxyCreationFinished(testProxy result) {
+                                                 logger.debug("proxy created successfully for domain: " + domain);
+                                                 proxyCreatedSemaphore.release();
+                                             }
+
+                                             @Override
+                                             public void onProxyCreationError(JoynrRuntimeException error) {
+                                                 logger.error("proxy creation failed: " + error);
+                                             }
+                                         });
+        assertTrue(proxyCreatedSemaphore.tryAcquire(60, TimeUnit.SECONDS));
+        return proxy;
     }
 
     private Future<String> subscribeForBroadcastOnTestProxy(testProxy proxy,
