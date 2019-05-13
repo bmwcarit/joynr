@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,33 +19,32 @@
 const Typing = require("../../util/Typing");
 const WebSocketMessagingStub = require("./WebSocketMessagingStub");
 
-/**
- * @constructor
- * @name WebSocketMessagingStubFactory
- * @param {Object}
- *            settings
- * @param {SharedWebSocket}
- *            settings.sharedWebSocket to the websocket server
- * @param {WebSocketAddress}
- *            settings.address of the websocket for the websocket server
- */
-const WebSocketMessagingStubFactory = function WebSocketMessagingStubFactory(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.address, "WebSocketAddress", "address");
-    Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
-
-    const addresses = {};
-    addresses[settings.address] = new WebSocketMessagingStub({
-        sharedWebSocket: settings.sharedWebSocket
-    });
-
+class WebSocketMessagingStubFactory {
     /**
-     * @name WebSocketMessagingStubFactory#build
-     * @function
+     * @constructor
+     * @name WebSocketMessagingStubFactory
+     * @param {Object} settings
+     * @param {SharedWebSocket} settings.sharedWebSocket to the websocket server
+     * @param {WebSocketAddress} settings.address of the websocket for the websocket server
      */
-    this.build = function build(address) {
-        return addresses[address];
-    };
-};
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.address, "WebSocketAddress", "address");
+        Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
+
+        const addresses = {};
+        addresses[settings.address] = new WebSocketMessagingStub({
+            sharedWebSocket: settings.sharedWebSocket
+        });
+
+        /**
+         * @name WebSocketMessagingStubFactory#build
+         * @function
+         */
+        this.build = function build(address) {
+            return addresses[address];
+        };
+    }
+}
 
 module.exports = WebSocketMessagingStubFactory;

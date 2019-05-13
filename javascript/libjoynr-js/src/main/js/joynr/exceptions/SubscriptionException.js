@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,49 +22,41 @@ const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 const defaultSettings = {};
 
-/**
- * @classdesc
- *
- * @summary
- * Constructor of SubscriptionException object used for reporting
- * error conditions when creating a subscription (e.g. the
- * provided subscription parameters are not correct etc.) that should
- * be transmitted back to consumer side.
- *
- * @constructor
- * @name SubscriptionException
- *
- * @param {Object}
- *            settings - the settings object for the constructor call
- * @param {String}
- *            [settings.detailMessage] message containing details
- *            about the error
- * @param {String}
- *            settings.subscriptionId - Id of the subscription
- * @returns {SubscriptionException}
- *            The newly created SubscriptionException object
- */
-function SubscriptionException(settings) {
-    if (!(this instanceof SubscriptionException)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new SubscriptionException(settings);
-    }
-
-    const runtimeException = new JoynrRuntimeException(settings);
-
+class SubscriptionException {
     /**
-     * Used for serialization.
-     * @name SubscriptionException#_typeName
-     * @type String
+     * @classdesc
+     *
+     * @summary
+     * Constructor of SubscriptionException object used for reporting
+     * error conditions when creating a subscription (e.g. the
+     * provided subscription parameters are not correct etc.) that should
+     * be transmitted back to consumer side.
+     *
+     * @constructor
+     * @name SubscriptionException
+     *
+     * @param {Object} settings - the settings object for the constructor call
+     * @param {String} [settings.detailMessage] message containing details
+     *            about the error
+     * @param {String} settings.subscriptionId - Id of the subscription
+     * @returns {SubscriptionException} The newly created SubscriptionException object
      */
-    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
+    constructor(settings) {
+        const runtimeException = new JoynrRuntimeException(settings);
 
-    if (settings) {
-        Typing.checkPropertyIfDefined(settings.subscriptionId, "String", "settings.subscriptionId");
+        /**
+         * Used for serialization.
+         * @name SubscriptionException#_typeName
+         * @type String
+         */
+        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
+
+        if (settings) {
+            Typing.checkPropertyIfDefined(settings.subscriptionId, "String", "settings.subscriptionId");
+        }
+
+        UtilInternal.extend(this, defaultSettings, settings, runtimeException);
     }
-
-    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.SubscriptionException", SubscriptionException);

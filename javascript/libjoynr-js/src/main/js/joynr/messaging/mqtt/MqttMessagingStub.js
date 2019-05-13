@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,33 +21,36 @@ const JSONSerializer = require("../../util/JSONSerializer");
 const LoggingManager = require("../../system/LoggingManager");
 
 const log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
-/**
- * @name MqttMessagingStub
- * @constructor
 
- * @param {Object} settings the settings object for this constructor call
- * @param {MqttAddress} settings.address the mqtt address of the message destination
- * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
- */
-function MqttMessagingStub(settings) {
-    this._settings = settings;
-}
+class MqttMessagingStub {
+    /**
+  * @name MqttMessagingStub
+  * @constructor
 
-/**
- * @name MqttMessagingStub#transmit
- * @function
- *
- * @param {Object|JoynrMessage} message the message to transmit
- */
-MqttMessagingStub.prototype.transmit = function transmit(message) {
-    log.debug(`transmit message: "${JSONSerializer.stringify(message)}"`);
-    let topic = this._settings.address.topic;
-    if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
-        topic += MqttMessagingStub.PRIORITY_LOW + message.to;
+  * @param {Object} settings the settings object for this constructor call
+  * @param {MqttAddress} settings.address the mqtt address of the message destination
+  * @param {SharedMqttClient} settings.client the mqtt client to be used to transmit messages
+  */
+    constructor(settings) {
+        this._settings = settings;
     }
 
-    return this._settings.client.send(topic, message);
-};
+    /**
+     * @name MqttMessagingStub#transmit
+     * @function
+     *
+     * @param {Object|JoynrMessage} message the message to transmit
+     */
+    transmit(message) {
+        log.debug(`transmit message: "${JSONSerializer.stringify(message)}"`);
+        let topic = this._settings.address.topic;
+        if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
+            topic += MqttMessagingStub.PRIORITY_LOW + message.to;
+        }
+
+        return this._settings.client.send(topic, message);
+    }
+}
 
 MqttMessagingStub.PRIORITY_LOW = "/low/";
 

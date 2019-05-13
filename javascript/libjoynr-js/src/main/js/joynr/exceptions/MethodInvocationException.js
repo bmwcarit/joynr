@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,55 +22,48 @@ const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 const defaultSettings = {};
 
-/**
- * @classdesc
- *
- * @summary
- * Constructor of MethodInvocationException object used for reporting
- * error conditions when invoking a method (e.g. method does not
- * exist or no method with matching signature found etc.) that should
- * be transmitted back to consumer side.
- *
- * @constructor
- * @name MethodInvocationException
- *
- * @param {Object}
- *            [settings] the settings object for the constructor call
- * @param {Version} [settings.providerVersion] the version of the provider
- *            which could not handle the method invocation
- * @param {String}
- *            [settings.detailMessage] message containing details
- *            about the error
- * @returns {MethodInvocationException}
- *            The newly created MethodInvocationException object
- */
-function MethodInvocationException(settings) {
-    if (!(this instanceof MethodInvocationException)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new MethodInvocationException(settings);
-    }
-
-    const runtimeException = new JoynrRuntimeException(settings);
-
+class MethodInvocationException {
     /**
-     * Used for serialization.
-     * @name MethodInvocationException#_typeName
-     * @type String
+     * @classdesc
+     *
+     * @summary
+     * Constructor of MethodInvocationException object used for reporting
+     * error conditions when invoking a method (e.g. method does not
+     * exist or no method with matching signature found etc.) that should
+     * be transmitted back to consumer side.
+     *
+     * @constructor
+     * @name MethodInvocationException
+     *
+     * @param {Object} [settings] the settings object for the constructor call
+     * @param {Version} [settings.providerVersion] the version of the provider
+     *            which could not handle the method invocation
+     * @param {String} [settings.detailMessage] message containing details
+     *            about the error
+     * @returns {MethodInvocationException} The newly created MethodInvocationException object
      */
-    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
+    constructor(settings) {
+        const runtimeException = new JoynrRuntimeException(settings);
 
-    /**
-     * The provider version information
-     * @name MethodInvocationException#providerVersion
-     * @type String
-     */
-    if (settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkPropertyIfDefined(settings.providerVersion, "Version", "settings.providerVersion");
+        /**
+         * Used for serialization.
+         * @name MethodInvocationException#_typeName
+         * @type String
+         */
+        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
+
+        /**
+         * The provider version information
+         * @name MethodInvocationException#providerVersion
+         * @type String
+         */
+        if (settings) {
+            Typing.checkProperty(settings, "Object", "settings");
+            Typing.checkPropertyIfDefined(settings.providerVersion, "Version", "settings.providerVersion");
+        }
+
+        UtilInternal.extend(this, defaultSettings, settings, runtimeException);
     }
-
-    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.MethodInvocationException", MethodInvocationException);

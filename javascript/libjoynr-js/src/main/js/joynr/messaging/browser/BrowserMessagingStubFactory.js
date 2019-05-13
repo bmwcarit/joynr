@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,35 +16,36 @@
  * limitations under the License.
  * #L%
  */
-
 const Typing = require("../../util/Typing");
 const BrowserMessagingStub = require("./BrowserMessagingStub");
 
-/**
- * @constructor
- * @name BrowserMessagingStubFactory
- *
- * @param {Object} settings
- * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
- */
-function BrowserMessagingStubFactory(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.webMessagingStub, "WebMessagingStub", "settings.webMessagingStub");
+class BrowserMessagingStubFactory {
+    /**
+     * @constructor
+     * @name BrowserMessagingStubFactory
+     *
+     * @param {Object} settings
+     * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
+     */
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.webMessagingStub, "WebMessagingStub", "settings.webMessagingStub");
 
-    this._settings = settings;
+        this._settings = settings;
+    }
+
+    /**
+     * @name BrowserMessagingStubFactory#build
+     * @function
+     *
+     * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
+     */
+    build(address) {
+        return new BrowserMessagingStub({
+            windowId: address.windowId,
+            webMessagingStub: this._settings.webMessagingStub
+        });
+    }
 }
-
-/**
- * @name BrowserMessagingStubFactory#build
- * @function
- *
- * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
- */
-BrowserMessagingStubFactory.prototype.build = function build(address) {
-    return new BrowserMessagingStub({
-        windowId: address.windowId,
-        webMessagingStub: this._settings.webMessagingStub
-    });
-};
 
 module.exports = BrowserMessagingStubFactory;

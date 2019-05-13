@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * @name PlatformSecurityManager
  * @constructor
@@ -26,21 +25,21 @@
  *            messageType the message type as defined by
  *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}
  */
-function PlatformSecurityManager() {}
-
-/**
- * @name PlatformSecurityManager(2)#getCurrentProcessUserId
- * @function
- *
- * @returns {String} the user ID that executes node
- */
-PlatformSecurityManager.prototype.getCurrentProcessUserId = function getCurrentProcessUserId() {
-    // Remark: Faking the user name by setting this environment variable
-    // is not a security threat, since the process can only access the
-    // private key of the real user. This key is used to sign the message.
-    // On the receiving side joynr will try to verify the message signature
-    // with the public key of the faked user which will fail.
-    return process.env.USER;
-};
+class PlatformSecurityManager {
+    /**
+     * @name PlatformSecurityManager(2)#getCurrentProcessUserId
+     * @function
+     *
+     * @returns {String} the user ID that executes node
+     */
+    getCurrentProcessUserId() {
+        // Remark: Faking the user name by setting this environment variable
+        // is not a security threat, since the process can only access the
+        // private key of the real user. This key is used to sign the message.
+        // On the receiving side joynr will try to verify the message signature
+        // with the public key of the faked user which will fail.
+        return process.env.USER;
+    }
+}
 
 module.exports = PlatformSecurityManager;

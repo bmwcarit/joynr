@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,37 +20,40 @@ const UtilInternal = require("../util/UtilInternal");
 const LoggingManager = require("../system/LoggingManager");
 
 const log = LoggingManager.getLogger("joynr/messaging/MessagingSkeletonFactory");
-/**
- * @name MessagingSkeletonFactory
- * @constructor
- *
- */
-function MessagingSkeletonFactory() {
-    this._messagingSkeletons = undefined;
-}
 
-MessagingSkeletonFactory.prototype.setSkeletons = function setSkeletons(newMessagingSkeletons) {
-    this._messagingSkeletons = newMessagingSkeletons;
-};
-
-/**
- * @name MessagingSkeletonFactory#getSkeleton
- * @function
- *
- * return {MessagingSkeleton} the skeleton matching the address
- */
-MessagingSkeletonFactory.prototype.getSkeleton = function getSkeleton(address) {
-    const className = address._typeName;
-    const skeleton = this._messagingSkeletons[className];
-
-    if (UtilInternal.checkNullUndefined(skeleton)) {
-        const errorMsg = `Could not find a messaging skeleton for "${className}" within messagingSkeletons [${Object.keys(
-            this._messagingSkeletons
-        ).join(",")}]`;
-        log.debug(errorMsg);
-        throw new Error(errorMsg);
+class MessagingSkeletonFactory {
+    /**
+     * @name MessagingSkeletonFactory
+     * @constructor
+     *
+     */
+    constructor() {
+        this._messagingSkeletons = undefined;
     }
-    return skeleton;
-};
+
+    setSkeletons(newMessagingSkeletons) {
+        this._messagingSkeletons = newMessagingSkeletons;
+    }
+
+    /**
+     * @name MessagingSkeletonFactory#getSkeleton
+     * @function
+     *
+     * return {MessagingSkeleton} the skeleton matching the address
+     */
+    getSkeleton(address) {
+        const className = address._typeName;
+        const skeleton = this._messagingSkeletons[className];
+
+        if (UtilInternal.checkNullUndefined(skeleton)) {
+            const errorMsg = `Could not find a messaging skeleton for "${className}" within messagingSkeletons [${Object.keys(
+                this._messagingSkeletons
+            ).join(",")}]`;
+            log.debug(errorMsg);
+            throw new Error(errorMsg);
+        }
+        return skeleton;
+    }
+}
 
 module.exports = MessagingSkeletonFactory;

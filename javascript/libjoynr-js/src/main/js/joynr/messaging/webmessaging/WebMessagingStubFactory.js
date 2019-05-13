@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,19 @@ const WebMessagingStub = require("./WebMessagingStub");
  * @constructor
  * @name WebMessagingStubFactory
  */
-function WebMessagingStubFactory() {}
-
-/**
- * @name WebMessagingStubFactory#build
- * @function
- *
- * @param {WebMessagingAddress} address the address to generate a messaging stub for
- */
-WebMessagingStubFactory.prototype.build = function build(address) {
-    return new WebMessagingStub({
-        window: address.getWindow(),
-        origin: address.getOrigin()
-    });
-};
+class WebMessagingStubFactory {
+    /**
+     * @name WebMessagingStubFactory#build
+     * @function
+     *
+     * @param {WebMessagingAddress} address the address to generate a messaging stub for
+     */
+    build(address) {
+        return new WebMessagingStub({
+            window: address.getWindow(),
+            origin: address.getOrigin()
+        });
+    }
+}
 
 module.exports = WebMessagingStubFactory;

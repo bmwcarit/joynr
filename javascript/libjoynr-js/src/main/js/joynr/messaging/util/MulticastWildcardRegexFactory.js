@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,24 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * @name MulticastWildcardRegexFactory
  * @constructor
  */
-function MulticastWildcardRegexFactory() {}
-
-MulticastWildcardRegexFactory.prototype.createIdPattern = function(multicastId) {
-    let patternString = multicastId.replace(/^\+\//g, "[^/]+/");
-    patternString = patternString.replace(/\/\+\//g, "/[^/]+/");
-    patternString = patternString.replace(/([\w\W]*)\/[\\+]$/, "$1/[^/]+$");
-    patternString = patternString.replace(/([\w\W]*)\/[\\*]$/, "$1(/.*)?$");
-    if (patternString.length === 0 || patternString[patternString.length - 1] !== "$") {
-        patternString += "$";
+class MulticastWildcardRegexFactory {
+    createIdPattern(multicastId) {
+        let patternString = multicastId.replace(/^\+\//g, "[^/]+/");
+        patternString = patternString.replace(/\/\+\//g, "/[^/]+/");
+        patternString = patternString.replace(/([\w\W]*)\/[\\+]$/, "$1/[^/]+$");
+        patternString = patternString.replace(/([\w\W]*)\/[\\*]$/, "$1(/.*)?$");
+        if (patternString.length === 0 || patternString[patternString.length - 1] !== "$") {
+            patternString += "$";
+        }
+        if (patternString.length === 0 || patternString[0] !== "^") {
+            patternString = `^${patternString}`;
+        }
+        return patternString;
     }
-    if (patternString.length === 0 || patternString[0] !== "^") {
-        patternString = `^${patternString}`;
-    }
-    return patternString;
-};
+}
 
 module.exports = MulticastWildcardRegexFactory;

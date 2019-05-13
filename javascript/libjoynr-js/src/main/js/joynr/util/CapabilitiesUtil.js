@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ const CapabilitiesUtil = {};
  * @function
  * @name CapabilitiesUtil#toDiscoveryEntry
  *
- * @param {CapabilityInformation}
- *            capabilityInformation the object to be transformed
+ * @param {CapabilityInformation} capabilityInformation the object to be transformed
  *
  * @returns {DiscoveryEntry} the transformed object
  */
@@ -57,8 +56,7 @@ CapabilitiesUtil.toDiscoveryEntry = function toDiscoveryEntry(capabilityInformat
  * @function
  * @name CapabilitiesUtil#toDiscoveryEntries
  *
- * @param {Array}
- *            capabilityInformations array of capability information
+ * @param {Array} capabilityInformations array of capability information
  *
  * @returns {Array} array of transformed objects of type DiscoveryEntry
  */
@@ -79,10 +77,8 @@ CapabilitiesUtil.toDiscoveryEntries = function toDiscoveryEntries(capabilityInfo
  * @function
  * @name CapabilitiesUtil#discoveryEntry2GlobalDiscoveryEntry
  *
- * @param {DiscoveryEntry}
- *            discoveryEntry the DiscoveryEntry to be transformed
- * @param {Address}
- *            address the address to be used for the GlobalDiscoveryEntry
+ * @param {DiscoveryEntry} discoveryEntry the DiscoveryEntry to be transformed
+ * @param {Address} address the address to be used for the GlobalDiscoveryEntry
  *
  * @returns {GlobalDiscoveryEntry} global DiscoveryEntry with provided address
  */
@@ -110,10 +106,8 @@ CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry = function discoveryEntry2G
  * @function
  * @name CapabilitiesUtil#convertToDiscoveryEntryWithMetaInfo
  *
- * @param {boolean}
- *            isLocal true, if it is a local DiscoveryEntry, false otherwise
- * @param {DiscoveryEntry}
- *            discoveryEntry the DiscoveryEntry to be transformed
+ * @param {boolean} isLocal true, if it is a local DiscoveryEntry, false otherwise
+ * @param {DiscoveryEntry} discoveryEntry the DiscoveryEntry to be transformed
  *
  * @returns {DiscoveryEntryWithMetaInfo} DiscoveryEntryWithMetaInfo with the given isLocal value
  */
@@ -132,10 +126,8 @@ CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo = function convertToDiscove
  * @function
  * @name CapabilitiesUtil#convertToDiscoveryEntryWithMetaInfoArray
  *
- * @param {boolean}
- *            isLocal true, if the DiscoveryEntries are local DiscoveryEntry, false otherwise
- * @param {Array}
- *            discoveryEntries array of DiscoveryEntries
+ * @param {boolean} isLocal true, if the DiscoveryEntries are local DiscoveryEntry, false otherwise
+ * @param {Array} discoveryEntries array of DiscoveryEntries
  *
  * @returns {Array} array of transformed objects of type DiscoveryEntryWithMetaInfo with the given isLocal value
  */
@@ -159,12 +151,9 @@ CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray = function convertToDi
  * @function
  * @name CapabilitiesUtil#generateParticipantIdStorageKey
  *
- * @param {String}
- *            domain the domain of the capability that is to be stored
- * @param {String}
- *            interfaceName the interface of the capability that is to be stored
- * @param {String}
- *            majorVersion the major Version of the capability that is to be stored
+ * @param {String} domain the domain of the capability that is to be stored
+ * @param {String} interfaceName the interface of the capability that is to be stored
+ * @param {String} majorVersion the major Version of the capability that is to be stored
  *
  * @returns {String} a key to store the participantId with
  */

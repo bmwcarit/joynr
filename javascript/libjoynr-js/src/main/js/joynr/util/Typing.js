@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,16 +60,13 @@ Typing.checkPropertyAllowObject = function(obj, type, description) {
  * Checks if the variable is of specified type
  * @function Typing#checkPropertyIfDefined
  *
- * @param {?}
- *            obj the object
- * @param {String|Function}
- *            type a string representation of the the data type (e.g. "Boolean", "Number",
+ * @param {?} obj the object
+ * @param {String|Function} type a string representation of the the data type (e.g. "Boolean", "Number",
  *             "String", "Array", "Object", "Function"
  *            "MyCustomType", "Object|MyCustomType") or a constructor function to check against
  *             using instanceof (e.g. obj
  *            instanceof type)
- * @param {String}
- *            description a description for the thrown error
+ * @param {String} description a description for the thrown error
  * @throws an
  *             error if the object not of the given type
  */
@@ -81,8 +78,7 @@ Typing.checkPropertyIfDefined = function(obj, type, description) {
 
 /**
  * @function Typing#getObjectType
- * @param {Boolean|Number|String|Object}
- *            obj the object to determine the type of
+ * @param {Boolean|Number|String|Object} obj the object to determine the type of
  * @returns {String} the object type
  */
 Typing.getObjectType = function(obj) {
@@ -101,16 +97,12 @@ Typing.getObjectType = function(obj) {
  * member "_typeName"
  *
  * @function Typing#augmentTypes
- * @param {Boolean|Number|String|Array|Object}
- *            untyped the untyped object
- * @param {TypeRegistry}
- *            typeRegistry the typeRegistry to retrieve type information from
- * @param {String}
- *            typeHint optional parameter which provides the type informed of the untyped object.
+ * @param {Boolean|Number|String|Array|Object} untyped the untyped object
+ * @param {TypeRegistry} typeRegistry the typeRegistry to retrieve type information from
+ * @param {String} typeHint optional parameter which provides the type informed of the untyped object.
  *            This is used i.e. for enums, where the type information is not included in the untyped object itself
  * @returns a deep copy of the untyped object with the types being augmented
- * @throws {Error}
- *             if in any of the objects contains a member of type "Function" or the type of the
+ * @throws {Error} if in any of the objects contains a member of type "Function" or the type of the
  *             untyped object is not (Boolean|Number|String|Array|Object)
  */
 Typing.augmentTypes = function(untyped, typeHint) {

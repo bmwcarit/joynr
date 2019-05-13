@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,51 +18,53 @@
  */
 const JoynrMessage = require("./JoynrMessage");
 
-/**
- * @name MessageReplyToAddressCalculator
- * @constructor
- * @param {Object} settings the settings object for this constructor call
- * @param {Address} settings.replyToAddress the address the reply should be send to
- */
-function MessageReplyToAddressCalculator(settings) {
-    this._replyToAddress = undefined;
-    this._checkExistingReplyAddress = true;
+class MessageReplyToAddressCalculator {
+    /**
+     * @name MessageReplyToAddressCalculator
+     * @constructor
+     * @param {Object} settings the settings object for this constructor call
+     * @param {Address} settings.replyToAddress the address the reply should be send to
+     */
+    constructor(settings) {
+        this._replyToAddress = undefined;
+        this._checkExistingReplyAddress = true;
 
-    if (settings.replyToAddress !== undefined) {
-        this.setReplyToAddress(settings.replyToAddress);
+        if (settings.replyToAddress !== undefined) {
+            this.setReplyToAddress(settings.replyToAddress);
+        }
+    }
+
+    _checkForExistingReplyToAddress() {
+        if (this._checkExistingReplyAddress && this._replyToAddress === undefined) {
+            throw new Error("MessageReplyToAddressCalculator: replyToAddress not specified!");
+        }
+    }
+
+    /**
+     * Helper function allowing to share the serialized reply to address with the calculator after object creation
+     */
+    setReplyToAddress(serializedAddress) {
+        this._replyToAddress = serializedAddress;
+        if (this._replyToAddress !== undefined) {
+            //disable check implementation
+            this._checkExistingReplyAddress = false;
+        }
+    }
+
+    setReplyTo(message) {
+        const type = message.type;
+        if (
+            type !== undefined &&
+            message.replyChannelId === undefined &&
+            (type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST ||
+                type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
+                type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
+                type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)
+        ) {
+            this._checkForExistingReplyToAddress();
+            message.replyChannelId = this._replyToAddress;
+        }
     }
 }
-
-MessageReplyToAddressCalculator.prototype._checkForExistingReplyToAddress = function() {
-    if (this._checkExistingReplyAddress && this._replyToAddress === undefined) {
-        throw new Error("MessageReplyToAddressCalculator: replyToAddress not specified!");
-    }
-};
-
-/**
- * Helper function allowing to share the serialized reply to address with the calculator after object creation
- */
-MessageReplyToAddressCalculator.prototype.setReplyToAddress = function(serializedAddress) {
-    this._replyToAddress = serializedAddress;
-    if (this._replyToAddress !== undefined) {
-        //disable check implementation
-        this._checkExistingReplyAddress = false;
-    }
-};
-
-MessageReplyToAddressCalculator.prototype.setReplyTo = function(message) {
-    const type = message.type;
-    if (
-        type !== undefined &&
-        message.replyChannelId === undefined &&
-        (type === JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST ||
-            type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST ||
-            type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
-            type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)
-    ) {
-        this._checkForExistingReplyToAddress();
-        message.replyChannelId = this._replyToAddress;
-    }
-};
 
 module.exports = MessageReplyToAddressCalculator;

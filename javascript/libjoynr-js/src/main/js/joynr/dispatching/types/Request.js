@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,20 +26,13 @@ let rrIndex = 0;
  * @name Request
  * @constructor
  *
- * @param {Object}
- *            settings
- * @param {String}
- *            settings.requestReplyId
- * @param {String}
- *            settings.methodName
- * @param {Array}
- *            [settings.paramDatatypes] parameter datatypes
- * @param {String}
- *            settings.paramDatatypes.array
- * @param {Array}
- *            [settings.params] parameters
- * @param {?}
- *            settings.params.array
+ * @param {Object} settings
+ * @param {String} settings.requestReplyId
+ * @param {String} settings.methodName
+ * @param {Array} [settings.paramDatatypes] parameter datatypes
+ * @param {String} settings.paramDatatypes.array
+ * @param {Array} [settings.params] parameters
+ * @param {?} settings.params.array
  */
 function Request(settings) {
     settings.requestReplyId = settings.requestReplyId || `${rrBase}_${rrIndex++}`;

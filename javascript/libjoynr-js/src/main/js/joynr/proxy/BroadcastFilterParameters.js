@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,65 +26,60 @@ function makeSetterFunction(obj, parameterName) {
     };
 }
 
-/**
- * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
- *
- * @constructor
- * @name BroadcastFilterParameters
- *
- * @param {Object}
- *            [filterParameters] the filterParameters object for the constructor call
- *
- * @returns {BroadcastFilterParameters} a BroadcastFilterParameters Object for subscriptions on broadcasts
- */
-function BroadcastFilterParameters(filterParameterProperties) {
-    if (!(this instanceof BroadcastFilterParameters)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new BroadcastFilterParameters(filterParameterProperties);
-    }
-
+class BroadcastFilterParameters {
     /**
-     * @name BroadcastFilterParameters#_typeName
-     * @type String
+     * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
+     *
+     * @constructor
+     * @name BroadcastFilterParameters
+     *
+     * @param {Object} [filterParameters] the filterParameters object for the constructor call
+     *
+     * @returns {BroadcastFilterParameters} a BroadcastFilterParameters Object for subscriptions on broadcasts
      */
-    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
-    Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
-
-    let parameterName;
-    let funcName;
-
-    if (filterParameterProperties === undefined) {
-        let filterParameters = null;
-        Object.defineProperty(this, "filterParameters", {
-            enumerable: true,
-            configurable: false,
-            get() {
-                return filterParameters;
-            },
-            set(value) {
-                filterParameters = value;
-            }
-        });
-    } else {
-        for (parameterName in filterParameterProperties) {
-            if (filterParameterProperties.hasOwnProperty(parameterName)) {
-                funcName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
-                //filter[funcName] = makeSetterFunction(filter, parameterName);
-                Object.defineProperty(this, funcName, {
-                    configurable: false,
-                    writable: false,
-                    enumerable: false,
-                    value: makeSetterFunction(this, parameterName)
-                });
-            }
-        }
-
+    constructor(filterParameterProperties) {
         /**
-         * @name BroadcastFilterParameters#filterParameters
-         * @type Object
+         * @name BroadcastFilterParameters#_typeName
+         * @type String
          */
-        this.filterParameters = {};
+        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
+        Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
+
+        let parameterName;
+        let funcName;
+
+        if (filterParameterProperties === undefined) {
+            let filterParameters = null;
+            Object.defineProperty(this, "filterParameters", {
+                enumerable: true,
+                configurable: false,
+                get() {
+                    return filterParameters;
+                },
+                set(value) {
+                    filterParameters = value;
+                }
+            });
+        } else {
+            for (parameterName in filterParameterProperties) {
+                if (filterParameterProperties.hasOwnProperty(parameterName)) {
+                    funcName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
+                    //filter[funcName] = makeSetterFunction(filter, parameterName);
+                    Object.defineProperty(this, funcName, {
+                        configurable: false,
+                        writable: false,
+                        enumerable: false,
+                        value: makeSetterFunction(this, parameterName)
+                    });
+                }
+            }
+
+            /**
+             * @name BroadcastFilterParameters#filterParameters
+             * @type Object
+             */
+            this.filterParameters = {};
+        }
     }
 }
 

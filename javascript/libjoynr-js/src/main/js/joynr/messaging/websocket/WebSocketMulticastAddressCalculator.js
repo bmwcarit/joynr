@@ -1,8 +1,7 @@
-/*eslint no-unused-vars: "off"*/
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +16,30 @@
  * limitations under the License.
  * #L%
  */
+/*eslint no-unused-vars: "off"*/
 const Typing = require("../../util/Typing");
 
-/**
- * @constructor WebSocketMulticastAddressCalculator
- * @param {Object}
- *            settings
- * @param {WebSocketAddress}
- *            settings.globalAddress
- */
-const WebSocketMulticastAddressCalculator = function WebSocketMulticastAddressCalculator(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.globalAddress, "WebSocketAddress", "settings.globalAddress");
-
+class WebSocketMulticastAddressCalculator {
     /**
-     * Calculates the multicast address for the submitted joynr message
-     * @function WebSocketMulticastAddressCalculator#calculate
-     *
-     * @param {JoynrMessage}
-     *            message
-     * @return {Address} the multicast address
+     * @constructor WebSocketMulticastAddressCalculator
+     * @param {Object} settings
+     * @param {WebSocketAddress} settings.globalAddress
      */
-    this.calculate = function calculate(message) {
-        return settings.globalAddress;
-    };
-};
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.globalAddress, "WebSocketAddress", "settings.globalAddress");
+
+        /**
+         * Calculates the multicast address for the submitted joynr message
+         * @function WebSocketMulticastAddressCalculator#calculate
+         *
+         * @param {JoynrMessage} message
+         * @return {Address} the multicast address
+         */
+        this.calculate = function calculate(message) {
+            return settings.globalAddress;
+        };
+    }
+}
 
 module.exports = WebSocketMulticastAddressCalculator;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,39 +20,42 @@ const JSONSerializer = require("../../util/JSONSerializer");
 const LoggingManager = require("../../system/LoggingManager");
 
 const log = LoggingManager.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
-/**
- * @name WebMessagingStub
- * @constructor
 
- * @param {Object} settings the settings object for this constructor call
- * @param {Object} settings.window the default target window, the messages should be sent to
- * @param {String} settings.origin the default origin, the messages should be sent to
- */
-function WebMessagingStub(settings) {
-    this._settings = settings;
+class WebMessagingStub {
+    /**
+  * @name WebMessagingStub
+  * @constructor
+
+  * @param {Object} settings the settings object for this constructor call
+  * @param {Object} settings.window the default target window, the messages should be sent to
+  * @param {String} settings.origin the default origin, the messages should be sent to
+  */
+    constructor(settings) {
+        this._settings = settings;
+    }
+
+    /**
+     * @name WebMessagingStub#transmit
+     * @function
+     *
+     * @param {Object|JoynrMessage} message the message to transmit
+     */
+    transmit(message) {
+        //TODO: check why sending a JoynrMessage provokes the following error
+        // maybe enumerability or visibility of members while using Object.defineProperties
+        /*
+              DataCloneError: An object could not be cloned.
+              code: 25
+              message: "An object could not be cloned."
+              name: "DataCloneError"
+              stack: "Error: An object could not be cloned.
+              __proto__: DOMException
+              */
+        log.debug(`transmit message: "${JSONSerializer.stringify(message)}"`);
+        this._settings.window.postMessage(JSON.parse(JSONSerializer.stringify(message)), this._settings.origin);
+
+        return Promise.resolve();
+    }
 }
-
-/**
- * @name WebMessagingStub#transmit
- * @function
- *
- * @param {Object|JoynrMessage} message the message to transmit
- */
-WebMessagingStub.prototype.transmit = function transmit(message) {
-    //TODO: check why sending a JoynrMessage provokes the following error
-    // maybe enumerability or visibility of members while using Object.defineProperties
-    /*
-             DataCloneError: An object could not be cloned.
-             code: 25
-             message: "An object could not be cloned."
-             name: "DataCloneError"
-             stack: "Error: An object could not be cloned.
-             __proto__: DOMException
-             */
-    log.debug(`transmit message: "${JSONSerializer.stringify(message)}"`);
-    this._settings.window.postMessage(JSON.parse(JSONSerializer.stringify(message)), this._settings.origin);
-
-    return Promise.resolve();
-};
 
 module.exports = WebMessagingStub;

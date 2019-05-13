@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,8 @@ define("joynr/security/PlatformSecurityManager", [], () => {
      * @name PlatformSecurityManager
      * @constructor
      *
-     * @param {String}
-     *            messageType the message type as defined by
-     *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}
-     */
+     * @param {String} messageType the message type as defined by
+     *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}     */
     function PlatformSecurityManager() {}
 
     /**

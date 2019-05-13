@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,24 +28,16 @@ const ProviderRuntimeException = require("../exceptions/ProviderRuntimeException
  * @function
  * @private
  *
- * @param {Array}
- *            unnamedArguments an array containing the arguments, e.g. [1234, "asdf"]
- * @param {?}
- *            unnamedArguments.array the argument value
- * @param {Array}
- *            argumentDatatypes an array containing the datatypes,
+ * @param {Array} unnamedArguments an array containing the arguments, e.g. [1234, "asdf"]
+ * @param {?} unnamedArguments.array the argument value
+ * @param {Array} argumentDatatypes an array containing the datatypes,
  *            e.g. ["Integer", "String"]
- * @param {String}
- *            argumentDatatypes.array the datatype in string format
- * @param {Array}
- *            operationSignatures an array of possible signatures for this operation
- * @param {Array}
- *            operationSignatures.array.inputParameter an array of supported arguments for
+ * @param {String} argumentDatatypes.array the datatype in string format
+ * @param {Array} operationSignatures an array of possible signatures for this operation
+ * @param {Array} operationSignatures.array.inputParameter an array of supported arguments for
  *            one specific signature
- * @param {String}
- *            operationSignatures.array.inputParameter.name the name of the input parameter
- * @param {String}
- *            operationSignatures.array.inputParameter.type the type of the input parameter
+ * @param {String} operationSignatures.array.inputParameter.name the name of the input parameter
+ * @param {String} operationSignatures.array.inputParameter.type the type of the input parameter
  *
  * @returns undefined if argumentDatatypes does not match operationSignature or a map
  *            containing a named argument map, e.g. &#123;nr: 1234,str: "asdf"&#125;
@@ -86,58 +78,6 @@ function returnValueToResponseArray(returnValue, outputParameter) {
      */
     return MethodUtil.transformParameterMapToArray(returnValue || {}, outputParameter).params;
 }
-/**
- * Constructor of ProviderAttribute object that is used in the generation of provider
- * objects
- *
- * @name ProviderOperation
- * @constructor
- *
- * @param {Provider}
- *            parent the provider object
- *
- * @param {Object}
- *            [implementation] the operation function
- *
- * @param {String}
- *            operationName the name of the operation
- *
- * @param {Array}
- *            operationSignatures an object with the argument name as key and an object
- *            as value defining the type
- * @param {Object}
- *            operationSignatures.array an object with the argument name as key and an
- *            object as value defining the type
- * @param {Object}
- *            operationSignatures.array.PARAMETERNAME an object describing the single
- *            parameter
- * @param {String}
- *            operationSignatures.array.PARAMETERNAME.type the type of the parameter
- */
-function ProviderOperation(parent, implementation, operationName, operationSignatures) {
-    if (!(this instanceof ProviderOperation)) {
-        // in case someone calls constructor without new keyword
-        // (e.g. var c = Constructor({..}))
-        return new ProviderOperation(parent, implementation, operationName, operationSignatures);
-    }
-
-    this._privateOperationFunc = implementation;
-    this._operationName = operationName;
-    this._operationSignatures = operationSignatures;
-}
-
-/**
- * Registers the operation function
- *
- * @name ProviderOperation#registerOperation
- * @function
- *
- * @param {Function}
- *            operationFunc registers the operation function
- */
-ProviderOperation.prototype.registerOperation = function registerOperation(operationFunc) {
-    this._privateOperationFunc = operationFunc;
-};
 
 function privateOperationOnError(exceptionOrErrorEnumValue) {
     let exception;
@@ -160,71 +100,107 @@ function privateOperationOnError(exceptionOrErrorEnumValue) {
     throw exception;
 }
 
-/**
- * Calls the operation function.
- *
- * @name ProviderOperation#callOperation
- * @function
- *
- * @param {Array}
- *            operationArguments the operation arguments as an array
- * @param {?}
- *            operationArguments the operation argument value, e.g. 1
- * @param {Array}
- *            operationArgumentTypes the operation argument types as an array
- * @param {String}
- *            operationArgumentTypes the operation argument type in String form
- *            e.g. "Integer"
- *
- * @returns {?} the return type of the called operation function
- */
-ProviderOperation.prototype.callOperation = function callOperation(operationArguments, operationArgumentTypes) {
-    let i, j;
-    let argument, namedArguments, signature;
-
-    // cycle through multiple available operation signatures
-    for (i = 0; i < this._operationSignatures.length && namedArguments === undefined; ++i) {
-        signature = this._operationSignatures[i];
-        // check if the parameters from the operation signature is valid for
-        // the provided arguments
-        namedArguments = getNamedArguments(operationArguments, operationArgumentTypes, signature);
+class ProviderOperation {
+    /**
+     * Constructor of ProviderAttribute object that is used in the generation of provider
+     * objects
+     *
+     * @name ProviderOperation
+     * @constructor
+     *
+     * @param {Provider} parent the provider object
+     *
+     * @param {Object} [implementation] the operation function
+     *
+     * @param {String} operationName the name of the operation
+     *
+     * @param {Array} operationSignatures an object with the argument name as key and an object
+     *            as value defining the type
+     * @param {Object} operationSignatures.array an object with the argument name as key and an
+     *            object as value defining the type
+     * @param {Object} operationSignatures.array.PARAMETERNAME an object describing the single
+     *            parameter
+     * @param {String} operationSignatures.array.PARAMETERNAME.type the type of the parameter
+     */
+    constructor(parent, implementation, operationName, operationSignatures) {
+        this._privateOperationFunc = implementation;
+        this._operationName = operationName;
+        this._operationSignatures = operationSignatures;
     }
 
-    function privateOperationOnSuccess(returnValue) {
-        return returnValueToResponseArray(returnValue, signature.outputParameter || []);
+    /**
+     * Registers the operation function
+     *
+     * @name ProviderOperation#registerOperation
+     * @function
+     *
+     * @param {Function} operationFunc registers the operation function
+     */
+    registerOperation(operationFunc) {
+        this._privateOperationFunc = operationFunc;
     }
 
-    if (namedArguments) {
-        // augment types
-        for (j = 0; j < signature.inputParameter.length; ++j) {
-            argument = signature.inputParameter[j];
-            namedArguments[argument.name] = Typing.augmentTypes(namedArguments[argument.name], argument.type);
+    /**
+     * Calls the operation function.
+     *
+     * @name ProviderOperation#callOperation
+     * @function
+     *
+     * @param {Array} operationArguments the operation arguments as an array
+     * @param {?} operationArguments the operation argument value, e.g. 1
+     * @param {Array} operationArgumentTypes the operation argument types as an array
+     * @param {String} operationArgumentTypes the operation argument type in String form
+     *            e.g. "Integer"
+     *
+     * @returns {?} the return type of the called operation function
+     */
+    callOperation(operationArguments, operationArgumentTypes) {
+        let i, j;
+        let argument, namedArguments, signature;
+
+        // cycle through multiple available operation signatures
+        for (i = 0; i < this._operationSignatures.length && namedArguments === undefined; ++i) {
+            signature = this._operationSignatures[i];
+            // check if the parameters from the operation signature is valid for
+            // the provided arguments
+            namedArguments = getNamedArguments(operationArguments, operationArgumentTypes, signature);
         }
 
-        // By starting a promise chain, privateOperationFunc will be converted into a promise as well
-        return Promise.resolve(namedArguments)
-            .then(this._privateOperationFunc)
-            .then(privateOperationOnSuccess)
-            .catch(privateOperationOnError);
+        function privateOperationOnSuccess(returnValue) {
+            return returnValueToResponseArray(returnValue, signature.outputParameter || []);
+        }
+
+        if (namedArguments) {
+            // augment types
+            for (j = 0; j < signature.inputParameter.length; ++j) {
+                argument = signature.inputParameter[j];
+                namedArguments[argument.name] = Typing.augmentTypes(namedArguments[argument.name], argument.type);
+            }
+
+            // By starting a promise chain, privateOperationFunc will be converted into a promise as well
+            return Promise.resolve(namedArguments)
+                .then(this._privateOperationFunc)
+                .then(privateOperationOnSuccess)
+                .catch(privateOperationOnError);
+        }
+
+        // TODO: proper error handling
+        throw new Error(
+            `Could not find a valid operation signature in '${JSON.stringify(
+                this._operationSignatures
+            )}' for a call to operation '${this._operationName}' with the arguments: '${JSON.stringify(
+                operationArguments
+            )}'`
+        );
     }
 
-    // TODO: proper error handling
-    throw new Error(
-        `Could not find a valid operation signature in '${JSON.stringify(
-            this._operationSignatures
-        )}' for a call to operation '${this._operationName}' with the arguments: '${JSON.stringify(
-            operationArguments
-        )}'`
-    );
-};
-
-/**
- * Check if the registered operation is defined.
- * @function ProviderOperation#checkOperation
- * @returns {Boolean}
- */
-ProviderOperation.prototype.checkOperation = function checkOperation() {
-    return typeof this._privateOperationFunc === "function";
-};
+    /**
+     * Check if the registered operation is defined.
+     * @function ProviderOperation#checkOperation
+     * @returns {Boolean} */
+    checkOperation() {
+        return typeof this._privateOperationFunc === "function";
+    }
+}
 
 module.exports = ProviderOperation;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,31 +19,31 @@
 const Typing = require("../../util/Typing");
 const MqttMessagingStub = require("./MqttMessagingStub");
 
-/**
- * @constructor
- * @name MqttMessagingStubFactory
- * @param {Object}
- *            settings
- * @param {SharedMqttClient}
- *            settings.client the mqtt client
- */
-const MqttMessagingStubFactory = function MqttMessagingStubFactory(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.client, "SharedMqttClient", "client");
-    this._settings = settings;
-};
+class MqttMessagingStubFactory {
+    /**
+     * @constructor
+     * @name MqttMessagingStubFactory
+     * @param {Object} settings
+     * @param {SharedMqttClient} settings.client the mqtt client
+     */
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.client, "SharedMqttClient", "client");
+        this._settings = settings;
+    }
 
-/**
- * @name MqttMessagingStubFactory#build
- * @function
- */
-MqttMessagingStubFactory.prototype.build = function build(address) {
-    Typing.checkProperty(address, "MqttAddress", "address");
+    /**
+     * @name MqttMessagingStubFactory#build
+     * @function
+     */
+    build(address) {
+        Typing.checkProperty(address, "MqttAddress", "address");
 
-    return new MqttMessagingStub({
-        address,
-        client: this._settings.client
-    });
-};
+        return new MqttMessagingStub({
+            address,
+            client: this._settings.client
+        });
+    }
+}
 
 module.exports = MqttMessagingStubFactory;

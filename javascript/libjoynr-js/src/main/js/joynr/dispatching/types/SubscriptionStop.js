@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,33 +19,33 @@
 const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 
-/**
- * @name SubscriptionStop
- * @constructor
- *
- * @param settings
- *            {Object}
- * @param settings.subscriptionId
- *            {String}
- */
-function SubscriptionStop(settings) {
-    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-
+class SubscriptionStop {
     /**
-     * @name SubscriptionStop#subscriptionId
-     * @type String
-     */
-    UtilInternal.extend(this, settings);
-
-    /**
-     * The joynr type name
+     * @name SubscriptionStop
+     * @constructor
      *
-     * @name SubscriptionStop#_typeName
-     * @type String
-     */
-    Typing.augmentTypeName(this, "joynr");
+     * @param settings
+     *            {Object} @param settings.subscriptionId
+     *            {String} */
+    constructor(settings) {
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
-    return Object.freeze(this);
+        /**
+         * @name SubscriptionStop#subscriptionId
+         * @type String
+         */
+        UtilInternal.extend(this, settings);
+
+        /**
+         * The joynr type name
+         *
+         * @name SubscriptionStop#_typeName
+         * @type String
+         */
+        Typing.augmentTypeName(this, "joynr");
+
+        return Object.freeze(this);
+    }
 }
 
 module.exports = SubscriptionStop;

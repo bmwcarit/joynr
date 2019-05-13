@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@ const InProcessMessagingStub = require("./InProcessMessagingStub");
  * @constructor
  * @name InProcessMessagingStubFactory
  */
-function InProcessMessagingStubFactory() {}
-
-/**
- * @name InProcessMessagingStubFactory#build
- * @function
- *
- * @param {InProcessAddress} address the address to generate a messaging stub for
- */
-InProcessMessagingStubFactory.prototype.build = function build(address) {
-    return new InProcessMessagingStub(address.getSkeleton());
-};
+class InProcessMessagingStubFactory {
+    /**
+     * @name InProcessMessagingStubFactory#build
+     * @function
+     *
+     * @param {InProcessAddress} address the address to generate a messaging stub for
+     */
+    build(address) {
+        return new InProcessMessagingStub(address.getSkeleton());
+    }
+}
 
 module.exports = InProcessMessagingStubFactory;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,49 +21,42 @@ const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 const defaultSettings = {};
 
-/**
- * @classdesc
- *
- * @summary
- * Constructor of IllegalAccessException object used for reporting
- * error conditions due to access restrictions that should be reported
- * back to consumer side.
- *
- * @constructor
- * @name IllegalAccessException
- *
- * @param {Object}
- *            [settings] the settings object for the constructor call
- * @param {String}
- *            [settings.detailMessage] message containing details
- *            about the error
- * @returns {IllegalAccessException}
- *            The newly created IllegalAccessException object
- */
-function IllegalAccessException(settings) {
-    if (!(this instanceof IllegalAccessException)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new IllegalAccessException(settings);
+class IllegalAccessException {
+    /**
+     * @classdesc
+     *
+     * @summary
+     * Constructor of IllegalAccessException object used for reporting
+     * error conditions due to access restrictions that should be reported
+     * back to consumer side.
+     *
+     * @constructor
+     * @name IllegalAccessException
+     *
+     * @param {Object} [settings] the settings object for the constructor call
+     * @param {String} [settings.detailMessage] message containing details
+     *            about the error
+     * @returns {IllegalAccessException} The newly created IllegalAccessException object
+     */
+    constructor(settings) {
+        const joynrRuntimeException = new JoynrRuntimeException(settings);
+
+        /**
+         * Used for serialization.
+         * @name IllegalAccessException#_typeName
+         * @type String
+         */
+        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
+
+        /**
+         * See [constructor description]{@link IllegalAccessException}.
+         * @name IllegalAccessException#detailMessage
+         * @type String
+         */
+        this.detailMessage = undefined;
+
+        UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
     }
-
-    const joynrRuntimeException = new JoynrRuntimeException(settings);
-
-    /**
-     * Used for serialization.
-     * @name IllegalAccessException#_typeName
-     * @type String
-     */
-    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.IllegalAccessException");
-
-    /**
-     * See [constructor description]{@link IllegalAccessException}.
-     * @name IllegalAccessException#detailMessage
-     * @type String
-     */
-    this.detailMessage = undefined;
-
-    UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.IllegalAccessException", IllegalAccessException);

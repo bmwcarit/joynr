@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,72 +24,71 @@ const defaultSettings = {
     qos: new MulticastSubscriptionQos()
 };
 
-/**
- * @name MulticastSubscriptionRequest
- * @constructor
- * @param {String}
- *            settings.subscriptionId Id of the new subscription
- * @param {String}
- *            settings.subscribedToName the name of the element to subscribe to
- * @param {Object|SubscriptionQos}
- *            [settings.subscriptionQos] the subscriptionQos
- */
-function MulticastSubscriptionRequest(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.multicastId, "String", "settings.multicastId");
-    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-    Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
+class MulticastSubscriptionRequest {
+    /**
+     * @name MulticastSubscriptionRequest
+     * @constructor
+     * @param {String} settings.subscriptionId Id of the new subscription
+     * @param {String} settings.subscribedToName the name of the element to subscribe to
+     * @param {Object|SubscriptionQos} [settings.subscriptionQos] the subscriptionQos
+     */
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.multicastId, "String", "settings.multicastId");
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
 
-    try {
-        Typing.checkPropertyIfDefined(settings.qos, ["Object", "MulticastSubscriptionQos"], "settings.qos");
-    } catch (e) {
-        if (Typing.getObjectType(settings.qos) === "OnChangeSubscriptionQos") {
-            log.warn(
-                "multicast subscription was passed an OnChangeSubscriptionQos. " +
-                    "The minIntervalMs and publicationTtlMs will be discarded"
-            );
-            settings.qos = new MulticastSubscriptionQos({
-                expiryDateMs: settings.qos.expiryDateMs
-            });
-        } else {
-            throw e;
+        try {
+            Typing.checkPropertyIfDefined(settings.qos, ["Object", "MulticastSubscriptionQos"], "settings.qos");
+        } catch (e) {
+            if (Typing.getObjectType(settings.qos) === "OnChangeSubscriptionQos") {
+                log.warn(
+                    "multicast subscription was passed an OnChangeSubscriptionQos. " +
+                        "The minIntervalMs and publicationTtlMs will be discarded"
+                );
+                settings.qos = new MulticastSubscriptionQos({
+                    expiryDateMs: settings.qos.expiryDateMs
+                });
+            } else {
+                throw e;
+            }
         }
+
+        /**
+         * @name MulticastSubscriptionRequest#multicastId
+         * @type String
+         */
+        this.multicastId = settings.multicastId;
+        /**
+         * @name MulticastSubscriptionRequest#subscriptionId
+         * @type String
+         */
+        this.subscriptionId = settings.subscriptionId;
+        /**
+         * @name MulticastSubscriptionRequest#subscribedToName
+         * @type String
+         */
+        this.subscribedToName = settings.subscribedToName;
+        /**
+         * @name MulticastSubscriptionRequest#qos
+         * @type Object|OnChangeSubscriptionQos
+         */
+        this.qos = settings.qos || defaultSettings.qos;
+        /**
+         * The joynr type name
+         *
+         * @name MulticastSubscriptionRequest#_typeName
+         * @type String
+         */
+        Object.defineProperty(this, "_typeName", {
+            value: "joynr.MulticastSubscriptionRequest",
+            writable: false,
+            enumerable: true,
+            configurable: false
+        });
+
+        return Object.freeze(this);
     }
-
-    /**
-     * @name MulticastSubscriptionRequest#multicastId
-     * @type String
-     */
-    this.multicastId = settings.multicastId;
-    /**
-     * @name MulticastSubscriptionRequest#subscriptionId
-     * @type String
-     */
-    this.subscriptionId = settings.subscriptionId;
-    /**
-     * @name MulticastSubscriptionRequest#subscribedToName
-     * @type String
-     */
-    this.subscribedToName = settings.subscribedToName;
-    /**
-     * @name MulticastSubscriptionRequest#qos
-     * @type Object|OnChangeSubscriptionQos
-     */
-    this.qos = settings.qos || defaultSettings.qos;
-    /**
-     * The joynr type name
-     *
-     * @name MulticastSubscriptionRequest#_typeName
-     * @type String
-     */
-    Object.defineProperty(this, "_typeName", {
-        value: "joynr.MulticastSubscriptionRequest",
-        writable: false,
-        enumerable: true,
-        configurable: false
-    });
-
-    return Object.freeze(this);
 }
 
 /**

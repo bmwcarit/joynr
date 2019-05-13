@@ -1,8 +1,7 @@
-/*eslint no-console: "off"*/
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-
+/*eslint no-console: "off"*/
 /**
  * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
  * log it there
@@ -25,23 +24,23 @@
  * @name ConsoleAppender
  * @constructor
  */
-function ConsoleAppender() {}
+class ConsoleAppender {
+    /**
+     * Implementing the appender function of log4javascript appenders
+     *
+     * @name ConsoleAppender#append
+     * @function
+     */
+    append(loggingEvent) {
+        const logLevel = loggingEvent.level.name.toLowerCase();
+        const formattedMessage = loggingEvent.messages.join(",");
+        console[logLevel] = console[logLevel] || console.log;
+        console[logLevel](formattedMessage);
+    }
 
-/**
- * Implementing the appender function of log4javascript appenders
- *
- * @name ConsoleAppender#append
- * @function
- */
-ConsoleAppender.prototype.append = function(loggingEvent) {
-    const logLevel = loggingEvent.level.name.toLowerCase();
-    const formattedMessage = loggingEvent.messages.join(",");
-    console[logLevel] = console[logLevel] || console.log;
-    console[logLevel](formattedMessage);
-};
-
-ConsoleAppender.prototype.toString = function toString() {
-    return "ConsoleAppender";
-};
+    toString() {
+        return "ConsoleAppender";
+    }
+}
 
 module.exports = ConsoleAppender;

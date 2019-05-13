@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,61 +19,63 @@
 const Typing = require("../../util/Typing");
 const UtilInternal = require("../../util/UtilInternal");
 
-/**
- * @constructor WebMessagingSkeleton
- * @param {Object} settings the settings object for this constructor call
- * @param {Window} settings.window the window to register the event handler at
- */
-function WebMessagingSkeleton(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
+class WebMessagingSkeleton {
+    /**
+     * @constructor WebMessagingSkeleton
+     * @param {Object} settings the settings object for this constructor call
+     * @param {Window} settings.window the window to register the event handler at
+     */
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
 
-    if (settings.window === undefined) {
-        throw new Error("WebMessagingSkeleton constructor parameter windows is undefined");
+        if (settings.window === undefined) {
+            throw new Error("WebMessagingSkeleton constructor parameter windows is undefined");
+        }
+
+        if (settings.window.addEventListener === undefined || settings.window.removeEventListener === undefined) {
+            throw new Error(
+                'WebMessagingSkeleton constructor parameter window does not provide the expected functions "addEventListener" and "removeEventListener"'
+            );
+        }
+
+        const receiverCallbacks = [];
+        const callbackFct = function(event) {
+            UtilInternal.fire(receiverCallbacks, event.data);
+        };
+
+        settings.window.addEventListener("message", callbackFct);
+
+        /**
+         * Registers a listener for web messaging
+         * @function WebMessagingSkeleton#registerListener
+         *
+         * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
+         */
+        this.registerListener = function registerListener(listener) {
+            Typing.checkPropertyIfDefined(listener, "Function", "listener");
+
+            receiverCallbacks.push(listener);
+        };
+
+        /**
+         * Unregisters a listener for web messaging
+         * @function WebMessagingSkeleton#unregisterListener
+         *
+         * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
+         */
+        this.unregisterListener = function unregisterListener(listener) {
+            Typing.checkPropertyIfDefined(listener, "Function", "listener");
+
+            UtilInternal.removeElementFromArray(receiverCallbacks, listener);
+        };
+
+        /**
+         * @function WebMessagingSkeleton#shutdown
+         */
+        this.shutdown = function shutdown() {
+            settings.window.removeEventListener("message", callbackFct);
+        };
     }
-
-    if (settings.window.addEventListener === undefined || settings.window.removeEventListener === undefined) {
-        throw new Error(
-            'WebMessagingSkeleton constructor parameter window does not provide the expected functions "addEventListener" and "removeEventListener"'
-        );
-    }
-
-    const receiverCallbacks = [];
-    const callbackFct = function(event) {
-        UtilInternal.fire(receiverCallbacks, event.data);
-    };
-
-    settings.window.addEventListener("message", callbackFct);
-
-    /**
-     * Registers a listener for web messaging
-     * @function WebMessagingSkeleton#registerListener
-     *
-     * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
-     */
-    this.registerListener = function registerListener(listener) {
-        Typing.checkPropertyIfDefined(listener, "Function", "listener");
-
-        receiverCallbacks.push(listener);
-    };
-
-    /**
-     * Unregisters a listener for web messaging
-     * @function WebMessagingSkeleton#unregisterListener
-     *
-     * @param {Function} listener the listener function receiving the messaging events events with the signature "function(joynrMessage) {..}"
-     */
-    this.unregisterListener = function unregisterListener(listener) {
-        Typing.checkPropertyIfDefined(listener, "Function", "listener");
-
-        UtilInternal.removeElementFromArray(receiverCallbacks, listener);
-    };
-
-    /**
-     * @function WebMessagingSkeleton#shutdown
-     */
-    this.shutdown = function shutdown() {
-        settings.window.removeEventListener("message", callbackFct);
-    };
 }
 
 module.exports = WebMessagingSkeleton;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,155 +178,154 @@ function discoverCapabilities(
         .catch(capabilitiesDiscoveredError);
 }
 
-/**
- * An arbitrator looks up all capabilities for given domains and an interface and uses the provides arbitraionStrategy passed in the
- * discoveryQos to choose one or more for the calling proxy
- *
- * @name Arbitrator
- * @constructor
- *
- * @param {CapabilityDiscovery} capabilityDiscoveryStub the capability discovery
- * @param {Array} capabilities the capabilities the arbitrator will use to resolve capabilities in case of static arbitration
- * @returns {Arbitrator} an Arbitrator instance
- */
-function Arbitrator(capabilityDiscoveryStub, staticCapabilities) {
-    if (!(this instanceof Arbitrator)) {
-        // in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-        return new Arbitrator(capabilityDiscoveryStub, staticCapabilities);
+class Arbitrator {
+    /**
+     * An arbitrator looks up all capabilities for given domains and an interface and uses the provides arbitraionStrategy passed in the
+     * discoveryQos to choose one or more for the calling proxy
+     *
+     * @name Arbitrator
+     * @constructor
+     *
+     * @param {CapabilityDiscovery} capabilityDiscoveryStub the capability discovery
+     * @param {Array} capabilities the capabilities the arbitrator will use to resolve capabilities in case of static arbitration
+     * @returns {Arbitrator} an Arbitrator instance
+     */
+    constructor(capabilityDiscoveryStub, staticCapabilities) {
+        this._staticCapabilities = staticCapabilities;
+        this._capabilityDiscoveryStub = capabilityDiscoveryStub;
+        this._pendingArbitrations = {};
+        this._arbitrationId = 0;
+        this._started = true;
     }
 
-    this._staticCapabilities = staticCapabilities;
-    this._capabilityDiscoveryStub = capabilityDiscoveryStub;
-    this._pendingArbitrations = {};
-    this._arbitrationId = 0;
-    this._started = true;
-}
+    /**
+     * Starts the arbitration process
+     *
+     * @name Arbitrator#startArbitration
+     * @function
+     *
+     * @param {Object} settings the settings object
+     * @param {String} settings.domains the domains to discover the provider
+     * @param {String} settings.interfaceName the interfaceName to discover the provider
+     * @param {DiscoveryQos} settings.discoveryQos
+     * @param {Boolean} [settings.staticArbitration] shall the arbitrator use staticCapabilities or contact the discovery provider
+     * @param {Version} [settings.proxyVersion] the version of the proxy object
+     * @returns {Object} a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
+     */
+    async startArbitration(settings) {
+        if (!this._started) {
+            return Promise.reject(new Error("Arbitrator is already shut down"));
+        }
 
-/**
- * Starts the arbitration process
- *
- * @name Arbitrator#startArbitration
- * @function
- *
- * @param {Object} settings the settings object
- * @param {String} settings.domains the domains to discover the provider
- * @param {String} settings.interfaceName the interfaceName to discover the provider
- * @param {DiscoveryQos} settings.discoveryQos
- * @param {Boolean} [settings.staticArbitration] shall the arbitrator use staticCapabilities or contact the discovery provider
- * @param {Version} [settings.proxyVersion] the version of the proxy object
- * @returns {Object} a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
- */
-Arbitrator.prototype.startArbitration = async function startArbitration(settings) {
-    if (!this._started) {
-        return Promise.reject(new Error("Arbitrator is already shut down"));
+        settings = UtilInternal.extendDeep({}, settings);
+
+        this._arbitrationId++;
+
+        if (settings.staticArbitration && this._staticCapabilities) {
+            return discoverStaticCapabilities(
+                this._staticCapabilities,
+                settings.domains,
+                settings.interfaceName,
+                settings.discoveryQos,
+                settings.proxyVersion
+            );
+        } else {
+            return this._discoverCapabilitiesWrapper(settings);
+        }
     }
 
-    settings = UtilInternal.extendDeep({}, settings);
+    _discoverCapabilitiesWrapper(settings) {
+        const that = this;
 
-    this._arbitrationId++;
+        const startArbitrationDeferred = UtilInternal.createDeferred();
 
-    if (settings.staticArbitration && this._staticCapabilities) {
-        return discoverStaticCapabilities(
-            this._staticCapabilities,
+        const deferred = {
+            id: this._arbitrationId,
+            incompatibleVersionsFound: [],
+            pending: true
+        };
+
+        function discoveryCapabilitiesTimeOutHandler() {
+            deferred.pending = false;
+            delete that._pendingArbitrations[deferred.id];
+
+            if (deferred.incompatibleVersionsFound.length > 0) {
+                const message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
+                    settings.domains
+                )}", interface "${settings.interfaceName}" with discoveryQos "${JSON.stringify(
+                    settings.discoveryQos
+                )}"`;
+                startArbitrationDeferred.reject(
+                    new NoCompatibleProviderFoundException({
+                        detailMessage: message,
+                        discoveredVersions: deferred.incompatibleVersionsFound,
+                        interfaceName: settings.interfaceName
+                    })
+                );
+            } else {
+                startArbitrationDeferred.reject(
+                    new DiscoveryException({
+                        detailMessage: `no provider found within discovery timeout for domains "${JSON.stringify(
+                            settings.domains
+                        )}", interface "${settings.interfaceName}" with discoveryQos "${JSON.stringify(
+                            settings.discoveryQos
+                        )}"${deferred.errorMsg !== undefined ? `. Error: ${deferred.errorMsg}` : ""}`
+                    })
+                );
+            }
+        }
+
+        that._pendingArbitrations[deferred.id] = deferred;
+        deferred.discoveryTimeoutMsId = LongTimer.setTimeout(
+            discoveryCapabilitiesTimeOutHandler,
+            settings.discoveryQos.discoveryTimeoutMs
+        );
+        const resolveWrapper = function(args) {
+            LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+            delete that._pendingArbitrations[deferred.id];
+            startArbitrationDeferred.resolve(args);
+        };
+        const rejectWrapper = function(args) {
+            LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
+            delete that._pendingArbitrations[deferred.id];
+            startArbitrationDeferred.reject(args);
+        };
+        deferred.resolve = resolveWrapper;
+        deferred.reject = rejectWrapper;
+        discoverCapabilities(
+            that._capabilityDiscoveryStub,
             settings.domains,
             settings.interfaceName,
             settings.discoveryQos,
-            settings.proxyVersion
+            settings.proxyVersion,
+            deferred
         );
-    } else {
-        return this._discoverCapabilitiesWrapper(settings);
-    }
-};
 
-Arbitrator.prototype._discoverCapabilitiesWrapper = function(settings) {
-    const that = this;
-
-    const startArbitrationDeferred = UtilInternal.createDeferred();
-
-    const deferred = {
-        id: this._arbitrationId,
-        incompatibleVersionsFound: [],
-        pending: true
-    };
-
-    function discoveryCapabilitiesTimeOutHandler() {
-        deferred.pending = false;
-        delete that._pendingArbitrations[deferred.id];
-
-        if (deferred.incompatibleVersionsFound.length > 0) {
-            const message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
-                settings.domains
-            )}", interface "${settings.interfaceName}" with discoveryQos "${JSON.stringify(settings.discoveryQos)}"`;
-            startArbitrationDeferred.reject(
-                new NoCompatibleProviderFoundException({
-                    detailMessage: message,
-                    discoveredVersions: deferred.incompatibleVersionsFound,
-                    interfaceName: settings.interfaceName
-                })
-            );
-        } else {
-            startArbitrationDeferred.reject(
-                new DiscoveryException({
-                    detailMessage: `no provider found within discovery timeout for domains "${JSON.stringify(
-                        settings.domains
-                    )}", interface "${settings.interfaceName}" with discoveryQos "${JSON.stringify(
-                        settings.discoveryQos
-                    )}"${deferred.errorMsg !== undefined ? `. Error: ${deferred.errorMsg}` : ""}`
-                })
-            );
-        }
+        return startArbitrationDeferred.promise;
     }
 
-    that._pendingArbitrations[deferred.id] = deferred;
-    deferred.discoveryTimeoutMsId = LongTimer.setTimeout(
-        discoveryCapabilitiesTimeOutHandler,
-        settings.discoveryQos.discoveryTimeoutMs
-    );
-    const resolveWrapper = function(args) {
-        LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
-        delete that._pendingArbitrations[deferred.id];
-        startArbitrationDeferred.resolve(args);
-    };
-    const rejectWrapper = function(args) {
-        LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
-        delete that._pendingArbitrations[deferred.id];
-        startArbitrationDeferred.reject(args);
-    };
-    deferred.resolve = resolveWrapper;
-    deferred.reject = rejectWrapper;
-    discoverCapabilities(
-        that._capabilityDiscoveryStub,
-        settings.domains,
-        settings.interfaceName,
-        settings.discoveryQos,
-        settings.proxyVersion,
-        deferred
-    );
-
-    return startArbitrationDeferred.promise;
-};
-
-/**
- * Shutdown the Arbitrator
- *
- * @function
- * @name Arbitrator#shutdown
- */
-Arbitrator.prototype.shutdown = function shutdown() {
-    for (const id in this._pendingArbitrations) {
-        if (this._pendingArbitrations.hasOwnProperty(id)) {
-            const pendingArbitration = this._pendingArbitrations[id];
-            if (pendingArbitration.discoveryTimeoutMsId !== undefined) {
-                LongTimer.clearTimeout(pendingArbitration.discoveryTimeoutMsId);
+    /**
+     * Shutdown the Arbitrator
+     *
+     * @function
+     * @name Arbitrator#shutdown
+     */
+    shutdown() {
+        for (const id in this._pendingArbitrations) {
+            if (this._pendingArbitrations.hasOwnProperty(id)) {
+                const pendingArbitration = this._pendingArbitrations[id];
+                if (pendingArbitration.discoveryTimeoutMsId !== undefined) {
+                    LongTimer.clearTimeout(pendingArbitration.discoveryTimeoutMsId);
+                }
+                if (pendingArbitration.discoveryRetryTimer !== undefined) {
+                    LongTimer.clearTimeout(pendingArbitration.discoveryRetryTimer);
+                }
+                pendingArbitration.reject(new Error("Arbitration is already shut down"));
             }
-            if (pendingArbitration.discoveryRetryTimer !== undefined) {
-                LongTimer.clearTimeout(pendingArbitration.discoveryRetryTimer);
-            }
-            pendingArbitration.reject(new Error("Arbitration is already shut down"));
         }
+        this._pendingArbitrations = {};
+        this._started = false;
     }
-    this._pendingArbitrations = {};
-    this._started = false;
-};
+}
 
 module.exports = Arbitrator;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,19 @@
  */
 const Typing = require("../../util/Typing");
 
-/**
- * @constructor WebMessagingAddress
- * @param {Object} settings the settings object for this constructor call
- * @param {Object} settings.window the default target window, the messages should be sent to
- * @param {String} settings.origin the default origin, the messages should be sent to
- */
-function WebMessagingAddress(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.window, "Object", "settings.window");
-    Typing.checkProperty(settings.origin, "String", "settings.origin");
-    this._settings = settings;
+class WebMessagingAddress {
+    /**
+     * @constructor WebMessagingAddress
+     * @param {Object} settings the settings object for this constructor call
+     * @param {Object} settings.window the default target window, the messages should be sent to
+     * @param {String} settings.origin the default origin, the messages should be sent to
+     */
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.window, "Object", "settings.window");
+        Typing.checkProperty(settings.origin, "String", "settings.origin");
+        this._settings = settings;
+    }
 
     /**
      * @name WebMessagingAddress#getWindow
@@ -36,9 +38,9 @@ function WebMessagingAddress(settings) {
      *
      * @returns {Window} the windows that should be addressed
      */
-    WebMessagingAddress.prototype.getWindow = function getWindow() {
+    getWindow() {
         return this._settings.window;
-    };
+    }
 
     /**
      * @name WebMessagingAddress#getOrigin
@@ -47,9 +49,9 @@ function WebMessagingAddress(settings) {
      * @returns {String} the origin of the window that should be addressed
      * @see WebMessagingAddress#getWindow
      */
-    WebMessagingAddress.prototype.getOrigin = function getOrigin() {
+    getOrigin() {
         return this._settings.origin;
-    };
+    }
 }
 
 module.exports = WebMessagingAddress;

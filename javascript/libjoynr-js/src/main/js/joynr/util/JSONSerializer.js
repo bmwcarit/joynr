@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,10 @@ function replacerFunction(key, src) {
  * This function wraps the JSON.stringify call, by altering the stringification process
  * for joynr types
  * @function JSONSerializer#stringify
- * @param {Object}
- *          value to be stringified
+ * @param {Object} value to be stringified
  * @param {Boolean} omitJoynrStringReplacement an optional member. If set to false,
  *                  special string replacement for joynr objects is omitted
- * @returns {String}
- *          the value in JSON notation
+ * @returns {String} the value in JSON notation
  */
 JSONSerializer.stringify = function stringify(value, omitJoynrStringReplacement) {
     if (omitJoynrStringReplacement === undefined || !omitJoynrStringReplacement) {

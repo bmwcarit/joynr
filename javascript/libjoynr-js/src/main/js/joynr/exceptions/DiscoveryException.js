@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,48 +21,41 @@ const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 const defaultSettings = {};
 
-/**
- * @classdesc
- *
- * @summary
- * Constructor of DiscoveryException object used for reporting
- * error conditions during discovery and arbitration.
- *
- * @constructor
- * @name DiscoveryException
- *
- * @param {Object}
- *            [settings] the settings object for the constructor call
- * @param {String}
- *            [settings.detailMessage] message containing details
- *            about the error
- * @returns {DiscoveryException}
- *            The newly created DiscoveryException object
- */
-function DiscoveryException(settings) {
-    if (!(this instanceof DiscoveryException)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new DiscoveryException(settings);
+class DiscoveryException {
+    /**
+     * @classdesc
+     *
+     * @summary
+     * Constructor of DiscoveryException object used for reporting
+     * error conditions during discovery and arbitration.
+     *
+     * @constructor
+     * @name DiscoveryException
+     *
+     * @param {Object} [settings] the settings object for the constructor call
+     * @param {String} [settings.detailMessage] message containing details
+     *            about the error
+     * @returns {DiscoveryException} The newly created DiscoveryException object
+     */
+    constructor(settings) {
+        const joynrRuntimeException = new JoynrRuntimeException(settings);
+
+        /**
+         * Used for serialization.
+         * @name DiscoveryException#_typeName
+         * @type String
+         */
+        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
+
+        /**
+         * See [constructor description]{@link DiscoveryException}.
+         * @name DiscoveryException#detailMessage
+         * @type String
+         */
+        this.detailMessage = undefined;
+
+        UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
     }
-
-    const joynrRuntimeException = new JoynrRuntimeException(settings);
-
-    /**
-     * Used for serialization.
-     * @name DiscoveryException#_typeName
-     * @type String
-     */
-    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
-
-    /**
-     * See [constructor description]{@link DiscoveryException}.
-     * @name DiscoveryException#detailMessage
-     * @type String
-     */
-    this.detailMessage = undefined;
-
-    UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.DiscoveryException", DiscoveryException);

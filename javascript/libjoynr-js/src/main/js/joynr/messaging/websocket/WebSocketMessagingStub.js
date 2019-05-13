@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,25 @@
  * limitations under the License.
  * #L%
  */
-
-/**
- * @name WebSocketMessagingStub
- * @constructor
- * @param {Object}
- *            settings
- * @param {SharedWebSocket}
- *            settings.sharedWebSocket to which messages are sent on the clustercontroller.
- */
-const WebSocketMessagingStub = function WebSocketMessagingStub(settings) {
-    const sharedWebSocket = settings.sharedWebSocket;
-
+class WebSocketMessagingStub {
     /**
-     * @name WebSocketMessagingStub#transmit
-     * @function
-     * @param {JoynrMessage}
-     *            joynrMessage the joynr message to transmit
+     * @name WebSocketMessagingStub
+     * @constructor
+     * @param {Object} settings
+     * @param {SharedWebSocket} settings.sharedWebSocket to which messages are sent on the clustercontroller.
      */
-    this.transmit = function transmit(joynrMessage) {
-        return sharedWebSocket.send(joynrMessage);
-    };
-};
+    constructor(settings) {
+        const sharedWebSocket = settings.sharedWebSocket;
+
+        /**
+         * @name WebSocketMessagingStub#transmit
+         * @function
+         * @param {JoynrMessage} joynrMessage the joynr message to transmit
+         */
+        this.transmit = function transmit(joynrMessage) {
+            return sharedWebSocket.send(joynrMessage);
+        };
+    }
+}
 
 module.exports = WebSocketMessagingStub;

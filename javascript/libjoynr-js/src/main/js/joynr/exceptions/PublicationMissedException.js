@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,46 +22,38 @@ const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 const defaultSettings = {};
 
-/**
- * @classdesc
- *
- * @summary
- * Constructor of PublicationMissedException object used to report
- * when a publication has not been received within the expected
- * time period.
- *
- * @constructor
- * @name PublicationMissedException
- *
- * @param {Object}
- *            [settings] the settings object for the constructor call
- * @param {String}
- *            [settings.detailMessage] message containing details
- *            about the error
- * @param {String}
- *            [settings.subscriptionId] the id of the subscription
- * @returns {PublicationMissedException}
- *            The newly created PublicationMissedException object
- */
-function PublicationMissedException(settings) {
-    if (!(this instanceof PublicationMissedException)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new PublicationMissedException(settings);
-    }
-
-    const runtimeException = new JoynrRuntimeException(settings);
-
-    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-
+class PublicationMissedException {
     /**
-     * Used for serialization.
-     * @name PublicationMissedException#_typeName
-     * @type String
+     * @classdesc
+     *
+     * @summary
+     * Constructor of PublicationMissedException object used to report
+     * when a publication has not been received within the expected
+     * time period.
+     *
+     * @constructor
+     * @name PublicationMissedException
+     *
+     * @param {Object} [settings] the settings object for the constructor call
+     * @param {String} [settings.detailMessage] message containing details
+     *            about the error
+     * @param {String} [settings.subscriptionId] the id of the subscription
+     * @returns {PublicationMissedException} The newly created PublicationMissedException object
      */
-    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.PublicationMissedException");
+    constructor(settings) {
+        const runtimeException = new JoynrRuntimeException(settings);
 
-    UtilInternal.extend(this, defaultSettings, settings, runtimeException);
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+
+        /**
+         * Used for serialization.
+         * @name PublicationMissedException#_typeName
+         * @type String
+         */
+        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.PublicationMissedException");
+
+        UtilInternal.extend(this, defaultSettings, settings, runtimeException);
+    }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.PublicationMissedException", PublicationMissedException);

@@ -1,8 +1,7 @@
-/*eslint promise/catch-or-return: "off"*/
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+/*eslint promise/catch-or-return: "off"*/
 const GlobalDiscoveryEntry = require("../../generated/joynr/types/GlobalDiscoveryEntry");
 const CapabilityDiscovery = require("../capabilities/discovery/CapabilityDiscovery");
 const CapabilitiesStore = require("../capabilities/CapabilitiesStore");
@@ -78,8 +78,7 @@ class InProcessRuntime extends JoynrRuntime {
      * @function
      * @returns {Object} an A+ promise object, reporting when libjoynr startup is
      *          then({InProcessRuntime}, {Error})-ed
-     * @throws {Error}
-     *             if libjoynr is not in SHUTDOWN state
+     * @throws {Error} if libjoynr is not in SHUTDOWN state
      */
     async start(provisioning) {
         super.start(provisioning);
@@ -226,8 +225,7 @@ class InProcessRuntime extends JoynrRuntime {
      *
      * @name InProcessRuntime#shutdown
      * @function
-     * @throws {Error}
-     *             if libjoynr is not in the STARTED state
+     * @throws {Error} if libjoynr is not in the STARTED state
      */
     shutdown(settings) {
         LongTimer.clearInterval(this._freshnessIntervalId);

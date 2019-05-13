@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,39 @@
  * limitations under the License.
  * #L%
  */
+class InProcessAddress {
+    /**
+     * @constructor
+     * @name InProcessAddress
+     *
+     * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton that should be addressed in process
+     */
+    constructor(inProcessMessagingSkeleton) {
+        this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
 
-/**
- * @constructor
- * @name InProcessAddress
- *
- * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton that should be addressed in process
- */
-function InProcessAddress(inProcessMessagingSkeleton) {
-    this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
+        /**
+         * @name InProcessAddress#_typeName
+         * @type String
+         * @readonly
+         */
+        Object.defineProperty(this, "_typeName", {
+            configurable: false,
+            writable: false,
+            enumerable: false,
+            value: InProcessAddress._typeName
+        });
+    }
 
     /**
-     * @name InProcessAddress#_typeName
-     * @type String
-     * @readonly
+     * The receive function from the corresponding local messaging receiver
+     * @name InProcessAddress#getSkeleton
+     * @function
+     *
+     * @returns {InProcessMessagingSkeleton} the skeleton that should be addressed
      */
-    Object.defineProperty(this, "_typeName", {
-        configurable: false,
-        writable: false,
-        enumerable: false,
-        value: InProcessAddress._typeName
-    });
+    getSkeleton() {
+        return this._inProcessMessagingSkeleton;
+    }
 }
 
 /**
@@ -71,16 +83,5 @@ Object.defineProperty(InProcessAddress.prototype, "equals", {
         return true;
     }
 });
-
-/**
- * The receive function from the corresponding local messaging receiver
- * @name InProcessAddress#getSkeleton
- * @function
- *
- * @returns {InProcessMessagingSkeleton} the skeleton that should be addressed
- */
-InProcessAddress.prototype.getSkeleton = function getSkeleton() {
-    return this._inProcessMessagingSkeleton;
-};
 
 module.exports = InProcessAddress;

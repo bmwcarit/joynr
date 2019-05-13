@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,27 @@
  * limitations under the License.
  * #L%
  */
+class InProcessMessagingStub {
+    /**
+     * @constructor
+     * @name InProcessMessagingStub
+     *
+     * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
+     */
+    constructor(inProcessMessagingSkeleton) {
+        this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
+    }
 
-/**
- * @constructor
- * @name InProcessMessagingStub
- *
- * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
- */
-function InProcessMessagingStub(inProcessMessagingSkeleton) {
-    this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
+    /**
+     * @name InProcessMessagingStub#transmit
+     * @function
+     *
+     * @param {JoynrMessage} message the message to transmit
+     * @returns {Object} A+ promise object
+     */
+    transmit(joynrMessage) {
+        return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
+    }
 }
 
-/**
- * @name InProcessMessagingStub#transmit
- * @function
- *
- * @param {JoynrMessage} message the message to transmit
- * @returns {Object} A+ promise object
- */
-InProcessMessagingStub.prototype.transmit = function transmit(joynrMessage) {
-    return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
-};
 module.exports = InProcessMessagingStub;

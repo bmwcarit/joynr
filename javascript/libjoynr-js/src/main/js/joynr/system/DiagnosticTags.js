@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ const loggingManager = require("./LoggingManager");
 const DiagnosticTags = {};
 
 /**
- * @param {JoynrMessage}
- *            joynrMessage
+ * @param {JoynrMessage} joynrMessage
  */
 DiagnosticTags.forJoynrMessage = function forJoynrMessage(joynrMessage) {
     return {
@@ -38,14 +37,10 @@ DiagnosticTags.forJoynrMessage = function forJoynrMessage(joynrMessage) {
 };
 
 /**
- * @param {String}
- *            channelInfo.channelUrl
- * @param {String}
- *            channelInfo.channelId
- * @param {String}
- *            channelInfo.status
- * @param {String}
- *            channelInfo.responseText
+ * @param {String} channelInfo.channelUrl
+ * @param {String} channelInfo.channelId
+ * @param {String} channelInfo.status
+ * @param {String} channelInfo.responseText
  */
 DiagnosticTags.forChannel = function forChannel(channelInfo) {
     return {

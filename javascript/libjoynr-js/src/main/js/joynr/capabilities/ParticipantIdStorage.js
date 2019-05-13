@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,58 +17,61 @@
  * #L%
  */
 const CapabilitiesUtil = require("../util/CapabilitiesUtil");
-/**
- * @constructor
- * @name ParticipantIdStorage
- *
- * @param {Persistency} persistency - the persistence object to be used to store the participantIds
- * @param {Function} nanoid - a function generating a unique string
- */
-function ParticipantIdStorage(persistency, nanoid) {
-    this._persistency = persistency;
-    this._nanoid = nanoid;
-}
 
-/**
- * @function
- * @name ParticipantIdStorage#getParticipantId
- *
- * @param {String} domain
- * @param {Object} provider
- * @param {String} provider.interfaceName
- *
- * @returns {String} the retrieved or generated participantId
- */
-ParticipantIdStorage.prototype.getParticipantId = function getParticipantId(domain, provider) {
-    const key = CapabilitiesUtil.generateParticipantIdStorageKey(
-        domain,
-        provider.interfaceName,
-        provider.constructor.MAJOR_VERSION
-    );
-    let participantId = this._persistency.getItem(key);
-    if (!participantId) {
-        participantId = this._nanoid();
+class ParticipantIdStorage {
+    /**
+     * @constructor
+     * @name ParticipantIdStorage
+     *
+     * @param {Persistency} persistency - the persistence object to be used to store the participantIds
+     * @param {Function} nanoid - a function generating a unique string
+     */
+    constructor(persistency, nanoid) {
+        this._persistency = persistency;
+        this._nanoid = nanoid;
+    }
+
+    /**
+     * @function
+     * @name ParticipantIdStorage#getParticipantId
+     *
+     * @param {String} domain
+     * @param {Object} provider
+     * @param {String} provider.interfaceName
+     *
+     * @returns {String} the retrieved or generated participantId
+     */
+    getParticipantId(domain, provider) {
+        const key = CapabilitiesUtil.generateParticipantIdStorageKey(
+            domain,
+            provider.interfaceName,
+            provider.constructor.MAJOR_VERSION
+        );
+        let participantId = this._persistency.getItem(key);
+        if (!participantId) {
+            participantId = this._nanoid();
+            this._persistency.setItem(key, participantId);
+        }
+        return participantId;
+    }
+
+    /**
+     * @function
+     * @name ParticipantIdStorage#setParticipantId
+     *
+     * @param {String} domain
+     * @param {Object} provider
+     * @param {String} provider.interfaceName
+     * @param {String} participantId
+     */
+    setParticipantId(domain, provider, participantId) {
+        const key = CapabilitiesUtil.generateParticipantIdStorageKey(
+            domain,
+            provider.interfaceName,
+            provider.constructor.MAJOR_VERSION
+        );
         this._persistency.setItem(key, participantId);
     }
-    return participantId;
-};
-
-/**
- * @function
- * @name ParticipantIdStorage#setParticipantId
- *
- * @param {String} domain
- * @param {Object} provider
- * @param {String} provider.interfaceName
- * @param {String} participantId
- */
-ParticipantIdStorage.prototype.setParticipantId = function setParticipantId(domain, provider, participantId) {
-    const key = CapabilitiesUtil.generateParticipantIdStorageKey(
-        domain,
-        provider.interfaceName,
-        provider.constructor.MAJOR_VERSION
-    );
-    this._persistency.setItem(key, participantId);
-};
+}
 
 module.exports = ParticipantIdStorage;

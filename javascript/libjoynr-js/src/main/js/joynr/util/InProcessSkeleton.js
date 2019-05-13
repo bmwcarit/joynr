@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,35 +16,31 @@
  * limitations under the License.
  * #L%
  */
-
-/**
- * Note: This skeleton is merely the holder of the proxy object and does not get informed about
- * calls from the stub to the proxy object (stub calls methods directly on proxy object).
- *
- * @name InProcessSkeleton
- * @constructor
- *
- * @param {Object} proxyObject the proxy object that can be accessed through the Stub
- */
-function InProcessSkeleton(proxyObject) {
-    if (!(this instanceof InProcessSkeleton)) {
-        // in case someone calls constructor without new keyword
-        // (e.g. var c = Constructor({..}))
-        return new InProcessSkeleton(proxyObject);
+class InProcessSkeleton {
+    /**
+     * Note: This skeleton is merely the holder of the proxy object and does not get informed about
+     * calls from the stub to the proxy object (stub calls methods directly on proxy object).
+     *
+     * @name InProcessSkeleton
+     * @constructor
+     *
+     * @param {Object} proxyObject the proxy object that can be accessed through the Stub
+     */
+    constructor(proxyObject) {
+        this._proxyObject = proxyObject;
     }
-    this._proxyObject = proxyObject;
-}
 
-/**
- * Getter for the proxy object
- *
- * @name InProcessSkeleton#getProxyObject
- * @function
- *
- * @returns the proxy object this is the skeleton for
- */
-InProcessSkeleton.prototype.getProxyObject = function() {
-    return this._proxyObject;
-};
+    /**
+     * Getter for the proxy object
+     *
+     * @name InProcessSkeleton#getProxyObject
+     * @function
+     *
+     * @returns the proxy object this is the skeleton for
+     */
+    getProxyObject() {
+        return this._proxyObject;
+    }
+}
 
 module.exports = InProcessSkeleton;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,33 @@
  * limitations under the License.
  * #L%
  */
-
 /**
  * @name InProcessMessagingSkeleton
  * @constructor
  */
-function InProcessMessagingSkeleton() {}
+class InProcessMessagingSkeleton {
+    /**
+     * @name InProcessMessagingSkeleton#receiveMessage
+     * @function
+     *
+     * @param {JoynrMessage} joynrMessage
+     * @returns {Object} A+ promise object
+     */
+    receiveMessage(joynrMessage) {
+        return this._onReceive(joynrMessage);
+    }
 
-/**
- * @name InProcessMessagingSkeleton#receiveMessage
- * @function
- *
- * @param {JoynrMessage} joynrMessage
- * @returns {Object} A+ promise object
- */
-InProcessMessagingSkeleton.prototype.receiveMessage = function receiveMessage(joynrMessage) {
-    return this._onReceive(joynrMessage);
-};
-
-/**
- * A setter for the callback function that will receive the incoming messages
- *
- * @name InProcessMessagingSkeleton#registerListener
- * @function
- *
- * @param {Function} newOnReceive the function that is called with the incoming JoynrMessage
- */
-InProcessMessagingSkeleton.prototype.registerListener = function registerListener(newOnReceive) {
-    this._onReceive = newOnReceive;
-};
+    /**
+     * A setter for the callback function that will receive the incoming messages
+     *
+     * @name InProcessMessagingSkeleton#registerListener
+     * @function
+     *
+     * @param {Function} newOnReceive the function that is called with the incoming JoynrMessage
+     */
+    registerListener(newOnReceive) {
+        this._onReceive = newOnReceive;
+    }
+}
 
 module.exports = InProcessMessagingSkeleton;

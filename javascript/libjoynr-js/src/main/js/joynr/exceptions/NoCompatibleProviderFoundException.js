@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,69 +21,60 @@ const UtilInternal = require("../util/UtilInternal");
 const DiscoveryException = require("./DiscoveryException");
 const defaultSettings = {};
 
-/**
- * @classdesc
- *
- * @summary
- * Constructor of NoCompatibleProviderFoundException object used for reporting
- * error conditions during discovery and arbitration when only providers
- * with incompatible versions are found. At least one such provider must
- * have been found, otherwise DiscoveryException will be used.
- *
- * @constructor
- * @name NoCompatibleProviderFoundException
- *
- * @param {Object}
- *            [settings] the settings object for the constructor call
- * @param {String}
- *            [settings.detailMessage] message containing details
- *            about the error
- * @param {String}
- *            [settings.interfaceName] the name of the interface
- * @param {Version[]}
- *            [settings.discoveredVersions] list of discovered
- *            but incompatible provider versions
- * @returns {NoCompatibleProviderFoundException}
- *            The newly created NoCompatibleProviderFoundException object
- */
-function NoCompatibleProviderFoundException(settings) {
-    if (!(this instanceof NoCompatibleProviderFoundException)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new NoCompatibleProviderFoundException(settings);
+class NoCompatibleProviderFoundException {
+    /**
+     * @classdesc
+     *
+     * @summary
+     * Constructor of NoCompatibleProviderFoundException object used for reporting
+     * error conditions during discovery and arbitration when only providers
+     * with incompatible versions are found. At least one such provider must
+     * have been found, otherwise DiscoveryException will be used.
+     *
+     * @constructor
+     * @name NoCompatibleProviderFoundException
+     *
+     * @param {Object} [settings] the settings object for the constructor call
+     * @param {String} [settings.detailMessage] message containing details
+     *            about the error
+     * @param {String} [settings.interfaceName] the name of the interface
+     * @param {Version[]} [settings.discoveredVersions] list of discovered
+     *            but incompatible provider versions
+     * @returns {NoCompatibleProviderFoundException} The newly created NoCompatibleProviderFoundException object
+     */
+    constructor(settings) {
+        const discoveryException = new DiscoveryException(settings);
+
+        /**
+         * Used for serialization.
+         * @name NoCompatibleProviderFoundException#_typeName
+         * @type String
+         */
+        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.NoCompatibleProviderFoundException");
+
+        /**
+         * See [constructor description]{@link NoCompatibleProviderFoundException}.
+         * @name NoCompatibleProviderFoundException#detailMessage
+         * @type String
+         */
+        this.detailMessage = undefined;
+
+        /**
+         * See [constructor description]{@link NoCompatibleProviderFoundException}.
+         * @name NoCompatibleProviderFoundException#discoveredVersions
+         * @type Version[]
+         */
+        this.discoveredVersions = undefined;
+
+        /**
+         * See [constructor description]{@link NoCompatibleProviderFoundException}.
+         * @name NoCompatibleProviderFoundException#interfaceName
+         * @type String
+         */
+        this.interfaceName = undefined;
+
+        UtilInternal.extend(this, defaultSettings, settings, discoveryException);
     }
-
-    const discoveryException = new DiscoveryException(settings);
-
-    /**
-     * Used for serialization.
-     * @name NoCompatibleProviderFoundException#_typeName
-     * @type String
-     */
-    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.NoCompatibleProviderFoundException");
-
-    /**
-     * See [constructor description]{@link NoCompatibleProviderFoundException}.
-     * @name NoCompatibleProviderFoundException#detailMessage
-     * @type String
-     */
-    this.detailMessage = undefined;
-
-    /**
-     * See [constructor description]{@link NoCompatibleProviderFoundException}.
-     * @name NoCompatibleProviderFoundException#discoveredVersions
-     * @type Version[]
-     */
-    this.discoveredVersions = undefined;
-
-    /**
-     * See [constructor description]{@link NoCompatibleProviderFoundException}.
-     * @name NoCompatibleProviderFoundException#interfaceName
-     * @type String
-     */
-    this.interfaceName = undefined;
-
-    UtilInternal.extend(this, defaultSettings, settings, discoveryException);
 }
 
 TypeRegistrySingleton.getInstance().addType(

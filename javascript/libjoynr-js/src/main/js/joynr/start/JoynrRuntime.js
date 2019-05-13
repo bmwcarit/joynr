@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -232,8 +232,7 @@ class JoynrRuntime {
      * @function
      * @returns {Object} an A+ promise object, reporting when libjoynr startup is
      *          completed or has failed
-     * @throws {Error}
-     *             if libjoynr is not in SHUTDOWN state
+     * @throws {Error} if libjoynr is not in SHUTDOWN state
      */
     start(provisioning) {
         if (this._joynrState !== JoynrStates.SHUTDOWN) {
@@ -276,8 +275,7 @@ class JoynrRuntime {
      *  Sends subscriptionStop messages for all active subscriptions.
      *
      *  @param timeout {number} optional timeout defaulting to 0 = no timeout
-     *  @returns {Promise}
-     *  - resolved after all SubscriptionStop messages are sent.
+     *  @returns {Promise} - resolved after all SubscriptionStop messages are sent.
      *  - rejected in case of any issues or timeout occurs.
      */
     terminateAllSubscriptions(timeout = 0) {
@@ -291,8 +289,7 @@ class JoynrRuntime {
      * @param settings.clearSubscriptionsEnabled {boolean} clear all subscriptions before shutting down.
      *  Set this to false in process.exit handler as this is not synchronous.
      *
-     * @returns {Promise}
-     * - resolved after successful shutdown
+     * @returns {Promise} - resolved after successful shutdown
      * - rejected in case of any issues
      */
     async shutdown(settings) {

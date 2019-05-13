@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,31 @@
  * limitations under the License.
  * #L%
  */
+class BrowserMessagingStub {
+    /**
+     * @name BrowserMessagingStub
+     * @constructor
+     *
+     * @param {Object} settings
+     * @param {String} [settings.windowId] the destination windowId to send the messages to, defaults to defaultWindowId of master tab
+     * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
+     */
+    constructor(settings) {
+        this._settings = settings;
+    }
 
-/**
- * @name BrowserMessagingStub
- * @constructor
- *
- * @param {Object} settings
- * @param {String} [settings.windowId] the destination windowId to send the messages to, defaults to defaultWindowId of master tab
- * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
- */
-function BrowserMessagingStub(settings) {
-    this._settings = settings;
+    /**
+     * @name BrowserMessagingStub#transmit
+     * @function
+     *
+     * @param {JoynrMessage} joynrMessage the joynr message to transmit
+     */
+    transmit(joynrMessage) {
+        return this._settings.webMessagingStub.transmit({
+            windowId: this._settings.windowId,
+            message: joynrMessage
+        });
+    }
 }
-/**
- * @name BrowserMessagingStub#transmit
- * @function
- *
- * @param {JoynrMessage} joynrMessage the joynr message to transmit
- */
-BrowserMessagingStub.prototype.transmit = function transmit(joynrMessage) {
-    return this._settings.webMessagingStub.transmit({
-        windowId: this._settings.windowId,
-        message: joynrMessage
-    });
-};
 
 module.exports = BrowserMessagingStub;

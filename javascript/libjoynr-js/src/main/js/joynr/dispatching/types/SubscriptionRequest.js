@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,56 +24,55 @@ const defaultSettings = {
     qos: new PeriodicSubscriptionQos()
 };
 
-/**
- * @name SubscriptionRequest
- * @constructor
- * @param {Object} settings
- * @param {String}
- *            settings.subscriptionId Id of the new subscription
- * @param {String}
- *            settings.subscribedToName the name of the element to subscribe to
- * @param {SubscriptionQos}
- *            [settings.qos] the subscriptionQos
- */
-function SubscriptionRequest(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-    Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
-    Typing.checkPropertyIfDefined(
-        settings.qos,
-        ["Object", "OnChangeSubscriptionQos", "PeriodicSubscriptionQos", "OnChangeWithKeepAliveSubscriptionQos"],
-        "settings.qos"
-    );
-
+class SubscriptionRequest {
     /**
-     * @name SubscriptionRequest#subscriptionId
-     * @type String
+     * @name SubscriptionRequest
+     * @constructor
+     * @param {Object} settings
+     * @param {String} settings.subscriptionId Id of the new subscription
+     * @param {String} settings.subscribedToName the name of the element to subscribe to
+     * @param {SubscriptionQos} [settings.qos] the subscriptionQos
      */
-    /**
-     * @name SubscriptionRequest#qosName
-     * @type OnChangeSubscriptionQos|PeriodicSubscriptionQos|OnChangeWithKeepAliveSubscriptionQos
-     */
-    /**
-     * @name SubscriptionRequest#attributeName
-     * @type String
-     */
-    UtilInternal.extend(this, defaultSettings, settings);
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        Typing.checkProperty(settings.subscribedToName, "String", "settings.subscribedToName");
+        Typing.checkPropertyIfDefined(
+            settings.qos,
+            ["Object", "OnChangeSubscriptionQos", "PeriodicSubscriptionQos", "OnChangeWithKeepAliveSubscriptionQos"],
+            "settings.qos"
+        );
 
-    /**
-     * The joynr type name
-     *
-     * @name SubscriptionRequest#_typeName
-     * @type String
-     */
+        /**
+         * @name SubscriptionRequest#subscriptionId
+         * @type String
+         */
+        /**
+         * @name SubscriptionRequest#qosName
+         * @type OnChangeSubscriptionQos|PeriodicSubscriptionQos|OnChangeWithKeepAliveSubscriptionQos
+         */
+        /**
+         * @name SubscriptionRequest#attributeName
+         * @type String
+         */
+        UtilInternal.extend(this, defaultSettings, settings);
 
-    Object.defineProperty(this, "_typeName", {
-        value: "joynr.SubscriptionRequest",
-        writable: false,
-        enumerable: true,
-        configurable: false
-    });
+        /**
+         * The joynr type name
+         *
+         * @name SubscriptionRequest#_typeName
+         * @type String
+         */
 
-    return Object.freeze(this);
+        Object.defineProperty(this, "_typeName", {
+            value: "joynr.SubscriptionRequest",
+            writable: false,
+            enumerable: true,
+            configurable: false
+        });
+
+        return Object.freeze(this);
+    }
 }
 
 /**

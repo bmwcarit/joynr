@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,8 @@ const ArbitrationStrategyCollection = {};
  * The ArbitrationStrategyCollection.Nothing just returns the passed array
  * @function ArbitrationStrategyCollection#Nothing
  *
- * @param {Array}
- *            capabilities the array of capability entries
- * @param {DiscoveryEntry}
- *            capabilities.array the array of DiscoveryEntries
+ * @param {Array} capabilities the array of capability entries
+ * @param {DiscoveryEntry} capabilities.array the array of DiscoveryEntries
  *
  * @returns {Array} an array of capabilities as it came in through the
  *          capabilities parameter
@@ -49,10 +47,8 @@ ArbitrationStrategyCollection.Nothing = function(capabilities) {
  * The ArbitrationStrategyCollection.HighestPriority favors higher priorities
  * @function ArbitrationStrategyCollection#HighestPriority
  *
- * @param {Array}
- *            capabilities the array of capability entries
- * @param {DiscoveryEntry}
- *            capabilities.array the array of capability entries
+ * @param {Array} capabilities the array of capability entries
+ * @param {DiscoveryEntry} capabilities.array the array of capability entries
  *
  * @returns {Array} an array of capabilities sorted by the highest priority
  */
@@ -74,12 +70,9 @@ ArbitrationStrategyCollection.HighestPriority = function(capabilities) {
  * arbitrationStrategy = Keyword.bind(undefined, "myKeyword")
  * @function ArbitrationStrategyCollection#Keyword
  *
- * @param {Array}
- *            capabilities the array of capability entries
- * @param {DiscoveryEntry}
- *            capabilities.array the array of capability entries
- * @param {String}
- *            keyword the keyword to search for
+ * @param {Array} capabilities the array of capability entries
+ * @param {DiscoveryEntry} capabilities.array the array of capability entries
+ * @param {String} keyword the keyword to search for
  * @returns {Array} an array of capabilities sorted by the highest priority
  */
 ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
@@ -111,10 +104,8 @@ ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
  * The ArbitrationStrategyCollection.LastSeen favors latest lastSeenDateMs
  * @function ArbitrationStrategyCollection#LastSeen
  *
- * @param {Array}
- *            capabilities the array of capability entries
- * @param {DiscoveryEntry}
- *            capabilities.array the array of capability entries
+ * @param {Array} capabilities the array of capability entries
+ * @param {DiscoveryEntry} capabilities.array the array of capability entries
  *
  * @returns {Array} an array of capabilities sorted by the lastSeenDateMs
  */

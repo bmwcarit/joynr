@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,50 +24,43 @@ const defaultSettings = {
     detailMessage: "This is an application exception."
 };
 
-/**
- * @classdesc
- *
- * @summary
- * Constructor of ApplicationException object used for reporting
- * error conditions from method implementations. The settings.error
- * object must be filled with _typeName and name as serialization
- * of an enum object of the matching error enum type defined in
- * Franca.
- *
- * @constructor
- * @name ApplicationException
- *
- * @param {Object}
- *            [settings] the settings object for the constructor call
- * @param settings.error the error enum to be reported
- * @param {String}
- *            [settings.detailMessage] message containing details
- *            about the error
- * @returns {ApplicationException}
- *            The newly created ApplicationException object
- */
-function ApplicationException(settings) {
-    if (!(this instanceof ApplicationException)) {
-        // in case someone calls constructor without new keyword (e.g. var c
-        // = Constructor({..}))
-        return new ApplicationException(settings);
-    }
-
-    const exception = new JoynrException(settings);
-
+class ApplicationException {
     /**
-     * Used for serialization.
-     * @name ApplicationException#_typeName
-     * @type String
+     * @classdesc
+     *
+     * @summary
+     * Constructor of ApplicationException object used for reporting
+     * error conditions from method implementations. The settings.error
+     * object must be filled with _typeName and name as serialization
+     * of an enum object of the matching error enum type defined in
+     * Franca.
+     *
+     * @constructor
+     * @name ApplicationException
+     *
+     * @param {Object} [settings] the settings object for the constructor call
+     * @param settings.error the error enum to be reported
+     * @param {String} [settings.detailMessage] message containing details
+     *            about the error
+     * @returns {ApplicationException} The newly created ApplicationException object
      */
-    UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.ApplicationException");
-    Typing.checkPropertyIfDefined(settings, "Object", "settings");
-    if (settings && settings.error) {
-        Typing.checkProperty(settings.error.name, "String", "settings.error.name");
-        Typing.checkProperty(settings.error.value, ["String", "Number"], "settings.error.value");
-    }
+    constructor(settings) {
+        const exception = new JoynrException(settings);
 
-    UtilInternal.extend(this, defaultSettings, settings, exception);
+        /**
+         * Used for serialization.
+         * @name ApplicationException#_typeName
+         * @type String
+         */
+        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.ApplicationException");
+        Typing.checkPropertyIfDefined(settings, "Object", "settings");
+        if (settings && settings.error) {
+            Typing.checkProperty(settings.error.name, "String", "settings.error.name");
+            Typing.checkProperty(settings.error.value, ["String", "Number"], "settings.error.value");
+        }
+
+        UtilInternal.extend(this, defaultSettings, settings, exception);
+    }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ApplicationException", ApplicationException);

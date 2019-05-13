@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,32 +19,31 @@
 const Typing = require("../../util/Typing");
 const MqttAddress = require("../../../generated/joynr/system/RoutingTypes/MqttAddress");
 
-/**
- * @constructor MqttMulticastAddressCalculator
- * @param {Object}
- *            settings
- * @param {WebSocketAddress}
- *            settings.globalAddress
- */
-const MqttMulticastAddressCalculator = function MqttMulticastAddressCalculator(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.globalAddress, "MqttAddress", "settings.globalAddress");
-    this._settings = settings;
-};
+class MqttMulticastAddressCalculator {
+    /**
+     * @constructor MqttMulticastAddressCalculator
+     * @param {Object} settings
+     * @param {WebSocketAddress} settings.globalAddress
+     */
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.globalAddress, "MqttAddress", "settings.globalAddress");
+        this._settings = settings;
+    }
 
-/**
- * Calculates the multicast address for the submitted joynr message
- * @function MqttMulticastAddressCalculator#calculate
- *
- * @param {JoynrMessage}
- *            message
- * @return {Address} the multicast address
- */
-MqttMulticastAddressCalculator.prototype.calculate = function calculate(message) {
-    return new MqttAddress({
-        brokerUri: this._settings.globalAddress,
-        topic: message.to
-    });
-};
+    /**
+     * Calculates the multicast address for the submitted joynr message
+     * @function MqttMulticastAddressCalculator#calculate
+     *
+     * @param {JoynrMessage} message
+     * @return {Address} the multicast address
+     */
+    calculate(message) {
+        return new MqttAddress({
+            brokerUri: this._settings.globalAddress,
+            topic: message.to
+        });
+    }
+}
 
 module.exports = MqttMulticastAddressCalculator;

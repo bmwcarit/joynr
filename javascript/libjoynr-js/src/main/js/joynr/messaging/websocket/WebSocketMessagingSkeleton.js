@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,64 +21,62 @@ const Typing = require("../../util/Typing");
 const LoggingManager = require("../../system/LoggingManager");
 const log = LoggingManager.getLogger("joynr.messaging.websocket.WebSocketMessagingSkeleton");
 
-/**
- * @constructor WebSocketMessagingSkeleton
- * @param {Object}
- *            settings
- * @param {SharedWebSocket}
- *            settings.sharedWebSocket
- */
-const WebSocketMessagingSkeleton = function WebSocketMessagingSkeleton(settings) {
-    Typing.checkProperty(settings, "Object", "settings");
-    Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
-    Typing.checkProperty(settings.mainTransport, "Boolean", "settings.mainTransport");
+class WebSocketMessagingSkeleton {
+    /**
+     * @constructor WebSocketMessagingSkeleton
+     * @param {Object} settings
+     * @param {SharedWebSocket} settings.sharedWebSocket
+     */
+    constructor(settings) {
+        Typing.checkProperty(settings, "Object", "settings");
+        Typing.checkProperty(settings.sharedWebSocket, "SharedWebSocket", "sharedWebSocket");
+        Typing.checkProperty(settings.mainTransport, "Boolean", "settings.mainTransport");
 
-    const sharedWebSocket = settings.sharedWebSocket;
-    let listener;
+        const sharedWebSocket = settings.sharedWebSocket;
+        let listener;
 
-    settings.sharedWebSocket.onmessage = function(joynrMessage) {
-        log.debug(`<<< INCOMING <<< message with ID ${joynrMessage.msgId}`);
-        if (listener !== undefined) {
-            if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST && settings.mainTransport) {
-                joynrMessage.isReceivedFromGlobal = true;
+        settings.sharedWebSocket.onmessage = function(joynrMessage) {
+            log.debug(`<<< INCOMING <<< message with ID ${joynrMessage.msgId}`);
+            if (listener !== undefined) {
+                if (joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST && settings.mainTransport) {
+                    joynrMessage.isReceivedFromGlobal = true;
+                }
+                listener(joynrMessage);
             }
-            listener(joynrMessage);
-        }
-    };
+        };
 
-    /**
-     * Registers the listener function
-     * @function WebSocketMessagingSkeleton#registerListener
-     *
-     * @param {Function}
-     *            listener a listener function that should be added and should receive messages
-     */
-    this.registerListener = function registerListener(listenerToAdd) {
-        Typing.checkProperty(listenerToAdd, "Function", "listenerToAdd");
+        /**
+         * Registers the listener function
+         * @function WebSocketMessagingSkeleton#registerListener
+         *
+         * @param {Function} listener a listener function that should be added and should receive messages
+         */
+        this.registerListener = function registerListener(listenerToAdd) {
+            Typing.checkProperty(listenerToAdd, "Function", "listenerToAdd");
 
-        listener = listenerToAdd;
-    };
+            listener = listenerToAdd;
+        };
 
-    /**
-     * Unregisters the listener function
-     * @function WebSocketMessagingSkeleton#unregisterListener
-     *
-     * @param {Function}
-     *            listener the listener function that should re removed and shouldn't receive
-     *            messages any more
-     */
-    this.unregisterListener = function unregisterListener(listenerToRemove) {
-        Typing.checkProperty(listenerToRemove, "Function", "listenerToRemove");
+        /**
+         * Unregisters the listener function
+         * @function WebSocketMessagingSkeleton#unregisterListener
+         *
+         * @param {Function} listener the listener function that should re removed and shouldn't receive
+         *            messages any more
+         */
+        this.unregisterListener = function unregisterListener(listenerToRemove) {
+            Typing.checkProperty(listenerToRemove, "Function", "listenerToRemove");
 
-        listener = undefined;
-    };
+            listener = undefined;
+        };
 
-    /**
-     * @function WebSocketMessagingSkeleton#shutdown
-     */
-    this.shutdown = function shutdown() {
-        sharedWebSocket.close();
-    };
-};
+        /**
+         * @function WebSocketMessagingSkeleton#shutdown
+         */
+        this.shutdown = function shutdown() {
+            sharedWebSocket.close();
+        };
+    }
+}
 
 module.exports = WebSocketMessagingSkeleton;

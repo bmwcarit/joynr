@@ -1,8 +1,7 @@
-/*eslint global-require: "off"*/
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+/*eslint global-require: "off"*/
 const JoynrMessage = require("./JoynrMessage");
 const LoggingManager = require("../system/LoggingManager");
 const log = LoggingManager.getLogger("joynr.messaging.MessageSerializer");

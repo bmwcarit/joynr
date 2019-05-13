@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,37 +19,36 @@
 const UtilInternal = require("../../util/UtilInternal");
 const Typing = require("../../util/Typing");
 
-/**
- * @name SubscriptionReply
- * @constructor
- *
- * @param {Object}
- *            settings
- * @param {String}
- *            settings.subscriptionId
- * @param {Object}
- *            [settings.error] The exception object in case of subscription request failure
- */
-function SubscriptionReply(settings) {
-    Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
-
-    Typing.checkPropertyIfDefined(settings.error, ["Object", "SubscriptionException"], "settings.error");
-
+class SubscriptionReply {
     /**
-     * @name SubscriptionReply#subscriptionId
-     * @type String
-     */
-    UtilInternal.extend(this, settings);
-
-    /**
-     * The joynr type name
+     * @name SubscriptionReply
+     * @constructor
      *
-     * @name SubscriptionReply#_typeName
-     * @type String
+     * @param {Object} settings
+     * @param {String} settings.subscriptionId
+     * @param {Object} [settings.error] The exception object in case of subscription request failure
      */
-    Typing.augmentTypeName(this, "joynr");
+    constructor(settings) {
+        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
-    return Object.freeze(this);
+        Typing.checkPropertyIfDefined(settings.error, ["Object", "SubscriptionException"], "settings.error");
+
+        /**
+         * @name SubscriptionReply#subscriptionId
+         * @type String
+         */
+        UtilInternal.extend(this, settings);
+
+        /**
+         * The joynr type name
+         *
+         * @name SubscriptionReply#_typeName
+         * @type String
+         */
+        Typing.augmentTypeName(this, "joynr");
+
+        return Object.freeze(this);
+    }
 }
 
 module.exports = SubscriptionReply;
