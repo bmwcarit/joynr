@@ -2,6 +2,15 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.1.5
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** Fixed a bug where fixed participantIds used for provider registrations
+  were not getting stored causing provider unregistration to fail.
+
 # joynr 1.1.4
 
 ## API relevant changes
