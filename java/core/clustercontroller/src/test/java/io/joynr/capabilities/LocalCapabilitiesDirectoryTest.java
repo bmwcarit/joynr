@@ -90,6 +90,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -183,7 +184,10 @@ public class LocalCapabilitiesDirectoryTest {
             }
 
         };
-        doAnswer(answer).when(globalCapabilitiesClient).add(any(Callback.class), any(GlobalDiscoveryEntry.class));
+        doAnswer(answer).when(globalCapabilitiesClient)
+                        .add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             any(GlobalDiscoveryEntry.class),
+                             org.mockito.Matchers.<String[]> any());
 
         String discoveryDirectoriesDomain = "io.joynr";
         String capabilitiesDirectoryParticipantId = "capDir_participantId";
@@ -271,7 +275,10 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
 
         ArgumentCaptor<GlobalDiscoveryEntry> argumentCaptor = ArgumentCaptor.forClass(GlobalDiscoveryEntry.class);
-        verify(globalCapabilitiesClient, timeout(200)).add(any(Callback.class), argumentCaptor.capture());
+        verify(globalCapabilitiesClient,
+               timeout(200)).add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                 argumentCaptor.capture(),
+                                 org.mockito.Matchers.<String[]> any());
         GlobalDiscoveryEntry capturedGlobalDiscoveryEntry = argumentCaptor.getValue();
         assertNotNull(capturedGlobalDiscoveryEntry);
         assertEquals(discoveryEntry.getDomain(), capturedGlobalDiscoveryEntry.getDomain());
@@ -297,7 +304,10 @@ public class LocalCapabilitiesDirectoryTest {
 
         localCapabilitiesDirectory.add(discoveryEntry);
         Thread.sleep(1000);
-        verify(globalCapabilitiesClient, never()).add(any(Callback.class), any(GlobalDiscoveryEntry.class));
+        verify(globalCapabilitiesClient,
+               never()).add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                            any(GlobalDiscoveryEntry.class),
+                            org.mockito.Matchers.<String[]> any());
     }
 
     @SuppressWarnings("unchecked")
@@ -335,13 +345,20 @@ public class LocalCapabilitiesDirectoryTest {
             public void onFulfillment(Object... values) {
                 Mockito.doAnswer(createAddAnswerWithSuccess())
                        .when(globalCapabilitiesClient)
-                       .add(any(Callback.class), eq(globalDiscoveryEntry));
+                       .add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                            eq(globalDiscoveryEntry),
+                            org.mockito.Matchers.<String[]> any());
 
                 verify(globalDiscoveryEntryCacheMock).add(eq(globalDiscoveryEntry));
-                verify(globalCapabilitiesClient).add(any(Callback.class), eq(globalDiscoveryEntry));
+                verify(globalCapabilitiesClient).add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                     eq(globalDiscoveryEntry),
+                                                     org.mockito.Matchers.<String[]> any());
                 reset(globalCapabilitiesClient);
                 localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
-                verify(globalCapabilitiesClient, after(200).never()).add(any(Callback.class), eq(globalDiscoveryEntry));
+                verify(globalCapabilitiesClient,
+                       after(200).never()).add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                               eq(globalDiscoveryEntry),
+                                               org.mockito.Matchers.<String[]> any());
             }
 
             @Override
@@ -379,8 +396,11 @@ public class LocalCapabilitiesDirectoryTest {
                                                         publicKeyId,
                                                         channelAddressSerialized);
 
-        Mockito.doAnswer(createAddAnswerWithError()).when(globalCapabilitiesClient).add(any(Callback.class),
-                                                                                        eq(globalDiscoveryEntry));
+        Mockito.doAnswer(createAddAnswerWithError())
+               .when(globalCapabilitiesClient)
+               .add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                    eq(globalDiscoveryEntry),
+                    org.mockito.Matchers.<String[]> any());
 
         final boolean awaitGlobalRegistration = true;
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
@@ -388,11 +408,15 @@ public class LocalCapabilitiesDirectoryTest {
             @Override
             public void onFulfillment(Object... values) {
                 verify(globalDiscoveryEntryCacheMock, never()).add(eq(globalDiscoveryEntry));
-                verify(globalCapabilitiesClient).add(any(Callback.class), eq(globalDiscoveryEntry));
+                verify(globalCapabilitiesClient).add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                     eq(globalDiscoveryEntry),
+                                                     org.mockito.Matchers.<String[]> any());
                 reset(globalCapabilitiesClient);
                 localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
-                verify(globalCapabilitiesClient, timeout(200)).add(any(Callback.class), eq(globalDiscoveryEntry));
-
+                verify(globalCapabilitiesClient,
+                       timeout(200)).add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                         eq(globalDiscoveryEntry),
+                                         org.mockito.Matchers.<String[]> any());
             }
 
             @Override

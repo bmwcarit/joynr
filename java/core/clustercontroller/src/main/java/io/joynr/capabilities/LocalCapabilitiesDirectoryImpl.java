@@ -48,13 +48,16 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
+import io.joynr.provider.DeferredListener;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
@@ -110,13 +113,16 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
-        private DeferredVoid deferred;
+        private String[] gbids;
+        private Add1Deferred deferred;
         private boolean awaitGlobalRegistration;
 
         public QueuedDiscoveryEntry(DiscoveryEntry discoveryEntry,
-                                    DeferredVoid deferred,
+                                    String[] gbids,
+                                    Add1Deferred deferred,
                                     boolean awaitGlobalRegistration) {
             this.discoveryEntry = discoveryEntry;
+            this.gbids = gbids;
             this.deferred = deferred;
             this.awaitGlobalRegistration = awaitGlobalRegistration;
         }
@@ -125,7 +131,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             return discoveryEntry;
         }
 
-        public DeferredVoid getDeferred() {
+        public String[] getGbids() {
+            return gbids;
+        }
+
+        public Add1Deferred getDeferred() {
             return deferred;
         }
 
@@ -217,7 +227,34 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry, final Boolean awaitGlobalRegistration) {
-        final DeferredVoid deferred = new DeferredVoid();
+        Promise<Add1Deferred> addPromise = add(discoveryEntry, awaitGlobalRegistration, new String[]{ gbids[0] });
+        DeferredVoid deferredVoid = new DeferredVoid();
+        addPromise.then(new PromiseListener() {
+            @Override
+            public void onRejection(JoynrException exception) {
+                if (exception instanceof ApplicationException) {
+                    DiscoveryError error = ((ApplicationException) exception).getError();
+                    deferredVoid.reject(new ProviderRuntimeException("Error registering provider "
+                            + discoveryEntry.getParticipantId() + " in default backend: " + error));
+                } else if (exception instanceof ProviderRuntimeException) {
+                    deferredVoid.reject((ProviderRuntimeException) exception);
+                } else {
+                    deferredVoid.reject(new ProviderRuntimeException("Unknown error registering provider "
+                            + discoveryEntry.getParticipantId() + " in all default backend: " + exception));
+                }
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                deferredVoid.resolve();
+            }
+        });
+        return new Promise<>(deferredVoid);
+    }
+
+    @Override
+    public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
+        final Add1Deferred deferred = new Add1Deferred();
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)) {
@@ -228,7 +265,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             synchronized (globalDiscoveryEntryCache) {
                 if (globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
                                                      DiscoveryQos.NO_MAX_AGE) != null) {
-                    mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), new String[]{ gbids[0] });
+                    mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
                     deferred.resolve();
                     return new Promise<>(deferred);
                 }
@@ -249,15 +286,15 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
          * localDiscoveryStore.
          */
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
-            DeferredVoid deferredForRegisterGlobal;
+            Add1Deferred deferredForRegisterGlobal;
             if (awaitGlobalRegistration == true) {
                 deferredForRegisterGlobal = deferred;
             } else {
                 // use an independent DeferredVoid not used for waiting
-                deferredForRegisterGlobal = new DeferredVoid();
+                deferredForRegisterGlobal = new Add1Deferred();
                 deferred.resolve();
             }
-            registerGlobal(discoveryEntry, deferredForRegisterGlobal, awaitGlobalRegistration);
+            registerGlobal(discoveryEntry, gbids, deferredForRegisterGlobal, awaitGlobalRegistration);
         } else {
             deferred.resolve();
         }
@@ -265,19 +302,33 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
     public Promise<AddToAllDeferred> addToAll(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        Promise<Add1Deferred> addPromise = add(discoveryEntry, awaitGlobalRegistration, gbids);
+        AddToAllDeferred addToAllDeferred = new AddToAllDeferred();
+        addPromise.then(new PromiseListener() {
+            @Override
+            public void onRejection(JoynrException error) {
+                if (error instanceof ApplicationException) {
+                    addToAllDeferred.reject(((ApplicationException) error).getError());
+                } else if (error instanceof ProviderRuntimeException) {
+                    addToAllDeferred.reject((ProviderRuntimeException) error);
+                } else {
+                    addToAllDeferred.reject(new ProviderRuntimeException("Unknown error registering provider "
+                            + discoveryEntry.getParticipantId() + " in all known backends: " + error));
+                }
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                addToAllDeferred.resolve();
+            }
+        });
+        return new Promise<>(addToAllDeferred);
     }
 
     private void registerGlobal(final DiscoveryEntry discoveryEntry,
-                                final DeferredVoid deferred,
+                                final String[] gbids,
+                                final Add1Deferred deferred,
                                 final boolean awaitGlobalRegistration) {
         synchronized (globalAddressLock) {
             try {
@@ -288,14 +339,15 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
 
             if (globalAddress == null) {
-                DeferredVoid deferredForQueueDiscoveryEntry;
+                Add1Deferred deferredForQueueDiscoveryEntry;
                 if (awaitGlobalRegistration == true) {
                     deferredForQueueDiscoveryEntry = deferred;
                 } else {
                     // use an independent DeferredVoid we do not wait for
-                    deferredForQueueDiscoveryEntry = new DeferredVoid();
+                    deferredForQueueDiscoveryEntry = new Add1Deferred();
                 }
                 queuedDiscoveryEntries.add(new QueuedDiscoveryEntry(discoveryEntry,
+                                                                    gbids,
                                                                     deferredForQueueDiscoveryEntry,
                                                                     awaitGlobalRegistration));
                 globalAddressProvider.registerGlobalAddressesReadyListener(this);
@@ -310,7 +362,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             logger.info("starting global registration for " + globalDiscoveryEntry.getDomain() + " : "
                     + globalDiscoveryEntry.getInterfaceName());
 
-            globalCapabilitiesDirectoryClient.add(new Callback<Void>() {
+            globalCapabilitiesDirectoryClient.add(new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
                 public void onSuccess(Void nothing) {
@@ -318,8 +370,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                             + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
                             + " completed");
                     synchronized (globalDiscoveryEntryCache) {
-                        mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(),
-                                                              new String[]{ gbids[0] });
+                        mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
                         globalDiscoveryEntryCache.add(globalDiscoveryEntry);
                     }
                     deferred.resolve();
@@ -335,7 +386,18 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     }
                     deferred.reject(new ProviderRuntimeException(exception.toString()));
                 }
-            }, globalDiscoveryEntry);
+
+                @Override
+                public void onFailure(DiscoveryError errorEnum) {
+                    logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
+                            + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
+                            + " failed");
+                    if (awaitGlobalRegistration == true) {
+                        localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
+                    }
+                    deferred.reject(errorEnum);
+                }
+            }, globalDiscoveryEntry, gbids);
         }
     }
 
@@ -835,6 +897,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
         for (QueuedDiscoveryEntry queuedDiscoveryEntry : queuedDiscoveryEntries) {
             registerGlobal(queuedDiscoveryEntry.getDiscoveryEntry(),
+                           queuedDiscoveryEntry.getGbids(),
                            queuedDiscoveryEntry.getDeferred(),
                            queuedDiscoveryEntry.getAwaitGlobalRegistration());
         }
