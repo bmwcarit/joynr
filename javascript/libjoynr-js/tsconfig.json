@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "moduleResolution": "node",
     "module": "commonjs",
     "target": "es2017",
@@ -15,7 +16,9 @@
     "typeRoots": [
       "node_modules/@types",
       "typings"
-    ]
+    ],
+    "outDir": ".output",
+    "rootDir" : "."
   },
   "include": [
     "src/main/**/*",
