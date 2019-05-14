@@ -98,6 +98,21 @@ describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", function() {
             done();
         });
 
+        it("stores participantId when setParticipantId is called", function(done) {
+            participantIdStorage.setParticipantId(domain, provider, storedParticipantId);
+            if (localStorageSpy) {
+                expect(localStorageSpy.setItem).toHaveBeenCalledWith(key, storedParticipantId);
+            }
+
+            var result = participantIdStorage.getParticipantId(domain, provider);
+            if (localStorageSpy) {
+                expect(localStorageSpy.getItem).toHaveBeenCalled();
+                expect(localStorageSpy.getItem).toHaveBeenCalledWith(key);
+            }
+            expect(result).toEqual(storedParticipantId);
+            done();
+        });
+
         it("generates a new uuid if no participantId is stored", function(done) {
             var result = participantIdStorage.getParticipantId(domain, provider);
             if (localStorageSpy) {

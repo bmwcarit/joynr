@@ -54,4 +54,18 @@ ParticipantIdStorage.prototype.getParticipantId = function getParticipantId(doma
     return participantId;
 };
 
+/**
+ * @function
+ * @name ParticipantIdStorage#setParticipantId
+ *
+ * @param {String} domain
+ * @param {Object} provider
+ * @param {String} provider.interfaceName
+ * @param {String} participantId
+ */
+ParticipantIdStorage.prototype.setParticipantId = function setParticipantId(domain, provider, participantId) {
+    var key = "joynr.participant." + domain + "." + provider.interfaceName;
+    this._persistency.setItem(key, participantId);
+};
+
 module.exports = ParticipantIdStorage;
