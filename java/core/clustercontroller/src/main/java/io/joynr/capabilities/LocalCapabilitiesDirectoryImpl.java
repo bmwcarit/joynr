@@ -262,6 +262,18 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return new Promise<>(deferred);
     }
 
+    @Override
+    public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Promise<AddToAllDeferred> addToAll(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
     private void registerGlobal(final DiscoveryEntry discoveryEntry,
                                 final DeferredVoid deferred,
                                 final boolean awaitGlobalRegistration) {
@@ -326,6 +338,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
+    public io.joynr.provider.Promise<io.joynr.provider.DeferredVoid> remove(String participantId) {
+        DeferredVoid deferred = new DeferredVoid();
+        DiscoveryEntry entryToRemove = localDiscoveryEntryStore.lookup(participantId, Long.MAX_VALUE);
+        if (entryToRemove != null) {
+            remove(entryToRemove);
+            deferred.resolve();
+        } else {
+            deferred.reject(new ProviderRuntimeException("Failed to remove participantId: " + participantId));
+        }
+        return new Promise<>(deferred);
+    }
+
+    @Override
     public void remove(final DiscoveryEntry discoveryEntry) {
         localDiscoveryEntryStore.remove(discoveryEntry.getParticipantId());
         notifyCapabilityRemoved(discoveryEntry);
@@ -352,6 +377,48 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         // Remove endpoint addresses
         messageRouter.removeNextHop(discoveryEntry.getParticipantId());
+    }
+
+    @Override
+    public Promise<Lookup1Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos) {
+        final Lookup1Deferred deferred = new Lookup1Deferred();
+        CapabilitiesCallback callback = new CapabilitiesCallback() {
+            @Override
+            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntryWithMetaInfo> capabilities) {
+                if (capabilities == null) {
+                    deferred.reject(new ProviderRuntimeException("Received capablities collection was null"));
+                } else {
+                    deferred.resolve(capabilities.toArray(new DiscoveryEntryWithMetaInfo[capabilities.size()]));
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                deferred.reject(new ProviderRuntimeException(e.toString()));
+            }
+        };
+        DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
+        lookup(domains,
+               interfaceName,
+               new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
+                                defaultDiscoveryRetryInterval,
+                                ArbitrationStrategy.NotSet,
+                                discoveryQos.getCacheMaxAge(),
+                                discoveryScope),
+               callback);
+
+        return new Promise<>(deferred);
+    }
+
+    @Override
+    public Promise<Lookup2Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos,
+                                           String gbid) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
     @Override
@@ -530,6 +597,49 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
+    public Promise<Lookup3Deferred> lookup(String participantId) {
+        Lookup3Deferred deferred = new Lookup3Deferred();
+        DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
+        deferred.resolve(discoveryEntry);
+        return new Promise<>(deferred);
+    }
+
+    @Override
+    public Promise<Lookup4Deferred> lookup(String participantId, String gbid) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    @CheckForNull
+    public DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos) {
+        final Future<DiscoveryEntryWithMetaInfo> lookupFuture = new Future<>();
+        lookup(participantId, discoveryQos, new CapabilityCallback() {
+
+            @Override
+            public void processCapabilityReceived(DiscoveryEntryWithMetaInfo capability) {
+                lookupFuture.onSuccess(capability);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                lookupFuture.onFailure(new JoynrRuntimeException(e));
+            }
+        });
+        DiscoveryEntryWithMetaInfo retrievedCapabilitiyEntry = null;
+
+        try {
+            retrievedCapabilitiyEntry = lookupFuture.get();
+        } catch (InterruptedException e1) {
+            logger.error("interrupted while retrieving capability entry by participant ID", e1);
+        } catch (ApplicationException e1) {
+            // should not be reachable since ApplicationExceptions are not used internally
+            logger.error("ApplicationException while retrieving capability entry by participant ID", e1);
+        }
+        return retrievedCapabilitiyEntry;
+    }
+
+    @Override
     @CheckForNull
     public void lookup(final String participantId,
                        final DiscoveryQos discoveryQos,
@@ -563,35 +673,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         default:
             break;
         }
-    }
-
-    @Override
-    @CheckForNull
-    public DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos) {
-        final Future<DiscoveryEntryWithMetaInfo> lookupFuture = new Future<>();
-        lookup(participantId, discoveryQos, new CapabilityCallback() {
-
-            @Override
-            public void processCapabilityReceived(DiscoveryEntryWithMetaInfo capability) {
-                lookupFuture.onSuccess(capability);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                lookupFuture.onFailure(new JoynrRuntimeException(e));
-            }
-        });
-        DiscoveryEntryWithMetaInfo retrievedCapabilitiyEntry = null;
-
-        try {
-            retrievedCapabilitiyEntry = lookupFuture.get();
-        } catch (InterruptedException e1) {
-            logger.error("interrupted while retrieving capability entry by participant ID", e1);
-        } catch (ApplicationException e1) {
-            // should not be reachable since ApplicationExceptions are not used internally
-            logger.error("ApplicationException while retrieving capability entry by participant ID", e1);
-        }
-        return retrievedCapabilitiyEntry;
     }
 
     private void registerIncomingEndpoints(Collection<GlobalDiscoveryEntry> caps) {
@@ -719,52 +800,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String[] domains,
-                                           String interfaceName,
-                                           joynr.types.DiscoveryQos discoveryQos) {
-        final Lookup1Deferred deferred = new Lookup1Deferred();
-        CapabilitiesCallback callback = new CapabilitiesCallback() {
-            @Override
-            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-                if (capabilities == null) {
-                    deferred.reject(new ProviderRuntimeException("Received capablities collection was null"));
-                } else {
-                    deferred.resolve(capabilities.toArray(new DiscoveryEntryWithMetaInfo[capabilities.size()]));
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                deferred.reject(new ProviderRuntimeException(e.toString()));
-            }
-        };
-        DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domains,
-               interfaceName,
-               new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
-                                defaultDiscoveryRetryInterval,
-                                ArbitrationStrategy.NotSet,
-                                discoveryQos.getCacheMaxAge(),
-                                discoveryScope),
-               callback);
-
-        return new Promise<>(deferred);
-    }
-
-    @Override
-    public io.joynr.provider.Promise<io.joynr.provider.DeferredVoid> remove(String participantId) {
-        DeferredVoid deferred = new DeferredVoid();
-        DiscoveryEntry entryToRemove = localDiscoveryEntryStore.lookup(participantId, Long.MAX_VALUE);
-        if (entryToRemove != null) {
-            remove(entryToRemove);
-            deferred.resolve();
-        } else {
-            deferred.reject(new ProviderRuntimeException("Failed to remove participantId: " + participantId));
-        }
-        return new Promise<>(deferred);
-    }
-
-    @Override
     public Set<DiscoveryEntry> listLocalCapabilities() {
         return localDiscoveryEntryStore.getAllDiscoveryEntries();
     }
@@ -781,39 +816,4 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
     }
 
-    @Override
-    public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Promise<AddToAllDeferred> addToAll(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Promise<Lookup3Deferred> lookup(String participantId) {
-        Lookup3Deferred deferred = new Lookup3Deferred();
-        DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
-        deferred.resolve(discoveryEntry);
-        return new Promise<>(deferred);
-
-    }
-
-    @Override
-    public Promise<Lookup2Deferred> lookup(String[] domains,
-                                           String interfaceName,
-                                           joynr.types.DiscoveryQos discoveryQos,
-                                           String gbid) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Promise<Lookup4Deferred> lookup(String participantId, String gbid) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
 }
