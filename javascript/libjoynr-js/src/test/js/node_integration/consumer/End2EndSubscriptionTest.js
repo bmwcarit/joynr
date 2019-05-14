@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -300,54 +300,50 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             .catch(fail);
     });
 
-    it(
-        "subscribe to byteBufferAttribute",
-        done => {
-            //initialize attribute
-            let mySpy;
-            let testByteBufferAttribute;
+    it("subscribe to byteBufferAttribute", done => {
+        //initialize attribute
+        let mySpy;
+        let testByteBufferAttribute;
 
-            setAttribute("byteBufferAttribute", [])
-                .then(() => {
-                    return setupSubscriptionAndReturnSpy("byteBufferAttribute", subscriptionQosOnChange);
-                })
-                .then(spy => {
-                    mySpy = spy;
-                    return expectPublication(mySpy, call => {
-                        expect(call.args[0]).toEqual([]);
-                    });
-                })
-                .then(() => {
-                    testByteBufferAttribute = function(expectedByteBuffer) {
-                        return setAttribute("byteBufferAttribute", expectedByteBuffer).then(() => {
-                            return expectPublication(mySpy, call => {
-                                expect(call.args[0]).toEqual(expectedByteBuffer);
-                            });
+        setAttribute("byteBufferAttribute", [])
+            .then(() => {
+                return setupSubscriptionAndReturnSpy("byteBufferAttribute", subscriptionQosOnChange);
+            })
+            .then(spy => {
+                mySpy = spy;
+                return expectPublication(mySpy, call => {
+                    expect(call.args[0]).toEqual([]);
+                });
+            })
+            .then(() => {
+                testByteBufferAttribute = function(expectedByteBuffer) {
+                    return setAttribute("byteBufferAttribute", expectedByteBuffer).then(() => {
+                        return expectPublication(mySpy, call => {
+                            expect(call.args[0]).toEqual(expectedByteBuffer);
                         });
-                    };
-                    return testByteBufferAttribute([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
-                })
-                .then(() => {
-                    return testByteBufferAttribute([255]);
-                })
-                .then(() => {
-                    return testByteBufferAttribute([2, 2, 2, 2]);
-                })
-                .then(() => {
-                    const byteBuffer10k = [];
-                    for (let i = 0; i < 10000; i++) {
-                        byteBuffer10k.push(i % 256);
-                    }
-                    return testByteBufferAttribute(byteBuffer10k);
-                })
-                .then(() => {
-                    done();
-                    return null;
-                })
-                .catch(fail);
-        },
-        20000
-    );
+                    });
+                };
+                return testByteBufferAttribute([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
+            })
+            .then(() => {
+                return testByteBufferAttribute([255]);
+            })
+            .then(() => {
+                return testByteBufferAttribute([2, 2, 2, 2]);
+            })
+            .then(() => {
+                const byteBuffer10k = [];
+                for (let i = 0; i < 10000; i++) {
+                    byteBuffer10k.push(i % 256);
+                }
+                return testByteBufferAttribute(byteBuffer10k);
+            })
+            .then(() => {
+                done();
+                return null;
+            })
+            .catch(fail);
+    }, 20000);
 
     it("subscribe to weakSignal broadcast having ByteBuffer as output parameter", done => {
         let mySpy;
@@ -516,8 +512,8 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                 })
                 .then(spy => {
                     /* the provider sends broadcasts for the complete partition hierarchy.
-                                 * However, expect only one publication here
-                                 */
+                     * However, expect only one publication here
+                     */
                     return expectNoMorePublication(spy, 500).then(unsubscribeMulticastSubscription);
                 });
         }
@@ -605,8 +601,8 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                 })
                 .then(spies => {
                     /* the provider sends broadcasts for partition0 only.
-                                 * So, expect no publication for subscription with partition1
-                                 */
+                     * So, expect no publication for subscription with partition1
+                     */
                     return expectNoMorePublication(spies[1], 500).then(() => {
                         return spies;
                     });
@@ -623,8 +619,8 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                 })
                 .then(spies => {
                     /* the provider sends broadcasts for partition1 only.
-                                 * So, expect no publication for subscription with partition0
-                                 */
+                     * So, expect no publication for subscription with partition0
+                     */
                     return expectNoMorePublication(spies[0], 500).then(() => {
                         return spies;
                     });
@@ -666,37 +662,33 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             .catch(fail);
     });
 
-    it(
-        "subscribe to broadcastWithEnum and get burst",
-        done => {
-            subscriptionQosOnChange.minIntervalMs = 0;
-            const times = 100;
-            let mySpy;
-            setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange)
-                .then(spy => {
-                    mySpy = spy;
-                    return callOperation("triggerBroadcasts", {
-                        broadcastName: "broadcastWithEnum",
-                        times
-                    });
-                })
-                .then(() => {
-                    return expectMultiplePublications(mySpy, times, 5000, calls => {
-                        let i;
-                        for (i = 0; i < times; i++) {
-                            expect(calls.argsFor(i)[0].enumOutput).toEqual(Country.CANADA);
-                            expect(calls.argsFor(i)[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
-                        }
-                    });
-                })
-                .then(() => {
-                    done();
-                    return null;
-                })
-                .catch(fail);
-        },
-        60000
-    );
+    it("subscribe to broadcastWithEnum and get burst", done => {
+        subscriptionQosOnChange.minIntervalMs = 0;
+        const times = 100;
+        let mySpy;
+        setupSubscriptionAndReturnSpy("broadcastWithEnum", subscriptionQosOnChange)
+            .then(spy => {
+                mySpy = spy;
+                return callOperation("triggerBroadcasts", {
+                    broadcastName: "broadcastWithEnum",
+                    times
+                });
+            })
+            .then(() => {
+                return expectMultiplePublications(mySpy, times, 5000, calls => {
+                    let i;
+                    for (i = 0; i < times; i++) {
+                        expect(calls.argsFor(i)[0].enumOutput).toEqual(Country.CANADA);
+                        expect(calls.argsFor(i)[0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
+                    }
+                });
+            })
+            .then(() => {
+                done();
+                return null;
+            })
+            .catch(fail);
+    }, 60000);
 
     it("subscribe to enumArrayAttribute", done => {
         const attributeName = "enumArrayAttribute";
@@ -1187,98 +1179,94 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             .catch(fail);
     });
 
-    it(
-        "terminates correctly according to the endDate ",
-        done => {
-            let timeout;
+    it("terminates correctly according to the endDate ", done => {
+        let timeout;
 
-            // provider will fire an interval publication 1s
-            // after
-            // initialization with the response "interval"
-            // after another 0.5 ms it will fire an onChange
-            // publication
-            // with the response "valueChanged1"
-            // after another 10 ms it will try to fire an
-            // onChange
-            // publication with the response "valueChanged2",
-            // should be
-            // blocked by the
-            // PublicationManager on the Provider side
+        // provider will fire an interval publication 1s
+        // after
+        // initialization with the response "interval"
+        // after another 0.5 ms it will fire an onChange
+        // publication
+        // with the response "valueChanged1"
+        // after another 10 ms it will try to fire an
+        // onChange
+        // publication with the response "valueChanged2",
+        // should be
+        // blocked by the
+        // PublicationManager on the Provider side
 
-            const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
-            subscriptionQosMixed.expiryDateMs = subscriptionQosMixed.maxIntervalMs * 1.5 + Date.now();
-            radioProxy.isOn
-                .subscribe({
-                    subscriptionQos: subscriptionQosMixed,
-                    onReceive: spy.onReceive,
-                    onError: spy.onError
-                })
-                .then(spy.onFulfilled)
-                .catch(error => {
-                    spy.onError(error);
-                    IntegrationUtils.outputPromiseError(error);
-                });
+        const spy = jasmine.createSpyObj("spy", ["onFulfilled", "onReceive", "onError"]);
+        subscriptionQosMixed.expiryDateMs = subscriptionQosMixed.maxIntervalMs * 1.5 + Date.now();
+        radioProxy.isOn
+            .subscribe({
+                subscriptionQos: subscriptionQosMixed,
+                onReceive: spy.onReceive,
+                onError: spy.onError
+            })
+            .then(spy.onFulfilled)
+            .catch(error => {
+                spy.onError(error);
+                IntegrationUtils.outputPromiseError(error);
+            });
 
-            waitsFor(
-                () => {
-                    return spy.onFulfilled.calls.count() > 0;
-                },
-                "subscription to be registered",
-                provisioning.ttl
-            )
-                .then(() => {
-                    expect(spy.onFulfilled).toHaveBeenCalled();
-                    return waitsFor(
-                        () => {
-                            return spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0;
-                        },
-                        "initial publication to occur",
-                        provisioning.ttl
-                    ); // timeout for
-                    // subscription request
-                    // round trip
-                })
-                .then(() => {
-                    expect(spy.onReceive).toHaveBeenCalled();
-                    expect(spy.onReceive.calls.argsFor(0)[0]).toEqual(true);
-                    expect(spy.onError).not.toHaveBeenCalled();
+        waitsFor(
+            () => {
+                return spy.onFulfilled.calls.count() > 0;
+            },
+            "subscription to be registered",
+            provisioning.ttl
+        )
+            .then(() => {
+                expect(spy.onFulfilled).toHaveBeenCalled();
+                return waitsFor(
+                    () => {
+                        return spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0;
+                    },
+                    "initial publication to occur",
+                    provisioning.ttl
+                ); // timeout for
+                // subscription request
+                // round trip
+            })
+            .then(() => {
+                expect(spy.onReceive).toHaveBeenCalled();
+                expect(spy.onReceive.calls.argsFor(0)[0]).toEqual(true);
+                expect(spy.onError).not.toHaveBeenCalled();
 
-                    spy.onReceive.calls.reset();
-                    spy.onError.calls.reset();
+                spy.onReceive.calls.reset();
+                spy.onError.calls.reset();
 
-                    return waitsFor(
-                        () => {
-                            return spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0;
-                        },
-                        "the interval onReceive to occur",
-                        2 * subscriptionQosMixed.maxIntervalMs
-                    );
-                })
-                .then(() => {
-                    expect(spy.onReceive).toHaveBeenCalled();
-                    expect(spy.onReceive).toHaveBeenCalledWith(true);
-                    spy.onReceive.calls.reset();
+                return waitsFor(
+                    () => {
+                        return spy.onReceive.calls.count() > 0 || spy.onError.calls.count() > 0;
+                    },
+                    "the interval onReceive to occur",
+                    2 * subscriptionQosMixed.maxIntervalMs
+                );
+            })
+            .then(() => {
+                expect(spy.onReceive).toHaveBeenCalled();
+                expect(spy.onReceive).toHaveBeenCalledWith(true);
+                spy.onReceive.calls.reset();
 
-                    joynr.util.LongTimer.setTimeout(() => {
-                        timeout = true;
-                    }, subscriptionQosMixed.expiryDateMs - Date.now() + safetyTimeout);
-                    return waitsFor(
-                        () => {
-                            return timeout || spy.onReceive.calls.count() > 0;
-                        },
-                        "the interval onReceive not to occur again",
-                        subscriptionQosMixed.expiryDateMs - Date.now() + safetyTimeout
-                    );
-                })
-                .then(() => {
-                    expect(spy.onReceive).not.toHaveBeenCalled();
-                    done();
-                    return null;
-                })
-                .catch(fail);
-        },
-        10000
-    );
+                joynr.util.LongTimer.setTimeout(() => {
+                    timeout = true;
+                }, subscriptionQosMixed.expiryDateMs - Date.now() + safetyTimeout);
+                return waitsFor(
+                    () => {
+                        return timeout || spy.onReceive.calls.count() > 0;
+                    },
+                    "the interval onReceive not to occur again",
+                    subscriptionQosMixed.expiryDateMs - Date.now() + safetyTimeout
+                );
+            })
+            .then(() => {
+                expect(spy.onReceive).not.toHaveBeenCalled();
+                done();
+                return null;
+            })
+            .catch(fail);
+    }, 10000);
 
     it("unsubscribes onChange subscription successfully", done => {
         checkUnsubscribe(1000, subscriptionQosOnChange)

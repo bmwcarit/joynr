@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -584,77 +584,73 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         });
     });
 
-    it(
-        "reruns discovery for empty discovery results according to discoveryTimeoutMs and discoveryRetryDelayMs",
-        done => {
-            //capDiscoverySpy.lookup.and.returnValue(Promise.resolve([]));
-            capDiscoverySpy.lookup.and.callFake(() => {
-                return Promise.resolve([]);
+    it("reruns discovery for empty discovery results according to discoveryTimeoutMs and discoveryRetryDelayMs", done => {
+        //capDiscoverySpy.lookup.and.returnValue(Promise.resolve([]));
+        capDiscoverySpy.lookup.and.callFake(() => {
+            return Promise.resolve([]);
+        });
+        arbitrator = new Arbitrator(capDiscoverySpy);
+
+        expect(capDiscoverySpy.lookup).not.toHaveBeenCalled();
+        spyOn(discoveryQos, "arbitrationStrategy").and.returnValue([]);
+
+        arbitrator
+            .startArbitration({
+                domains: [domain],
+                interfaceName,
+                discoveryQos,
+                proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
+            })
+            .catch(() => {
+                // startAbitration caught error [expected!]
+                done();
+                return null;
             });
-            arbitrator = new Arbitrator(capDiscoverySpy);
 
-            expect(capDiscoverySpy.lookup).not.toHaveBeenCalled();
-            spyOn(discoveryQos, "arbitrationStrategy").and.returnValue([]);
+        increaseFakeTime(1);
+        let promiseChain = waitsFor(
+            () => {
+                return capDiscoverySpy.lookup.calls.count() === 1;
+            },
+            "first lookup",
+            1000
+        );
 
-            arbitrator
-                .startArbitration({
-                    domains: [domain],
-                    interfaceName,
-                    discoveryQos,
-                    proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
-                })
-                .catch(() => {
-                    // startAbitration caught error [expected!]
-                    done();
-                    return null;
-                });
+        let i;
 
-            increaseFakeTime(1);
-            let promiseChain = waitsFor(
-                () => {
-                    return capDiscoverySpy.lookup.calls.count() === 1;
-                },
-                "first lookup",
-                1000
-            );
-
-            let i;
-
-            function createFunc(i, promiseChain) {
-                return promiseChain.then(() => {
-                    increaseFakeTime(discoveryQos.discoveryRetryDelayMs - 2);
-                    return waitsFor(
-                        () => {
-                            return capDiscoverySpy.lookup.calls.count() === i;
-                        },
-                        `lookup ${i}`,
-                        1000
-                    ).then(() => {
-                        expect(capDiscoverySpy.lookup.calls.count()).toBe(i);
-                        increaseFakeTime(2);
-                        return waitsFor(() => {
-                            return capDiscoverySpy.lookup.calls.count() === i + 1;
-                        }).then(() => {
-                            expect(capDiscoverySpy.lookup.calls.count()).toBe(i + 1);
-                        });
+        function createFunc(i, promiseChain) {
+            return promiseChain.then(() => {
+                increaseFakeTime(discoveryQos.discoveryRetryDelayMs - 2);
+                return waitsFor(
+                    () => {
+                        return capDiscoverySpy.lookup.calls.count() === i;
+                    },
+                    `lookup ${i}`,
+                    1000
+                ).then(() => {
+                    expect(capDiscoverySpy.lookup.calls.count()).toBe(i);
+                    increaseFakeTime(2);
+                    return waitsFor(() => {
+                        return capDiscoverySpy.lookup.calls.count() === i + 1;
+                    }).then(() => {
+                        expect(capDiscoverySpy.lookup.calls.count()).toBe(i + 1);
                     });
                 });
-            }
+            });
+        }
 
-            for (i = 1; i < nrTimes + 1; ++i) {
-                promiseChain = createFunc(i, promiseChain);
-            }
-            promiseChain
-                .then(() => {
-                    // this should trigger the done in the catch of startArbitration
-                    // above
-                    increaseFakeTime(discoveryQos.discoveryTimeoutMs);
-                    return null;
-                })
-                .catch(fail);
-        },
-        7000
-    );
+        for (i = 1; i < nrTimes + 1; ++i) {
+            promiseChain = createFunc(i, promiseChain);
+        }
+        promiseChain
+            .then(() => {
+                // this should trigger the done in the catch of startArbitration
+                // above
+                increaseFakeTime(discoveryQos.discoveryTimeoutMs);
+                return null;
+            })
+            .catch(fail);
+    }, 7000);
 
     it("uses arbitration strategy and returns its results", done => {
         const fakeDiscoveredCaps = [{}, {}, {}, {}, {}];

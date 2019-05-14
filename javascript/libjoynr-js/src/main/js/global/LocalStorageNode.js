@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -79,10 +79,12 @@ LocalStorageWrapper.prototype = {
         await this._promiseChain;
     },
     _wrapFunction(cb, ...args) {
-        // eslint-disable-next-line promise/no-callback-in-promise
-        this._promiseChain = this._promiseChain.then(() => cb(...args)).catch(e => {
-            log.error(`failure executing ${cb} with args ${JSON.stringify(args)} error: ${e}`);
-        });
+        this._promiseChain = this._promiseChain
+            // eslint-disable-next-line promise/no-callback-in-promise
+            .then(() => cb(...args))
+            .catch(e => {
+                log.error(`failure executing ${cb} with args ${JSON.stringify(args)} error: ${e}`);
+            });
     }
 };
 

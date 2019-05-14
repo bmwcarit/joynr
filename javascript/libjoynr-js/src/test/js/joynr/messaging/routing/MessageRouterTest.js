@@ -563,8 +563,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             multicastMessage.from = "senderParticipantId";
 
             /* add routing table entry for parameters.subscriberParticipantId,
-                                 * otherwise messaging stub call can be executed by the message router
-                                 */
+             * otherwise messaging stub call can be executed by the message router
+             */
             addressOfSubscriberParticipant = new BrowserAddress({
                 windowId: "windowIdOfSubscriberParticipant"
             });
@@ -906,7 +906,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
                 expect(messageRouter.hasMulticastReceivers()).toBe(false);
                 /* addMulticastReceiver is already tested, but added here for
-                                     * checking proper removeMulticastReceiver functionality */
+                 * checking proper removeMulticastReceiver functionality */
                 messageRouter.addMulticastReceiver(parameters);
                 expect(messageRouter.hasMulticastReceivers()).toBe(true);
             });
