@@ -132,11 +132,11 @@ var capabilitiesValue = [ // untyped list of provisioned capabilities
                 },
                 ...
             ],
-            providerVersion: <provider version>,
             scope: <ProviderScope.GLOBAL|ProviderScope.LOCAL>,
             priority: <priority>,
             supportsOnChangeSubscriptions: <true|false>
         },
+        providerVersion: <provider version>,
         participantId: <participantId>
     },
     ...
@@ -149,7 +149,6 @@ var discoveryQosValue = {
 };
 
 var loggingValue = {
-    ttl: <ttl>, //default value: 172800000, two days in milliseconds
     configuration: {...} /*
                        * log4j2-style JSON config, but as JavaScript object
                        * See https://logging.apache.org/log4j/2.x/manual/configuration.html#JSON
