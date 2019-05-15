@@ -44,6 +44,7 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.JoynrVersion;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
@@ -109,7 +110,10 @@ public class LocalDiscoveryAggregatorTest {
         localDiscoveryAggregator.forceQueryOfDiscoveryProxy();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        discoveryProviderEntry = new DiscoveryEntryWithMetaInfo(new Version(0, 1),
+        JoynrVersion interfaceVersion = Discovery.class.getAnnotation(JoynrVersion.class);
+
+        discoveryProviderEntry = new DiscoveryEntryWithMetaInfo(new Version(interfaceVersion.major(),
+                                                                            interfaceVersion.minor()),
                                                                 systemServicesDomain,
                                                                 Discovery.INTERFACE_NAME,
                                                                 discoveryProviderParticipantId,
