@@ -151,6 +151,19 @@ public:
              std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
     // inherited method from joynr::system::DiscoveryProvider
+    void add(const joynr::types::DiscoveryEntry& discoveryEntry,
+             const bool& awaitGlobalRegistration,
+             const std::vector<std::string>& gbids,
+             std::function<void()> onSuccess,
+             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
+            override;
+    // inherited method from joynr::system::DiscoveryProvider
+    void addToAll(const joynr::types::DiscoveryEntry& discoveryEntry,
+                  const bool& awaitGlobalRegistration,
+                  std::function<void()> onSuccess,
+                  std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
+            override;
+    // inherited method from joynr::system::DiscoveryProvider
     void lookup(
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
@@ -161,9 +174,26 @@ public:
             override;
     // inherited method from joynr::system::DiscoveryProvider
     void lookup(
+            const std::vector<std::string>& domains,
+            const std::string& interfaceName,
+            const joynr::types::DiscoveryQos& discoveryQos,
+            const std::string& gbid,
+            std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
+                    onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
+            override;
+    // inherited method from joynr::system::DiscoveryProvider
+    void lookup(
             const std::string& participantId,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override;
+    // inherited method from joynr::system::DiscoveryProvider
+    void lookup(
+            const std::string& participantId,
+            const std::string& gbid,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
             override;
     // inherited method from joynr::system::DiscoveryProvider
     void remove(const std::string& participantId,

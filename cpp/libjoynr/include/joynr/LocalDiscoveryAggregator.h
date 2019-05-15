@@ -64,10 +64,33 @@ public:
     std::shared_ptr<joynr::Future<void>> addAsync(
             const joynr::types::DiscoveryEntry& discoveryEntry,
             const bool& awaitGlobalRegistration,
+            const std::vector<std::string>& gbids,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
+                    onApplicationError = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override;
+
+    // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<void>> addAsync(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            const bool& awaitGlobalRegistration,
             std::function<void()> onSuccess = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                     onRuntimeError = nullptr,
             boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
+
+    // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<void>> addToAllAsync(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            const bool& awaitGlobalRegistration,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
+                    onApplicationError = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
@@ -82,6 +105,21 @@ public:
             boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
+    lookupAsync(
+            const std::vector<std::string>& domains,
+            const std::string& interfaceName,
+            const joynr::types::DiscoveryQos& discoveryQos,
+            const std::string& gbid,
+            std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
+                    onSuccess = nullptr,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
+                    onApplicationError = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override;
+
+    // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
             const std::string& participantId,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
@@ -89,6 +127,18 @@ public:
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                     onRuntimeError = nullptr,
             boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
+
+    // inherited from joynr::system::IDiscoveryAsync
+    std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
+            const std::string& participantId,
+            const std::string& gbid,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
+                    nullptr,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
+                    onApplicationError = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<void>> removeAsync(

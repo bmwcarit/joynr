@@ -777,6 +777,37 @@ void LocalCapabilitiesDirectory::add(
                         discoveryEntry.getDomain())));
 }
 
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::add(
+        const joynr::types::DiscoveryEntry& discoveryEntry,
+        const bool& awaitGlobalRegistration,
+        const std::vector<std::string>& gbids,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
+{
+    std::ignore = discoveryEntry;
+    std::ignore = awaitGlobalRegistration;
+    std::ignore = gbids;
+    std::ignore = onSuccess;
+    std::ignore = onError;
+    throw exceptions::JoynrRuntimeException("Not implemented...yet!");
+}
+
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::addToAll(
+        const joynr::types::DiscoveryEntry& discoveryEntry,
+        const bool& awaitGlobalRegistration,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
+{
+
+    std::ignore = discoveryEntry;
+    std::ignore = awaitGlobalRegistration;
+    std::ignore = onSuccess;
+    std::ignore = onError;
+    throw exceptions::JoynrRuntimeException("Not implemented...yet!");
+}
+
 bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)
 {
     if (!clusterControllerSettings.enableAccessController()) {
@@ -855,6 +886,25 @@ void LocalCapabilitiesDirectory::lookup(
 
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::lookup(
+        const std::vector<std::string>& domains,
+        const std::string& interfaceName,
+        const joynr::types::DiscoveryQos& discoveryQos,
+        const std::string& gbid,
+        std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
+                onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
+{
+    std::ignore = domains;
+    std::ignore = interfaceName;
+    std::ignore = discoveryQos;
+    std::ignore = gbid;
+    std::ignore = onSuccess;
+    std::ignore = onError;
+    throw exceptions::JoynrRuntimeException("Not implemented...yet!");
+}
+
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::lookup(
         const std::string& participantId,
         std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
@@ -888,6 +938,20 @@ void LocalCapabilitiesDirectory::lookup(
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(callback), std::move(onError));
     lookup(participantId, std::move(localCapabilitiesCallback));
+}
+
+// inherited method from joynr::system::DiscoveryProvider
+void LocalCapabilitiesDirectory::lookup(
+        const std::string& participantId,
+        const std::string& gbid,
+        std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
+{
+    std::ignore = participantId;
+    std::ignore = gbid;
+    std::ignore = onSuccess;
+    std::ignore = onError;
+    throw exceptions::JoynrRuntimeException("Not implemented...yet!");
 }
 
 // inherited method from joynr::system::DiscoveryProvider

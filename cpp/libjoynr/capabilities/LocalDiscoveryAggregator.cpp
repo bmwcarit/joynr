@@ -84,6 +84,42 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
                                     std::move(messagingQos));
 }
 
+std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
+        const joynr::types::DiscoveryEntry& discoveryEntry,
+        const bool& awaitGlobalRegistration,
+        const std::vector<std::string>& gbids,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+        boost::optional<joynr::MessagingQos> qos) noexcept
+{
+    std::ignore = discoveryEntry;
+    std::ignore = awaitGlobalRegistration;
+    std::ignore = gbids;
+    std::ignore = onSuccess;
+    std::ignore = onRuntimeError;
+    std::ignore = onApplicationError;
+    std::ignore = qos;
+    assert(false && "Not implemented yet");
+}
+
+std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addToAllAsync(
+        const joynr::types::DiscoveryEntry& discoveryEntry,
+        const bool& awaitGlobalRegistration,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+        boost::optional<joynr::MessagingQos> qos) noexcept
+{
+    std::ignore = discoveryEntry;
+    std::ignore = awaitGlobalRegistration;
+    std::ignore = onSuccess;
+    std::ignore = onRuntimeError;
+    std::ignore = onApplicationError;
+    std::ignore = qos;
+    assert(false && "Not implemented yet");
+}
+
 std::shared_ptr<joynr::Future<std::vector<types::DiscoveryEntryWithMetaInfo>>>
 LocalDiscoveryAggregator::lookupAsync(
         const std::vector<std::string>& domains,
@@ -102,6 +138,29 @@ LocalDiscoveryAggregator::lookupAsync(
                                        std::move(onSuccess),
                                        std::move(onRuntimeError),
                                        std::move(messagingQos));
+}
+
+std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
+LocalDiscoveryAggregator::lookupAsync(
+        const std::vector<std::string>& domains,
+        const std::string& interfaceName,
+        const types::DiscoveryQos& discoveryQos,
+        const std::string& gbid,
+        std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
+                onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+        boost::optional<joynr::MessagingQos> messagingQos) noexcept
+{
+    std::ignore = domains;
+    std::ignore = interfaceName;
+    std::ignore = discoveryQos;
+    std::ignore = gbid;
+    std::ignore = onSuccess;
+    std::ignore = onApplicationError;
+    std::ignore = onRuntimeError;
+    std::ignore = messagingQos;
+    assert(false && "Not implemented yet");
 }
 
 std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscoveryAggregator::
@@ -126,6 +185,24 @@ std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscovery
                                            std::move(onRuntimeError),
                                            std::move(messagingQos));
     }
+}
+
+std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>
+LocalDiscoveryAggregator::lookupAsync(
+        const std::string& participantId,
+        const std::string& gbid,
+        std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
+        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+        boost::optional<joynr::MessagingQos> qos) noexcept
+{
+    std::ignore = participantId;
+    std::ignore = gbid;
+    std::ignore = onSuccess;
+    std::ignore = onApplicationError;
+    std::ignore = onRuntimeError;
+    std::ignore = qos;
+    assert(false && "Not implemented yet");
 }
 
 std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::removeAsync(
