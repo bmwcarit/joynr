@@ -47,6 +47,7 @@ using ::testing::_;
 using ::testing::A;
 using ::testing::InvokeWithoutArgs;
 using ::testing::DoAll;
+using ::testing::Matcher;
 
 using namespace joynr;
 
@@ -206,7 +207,7 @@ TEST_F(ArbitratorTest, getLastSeen)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &lastSeenParticipantId](
@@ -267,7 +268,7 @@ TEST_F(ArbitratorTest, getHighestPriority)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess =
@@ -335,7 +336,7 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
 
     // Check that one of the expected participant was selected
     auto onSuccess = [this, &expectedParticipantIds](
@@ -405,7 +406,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess =
@@ -486,7 +487,7 @@ TEST_F(ArbitratorTest, getKeywordProvider)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess =
@@ -557,7 +558,7 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantId](
@@ -714,7 +715,7 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
     auto mockFuture2 = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -806,7 +807,7 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
     auto mockFuture2 = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -970,7 +971,7 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
     auto mockFuture2 = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -1047,7 +1048,7 @@ TEST_P(ArbitratorTestWithParams, exceptionFromDiscoveryProxy)
         mockFuture2->onError(
                 std::make_shared<exceptions::JoynrRuntimeException>(expectedException));
 
-        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _))
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
                 .WillOnce(Return(mockFuture1))
                 .WillRepeatedly(Return(mockFuture2));
     }
@@ -1111,7 +1112,7 @@ void ArbitratorTest::testExceptionEmptyResult(std::shared_ptr<Arbitrator> arbitr
     auto mockFuture2 = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -1209,10 +1210,10 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
     mockFuture->onSuccess({});
 
     if (testRetry) {
-        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _))
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
                 .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Return(mockFuture)));
     } else {
-        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _))
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
                 .WillOnce(DoAll(ReleaseSemaphore(&semaphore),
                                 InvokeWithoutArgs(letThreadSleep<500>),
                                 Return(mockFuture)));

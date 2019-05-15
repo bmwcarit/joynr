@@ -73,7 +73,7 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_proxyNotSet_does
     const std::string interfaceName;
     const types::DiscoveryQos discoveryQos;
     EXPECT_DEATH(localDiscoveryAggregator.lookupAsync(
-                         domains, interfaceName, discoveryQos, nullptr, nullptr),
+                         domains, interfaceName, discoveryQos),
                  "Assertion.*");
 }
 
@@ -81,14 +81,14 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_proxyNotSet_doesNo
 {
     const std::string participantId;
     EXPECT_DEATH(
-            localDiscoveryAggregator.lookupAsync(participantId, nullptr, nullptr), "Assertion.*");
+            localDiscoveryAggregator.lookupAsync(participantId), "Assertion.*");
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, removeAsync_proxyNotSet_doesNotThrow)
 {
     const std::string participantId;
     EXPECT_DEATH(
-            localDiscoveryAggregator.removeAsync(participantId, nullptr, nullptr), "Assertion.*");
+            localDiscoveryAggregator.removeAsync(participantId), "Assertion.*");
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, addAsync_callsProxy)
@@ -112,8 +112,8 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_callsProxy)
     EXPECT_CALL(
             *discoveryMock,
             lookupAsyncMock(
-                    Eq(domains), Eq(interfaceName), Eq(discoveryQos), Eq(nullptr), Eq(nullptr), _));
-    localDiscoveryAggregator.lookupAsync(domains, interfaceName, discoveryQos, nullptr, nullptr);
+                    Eq(domains), Eq(interfaceName), Eq(discoveryQos),Matcher<std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>>(_),_,_));
+    localDiscoveryAggregator.lookupAsync(domains, interfaceName, discoveryQos);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_callsProxy)
@@ -122,7 +122,7 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_callsProxy)
 
     const std::string participantId("testParticipantId");
     EXPECT_CALL(*discoveryMock, lookupAsyncMock(Eq(participantId), Eq(nullptr), Eq(nullptr), _));
-    localDiscoveryAggregator.lookupAsync(participantId, nullptr, nullptr);
+    localDiscoveryAggregator.lookupAsync(participantId);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, removeAsync_callsProxy)

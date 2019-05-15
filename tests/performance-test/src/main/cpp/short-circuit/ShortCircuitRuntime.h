@@ -91,6 +91,46 @@ public:
         return addAsync(discoveryEntry, onSuccess, onRuntimeError, qos);
     }
 
+    std::shared_ptr<joynr::Future<void>> addAsync(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            const bool& awaitGlobalRegistration,
+            const std::vector<std::string>& gbids,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
+                    onApplicationError = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override
+    {
+        std::ignore = discoveryEntry;
+        std::ignore = awaitGlobalRegistration;
+        std::ignore = gbids;
+        std::ignore = onSuccess;
+        std::ignore = onRuntimeError;
+        std::ignore = onApplicationError;
+        std::ignore = qos;
+        assert(false && "Not implemented yet");
+    }
+
+    std::shared_ptr<joynr::Future<void>> addToAllAsync(
+            const joynr::types::DiscoveryEntry& discoveryEntry,
+            const bool& awaitGlobalRegistration,
+            std::function<void()> onSuccess = nullptr,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
+                    onApplicationError = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override
+    {
+        std::ignore = discoveryEntry;
+        std::ignore = awaitGlobalRegistration;
+        std::ignore = onSuccess;
+        std::ignore = onRuntimeError;
+        std::ignore = onApplicationError;
+        std::ignore = qos;
+        assert(false && "Not implemented yet");
+    }
+
     std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
     lookupAsync(
             const std::vector<std::string>& domains,
@@ -107,6 +147,31 @@ public:
         return resolve(result, onSuccess);
     }
 
+    std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
+    lookupAsync(
+            const std::vector<std::string>& domains,
+            const std::string& interfaceName,
+            const joynr::types::DiscoveryQos& discoveryQos,
+            const std::string& gbid,
+            std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
+                    onSuccess = nullptr,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
+                    onApplicationError = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override
+    {
+        std::ignore = domains;
+        std::ignore = interfaceName;
+        std::ignore = discoveryQos;
+        std::ignore = gbid;
+        std::ignore = onSuccess;
+        std::ignore = onApplicationError;
+        std::ignore = onRuntimeError;
+        std::ignore = qos;
+        assert(false && "Not implemented yet");
+    }
+
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
             const std::string& participantId,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
@@ -116,6 +181,26 @@ public:
             boost::optional<MessagingQos> qos = boost::none) noexcept override
     {
         return resolve(joynr::util::convert(true, entry), onSuccess);
+    }
+
+    std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
+            const std::string& participantId,
+            const std::string& gbid,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
+                    nullptr,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
+                    onApplicationError = nullptr,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr,
+            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override
+    {
+        std::ignore = participantId;
+        std::ignore = gbid;
+        std::ignore = onSuccess;
+        std::ignore = onApplicationError;
+        std::ignore = onRuntimeError;
+        std::ignore = qos;
+        assert(false && "Not implemented yet");
     }
 
     std::shared_ptr<joynr::Future<void>> removeAsync(
