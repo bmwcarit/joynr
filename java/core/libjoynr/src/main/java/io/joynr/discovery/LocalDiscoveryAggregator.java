@@ -36,9 +36,11 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.DiscoveryAsync;
 import joynr.system.DiscoveryProvider;
 import joynr.system.DiscoveryProxy;
@@ -46,6 +48,7 @@ import joynr.system.Routing;
 import joynr.system.RoutingProvider;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 import joynr.types.DiscoveryQos;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -79,7 +82,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                                        NO_EXPIRY,
                                                                        defaultPublicKeyId,
                                                                        false));
-        // provision routing provider to prevent lookup via discovery proxy during startup.
+        // provision routing provider to prevent lookup via discovery proxy during
+        // startup.
         provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
                                         new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(RoutingProvider.class),
                                                                        systemServicesDomain,
@@ -183,9 +187,11 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
     private DiscoveryProxy getDefaultDiscoveryProxy() {
         if (discoveryProxy == null) {
-            // extend default ttl by 10 seconds to allow the cluster controller to handle timeout for
+            // extend default ttl by 10 seconds to allow the cluster controller to handle
+            // timeout for
             // global discovery requests and send back the response to discoveryProxy.
-            // Note that ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS must be
+            // Note that ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS
+            // must be
             // larger than the resulting value here.
             MessagingQos internalMessagingQos = new MessagingQos();
             internalMessagingQos.setTtl_ms(internalMessagingQos.getRoundTripTtl_ms() + 10000);
@@ -195,5 +201,40 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         }
 
         return discoveryProxy;
+    }
+
+    @Override
+    public Future<Void> add(CallbackWithModeledError<Void, DiscoveryError> callback,
+                            DiscoveryEntry discoveryEntry,
+                            Boolean awaitGlobalRegistration,
+                            String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Future<Void> addToAll(CallbackWithModeledError<Void, DiscoveryError> callback,
+                                 DiscoveryEntry discoveryEntry,
+                                 Boolean awaitGlobalRegistration) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Future<DiscoveryEntryWithMetaInfo[]> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callback,
+                                                       String[] domains,
+                                                       String interfaceName,
+                                                       DiscoveryQos discoveryQos,
+                                                       String gbid) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Future<DiscoveryEntryWithMetaInfo> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError> callback,
+                                                     String participantId,
+                                                     String gbid) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 }

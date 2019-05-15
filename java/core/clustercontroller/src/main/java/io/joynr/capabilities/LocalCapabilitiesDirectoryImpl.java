@@ -752,14 +752,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup2Deferred> lookup(String participantId) {
-        Lookup2Deferred deferred = new Lookup2Deferred();
-        DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
-        deferred.resolve(discoveryEntry);
-        return new Promise<>(deferred);
-    }
-
-    @Override
     public io.joynr.provider.Promise<io.joynr.provider.DeferredVoid> remove(String participantId) {
         DeferredVoid deferred = new DeferredVoid();
         DiscoveryEntry entryToRemove = localDiscoveryEntryStore.lookup(participantId, Long.MAX_VALUE);
@@ -787,5 +779,41 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                            queuedDiscoveryEntry.getDeferred(),
                            queuedDiscoveryEntry.getAwaitGlobalRegistration());
         }
+    }
+
+    @Override
+    public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Promise<AddToAllDeferred> addToAll(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Promise<Lookup3Deferred> lookup(String participantId) {
+        Lookup3Deferred deferred = new Lookup3Deferred();
+        DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
+        deferred.resolve(discoveryEntry);
+        return new Promise<>(deferred);
+
+    }
+
+    @Override
+    public Promise<Lookup2Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos,
+                                           String gbid) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Promise<Lookup4Deferred> lookup(String participantId, String gbid) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 }

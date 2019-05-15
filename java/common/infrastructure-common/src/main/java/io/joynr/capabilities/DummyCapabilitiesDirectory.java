@@ -99,11 +99,11 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public Promise<Lookup2Deferred> lookup(String participantId) {
-        Lookup2Deferred deferred = new Lookup2Deferred();
+    public Promise<Lookup3Deferred> lookup(String participantId) {
+        Lookup3Deferred deferred = new Lookup3Deferred();
         DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
         deferred.resolve(discoveryEntry);
-        return new Promise<Lookup2Deferred>(deferred);
+        return new Promise<Lookup3Deferred>(deferred);
     }
 
     @Override
@@ -165,5 +165,32 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     @Override
     public Set<DiscoveryEntry> listLocalCapabilities() {
         return new HashSet<DiscoveryEntry>(registeredCapabilities);
+    }
+
+    @Override
+    public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Promise<AddToAllDeferred> addToAll(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Promise<Lookup2Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos,
+                                           String gbid) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Promise<Lookup4Deferred> lookup(String participantId, String gbid) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 }
