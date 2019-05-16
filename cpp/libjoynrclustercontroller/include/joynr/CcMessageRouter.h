@@ -230,7 +230,7 @@ private:
     void queueMessage(std::shared_ptr<ImmutableMessage> message,
                       const ReadLocker& messageQueueRetryReadLock) final;
 
-    bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const;
+    bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const final;
 
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
     ADD_LOGGER(CcMessageRouter)
