@@ -177,7 +177,7 @@ public:
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
             const joynr::types::DiscoveryQos& discoveryQos,
-            const std::string& gbid,
+            const std::vector<std::string>& gbids,
             std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                     onSuccess,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
@@ -191,7 +191,7 @@ public:
     // inherited method from joynr::system::DiscoveryProvider
     void lookup(
             const std::string& participantId,
-            const std::string& gbid,
+            const std::vector<std::string>& gbids,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
             override;

@@ -70,6 +70,18 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
+    public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Promise<AddToAllDeferred> addToAll(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public Promise<Lookup1Deferred> lookup(String[] domains,
                                            String interfaceName,
                                            joynr.types.DiscoveryQos discoveryQos) {
@@ -138,9 +150,24 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
+    public Promise<Lookup2Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos,
+                                           String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     @CheckForNull
     public void lookup(String participantId, DiscoveryQos discoveryQos, CapabilityCallback callback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
+    }
+
+    @Override
+    public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
     @Override
@@ -167,30 +194,4 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
         return new HashSet<DiscoveryEntry>(registeredCapabilities);
     }
 
-    @Override
-    public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Promise<AddToAllDeferred> addToAll(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Promise<Lookup2Deferred> lookup(String[] domains,
-                                           String interfaceName,
-                                           joynr.types.DiscoveryQos discoveryQos,
-                                           String gbid) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Promise<Lookup4Deferred> lookup(String participantId, String gbid) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
 }

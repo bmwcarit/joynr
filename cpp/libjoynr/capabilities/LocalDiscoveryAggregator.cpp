@@ -145,7 +145,7 @@ LocalDiscoveryAggregator::lookupAsync(
         const std::vector<std::string>& domains,
         const std::string& interfaceName,
         const types::DiscoveryQos& discoveryQos,
-        const std::string& gbid,
+        const std::vector<std::string>& gbids,
         std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                 onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
@@ -155,7 +155,7 @@ LocalDiscoveryAggregator::lookupAsync(
     std::ignore = domains;
     std::ignore = interfaceName;
     std::ignore = discoveryQos;
-    std::ignore = gbid;
+    std::ignore = gbids;
     std::ignore = onSuccess;
     std::ignore = onApplicationError;
     std::ignore = onRuntimeError;
@@ -190,14 +190,14 @@ std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscovery
 std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>
 LocalDiscoveryAggregator::lookupAsync(
         const std::string& participantId,
-        const std::string& gbid,
+        const std::vector<std::string>& gbids,
         std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
         boost::optional<joynr::MessagingQos> qos) noexcept
 {
     std::ignore = participantId;
-    std::ignore = gbid;
+    std::ignore = gbids;
     std::ignore = onSuccess;
     std::ignore = onApplicationError;
     std::ignore = onRuntimeError;

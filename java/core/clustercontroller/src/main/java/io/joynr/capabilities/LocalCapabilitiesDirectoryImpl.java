@@ -416,7 +416,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     public Promise<Lookup2Deferred> lookup(String[] domains,
                                            String interfaceName,
                                            joynr.types.DiscoveryQos discoveryQos,
-                                           String gbid) {
+                                           String[] gbids) {
         // TODO
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
@@ -605,7 +605,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup4Deferred> lookup(String participantId, String gbid) {
+    public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
         // TODO
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }

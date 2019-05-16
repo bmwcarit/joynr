@@ -110,6 +110,23 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     }
 
     @Override
+    public Future<Void> add(CallbackWithModeledError<Void, DiscoveryError> callback,
+                            DiscoveryEntry discoveryEntry,
+                            Boolean awaitGlobalRegistration,
+                            String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
+    public Future<Void> addToAll(CallbackWithModeledError<Void, DiscoveryError> callback,
+                                 DiscoveryEntry discoveryEntry,
+                                 Boolean awaitGlobalRegistration) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public Future<DiscoveryEntryWithMetaInfo[]> lookup(final Callback<DiscoveryEntryWithMetaInfo[]> callback,
                                                        String[] domains,
                                                        String interfaceName,
@@ -171,6 +188,16 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     }
 
     @Override
+    public Future<DiscoveryEntryWithMetaInfo[]> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callback,
+                                                       String[] domains,
+                                                       String interfaceName,
+                                                       DiscoveryQos discoveryQos,
+                                                       String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public Future<DiscoveryEntryWithMetaInfo> lookup(Callback<DiscoveryEntryWithMetaInfo> callback,
                                                      String participantId) {
         return getDefaultDiscoveryProxy().lookup(callback, participantId);
@@ -179,6 +206,14 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     @Override
     public Future<Void> remove(Callback<Void> callback, String participantId) {
         return getDefaultDiscoveryProxy().remove(callback, participantId);
+    }
+
+    @Override
+    public Future<DiscoveryEntryWithMetaInfo> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError> callback,
+                                                     String participantId,
+                                                     String[] gbids) {
+        // TODO
+        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
     public void forceQueryOfDiscoveryProxy() {
@@ -203,38 +238,4 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         return discoveryProxy;
     }
 
-    @Override
-    public Future<Void> add(CallbackWithModeledError<Void, DiscoveryError> callback,
-                            DiscoveryEntry discoveryEntry,
-                            Boolean awaitGlobalRegistration,
-                            String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Future<Void> addToAll(CallbackWithModeledError<Void, DiscoveryError> callback,
-                                 DiscoveryEntry discoveryEntry,
-                                 Boolean awaitGlobalRegistration) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Future<DiscoveryEntryWithMetaInfo[]> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callback,
-                                                       String[] domains,
-                                                       String interfaceName,
-                                                       DiscoveryQos discoveryQos,
-                                                       String gbid) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    public Future<DiscoveryEntryWithMetaInfo> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError> callback,
-                                                     String participantId,
-                                                     String gbid) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
 }

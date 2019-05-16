@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,30 +31,34 @@ import types.* from "DiscoveryTypes.fidl"
 interface Discovery {
 
 	version {major 0 minor 2}
-	
 
-	<** 
-		@description: Adds a provider to the joynr discovery for the default backend. 
+
+	<**
+		@description: Adds a provider to the joynr discovery. In case of global registration,
+			it will be registered for the default backend (via the GCD instance in the default
+			backend).
 	**>
 	method add {
 		in {
-			<** 
-				@description: the new DiscoveryEntry to be added 
+			<**
+				@description: the new DiscoveryEntry to be added
 			**>
 			DiscoveryEntry discoveryEntry
 		}
 	}
 
-	<** 
-		@description: Adds a provider to the joynr discovery for the default backend. 
+	<**
+		@description: Adds a provider to the joynr discovery. In case of global registration,
+			it will be registered for the default backend (via the GCD instance in the default
+			backend).
 	**>
 	method add {
 		in {
-			<** 
-				@description: the new DiscoveryEntry to be added 
+			<**
+				@description: the new DiscoveryEntry to be added
 			**>
 			DiscoveryEntry discoveryEntry
-			<** 
+			<**
 				@description: if true, the response will be delayed either until
 					global registration succeeded or failed
 			**>
@@ -64,14 +68,16 @@ interface Discovery {
 
 	<**
 		@description: Adds a provider to the joynr discovery directory for selected backends.
+			The global registration will be done via the GCD instance in the backend identified
+			by the first gbid of the gbids parameter.
 	**>
 	method add {
 		in {
-			<** 
-				@description: the new DiscoveryEntry to be added 
+			<**
+				@description: the new DiscoveryEntry to be added
 			**>
-			DiscoveryEntry discoveryEntry		
-			<** 
+			DiscoveryEntry discoveryEntry
+			<**
 				@description: if true, the response will be delayed either until
 					global registration succeeded or failed
 			**>
@@ -87,14 +93,15 @@ interface Discovery {
 	<**
 		@description: Adds a provider to the joynr discovery directory for all backends
 			known to the cluster controller.
+			The global registration will be done via the GCD instance in the default backend.
 	**>
 	method addToAll {
 		in {
 			<**
-				@description: the new DiscoveryEntry to be added 
+				@description: the new DiscoveryEntry to be added
 			**>
 			DiscoveryEntry discoveryEntry
-			<** 
+			<**
 				@description: if true, the response will be delayed either until
 					global registration succeeded or failed
 			**>
@@ -103,121 +110,132 @@ interface Discovery {
 		error DiscoveryError
 	}
 
+
 	<**
-		@description: Looks up providers in the joynr discovery that match
-			the requested QoS for the default backend.
+		@description: Looks up providers in the joynr discovery that match the requested QoS.
+			In case of global discovery, the lookup will be done for all known backends via the GCD
+			instance in the default backend.
 		@param: qos [not implemented yet] the minimum QoS the provider must offer
 	**>
 	method lookup {
 		in {
-			<** 
-				@description: the domain to search for provider 
+			<**
+				@description: the domain to search for provider
 			**>
 			String[] domains
-			<** 
-				@description: the interface the provider must implement 
+			<**
+				@description: the interface the provider must implement
 			**>
 			String interfaceName
-			<** 
-				@description: the QoS used for the lookup 
+			<**
+				@description: the QoS used for the lookup
 			**>
 			DiscoveryQos discoveryQos
 		}
 		out {
-			<** 
-				@description: a list of matching providers 
+			<**
+				@description: a list of matching providers
 			**>
 			DiscoveryEntryWithMetaInfo[] result
 		}
 	}
+
 	<**
-		@description: Looks up providers in the joynr discovery for a given GBID 
-			that match the requested QoS.
+		@description: Looks up providers that match the requested QoS in the joynr discovery for
+			specific GBIDs.
+			The global lookup will be done via the GCD instance in the backend identified
+			by the first gbid of the gbids parameter.
 		@param: qos [not implemented yet] the minimum QoS the provider must offer
 	**>
 	method lookup {
 		in {
-			<** 
-				@description: the domain to search for provider 
+			<**
+				@description: the domain to search for provider
 			**>
 			String[] domains
-			<** 
-				@description: the interface the provider must implement 
+			<**
+				@description: the interface the provider must implement
 			**>
 			String interfaceName
-			<** 
-				@description: the QoS used for the lookup 
+			<**
+				@description: the QoS used for the lookup
 			**>
 			DiscoveryQos discoveryQos
 			<**
-				@description: Global Backend ID for which providers should be returned. Only
-					Providers from the provided Global Backend will be returned.
+				@description: Global Backend IDs for which providers should be returned. Only
+					Providers from the provided Global Backends will be returned.
 			**>
-			String gbid
+			String[] gbids
 		}
 		out {
-			<** 
-				@description: a list of matching providers 
+			<**
+				@description: a list of matching providers
 			**>
 			DiscoveryEntryWithMetaInfo[] result
 		}
 		error DiscoveryError
 	}
 
-	<** 
-		@description: Looks up a specific provider in the joynr discovery for the default backend. 
+	<**
+		@description: Looks up a specific provider in the joynr discovery.
+			In case of global discovery, the lookup will be done for all known backends via the GCD
+			instance in the default backend.
 	**>
 	method lookup {
 		in {
-			<** 
-				@description: the participant ID of the provider to look up 
+			<**
+				@description: the participant ID of the provider to look up
 			**>
 			String participantId
 		}
 		out {
-			<** 
-				@description: the provider matching the participant ID 
+			<**
+				@description: the provider matching the participant ID
 			**>
 			DiscoveryEntryWithMetaInfo result
 		}
 	}
-	
-	<** 
-		@description: Looks up a specific provider in the joynr discovery for specific GIBD. 
+
+	<**
+		@description: Looks up a specific provider in the joynr discovery for specific GBIDs.
+			The global lookup will be done via the GCD instance in the backend identified
+			by the first gbid of the gbids parameter.
 	**>
 	method lookup {
 		in {
-			<** 
-				@description: the participant ID of the provider to look up 
+			<**
+				@description: the participant ID of the provider to look up
 			**>
 			String participantId
-			
+
 			<**
-				@description: Global Backend ID for which providers should be returned. Only
-					Providers from the provided Global Backend will be returned.
+				@description: Global Backend IDs for which providers should be returned. Only
+					Providers from the provided Global Backends will be returned.
 			**>
-			String gbid
+			String[] gbids
 		}
 		out {
-			<** 
-				@description: the provider matching the participant ID 
+			<**
+				@description: the provider matching the participant ID
 			**>
 			DiscoveryEntryWithMetaInfo result
 		}
 		error DiscoveryError
 	}
 
-	<** 
-		@description: Removes a provider from joynr discovery. 
+
+	<**
+		@description: Removes a provider from joynr discovery.
 			In the case of a provider registered in multiple backends,
-			that provider will be removed from all backends, it was 
-			previously registered.
-			 
+			that provider will be removed from all backends, it was
+			previously registered for.
+			The global remove will be done via the GCD instance in one of the backends in which
+			the provider was registered.
 	**>
 	method remove {
 		in {
-			<** 
-				@description: the participant ID of the provider to remove 
+			<**
+				@description: the participant ID of the provider to remove
 			**>
 			String participantId
 		}

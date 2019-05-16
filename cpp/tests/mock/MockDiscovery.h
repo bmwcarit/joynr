@@ -73,7 +73,7 @@ public:
             void(
                 joynr::types::DiscoveryEntryWithMetaInfo& result,
                 const std::string& participantId,
-                const std::string& gbid,
+                const std::vector<std::string>& gbids,
                 boost::optional<joynr::MessagingQos> qos
             )
     );
@@ -95,7 +95,7 @@ public:
                 const std::vector<std::string> & domains,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos,
-                const std::string& gbid,
+                const std::vector<std::string>& gbids,
                 boost::optional<joynr::MessagingQos> qos
             )
     );
@@ -149,7 +149,7 @@ public:
     std::shared_ptr<joynr::Future<void>> addAsync(
                 const joynr::types::DiscoveryEntry& discoveryEntry,
                 const bool& awaitGlobalRegistration,
-                const std::vector<std::string> & gbids,
+                const std::vector<std::string>& gbids,
                 std::function<void()> onSuccess,
                 std::function<void (const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
@@ -168,7 +168,7 @@ public:
             std::shared_ptr<joynr::Future<void>>(
                 const joynr::types::DiscoveryEntry& discoveryEntry,
                 const bool& awaitGlobalRegistration,
-                const std::vector<std::string> & gbids,
+                const std::vector<std::string>& gbids,
                 std::function<void(void)> onSuccess,
                 std::function<void (const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
@@ -226,7 +226,7 @@ public:
     );
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
                 const std::string& participantId,
-                const std::string& gbid,
+                const std::vector<std::string>& gbids,
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)>
                         onSuccess,
                 std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
@@ -236,13 +236,13 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             ) noexcept override
     {
-        return lookupAsyncMock(participantId, gbid, std::move(onSuccess), std::move(onApplicationError), std::move(onRuntimeError), std::move(qos));
+        return lookupAsyncMock(participantId, gbids, std::move(onSuccess), std::move(onApplicationError), std::move(onRuntimeError), std::move(qos));
     }
     MOCK_METHOD6(
             lookupAsyncMock,
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>(
                 const std::string& participantId,
-                const std::string& gbid,
+                const std::vector<std::string>& gbids,
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)>
                         onSuccess,
                 std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
@@ -280,7 +280,7 @@ public:
                 const std::vector<std::string>& domains,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos,
-                const std::string& gbid,
+                const std::vector<std::string>& gbids,
                 std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                         onSuccess,
                 std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
@@ -290,7 +290,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             ) noexcept override
     {
-        return lookupAsyncMock(domains, interfaceName, discoveryQos, gbid, std::move(onSuccess), std::move(onApplicationError), std::move(onRuntimeError), std::move(qos));
+        return lookupAsyncMock(domains, interfaceName, discoveryQos, gbids, std::move(onSuccess), std::move(onApplicationError), std::move(onRuntimeError), std::move(qos));
     }
     MOCK_METHOD8(
             lookupAsyncMock,
@@ -298,7 +298,7 @@ public:
                 const std::vector<std::string>& domains,
                 const std::string& interfaceName,
                 const joynr::types::DiscoveryQos& discoveryQos,
-                const std::string& gbid,
+                const std::vector<std::string>& gbids,
                 std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                         onSuccess,
                 std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>

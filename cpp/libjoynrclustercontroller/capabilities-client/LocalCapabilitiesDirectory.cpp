@@ -889,7 +889,7 @@ void LocalCapabilitiesDirectory::lookup(
         const std::vector<std::string>& domains,
         const std::string& interfaceName,
         const joynr::types::DiscoveryQos& discoveryQos,
-        const std::string& gbid,
+        const std::vector<std::string>& gbids,
         std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                 onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
@@ -897,7 +897,7 @@ void LocalCapabilitiesDirectory::lookup(
     std::ignore = domains;
     std::ignore = interfaceName;
     std::ignore = discoveryQos;
-    std::ignore = gbid;
+    std::ignore = gbids;
     std::ignore = onSuccess;
     std::ignore = onError;
     throw exceptions::JoynrRuntimeException("Not implemented...yet!");
@@ -943,12 +943,12 @@ void LocalCapabilitiesDirectory::lookup(
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::lookup(
         const std::string& participantId,
-        const std::string& gbid,
+        const std::vector<std::string>& gbids,
         std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
 {
     std::ignore = participantId;
-    std::ignore = gbid;
+    std::ignore = gbids;
     std::ignore = onSuccess;
     std::ignore = onError;
     throw exceptions::JoynrRuntimeException("Not implemented...yet!");

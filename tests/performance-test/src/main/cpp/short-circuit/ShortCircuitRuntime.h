@@ -152,7 +152,7 @@ public:
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
             const joynr::types::DiscoveryQos& discoveryQos,
-            const std::string& gbid,
+            const std::vector<std::string>& gbids,
             std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                     onSuccess = nullptr,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
@@ -164,7 +164,7 @@ public:
         std::ignore = domains;
         std::ignore = interfaceName;
         std::ignore = discoveryQos;
-        std::ignore = gbid;
+        std::ignore = gbids;
         std::ignore = onSuccess;
         std::ignore = onApplicationError;
         std::ignore = onRuntimeError;
@@ -185,7 +185,7 @@ public:
 
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
             const std::string& participantId,
-            const std::string& gbid,
+            const std::vector<std::string>& gbids,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
                     nullptr,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
@@ -195,7 +195,7 @@ public:
             boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override
     {
         std::ignore = participantId;
-        std::ignore = gbid;
+        std::ignore = gbids;
         std::ignore = onSuccess;
         std::ignore = onApplicationError;
         std::ignore = onRuntimeError;

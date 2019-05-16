@@ -110,7 +110,7 @@ public:
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
             const joynr::types::DiscoveryQos& discoveryQos,
-            const std::string& gbid,
+            const std::vector<std::string>& gbids,
             std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result)>
                     onSuccess = nullptr,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
@@ -131,7 +131,7 @@ public:
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
             const std::string& participantId,
-            const std::string& gbid,
+            const std::vector<std::string>& gbids,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
                     nullptr,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>
