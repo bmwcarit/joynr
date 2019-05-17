@@ -29,7 +29,7 @@ public class NoOpMqttMessagingSkeletonFactory extends AbstractMessagingSkeletonF
     @Inject
     public NoOpMqttMessagingSkeletonFactory(MqttClientFactory mqttClientFactory, String[] gbids) {
         super();
-        IMessagingSkeleton messagingSkeleton = new NoOpMqttMessagingSkeleton(mqttClientFactory, gbids[0]);
+        IMessagingSkeleton messagingSkeleton = new NoOpMqttMessagingSkeleton(mqttClientFactory, gbids);
         messagingSkeletonList.add(messagingSkeleton);
     }
 }

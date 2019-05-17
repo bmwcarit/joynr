@@ -18,6 +18,9 @@
  */
 package io.joynr.jeeintegration.messaging;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +38,13 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
     private final static Logger logger = LoggerFactory.getLogger(NoOpMqttMessagingSkeleton.class);
 
     private MqttClientFactory mqttClientFactory;
-    private JoynrMqttClient mqttClient;
-    private final String ownGbid;
+    private Set<JoynrMqttClient> mqttClients;
+    private final String[] gbids;
 
-    public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory, String ownGbid) {
+    public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory, String[] gbids) {
         this.mqttClientFactory = mqttClientFactory;
-        this.ownGbid = ownGbid;
+        this.gbids = gbids.clone();
+        mqttClients = new HashSet<>();
     }
 
     @Override
@@ -50,14 +54,18 @@ public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
 
     @Override
     public void init() {
-        mqttClient = mqttClientFactory.createReceiver(ownGbid);
-        mqttClient.setMessageListener(this);
-        mqttClient.start();
+        for (String gbid : gbids) {
+            // NoOpMqttMessagingSkeleton initializes only the senders to enable Mqtt message publishing
+            JoynrMqttClient mqttClient = mqttClientFactory.createSender(gbid);
+            mqttClient.setMessageListener(this);
+            mqttClient.start();
+            mqttClients.add(mqttClient);
+        }
     }
 
     @Override
     public void shutdown() {
-        mqttClient.shutdown();
+        mqttClients.forEach(mqttClient -> mqttClient.shutdown());
     }
 
     @Override
