@@ -20,6 +20,12 @@ package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -28,15 +34,25 @@ import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFactory<MqttMessagingStub, MqttAddress> {
 
-    private JoynrMqttClient mqttClient;
+    private static final Logger logger = LoggerFactory.getLogger(MqttMessagingStubFactory.class);
+
+    private Map<String, JoynrMqttClient> gbidToMqttClientMap;
 
     @Inject
-    public MqttMessagingStubFactory(MqttClientFactory mqttClientFactory, @Named(GBID_ARRAY) String[] gbids) {
-        this.mqttClient = mqttClientFactory.createSender(gbids[0]);
+    public MqttMessagingStubFactory(MqttClientFactory mqttClientFactory, @Named(GBID_ARRAY) String[] gbid_array) {
+        gbidToMqttClientMap = new HashMap<String, JoynrMqttClient>();
+        for (String gbid : gbid_array) {
+            gbidToMqttClientMap.put(gbid, mqttClientFactory.createSender(gbid));
+        }
     }
 
     @Override
     protected MqttMessagingStub createInternal(MqttAddress address) {
-        return new MqttMessagingStub(address, mqttClient);
+        String gbid = address.getBrokerUri();
+        if (!gbidToMqttClientMap.containsKey(gbid)) {
+            logger.error("Gbid " + gbid + " is not known in MqttMessagingStubFactory.");
+            return null;
+        }
+        return new MqttMessagingStub(address, gbidToMqttClientMap.get(gbid));
     }
 }
