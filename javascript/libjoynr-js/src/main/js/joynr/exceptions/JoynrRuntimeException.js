@@ -17,46 +17,32 @@
  * #L%
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const Typing = require("../util/Typing");
-const UtilInternal = require("../util/UtilInternal");
 const JoynrException = require("./JoynrException");
-const defaultSettings = {};
 
-class JoynrRuntimeException {
+class JoynrRuntimeException extends JoynrException {
     /**
-     * @classdesc
-     *
-     * @summary
      * Constructor of JoynrRuntimeException object used for reporting
-     * error conditions. This serves as superobject for other more specific
+     * error conditions. This serves as super class for other more specific
      * runtime exception objects and inherits from JoynrException.
-     *
-     * @constructor
-     * @name JoynrRuntimeException
      *
      * @param {Object} [settings] the settings object for the constructor call
      * @param {String} [settings.detailMessage] message containing details
      *            about the error
      * @returns {JoynrRuntimeException} The newly created IllegalAccessException object
      */
-    constructor(settings) {
-        const exception = new JoynrException(settings);
+    constructor(settings = {}) {
+        super(settings);
 
         /**
          * Used for serialization.
          * @name JoynrRuntimeException#_typeName
          * @type String
          */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.JoynrRuntimeException");
-        Typing.checkPropertyIfDefined(settings, "Object", "settings");
-        UtilInternal.extend(this, defaultSettings, settings, exception);
+        this._typeName = "joynr.exceptions.JoynrRuntimeException";
+        this.name = "JoynrRuntimeException";
     }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.JoynrRuntimeException", JoynrRuntimeException);
-
-JoynrRuntimeException.prototype = new Error();
-JoynrRuntimeException.prototype.constructor = JoynrRuntimeException;
-JoynrRuntimeException.prototype.name = "JoynrRuntimeException";
 
 module.exports = JoynrRuntimeException;

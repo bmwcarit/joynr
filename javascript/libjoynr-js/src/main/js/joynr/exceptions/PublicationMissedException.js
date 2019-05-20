@@ -18,21 +18,13 @@
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
-const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-const defaultSettings = {};
 
-class PublicationMissedException {
+class PublicationMissedException extends JoynrRuntimeException {
     /**
-     * @classdesc
-     *
-     * @summary
      * Constructor of PublicationMissedException object used to report
      * when a publication has not been received within the expected
      * time period.
-     *
-     * @constructor
-     * @name PublicationMissedException
      *
      * @param {Object} [settings] the settings object for the constructor call
      * @param {String} [settings.detailMessage] message containing details
@@ -40,8 +32,8 @@ class PublicationMissedException {
      * @param {String} [settings.subscriptionId] the id of the subscription
      * @returns {PublicationMissedException} The newly created PublicationMissedException object
      */
-    constructor(settings) {
-        const runtimeException = new JoynrRuntimeException(settings);
+    constructor(settings = {}) {
+        super(settings);
 
         Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
@@ -50,16 +42,12 @@ class PublicationMissedException {
          * @name PublicationMissedException#_typeName
          * @type String
          */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.PublicationMissedException");
-
-        UtilInternal.extend(this, defaultSettings, settings, runtimeException);
+        this._typeName = "joynr.exceptions.PublicationMissedException";
+        this.name = "PublicationMissedException";
+        this.subscriptionId = settings.subscriptionId;
     }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.PublicationMissedException", PublicationMissedException);
-
-PublicationMissedException.prototype = new Error();
-PublicationMissedException.prototype.constructor = PublicationMissedException;
-PublicationMissedException.prototype.name = "PublicationMissedException";
 
 module.exports = PublicationMissedException;

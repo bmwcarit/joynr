@@ -17,20 +17,12 @@
  * #L%
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-const defaultSettings = {};
 
-class DiscoveryException {
+class DiscoveryException extends JoynrRuntimeException {
     /**
-     * @classdesc
-     *
-     * @summary
      * Constructor of DiscoveryException object used for reporting
      * error conditions during discovery and arbitration.
-     *
-     * @constructor
-     * @name DiscoveryException
      *
      * @param {Object} [settings] the settings object for the constructor call
      * @param {String} [settings.detailMessage] message containing details
@@ -38,30 +30,18 @@ class DiscoveryException {
      * @returns {DiscoveryException} The newly created DiscoveryException object
      */
     constructor(settings) {
-        const joynrRuntimeException = new JoynrRuntimeException(settings);
+        super(settings);
 
         /**
          * Used for serialization.
          * @name DiscoveryException#_typeName
          * @type String
          */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.DiscoveryException");
-
-        /**
-         * See [constructor description]{@link DiscoveryException}.
-         * @name DiscoveryException#detailMessage
-         * @type String
-         */
-        this.detailMessage = undefined;
-
-        UtilInternal.extend(this, defaultSettings, settings, joynrRuntimeException);
+        this._typeName = "joynr.exceptions.DiscoveryException";
+        this.name = "DiscoveryException";
     }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.DiscoveryException", DiscoveryException);
-
-DiscoveryException.prototype = new Error();
-DiscoveryException.prototype.constructor = DiscoveryException;
-DiscoveryException.prototype.name = "DiscoveryException";
 
 module.exports = DiscoveryException;

@@ -18,25 +18,16 @@
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
-const UtilInternal = require("../util/UtilInternal");
 const JoynrException = require("./JoynrException");
-const defaultSettings = {
-    detailMessage: "This is an application exception."
-};
+const defaultMessage = "This is an application exception.";
 
-class ApplicationException {
+class ApplicationException extends JoynrException {
     /**
-     * @classdesc
-     *
-     * @summary
      * Constructor of ApplicationException object used for reporting
      * error conditions from method implementations. The settings.error
      * object must be filled with _typeName and name as serialization
      * of an enum object of the matching error enum type defined in
      * Franca.
-     *
-     * @constructor
-     * @name ApplicationException
      *
      * @param {Object} [settings] the settings object for the constructor call
      * @param settings.error the error enum to be reported
@@ -44,29 +35,27 @@ class ApplicationException {
      *            about the error
      * @returns {ApplicationException} The newly created ApplicationException object
      */
-    constructor(settings) {
-        const exception = new JoynrException(settings);
+    constructor(settings = {}) {
+        settings.detailMessage = settings.detailMessage || defaultMessage;
+        super(settings);
 
         /**
          * Used for serialization.
          * @name ApplicationException#_typeName
          * @type String
          */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.ApplicationException");
-        Typing.checkPropertyIfDefined(settings, "Object", "settings");
+        this._typeName = "joynr.exceptions.ApplicationException";
+        this.name = "ApplicationException";
+
+        this.error = settings.error;
+
         if (settings && settings.error) {
             Typing.checkProperty(settings.error.name, "String", "settings.error.name");
             Typing.checkProperty(settings.error.value, ["String", "Number"], "settings.error.value");
         }
-
-        UtilInternal.extend(this, defaultSettings, settings, exception);
     }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ApplicationException", ApplicationException);
-
-ApplicationException.prototype = new Error();
-ApplicationException.prototype.constructor = ApplicationException;
-ApplicationException.prototype.name = "ApplicationException";
 
 module.exports = ApplicationException;

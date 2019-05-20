@@ -17,45 +17,32 @@
  * #L%
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-const defaultSettings = {};
 
-class ProviderRuntimeException {
+class ProviderRuntimeException extends JoynrRuntimeException {
     /**
-     * @classdesc
-     *
-     * @summary
      * Constructor of ProviderRuntimeException object used for reporting
      * generic error conditions on the provider side that should be
      * transmitted back to consumer side.
-     *
-     * @constructor
-     * @name ProviderRuntimeException
      *
      * @param {Object} [settings] the settings object for the constructor call
      * @param {String} [settings.detailMessage] message containing details
      *            about the error
      * @returns {ProviderRuntimeException} The newly created ProviderRuntimeException object
      */
-    constructor(settings) {
-        const runtimeException = new JoynrRuntimeException(settings);
+    constructor(settings = {}) {
+        super(settings);
 
         /**
          * Used for serialization.
          * @name ProviderRuntimeException#_typeName
          * @type String
          */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.ProviderRuntimeException");
-
-        UtilInternal.extend(this, defaultSettings, settings, runtimeException);
+        this._typeName = "joynr.exceptions.ProviderRuntimeException";
+        this.name = "ProviderRuntimeException";
     }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ProviderRuntimeException", ProviderRuntimeException);
-
-ProviderRuntimeException.prototype = new Error();
-ProviderRuntimeException.prototype.constructor = ProviderRuntimeException;
-ProviderRuntimeException.prototype.name = "ProviderRuntimeException";
 
 module.exports = ProviderRuntimeException;

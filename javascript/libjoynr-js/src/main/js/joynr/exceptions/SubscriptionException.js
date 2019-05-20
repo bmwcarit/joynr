@@ -18,22 +18,14 @@
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
-const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-const defaultSettings = {};
 
-class SubscriptionException {
+class SubscriptionException extends JoynrRuntimeException {
     /**
-     * @classdesc
-     *
-     * @summary
      * Constructor of SubscriptionException object used for reporting
      * error conditions when creating a subscription (e.g. the
      * provided subscription parameters are not correct etc.) that should
      * be transmitted back to consumer side.
-     *
-     * @constructor
-     * @name SubscriptionException
      *
      * @param {Object} settings - the settings object for the constructor call
      * @param {String} [settings.detailMessage] message containing details
@@ -41,28 +33,24 @@ class SubscriptionException {
      * @param {String} settings.subscriptionId - Id of the subscription
      * @returns {SubscriptionException} The newly created SubscriptionException object
      */
-    constructor(settings) {
-        const runtimeException = new JoynrRuntimeException(settings);
+    constructor(settings = {}) {
+        super(settings);
 
         /**
          * Used for serialization.
          * @name SubscriptionException#_typeName
          * @type String
          */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.SubscriptionException");
+        this._typeName = "joynr.exceptions.SubscriptionException";
+        this.name = "SubscriptionException";
 
+        this.subscriptionId = settings.subscriptionId;
         if (settings) {
             Typing.checkPropertyIfDefined(settings.subscriptionId, "String", "settings.subscriptionId");
         }
-
-        UtilInternal.extend(this, defaultSettings, settings, runtimeException);
     }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.SubscriptionException", SubscriptionException);
-
-SubscriptionException.prototype = new Error();
-SubscriptionException.prototype.constructor = SubscriptionException;
-SubscriptionException.prototype.name = "SubscriptionException";
 
 module.exports = SubscriptionException;

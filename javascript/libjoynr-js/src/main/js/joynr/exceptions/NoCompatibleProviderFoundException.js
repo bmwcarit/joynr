@@ -17,22 +17,14 @@
  * #L%
  */
 const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-const UtilInternal = require("../util/UtilInternal");
 const DiscoveryException = require("./DiscoveryException");
-const defaultSettings = {};
 
-class NoCompatibleProviderFoundException {
+class NoCompatibleProviderFoundException extends DiscoveryException {
     /**
-     * @classdesc
-     *
-     * @summary
      * Constructor of NoCompatibleProviderFoundException object used for reporting
      * error conditions during discovery and arbitration when only providers
      * with incompatible versions are found. At least one such provider must
      * have been found, otherwise DiscoveryException will be used.
-     *
-     * @constructor
-     * @name NoCompatibleProviderFoundException
      *
      * @param {Object} [settings] the settings object for the constructor call
      * @param {String} [settings.detailMessage] message containing details
@@ -42,38 +34,30 @@ class NoCompatibleProviderFoundException {
      *            but incompatible provider versions
      * @returns {NoCompatibleProviderFoundException} The newly created NoCompatibleProviderFoundException object
      */
-    constructor(settings) {
-        const discoveryException = new DiscoveryException(settings);
+    constructor(settings = {}) {
+        super(settings);
 
         /**
          * Used for serialization.
          * @name NoCompatibleProviderFoundException#_typeName
          * @type String
          */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.NoCompatibleProviderFoundException");
-
-        /**
-         * See [constructor description]{@link NoCompatibleProviderFoundException}.
-         * @name NoCompatibleProviderFoundException#detailMessage
-         * @type String
-         */
-        this.detailMessage = undefined;
+        this._typeName = "joynr.exceptions.NoCompatibleProviderFoundException";
+        this.name = "NoCompatibleProviderFoundException";
 
         /**
          * See [constructor description]{@link NoCompatibleProviderFoundException}.
          * @name NoCompatibleProviderFoundException#discoveredVersions
          * @type Version[]
          */
-        this.discoveredVersions = undefined;
+        this.discoveredVersions = settings.discoveredVersions;
 
         /**
          * See [constructor description]{@link NoCompatibleProviderFoundException}.
          * @name NoCompatibleProviderFoundException#interfaceName
          * @type String
          */
-        this.interfaceName = undefined;
-
-        UtilInternal.extend(this, defaultSettings, settings, discoveryException);
+        this.interfaceName = settings.interfaceName;
     }
 }
 
@@ -81,9 +65,5 @@ TypeRegistrySingleton.getInstance().addType(
     "joynr.exceptions.NoCompatibleProviderFoundException",
     NoCompatibleProviderFoundException
 );
-
-NoCompatibleProviderFoundException.prototype = new Error();
-NoCompatibleProviderFoundException.prototype.constructor = NoCompatibleProviderFoundException;
-NoCompatibleProviderFoundException.prototype.name = "NoCompatibleProviderFoundException";
 
 module.exports = NoCompatibleProviderFoundException;

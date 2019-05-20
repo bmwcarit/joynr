@@ -22,18 +22,12 @@ const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 const defaultSettings = {};
 
-class MethodInvocationException {
+class MethodInvocationException extends JoynrRuntimeException {
     /**
-     * @classdesc
-     *
-     * @summary
      * Constructor of MethodInvocationException object used for reporting
      * error conditions when invoking a method (e.g. method does not
      * exist or no method with matching signature found etc.) that should
      * be transmitted back to consumer side.
-     *
-     * @constructor
-     * @name MethodInvocationException
      *
      * @param {Object} [settings] the settings object for the constructor call
      * @param {Version} [settings.providerVersion] the version of the provider
@@ -42,34 +36,30 @@ class MethodInvocationException {
      *            about the error
      * @returns {MethodInvocationException} The newly created MethodInvocationException object
      */
-    constructor(settings) {
-        const runtimeException = new JoynrRuntimeException(settings);
+    constructor(settings = {}) {
+        super();
 
         /**
          * Used for serialization.
          * @name MethodInvocationException#_typeName
          * @type String
          */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.exceptions.MethodInvocationException");
+        this._typeName = "joynr.exceptions.MethodInvocationException";
+        this.name = "MethodInvocationException";
 
         /**
          * The provider version information
          * @name MethodInvocationException#providerVersion
-         * @type String
+         * @type Version
          */
+        this.providerVersion = settings.providerVersion;
         if (settings) {
             Typing.checkProperty(settings, "Object", "settings");
             Typing.checkPropertyIfDefined(settings.providerVersion, "Version", "settings.providerVersion");
         }
-
-        UtilInternal.extend(this, defaultSettings, settings, runtimeException);
     }
 }
 
 TypeRegistrySingleton.getInstance().addType("joynr.exceptions.MethodInvocationException", MethodInvocationException);
-
-MethodInvocationException.prototype = new Error();
-MethodInvocationException.prototype.constructor = MethodInvocationException;
-MethodInvocationException.prototype.name = "MethodInvocationException";
 
 module.exports = MethodInvocationException;
