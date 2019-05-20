@@ -21,7 +21,8 @@ then
 	exit 1
 fi
 
-mvn -q dependency:get -Dartifact=android:android:8.0.0_r2
+mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+-q dependency:get -Dartifact=android:android:8.0.0_r2
 
 if [ $? -eq 0 ]
 then
@@ -39,7 +40,9 @@ fi
 (
 	log "INSTALL OREO SDK TO MAVEN REPOSITORY"
 	cd maven-android-sdk-deployer
-	mvn install -P 8.0
+	mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+	install -P 8.0
+
 )
 (
 	log "CLEANUP"

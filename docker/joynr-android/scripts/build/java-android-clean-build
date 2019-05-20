@@ -60,10 +60,12 @@ echo '####################################################'
 cd /data/src
 
 # 1st run; just build without tests to provide WAR files for payara
-mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests \
 -Dmaven.test.failure.ignore=true \
--Denforcer.skip=true -Dmaven.compile.fork=true \
+-Denforcer.skip=true \
+-Dmaven.compile.fork=true \
 -Dmaven.junit.fork=true
 
 echo '####################################################'
@@ -84,11 +86,13 @@ DOMAIN_ACCESS_CONTROLLER_WAR_FILE=$(find /data/src/java/backend-services/domain-
 
 # 2nd run; now including test execution which requires mosquitto / payara and
 # generate site report
-mvn clean $GOAL jxr:aggregate site -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests=false \
 -DshowSuccess=true \
 -Dmaven.test.failure.ignore=true \
--Denforcer.skip=true -Dmaven.compile.fork=true \
+-Denforcer.skip=true \
+-Dmaven.compile.fork=true \
 -Dmaven.junit.fork=true \
 --fail-at-end
 
