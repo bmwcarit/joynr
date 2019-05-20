@@ -1020,6 +1020,7 @@
 						<skipTests>${skipTests}</skipTests>
 						<rerunFailingTestsCount>2</rerunFailingTestsCount>
 						<testFailureIgnore>false</testFailureIgnore>
+						<forkedProcessTimeoutInSeconds>120</forkedProcessTimeoutInSeconds>
 					</configuration>
 				</plugin>
 				<plugin>
