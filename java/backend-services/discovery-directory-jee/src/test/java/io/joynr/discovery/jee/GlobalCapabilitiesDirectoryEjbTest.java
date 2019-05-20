@@ -38,7 +38,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,6 +56,8 @@ import joynr.types.Version;
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class GlobalCapabilitiesDirectoryEjbTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     private static final String TOPIC_NAME = "my/topic";
 

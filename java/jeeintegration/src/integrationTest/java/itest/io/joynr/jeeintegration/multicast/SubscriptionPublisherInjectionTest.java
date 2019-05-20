@@ -31,7 +31,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,8 @@ import joynr.jeeintegration.servicelocator.MyServiceSync;
 
 @RunWith(Arquillian.class)
 public class SubscriptionPublisherInjectionTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionPublisherInjectionTest.class);
 

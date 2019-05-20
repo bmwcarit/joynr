@@ -38,7 +38,9 @@ import org.jboss.arquillian.transaction.api.annotation.Transactional;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import io.joynr.accesscontrol.global.jee.persistence.ControlEntryType;
@@ -55,6 +57,9 @@ import joynr.infrastructure.DacTypes.TrustLevel;
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class MasterAccessControlEntryManagerTest {
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     @Deployment
     public static WebArchive createArchive() {

@@ -50,7 +50,6 @@ import joynr.infrastructure.GlobalDomainAccessControllerSubscriptionPublisher;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalDomainAccessControlListEditorBeanTest {
-
     @Mock
     private MasterAccessControlEntryManager masterAccessControlEntryManagerMock;
 

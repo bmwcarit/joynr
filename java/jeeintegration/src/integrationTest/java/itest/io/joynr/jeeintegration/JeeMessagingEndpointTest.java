@@ -35,7 +35,9 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +56,8 @@ import io.joynr.jeeintegration.messaging.JeeMessagingEndpoint;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class JeeMessagingEndpointTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     private static final Logger LOG = LoggerFactory.getLogger(JeeMessagingEndpointTest.class);
 

@@ -37,6 +37,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,6 @@ import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
  */
 @RunWith(Arquillian.class)
 public class JoynrJeeMessageContextTest {
-
     private static final Logger logger = LoggerFactory.getLogger(JoynrJeeMessageContextTest.class);
 
     @Deployment
@@ -69,7 +69,7 @@ public class JoynrJeeMessageContextTest {
     @Inject
     private MessageScopedBean messageScopedBean;
 
-    @Test
+    @Test(timeout = 10000)
     public void testContextRegistered() {
         JoynrJeeMessageContext.getInstance().activate();
 
@@ -93,7 +93,7 @@ public class JoynrJeeMessageContextTest {
         messageScopedBean.ping("Hello world");
     }
 
-    @Test
+    @Test(timeout = 10000)
     public void testMessageScopedBean() {
         assertNotNull(messageScopedBean);
         JoynrJeeMessageContext.getInstance().activate();

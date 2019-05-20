@@ -30,7 +30,9 @@ import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
@@ -45,6 +47,8 @@ import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
  */
 @RunWith(Arquillian.class)
 public class JeeIntegrationBeanMqttOnlyTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     @Deployment
     public static JavaArchive createTestArchive() {

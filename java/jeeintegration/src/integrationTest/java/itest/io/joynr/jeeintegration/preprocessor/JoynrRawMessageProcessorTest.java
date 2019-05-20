@@ -31,7 +31,9 @@ import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import io.joynr.jeeintegration.api.JoynrRawMessagingPreprocessor;
@@ -42,6 +44,8 @@ import io.joynr.messaging.RawMessagingPreprocessor;
  */
 @RunWith(Arquillian.class)
 public class JoynrRawMessageProcessorTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     @Deployment
     public static Archive<?> getDeployment() {

@@ -24,12 +24,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 
 public class JoynrConfigurationProviderTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(120);
 
     @Test
     public void testCapabilitiesDirectoryParticipantIdReadCorrectly() {

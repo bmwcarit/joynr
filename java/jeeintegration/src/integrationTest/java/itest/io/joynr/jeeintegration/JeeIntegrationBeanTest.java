@@ -33,7 +33,9 @@ import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import com.google.inject.Injector;
@@ -58,6 +60,8 @@ import io.joynr.statusmetrics.StatusReceiver;
  */
 @RunWith(Arquillian.class)
 public class JeeIntegrationBeanTest {
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     @Deployment
     public static JavaArchive createTestArchive() {
