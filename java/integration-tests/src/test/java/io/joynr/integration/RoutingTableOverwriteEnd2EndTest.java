@@ -85,8 +85,6 @@ public class RoutingTableOverwriteEnd2EndTest {
         mqttConfig = new Properties();
         mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:" + mqttBrokerPort);
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-        mqttConfig.put(ConfigurableMessagingSettings.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL,
-                       "tcp://localhost:" + mqttBrokerPort);
 
         providerDomain = "testDomain" + System.currentTimeMillis();
     }

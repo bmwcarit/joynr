@@ -98,10 +98,6 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
         mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:" + mqttBrokerPort);
         mqttConfig.put(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
         mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-        mqttConfig.put(ConfigurableMessagingSettings.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL,
-                       "tcp://localhost:" + mqttBrokerPort);
-        mqttConfig.put(ConfigurableMessagingSettings.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL,
-                       "tcp://localhost:" + mqttBrokerPort);
     }
 
     private JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
