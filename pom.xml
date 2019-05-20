@@ -1018,7 +1018,7 @@
 						<reuseForks>false</reuseForks>
 						<argLine>-Xmx1024m</argLine>
 						<skipTests>${skipTests}</skipTests>
-						<testFailureIgnore>false</testFailureIgnore>
+						<rerunFailingTestsCount>2</rerunFailingTestsCount>
 					</configuration>
 				</plugin>
 				<plugin>
