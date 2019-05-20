@@ -93,14 +93,6 @@ mvn clean $GOAL jxr:aggregate site -P no-license-and-notice,no-java-formatter,no
 --fail-at-end
 
 echo '####################################################'
-echo '# stage site'
-echo '####################################################'
-
-mvn -T 1C site:stage -P no-license-and-notice,no-java-formatter,no-checkstyle,android,site-staging \
--DshowSuccess=true \
--DstagingDirectory=/data/src/fullsite
-
-echo '####################################################'
 echo '# stop services'
 echo '####################################################'
 
