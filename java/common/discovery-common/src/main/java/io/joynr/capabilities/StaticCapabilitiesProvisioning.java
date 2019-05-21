@@ -36,12 +36,13 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessControlListEditor;
 import joynr.infrastructure.GlobalDomainAccessController;
+import joynr.infrastructure.GlobalDomainRoleController;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -63,29 +64,23 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     private static Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioning.class);
     private final ResourceContentProvider resourceContentProvider;
     private final String[] gbids;
-    private final HashSet<String> internalParticipantIds;
+    private final HashSet<String> internalInterfaces;
 
     private Collection<DiscoveryEntry> discoveryEntries;
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public StaticCapabilitiesProvisioning(@Named(PROPERTY_PROVISIONED_CAPABILITIES_FILE) String provisionedCapabilitiesFile,
                                           @Named(CHANNELID) String localChannelId,
                                           ObjectMapper objectMapper,
                                           RoutingTable routingTable,
                                           LegacyCapabilitiesProvisioning legacyCapabilitiesProvisioning,
                                           ResourceContentProvider resourceContentProvider,
-                                          @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID) String capabilitiesDirectoryPaticipantId,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID) String domainAccessControllerParticipantId,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID) String domainAccessControlListeditorParticipantId,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID) String domainRoleControllerParticipantId) {
-        // CHECKSTYLE:ON
-        internalParticipantIds = new HashSet<String>();
-        internalParticipantIds.add(capabilitiesDirectoryPaticipantId);
-        internalParticipantIds.add(domainRoleControllerParticipantId);
-        internalParticipantIds.add(domainAccessControlListeditorParticipantId);
-        internalParticipantIds.add(domainRoleControllerParticipantId);
+                                          @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids) {
+        internalInterfaces = new HashSet<String>();
+        internalInterfaces.add(GlobalCapabilitiesDirectory.INTERFACE_NAME);
+        internalInterfaces.add(GlobalDomainAccessController.INTERFACE_NAME);
+        internalInterfaces.add(GlobalDomainRoleController.INTERFACE_NAME);
+        internalInterfaces.add(GlobalDomainAccessControlListEditor.INTERFACE_NAME);
         discoveryEntries = new HashSet<DiscoveryEntry>();
         this.gbids = gbids.clone();
         this.resourceContentProvider = resourceContentProvider;
@@ -158,7 +153,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
             for (GlobalDiscoveryEntry globalDiscoveryEntry : newEntries) {
                 globalDiscoveryEntry.setLastSeenDateMs(System.currentTimeMillis());
                 Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
-                if (internalParticipantIds.contains(globalDiscoveryEntry.getParticipantId())
+                if (internalInterfaces.contains(globalDiscoveryEntry.getInterfaceName())
                         && address instanceof MqttAddress) {
                     ((MqttAddress) address).setBrokerUri(gbids[0]);
                     globalDiscoveryEntry.setAddress(CapabilityUtils.serializeAddress(address));

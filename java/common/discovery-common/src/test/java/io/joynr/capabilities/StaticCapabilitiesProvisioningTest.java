@@ -58,7 +58,9 @@ import com.google.inject.name.Names;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessControlListEditor;
 import joynr.infrastructure.GlobalDomainAccessController;
+import joynr.infrastructure.GlobalDomainRoleController;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -74,7 +76,7 @@ public class StaticCapabilitiesProvisioningTest {
 
     private static final String DEFAULT_GBID = "testgbid1";
     private static final String TEST_GBID = "testgbid42";
-    private static final String DEFAULT_BROKER_URI = "brokerUri";
+    private static final String PROVISIONED_GBID = "brokerUri";
     private static final String GCD_PARTICIPANT_ID = "capdir_participant_id";
     private static final String GDAC_PARTICIPANT_ID = "acl_participant_id";
 
@@ -99,7 +101,7 @@ public class StaticCapabilitiesProvisioningTest {
         Long lastSeenDateMs = 0L;
         Long expiryDateMs = 0L;
         String publicKeyId = "publicKeyId";
-        Address address = new MqttAddress(DEFAULT_BROKER_URI, "topic");
+        Address address = new MqttAddress(PROVISIONED_GBID, "topic");
         for (String interfaceName : interfaceNames) {
             GlobalDiscoveryEntry entry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                                  domain,
@@ -200,7 +202,7 @@ public class StaticCapabilitiesProvisioningTest {
                                                                       GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                                                       GlobalDomainAccessController.INTERFACE_NAME);
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
-        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
+        createInjectorForJsonValue(serializedDiscoveryEntries, properties);
         fail("Expecting legacy capabilities provisioning to fail fast.");
     }
 
@@ -253,10 +255,10 @@ public class StaticCapabilitiesProvisioningTest {
     @Test
     public void testGbidsOfInternalProvidersAreReplacedByDefaultGbid() throws IOException {
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME);
-        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-            discoveryEntry.setParticipantId(GCD_PARTICIPANT_ID);
-        }
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME,
+                                                                      GlobalDomainRoleController.INTERFACE_NAME,
+                                                                      GlobalDomainAccessControlListEditor.INTERFACE_NAME);
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
 
@@ -264,6 +266,21 @@ public class StaticCapabilitiesProvisioningTest {
         Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                               null,
+                               null,
+                               DEFAULT_GBID);
+        assertContainsEntryFor(provisionedDiscoveryEntries,
+                               GlobalDomainAccessController.INTERFACE_NAME,
+                               null,
+                               null,
+                               DEFAULT_GBID);
+        assertContainsEntryFor(provisionedDiscoveryEntries,
+                               GlobalDomainRoleController.INTERFACE_NAME,
+                               null,
+                               null,
+                               DEFAULT_GBID);
+        assertContainsEntryFor(provisionedDiscoveryEntries,
+                               GlobalDomainAccessControlListEditor.INTERFACE_NAME,
                                null,
                                null,
                                DEFAULT_GBID);
@@ -273,14 +290,8 @@ public class StaticCapabilitiesProvisioningTest {
     public void testGbidsOfCustomProvidersAreNotReplaced() throws IOException {
         String testinterfacename = "test";
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME);
-        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-            discoveryEntry.setParticipantId(GCD_PARTICIPANT_ID);
-        }
-        Set<DiscoveryEntry> discoveryEntries2 = createDiscoveryEntries("io.joynr", testinterfacename);
-        for (DiscoveryEntry discoveryEntry : discoveryEntries2) {
-            discoveryEntries.add(discoveryEntry);
-        }
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      testinterfacename);
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
 
@@ -291,7 +302,7 @@ public class StaticCapabilitiesProvisioningTest {
                                null,
                                null,
                                DEFAULT_GBID);
-        assertContainsEntryFor(provisionedDiscoveryEntries, testinterfacename, null, null, DEFAULT_BROKER_URI);
+        assertContainsEntryFor(provisionedDiscoveryEntries, testinterfacename, null, null, PROVISIONED_GBID);
     }
 
     @Test
@@ -319,7 +330,7 @@ public class StaticCapabilitiesProvisioningTest {
                                GDAC_PARTICIPANT_ID,
                                null,
                                TEST_GBID);
-        assertContainsEntryFor(provisionedDiscoveryEntries, testInterface, testParticipantId, null, DEFAULT_BROKER_URI);
+        assertContainsEntryFor(provisionedDiscoveryEntries, testInterface, testParticipantId, null, PROVISIONED_GBID);
     }
 
     private Injector createInjectorForJsonValue(final String jsonValue) throws IOException {
