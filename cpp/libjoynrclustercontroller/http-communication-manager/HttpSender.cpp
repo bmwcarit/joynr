@@ -182,64 +182,70 @@ void HttpSender::handleCurlError(
     }
     switch (sendMessageResult.getCurlError()) {
     // non recoverable errors
-    case CURLcode::CURLE_HTTP_RETURNED_ERROR:      // 22
-    case CURLcode::CURLE_UNSUPPORTED_PROTOCOL:     // 1
-    case CURLcode::CURLE_URL_MALFORMAT:            // 3
-    case CURLcode::CURLE_NOT_BUILT_IN:             // 4
-    case CURLcode::CURLE_FTP_WEIRD_SERVER_REPLY:   // 8
-    case CURLcode::CURLE_REMOTE_ACCESS_DENIED:     // 9
-    case CURLcode::CURLE_FTP_ACCEPT_FAILED:        // 10
-    case CURLcode::CURLE_FTP_WEIRD_PASS_REPLY:     // 11
-    case CURLcode::CURLE_FTP_WEIRD_PASV_REPLY:     // 13
-    case CURLcode::CURLE_FTP_WEIRD_227_FORMAT:     // 14
-    case CURLcode::CURLE_FTP_CANT_GET_HOST:        // 15
-    case CURLcode::CURLE_FTP_COULDNT_SET_TYPE:     // 17
-    case CURLcode::CURLE_PARTIAL_FILE:             // 18
-    case CURLcode::CURLE_FTP_COULDNT_RETR_FILE:    // 19
-    case CURLcode::CURLE_FTP_PORT_FAILED:          // 30
-    case CURLcode::CURLE_FTP_COULDNT_USE_REST:     // 31
-    case CURLcode::CURLE_RANGE_ERROR:              // 33
-    case CURLcode::CURLE_BAD_DOWNLOAD_RESUME:      // 36
-    case CURLcode::CURLE_FILE_COULDNT_READ_FILE:   // 37
-    case CURLcode::CURLE_LDAP_CANNOT_BIND:         // 38
-    case CURLcode::CURLE_LDAP_SEARCH_FAILED:       // 39
-    case CURLcode::CURLE_FUNCTION_NOT_FOUND:       // 41
-    case CURLcode::CURLE_ABORTED_BY_CALLBACK:      // 42
-    case CURLcode::CURLE_BAD_FUNCTION_ARGUMENT:    // 43
-    case CURLcode::CURLE_INTERFACE_FAILED:         // 45
-    case CURLcode::CURLE_TOO_MANY_REDIRECTS:       // 47
-    case CURLcode::CURLE_UNKNOWN_OPTION:           // 48
-    case CURLcode::CURLE_TELNET_OPTION_SYNTAX:     // 49
+    case CURLcode::CURLE_UNSUPPORTED_PROTOCOL:   // 1
+    case CURLcode::CURLE_URL_MALFORMAT:          // 3
+    case CURLcode::CURLE_NOT_BUILT_IN:           // 4
+    case CURLcode::CURLE_FTP_WEIRD_SERVER_REPLY: // 8
+    case CURLcode::CURLE_REMOTE_ACCESS_DENIED:   // 9
+    case CURLcode::CURLE_FTP_ACCEPT_FAILED:      // 10
+    case CURLcode::CURLE_FTP_WEIRD_PASS_REPLY:   // 11
+    case CURLcode::CURLE_FTP_WEIRD_PASV_REPLY:   // 13
+    case CURLcode::CURLE_FTP_WEIRD_227_FORMAT:   // 14
+    case CURLcode::CURLE_FTP_CANT_GET_HOST:      // 15
+    case CURLcode::CURLE_FTP_COULDNT_SET_TYPE:   // 17
+    case CURLcode::CURLE_PARTIAL_FILE:           // 18
+    case CURLcode::CURLE_FTP_COULDNT_RETR_FILE:  // 19
+    case CURLcode::CURLE_HTTP_RETURNED_ERROR:    // 22
+    case CURLcode::CURLE_FTP_PORT_FAILED:        // 30
+    case CURLcode::CURLE_FTP_COULDNT_USE_REST:   // 31
+    case CURLcode::CURLE_RANGE_ERROR:            // 33
+    case CURLcode::CURLE_BAD_DOWNLOAD_RESUME:    // 36
+    case CURLcode::CURLE_FILE_COULDNT_READ_FILE: // 37
+    case CURLcode::CURLE_LDAP_CANNOT_BIND:       // 38
+    case CURLcode::CURLE_LDAP_SEARCH_FAILED:     // 39
+    case CURLcode::CURLE_FUNCTION_NOT_FOUND:     // 41
+    case CURLcode::CURLE_ABORTED_BY_CALLBACK:    // 42
+    case CURLcode::CURLE_BAD_FUNCTION_ARGUMENT:  // 43
+    case CURLcode::CURLE_INTERFACE_FAILED:       // 45
+    case CURLcode::CURLE_TOO_MANY_REDIRECTS:     // 47
+    case CURLcode::CURLE_UNKNOWN_OPTION:         // 48
+    case CURLcode::CURLE_TELNET_OPTION_SYNTAX:   // 49
+#if LIBCURL_VERSION_NUM < 0x073e00
     case CURLcode::CURLE_PEER_FAILED_VERIFICATION: // 51
-    case CURLcode::CURLE_SSL_ENGINE_NOTFOUND:      // 53
-    case CURLcode::CURLE_SSL_ENGINE_SETFAILED:     // 54
-    case CURLcode::CURLE_SSL_CERTPROBLEM:          // 58
-    case CURLcode::CURLE_SSL_CIPHER:               // 59
-    case CURLcode::CURLE_SSL_CACERT:               // 60
-    case CURLcode::CURLE_BAD_CONTENT_ENCODING:     // 61
-    case CURLcode::CURLE_LDAP_INVALID_URL:         // 62
-    case CURLcode::CURLE_FILESIZE_EXCEEDED:        // 63
-    case CURLcode::CURLE_USE_SSL_FAILED:           // 64
-    case CURLcode::CURLE_SSL_ENGINE_INITFAILED:    // 66
-    case CURLcode::CURLE_LOGIN_DENIED:             // 67
-    case CURLcode::CURLE_TFTP_NOTFOUND:            // 68
-    case CURLcode::CURLE_TFTP_PERM:                // 69
-    case CURLcode::CURLE_REMOTE_DISK_FULL:         // 70
-    case CURLcode::CURLE_TFTP_ILLEGAL:             // 71
-    case CURLcode::CURLE_TFTP_UNKNOWNID:           // 72
-    case CURLcode::CURLE_REMOTE_FILE_EXISTS:       // 73
-    case CURLcode::CURLE_TFTP_NOSUCHUSER:          // 74
-    case CURLcode::CURLE_CONV_FAILED:              // 75
-    case CURLcode::CURLE_CONV_REQD:                // 76
-    case CURLcode::CURLE_SSL_CACERT_BADFILE:       // 77
-    case CURLcode::CURLE_REMOTE_FILE_NOT_FOUND:    // 78
-    case CURLcode::CURLE_SSH:                      // 79
-    case CURLcode::CURLE_SSL_CRL_BADFILE:          // 82
-    case CURLcode::CURLE_SSL_ISSUER_ERROR:         // 83
-    case CURLcode::CURLE_FTP_PRET_FAILED:          // 84
-    case CURLcode::CURLE_FTP_BAD_FILE_LIST:        // 87
-    case CURLcode::CURLE_CHUNK_FAILED:             // 88
-    case CURLcode::CURLE_NO_CONNECTION_AVAILABLE:  // 89
+#endif
+    case CURLcode::CURLE_SSL_ENGINE_NOTFOUND:  // 53
+    case CURLcode::CURLE_SSL_ENGINE_SETFAILED: // 54
+    case CURLcode::CURLE_SSL_CERTPROBLEM:      // 58
+    case CURLcode::CURLE_SSL_CIPHER:           // 59
+#if LIBCURL_VERSION_NUM < 0x073e00
+    case CURLcode::CURLE_SSL_CACERT: // 60
+#else
+    case CURLcode::CURLE_PEER_FAILED_VERIFICATION: // 60
+#endif
+    case CURLcode::CURLE_BAD_CONTENT_ENCODING:    // 61
+    case CURLcode::CURLE_LDAP_INVALID_URL:        // 62
+    case CURLcode::CURLE_FILESIZE_EXCEEDED:       // 63
+    case CURLcode::CURLE_USE_SSL_FAILED:          // 64
+    case CURLcode::CURLE_SSL_ENGINE_INITFAILED:   // 66
+    case CURLcode::CURLE_LOGIN_DENIED:            // 67
+    case CURLcode::CURLE_TFTP_NOTFOUND:           // 68
+    case CURLcode::CURLE_TFTP_PERM:               // 69
+    case CURLcode::CURLE_REMOTE_DISK_FULL:        // 70
+    case CURLcode::CURLE_TFTP_ILLEGAL:            // 71
+    case CURLcode::CURLE_TFTP_UNKNOWNID:          // 72
+    case CURLcode::CURLE_REMOTE_FILE_EXISTS:      // 73
+    case CURLcode::CURLE_TFTP_NOSUCHUSER:         // 74
+    case CURLcode::CURLE_CONV_FAILED:             // 75
+    case CURLcode::CURLE_CONV_REQD:               // 76
+    case CURLcode::CURLE_SSL_CACERT_BADFILE:      // 77
+    case CURLcode::CURLE_REMOTE_FILE_NOT_FOUND:   // 78
+    case CURLcode::CURLE_SSH:                     // 79
+    case CURLcode::CURLE_SSL_CRL_BADFILE:         // 82
+    case CURLcode::CURLE_SSL_ISSUER_ERROR:        // 83
+    case CURLcode::CURLE_FTP_PRET_FAILED:         // 84
+    case CURLcode::CURLE_FTP_BAD_FILE_LIST:       // 87
+    case CURLcode::CURLE_CHUNK_FAILED:            // 88
+    case CURLcode::CURLE_NO_CONNECTION_AVAILABLE: // 89
     // CURLcode::CURLE_SSL_PINNEDPUBKEYNOTMATCH has been added in libcurl 7_39_0
     // The joynr docker containers use fedora 21 and the latest libcurl 7_37_0
     // from the fedora 21 repositories
