@@ -70,8 +70,6 @@ class SubscriptionRequest {
             enumerable: true,
             configurable: false
         });
-
-        return Object.freeze(this);
     }
 }
 

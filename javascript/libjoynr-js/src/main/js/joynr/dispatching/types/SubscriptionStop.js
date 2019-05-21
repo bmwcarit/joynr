@@ -43,8 +43,6 @@ class SubscriptionStop {
          * @type String
          */
         Typing.augmentTypeName(this, "joynr");
-
-        return Object.freeze(this);
     }
 }
 

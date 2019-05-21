@@ -182,36 +182,32 @@ class JoynrRuntime {
         this.participantIdStorage = new ParticipantIdStorage(this._persistencyConfig.capabilities, nanoid);
         this._discovery = new InProcessStub();
 
-        this.registration = Object.freeze(
-            new CapabilitiesRegistrar({
-                discoveryStub: this._discovery,
-                messageRouter: this._messageRouter,
-                requestReplyManager: this._requestReplyManager,
-                publicationManager: this._publicationManager,
-                libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
-                participantIdStorage: this.participantIdStorage
-            })
-        );
+        this.registration = new CapabilitiesRegistrar({
+            discoveryStub: this._discovery,
+            messageRouter: this._messageRouter,
+            requestReplyManager: this._requestReplyManager,
+            publicationManager: this._publicationManager,
+            libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton),
+            participantIdStorage: this.participantIdStorage
+        });
 
         // typedCapabilites can be undefined in case of InProcessRuntime
         this._arbitrator = new Arbitrator(this._discovery, typedCapabilities);
 
-        this.providerBuilder = Object.freeze(new ProviderBuilder());
+        this.providerBuilder = new ProviderBuilder();
 
-        this.proxyBuilder = Object.freeze(
-            new ProxyBuilder(
-                {
-                    arbitrator: this._arbitrator,
-                    typeRegistry: this.typeRegistry,
-                    requestReplyManager: this._requestReplyManager,
-                    subscriptionManager: this._subscriptionManager,
-                    publicationManager: this._publicationManager
-                },
-                {
-                    messageRouter: this._messageRouter,
-                    libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
-                }
-            )
+        this.proxyBuilder = new ProxyBuilder(
+            {
+                arbitrator: this._arbitrator,
+                typeRegistry: this.typeRegistry,
+                requestReplyManager: this._requestReplyManager,
+                subscriptionManager: this._subscriptionManager,
+                publicationManager: this._publicationManager
+            },
+            {
+                messageRouter: this._messageRouter,
+                libjoynrMessagingAddress: new InProcessAddress(libjoynrMessagingSkeleton)
+            }
         );
 
         /*
