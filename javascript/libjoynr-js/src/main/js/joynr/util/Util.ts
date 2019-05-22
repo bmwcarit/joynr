@@ -16,19 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("./Typing");
-
-/**
- * @name Util
- * @class
- */
-const Util = {};
-
-/**
- * @function Util#ensureTypedValues
- * @param {Object} value
- * @param {Object} typeRegistry
- */
-Util.ensureTypedValues = Typing.augmentTypes;
-
-module.exports = Util;
+/* istanbul ignore file */
+import { augmentTypes } from "./Typing";
+export { augmentTypes as ensureTypedValues };
