@@ -434,7 +434,7 @@ class Dispatcher {
                 })
             );
 
-            settings.reply = JSONSerializer.stringify(reply, reply.error !== undefined);
+            settings.reply = JSONSerializer.stringifyOptional(reply, reply.error !== undefined);
             settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_REPLY;
             return sendReply(settings);
         }
@@ -459,7 +459,7 @@ class Dispatcher {
                 })
             );
 
-            settings.reply = JSONSerializer.stringify(subscriptionReply, subscriptionReply.error !== undefined);
+            settings.reply = JSONSerializer.stringifyOptional(subscriptionReply, subscriptionReply.error !== undefined);
             settings.messageType = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY;
             sendReply(settings);
         }

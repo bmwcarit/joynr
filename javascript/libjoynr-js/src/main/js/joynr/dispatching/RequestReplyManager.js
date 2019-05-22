@@ -363,11 +363,7 @@ class RequestReplyManager {
 
                 replyCallers.delete(reply.requestReplyId);
             } catch (e) {
-                log.error(
-                    `exception thrown during handling reply ${JSONSerializer.stringify(reply, undefined, 4)}:\n${
-                        e.stack
-                    }`
-                );
+                log.error(`exception thrown during handling reply ${JSONSerializer.stringify(reply)}:\n${e.stack}`);
             }
         };
 

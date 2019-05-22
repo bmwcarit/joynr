@@ -454,9 +454,7 @@ class SubscriptionManager {
             if (subscriptionReplyCaller === undefined && subscriptionListener === undefined) {
                 log.error(
                     `error handling subscription reply, because subscriptionReplyCaller and subscriptionListener could not be found: ${JSONSerializer.stringify(
-                        subscriptionReply,
-                        undefined,
-                        4
+                        subscriptionReply
                     )}`
                 );
                 return;
@@ -486,9 +484,7 @@ class SubscriptionManager {
             } catch (e) {
                 log.error(
                     `exception thrown during handling subscription reply ${JSONSerializer.stringify(
-                        subscriptionReply,
-                        undefined,
-                        4
+                        subscriptionReply
                     )}:\n${e.stack}`
                 );
                 subscriptionReplyCallers.delete(subscriptionReply.subscriptionId);
