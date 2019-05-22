@@ -200,7 +200,7 @@ class InProcessRuntime extends JoynrRuntime {
         mqttClient.onConnected().then(() => {
             // TODO remove workaround when multiple backend support is implemented in JS
             const globalClusterControllerAddressWithGbid = new MqttAddress({
-                brokerUri: "joynrtestgbid",
+                brokerUri: "joynrdefaultgbid",
                 topic: globalClusterControllerAddress.topic
             });
             capabilityDiscovery.globalAddressReady(globalClusterControllerAddressWithGbid);

@@ -58,7 +58,7 @@ Additionally, the method must be annotated with
   so that all nodes of the cluster are identified by the same channel ID.
 * `ConfigurableMessagingSettings.PROPERTY_GBIDS` - use this to configure the GBIDs for
   connecting to the MQTT brokers being used for communication.
-  E.g. `joynrtestgbid1,joynrtestgbid2`.
+  E.g. `gbid1,gbid2`.
         * A GBID (Global Backend IDentifier) identifies a single backend independently of its uri.
           This is necessary for multiple backends, since the broker-uri of a backend can differ
           depending on location.
@@ -118,7 +118,7 @@ public class JoynrConfigurationProvider {
     joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
         "io.joynr.test.interlanguage.jee.provider");
     joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS,
-        "joynrtestgbid");
+        "joynrdefaultgbid");
     joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS,
         "tcp://localhost:1883");
     joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,

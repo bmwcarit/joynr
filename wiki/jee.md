@@ -65,7 +65,7 @@ See Java Configuration Reference for more details on the available properties.
 application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
 so that all nodes of the cluster are identified by the same channel ID.
 * `ConfigurableMessagingSettings.PROPERTY_GBIDS` - use this to configure the GBIDs for
-the backends to be used, e.g. `joynrtestgbid1,joynrtestgbid2`.
+the backends to be used, e.g. `gbid1,gbid2`.
 * `MqttModule.PROPERTY_MQTT_BROKER_URIS` - use this to configure the URLs for
 the backends identified by `ConfigurableMessagingModule.PROPERTY_GBIDS`.
 If used, the number of configured broker-uris must be equal to the number of configured gbids.
@@ -123,8 +123,8 @@ An example of a configuration EJB is:
 			"provider.domain");
 		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
 			Boolean.TRUE.toString());
-                joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS,
-                        "joynrtestgbid");
+		joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS,
+			"joynrdefaultgbid");
 		joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS,
 			"tcp://mqttbroker.com:1883");
 		joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,

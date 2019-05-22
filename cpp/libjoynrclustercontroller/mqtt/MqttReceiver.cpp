@@ -35,7 +35,7 @@ MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnect
     const std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
     std::ignore = settings; // TODO configure GBIDs
     globalClusterControllerAddress =
-            system::RoutingTypes::MqttAddress("joynrtestgbid", unicastChannelIdForMqttTopic);
+            system::RoutingTypes::MqttAddress("joynrdefaultgbid", unicastChannelIdForMqttTopic);
     this->mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
 }
 

@@ -85,7 +85,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         // JoynInjectorFactory. E.g. uncomment the following lines to set a
         // certain joynr server
         // instance.
-        // joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, "joynrtestgbid");
+        // joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, "joynrdefaultgbid");
         // joynrConfig.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883/");
 
         // Each joynr instance has a local domain. It identifies the execution
@@ -112,11 +112,11 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         // Copy the following lines to the custom persistence file to set a
         // certain joynr server
         // instance.
-        // joynr.messaging.gbids=joynrtestgbid
+        // joynr.messaging.gbids=joynrdefaultgbid
         // joynr.messaging.mqtt.brokeruris=tcp://localhost:1883/
 
         // 3) Or set them in Java System properties.
-        // -Djoynr.messaging.gbids=joynrtestgbid
+        // -Djoynr.messaging.gbids=joynrdefaultgbid
         // -Djoynr.messaging.mqtt.brokeruris=tcp://localhost:1883/
 
         // NOTE:

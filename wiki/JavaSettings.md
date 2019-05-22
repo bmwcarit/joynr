@@ -386,7 +386,7 @@ This property has to be provided as one line where the GBIDs are separated by co
 * **REQUIRED for cluster controller runtime with enabled global transport.**
 * **Type**: String
 * **User property**: `joynr.messaging.gbids`
-* **Default value**: `joynrtestgbid`
+* **Default value**: `joynrdefaultgbid`
 
 
 ## LimitAndBackpressureSettings
