@@ -46,7 +46,7 @@ module.exports = {
         "linebreak-style": ["error", "unix"],
         semi: ["error", "always"],
         "default-case": "error",
-        "no-use-before-define": "error",
+        "no-use-before-define": "off",
         "consistent-return": "off",
         "no-lonely-if": "error",
         "no-console": "error",
@@ -95,7 +95,8 @@ module.exports = {
         "promise/avoid-new": "error",
         "promise/no-new-statics": "off",
         "promise/no-return-in-finally": "off",
-        "promise/valid-params": "off"
+        "promise/valid-params": "off",
+        "@typescript-eslint/no-use-before-define": ["error", { "functions": false }]
     },
     overrides: [
         {
@@ -150,7 +151,8 @@ module.exports = {
             rules: {
                 "no-useless-constructor": "off",
                 "@typescript-eslint/no-parameter-properties": "off",
-                "@typescript-eslint/no-explicit-any": "off"
+                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/explicit-function-return-type": "error"
             }
         },
         {

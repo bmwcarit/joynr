@@ -271,7 +271,7 @@ describe("libjoynr-js.joynr.Typing.augmentType", () => {
     ];
 
     it("types all objects correctly", done => {
-        const typeRegistry = new TypeRegistrySingleton.getInstance();
+        const typeRegistry = TypeRegistrySingleton.getInstance();
         typeRegistry.addType("MyTypeName", MyType);
         typeRegistry.addType("MySecondTypeName", MySecondType);
 

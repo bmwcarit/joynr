@@ -73,7 +73,7 @@ class TypeRegistry {
      * @param joynrTypeName - the joynr type name that is sent/received on the wire.
      * @returns the constructor function for the specified type name
      */
-    public getConstructor(joynrTypeName: string): Function {
+    public getConstructor(joynrTypeName: string): any {
         return this.registry[joynrTypeName];
     }
 
