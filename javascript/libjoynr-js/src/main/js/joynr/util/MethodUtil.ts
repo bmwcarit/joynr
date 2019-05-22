@@ -16,23 +16,21 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("./UtilInternal");
+import * as UtilInternal from "./UtilInternal";
 
-/**
- * @exports MethodUtil
- */
-const MethodUtil = {};
-
-function createErrorMessage(objectType, name, type) {
+function createErrorMessage(objectType: string, name: string, type: string): string {
     return `Signature does not match: type ${objectType} of argument ${name} does not match with expected type ${type}`;
 }
 
 /**
- * @param {Object[]} operationArguments Arguments coming from the proxy or provider
- * @param {Object[]} parameters List of paraemters for the operationArguments
- * @returns {Object} Object in the form of { paramDatatypes: [Array of types], params: [Array of values] };
+ * @param operationArguments Arguments coming from the proxy or provider
+ * @param parameters List of parameters for the operationArguments
+ * @returns Object in the form of { paramDatatypes: [Array of types], params: [Array of values] };
  */
-MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(operationArguments, parameters) {
+export function transformParameterMapToArray(
+    operationArguments: Record<string, any>,
+    parameters: any[]
+): { paramDatatypes: any[]; params: any[] } {
     const params = [];
     const paramDatatypes = [];
 
@@ -83,6 +81,4 @@ MethodUtil.transformParameterMapToArray = function transformParameterMapToArray(
         paramDatatypes,
         params
     };
-};
-
-module.exports = MethodUtil;
+}

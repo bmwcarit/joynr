@@ -16,8 +16,7 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const MethodUtil = require("../../../../main/js/joynr/util/MethodUtil");
+import * as MethodUtil from "../../../../main/js/joynr/util/MethodUtil";
 
 describe("libjoynr-js.joynr.MethodUtil", () => {
     it("transformParameterMapToArray throws for null values", () => {
@@ -54,6 +53,14 @@ describe("libjoynr-js.joynr.MethodUtil", () => {
 
     it("transformParameterMapToArray throws if signature does not match arguments (type mismatch)", () => {
         const operationArguments = { bool: 2 };
+        const parameters = [{ name: "bool", type: "Boolean" }];
+        expect(() => {
+            MethodUtil.transformParameterMapToArray(operationArguments, parameters);
+        }).toThrow();
+    });
+
+    it("transformParameterMapToArray throws if signature does not match arguments (type mismatch (no array))", () => {
+        const operationArguments = { bool: [true] };
         const parameters = [{ name: "bool", type: "Boolean" }];
         expect(() => {
             MethodUtil.transformParameterMapToArray(operationArguments, parameters);
