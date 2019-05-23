@@ -16,42 +16,46 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const JoynrLogger = require("../../../../main/js/joynr/system/JoynrLogger");
+
+import JoynrLogger from "../../../../main/js/joynr/system/JoynrLogger";
 
 describe("libjoynr-js.joynr.system.JoynrLogger", () => {
-    let loggerInstance, loggingSpy;
+    let loggerInstance: any, loggingSpy: jest.Mock;
     const loggerName = "joynrLogger";
     const message = "some message";
+    const jsonObject = { some: "logs" };
+    const RealDate = Date;
 
     beforeEach(() => {
-        loggingSpy = jasmine.createSpy("loggingSpy");
+        loggingSpy = jest.fn();
         JoynrLogger.setOutput(loggingSpy);
         loggerInstance = new JoynrLogger(loggerName);
-        jasmine.clock().install();
-        jasmine.clock().mockDate();
+        const now = new Date();
+
+        (global.Date as any) = function() {
+            return now;
+        };
     });
 
     afterEach(() => {
-        jasmine.clock().uninstall();
+        global.Date = RealDate;
     });
 
     it("uses the expected defaults without a config", () => {
         expect(loggerInstance.name).toEqual(loggerName);
-        expect(loggerInstance.level).toEqual("off");
         expect(loggerInstance.isDebugEnabled()).toBeFalsy();
 
         loggerInstance.fatal(message);
         expect(loggingSpy).not.toHaveBeenCalled();
     });
 
-    function loglevelHelper(level) {
+    function loglevelHelper(level: any) {
         loggerInstance[level](message);
         expect(loggingSpy).not.toHaveBeenCalled();
         JoynrLogger.setLogLevel(level);
         loggerInstance[level](message);
         expect(loggingSpy).toHaveBeenCalled();
-        loggingSpy.calls.reset();
+        loggingSpy.mockClear();
     }
 
     it("works with different logLevels", () => {
@@ -63,13 +67,13 @@ describe("libjoynr-js.joynr.system.JoynrLogger", () => {
         loglevelHelper(JoynrLogger.LogLevel.TRACE);
     });
 
-    function logEventHelper(level) {
+    function logEventHelper(level: any) {
         loggerInstance[level](message);
         expect(loggingSpy).toHaveBeenCalledWith({
             level: { name: level },
             messages: [message]
         });
-        loggingSpy.calls.reset();
+        loggingSpy.mockClear();
     }
 
     it("adds the logLevel to the logEvent", () => {
@@ -80,12 +84,26 @@ describe("libjoynr-js.joynr.system.JoynrLogger", () => {
         logEventHelper(JoynrLogger.LogLevel.WARN);
         logEventHelper(JoynrLogger.LogLevel.ERROR);
         logEventHelper(JoynrLogger.LogLevel.FATAL);
+
+        JoynrLogger.setLogLevel(JoynrLogger.LogLevel.OFF);
+        loggerInstance.trace(message);
+        expect(loggingSpy).not.toHaveBeenCalled();
     });
 
     function getDateString() {
         const date = new Date();
         return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()},${date.getMilliseconds()}`;
     }
+
+    it("stringifies json objects", () => {
+        JoynrLogger.setLogLevel("trace");
+        loggerInstance.debug(message, jsonObject);
+        const formattedMessage = `${message} ${JSON.stringify(jsonObject)}`;
+        expect(loggingSpy).toHaveBeenCalledWith({
+            level: { name: "debug" },
+            messages: [formattedMessage]
+        });
+    });
 
     it("works with simple formatting", () => {
         JoynrLogger.setLogLevel("trace");
