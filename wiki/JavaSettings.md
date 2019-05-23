@@ -18,8 +18,8 @@ localhost) are marked below as REQUIRED.
 
 **OS environment settings:**
 Since `.` is not allowed in OS environment settings, every `.` in the property key has to be replaced
-by a `_` when used in OS environment settings. E.g.: `joynr_messaging_mqtt_brokeruri`instead of
-`joynr.messaging.mqtt.brokeruri`.
+by a `_` when used in OS environment settings. E.g.: `joynr_messaging_mqtt_brokeruris`instead of
+`joynr.messaging.mqtt.brokeruris`.
 
 **Examples**
 
