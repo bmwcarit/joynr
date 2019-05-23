@@ -32,6 +32,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
+import io.joynr.capabilities.directory.util.Utilities;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
@@ -70,7 +71,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             addInternal(globalDiscoveryEntry, gcdGbId);
             deferred.resolve();
         } catch (ProviderRuntimeException e) {
-            logger.error("Error adding DiscoveryEntry: {}", e);
+            logger.error("Error adding DiscoveryEntry for {}: {}", globalDiscoveryEntry.getParticipantId(), e);
             deferred.reject(e);
         }
         return promise;
@@ -80,18 +81,14 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public Promise<Add1Deferred> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
         Add1Deferred deferred = new Add1Deferred();
         Promise<Add1Deferred> promise = new Promise<Add1Deferred>(deferred);
-        if (gbids.length == 0) {
-            logger.error("INVALID_GBID: provided list of GBIDs is empty.");
+        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        case INVALID:
             deferred.reject(DiscoveryError.INVALID_GBID);
-        } else if (gbids.length > 1) {
-            deferred.reject(new ProviderRuntimeException("MULTIPLE GBIDs ARE NOT PERMITTED FOR THE MOMENT"));
-        } else if (gbids[0] == null || gbids[0].isEmpty()) {
-            logger.error("INVALID_GBID: provided GBID is null or empty: {}.", gbids[0]);
-            deferred.reject(DiscoveryError.INVALID_GBID);
-        } else if (!gcdGbId.equals(gbids[0])) {
-            logger.error("UNKNOWN_GBID: {}", gbids[0]);
+            break;
+        case UNKNOWN:
             deferred.reject(DiscoveryError.UNKNOWN_GBID);
-        } else {
+            break;
+        case OK:
             try {
                 addInternal(globalDiscoveryEntry, gbids);
                 deferred.resolve();
@@ -161,7 +158,17 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<Lookup1Deferred> lookup(final String[] domains, final String interfaceName) {
         Lookup1Deferred deferred = new Lookup1Deferred();
-        logger.debug("Searching channels for domains: {} interfaceName: {}", domains, interfaceName);
+        GlobalDiscoveryEntry[] globalDiscoveryEntries = lookupInternal(domains, interfaceName, gcdGbId);
+        deferred.resolve(globalDiscoveryEntries);
+        return new Promise<Lookup1Deferred>(deferred);
+    }
+
+    private GlobalDiscoveryEntry[] lookupInternal(final String[] domains, final String interfaceName, String... gbids) {
+        assert (gbids.length > 0);
+        logger.debug("Searching for global discovery entries for domains: {} interfaceName: {} in backends {}",
+                     domains,
+                     interfaceName,
+                     Arrays.toString(gbids));
         Collection<DiscoveryEntry> discoveryEntries = discoveryEntryStore.lookup(domains, interfaceName);
         GlobalDiscoveryEntry[] globalDiscoveryEntries = new GlobalDiscoveryEntry[discoveryEntries.size()];
         int index = 0;
@@ -171,34 +178,76 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             globalDiscoveryEntries[index] = new GlobalDiscoveryEntry((GlobalDiscoveryEntry) discoveryEntry);
             index++;
         }
-        deferred.resolve(globalDiscoveryEntries);
-        return new Promise<Lookup1Deferred>(deferred);
+        return globalDiscoveryEntries;
     }
 
     @Override
     public Promise<Lookup2Deferred> lookup(String[] domains, String interfaceName, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        Lookup2Deferred deferred = new Lookup2Deferred();
+        Promise<Lookup2Deferred> promise = new Promise<Lookup2Deferred>(deferred);
+        GlobalDiscoveryEntry[] globalDiscoveryEntries = null;
+        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        case INVALID:
+            deferred.reject(DiscoveryError.INVALID_GBID);
+            break;
+        case UNKNOWN:
+            deferred.reject(DiscoveryError.UNKNOWN_GBID);
+            break;
+        case OK:
+            globalDiscoveryEntries = lookupInternal(domains, interfaceName, gbids);
+            if (globalDiscoveryEntries.length == 0) {
+                logger.debug("No Global Discovery Entries found for backends {} in domains: {} and for interface {}",
+                             gbids,
+                             domains,
+                             interfaceName);
+            }
+            deferred.resolve(globalDiscoveryEntries);
+            break;
+        }
+        return promise;
     }
 
     @Override
-    public Promise<Lookup3Deferred> lookup(String forParticipantId) {
+    public Promise<Lookup3Deferred> lookup(String participantId) {
         Lookup3Deferred deferred = new Lookup3Deferred();
-        logger.debug("Searching discovery entries for participantId: {}", forParticipantId);
-        DiscoveryEntry discoveryEntry = discoveryEntryStore.lookup(forParticipantId,
-                                                                   DiscoveryQos.NO_FILTER.getCacheMaxAgeMs());
+        GlobalDiscoveryEntry discoveryEntry = lookupInternal(participantId, gcdGbId);
         if (discoveryEntry == null) {
-            deferred.resolve(null);
+            deferred.reject(new ProviderRuntimeException("No Entry found for participantId " + participantId));
         } else {
-            deferred.resolve((GlobalDiscoveryEntry) discoveryEntry);
+            deferred.resolve(discoveryEntry);
         }
         return new Promise<Lookup3Deferred>(deferred);
     }
 
+    private GlobalDiscoveryEntry lookupInternal(String forParticipantId, String... gbids) {
+        assert (gbids.length > 0);
+        logger.debug("Searching discovery entries for participantId: {} in backends: {}...",
+                     forParticipantId,
+                     Arrays.toString(gbids));
+        return (GlobalDiscoveryEntry) discoveryEntryStore.lookup(forParticipantId,
+                                                                 DiscoveryQos.NO_FILTER.getCacheMaxAgeMs());
+    }
+
     @Override
     public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        Lookup4Deferred deferred = new Lookup4Deferred();
+        Promise<Lookup4Deferred> promise = new Promise<Lookup4Deferred>(deferred);
+        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        case INVALID:
+            deferred.reject(DiscoveryError.INVALID_GBID);
+            break;
+        case UNKNOWN:
+            deferred.reject(DiscoveryError.UNKNOWN_GBID);
+            break;
+        case OK:
+            GlobalDiscoveryEntry discoveryEntry = lookupInternal(participantId, gbids);
+            if (discoveryEntry == null) {
+                deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+            } else {
+                deferred.resolve(discoveryEntry);
+            }
+        }
+        return promise;
     }
 
     @Override
