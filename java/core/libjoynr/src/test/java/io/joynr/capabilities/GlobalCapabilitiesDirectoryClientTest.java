@@ -150,12 +150,39 @@ public class GlobalCapabilitiesDirectoryClientTest {
 
     @Test
     public void testAddWithCustomTTL() {
-        GlobalCapabilitiesDirectoryClient subjectInject = getClientWithCustomTTL(CUSTOM_TTL);
-        messagingQos.setTtl_ms(CUSTOM_TTL);
+        // given a GCD client with custom ttl...
+        Properties properties = new Properties();
+        properties.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS,
+                       String.valueOf(CUSTOM_TTL));
+        GlobalCapabilitiesDirectoryClient subjectInject = createGCDClientWithProperties(properties);
+        // ...and some discovery entry
         GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
+
+        // when we call the add method on this client
         subjectInject.add(callbackMock, capabilitiesDirectoryEntryMock);
-        verify(capabilitiesProxyBuilderMock).setMessagingQos(eq(messagingQos));
-        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock), eq(capabilitiesDirectoryEntryMock));
+
+        // then the GCD proxy is called with the expected parameters and QoS
+        expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
+        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock),
+                                                         eq(capabilitiesDirectoryEntryMock),
+                                                         eq(expectedGcdCallMessagingQos));
+    }
+
+    @Test
+    public void testAddWithGBID() {
+        // given a desired gbid and some global discovery entry
+        final String targetGbid = "myjoynrbackend";
+        final GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
+
+        // when we call the add method with them
+        subject.add(callbackMock, capabilitiesDirectoryEntryMock, targetGbid);
+
+        // then the custom header in the GCD proxy call contains the desired gbid
+        // and the call as well gets the desired callback and global discovery entry
+        expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock),
+                                                         eq(capabilitiesDirectoryEntryMock),
+                                                         eq(expectedGcdCallMessagingQos));
     }
 
     @Test
