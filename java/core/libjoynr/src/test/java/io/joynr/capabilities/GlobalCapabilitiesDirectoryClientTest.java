@@ -121,17 +121,6 @@ public class GlobalCapabilitiesDirectoryClientTest {
         verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock), eq(capabilitiesDirectoryEntryMock));
     }
 
-    @Test
-    public void testRemove() {
-        messagingQos.setTtl_ms(DEFAULT_TTL_ADD_AND_REMOVE);
-        List<String> testParticipantIdList = new ArrayList<String>();
-        final String testParticipantId = "testParticipantId";
-        testParticipantIdList.add(testParticipantId);
-        subject.remove(callbackMock, testParticipantIdList);
-        verify(capabilitiesProxyBuilderMock).setMessagingQos(eq(messagingQos));
-        String[] testParticipantIdToArray = testParticipantIdList.toArray(new String[testParticipantIdList.size()]);
-        verify(globalCapabilitiesDirectoryProxyMock).remove(eq(callbackMock), eq(testParticipantIdToArray));
-    }
 
     private GlobalCapabilitiesDirectoryClient getClientWithCustomTTL(long ttl) {
         Properties properties = new Properties();
