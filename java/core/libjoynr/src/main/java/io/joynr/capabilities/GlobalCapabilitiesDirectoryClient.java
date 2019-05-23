@@ -54,9 +54,9 @@ public class GlobalCapabilitiesDirectoryClient {
     private final String domain;
     private final DiscoveryQos discoveryQos;
     private final ProxyBuilderFactory proxyBuilderFactory;
-    private GlobalCapabilitiesDirectoryProxy touchProxy;
-    private GlobalCapabilitiesDirectoryProxy addAndRemoveProxy;
     private final String[] allGbids; // index 0 is the default backend
+
+    private GlobalCapabilitiesDirectoryProxy gcdProxy;
 
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
@@ -82,18 +82,13 @@ public class GlobalCapabilitiesDirectoryClient {
         this.allGbids = gbidsArray.clone();
     }
 
-    private GlobalCapabilitiesDirectoryProxy getProxy(long ttl) {
-        ProxyBuilder<GlobalCapabilitiesDirectoryProxy> capabilitiesProxyBuilder = proxyBuilderFactory.get(domain,
-                                                                                                          GlobalCapabilitiesDirectoryProxy.class);
-        MessagingQos messagingQos = new MessagingQos(ttl);
-        return capabilitiesProxyBuilder.setDiscoveryQos(discoveryQos).setMessagingQos(messagingQos).build();
-    }
-
-    private GlobalCapabilitiesDirectoryProxy getAddAndRemoveProxy() {
-        if (addAndRemoveProxy == null) {
-            addAndRemoveProxy = getProxy(ttlAddAndRemoveMs);
+    private synchronized GlobalCapabilitiesDirectoryProxy getGcdProxy() {
+        if (this.gcdProxy == null) {
+            ProxyBuilder<GlobalCapabilitiesDirectoryProxy> capabilitiesProxyBuilder = proxyBuilderFactory.get(domain,
+                                                                                                              GlobalCapabilitiesDirectoryProxy.class);
+            gcdProxy = capabilitiesProxyBuilder.setDiscoveryQos(discoveryQos).build();
         }
-        return addAndRemoveProxy;
+        return this.gcdProxy;
     }
 
     // add methods
