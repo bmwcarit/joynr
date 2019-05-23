@@ -5,8 +5,15 @@ COPY target/domain-access-controller-jee.war /domain-access-controller-jee.war
 COPY start-me-up.sh /start-me-up.sh
 
 ENV PATH ${PATH}:/opt/payara41/glassfish/bin
-ENV joynr_messaging_mqtt_brokeruri tcp://mqttbroker:1883
 ENV joynr_servlet_hostpath http://joynrbackend:8080
+
+# environment for joynr 1.9.0 onwards
+ENV joynr_messaging_mqtt_brokeruris tcp://mqttbroker:1883
+ENV joynr_messaging_gcd_url tcp://mqttbroker:1883
+ENV joynr_messaging_gdac_url tcp://mqttbroker:1883
+
+# legacy environment for joynr < 1.9.0
+ENV joynr_messaging_mqtt_brokeruri tcp://mqttbroker:1883
 ENV joynr_messaging_discoverydirectoryurl tcp://mqttbroker:1883
 ENV joynr_messaging_domainaccesscontrollerurl tcp://mqttbroker:1883
 
