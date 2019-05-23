@@ -15,7 +15,7 @@
     "browserify": "16.1.0",
     "eslint": "5.16.0",
     "eslint-config-prettier": "4.2.0",
-    "eslint-plugin-jest": "^22.5.1",
+    "eslint-plugin-jest": "22.5.1",
     "eslint-plugin-prettier": "3.0.1",
     "eslint-plugin-promise": "3.8.0",
     "exit-hook": "1.1.1",
