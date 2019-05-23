@@ -16,39 +16,40 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistry = require("../start/TypeRegistry");
-let instance;
+/* istanbul ignore file */
+
+import TypeRegistry from "../start/TypeRegistry";
+
+let instance: TypeRegistry;
 
 class TypeRegistrySingleton {
+    /**
+     * forward addType call to the TypeRegistry instance
+     * @function TypeRegistrySingleton#addType
+     */
+    public static addType = TypeRegistrySingleton.getInstance().addType;
+
     /**
      * A singleton Implementation for the Type Registry.
      *
      * Cannot be instantiated.
      *
-     * @name TypeRegistrySingleton
      * @constructor
      * @throws {Error} Can not instantiate this type
      */
-    constructor() {
+    public constructor() {
         throw new Error("Can not instantiate this type");
+    }
+
+    /**
+     * @returns the TypeRegistry singleton instance
+     */
+    public static getInstance(): TypeRegistry {
+        if (instance === undefined) {
+            instance = new TypeRegistry();
+        }
+        return instance;
     }
 }
 
-/**
- * @function TypeRegistrySingleton#getInstance
- * @returns {TypeRegistry} the TypeRegistry singleton instance
- */
-TypeRegistrySingleton.getInstance = function() {
-    if (instance === undefined) {
-        instance = new TypeRegistry();
-    }
-    return instance;
-};
-
-/**
- * forward addType call to the TypeRegistry instance
- * @function TypeRegistrySingleton#addType
- */
-TypeRegistrySingleton.addType = TypeRegistrySingleton.getInstance().addType;
-
-module.exports = TypeRegistrySingleton;
+export = TypeRegistrySingleton;
