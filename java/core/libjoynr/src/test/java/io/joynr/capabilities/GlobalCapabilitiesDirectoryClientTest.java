@@ -67,6 +67,12 @@ import joynr.types.GlobalDiscoveryEntry;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalCapabilitiesDirectoryClientTest {
+    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 60L * 1000L;
+    private static final long CUSTOM_TTL = 3L * 1000L;
+    private static final long FRESHNESS_UPDATE_INTERVAL_MS = 42;
+    private static final String GBID_DEFAULT_BACKEND = "joynrbackend1";
+    private static final String[] GBIDS_ARRAY_PROPERTY_SETTING = { GBID_DEFAULT_BACKEND, "joynrbackend2" };
+
     @Mock
     private ProxyBuilder<GlobalCapabilitiesDirectoryProxy> capabilitiesProxyBuilderMock;
 
@@ -87,13 +93,8 @@ public class GlobalCapabilitiesDirectoryClientTest {
 
     private GlobalCapabilitiesDirectoryClient subject;
 
-    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 60L * 1000L;
-
-    private static final long CUSTOM_TTL = 3L * 1000L;
-
-    private static final long FRESHNESS_UPDATE_INTERVAL_MS = 42;
-
     private final MessagingQos messagingQos = new MessagingQos();
+    private final MessagingQos expectedGcdCallMessagingQos = new MessagingQos();
 
     @Before
     public void setup() {
