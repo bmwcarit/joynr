@@ -104,7 +104,7 @@ public class AddressManager {
             handleMulticastMessage(message, result);
         } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             Map<String, String> customHeader = message.getCustomHeaders();
-            final String gbidVal = customHeader.get("gb");
+            final String gbidVal = customHeader.get(Message.CUSTOM_HEADER_GBID_KEY);
             Address address = null;
             if (gbidVal == null) {
                 address = routingTable.get(toParticipantId);

@@ -117,7 +117,7 @@ public class AddressManagerNonMulticastTest {
         when(joynrMessage.getRecipient()).thenReturn(PARTICIPANT_ID);
 
         Map<String, String> customHeader = new HashMap<>();
-        customHeader.put("gb", gbidVal);
+        customHeader.put(Message.CUSTOM_HEADER_GBID_KEY, gbidVal);
         when(joynrMessage.getCustomHeaders()).thenReturn(customHeader);
 
         Set<Address> result = subject.getAddresses(joynrMessage);
