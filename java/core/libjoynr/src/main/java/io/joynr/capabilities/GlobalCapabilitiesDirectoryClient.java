@@ -37,6 +37,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
+import joynr.Message;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
 import joynr.types.GlobalDiscoveryEntry;
 
@@ -97,6 +98,9 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry, String targetGbid) {
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        getGcdProxy().add(callback, globalDiscoveryEntry, qosWithGbidCustomHeader);
     }
 
     // remove methods
@@ -105,6 +109,9 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     public void remove(Callback<Void> callback, String participantId, String targetGbid) {
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        getGcdProxy().remove(callback, participantId, qosWithGbidCustomHeader);
     }
 
     public void remove(Callback<Void> callback, List<String> participantIds) {
@@ -112,6 +119,11 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     public void remove(Callback<Void> callback, List<String> participantIds, String targetGbid) {
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        getGcdProxy().remove(callback,
+                             participantIds.toArray(new String[participantIds.size()]),
+                             qosWithGbidCustomHeader);
     }
 
     // lookup methods
@@ -120,13 +132,27 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long ttl, String targetGbid) {
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttl);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        getGcdProxy().lookup(callback, participantId, qosWithGbidCustomHeader);
     }
 
     public void lookup(final Callback<List<GlobalDiscoveryEntry>> callback,
                        String[] domains,
                        String interfaceName,
                        long ttl) {
-        getProxy(ttl).lookup(new Callback<GlobalDiscoveryEntry[]>() {
+        lookup(callback, domains, interfaceName, ttl, allGbids[0]);
+    }
+
+    public void lookup(final Callback<List<GlobalDiscoveryEntry>> callback,
+                       String[] domains,
+                       String interfaceName,
+                       long ttl,
+                       String targetGbid) {
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttl);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+
+        getGcdProxy().lookup(new Callback<GlobalDiscoveryEntry[]>() {
             @Override
             public void onFailure(JoynrRuntimeException error) {
                 callback.onFailure(error);
@@ -144,7 +170,7 @@ public class GlobalCapabilitiesDirectoryClient {
                 callback.onSuccess(globalDiscoveryEntryList);
             }
 
-        }, domains, interfaceName);
+        }, domains, interfaceName, qosWithGbidCustomHeader);
 
     }
 
@@ -156,5 +182,8 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     private void touch(String targetGbid) {
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos(freshnessUpdateIntervalMs);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        getGcdProxy().touch(localChannelId, qosWithGbidCustomHeader);
     }
 }
