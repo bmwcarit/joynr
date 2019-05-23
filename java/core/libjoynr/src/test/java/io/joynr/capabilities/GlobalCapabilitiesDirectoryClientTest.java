@@ -30,7 +30,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -40,7 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -88,12 +86,8 @@ public class GlobalCapabilitiesDirectoryClientTest {
     @Mock
     private ProxyBuilderFactory proxyBuilderFactoryMock;
 
-    @Captor
-    private ArgumentCaptor<Callback<GlobalDiscoveryEntry[]>> callbackArrayOfGlobalDiscoveryEntryCaptor;
-
     private GlobalCapabilitiesDirectoryClient subject;
 
-    private final MessagingQos messagingQos = new MessagingQos();
     private final MessagingQos expectedGcdCallMessagingQos = new MessagingQos();
 
     @Before
@@ -334,39 +328,72 @@ public class GlobalCapabilitiesDirectoryClientTest {
                                                             eq(expectedGcdCallMessagingQos));
     }
 
-    private Callback<GlobalDiscoveryEntry[]> lookupDomainsHelper(Callback<List<GlobalDiscoveryEntry>> callbackListOfGlobalDiscoveryEntriesMock) {
+    private void checkLookupDomainsIsCalledCorrectly(Callback<List<GlobalDiscoveryEntry>> callbackListOfGlobalDiscoveryEntriesMock) {
+        // given some callback (the method parameter)...
+        // ...and an interface plus an array of domains
         String[] domainsStrArrayDummy = new String[]{ "dummyDomain1", "dummyDomain2", "dummyDomain3" };
         String interfaceNameDummy = "interfaceNameDummy";
-        messagingQos.setTtl_ms(CUSTOM_TTL);
+
+        // when we call this GCD client with them as well as with custom ttl
         subject.lookup(callbackListOfGlobalDiscoveryEntriesMock, domainsStrArrayDummy, interfaceNameDummy, CUSTOM_TTL);
-        verify(capabilitiesProxyBuilderMock).setMessagingQos(eq(messagingQos));
-        verify(globalCapabilitiesDirectoryProxyMock,
-               times(1)).lookup(callbackArrayOfGlobalDiscoveryEntryCaptor.capture(),
-                                eq(domainsStrArrayDummy),
-                                eq(interfaceNameDummy));
-        Callback<GlobalDiscoveryEntry[]> callback = callbackArrayOfGlobalDiscoveryEntryCaptor.getValue();
-        return callback;
+
+        // then the GCD proxy is called with the expected parameters
+        expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
+        verify(globalCapabilitiesDirectoryProxyMock).lookup(Mockito.<Callback<GlobalDiscoveryEntry[]>> any(),
+                                                            eq(domainsStrArrayDummy),
+                                                            eq(interfaceNameDummy),
+                                                            eq(expectedGcdCallMessagingQos));
     }
 
     @Test
     public void testLookupDomainsOnFailure() {
+        // given the GCD proxy returns an error on lookup with domain/interface...
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("unchecked")
+                Callback<GlobalDiscoveryEntry[]> callback = (Callback<GlobalDiscoveryEntry[]>) invocation.getArguments()[0];
+                JoynrRuntimeException error = new JoynrRuntimeException();
+                callback.onFailure(error);
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryProxyMock)
+          .lookup(anyObject(), any(String[].class), any(String.class), any(MessagingQos.class));
+        // ...and given some callback
         @SuppressWarnings("unchecked")
-        Callback<List<GlobalDiscoveryEntry>> callbackListOfGlobalDiscoveryEntriesMock = (Callback<List<GlobalDiscoveryEntry>>) mock(Callback.class);
-        Callback<GlobalDiscoveryEntry[]> callback = lookupDomainsHelper(callbackListOfGlobalDiscoveryEntriesMock);
-        JoynrRuntimeException error = new JoynrRuntimeException();
-        callback.onFailure(error);
-        verify(callbackListOfGlobalDiscoveryEntriesMock).onFailure(eq(error));
+        Callback<List<GlobalDiscoveryEntry>> callbackListOfGlobalDiscoveryEntriesMock = mock(Callback.class);
+
+        // when we execute the lookup method of the GCD client with this callback
+        checkLookupDomainsIsCalledCorrectly(callbackListOfGlobalDiscoveryEntriesMock);
+
+        // then the callback we used for the GCD client call is correctly completed
+        verify(callbackListOfGlobalDiscoveryEntriesMock).onFailure(eq(new JoynrRuntimeException()));
         verify(callbackListOfGlobalDiscoveryEntriesMock, times(0)).onSuccess(anyListOf(GlobalDiscoveryEntry.class));
     }
 
     @Test
     public void testLookupDomainsOnSuccess() {
+        // given the GCD proxy returns a regular answer on lookup with domain/interface...
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("unchecked")
+                Callback<GlobalDiscoveryEntry[]> callback = (Callback<GlobalDiscoveryEntry[]>) invocation.getArguments()[0];
+                GlobalDiscoveryEntry[] result = new GlobalDiscoveryEntry[]{ new GlobalDiscoveryEntry(),
+                        new GlobalDiscoveryEntry() };
+                callback.onSuccess(result);
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryProxyMock)
+          .lookup(anyObject(), any(String[].class), any(String.class), any(MessagingQos.class));
+        // ...and given some callback
         @SuppressWarnings("unchecked")
-        Callback<List<GlobalDiscoveryEntry>> callbackListOfGlobalDiscoveryEntriesMock = (Callback<List<GlobalDiscoveryEntry>>) mock(Callback.class);
-        Callback<GlobalDiscoveryEntry[]> callback = lookupDomainsHelper(callbackListOfGlobalDiscoveryEntriesMock);
-        GlobalDiscoveryEntry[] result = new GlobalDiscoveryEntry[]{ new GlobalDiscoveryEntry(),
-                new GlobalDiscoveryEntry() };
-        callback.onSuccess(result);
+        Callback<List<GlobalDiscoveryEntry>> callbackListOfGlobalDiscoveryEntriesMock = mock(Callback.class);
+
+        // when we execute the lookup method of the GCD client with this callback
+        checkLookupDomainsIsCalledCorrectly(callbackListOfGlobalDiscoveryEntriesMock);
+
+        // then the callback we used for the GCD client call is correctly completed
         verify(callbackListOfGlobalDiscoveryEntriesMock).onSuccess(anyListOf(GlobalDiscoveryEntry.class));
         verify(callbackListOfGlobalDiscoveryEntriesMock, times(0)).onFailure(any(JoynrRuntimeException.class));
     }
