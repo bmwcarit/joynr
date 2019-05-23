@@ -18,6 +18,8 @@
  */
 package io.joynr.dispatching;
 
+import static joynr.Message.CUSTOM_HEADER_REQUEST_REPLY_ID;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -50,7 +52,6 @@ import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 
 public class MutableMessageFactory {
-    private static final String REQUEST_REPLY_ID_CUSTOM_HEADER = "z4";
     private final Set<JoynrMessageProcessor> messageProcessors;
     private ObjectMapper objectMapper;
     @Inject(optional = true)
@@ -134,7 +135,7 @@ public class MutableMessageFactory {
 
     private MutableMessage addRequestReplyIdCustomHeader(MutableMessage msg, String requestReplyId) {
         Map<String, String> customHeaders = new HashMap<>();
-        customHeaders.put(REQUEST_REPLY_ID_CUSTOM_HEADER, requestReplyId);
+        customHeaders.put(CUSTOM_HEADER_REQUEST_REPLY_ID, requestReplyId);
         msg.setCustomHeaders(customHeaders);
         return msg;
     }
