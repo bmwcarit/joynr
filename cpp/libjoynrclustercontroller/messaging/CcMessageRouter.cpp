@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -253,9 +253,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
         try {
             providerParticipantId = util::extractParticipantIdFromMulticastId(multicastId);
         } catch (std::invalid_argument& ex) {
-            JOYNR_LOG_ERROR(logger(),
-                            "Persisted multicast receivers: Invalid multicast ID found {}",
-                            multicastId);
+            JOYNR_LOG_ERROR(logger(), "Persisted multicast receivers: {}", ex.what());
             continue;
         }
 
