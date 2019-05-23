@@ -40,6 +40,15 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
 import joynr.types.GlobalDiscoveryEntry;
 
+/**
+ * A wrapper class around the {@link GlobalCapabilitiesDirectoryProxy}. Used inside the cluster
+ * controller to communicate with the GCD for adding/removing/looking up global providers.
+ *
+ * In the current architecture with multiple GCDs (aka. "multiple backend") it is needed to extend
+ * the GCD proxy calls with a custom header indicating which GCD (in which backend) should receive
+ * the call. This information is processed by the AddressManager in order to select the right
+ * address of the GCD for sending the message.
+ */
 public class GlobalCapabilitiesDirectoryClient {
     private static final long DEFAULT_TTL_ADD_AND_REMOVE = 60L * 1000L;
     private final String domain;
