@@ -96,20 +96,35 @@ public class GlobalCapabilitiesDirectoryClient {
         return addAndRemoveProxy;
     }
 
+    // add methods
     public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry) {
-        getAddAndRemoveProxy().add(callback, globalDiscoveryEntry);
+        add(callback, globalDiscoveryEntry, allGbids[0]);
     }
 
+    public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry, String targetGbid) {
+    }
+
+    // remove methods
     public void remove(Callback<Void> callback, String participantId) {
-        getAddAndRemoveProxy().remove(callback, participantId);
+        remove(callback, participantId, allGbids[0]);
+    }
+
+    public void remove(Callback<Void> callback, String participantId, String targetGbid) {
     }
 
     public void remove(Callback<Void> callback, List<String> participantIds) {
-        getAddAndRemoveProxy().remove(callback, participantIds.toArray(new String[participantIds.size()]));
+        remove(callback, participantIds, allGbids[0]);
     }
 
+    public void remove(Callback<Void> callback, List<String> participantIds, String targetGbid) {
+    }
+
+    // lookup methods
     public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long ttl) {
-        getProxy(ttl).lookup(callback, participantId);
+        lookup(callback, participantId, ttl, allGbids[0]);
+    }
+
+    public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long ttl, String targetGbid) {
     }
 
     public void lookup(final Callback<List<GlobalDiscoveryEntry>> callback,
@@ -138,11 +153,13 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
+    // touch methods
     public void touch() {
-        if (touchProxy == null) {
-            touchProxy = getProxy(freshnessUpdateIntervalMs);
+        for (String gbid : allGbids) {
+            touch(gbid);
         }
-        touchProxy.touch(localChannelId);
     }
 
+    private void touch(String targetGbid) {
+    }
 }
