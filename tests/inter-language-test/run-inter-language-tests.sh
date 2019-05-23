@@ -274,7 +274,7 @@ function start_cluster_controller {
 		cd $CLUSTER_CONTROLLER_DIR
 		if [ "$BACKEND_SERVICES" = "HTTP" ]
 		then
-			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http" -Djoynr.messaging.discoverydirectoryurl="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
+			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http" -Djoynr.messaging.gcd.url="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
 		else
 			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
 		fi
@@ -326,7 +326,7 @@ function start_java_provider_cc {
 	rm -f java-provider.persistence_file
 	if [ "$BACKEND_SERVICES" = "HTTP" ]
 	then
-		mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http" -Djoynr.messaging.discoverydirectoryurl="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
+		mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http" -Djoynr.messaging.gcd.url="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
 	else
 		mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN mqtt" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
 	fi
@@ -392,7 +392,7 @@ function start_java_consumer_cc {
 	rm -fr $ILT_DIR/target/surefire-reports
 	if [ "$BACKEND_SERVICES" = "HTTP" ]
 	then
-		mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=http -Djoynr.messaging.discoverydirectoryurl="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
+		mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=http -Djoynr.messaging.gcd.url="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
 	else
 		mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=mqtt -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
 	fi

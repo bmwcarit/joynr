@@ -182,11 +182,11 @@
 									<value>true</value>
 								</systemProperty>
 								<systemProperty>
-									<name>joynr.messaging.discoverydirectoryurl</name>
+									<name>joynr.messaging.gcd.url</name>
 									<value>http://localhost:8383/discovery/channels/discoverydirectory_channelid/</value>
 								</systemProperty>
 								<systemProperty>
-									<name>joynr.messaging.domainaccesscontrollerurl</name>
+									<name>joynr.messaging.gdac.url</name>
 									<value>http://localhost:8383/discovery/channels/discoverydirectory_channelid/</value>
 								</systemProperty>
 								<systemProperty>

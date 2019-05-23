@@ -5,10 +5,8 @@ COPY target/domain-access-controller-jee.war /domain-access-controller-jee.war
 COPY start-me-up.sh /start-me-up.sh
 
 ENV PATH ${PATH}:/opt/payara41/glassfish/bin
-ENV joynr_messaging_mqtt_brokeruri tcp://mqttbroker:1883
+ENV joynr_messaging_mqtt_brokeruris tcp://mqttbroker:1883
 ENV joynr_servlet_hostpath http://joynrbackend:8080
-ENV joynr_messaging_discoverydirectoryurl tcp://mqttbroker:1883
-ENV joynr_messaging_domainaccesscontrollerurl tcp://mqttbroker:1883
 
 RUN echo 'AS_ADMIN_PASSWORD=glassfish\n\
 EOF\n' \
