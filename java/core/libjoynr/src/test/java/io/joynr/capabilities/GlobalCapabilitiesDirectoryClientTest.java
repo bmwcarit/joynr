@@ -105,48 +105,47 @@ public class GlobalCapabilitiesDirectoryClientTest {
         properties.put(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS,
                        String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
 
-        Injector injector = Guice.createInjector(new AbstractModule() {
-            @Override
-            public void configure() {
-                bind(ProxyBuilderFactory.class).toInstance(proxyBuilderFactoryMock);
-                bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
-                                                .toInstance(capabilitiesDirectoryEntryMock);
-            }
-        }, new JoynrPropertiesModule(properties));
-        subject = injector.getInstance(GlobalCapabilitiesDirectoryClient.class);
+        subject = createGCDClientWithProperties(properties);
 
         when(proxyBuilderFactoryMock.get(domainMock,
                                          GlobalCapabilitiesDirectoryProxy.class)).thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.setDiscoveryQos(any(DiscoveryQos.class))).thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.setMessagingQos(any(MessagingQos.class))).thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.build()).thenReturn(globalCapabilitiesDirectoryProxyMock);
+
+        // expect default ttl if not changed in the test case
+        expectedGcdCallMessagingQos.setTtl_ms(DEFAULT_TTL_ADD_AND_REMOVE);
+        // expect the default backend in the custom header if not changed in the test case
+        expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, GBID_DEFAULT_BACKEND);
     }
 
-    @Test
-    public void testAdd() {
-        messagingQos.setTtl_ms(DEFAULT_TTL_ADD_AND_REMOVE);
-        GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
-        subject.add(callbackMock, capabilitiesDirectoryEntryMock);
-        verify(capabilitiesProxyBuilderMock).setMessagingQos(eq(messagingQos));
-        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock), eq(capabilitiesDirectoryEntryMock));
-    }
-
-
-    private GlobalCapabilitiesDirectoryClient getClientWithCustomTTL(long ttl) {
-        Properties properties = new Properties();
-        properties.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS,
-                       String.valueOf(ttl));
-
+    private GlobalCapabilitiesDirectoryClient createGCDClientWithProperties(final Properties properties) {
         Injector injector = Guice.createInjector(new AbstractModule() {
             @Override
             public void configure() {
                 bind(ProxyBuilderFactory.class).toInstance(proxyBuilderFactoryMock);
                 bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
                                                 .toInstance(capabilitiesDirectoryEntryMock);
+                bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                    .toInstance(GBIDS_ARRAY_PROPERTY_SETTING);
             }
         }, new JoynrPropertiesModule(properties));
 
         return injector.getInstance(GlobalCapabilitiesDirectoryClient.class);
+    }
+
+    @Test
+    public void testAdd() {
+        // given some discovery entry
+        GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
+
+        // when we call the add method with it
+        subject.add(callbackMock, capabilitiesDirectoryEntryMock);
+
+        // then the GCD proxy is called with the expected parameters and QoS
+        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock),
+                                                         eq(capabilitiesDirectoryEntryMock),
+                                                         eq(expectedGcdCallMessagingQos));
     }
 
     @Test
