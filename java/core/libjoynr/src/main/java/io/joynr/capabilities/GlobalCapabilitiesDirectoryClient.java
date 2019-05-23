@@ -56,6 +56,8 @@ public class GlobalCapabilitiesDirectoryClient {
     private final ProxyBuilderFactory proxyBuilderFactory;
     private GlobalCapabilitiesDirectoryProxy touchProxy;
     private GlobalCapabilitiesDirectoryProxy addAndRemoveProxy;
+    private final String[] allGbids; // index 0 is the default backend
+
     @Inject
     @Named(MessagingPropertyKeys.CHANNELID)
     private String localChannelId;
@@ -69,13 +71,15 @@ public class GlobalCapabilitiesDirectoryClient {
 
     @Inject
     public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
-                                             @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry) {
+                                             @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry,
+                                             @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbidsArray) {
         this.proxyBuilderFactory = proxyBuilderFactory;
         this.domain = capabilitiesDirectoryEntry.getDomain();
         this.discoveryQos = new DiscoveryQos(30000,
                                              ArbitrationStrategy.HighestPriority,
                                              DiscoveryQos.NO_MAX_AGE,
                                              DiscoveryScope.GLOBAL_ONLY);
+        this.allGbids = gbidsArray.clone();
     }
 
     private GlobalCapabilitiesDirectoryProxy getProxy(long ttl) {
