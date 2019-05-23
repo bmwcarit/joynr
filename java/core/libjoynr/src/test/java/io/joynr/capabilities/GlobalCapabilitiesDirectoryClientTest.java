@@ -186,16 +186,87 @@ public class GlobalCapabilitiesDirectoryClientTest {
     }
 
     @Test
-    public void testRemoveWithCustomTTL() {
-        GlobalCapabilitiesDirectoryClient subjectInject = getClientWithCustomTTL(CUSTOM_TTL);
-        messagingQos.setTtl_ms(CUSTOM_TTL);
-        List<String> testParticipantIdList = new ArrayList<String>();
+    public void testRemoveSingleParticipant() {
+        // given some participantId
         final String testParticipantId = "testParticipantId";
-        testParticipantIdList.add(testParticipantId);
+
+        // when we call the remove method with it
+        subject.remove(callbackMock, testParticipantId);
+
+        // then the GCD proxy is called with the expected parameters and QoS
+        verify(globalCapabilitiesDirectoryProxyMock).remove(eq(callbackMock),
+                                                            eq(testParticipantId),
+                                                            eq(expectedGcdCallMessagingQos));
+    }
+
+    @Test
+    public void testRemoveSingleParticipantWithGbid() {
+        // given some participantId and a desired gbid
+        final String testParticipantId = "testParticipantId";
+        final String targetGbid = "myjoynrbackend";
+
+        // when we call the remove method with them
+        subject.remove(callbackMock, testParticipantId, targetGbid);
+
+        // then the GCD proxy is called with the expected parameters and QoS
+        expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        verify(globalCapabilitiesDirectoryProxyMock).remove(eq(callbackMock),
+                                                            eq(testParticipantId),
+                                                            eq(expectedGcdCallMessagingQos));
+    }
+
+    @Test
+    public void testRemoveParticipantsList() {
+        // given some participantId list
+        List<String> testParticipantIdList = Arrays.asList("testParticipantId", "testParticipantId2");
+
+        // when we call the remove method with them
+        subject.remove(callbackMock, testParticipantIdList);
+
+        // then the GCD proxy is called with the expected parameters and QoS
+        String[] testParticipantIdToArray = testParticipantIdList.stream().toArray(String[]::new);
+        verify(globalCapabilitiesDirectoryProxyMock).remove(eq(callbackMock),
+                                                            eq(testParticipantIdToArray),
+                                                            eq(expectedGcdCallMessagingQos));
+    }
+
+    @Test
+    public void testRemoveParticipantsListWithGbid() {
+        // given a desired gbid and some participantId list
+        final String targetGbid = "myjoynrbackend";
+        final List<String> testParticipantIdList = Arrays.asList("testParticipantId", "testParticipantId2");
+
+        // when we call the remove method with them
+        subject.remove(callbackMock, testParticipantIdList, targetGbid);
+
+        // then the custom header in the GCD proxy call contains the desired gbid
+        // and the call as well gets the desired callback and participantId array
+        expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        String[] expectedParticipantIdArray = testParticipantIdList.stream().toArray(String[]::new);
+        verify(globalCapabilitiesDirectoryProxyMock).remove(eq(callbackMock),
+                                                            eq(expectedParticipantIdArray),
+                                                            eq(expectedGcdCallMessagingQos));
+    }
+
+    @Test
+    public void testRemoveParticipantsListWithCustomTTL() {
+        // given a GCD client with custom ttl...
+        Properties properties = new Properties();
+        properties.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS,
+                       String.valueOf(CUSTOM_TTL));
+        GlobalCapabilitiesDirectoryClient subjectInject = createGCDClientWithProperties(properties);
+        // ...and some participantId list
+        List<String> testParticipantIdList = Arrays.asList("testParticipantId", "testParticipantId2");
+
+        // when we call the remove method on this client
         subjectInject.remove(callbackMock, testParticipantIdList);
-        verify(capabilitiesProxyBuilderMock).setMessagingQos(eq(messagingQos));
-        String[] testParticipantIdToArray = testParticipantIdList.toArray(new String[testParticipantIdList.size()]);
-        verify(globalCapabilitiesDirectoryProxyMock).remove(eq(callbackMock), eq(testParticipantIdToArray));
+
+        // then the GCD proxy is called with the expected parameters and QoS
+        String[] testParticipantIdToArray = testParticipantIdList.stream().toArray(String[]::new);
+        expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
+        verify(globalCapabilitiesDirectoryProxyMock).remove(eq(callbackMock),
+                                                            eq(testParticipantIdToArray),
+                                                            eq(expectedGcdCallMessagingQos));
     }
 
     @Test
