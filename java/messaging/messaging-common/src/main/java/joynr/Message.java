@@ -26,6 +26,7 @@ public abstract class Message {
     public static final String HEADER_REPLY_TO = "re";
 
     public static final String CUSTOM_HEADER_REQUEST_REPLY_ID = "z4";
+    public static final String CUSTOM_HEADER_GBID_KEY = "gb";
 
     public static final String VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST = "brq";
     public static final String VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST = "mrq";
