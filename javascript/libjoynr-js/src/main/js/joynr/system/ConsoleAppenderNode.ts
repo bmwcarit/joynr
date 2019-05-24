@@ -16,7 +16,11 @@
  * limitations under the License.
  * #L%
  */
+/* istanbul ignore file */
+
 /*eslint no-console: "off"*/
+import { LoggingEvent } from "./JoynrLogger";
+
 /**
  * A log4javascript Appender that sends a logged message from a WebWorker to the main context to
  * log it there
@@ -27,20 +31,16 @@
 class ConsoleAppender {
     /**
      * Implementing the appender function of log4javascript appenders
-     *
-     * @name ConsoleAppender#append
-     * @function
      */
-    append(loggingEvent) {
+    public append(loggingEvent: LoggingEvent): void {
         const logLevel = loggingEvent.level.name.toLowerCase();
         const formattedMessage = loggingEvent.messages.join(",");
-        console[logLevel] = console[logLevel] || console.log;
-        console[logLevel](formattedMessage);
+        ((console as any)[logLevel] || console.log)(formattedMessage);
     }
 
-    toString() {
+    public toString(): string {
         return "ConsoleAppender";
     }
 }
 
-module.exports = ConsoleAppender;
+export = ConsoleAppender;
