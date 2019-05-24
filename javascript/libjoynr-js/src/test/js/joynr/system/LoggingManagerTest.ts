@@ -16,15 +16,16 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
-const JoynrLogger = require("../../../../main/js/joynr/system/JoynrLogger");
+
+import LoggingManager from "../../../../main/js/joynr/system/LoggingManager";
+import JoynrLogger from "../../../../main/js/joynr/system/JoynrLogger";
 
 describe("libjoynr-js.joynr.util.LoggingManager", () => {
     beforeEach(() => {
-        spyOn(JoynrLogger, "setLogLevel").and.stub();
-        spyOn(JoynrLogger, "setFormatting").and.stub();
-        spyOn(JoynrLogger, "setOutput").and.stub();
+        jest.clearAllMocks();
+        jest.spyOn(JoynrLogger, "setLogLevel");
+        jest.spyOn(JoynrLogger, "setFormatting");
+        jest.spyOn(JoynrLogger, "setOutput");
     });
 
     function expectNoCalls() {
@@ -37,16 +38,16 @@ describe("libjoynr-js.joynr.util.LoggingManager", () => {
         LoggingManager.configure({});
         expectNoCalls();
 
-        LoggingManager.configure({ configuration: {} });
+        LoggingManager.configure({ configuration: {} } as any);
         expectNoCalls();
 
-        LoggingManager.configure({ configuration: { loggers: {} } });
+        LoggingManager.configure({ configuration: { loggers: {} } } as any);
         expectNoCalls();
 
-        LoggingManager.configure({ configuration: { loggers: { root: {} } } });
+        LoggingManager.configure({ configuration: { loggers: { root: {} } } } as any);
         expectNoCalls();
 
-        LoggingManager.configure({ configuration: { appenders: {} } });
+        LoggingManager.configure({ configuration: { appenders: {} } } as any);
         expectNoCalls();
 
         LoggingManager.configure({
@@ -56,12 +57,12 @@ describe("libjoynr-js.joynr.util.LoggingManager", () => {
 
         LoggingManager.configure({
             configuration: { appenders: { appender: [{}] } }
-        });
+        } as any);
         expectNoCalls();
 
         LoggingManager.configure({
             configuration: { appenders: { appender: [{ PatternLayout: {} }] } }
-        });
+        } as any);
         expectNoCalls();
 
         LoggingManager.configure({ appenderClasses: {} });
@@ -91,7 +92,7 @@ describe("libjoynr-js.joynr.util.LoggingManager", () => {
         const pattern = "%m";
         LoggingManager.configure({
             configuration: { appenders: [{ PatternLayout: { pattern } }] }
-        });
+        } as any);
         expect(JoynrLogger.setFormatting).not.toHaveBeenCalled();
     });
 
@@ -100,5 +101,21 @@ describe("libjoynr-js.joynr.util.LoggingManager", () => {
         SomeObject.prototype.append = function() {};
         LoggingManager.configure({ appenderClasses: { someName: SomeObject } });
         expect(JoynrLogger.setOutput).toHaveBeenCalledWith(SomeObject.prototype.append);
+    });
+
+    it(`.get returns new Instance of JoynrLogger`, () => {
+        const logger = LoggingManager.getLogger("test");
+        expect(logger instanceof JoynrLogger).toBeTruthy();
+    });
+
+    it(`registerForLogLevelChanged cb is called upon configure`, () => {
+        const spy = jest.fn();
+        LoggingManager.registerForLogLevelChanged(spy);
+        LoggingManager.configure({
+            configuration: {
+                loggers: { root: { level: JoynrLogger.LogLevel.DEBUG } }
+            }
+        });
+        expect(spy).toHaveBeenCalledWith(JoynrLogger.LogLevel.DEBUG);
     });
 });

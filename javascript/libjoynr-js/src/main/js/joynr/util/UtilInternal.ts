@@ -264,9 +264,9 @@ export function createDeferred(): Deferred {
  * @param config
  * @returns an ES6 Proxy object
  */
-export function augmentConfig<T>(config: T): T {
+export function augmentConfig(config: any): any {
     let parts: string[] = [];
-    const proxy: T = new Proxy(
+    const proxy: Function = new Proxy(
         (): any => {
             let level: any = config;
             for (let i = 0; i < parts.length; i++) {
@@ -284,7 +284,7 @@ export function augmentConfig<T>(config: T): T {
                 return true;
             },
 
-            get(_, prop: string): T {
+            get(_, prop: string): any {
                 parts.push(prop);
                 return proxy;
             },
