@@ -109,28 +109,6 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     // remove methods
-    public void remove(Callback<Void> callback, String participantId) {
-        remove(callback, participantId, allGbids[0]);
-    }
-
-    public void remove(Callback<Void> callback, String participantId, String targetGbid) {
-        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
-        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
-        getGcdProxy().remove(callback, participantId, qosWithGbidCustomHeader);
-    }
-
-    public void remove(Callback<Void> callback, List<String> participantIds) {
-        remove(callback, participantIds, allGbids[0]);
-    }
-
-    public void remove(Callback<Void> callback, List<String> participantIds, String targetGbid) {
-        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
-        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
-        getGcdProxy().remove(callback,
-                             participantIds.toArray(new String[participantIds.size()]),
-                             qosWithGbidCustomHeader);
-    }
-
     public void remove(CallbackWithModeledError<Void, joynr.types.DiscoveryError> callback,
                        String participantId,
                        String[] targetGbids) {
