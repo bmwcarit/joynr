@@ -16,33 +16,42 @@
  * limitations under the License.
  * #L%
  */
+/* istanbul ignore file */
 
 /**
  * @exports DiagnosticTags
  */
-const UtilInternal = require("../util/UtilInternal");
-const loggingManager = require("./LoggingManager");
-const DiagnosticTags = {};
+import * as UtilInternal from "../util/UtilInternal";
+import { LogLevel } from "./JoynrLogger";
+
+import loggingManager from "./LoggingManager";
+import JoynrMessage from "../messaging/JoynrMessage";
 
 /**
- * @param {JoynrMessage} joynrMessage
+ * @param joynrMessage
+ * @returns object to be logged
  */
-DiagnosticTags.forJoynrMessage = function forJoynrMessage(joynrMessage) {
+export function forJoynrMessage(joynrMessage: JoynrMessage): any {
     return {
         diagnosticTag: "JoynrMessage",
         from: joynrMessage.from,
         to: joynrMessage.to,
         type: joynrMessage.type
     };
-};
+}
 
 /**
- * @param {String} channelInfo.channelUrl
- * @param {String} channelInfo.channelId
- * @param {String} channelInfo.status
- * @param {String} channelInfo.responseText
+ * @param channelInfo.channelUrl
+ * @param channelInfo.channelId
+ * @param channelInfo.status
+ * @param channelInfo.responseText
  */
-DiagnosticTags.forChannel = function forChannel(channelInfo) {
+export function forChannel(channelInfo: {
+    channelUrl: string;
+    channelId: string;
+    status: string;
+    responseText: string;
+}): any {
     return {
         diagnosticTag: "ChannelInfo",
         channelUrl: channelInfo.channelUrl,
@@ -50,18 +59,18 @@ DiagnosticTags.forChannel = function forChannel(channelInfo) {
         status: channelInfo.status,
         responseText: channelInfo.responseText
     };
-};
+}
 
-let forRequestHelper = function forRequestHelper(tagsForRequest, requestInfo) {
+let forRequestHelper = (tagsForRequest: any, requestInfo: any): void => {
     if (requestInfo.request.params) {
         tagsForRequest.params = requestInfo.request.params;
     }
 };
 
 /**
- * @param {Object} requestInfo
+ * @param requestInfo
  */
-DiagnosticTags.forRequest = function forRequest(requestInfo) {
+export function forRequest(requestInfo: Record<string, any>): any {
     const tagsForRequest = {
         diagnosticTag: "Request",
         requestReplyId: requestInfo.request.requestReplyId,
@@ -70,18 +79,18 @@ DiagnosticTags.forRequest = function forRequest(requestInfo) {
     };
     forRequestHelper(tagsForRequest, requestInfo);
     return tagsForRequest;
-};
+}
 
-let forOneWayRequestHelper = function(tagsForOneWayRequest, requestInfo) {
+let forOneWayRequestHelper = (tagsForOneWayRequest: any, requestInfo: any): void => {
     if (requestInfo.request.params) {
         tagsForOneWayRequest.params = requestInfo.request.params;
     }
 };
 
 /**
- * @param {Object} requestInfo
+ * @param requestInfo
  */
-DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
+export function forOneWayRequest(requestInfo: Record<string, any>): any {
     const tagsForOneWayRequest = {
         diagnosticTag: "OneWayRequest",
         to: requestInfo.to,
@@ -89,17 +98,17 @@ DiagnosticTags.forOneWayRequest = function forOneWayRequest(requestInfo) {
     };
     forOneWayRequestHelper(tagsForOneWayRequest, requestInfo);
     return tagsForOneWayRequest;
-};
+}
 
-let forReplyHelper = function(tagsForReply, replyInfo) {
+let forReplyHelper = (tagsForReply: any, replyInfo: any): void => {
     tagsForReply.response = replyInfo.reply.response;
 };
 
 /**
- * @param {Object} replyInfo
+ * @param replyInfo
  */
-DiagnosticTags.forReply = function forReply(replyInfo) {
-    const tagsForReply = {
+export function forReply(replyInfo: Record<string, any>): Record<string, any> {
+    const tagsForReply: Record<string, any> = {
         diagnosticTag: "Reply",
         requestReplyId: replyInfo.reply.requestReplyId,
         to: replyInfo.to,
@@ -110,13 +119,13 @@ DiagnosticTags.forReply = function forReply(replyInfo) {
     }
     forReplyHelper(tagsForReply, replyInfo);
     return tagsForReply;
-};
+}
 
 /**
- * @param {Object} subscriptionReplyInfo
+ * @param subscriptionReplyInfo
  */
-DiagnosticTags.forSubscriptionReply = function forSubscriptionReply(subscriptionReplyInfo) {
-    const subscriptionReplyTag = {
+export function forSubscriptionReply(subscriptionReplyInfo: Record<string, any>): any {
+    const subscriptionReplyTag: Record<string, any> = {
         diagnosticTag: "SubscriptionReply",
         subscriptionId: subscriptionReplyInfo.subscriptionReply.subscriptionId,
         to: subscriptionReplyInfo.to,
@@ -127,12 +136,12 @@ DiagnosticTags.forSubscriptionReply = function forSubscriptionReply(subscription
     }
 
     return subscriptionReplyTag;
-};
+}
 
 /**
- * @param {Object} subscriptionRequestInfo
+ * @param subscriptionRequestInfo
  */
-DiagnosticTags.forMulticastSubscriptionRequest = function forMulticastSubscriptionRequest(subscriptionRequestInfo) {
+export function forMulticastSubscriptionRequest(subscriptionRequestInfo: Record<string, any>): any {
     return {
         diagnosticTag: "MulticastSubscriptionRequest",
         eventName: subscriptionRequestInfo.subscriptionRequest.subscribedToName,
@@ -141,12 +150,12 @@ DiagnosticTags.forMulticastSubscriptionRequest = function forMulticastSubscripti
         to: subscriptionRequestInfo.to,
         from: subscriptionRequestInfo.from
     };
-};
+}
 
 /**
- * @param {Object} subscriptionRequestInfo
+ * @param subscriptionRequestInfo
  */
-DiagnosticTags.forBroadcastSubscriptionRequest = function forBroadcastSubscriptionRequest(subscriptionRequestInfo) {
+export function forBroadcastSubscriptionRequest(subscriptionRequestInfo: Record<string, any>): any {
     return {
         diagnosticTag: "BroadcastSubscriptionRequest",
         eventName: subscriptionRequestInfo.subscriptionRequest.subscribedToName,
@@ -154,12 +163,12 @@ DiagnosticTags.forBroadcastSubscriptionRequest = function forBroadcastSubscripti
         to: subscriptionRequestInfo.to,
         from: subscriptionRequestInfo.from
     };
-};
+}
 
 /**
- * @param {Object} subscriptionRequestInfo
+ * @param subscriptionRequestInfo
  */
-DiagnosticTags.forSubscriptionRequest = function forSubscriptionRequest(subscriptionRequestInfo) {
+export function forSubscriptionRequest(subscriptionRequestInfo: Record<string, any>): any {
     return {
         diagnosticTag: "SubscriptionRequest",
         attributeName: subscriptionRequestInfo.subscriptionRequest.subscribedToName,
@@ -167,29 +176,29 @@ DiagnosticTags.forSubscriptionRequest = function forSubscriptionRequest(subscrip
         to: subscriptionRequestInfo.to,
         from: subscriptionRequestInfo.from
     };
-};
+}
 
 /**
- * @param {Object} subscriptionStopInfo
+ * @param subscriptionStopInfo
  */
-DiagnosticTags.forSubscriptionStop = function forSubscriptionStop(subscriptionStopInfo) {
+export function forSubscriptionStop(subscriptionStopInfo: Record<string, any>): any {
     return {
         diagnosticTag: "SubscriptionStop",
         subscriptionId: subscriptionStopInfo.subscriptionId,
         to: subscriptionStopInfo.to,
         from: subscriptionStopInfo.from
     };
-};
+}
 
-let forPublicationHelper = function(tagsForPublication, publicationInfo) {
+let forPublicationHelper = (tagsForPublication: any, publicationInfo: any): void => {
     tagsForPublication.response = publicationInfo.publication.response;
 };
 
 /**
- * @param {Object} publicationInfo
+ * @param publicationInfo
  */
-DiagnosticTags.forPublication = function forPublication(publicationInfo) {
-    const tagsForPublication = {
+export function forPublication(publicationInfo: Record<string, any>): Record<string, any> {
+    const tagsForPublication: Record<string, any> = {
         diagnosticTag: "Publication",
         subscriptionId: publicationInfo.publication.subscriptionId,
         to: publicationInfo.to,
@@ -200,17 +209,17 @@ DiagnosticTags.forPublication = function forPublication(publicationInfo) {
         tagsForPublication.error = publicationInfo.error;
     }
     return tagsForPublication;
-};
+}
 
-let forMulticastPublicationHelper = function(tagsForMulticastPublication, publicationInfo) {
+let forMulticastPublicationHelper = (tagsForMulticastPublication: any, publicationInfo: any): void => {
     tagsForMulticastPublication.response = publicationInfo.publication.response;
 };
 
 /**
- * @param {Object} publicationInfo - multicast publication info
+ * @param publicationInfo - multicast publication info
  */
-DiagnosticTags.forMulticastPublication = function forMulticastPublication(publicationInfo) {
-    const tagsForMulticastPublication = {
+export function forMulticastPublication(publicationInfo: Record<string, any>): Record<string, any> {
+    const tagsForMulticastPublication: Record<string, any> = {
         diagnosticTag: "MulticastPublication",
         multicastId: publicationInfo.publication.multicastId,
         from: publicationInfo.from
@@ -220,9 +229,9 @@ DiagnosticTags.forMulticastPublication = function forMulticastPublication(public
         tagsForMulticastPublication.error = publicationInfo.error;
     }
     return tagsForMulticastPublication;
-};
+}
 
-function logLevelChangedCb(level) {
+function logLevelChangedCb(level: LogLevel): void {
     if (level !== loggingManager.LogLevel.DEBUG && level !== loggingManager.LogLevel.TRACE) {
         forRequestHelper = UtilInternal.emptyFunction;
         forOneWayRequestHelper = UtilInternal.emptyFunction;
@@ -233,5 +242,3 @@ function logLevelChangedCb(level) {
 }
 
 loggingManager.registerForLogLevelChanged(logLevelChangedCb);
-
-module.exports = DiagnosticTags;
