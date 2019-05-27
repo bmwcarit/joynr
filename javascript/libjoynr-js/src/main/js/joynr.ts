@@ -25,7 +25,7 @@ import GenerationUtil from "./joynr/util/GenerationUtil";
 
 import JoynrRuntime from "./joynr/start/JoynrRuntime";
 
-function populateJoynrApi(joynr: any, api: any) {
+function populateJoynrApi(joynr: any, api: any): void {
     let key;
     for (key in api) {
         if (api.hasOwnProperty(key)) {
@@ -41,7 +41,7 @@ function populateJoynrApi(joynr: any, api: any) {
  * @param joynr
  * @param runtime
  */
-function wrapRuntime(joynr: any, runtime: JoynrRuntime) {
+function wrapRuntime(joynr: any, runtime: JoynrRuntime): void {
     (Object.keys(runtime) as (keyof JoynrRuntime)[]).forEach(
         (key): void => {
             if (!key.startsWith("_")) {
