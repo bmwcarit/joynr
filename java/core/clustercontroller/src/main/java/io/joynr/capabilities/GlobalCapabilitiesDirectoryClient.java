@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -35,6 +38,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.Message;
@@ -52,6 +56,7 @@ import joynr.types.GlobalDiscoveryEntry;
  */
 public class GlobalCapabilitiesDirectoryClient {
     private static final long DEFAULT_TTL_ADD_AND_REMOVE = 60L * 1000L;
+    private static final Logger logger = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryClient.class);
     private final String domain;
     private final DiscoveryQos discoveryQos;
     private final ProxyBuilderFactory proxyBuilderFactory;
@@ -124,6 +129,18 @@ public class GlobalCapabilitiesDirectoryClient {
         getGcdProxy().remove(callback,
                              participantIds.toArray(new String[participantIds.size()]),
                              qosWithGbidCustomHeader);
+    }
+
+    public void remove(CallbackWithModeledError<Void, joynr.types.DiscoveryError> callback,
+                       String participantId,
+                       String[] targetGbids) {
+        if (null == targetGbids || targetGbids.length == 0) {
+            logger.warn("Remove called without any target GBIDs! Gbids: {}", (Object[]) targetGbids);
+            throw new IllegalStateException("GCDClient.remove called without any target GBIDs!");
+        }
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbids[0]);
+        getGcdProxy().remove(callback, participantId, targetGbids, qosWithGbidCustomHeader);
     }
 
     // lookup methods
