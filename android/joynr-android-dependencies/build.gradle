@@ -1,0 +1,34 @@
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+
+group = 'io.joynr.android'
+version = '0.1'
+
+repositories {          
+     jcenter()
+}
+
+dependencies {
+
+    api ('com.google.inject:guice:3.0:no_aop')
+
+    api (group: 'io.joynr.java.core', name: 'clustercontroller-websocket-runtime', version:'1.9.0-SNAPSHOT'){
+        exclude(module: 'guice')
+    }
+
+    api (group: 'io.joynr.java.core', name: 'libjoynr-websocket-runtime', version:'1.9.0-SNAPSHOT'){
+        exclude(module: 'guice')
+    }
+}
+
+
+publishing {
+    publications {
+        jar(MavenPublication) {
+            groupId = 'io.joynr.android'
+            artifactId = 'joynr-android'            
+
+            from project.components.java
+        }
+    }
+}
