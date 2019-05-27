@@ -77,6 +77,7 @@ import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.GlobalAddressProvider;
@@ -85,6 +86,7 @@ import io.joynr.runtime.ShutdownNotifier;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -213,7 +215,6 @@ public class LocalCapabilitiesDirectoryTest {
 
         when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(new HashSet<DiscoveryEntry>(Arrays.asList(globalCapabilitiesDirectoryDiscoveryEntry,
                                                                                                                   domainAccessControllerDiscoveryEntry)));
-
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
                                                                         globalAddressProvider,
@@ -1186,10 +1187,22 @@ public class LocalCapabilitiesDirectoryTest {
     @SuppressWarnings("unchecked")
     @Test(timeout = 1000)
     public void removeCapabilities() throws InterruptedException {
+        when(globalAddressProvider.get()).thenReturn(new MqttAddress("testgbid", "testtopic"));
+        localCapabilitiesDirectory.add(discoveryEntry);
         localCapabilitiesDirectory.remove(discoveryEntry);
 
-        verify(globalCapabilitiesClient,
-               timeout(1000)).remove(any(Callback.class), eq(Arrays.asList(globalDiscoveryEntry.getParticipantId())));
+        verify(globalCapabilitiesClient, timeout(1000)).remove(any(CallbackWithModeledError.class),
+                                                               eq(globalDiscoveryEntry.getParticipantId()),
+                                                               any(String[].class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testGCDRemoveNotCalledIfParticipantIsNotRegistered() throws InterruptedException {
+        localCapabilitiesDirectory.remove(discoveryEntry);
+        verify(globalCapabilitiesClient, never()).remove(any(CallbackWithModeledError.class),
+                                                         any(String.class),
+                                                         any(String[].class));
     }
 
     @Test
