@@ -20,20 +20,20 @@ package io.joynr.generator.js.communicationmodel
 
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
-import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.templates.CompoundTypeTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
+import java.util.HashSet
 import org.franca.core.franca.FCompoundType
+import org.franca.core.franca.FField
 import org.franca.core.franca.FStructType
 import org.franca.core.franca.FUnionType
 
 class CompoundTypeGenerator extends CompoundTypeTemplate {
 
 	@Inject extension JSTypeUtil
-	@Inject extension GeneratorParameter
 	@Inject extension NamingUtil
 	@Inject extension JoynrJSGeneratorExtensions
 
@@ -54,148 +54,108 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		//TODO generate union type «type.joynrName»
 	'''
 
+	def Iterable<FField> filterDuplicateTypeNames(Iterable<FField> fields){
+		val set = new HashSet<String>;
+		fields.filter[set.add(it.type.tsTypeName)]
+	}
+
 	def generateStructType(FStructType type) '''
-		«val generationDate = (new Date()).toString»
-		/**
-		 * This is the generated struct type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
-		 * Generation date: «generationDate»
-		 */
-		(function(undefined) {
-			/**
-			 * @name «type.joynrName»
-			 * @constructor
-			 *
-			 * @classdesc
-			 * This is the generated struct type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
-			 * <br/>Generation date: «generationDate»
-			 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
-			 *
-			 * @param {Object} members - an object containing the individual member elements
-			 «val members = getMembersRecursive(type)»
-			 «FOR member : members»
-			 * @param {«member.jsdocTypeName»} members.«member.joynrName» - «IF member.comment !== null»«FOR comment : member.comment.elements»«comment.
-				comment.replaceAll("\n", "\n" + "* ")»«ENDFOR»«ENDIF»
-			 «ENDFOR»
-			 * @returns {«type.joynrName»} a new instance of a «type.joynrName»
-			 */
-			var «type.joynrName» = function «type.joynrName»(members) {
-				if (!(this instanceof «type.joynrName»)) {
-					// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-					return new «type.joynrName»(members);
-				}
+	«val generationDate = (new Date()).toString»
+	«val members = getMembersRecursive(type)»
+	import JoynrCompound from "joynr/joynr/types/JoynrCompound";
+	«val filteredMembers = members.filterDuplicateTypeNames»
+	«FOR member : filteredMembers»
+	«val importPath = member.getRelativeImportPath(type)»
+	«IF importPath !== null»
+	import «member.type.tsTypeName» from "«importPath»";
+	«ENDIF»
+	«ENDFOR»
 
-				/**
-				 * Used for serialization.
-				 * @name «type.joynrName»#_typeName
-				 * @type String
-				 * @readonly
-				 */
-				Object.defineProperty(this, "_typeName", {
-					enumerable : true,
-					value : «type.joynrName»._typeName
-				});
-				«IF type.base !== null»
-
-				/**
-				 * Parent class.
-				 * @name «type.joynrName»#_extends
-				 * @type String
-				 * @readonly
-				 */
-				Object.defineProperty(this, "_extends", {
-					value : "«type.base.joynrTypeName»"
-				});
-				«ENDIF»
-
+	namespace «type.joynrName» {
+		«IF members.length > 0»
+			export interface «type.joynrName»Members {
 				«FOR member : members»
-					/**
-					 * «IF member.comment !== null»«FOR comment : member.comment.elements»«comment.
-						comment.replaceAll("\n", "\n" + "* ")»«ENDFOR»«ENDIF»
-					 * @name «type.joynrName»#«member.joynrName»
-					 * @type «member.jsdocTypeName»
-					 */
+					«member.joynrName»: «member.tsTypeName»;
 				«ENDFOR»
-
-				if (members !== undefined) {
-					«FOR member : members»
-					this.«member.joynrName» = members.«member.joynrName»;
-					«ENDFOR»
-				}
-
-			};
-
-			Object.defineProperty(«type.joynrName», "_typeName", {
-				value : "«type.joynrTypeName»"
-			});
-
-			Object.defineProperty(«type.joynrName», 'checkMembers', {
-				value: function checkMembers(instance, check) {
-					«FOR member : members»
-					check(instance.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
-					«ENDFOR»
-				}
-			});
-
-			/**
-			 * @name «type.joynrName»#MAJOR_VERSION
-			 * @constant {Number}
-			 * @default «majorVersion»
-			 * @summary The MAJOR_VERSION of the struct type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
-			 */
-			Object.defineProperty(«type.joynrName», 'MAJOR_VERSION', { value: «majorVersion» });
-			/**
-			 * @name «type.joynrName»#MINOR_VERSION
-			 * @constant {Number}
-			 * @default «minorVersion»
-			 * @summary The MINOR_VERSION of the struct type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
-			 */
-			Object.defineProperty(«type.joynrName», 'MINOR_VERSION', { value: «minorVersion» });
-
-			var preparePrototype = function(joynr) {
-				«type.joynrName».prototype = new joynr.JoynrObject();
-				«type.joynrName».prototype.constructor = «type.joynrName»;
-				joynr.util.GenerationUtil.addEqualsCompound(«type.joynrName»);
-				joynr.util.GenerationUtil.addMemberTypeGetter(«type.joynrName»);
-			};
-
-			Object.defineProperty(«type.joynrName», '_memberTypes', {
-				value: {
-					«FOR member : members SEPARATOR ","»
-					«member.joynrName»: "«member.joynrTypeName»"
-					«ENDFOR»
-				}
-			});
-
-			«IF requireJSSupport»
-			// AMD support
-			if (typeof define === 'function' && define.amd) {
-				define(«type.defineName»["joynr"], function (joynr) {
-					preparePrototype(joynr);
-					joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-					return «type.joynrName»;
-				});
-			} else if (typeof exports !== 'undefined' ) {
-				if ((module !== undefined) && module.exports) {
-					exports = module.exports = «type.joynrName»;
-				} else {
-					// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
-					exports.«type.joynrName» = «type.joynrName»;
-				}
-				var joynr = require("joynr");
-				preparePrototype(joynr);
-
-				joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-			} else {
-				preparePrototype(window.joynr);
-				window.joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-				window.«type.joynrName» = «type.joynrName»;
 			}
-			«ELSE»
-			var joynr = require("joynr");
-			preparePrototype(joynr);
-			joynr.addType("«type.joynrTypeName»", «type.joynrName»);
-			module.exports = «type.joynrName»;
+		«ELSE»
+			export type «type.joynrName»Members = {} | void;
+		«ENDIF»
+	}
+	/**
+	 * This is the generated struct type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
+	 * <br/>Generation date: «generationDate»
+	 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
+	 */
+	class «type.joynrName» extends JoynrCompound {
+		public static _typeName: string = "«type.joynrTypeName»";
+		public _typeName: string = "«type.joynrTypeName»";
+
+		«FOR member : members»
+		«IF member.comment !== null»
+		/**
+		 * «FOR comment : member.comment.elements»«comment.
+		    comment.replaceAll("\n", "\n" + "* ")»«ENDFOR»
+		 */
+		 «ENDIF»
+		public «member.joynrName»!: «member.tsTypeName»;
+		«ENDFOR»
+
+		/**
+		 * @param members - an object containing the individual member elements
+		 «FOR member : members»
+		 * @param members.«member.joynrName» - «IF member.comment !== null»«FOR comment : member.comment.elements»«comment.
+			comment.replaceAll("\n", "\n" + "* ")»«ENDFOR»«ENDIF»
+		 «ENDFOR»
+		 */
+		public constructor(members: «type.joynrName».«type.joynrName»Members) {
+			super();
+			«IF type.base !== null»
+			/**
+			 * Parent class.
+			 * @name «type.joynrName»#_extends
+			 * @type String
+			 * @readonly
+			 */
+			Object.defineProperty(this, "_extends", {
+				value : "«type.base.joynrTypeName»"
+			});
 			«ENDIF»
-		})();
+			if (members) {
+			«FOR member : members»
+				this.«member.joynrName» = members.«member.joynrName»;
+			«ENDFOR»
+			}
+		}
+
+		public static checkMembers(_instance: «type.joynrName», _check: Function): void {
+			«FOR member : members»
+				_check(_instance.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
+			«ENDFOR»
+		}
+
+		/**
+		 * The MAJOR_VERSION of the struct type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		public static MAJOR_VERSION = «majorVersion»;
+
+		/**
+		 * The MINOR_VERSION of the struct type «type.joynrName» is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		public static MINOR_VERSION = «minorVersion»;
+
+		public static readonly _memberTypes: Record<string, string> = {
+			«FOR member : members SEPARATOR ","»
+				«member.joynrName»: "«member.joynrTypeName»"
+			«ENDFOR»
+		};
+
+		public static getMemberType(memberName: string): string | undefined {
+			if («type.joynrName»._memberTypes[memberName] !== undefined) {
+				return «type.joynrName»._memberTypes[memberName];
+			}
+		}
+	}
+	export = «type.joynrName»;
 	'''
 }

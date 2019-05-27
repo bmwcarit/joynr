@@ -24,12 +24,15 @@ import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.Collections
 import java.util.HashMap
 import java.util.Map
 import java.util.logging.Logger
 import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArgument
+import org.franca.core.franca.FArrayType
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FMethod
@@ -38,7 +41,7 @@ import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
-import org.franca.core.franca.FArrayType
+import org.franca.core.franca.impl.FTypeDefImpl
 
 class JSTypeUtil extends AbstractTypeUtil {
 
@@ -115,6 +118,25 @@ class JSTypeUtil extends AbstractTypeUtil {
 			default: throw new UnsupportedOperationException("Unsupported basic type: " + datatype.joynrName)
 			}
 	}
+	
+	def getTsTypeName(FBasicTypeId datatype) {
+		switch (datatype){
+			case FBasicTypeId::STRING: return "string"
+			case FBasicTypeId::INT8: return "number"
+			case FBasicTypeId::UINT8: return "number"
+			case FBasicTypeId::INT16: return "number"
+			case FBasicTypeId::UINT16: return "number"
+			case FBasicTypeId::INT32: return "number"
+			case FBasicTypeId::UINT32: return "number"
+			case FBasicTypeId::INT64: return "number"
+			case FBasicTypeId::UINT64: return "number"
+			case FBasicTypeId::BOOLEAN: return "boolean"
+			case FBasicTypeId::FLOAT: return "number"
+			case FBasicTypeId::DOUBLE: return "number"
+			case FBasicTypeId::BYTE_BUFFER:return "number[]"
+			default: throw new UnsupportedOperationException("Unsupported basic type: " + datatype.joynrName)
+			}
+	}
 
 	override getTypeName(FType datatype) {
 		if (isEnum(datatype)){
@@ -175,6 +197,42 @@ class JSTypeUtil extends AbstractTypeUtil {
 		}
 		return result;
 	}
+	
+	def String getTsTypeName (FTypedElement typedElement) {
+		var result =
+			if (isArray(typedElement))
+				typedElement.type.tsTypeNameForList
+			else
+				typedElement.type.tsTypeName
+		if (result === null) {
+			throw new IllegalStateException ("Datatype for element " + typedElement.name + " could not be found");
+		}
+		return result;
+	}
+
+	def String getRelativeImportPath (FTypedElement typedElement, FType parentElement) {
+		var type = typedElement.type;
+		return getRelativeImportPath(type, parentElement);
+	}
+
+	def String getRelativeImportPath (FTypeRef type, FType parentElement) {
+		if (type.derived !== null){
+			var Path childPath;
+			var parentPath = Paths.get(parentElement.dependencyPath);
+			if (type.derived instanceof FTypeDefImpl){
+				var typeRef = type.derived as FTypeDefImpl;
+				if (typeRef.actualType.derived !== null){
+					childPath = Paths.get(typeRef.actualType.derived.dependencyPath);
+				} else {
+					return null;
+				}
+			} else {
+				childPath = Paths.get(type.derived.dependencyPath);
+			}
+			return "." + File::separator + parentPath.getParent().relativize(childPath).toString();
+		}
+		return null;
+	}
 
 	def getJsdocTypeName(FType datatype) {
 		if (datatype.isEnum){
@@ -195,12 +253,49 @@ class JSTypeUtil extends AbstractTypeUtil {
 		throw new IllegalStateException("getJsdocTypeName: unsupported state, datatype " +
 			datatype.joynrName + " could not be mapped to an implementation datatype")
 	}
+	
+	def getTsTypeName(FType datatype) {
+		// isTypeDef check needs to be first when having a typeDef for an enum, because isEnum will also return true
+		if (datatype.isTypeDef){
+			return datatype.typeDefType.actualType.tsTypeName
+		}
+		if (datatype.isEnum){
+			return  datatype.name
+		}
+		if (datatype.isPrimitive){
+			return datatype.getPrimitive.tsTypeName
+		}
+		if (datatype.isCompound){
+			return datatype.compoundType.joynrName
+		}
+		if (datatype.isMap){
+			return datatype.mapType.joynrName
+		}
+		throw new IllegalStateException("getJsdocTypeName: unsupported state, datatype " +
+			datatype.joynrName + " could not be mapped to an implementation datatype")
+	}
 
 	def String getJsdocTypeName(FTypeRef type) {
 		if (type.derived !== null) {
 			type.derived.jsdocTypeName
 		} else {
 			type.predefined.typeName
+		}
+	}
+
+	def String getTsTypeName(FTypeRef type) {
+		if (type.derived !== null) {
+			type.derived.tsTypeName
+		} else {
+			type.predefined.tsTypeName
+		}
+	}
+
+	def String getTsTypeNameForList(FTypeRef type) {
+		if (type.derived !== null) {
+			type.derived.tsTypeNameForList
+		} else {
+			type.predefined.tsTypeNameForList
 		}
 	}
 
@@ -215,8 +310,16 @@ class JSTypeUtil extends AbstractTypeUtil {
 		"Array.<" + datatype.typeName + ">";
 	}
 
+	def getTsTypeNameForList(FBasicTypeId datatype) {
+		datatype.tsTypeName + "[]";
+	}
+
 	def getJsdocTypeNameForList(FType datatype) {
 		"Array.<" + datatype.jsdocTypeName + ">";
+	}
+
+	def getTsTypeNameForList(FType datatype) {
+		datatype.tsTypeName + "[]";
 	}
 
 	def appendJSDocSummaryAndWriteSeeAndDescription(FModelElement element, String prefix) '''
