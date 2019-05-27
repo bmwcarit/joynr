@@ -56,6 +56,7 @@ import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ShutdownNotifier;
@@ -64,6 +65,7 @@ import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
@@ -357,7 +359,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         // Remove from the global capabilities directory if needed
         if (discoveryEntry.getQos().getScope() != ProviderScope.LOCAL) {
 
-            Callback<Void> callback = new Callback<Void>() {
+            CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
                 public void onSuccess(Void result) {
@@ -371,8 +373,20 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 public void onFailure(JoynrRuntimeException error) {
                     // do nothing
                 }
+
+                @Override
+                public void onFailure(DiscoveryError errorEnum) {
+
+                }
             };
-            globalCapabilitiesDirectoryClient.remove(callback, Arrays.asList(discoveryEntry.getParticipantId()));
+            String participantId = discoveryEntry.getParticipantId();
+            if (globalProviderParticipantIdToGbidSetMap.containsKey(participantId)) {
+                String[] gbidsToRemove = globalProviderParticipantIdToGbidSetMap.get(participantId)
+                                                                                .toArray(new String[0]);
+                globalCapabilitiesDirectoryClient.remove(callback, participantId, gbidsToRemove);
+            } else {
+                logger.warn("Participant " + participantId + " is not registered and cannot be removed!");
+            }
         }
 
         // Remove endpoint addresses
@@ -776,7 +790,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
             if (discoveryEntries.size() > 0) {
                 try {
-                    Callback<Void> callback = new Callback<Void>() {
+                    CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
 
                         @Override
                         public void onFailure(JoynrRuntimeException error) {
@@ -786,12 +800,22 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         public void onSuccess(Void result) {
                         }
 
+                        @Override
+                        public void onFailure(DiscoveryError errorEnum) {
+
+                        }
+
                     };
                     List<String> participantIds = discoveryEntries.stream()
                                                                   .filter(Objects::nonNull)
                                                                   .map(dEntry -> dEntry.getParticipantId())
                                                                   .collect(Collectors.toList());
-                    globalCapabilitiesDirectoryClient.remove(callback, participantIds);
+                    for (String participantId : participantIds) {
+                        globalCapabilitiesDirectoryClient.remove(callback,
+                                                                 participantId,
+                                                                 globalProviderParticipantIdToGbidSetMap.get(participantId)
+                                                                                                        .toArray(new String[0]));
+                    }
                 } catch (DiscoveryException e) {
                     logger.debug("error removing discovery entries", e);
                 }
