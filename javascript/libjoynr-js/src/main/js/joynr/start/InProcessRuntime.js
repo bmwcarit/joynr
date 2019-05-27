@@ -126,13 +126,18 @@ class InProcessRuntime extends JoynrRuntime {
         }
 
         const globalClusterControllerAddress = new MqttAddress({
-            brokerUri: provisioning.brokerUri,
+            brokerUri: "joynrdefaultgbid",
             topic: channelId
         });
         const serializedGlobalClusterControllerAddress = JSON.stringify(globalClusterControllerAddress);
 
+        const mqttClusterControllerAddress = new MqttAddress({
+            brokerUri: provisioning.brokerUri,
+            topic: channelId
+        });
+
         const mqttClient = new SharedMqttClient({
-            address: globalClusterControllerAddress,
+            address: mqttClusterControllerAddress,
             provisioning: provisioning.mqtt || {}
         });
 
