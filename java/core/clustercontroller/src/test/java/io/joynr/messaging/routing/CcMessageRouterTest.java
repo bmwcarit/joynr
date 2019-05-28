@@ -72,6 +72,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
@@ -94,6 +95,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.channel.ChannelMessagingSkeletonFactory;
 import io.joynr.messaging.channel.ChannelMessagingStubFactory;
@@ -195,7 +197,9 @@ public class CcMessageRouterTest {
             @Override
             protected void configure() {
                 requestStaticInjection(RoutingTypesUtil.class);
+                bind(CcMessageRouter.class).in(Singleton.class);
                 bind(MessageRouter.class).to(CcMessageRouter.class);
+                bind(MulticastReceiverRegistrar.class).to(CcMessageRouter.class);
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(AddressManager.class).toInstance(addressManager);
                 bind(MulticastReceiverRegistry.class).toInstance(multicastReceiverRegistry);

@@ -76,6 +76,7 @@ import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
@@ -110,7 +111,7 @@ public class DispatcherImplTest {
     @Mock
     private PublicationManager publicationManagerMock;
     @Mock
-    private MessageRouter messageRouterMock;
+    private MulticastReceiverRegistrar mockMulticastReceiverRegistrar;
     @Mock
     private MessageSender messageSenderMock;
     @Mock
@@ -139,7 +140,7 @@ public class DispatcherImplTest {
                 bind(SubscriptionManager.class).toInstance(subscriptionManagerMock);
                 bind(PublicationManager.class).toInstance(publicationManagerMock);
                 bind(MessageSender.class).toInstance(messageSenderMock);
-                bind(MessageRouter.class).toInstance(messageRouterMock);
+                bind(MulticastReceiverRegistrar.class).toInstance(mockMulticastReceiverRegistrar);
                 bind(MessageReceiver.class).toInstance(messageReceiverMock);
                 Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
                 });
@@ -283,7 +284,7 @@ public class DispatcherImplTest {
         fixture = new DispatcherImpl(requestReplyManagerMock,
                                      subscriptionManagerMock,
                                      publicationManagerMock,
-                                     messageRouterMock,
+                                     mockMulticastReceiverRegistrar,
                                      messageSenderMock,
                                      messageFactoryMock,
                                      objectMapperMock,
@@ -319,7 +320,7 @@ public class DispatcherImplTest {
         fixture = new DispatcherImpl(requestReplyManagerMock,
                                      subscriptionManagerMock,
                                      publicationManagerMock,
-                                     messageRouterMock,
+                                     mockMulticastReceiverRegistrar,
                                      messageSenderMock,
                                      messageFactoryMock,
                                      objectMapperMock,
@@ -364,7 +365,7 @@ public class DispatcherImplTest {
             fixture = new DispatcherImpl(requestReplyManagerMock,
                                          subscriptionManagerMock,
                                          publicationManagerMock,
-                                         messageRouterMock,
+                                         mockMulticastReceiverRegistrar,
                                          messageSenderMock,
                                          messageFactoryMock,
                                          objectMapperMock,

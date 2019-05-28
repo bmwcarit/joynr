@@ -32,6 +32,7 @@ import io.joynr.accesscontrol.AccessControlClientModule;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryModule;
 import io.joynr.messaging.GbidArrayFactory;
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.messaging.routing.CcRoutingTableAddressValidator;
@@ -55,7 +56,9 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
         bind(RoutingProvider.class).to(RoutingProviderImpl.class);
 
         bind(MessageSender.class).to(CcMessageSender.class);
-        bind(MessageRouter.class).to(CcMessageRouter.class).in(Singleton.class);
+        bind(CcMessageRouter.class).in(Singleton.class);
+        bind(MessageRouter.class).to(CcMessageRouter.class);
+        bind(MulticastReceiverRegistrar.class).to(CcMessageRouter.class);
         bind(ReplyToAddressRegistrar.class).in(Singleton.class);
         bind(RoutingTableAddressValidator.class).to(CcRoutingTableAddressValidator.class);
 

@@ -23,6 +23,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -43,6 +44,7 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
  */
 public class RoutingProviderImpl extends RoutingAbstractProvider {
     private MessageRouter messageRouter;
+    private MulticastReceiverRegistrar multicastReceiverRegistrar;
     private String globalAddressString;
     private String replyToAddressString;
     private List<Deferred<String>> unresolvedGlobalAddressDeferreds = new ArrayList<Deferred<String>>();
@@ -53,9 +55,11 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
      */
     @Inject
     public RoutingProviderImpl(final MessageRouter messageRouter,
+                               final MulticastReceiverRegistrar multicastReceiverRegistrar,
                                GlobalAddressProvider globalAddressProvider,
                                ReplyToAddressProvider replyToAddressProvider) {
         this.messageRouter = messageRouter;
+        this.multicastReceiverRegistrar = multicastReceiverRegistrar;
 
         globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
@@ -141,7 +145,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     public Promise<DeferredVoid> addMulticastReceiver(String multicastId,
                                                       String subscriberParticipantId,
                                                       String providerParticipantId) {
-        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        multicastReceiverRegistrar.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         return resolvedDeferred();
     }
 
@@ -149,7 +153,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     public Promise<DeferredVoid> removeMulticastReceiver(String multicastId,
                                                          String subscriberParticipantId,
                                                          String providerParticipantId) {
-        messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        multicastReceiverRegistrar.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         return resolvedDeferred();
     }
 

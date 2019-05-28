@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.StatelessAsyncIdCalculator;
@@ -71,7 +71,7 @@ public class DispatcherImpl implements Dispatcher {
     private RequestReplyManager requestReplyManager;
     private SubscriptionManager subscriptionManager;
     private PublicationManager publicationManager;
-    private final MessageRouter messageRouter;
+    private final MulticastReceiverRegistrar multicastReceiverRegistrar;
     private final MessageSender messageSender;
     private ObjectMapper objectMapper;
     private boolean overrideCompress;
@@ -82,7 +82,7 @@ public class DispatcherImpl implements Dispatcher {
     public DispatcherImpl(RequestReplyManager requestReplyManager,
                           SubscriptionManager subscriptionManager,
                           PublicationManager publicationManager,
-                          MessageRouter messageRouter,
+                          MulticastReceiverRegistrar multicastReceiverRegistrar,
                           MessageSender messageSender,
                           MutableMessageFactory messageFactory,
                           ObjectMapper objectMapper,
@@ -91,7 +91,7 @@ public class DispatcherImpl implements Dispatcher {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
-        this.messageRouter = messageRouter;
+        this.multicastReceiverRegistrar = multicastReceiverRegistrar;
         this.messageSender = messageSender;
         this.messageFactory = messageFactory;
         this.objectMapper = objectMapper;
@@ -115,7 +115,9 @@ public class DispatcherImpl implements Dispatcher {
 
             if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
-                messageRouter.addMulticastReceiver(multicastId, fromParticipantId, toDiscoveryEntry.getParticipantId());
+                multicastReceiverRegistrar.addMulticastReceiver(multicastId,
+                                                                fromParticipantId,
+                                                                toDiscoveryEntry.getParticipantId());
             }
             logger.debug("Send SubscriptionRequest: subscriptionId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}",
                          subscriptionRequest.getSubscriptionId(),

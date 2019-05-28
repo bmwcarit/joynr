@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import java.lang.reflect.Field;
 import java.util.concurrent.Semaphore;
 
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +53,8 @@ public class RoutingProviderImplTest {
 
     @Mock
     private MessageRouter mockMessageRouter;
+    @Mock
+    private MulticastReceiverRegistrar mockMulticastReceiverRegistrar;
     @Mock
     private GlobalAddressProvider mockGlobalAddressProvider;
     @Mock
@@ -88,6 +91,7 @@ public class RoutingProviderImplTest {
         expectedChannelAddressString = RoutingTypesUtil.toAddressString(expectedChannelAddress);
 
         routingProvider = new RoutingProviderImpl(mockMessageRouter,
+                                                  mockMulticastReceiverRegistrar,
                                                   mockGlobalAddressProvider,
                                                   mockReplyToAddressProvider);
         routingProvider.setSubscriptionPublisher(mockRoutingSubscriptionPublisher);
