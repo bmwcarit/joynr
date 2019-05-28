@@ -20,6 +20,8 @@ package io.joynr.messaging;
 
 /**
  * An interface for bookkeeping of multicast receivers
+ * {@link io.joynr.messaging.routing.MulticastReceiverRegistry} maintains mappings of the receivers' participant IDs to the multicast IDs they subscribe to.
+ * Whereas {@link MulticastReceiverRegistrar} delegates to implementations of {@link io.joynr.messaging.routing.MulticastReceiverRegistry} and also triggers the subscription operation.
  */
 public interface MulticastReceiverRegistrar {
     void addMulticastReceiver(String multicastId, String subscriberParticipantId, String providerParticipantId);
