@@ -41,7 +41,7 @@ class TypesGenerator {
 		for (type : filterComplex(types)) {
 			val path = type.buildPackagePath(File::separator, true)
 
-			val fileName = path + File::separator + type.joynrName + ".js"
+			val fileName = path + File::separator + type.joynrName + ".ts"
 			if (clean) {
 				fsa.deleteFile(fileName);
 			}
