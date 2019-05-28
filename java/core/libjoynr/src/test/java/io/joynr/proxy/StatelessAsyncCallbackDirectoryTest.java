@@ -66,7 +66,7 @@ public class StatelessAsyncCallbackDirectoryTest {
     private Address dispatcherAddress;
 
     @InjectMocks
-    private StatelessAsyncCallbackDirectory subject;
+    private StatelessAsyncCallbackDirectoryImpl subject;
 
     @Before
     public void setup() {
