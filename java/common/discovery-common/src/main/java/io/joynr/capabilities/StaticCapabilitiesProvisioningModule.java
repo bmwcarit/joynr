@@ -29,7 +29,8 @@ public class StaticCapabilitiesProvisioningModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(CapabilitiesProvisioning.class).to(StaticCapabilitiesProvisioning.class).asEagerSingleton();
+        bind(CapabilitiesProvisioning.class).to(StaticCapabilitiesProvisioningWithRoutingTableInsertion.class)
+                                            .asEagerSingleton();
         bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
                                         .toProvider(GlobalCapabilitiesDirectoryDiscoveryEntryProvider.class);
         bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY))

@@ -38,7 +38,6 @@ import com.google.inject.name.Named;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessControlListEditor;
 import joynr.infrastructure.GlobalDomainAccessController;
@@ -48,7 +47,6 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
-import joynr.types.ProviderScope;
 
 /**
  * Loads a set of JSON encoded {@link GlobalDiscoveryEntry discovery entries} from the file referenced by the property
@@ -66,13 +64,12 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     private final String[] gbids;
     private final HashSet<String> internalInterfaces;
 
-    private Collection<GlobalDiscoveryEntry> discoveryEntries;
+    protected Collection<GlobalDiscoveryEntry> discoveryEntries;
 
     @Inject
     public StaticCapabilitiesProvisioning(@Named(PROPERTY_PROVISIONED_CAPABILITIES_FILE) String provisionedCapabilitiesFile,
                                           @Named(CHANNELID) String localChannelId,
                                           ObjectMapper objectMapper,
-                                          RoutingTable routingTable,
                                           LegacyCapabilitiesProvisioning legacyCapabilitiesProvisioning,
                                           ResourceContentProvider resourceContentProvider,
                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids) {
@@ -93,24 +90,6 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                      discoveryEntries.size(),
                      discoveryEntries);
         logger.debug("Statically provisioned discovery entries loaded: {}", discoveryEntries);
-        addAddressesToRoutingTable(routingTable);
-    }
-
-    private void addAddressesToRoutingTable(RoutingTable routingTable) {
-        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-            if (discoveryEntry instanceof GlobalDiscoveryEntry) {
-                GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) discoveryEntry;
-                routingTable.setGcdParticipantId(globalDiscoveryEntry.getParticipantId());
-                boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
-                final long expiryDateMs = Long.MAX_VALUE;
-                final boolean isSticky = true;
-                routingTable.put(globalDiscoveryEntry.getParticipantId(),
-                                 CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
-                                 isGloballyVisible,
-                                 expiryDateMs,
-                                 isSticky);
-            }
-        }
     }
 
     private void overrideEntriesFromLegacySettings(LegacyCapabilitiesProvisioning legacyCapabilitiesProvisioning) {
