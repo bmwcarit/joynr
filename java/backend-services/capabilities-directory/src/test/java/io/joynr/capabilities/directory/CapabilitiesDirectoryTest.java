@@ -195,7 +195,7 @@ public class CapabilitiesDirectoryTest {
         assertTrue(addPromiseKeeper.isRejected());
         JoynrException error = addPromiseKeeper.getError();
         assertTrue(error instanceof ApplicationException);
-        assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException)error).getError());
+        assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException) error).getError());
         capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupCapInfo);
         assertArrayEquals(new GlobalDiscoveryEntry[]{}, (GlobalDiscoveryEntry[]) lookupCapInfo.getValues()[0]);
     }
