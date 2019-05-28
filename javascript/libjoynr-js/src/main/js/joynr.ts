@@ -19,7 +19,7 @@
  */
 /* istanbul ignore file */
 
-import JoynrObject from "./joynr/JoynrObject";
+import JoynrObject from "./joynr/types/JoynrObject";
 import TypeRegistrySingleton from "./joynr/types/TypeRegistrySingleton";
 import GenerationUtil from "./joynr/util/GenerationUtil";
 

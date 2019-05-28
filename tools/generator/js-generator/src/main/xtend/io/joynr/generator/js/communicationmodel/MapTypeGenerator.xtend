@@ -21,6 +21,7 @@ package io.joynr.generator.js.communicationmodel
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
 import io.joynr.generator.js.util.JSTypeUtil
+import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.util.NamingUtil
 import java.util.Date
@@ -50,9 +51,21 @@ class MapTypeGenerator extends MapTemplate {
 	 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
 	 */
 	class «type.joynrName» extends JoynrMap<«mapType»> {
+		public static _typeName: string = "«type.joynrTypeName»";
+		public _typeName: string = "«type.joynrTypeName»"; 
 
-		public constructor(settings: Record<string, «mapType»>){
-			super(settings, «type.valueType.checkPropertyTypeName(false)»);
+		public constructor(settings?: Record<string, «mapType»>){
+			super(settings);
+		}
+
+		public static checkMembers(instance: any, check: Function): void {
+			for (const memberKey in instance) {
+				if (Object.prototype.hasOwnProperty.call(instance, memberKey)) {
+					if (memberKey !== "_typeName") {
+						check(instance[memberKey], «type.valueType.checkPropertyTypeName(false)», memberKey);
+					}
+				}
+			}
 		}
 
 		/**

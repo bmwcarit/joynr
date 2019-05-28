@@ -17,9 +17,8 @@
  * #L%
  */
 /* istanbul ignore file */
-import joynr from "joynr";
-
-import TypeRegistrySingleton from "../../joynr/types/TypeRegistrySingleton";
+import JoynrObject from "../types/JoynrObject";
+import TypeRegistrySingleton from "../types/TypeRegistrySingleton";
 
 const typeRegistry = TypeRegistrySingleton.getInstance();
 
@@ -204,7 +203,7 @@ export function augmentTypeName(obj: any, packageName: string, memberName?: stri
  * Returns true if the object is a joynr complex type modelled in Franca
  */
 export function isComplexJoynrObject(value: any): boolean {
-    return value instanceof joynr.JoynrObject;
+    return value instanceof JoynrObject;
 }
 
 /**

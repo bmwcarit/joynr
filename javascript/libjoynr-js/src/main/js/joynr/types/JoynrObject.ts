@@ -18,5 +18,7 @@
  */
 /* istanbul ignore file */
 
-class JoynrObject {}
+abstract class JoynrObject {
+    protected constructor() {}
+}
 export = JoynrObject;
