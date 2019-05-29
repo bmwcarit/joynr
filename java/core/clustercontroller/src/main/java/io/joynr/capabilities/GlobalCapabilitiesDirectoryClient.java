@@ -43,6 +43,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import joynr.Message;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 
 /**
@@ -98,18 +99,16 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     // add methods
-    public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry) {
-        add(callback, globalDiscoveryEntry, allGbids[0]);
-    }
-
-    public void add(Callback<Void> callback, GlobalDiscoveryEntry globalDiscoveryEntry, String targetGbid) {
+    public void add(CallbackWithModeledError<Void, DiscoveryError> callbackWithModeledError,
+                    GlobalDiscoveryEntry globalDiscoveryEntry,
+                    String[] gbids) {
         MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
-        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
-        getGcdProxy().add(callback, globalDiscoveryEntry, qosWithGbidCustomHeader);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, gbids[0]);
+        getGcdProxy().add(callbackWithModeledError, globalDiscoveryEntry, gbids, qosWithGbidCustomHeader);
     }
 
     // remove methods
-    public void remove(CallbackWithModeledError<Void, joynr.types.DiscoveryError> callback,
+    public void remove(CallbackWithModeledError<Void, DiscoveryError> callback,
                        String participantId,
                        String[] targetGbids) {
         if (null == targetGbids || targetGbids.length == 0) {

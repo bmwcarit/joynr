@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -40,6 +41,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -61,8 +64,10 @@ import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.util.StringArrayMatcher;
 import joynr.Message;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -71,7 +76,8 @@ public class GlobalCapabilitiesDirectoryClientTest {
     private static final long CUSTOM_TTL = 3L * 1000L;
     private static final long FRESHNESS_UPDATE_INTERVAL_MS = 42;
     private static final String GBID_DEFAULT_BACKEND = "joynrbackend1";
-    private static final String[] GBIDS_ARRAY_PROPERTY_SETTING = { GBID_DEFAULT_BACKEND, "joynrbackend2" };
+    private static final String GBID_OTHER_BACKEND = "joynrbackend2";
+    private static final String[] GBIDS_ARRAY_PROPERTY_SETTING = { GBID_DEFAULT_BACKEND, GBID_OTHER_BACKEND };
 
     @Mock
     private ProxyBuilder<GlobalCapabilitiesDirectoryProxy> capabilitiesProxyBuilderMock;
@@ -80,10 +86,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
     private GlobalCapabilitiesDirectoryProxy globalCapabilitiesDirectoryProxyMock;
 
     @Mock
-    private Callback<Void> callbackMock;
-
-    @Mock
-    private CallbackWithModeledError<Void, joynr.types.DiscoveryError> callbackWithModeledErrorMock;
+    private CallbackWithModeledError<Void, DiscoveryError> callbackWithModeledErrorMock;
 
     @Mock
     GlobalDiscoveryEntry capabilitiesDirectoryEntryMock;
@@ -135,21 +138,24 @@ public class GlobalCapabilitiesDirectoryClientTest {
 
     @Test
     public void testAdd() {
+        String[] gbids = new String[]{ GBID_DEFAULT_BACKEND, GBID_OTHER_BACKEND };
         // given some discovery entry
         GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
 
         // when we call the add method with it
-        subject.add(callbackMock, capabilitiesDirectoryEntryMock);
+        subject.add(callbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, gbids);
 
         // then the GCD proxy is called with the expected parameters and QoS
-        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock),
+        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackWithModeledErrorMock),
                                                          eq(capabilitiesDirectoryEntryMock),
+                                                         argThat(new StringArrayMatcher(gbids)),
                                                          eq(expectedGcdCallMessagingQos));
     }
 
     @Test
     public void testAddWithCustomTTL() {
         // given a GCD client with custom ttl...
+        final String[] gbids = new String[]{ GBID_DEFAULT_BACKEND };
         Properties properties = new Properties();
         properties.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS,
                        String.valueOf(CUSTOM_TTL));
@@ -158,29 +164,32 @@ public class GlobalCapabilitiesDirectoryClientTest {
         GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
 
         // when we call the add method on this client
-        subjectInject.add(callbackMock, capabilitiesDirectoryEntryMock);
+        subjectInject.add(callbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, gbids);
 
         // then the GCD proxy is called with the expected parameters and QoS
         expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
-        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock),
+        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackWithModeledErrorMock),
                                                          eq(capabilitiesDirectoryEntryMock),
+                                                         argThat(new StringArrayMatcher(gbids)),
                                                          eq(expectedGcdCallMessagingQos));
     }
 
     @Test
-    public void testAddWithGBID() {
+    public void testAddWithNonDefaultSingleGbid() {
         // given a desired gbid and some global discovery entry
         final String targetGbid = "myjoynrbackend";
+        final String[] gbids = new String[]{ targetGbid };
         final GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
+        expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
 
         // when we call the add method with them
-        subject.add(callbackMock, capabilitiesDirectoryEntryMock, targetGbid);
+        subject.add(callbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, gbids);
 
         // then the custom header in the GCD proxy call contains the desired gbid
         // and the call as well gets the desired callback and global discovery entry
-        expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
-        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackMock),
+        verify(globalCapabilitiesDirectoryProxyMock).add(eq(callbackWithModeledErrorMock),
                                                          eq(capabilitiesDirectoryEntryMock),
+                                                         argThat(new StringArrayMatcher(gbids)),
                                                          eq(expectedGcdCallMessagingQos));
     }
 
