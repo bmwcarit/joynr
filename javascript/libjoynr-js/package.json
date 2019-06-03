@@ -55,7 +55,7 @@
     "lines": 80,
     "statements": 80,
     "functions": 80,
-    "branches": 70,
+    "branches": 50,
     "exclude": [
       "src/test/**/*.js",
       "src/main/js/generated/**/*.js"
