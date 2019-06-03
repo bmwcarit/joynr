@@ -76,7 +76,7 @@
     "build:fast": "npm run build:skip && npm run test",
     "build": "npm run clean && npm run build:fast",
     "build:skip": "cd src/main/js && npm i && cd ../../.. && npm i && npm run sig && npm run lint && npm run ts:compile && npm run ts:copy && npm run fixRequire",
-    "fixRequire": "echo 'module.exports = require(\"..\");' > src/main/js/node_modules/joynr.js",
+    "fixRequire": "ln -s .. src/main/js/node_modules/joynr",
     "ts:copy": "find src/main/js/ \\( -name node_modules \\) -prune -o \\( -name '*.ts' \\) -exec bash -c 'cp .output/$(dirname {})/$(basename {} .ts).js $(dirname {})/$(basename {} .ts).js' \\;",
     "ts:compile": "tsc --noImplicitUseStrict",
     "ts:check": "tsc --noEmit",
