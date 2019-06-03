@@ -20,7 +20,6 @@ package io.joynr.generator.js.proxy
 
 import com.google.inject.Inject
 import io.joynr.generator.js.templates.InterfaceJsTemplate
-import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.templates.util.BroadcastUtil
@@ -35,7 +34,6 @@ class ProxyGenerator extends InterfaceJsTemplate {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension JSTypeUtil
-	@Inject extension GeneratorParameter
 	@Inject extension NamingUtil
 	@Inject extension MethodUtil
 	@Inject extension BroadcastUtil
@@ -50,7 +48,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	}
 
 	def generateProxy(IFileSystemAccess fsa){
-		var fileName = path + "" + proxyName + ".js"
+		var fileName = path + "" + proxyName + ".ts"
 		if (clean) {
 			fsa.deleteFile(fileName)
 		}
@@ -68,83 +66,124 @@ class ProxyGenerator extends InterfaceJsTemplate {
 
 	override generate()'''
 	«val generationDate = (new Date()).toString»
-	/**
-	 * PLEASE NOTE: THIS IS A GENERATED FILE!
-	 * Generation date: «generationDate»
-	 *
-	 * «proxyName», generated from the corresponding interface description.
-	 */
-	(function (undefined){
-		/**
-		 * @name «proxyName»
-		 * @constructor
-		 *
-		 * @classdesc
-		 * <br/>Generation date: «generationDate»
-		 * <br/><br/>
-		 * «proxyName», generated from the corresponding interface description.
-		 «appendJSDocSummaryAndWriteSeeAndDescription(francaIntf, "* ")»
-		 *
-		 * @param {object} settings the settings object for this function call
-		 * @param {String} settings.domain the domain name //TODO: check do we need this?
-		 * @param {String} settings.joynrName the interface name //TODO: check do we need this?
-		 *
-		 * @param {Object} settings.discoveryQos the Quality of Service parameters for arbitration
-		 * @param {Number} settings.discoveryQos.discoveryTimeoutMs for rpc calls to wait for arbitration to finish.
-		 * @param {String} settings.discoveryQos.arbitrationStrategy Strategy for choosing the appropriate provider from the list returned by the capabilities directory
-		 * @param {Number} settings.discoveryQos.cacheMaxAgeMs Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
-		 * @param {Boolean} settings.discoveryQos.discoveryScope If localOnly is set to true, only local providers will be considered.
-		 * @param {Object} settings.discoveryQos.additionalParameters a map holding additional parameters in the form of key value pairs in the javascript object, e.g.: {"myKey": "myValue", "myKey2": 5}
-		 *
-		 * @param {object} settings.messagingQos the Quality of Service parameters for messaging
-		 * @param {Number} settings.messagingQos.ttl Roundtrip timeout for rpc requests.
+	«val attributes = getAttributes(francaIntf)»
+	«val methodNames = getMethodNames(francaIntf)»
+	«val events = getEvents(francaIntf)»
 
-		 * @param {Number} settings.dependencies instances of the internal objects needed by the proxy to interface with joynr
-		 * @param {Number} settings.proxyElementTypes constructors for attribute, method and broadcasts, used to create the proxy's elements
-		 *
-		 * @returns {«proxyName»} a «proxyName» object to access other providers
-		 */
-		var «proxyName» = function «proxyName»(
-			settings) {
-			if (!(this instanceof «proxyName»)) {
-				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-				return new «proxyName»(
-					settings);
-			}
+	«IF attributes.length > 0»
+	import ProxyAttribute from "joynr/joynr/proxy/ProxyAttribute";
+	«ENDIF»
+	«IF methodNames.length > 0»
+	import ProxyOperation from "joynr/joynr/proxy/ProxyOperation";
+	«ENDIF»
+	«IF events.length > 0»
+	import ProxyEvent from "joynr/joynr/proxy/ProxyEvent";
+	«ENDIF»
 
-			// generated package name
-			this.settings = settings || {};
+	import MessagingQos from "joynr/joynr/messaging/MessagingQos";
+	import JoynrDiscoveryQos from "joynr/joynr/proxy/DiscoveryQos";
 
-	«FOR attribute : getAttributes(francaIntf)»
-	«val attributeName = attribute.joynrName»
-			/**
-			 * @name «proxyName»#«attributeName»
-			 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
-			 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
-			*/
-			this.«attributeName» = new settings.proxyElementTypes.ProxyAttribute(this, settings, "«attributeName»", "«attribute.joynrTypeName»","«getAttributeCaps(attribute)»");
+	interface ProxySettings {
+	    domain: string;
+	    joynrName: string;
+	    discoveryQos: JoynrDiscoveryQos;
+	    messagingQos: MessagingQos;
+	    dependencies: any;
+	    proxyParticipantId: string;
+	}
+
+	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
+	import «datatype.name» from "«relativePathToBase() + datatype.getDependencyPath()»";
 	«ENDFOR»
 
-	«FOR operationName : getMethodNames(francaIntf)»
-	«val operations = getMethods(francaIntf, operationName)»
-			«FOR operation : operations»
-				/**
-				 * @function «proxyName»#«operationName»
-				 * @summary The «operationName» operation is GENERATED FROM THE INTERFACE DESCRIPTION
-				 «IF operations.size > 1»
-				 * <br/>method overloading: different call semantics possible
-				 «ENDIF»
-				 «appendJSDocSummaryAndWriteSeeAndDescription(operation, "* ")»
-				 *
-				 «writeJSDocForSignature(proxyName, operation, "* ")»
-				 */
-				«IF operation.outputParameters.size>0»
-					/**
-					 «writeJSDocTypedefForSignature(proxyName, operation, operationName, "* ")»
-					 */
-				«ENDIF»
+	/**
+	 * @classdesc
+	 * <br/>Generation date: «generationDate»
+	 * <br/><br/>
+	 * «proxyName», generated from the corresponding interface description.
+	 «appendJSDocSummaryAndWriteSeeAndDescription(francaIntf, "* ")»
+	 */
+	class «proxyName» {
+
+		public interfaceName: string = "«francaIntf.fullyQualifiedName»";
+		public settings: ProxySettings;
+		public domain: string;
+		public messagingQos: MessagingQos;
+
+		public providerDiscoveryEntry: any;
+		public proxyParticipantId: string;
+
+	«FOR attribute : attributes»
+	«val attributeName = attribute.joynrName»
+		/**
+		 * @name «proxyName»#«attributeName»
+		 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
+		 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
+		*/
+		public «attributeName»: ProxyAttribute;
+	«ENDFOR»
+
+	«FOR operationName : methodNames»
+		«val operations = getMethods(francaIntf, operationName)»
+		«FOR operation : operations»
+		/**
+		 * @function «proxyName»#«operationName»
+		 * @summary The «operationName» operation is GENERATED FROM THE INTERFACE DESCRIPTION
+		 «IF operations.size > 1»
+		 * <br/>method overloading: different call semantics possible
+		 «ENDIF»
+		 «appendJSDocSummaryAndWriteSeeAndDescription(operation, "* ")»
+		 *
+		 «writeJSDocForSignature(proxyName, operation, "* ")»
+		 */
+		«IF operation.outputParameters.size>0»
+			/**
+			 «writeJSDocTypedefForSignature(proxyName, operation, operationName, "* ")»
+			 */
+		«ENDIF»
+		«ENDFOR»
+		public «operationName»: Function;
+	«ENDFOR»
+
+	«FOR event: events»
+	«val eventName = event.joynrName»
+	/**
+	 * @name «proxyName»#«eventName»
+	 * @summary The «eventName» event is GENERATED FROM THE INTERFACE DESCRIPTION
+	 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
+	 */
+	public «eventName»: ProxyEvent;
+	«ENDFOR»
+
+		/**
+		 * @param settings the settings object for this function call
+		 * @param settings.domain the domain name
+		 * @param settings.joynrName the interface name //TODO: check do we need this?
+		 *
+		 * @param settings.discoveryQos the Quality of Service parameters for arbitration
+		 * @param settings.discoveryQos.discoveryTimeoutMs for rpc calls to wait for arbitration to finish.
+		 * @param settings.discoveryQos.arbitrationStrategy Strategy for choosing the appropriate provider from the list returned by the capabilities directory
+		 * @param settings.discoveryQos.cacheMaxAgeMs Maximum age of entries in the localCapabilitiesDirectory. If this value filters out all entries of the local capabilities directory a lookup in the global capabilitiesDirectory will take place.
+		 * @param settings.discoveryQos.discoveryScope If localOnly is set to true, only local providers will be considered.
+		 * @param settings.discoveryQos.additionalParameters a map holding additional parameters in the form of key value pairs in the javascript object, e.g.: {"myKey": "myValue", "myKey2": 5}
+		 *
+		 * @param settings.messagingQos the Quality of Service parameters for messaging
+		 * @param settings.messagingQos.ttl Roundtrip timeout for rpc requests.
+		 * @param settings.dependencies instances of the internal objects needed by the proxy to interface with joynr
+		 * @param settings.proxyParticipantId unique identifier of the proxy
+		 */
+		public constructor(settings: ProxySettings){
+			this.domain = settings.domain;
+			this.messagingQos = settings.messagingQos;
+			this.proxyParticipantId = settings.proxyParticipantId;
+			this.settings = settings;
+			«FOR attribute : attributes»
+			«val attributeName = attribute.joynrName»
+			this.«attributeName» = new ProxyAttribute(this, settings, "«attributeName»", "«attribute.joynrTypeName»","«getAttributeCaps(attribute)»");
 			«ENDFOR»
-			this.«operationName» = new settings.proxyElementTypes.ProxyOperation(this, settings, "«operationName»", [
+
+			«FOR operationName : methodNames»
+			this.«operationName» = new ProxyOperation(this, settings, "«operationName»", [
 				«FOR operation: getMethods(francaIntf, operationName) SEPARATOR ","»
 				{
 					inputParameter: [
@@ -166,107 +205,77 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					fireAndForget: «IF operation.fireAndForget»true«ELSE»false«ENDIF»
 				}«ENDFOR»
 			]).buildFunction();
-	«ENDFOR»
+			«ENDFOR»
 
-	«FOR event: getEvents(francaIntf)»
-	«val eventName = event.joynrName»
-	«val filterParameters = getFilterParameters(event)»
+			«FOR event: events»
+			«val eventName = event.joynrName»
+			«val filterParameters = getFilterParameters(event)»
 			/**
 			 * @name «proxyName»#«eventName»
 			 * @summary The «eventName» event is GENERATED FROM THE INTERFACE DESCRIPTION
 			 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
 			 */
-			this.«eventName» = new settings.proxyElementTypes.ProxyEvent(this, {
-					broadcastName : "«eventName»",
-					broadcastParameter : [
-						«FOR param: event.outputParameters SEPARATOR ", "»
-						{
-							name : "«param.joynrName»",
-							type : "«param.joynrTypeName»"
-						}
-						«ENDFOR»
-					],
-					messagingQos : settings.messagingQos,
-					discoveryQos : settings.discoveryQos,
-					«IF event.selective»
-					dependencies: {
-							subscriptionManager: settings.dependencies.subscriptionManager
-					},
-					selective : «event.selective»,
-					«IF filterParameters.size > 0»
-					filterParameters: {
-						«FOR filterParameter : filterParameters SEPARATOR ","»
-							"«filterParameter»": "reservedForTypeInfo"
-						«ENDFOR»
+			this.«eventName» = new ProxyEvent(this, {
+				broadcastName : "«eventName»",
+				broadcastParameter : [
+					«FOR param: event.outputParameters SEPARATOR ", "»
+					{
+						name : "«param.joynrName»",
+						type : "«param.joynrTypeName»"
 					}
-					«ENDIF»
-					«ELSE»
-					dependencies: {
-							subscriptionManager: settings.dependencies.subscriptionManager
-					}
-					«ENDIF»
-				});
-	«ENDFOR»
-
-			Object.defineProperty(this, "interfaceName", {
-				value: "«francaIntf.fullyQualifiedName»"
+					«ENDFOR»
+				],
+				messagingQos : settings.messagingQos,
+				discoveryQos : settings.discoveryQos,
+				«IF event.selective»
+				dependencies: {
+						subscriptionManager: settings.dependencies.subscriptionManager
+				},
+				selective : «event.selective»,
+				«IF filterParameters.size > 0»
+				filterParameters: {
+					«FOR filterParameter : filterParameters SEPARATOR ","»
+						"«filterParameter»": "reservedForTypeInfo"
+					«ENDFOR»
+				}
+				«ENDIF»
+				«ELSE»
+				dependencies: {
+						subscriptionManager: settings.dependencies.subscriptionManager
+				}
+				«ENDIF»
 			});
-		};
+			«ENDFOR»
+		}
 
 		/**
-		 * @name «proxyName»#MAJOR_VERSION
-		 * @constant {Number}
-		 * @default «majorVersion»
-		 * @summary The MAJOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
+		 * The MAJOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
-		Object.defineProperty(«proxyName», 'MAJOR_VERSION', { value: «majorVersion»});
-		/**
-		 * @name «proxyName»#MINOR_VERSION
-		 * @constant {Number}
-		 * @default «minorVersion»
-		 * @summary The MINOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
-		 */
-		Object.defineProperty(«proxyName», 'MINOR_VERSION', { value: «minorVersion»});
+		public static MAJOR_VERSION = «majorVersion»;
 
-		«proxyName».getUsedDatatypes = function getUsedDatatypes(){
+		/**
+		 * The MINOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		public static MINOR_VERSION = «minorVersion»;
+
+		public static getUsedDatatypes(): string[] {
 			return [
 				«FOR datatype : francaIntf.getAllComplexTypes SEPARATOR ','»
 				"«datatype.joynrTypeName»"
 				«ENDFOR»
 			];
-		};
-
-		«IF requireJSSupport»
-		// AMD support
-		if (typeof define === 'function' && define.amd) {
-			define(«francaIntf.defineName(proxyName)»[
-				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
-						"«datatype.getDependencyPath»"
-				«ENDFOR»
-				], function () {
-					return «proxyName»;
-				});
-		} else if (typeof exports !== 'undefined' ) {
-			if ((module !== undefined) && module.exports) {
-				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-					require("«relativePathToBase() + datatype.getDependencyPath()»");
-				«ENDFOR»
-				exports = module.exports = «proxyName»;
-			}
-			else {
-				// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
-				exports.«proxyName» = «proxyName»;
-			}
-		} else {
-			window.«proxyName» = «proxyName»;
 		}
-		«ELSE»
-		«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-		require("«relativePathToBase() + datatype.getDependencyPath()»");
-		«ENDFOR»
-		module.exports = «proxyName»;
-		«ENDIF»
-	})();
+
+		public static getUsedJoynrtypes(): any[] {
+			return [
+				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
+				«datatype.name»
+				«ENDFOR»
+			];
+		}
+	}
+
+	export = «proxyName»;
 	'''
 
 }
