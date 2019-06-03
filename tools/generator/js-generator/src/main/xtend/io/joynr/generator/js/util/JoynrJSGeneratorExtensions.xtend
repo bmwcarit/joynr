@@ -22,10 +22,17 @@ import com.google.inject.Inject
 import io.joynr.generator.templates.util.AttributeUtil
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import org.franca.core.franca.FAttribute
+import java.util.stream.Collectors
+import java.util.List
 
 class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
 	@Inject extension AttributeUtil
 
 	def getAttributeCaps(FAttribute attribute)
 	'''«IF isNotifiable(attribute)»NOTIFY«ENDIF»«IF isReadable(attribute)»READ«ENDIF»«IF isWritable(attribute)»WRITE«ENDIF»'''
+	def getProviderAttributeName(FAttribute attribute)
+	'''ProviderRead«IF isWritable(attribute)»Write«ENDIF»«IF isNotifiable(attribute)»Notify«ENDIF»Attribute'''
+	def List<String> getProviderAttributeNames(List<FAttribute> attributes){
+		attributes.map[it.providerAttributeName.toString()].stream().distinct().collect(Collectors.toList())
+	}
 }

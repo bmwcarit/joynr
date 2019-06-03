@@ -20,7 +20,6 @@ package io.joynr.generator.js.provider
 
 import com.google.inject.Inject
 import io.joynr.generator.js.templates.InterfaceJsTemplate
-import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JSTypeUtil
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.templates.util.InterfaceUtil
@@ -35,7 +34,6 @@ class ProviderGenerator extends InterfaceJsTemplate {
 
 	@Inject extension JoynrJSGeneratorExtensions
 	@Inject extension JSTypeUtil
-	@Inject extension GeneratorParameter
 	@Inject extension NamingUtil
 	@Inject extension MethodUtil
 	@Inject extension InterfaceUtil
@@ -49,7 +47,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 	}
 
 	def generateProvider(IFileSystemAccess fsa){
-		var fileName = path + "" + providerName + ".js"
+		var fileName = path + "" + providerName + ".ts"
 		if (clean) {
 			fsa.deleteFile(fileName)
 		}
@@ -67,13 +65,151 @@ class ProviderGenerator extends InterfaceJsTemplate {
 
 	override generate()'''
 	«val generationDate = (new Date()).toString»
-	/*
-	 * PLEASE NOTE. THIS IS A GENERATED FILE!
-	 * Generation date: «generationDate»
-	 */
-	(function(undefined){
+	«val attributes = getAttributes(francaIntf)»
+	«val methodNames = getMethodNames(francaIntf)»
+	«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
+	«val events = getEvents(francaIntf)»
 
-		var checkImpl = function() {
+	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
+	import «datatype.name» from "«relativePathToBase() + datatype.getDependencyPath()»";
+	«ENDFOR»
+
+	«IF attributes.length > 0»
+	import {«FOR attributeType: attributes.providerAttributeNames SEPARATOR ','»«attributeType» «ENDFOR»} from "joynr/joynr/provider/ProviderAttribute";
+	«ENDIF»
+	«IF methodNames.length > 0»
+	import ProviderOperation from "joynr/joynr/provider/ProviderOperation"
+	«ENDIF»
+	«IF events.length > 0»
+	import ProviderEvent from "joynr/joynr/provider/ProviderEvent"
+	«ENDIF»
+
+	/**
+	 * PLEASE NOTE. THIS IS A GENERATED FILE!
+	 * <br/>Generation date: «generationDate»
+	 «appendJSDocSummaryAndWriteSeeAndDescription(francaIntf, "* ")»
+	 */
+	class «providerName» {
+
+		public interfaceName = "«francaIntf.fullyQualifiedName»";
+	«FOR attribute: attributes»
+		«val attributeName = attribute.joynrName»
+		/**
+		 * @name «providerName»#«attributeName»
+		 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
+		 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
+		 */
+		public «attributeName»: «attribute.providerAttributeName»;
+	«ENDFOR»
+
+	«FOR methodName : methodNames»
+		«val operations = getMethods(francaIntf, methodName)»
+		«FOR operation : operations»
+		/**
+		 * @function «providerName»#«methodName»
+		 * @summary The «methodName» operation is GENERATED FROM THE INTERFACE DESCRIPTION
+		 «IF operations.size > 1»
+		 * <br/>method overloading: different call semantics possible
+		 «ENDIF»
+		 «appendJSDocSummaryAndWriteSeeAndDescription(operation, "* ")»
+		 *
+		 «writeJSDocForSignature(providerName, operation, "* ")»
+		 */
+		«IF operation.outputParameters.size>0»
+		/**
+		 «writeJSDocTypedefForSignature(providerName, operation, methodName, "* ")»
+		 */
+		«ENDIF»
+		«ENDFOR»
+		public «methodName»: ProviderOperation;
+	«ENDFOR»
+
+	«FOR event: events»
+		«val eventName = event.joynrName»
+		/**
+		 * @name «providerName»#«eventName»
+		 * @summary The «eventName» event is GENERATED FROM THE INTERFACE DESCRIPTION
+		 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
+		 */
+		public «eventName»: ProviderEvent;
+	«ENDFOR»
+
+		/**
+		 * @param {Object} [implementation] the implementation of the provider
+		 * @param {Object} [implementation.ATTRIBUTENAME] the definition of attribute implementation
+		 * @param {Function} [implementation.ATTRIBUTENAME.set] the getter function with the
+		 *     signature "function(value){}" that stores the given attribute value
+		 * @param {Function} [implementation.ATTRIBUTENAME.get] the getter function with the
+		 *     signature "function(){}" that returns the current attribute value
+		 * @param {Function} [implementation.OPERATIONNAME] the operation function
+		 * @param {Object} [implementation.EVENTNAME] the definition of the event implementation
+		 */
+		public constructor(implementation: any = {}) {
+			// defining provider members
+		«FOR attribute: attributes»
+			«val attributeName = attribute.joynrName»
+			this.«attributeName» = new «attribute.providerAttributeName»(this, implementation.«attributeName», "«attributeName»", "«attribute.joynrTypeName»");
+			if (implementation.«attributeName») {
+				implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
+			}
+		«ENDFOR»
+
+		«FOR methodName : methodNames»
+			this.«methodName» = new ProviderOperation(this, implementation.«methodName», "«methodName»", [
+				«FOR operation: getMethods(francaIntf, methodName) SEPARATOR ","»
+				{
+					inputParameter: [
+						«FOR param: getInputParameters(operation) SEPARATOR ","»
+						{
+							name : "«param.joynrName»",
+							type : "«param.joynrTypeName»"
+						}
+						«ENDFOR»
+					],
+					error: {
+						type: "«determErrorTypeName(operation, methodToErrorEnumName.get(operation))»"
+					},
+					outputParameter: [
+						«FOR param: getOutputParameters(operation) SEPARATOR ","»
+						{
+							name : "«param.joynrName»",
+							type : "«param.joynrTypeName»"
+						}
+						«ENDFOR»
+					]
+				}
+				«ENDFOR»
+			]);
+		«ENDFOR»
+
+		«FOR event: events»
+			«val filterParameters = getFilterParameters(event)»
+			«val eventName = event.joynrName»
+			this.«eventName» = new ProviderEvent({
+				eventName : "«eventName»",
+				outputParameterProperties : [
+					«FOR param : getOutputParameters(event) SEPARATOR ","»
+					{
+						name : "«param.joynrName»",
+						type : "«param.joynrTypeName»"
+					}
+					«ENDFOR»
+				],
+				selective : «event.selective»,
+				filterSettings : {
+				«IF event.selective»
+					«FOR filterParameter : filterParameters SEPARATOR ","»
+						"«filterParameter»": "reservedForTypeInfo"
+					«ENDFOR»
+				«ENDIF»
+				}
+			});
+			implementation.«eventName» = this.«eventName»;
+		«ENDFOR»
+
+		}
+
+		public checkImplementation(): string[] {
 			var missingInImplementation = [];
 			«FOR attribute: getAttributes(francaIntf)»
 			«val attributeName = attribute.joynrName»
@@ -87,188 +223,28 @@ class ProviderGenerator extends InterfaceJsTemplate {
 			«ENDFOR»
 
 			return missingInImplementation;
-		};
-
-		/**
-		 * @name «providerName»
-		 * @constructor
-		 *
-		 * @classdesc
-		 * PLEASE NOTE. THIS IS A GENERATED FILE!
-		 * <br/>Generation date: «generationDate»
-		 «appendJSDocSummaryAndWriteSeeAndDescription(francaIntf, "* ")»
-		 *
-		 * @summary Constructor of «providerName» object
-		 *
-		 * @param {Object} [implementation] the implementation of the provider
-		 * @param {Object} [implementation.ATTRIBUTENAME] the definition of attribute implementation
-		 * @param {Function} [implementation.ATTRIBUTENAME.set] the getter function with the
-		 *     signature "function(value){}" that stores the given attribute value
-		 * @param {Function} [implementation.ATTRIBUTENAME.get] the getter function with the
-		 *     signature "function(){}" that returns the current attribute value
-		 * @param {Function} [implementation.OPERATIONNAME] the operation function
-		 * @param {Object} [implementation.EVENTNAME] the definition of the event implementation
-		 *
-		 * @returns {«providerName»} a «providerName» object to communicate with the joynr infrastructure
-		 */
-		var «providerName» = null;
-		«providerName» = function «providerName»(
-			passedImplementation,
-			dependencies
-		) {
-			if (!(this instanceof «providerName»)) {
-				// in case someone calls constructor without new keyword (e.g. var c = Constructor({..}))
-				return new «providerName»(
-					passedImplementation,
-					dependencies);
-			}
-
-			var implementation = passedImplementation || {};
-
-			// defining provider members
-			«FOR attribute: getAttributes(francaIntf)»
-				«val attributeName = attribute.joynrName»
-				/**
-				 * @name «providerName»#«attributeName»
-				 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
-				 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
-				 */
-				this.«attributeName» = new dependencies.ProviderAttribute
-					(this, implementation.«attributeName», "«attributeName»", "«attribute.joynrTypeName»", "«getAttributeCaps(attribute)»");
-				if (implementation.«attributeName») {
-					implementation.«attributeName».valueChanged = this.«attributeName».valueChanged;
-				}
-			«ENDFOR»
-			«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
-			«FOR methodName : getMethodNames(francaIntf)»
-				«val operations = getMethods(francaIntf, methodName)»
-				«FOR operation : operations»
-					/**
-					 * @function «providerName»#«methodName»
-					 * @summary The «methodName» operation is GENERATED FROM THE INTERFACE DESCRIPTION
-					 «IF operations.size > 1»
-					 * <br/>method overloading: different call semantics possible
-					 «ENDIF»
-					 «appendJSDocSummaryAndWriteSeeAndDescription(operation, "* ")»
-					 *
-					 «writeJSDocForSignature(providerName, operation, "* ")»
-					 */
-					«IF operation.outputParameters.size>0»
-						/**
-						 «writeJSDocTypedefForSignature(providerName, operation, methodName, "* ")»
-						 */
-					«ENDIF»
-				«ENDFOR»
-				this.«methodName» = new dependencies.ProviderOperation(this, implementation.«methodName», "«methodName»", [
-					«FOR operation: getMethods(francaIntf, methodName) SEPARATOR ","»
-					{
-						inputParameter: [
-							«FOR param: getInputParameters(operation) SEPARATOR ","»
-							{
-								name : "«param.joynrName»",
-								type : "«param.joynrTypeName»"
-							}
-							«ENDFOR»
-						],
-						error: {
-							type: "«determErrorTypeName(operation, methodToErrorEnumName.get(operation))»"
-						},
-						outputParameter: [
-							«FOR param: getOutputParameters(operation) SEPARATOR ","»
-							{
-								name : "«param.joynrName»",
-								type : "«param.joynrTypeName»"
-							}
-							«ENDFOR»
-						]
-					}
-					«ENDFOR»
-				]);
-			«ENDFOR»
-			«FOR event: getEvents(francaIntf)»
-				«val filterParameters = getFilterParameters(event)»
-				«val eventName = event.joynrName»
-				/**
-				 * @name «providerName»#«eventName»
-				 * @summary The «eventName» event is GENERATED FROM THE INTERFACE DESCRIPTION
-				 «appendJSDocSummaryAndWriteSeeAndDescription(event, "* ")»
-				 */
-				this.«eventName» = new dependencies.ProviderEvent({
-					eventName : "«eventName»",
-					outputParameterProperties : [
-						«FOR param : getOutputParameters(event) SEPARATOR ","»
-						{
-							name : "«param.joynrName»",
-							type : "«param.joynrTypeName»"
-						}
-						«ENDFOR»
-					],
-					selective : «event.selective»,
-					filterSettings : {
-					«IF event.selective»
-						«FOR filterParameter : filterParameters SEPARATOR ","»
-							"«filterParameter»": "reservedForTypeInfo"
-						«ENDFOR»
-					«ENDIF»
-					}
-				});
-				implementation.«eventName» = this.«eventName»;
-			«ENDFOR»
-
-			Object.defineProperty(this, 'checkImplementation', { value: checkImpl});
-
-			this.interfaceName = "«francaIntf.fullyQualifiedName»";
-
-			return Object.freeze(this);
-		};
-
-		/**
-		 * @name «providerName»#MAJOR_VERSION
-		 * @constant {Number}
-		 * @default «majorVersion»
-		 * @summary The MAJOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
-		 */
-		Object.defineProperty(«providerName», 'MAJOR_VERSION', { value: «majorVersion»});
-		/**
-		 * @name «providerName»#MINOR_VERSION
-		 * @constant {Number}
-		 * @default «minorVersion»
-		 * @summary The MINOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
-		 */
-		Object.defineProperty(«providerName», 'MINOR_VERSION', { value: «minorVersion»});
-
-		«IF requireJSSupport»
-		// AMD support
-		if (typeof define === 'function' && define.amd) {
-			define(«francaIntf.defineName(providerName)»[
-				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
-						"«datatype.getDependencyPath»"
-				«ENDFOR»
-				], function () {
-					return «providerName»;
-				}
-			);
-		} else if (typeof exports !== 'undefined' ) {
-			if ((module !== undefined) && module.exports) {
-				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-					require("«relativePathToBase() + datatype.getDependencyPath()»");
-				«ENDFOR»
-				exports = module.exports = «providerName»;
-			}
-			else {
-				// support CommonJS module 1.1.1 spec (`exports` cannot be a function)
-				exports.«providerName» = «providerName»;
-			}
-		} else {
-			window.«providerName» = «providerName»;
 		}
-		«ELSE»
-		«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-		require("«relativePathToBase() + datatype.getDependencyPath()»");
-		«ENDFOR»
-		module.exports = «providerName»;
-		«ENDIF»
-	})();
+
+		/**
+		 * The MAJOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		public static MAJOR_VERSION = { value: «majorVersion» };
+
+		/**
+		 * The MINOR_VERSION of the provider is GENERATED FROM THE INTERFACE DESCRIPTION
+		 */
+		public static MINOR_VERSION = { value: «minorVersion» };
+
+		public static getUsedJoynrtypes(): any[] {
+			return [
+				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
+				«datatype.name»
+				«ENDFOR»
+			];
+		}
+	}
+
+	export = «providerName»;
 	'''
 
 	def determErrorTypeName(FMethod method, String errorEnumName) {
