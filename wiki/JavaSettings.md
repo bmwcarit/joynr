@@ -378,24 +378,23 @@ The URL you set here is that of the capabilities directory's channel
 
 See also the static capabilities provisioning documentation below.
 
-* **REQUIRED if using a non default backend or HTTP to connect to the GCD**
+* **REQUIRED to override the provisioned GCD DiscoveryEntry or to use HTTP to connect to the GCD**
 * **Type**: String
 * **User property**: `joynr.messaging.gcd.url`
-* **Default value**: `tcp://localhost:1883`
+* **Default value**: ``
 
 #### `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL`
 
-In case the global domain access controller is using MQTT as its primary transport (default):  
-The value you set here is ignored. It still has to be set to a non empty value to enable overriding
-of the other fields of the global domain access controller discovery entry.
-The GDAC is always contacted via the first (default) configured MQTT connection
-(first GBID `PROPERTY_GBIDS`).
+The GBID (Mqtt) or URL (Http) of the receive channel (incoming message queue) of the global domain
+access controller service. To connect to the global domain access controller directory the cluster
+controller creates an appropriate entry in the local capabilities directory.
 
-In case the global domain access controller is using HTTP (longpolling) as its primary transport:  
-URL of the receive channel (incoming message queue) of the global domain access controller backend
-service. To connect to the global domain access controller directory the cluster controller creates
-an appropriate entry in the local capabilities directory.
-The URL you set here is that of the domain access controller's channel
+If the domain access controller is using MQTT as its primary transport (default), then the value you
+set here is the GBID of the backend where the domain access controller you want to use is located,
+e.g. `gbid2`. By default, the first (default) GBID of `PROPERTY_GBIDS` is used.
+
+If the domain access controller is using HTTP (longpolling) as its primary transport, then the URL
+you set here is that of the domain access controller's channel
 (channelId=domainaccesscontroller_channelid) at the Bounceproxy. E.g.
 `http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/`
 
@@ -405,7 +404,7 @@ the static capabilities provisioning documentation below.
 * **REQUIRED if using a non default backend or HTTP to connect to the GDAC**
 * **Type**: String
 * **User property**: `joynr.messaging.gdac.url`
-* **Default value**: `tcp://localhost:1883`
+* **Default value**: ``
 
 #### `PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN`
 The domain of the discovery services (backend). To be able to connect to the global discovery
