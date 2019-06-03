@@ -19,6 +19,7 @@
 package io.joynr.jeeintegration.api;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingQos;
@@ -168,6 +169,15 @@ public interface ServiceLocator {
 
     /**
      * Builder allowing you to set the various properties necessary for constructing a service proxy.
+     *
+     * The proxy returned might not be immediately connected to the provider, in which case any calls will be queued
+     * until such a time as the provider has been discovered and connected.
+     *
+     * If you want to ensure that you don't make any calls to the proxy until arbitration was successful (i.e. the proxy
+     * is connected to an actual provider), then prefer using the {@link #useFuture()} method to obtain a version of
+     * the proxy builder which returns a <code>CompletableFuture</code> which isn't completed until the proxy is
+     * successfully connected, or which will complete exceptionally if no provider can be found in time.
+     *
      * @param <T> the type of the service for which to build a proxy.
      */
     interface ServiceProxyBuilder<T> {
@@ -209,9 +219,22 @@ public interface ServiceLocator {
         ServiceProxyBuilder<T> withUseCase(String useCase);
 
         /**
+         * If you want to have a <code>CompletableFuture</code> returned which will complete when the proxy has been
+         * fully created and initialised successfully, then call this method before calling {@link #build()}.
+         *
+         * This also allows you to react to any error encountered while attempting to initialise the proxy, such as
+         * encountering discovery timeouts if the requested provider isn't available in time.
+         *
+         * @return returns a version of the proxy builder which returns a <code>CompletableFuture</code> for the proxy
+         * rather than the proxy itself.
+         */
+        ServiceProxyBuilder<CompletableFuture<T>> useFuture();
+
+        /**
          * Create the service proxy using all of the settings previously setup using the 'with*' methods.
          *
-         * @return the service proxy.
+         * @return the service proxy. Alternatively a <code>CompletableFuture</code> which will yield the service
+         * proxy upon successful completion if you previously called {@link #useFuture()}.
          */
         T build();
     }

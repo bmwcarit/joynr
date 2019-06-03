@@ -21,6 +21,7 @@ package io.joynr.jeeintegration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import javax.ejb.Singleton;
 import javax.inject.Inject;
@@ -37,6 +38,21 @@ import io.joynr.proxy.ProxyBuilder;
  * The service interface is mapped to its joynr proxy, by expecting a {@link io.joynr.UsedBy} annotation
  * is attached in the class hierarchy of the service interface. With this annotation, the proxy is found by
  * the JeeJoynrServiceLocator.
+ * <p>
+ * This class provides some helper methods for common use cases for obtaining a service proxy in the form of the
+ * various <code>get</code> methods. In order to have access to all features of the joynr proxy builder, such as
+ * specifying the stateless async use case or getting a <code>CompletableFuture</code> for the service proxy, use
+ * the {@link io.joynr.jeeintegration.api.ServiceLocator.ServiceProxyBuilder} which can be obtained by calling
+ * {@link #builder(Class, String...)} instead.
+ * </p>
+ * <p>
+ * Note that unless you use {@link ServiceProxyBuilder#useFuture()}, then the service proxy returned might not initially
+ * be connected to the desired provider while arbitration is ongoing. Any calls you make the service proxy in this state
+ * will be queued until such a time as the provider becomes available. If you want more fine-grained control over how
+ * to handle the provider not being available, becoming available or the arbitration failing, then call the
+ * <code>useFuture()</code> method before calling the <code>build()</code> method and add the relevant listeners to
+ * the resulting completable future.
+ * </p>
  */
 @Singleton
 public class JeeJoynrServiceLocator implements ServiceLocator {
@@ -87,6 +103,15 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                      MessagingQos messagingQos,
                      DiscoveryQos discoveryQos,
                      String useCase) {
+        return get(serviceInterface, domains, messagingQos, discoveryQos, useCase, null);
+    }
+
+    private <I> I get(Class<I> serviceInterface,
+                      Set<String> domains,
+                      MessagingQos messagingQos,
+                      DiscoveryQos discoveryQos,
+                      String useCase,
+                      ProxyBuilder.ProxyCreatedCallback<I> proxyCreatedCallback) {
         if (joynrIntegrationBean.getRuntime() == null) {
             throw new IllegalStateException("You can't get service proxies until the joynr runtime has been initialised.");
         }
@@ -105,7 +130,19 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
             throw new IllegalArgumentException("Service interface " + serviceInterface
                     + " is @StatelessAsync, but you failed to provide a use case.");
         }
+        if (proxyCreatedCallback != null) {
+            return proxyBuilder.build(proxyCreatedCallback);
+        }
         return proxyBuilder.build();
+    }
+
+    @Override
+    public <I> ServiceProxyBuilder<I> builder(Class<I> serviceInterface, String... domains) {
+        if (domains == null || domains.length == 0) {
+            throw new JoynrRuntimeException("You must provide at least one domain.");
+        }
+        Set<String> domainSet = new HashSet<>(Arrays.asList(domains));
+        return new JeeJoynrServiceProxyBuilder<>(serviceInterface, domainSet);
     }
 
     public class JeeJoynrServiceProxyBuilder<T> implements ServiceProxyBuilder<T> {
@@ -146,18 +183,74 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         }
 
         @Override
+        public ServiceProxyBuilder<CompletableFuture<T>> useFuture() {
+            return new JeeJoynrServiceFutureProxyBuilder<>(this);
+        }
+
+        @Override
         public T build() {
             return get(serviceInterface, domains, messagingQos, discoveryQos, useCase);
         }
     }
 
-    @Override
-    public <I> ServiceProxyBuilder<I> builder(Class<I> serviceInterface, String... domains) {
-        if (domains == null || domains.length == 0) {
-            throw new JoynrRuntimeException("You must provide at least one domain.");
+    public class JeeJoynrServiceFutureProxyBuilder<T> implements ServiceProxyBuilder<CompletableFuture<T>> {
+
+        private JeeJoynrServiceProxyBuilder<T> wrappedBuilder;
+
+        private JeeJoynrServiceFutureProxyBuilder(JeeJoynrServiceProxyBuilder<T> wrappedBuilder) {
+            this.wrappedBuilder = wrappedBuilder;
         }
-        Set<String> domainSet = new HashSet<>(Arrays.asList(domains));
-        return new JeeJoynrServiceProxyBuilder<>(serviceInterface, domainSet);
+
+        @Override
+        public ServiceProxyBuilder<CompletableFuture<T>> withTtl(long ttl) {
+            wrappedBuilder.withTtl(ttl);
+            return this;
+        }
+
+        @Override
+        public ServiceProxyBuilder<CompletableFuture<T>> withMessagingQos(MessagingQos messagingQos) {
+            wrappedBuilder.withMessagingQos(messagingQos);
+            return this;
+        }
+
+        @Override
+        public ServiceProxyBuilder<CompletableFuture<T>> withDiscoveryQos(DiscoveryQos discoveryQos) {
+            wrappedBuilder.withDiscoveryQos(discoveryQos);
+            return this;
+        }
+
+        @Override
+        public ServiceProxyBuilder<CompletableFuture<T>> withUseCase(String useCase) {
+            wrappedBuilder.withUseCase(useCase);
+            return this;
+        }
+
+        @Override
+        public ServiceProxyBuilder<CompletableFuture<CompletableFuture<T>>> useFuture() {
+            throw new IllegalStateException("The builder will already provide a future. Ensure that you only call useFuture() once.");
+        }
+
+        @Override
+        public CompletableFuture<T> build() {
+            CompletableFuture<T> future = new CompletableFuture<>();
+            get(wrappedBuilder.serviceInterface,
+                wrappedBuilder.domains,
+                wrappedBuilder.messagingQos,
+                wrappedBuilder.discoveryQos,
+                wrappedBuilder.useCase,
+                new ProxyBuilder.ProxyCreatedCallback<T>() {
+                    @Override
+                    public void onProxyCreationFinished(T result) {
+                        future.complete(result);
+                    }
+
+                    @Override
+                    public void onProxyCreationError(JoynrRuntimeException error) {
+                        future.completeExceptionally(error);
+                    }
+                });
+            return future;
+        }
     }
 
 }

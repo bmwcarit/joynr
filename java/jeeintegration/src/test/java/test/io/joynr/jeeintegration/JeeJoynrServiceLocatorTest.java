@@ -32,9 +32,13 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.inject.spi.Bean;
 
@@ -203,17 +207,6 @@ public class JeeJoynrServiceLocatorTest {
         verify(proxyBuilderSync).setDiscoveryQos(discoveryQos);
     }
 
-    // The method findJoynrProxyInterface has been removed
-    //    @Test(expected = IllegalArgumentException.class)
-    //    public void testGetNoProxyAvailable() {
-    //        JoynrRuntime joynrRuntime = mock(JoynrRuntime.class);
-    //        JoynrIntegrationBean joynrIntegrationBean = mock(JoynrIntegrationBean.class);
-    //        when(joynrIntegrationBean.getRuntime()).thenReturn(joynrRuntime);
-    //        JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(joynrIntegrationBean);
-    //
-    //        subject.get(MyInvalidServiceSync.class, "local");
-    //    }
-
     @Test(expected = IllegalStateException.class)
     public void testGetNoRuntime() {
         JeeJoynrServiceLocator subject = new JeeJoynrServiceLocator(mock(JoynrIntegrationBean.class));
@@ -267,6 +260,49 @@ public class JeeJoynrServiceLocatorTest {
         when(proxyBuilderStatelessAsync.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
         subject.builder(MyServiceStatelessAsync.class, "local").build();
         fail("Should not be able to build stateless async proxy without a use case specified.");
+    }
+
+    @Test
+    public void testBuildWithFuture() throws Exception {
+        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local").useFuture().build();
+        future.whenCompleteAsync((proxy, error) -> {
+            if (proxy != null && error == null) {
+                countDownLatch.countDown();
+            }
+        });
+
+        ArgumentCaptor<ProxyBuilder.ProxyCreatedCallback> callbackCaptor = ArgumentCaptor.forClass(ProxyBuilder.ProxyCreatedCallback.class);
+        verify(proxyBuilderSync).build(callbackCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback value = callbackCaptor.getValue();
+        value.onProxyCreationFinished(myJoynrProxy);
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
+
+        MyServiceSync myServiceSync = future.get();
+        assertNotNull(myServiceSync);
+    }
+
+    @Test
+    public void testBuildWithFutureAndFails() throws Exception {
+        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local").useFuture().build();
+        future.whenCompleteAsync((proxy, error) -> {
+            if (error != null && proxy == null) {
+                countDownLatch.countDown();
+            }
+        });
+
+        ArgumentCaptor<ProxyBuilder.ProxyCreatedCallback> callbackCaptor = ArgumentCaptor.forClass(ProxyBuilder.ProxyCreatedCallback.class);
+        verify(proxyBuilderSync).build(callbackCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback value = callbackCaptor.getValue();
+        value.onProxyCreationError(new JoynrRuntimeException("test"));
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
     }
 
 }
