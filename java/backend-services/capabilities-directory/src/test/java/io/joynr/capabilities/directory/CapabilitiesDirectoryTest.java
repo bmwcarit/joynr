@@ -21,6 +21,7 @@ package io.joynr.capabilities.directory;
 import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
@@ -33,11 +34,12 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.PromiseKeeper;
 import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
@@ -50,13 +52,15 @@ public class CapabilitiesDirectoryTest {
     private static final CustomParameter[] CUSTOM_PARAMETERS = {};
 
     private static final long ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+    private static final int PROMISE_SETTLEMENT_TIMEOUT_MS = 1000;
+    private static final String gcdGbid = "joynrGcdTestGbid";
 
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
 
-    String channelId = "capabilitiesProvider";
-    String url = "http://testUrl";
-    Address channelAddres = new ChannelAddress(url, channelId);
-    String channelAddresSerialized;
+    String url = "tcp://testUrl";
+    String topic = "testTopic";
+    Address mqttAddress = new MqttAddress(url, topic);
+    String mqttAddressSerialized;
     String domain = "com";
     String interface1 = "interface1";
     String interface2 = "interface2";
@@ -77,12 +81,15 @@ public class CapabilitiesDirectoryTest {
 
     @BeforeClass
     public static void start() {
+        Properties systemProperties = System.getProperties();
+        systemProperties.setProperty(CapabilitiesDirectoryImpl.GCD_GBID, gcdGbid);
+        System.setProperties(systemProperties);
         capabilitiesDirectory = startCapabilitiesDirectory();
     }
 
     @Before
     public void setUp() throws Exception {
-        channelAddresSerialized = new ObjectMapper().writeValueAsString(channelAddres);
+        mqttAddressSerialized = new ObjectMapper().writeValueAsString(mqttAddress);
         String publicKeyId = "publicKeyId";
         String publicKeyIdFromAnotherNodeInCluster = "publicKeyIdAnotherNode";
 
@@ -96,7 +103,7 @@ public class CapabilitiesDirectoryTest {
                                                    lastSeenDateMs,
                                                    expiryDateMs,
                                                    publicKeyId,
-                                                   channelAddresSerialized);
+                                                   mqttAddressSerialized);
         discoveryEntry2 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                    domain,
                                                    interface2,
@@ -105,7 +112,7 @@ public class CapabilitiesDirectoryTest {
                                                    lastSeenDateMs,
                                                    expiryDateMs,
                                                    publicKeyId,
-                                                   channelAddresSerialized);
+                                                   mqttAddressSerialized);
         discoveryEntry3 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                    domain,
                                                    interface3,
@@ -114,7 +121,7 @@ public class CapabilitiesDirectoryTest {
                                                    lastSeenDateMs,
                                                    expiryDateMs,
                                                    publicKeyId,
-                                                   channelAddresSerialized);
+                                                   mqttAddressSerialized);
         discoveryEntry4 = new GlobalDiscoveryEntry(new Version(47, 11),
                                                    domain,
                                                    interface4,
@@ -123,7 +130,7 @@ public class CapabilitiesDirectoryTest {
                                                    lastSeenDateMs,
                                                    expiryDateMs,
                                                    publicKeyId,
-                                                   channelAddresSerialized);
+                                                   mqttAddressSerialized);
         discoveryEntry4FromAnotherNodeInCluster = new GlobalDiscoveryEntry(new Version(47, 11),
                                                                            domain,
                                                                            interface4,
@@ -132,7 +139,7 @@ public class CapabilitiesDirectoryTest {
                                                                            lastSeenDateMs + 5000,
                                                                            expiryDateMs + 5000,
                                                                            publicKeyIdFromAnotherNodeInCluster,
-                                                                           channelAddresSerialized);
+                                                                           mqttAddressSerialized);
 
     }
 
@@ -151,75 +158,130 @@ public class CapabilitiesDirectoryTest {
         CapabilitiesDirectoryLauncher.stop();
     }
 
+    private void checkDiscoveryEntry(GlobalDiscoveryEntry expected, GlobalDiscoveryEntry actual, String expectedGbid) {
+        assertEquals(expected.getParticipantId(), actual.getParticipantId());
+        assertEquals(expected.getInterfaceName(), actual.getInterfaceName());
+        assertEquals(expected.getDomain(), actual.getDomain());
+        assertEquals(expected.getExpiryDateMs(), actual.getExpiryDateMs());
+        assertEquals(expected.getLastSeenDateMs(), actual.getLastSeenDateMs());
+        assertEquals(expected.getProviderVersion(), actual.getProviderVersion());
+        assertEquals(expected.getQos(), actual.getQos());
+
+        // The (Mqtt) address is not equal because the brokerUri is replaced with the GCD's GBID
+        assertNotEquals(expected.getAddress(), actual.getAddress());
+        assertEquals(expectedGbid,
+                     ((MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(actual)).getBrokerUri());
+        assertEquals(topic, ((MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(actual)).getTopic());
+    }
+
     @Test
     public void addMultipleCapabilitiesAsArray() throws InterruptedException {
+        GlobalDiscoveryEntry expectedDiscoveryEntry2 = new GlobalDiscoveryEntry(discoveryEntry2);
+        GlobalDiscoveryEntry expectedDiscoveryEntry3 = new GlobalDiscoveryEntry(discoveryEntry3);
 
         GlobalDiscoveryEntry[] interfaces2And3 = { discoveryEntry2, discoveryEntry3 };
         capabilitiesDirectory.add(interfaces2And3);
 
         PromiseKeeper lookupCapInfo2 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface2).then(lookupCapInfo2);
-        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry2 },
-                          (GlobalDiscoveryEntry[]) lookupCapInfo2.getValues()[0]);
+        lookupCapInfo2.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        GlobalDiscoveryEntry[] discoveredEntries2 = (GlobalDiscoveryEntry[]) lookupCapInfo2.getValues()[0];
+        assertEquals(1, discoveredEntries2.length);
+        checkDiscoveryEntry(expectedDiscoveryEntry2, discoveredEntries2[0], gcdGbid);
 
         PromiseKeeper lookupCapInfo3 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface3).then(lookupCapInfo3);
 
-        GlobalDiscoveryEntry[] passedDiscoveryEntries = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues()[0];
-        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry3 }, passedDiscoveryEntries);
+        lookupCapInfo3.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        GlobalDiscoveryEntry[] discoveredEntries3 = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues()[0];
+        assertEquals(1, discoveredEntries3.length);
+        checkDiscoveryEntry(expectedDiscoveryEntry3, discoveredEntries3[0], gcdGbid);
     }
 
     @Test
     public void addAndLookupAndRemoveWithGbids_validGbid() throws InterruptedException {
-        String[] gbids = { "joynrdefaultgbid" };
+        String[] gbids = { gcdGbid };
+        GlobalDiscoveryEntry expectedDiscoveryEntry = new GlobalDiscoveryEntry(discoveryEntry1);
+
         PromiseKeeper addPromiseKeeper = new PromiseKeeper();
         capabilitiesDirectory.add(discoveryEntry1, gbids).then(addPromiseKeeper);
+        addPromiseKeeper.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
         assertTrue(addPromiseKeeper.isFulfilled());
-        PromiseKeeper lookupCapInfo = new PromiseKeeper();
-        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupCapInfo);
-        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry1 },
-                          (GlobalDiscoveryEntry[]) lookupCapInfo.getValues()[0]);
 
-        capabilitiesDirectory.remove(participantId1, gbids);
+        PromiseKeeper lookupPromiseKeeper1 = new PromiseKeeper();
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupPromiseKeeper1);
+        lookupPromiseKeeper1.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        assertTrue(lookupPromiseKeeper1.isFulfilled());
+        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupPromiseKeeper1.getValues()[0];
+        assertEquals(1, discoveredEntries.length);
+        checkDiscoveryEntry(expectedDiscoveryEntry, discoveredEntries[0], gbids[0]);
 
-        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupCapInfo);
-        assertArrayEquals(new GlobalDiscoveryEntry[]{}, (GlobalDiscoveryEntry[]) lookupCapInfo.getValues()[0]);
+        PromiseKeeper removePromiseKeeper = new PromiseKeeper();
+        capabilitiesDirectory.remove(participantId1, gbids).then(removePromiseKeeper);
+        removePromiseKeeper.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        assertTrue(removePromiseKeeper.isFulfilled());
+
+        PromiseKeeper lookupPromiseKeeper2 = new PromiseKeeper();
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupPromiseKeeper2);
+        lookupPromiseKeeper2.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        assertTrue(lookupPromiseKeeper2.isFulfilled());
+        assertArrayEquals(new GlobalDiscoveryEntry[]{}, (GlobalDiscoveryEntry[]) lookupPromiseKeeper2.getValues()[0]);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void addAndLookupAndRemoveWithGbids_unknownGbid() throws InterruptedException {
         String gbids[] = { "unknownGbid" };
+
         PromiseKeeper addPromiseKeeper = new PromiseKeeper();
-        PromiseKeeper lookupCapInfo = new PromiseKeeper();
         capabilitiesDirectory.add(discoveryEntry1, gbids).then(addPromiseKeeper);
+        addPromiseKeeper.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
         assertTrue(addPromiseKeeper.isRejected());
         JoynrException error = addPromiseKeeper.getError();
         assertTrue(error instanceof ApplicationException);
         assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException) error).getError());
-        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupCapInfo);
-        assertArrayEquals(new GlobalDiscoveryEntry[]{}, (GlobalDiscoveryEntry[]) lookupCapInfo.getValues()[0]);
+
+        PromiseKeeper lookupPromiseKeeper = new PromiseKeeper();
+        capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupPromiseKeeper);
+        lookupPromiseKeeper.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        assertTrue(lookupPromiseKeeper.isRejected());
+        error = lookupPromiseKeeper.getError();
+        assertTrue(error instanceof ApplicationException);
+        assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException) error).getError());
+
+        PromiseKeeper removePromiseKeeper = new PromiseKeeper();
+        capabilitiesDirectory.remove(participantId1, gbids).then(removePromiseKeeper);
+        removePromiseKeeper.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        assertTrue(removePromiseKeeper.isRejected());
+        error = removePromiseKeeper.getError();
+        assertTrue(error instanceof ApplicationException);
+        assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException) error).getError());
+
     }
 
     @Test
     public void addAndLookup() throws Exception {
+        GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(discoveryEntry1);
         capabilitiesDirectory.add(discoveryEntry1);
 
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface1).then(lookupCapInfo1);
-        lookupCapInfo1.waitForSettlement();
-        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry1 },
-                          (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0]);
+        lookupCapInfo1.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0];
+        assertEquals(1, discoveredEntries.length);
+        checkDiscoveryEntry(expectedEntry, discoveredEntries[0], gcdGbid);
     }
 
     @Test
     public void registerSameProviderMultipleTimesFromClusteredApplication() throws InterruptedException {
+        GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(discoveryEntry4FromAnotherNodeInCluster);
         capabilitiesDirectory.add(discoveryEntry4);
         capabilitiesDirectory.add(discoveryEntry4FromAnotherNodeInCluster);
 
         PromiseKeeper lookupCapInfo4 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface4).then(lookupCapInfo4);
-        lookupCapInfo4.waitForSettlement();
-        assertArrayEquals(new GlobalDiscoveryEntry[]{ discoveryEntry4FromAnotherNodeInCluster },
-                          (GlobalDiscoveryEntry[]) lookupCapInfo4.getValues()[0]);
+        lookupCapInfo4.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
+        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupCapInfo4.getValues()[0];
+        assertEquals(1, discoveredEntries.length);
+        checkDiscoveryEntry(expectedEntry, discoveredEntries[0], gcdGbid);
     }
 }
