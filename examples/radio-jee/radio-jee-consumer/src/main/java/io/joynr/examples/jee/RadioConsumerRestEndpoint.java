@@ -18,6 +18,9 @@
  */
 package io.joynr.examples.jee;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.locks.ReentrantLock;
+
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -26,6 +29,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import joynr.exceptions.ApplicationException;
 import joynr.vehicle.Country;
@@ -37,9 +45,13 @@ import joynr.vehicle.RadioSync;
 @Produces(MediaType.APPLICATION_JSON)
 public class RadioConsumerRestEndpoint {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(RadioConsumerRestEndpoint.class);
+
     private ServiceLocator serviceLocator;
 
-    private RadioSync radioClient;
+    private volatile RadioSync radioClient;
+
+    private ReentrantLock radioClientLock = new ReentrantLock();
 
     @Inject
     public RadioConsumerRestEndpoint(ServiceLocator serviceLocator) {
@@ -86,7 +98,26 @@ public class RadioConsumerRestEndpoint {
 
     private RadioSync getRadioClient() {
         if (radioClient == null) {
-            radioClient = serviceLocator.get(RadioSync.class, "io.joynr.examples.jee.provider");
+            radioClientLock.lock();
+            try {
+                if (radioClient == null) {
+                    CompletableFuture<RadioSync> future = serviceLocator.builder(RadioSync.class,
+                                                                                 "io.joynr.examples.jee.provider")
+                                                                        .withDiscoveryQos(new DiscoveryQos(10000L,
+                                                                                                           ArbitrationStrategy.HighestPriority,
+                                                                                                           360000L))
+                                                                        .useFuture()
+                                                                        .build();
+                    try {
+                        radioClient = future.get();
+                    } catch (Exception e) {
+                        LOGGER.error("Unable to create a proxy for the radio provider. All calls will fail.", e);
+                        throw new RuntimeException("Radio proxy creation failed.", e);
+                    }
+                }
+            } finally {
+                radioClientLock.unlock();
+            }
         }
         return radioClient;
     }
