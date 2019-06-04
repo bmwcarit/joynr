@@ -152,7 +152,9 @@ module.exports = {
                 "no-useless-constructor": "off",
                 "@typescript-eslint/no-parameter-properties": "off",
                 "@typescript-eslint/no-explicit-any": "off",
-                "@typescript-eslint/explicit-function-return-type": "error"
+                "@typescript-eslint/explicit-function-return-type": ["error", {
+                    allowExpressions: true
+                }]
             }
         },
         {
