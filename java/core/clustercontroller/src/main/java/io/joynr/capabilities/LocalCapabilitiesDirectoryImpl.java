@@ -54,7 +54,6 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
-import io.joynr.provider.DeferredListener;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
@@ -109,7 +108,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private List<QueuedDiscoveryEntry> queuedDiscoveryEntries = new ArrayList<QueuedDiscoveryEntry>();
 
-    private final String[] gbids;
+    private final String[] knownGbids;
 
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
@@ -166,7 +165,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
-        this.gbids = gbids.clone();
+        this.knownGbids = gbids.clone();
         this.globalDiscoveryEntryCache.add(capabilitiesProvisioning.getDiscoveryEntries());
         expiredDiscoveryEntryCacheCleaner.scheduleCleanUpForCaches(new ExpiredDiscoveryEntryCacheCleaner.CleanupAction() {
             @Override
@@ -227,7 +226,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry, final Boolean awaitGlobalRegistration) {
-        Promise<Add1Deferred> addPromise = add(discoveryEntry, awaitGlobalRegistration, new String[]{ gbids[0] });
+        Promise<Add1Deferred> addPromise = add(discoveryEntry, awaitGlobalRegistration, new String[]{ knownGbids[0] });
         DeferredVoid deferredVoid = new DeferredVoid();
         addPromise.then(new PromiseListener() {
             @Override
@@ -252,9 +251,42 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return new Promise<>(deferredVoid);
     }
 
+    private void validateGbids(Add1Deferred deferred, final String[] gbids) {
+        if (gbids == null || gbids.length == 0) {
+            deferred.reject(DiscoveryError.INVALID_GBID);
+            return;
+        }
+
+        HashSet<String> gbidSet = new HashSet<String>();
+        for (String gbid : gbids) {
+            if (gbid == null || gbid.isEmpty() || gbidSet.contains(gbid)) {
+                deferred.reject(DiscoveryError.INVALID_GBID);
+                return;
+            }
+            gbidSet.add(gbid);
+
+            boolean found = false;
+            for (String validGbid : knownGbids) {
+                if (gbid.equals(validGbid)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                deferred.reject(DiscoveryError.UNKNOWN_GBID);
+                return;
+            }
+        }
+    }
+
     @Override
     public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
         final Add1Deferred deferred = new Add1Deferred();
+
+        validateGbids(deferred, gbids);
+        if (deferred.isRejected()) {
+            return new Promise<>(deferred);
+        }
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)) {
@@ -303,7 +335,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public Promise<AddToAllDeferred> addToAll(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration) {
-        Promise<Add1Deferred> addPromise = add(discoveryEntry, awaitGlobalRegistration, gbids);
+        Promise<Add1Deferred> addPromise = add(discoveryEntry, awaitGlobalRegistration, knownGbids);
         AddToAllDeferred addToAllDeferred = new AddToAllDeferred();
         addPromise.then(new PromiseListener() {
             @Override
