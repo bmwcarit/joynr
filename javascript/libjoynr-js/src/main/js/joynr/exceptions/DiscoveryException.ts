@@ -16,31 +16,28 @@
  * limitations under the License.
  * #L%
  */
-const JoynrRuntimeException = require("./JoynrRuntimeException");
+import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class DiscoveryException extends JoynrRuntimeException {
+    public name = "DiscoveryException";
+
+    /**
+     * Used for serialization.
+     */
+    public _typeName = "joynr.exceptions.DiscoveryException";
     /**
      * Constructor of DiscoveryException object used for reporting
      * error conditions during discovery and arbitration.
      *
-     * @param {Object} [settings] the settings object for the constructor call
-     * @param {String} [settings.detailMessage] message containing details
+     * @param [settings] the settings object for the constructor call
+     * @param [settings.detailMessage] message containing details
      *            about the error
-     * @returns {DiscoveryException} The newly created DiscoveryException object
      */
-    constructor(settings) {
+    public constructor(settings: { detailMessage: string }) {
         super(settings);
-
-        /**
-         * Used for serialization.
-         * @name DiscoveryException#_typeName
-         * @type String
-         */
-        this._typeName = "joynr.exceptions.DiscoveryException";
-        this.name = "DiscoveryException";
     }
 
-    static _typeName = "joynr.exceptions.DiscoveryException";
+    public static _typeName = "joynr.exceptions.DiscoveryException";
 }
 
-module.exports = DiscoveryException;
+export = DiscoveryException;

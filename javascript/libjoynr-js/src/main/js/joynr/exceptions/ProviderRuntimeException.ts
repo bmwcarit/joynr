@@ -16,32 +16,28 @@
  * limitations under the License.
  * #L%
  */
-const JoynrRuntimeException = require("./JoynrRuntimeException");
+import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class ProviderRuntimeException extends JoynrRuntimeException {
+    public name = "ProviderRuntimeException";
+    /**
+     * Used for serialization.
+     */
+    public _typeName = "joynr.exceptions.ProviderRuntimeException";
+
     /**
      * Constructor of ProviderRuntimeException object used for reporting
      * generic error conditions on the provider side that should be
      * transmitted back to consumer side.
      *
-     * @param {Object} [settings] the settings object for the constructor call
-     * @param {String} [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {ProviderRuntimeException} The newly created ProviderRuntimeException object
+     * @param [settings] the settings object for the constructor call
+     * @param [settings.detailMessage] message containing details about the error
      */
-    constructor(settings = {}) {
+    public constructor(settings: { detailMessage: string }) {
         super(settings);
-
-        /**
-         * Used for serialization.
-         * @name ProviderRuntimeException#_typeName
-         * @type String
-         */
-        this._typeName = "joynr.exceptions.ProviderRuntimeException";
-        this.name = "ProviderRuntimeException";
     }
 
-    static _typeName = "joynr.exceptions.ProviderRuntimeException";
+    public static _typeName = "joynr.exceptions.ProviderRuntimeException";
 }
 
-module.exports = ProviderRuntimeException;
+export = ProviderRuntimeException;

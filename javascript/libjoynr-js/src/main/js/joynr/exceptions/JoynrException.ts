@@ -17,35 +17,28 @@
  * #L%
  */
 class JoynrException extends Error {
+    public detailMessage: string;
+    public name = "JoynrException";
+
+    /**
+     * Used for serialization.
+     */
+    public _typeName = "joynr.exceptions.JoynrException";
+
     /**
      * Constructor of JoynrException object used for reporting
      * error conditions. This serves as base class for the underlying
      * ApplicationException and JoynrRuntimeException.
      *
-     * @param {Object} [settings] the settings object for the constructor call
-     * @param {String} [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {JoynrException} The newly created JoynrException object
+     * @param [settings] the settings object for the constructor call
+     * @param [settings.detailMessage] message containing details about the error
      */
-    constructor(settings = {}) {
+    public constructor(settings: { detailMessage: string }) {
         super();
-        /**
-         * Used for serialization.
-         * @name JoynrException#_typeName
-         * @type String
-         */
-        this._typeName = "joynr.exceptions.JoynrException";
-        this.name = "JoynrException";
-
-        /**
-         * See [constructor description]{@link JoynrException}.
-         * @name JoynrException#detailMessage
-         * @type String
-         */
-        this.detailMessage = settings.detailMessage;
+        this.detailMessage = (settings && settings.detailMessage) || "";
     }
 
-    static _typeName = "joynr.exceptions.JoynrException";
+    public static _typeName = "joynr.exceptions.JoynrException";
 }
 
-module.exports = JoynrException;
+export = JoynrException;

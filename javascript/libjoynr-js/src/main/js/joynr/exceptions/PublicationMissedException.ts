@@ -16,37 +16,38 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../util/Typing");
-const JoynrRuntimeException = require("./JoynrRuntimeException");
+import { checkProperty } from "../util/UtilInternal";
+import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class PublicationMissedException extends JoynrRuntimeException {
+    public subscriptionId: string;
+    public name = "PublicationMissedException";
+
+    /**
+     * Used for serialization.
+     */
+    public _typeName = "joynr.exceptions.PublicationMissedException";
+
     /**
      * Constructor of PublicationMissedException object used to report
      * when a publication has not been received within the expected
      * time period.
      *
-     * @param {Object} [settings] the settings object for the constructor call
-     * @param {String} [settings.detailMessage] message containing details
+     * @param [settings] the settings object for the constructor call
+     * @param [settings.detailMessage] message containing details
      *            about the error
-     * @param {String} [settings.subscriptionId] the id of the subscription
-     * @returns {PublicationMissedException} The newly created PublicationMissedException object
+     * @param [settings.subscriptionId] the id of the subscription
      */
-    constructor(settings = {}) {
+    public constructor(settings: { detailMessage: string; subscriptionId: string }) {
         super(settings);
 
-        Typing.checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
+        checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
-        /**
-         * Used for serialization.
-         * @name PublicationMissedException#_typeName
-         * @type String
-         */
-        this._typeName = "joynr.exceptions.PublicationMissedException";
         this.name = "PublicationMissedException";
         this.subscriptionId = settings.subscriptionId;
     }
 
-    static _typeName = "joynr.exceptions.PublicationMissedException";
+    public static _typeName = "joynr.exceptions.PublicationMissedException";
 }
 
-module.exports = PublicationMissedException;
+export = PublicationMissedException;

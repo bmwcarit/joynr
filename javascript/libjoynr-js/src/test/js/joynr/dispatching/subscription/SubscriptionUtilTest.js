@@ -101,7 +101,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
         const serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
         const expectedString = `[${buildString(info)}]`;
 
-        expect(serializedSubscriptions).toBe(expectedString);
+        expect(JSON.parse(serializedSubscriptions)).toEqual(JSON.parse(expectedString));
     });
 
     it("serialize multiple subscription shall work", () => {
@@ -117,7 +117,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
         const serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
         const expectedString = `[${buildString(info1)},${buildString(info2)},${buildString(info3)}]`;
 
-        expect(serializedSubscriptions).toBe(expectedString);
+        expect(JSON.parse(serializedSubscriptions)).toEqual(JSON.parse(expectedString));
     });
 
     it("deserialize single subscription shall work", () => {

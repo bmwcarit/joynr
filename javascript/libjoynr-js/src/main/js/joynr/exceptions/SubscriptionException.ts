@@ -16,40 +16,34 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../util/Typing");
-const JoynrRuntimeException = require("./JoynrRuntimeException");
+import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class SubscriptionException extends JoynrRuntimeException {
+    public subscriptionId: string;
+    public name = "SubscriptionException";
+
+    /**
+     * Used for serialization.
+     */
+    public _typeName = "joynr.exceptions.SubscriptionException";
+
     /**
      * Constructor of SubscriptionException object used for reporting
      * error conditions when creating a subscription (e.g. the
      * provided subscription parameters are not correct etc.) that should
      * be transmitted back to consumer side.
      *
-     * @param {Object} settings - the settings object for the constructor call
-     * @param {String} [settings.detailMessage] message containing details
+     * @param settings - the settings object for the constructor call
+     * @param [settings.detailMessage] message containing details
      *            about the error
-     * @param {String} settings.subscriptionId - Id of the subscription
-     * @returns {SubscriptionException} The newly created SubscriptionException object
+     * @param settings.subscriptionId - Id of the subscription
      */
-    constructor(settings = {}) {
+    public constructor(settings: { detailMessage: string; subscriptionId: string }) {
         super(settings);
-
-        /**
-         * Used for serialization.
-         * @name SubscriptionException#_typeName
-         * @type String
-         */
-        this._typeName = "joynr.exceptions.SubscriptionException";
-        this.name = "SubscriptionException";
-
-        this.subscriptionId = settings.subscriptionId;
-        if (settings) {
-            Typing.checkPropertyIfDefined(settings.subscriptionId, "String", "settings.subscriptionId");
-        }
+        this.subscriptionId = settings && settings.subscriptionId;
     }
 
-    static _typeName = "joynr.exceptions.SubscriptionException";
+    public static _typeName = "joynr.exceptions.SubscriptionException";
 }
 
-module.exports = SubscriptionException;
+export = SubscriptionException;

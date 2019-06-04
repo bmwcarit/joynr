@@ -16,32 +16,28 @@
  * limitations under the License.
  * #L%
  */
-const JoynrException = require("./JoynrException");
+import JoynrException from "./JoynrException";
 
 class JoynrRuntimeException extends JoynrException {
+    public name = "JoynrRuntimeException";
+    /**
+     * Used for serialization.
+     */
+    public _typeName = "joynr.exceptions.JoynrRuntimeException";
+
     /**
      * Constructor of JoynrRuntimeException object used for reporting
      * error conditions. This serves as super class for other more specific
      * runtime exception objects and inherits from JoynrException.
      *
-     * @param {Object} [settings] the settings object for the constructor call
-     * @param {String} [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {JoynrRuntimeException} The newly created IllegalAccessException object
+     * @param [settings] the settings object for the constructor call
+     * @param [settings.detailMessage] message containing details about the error
      */
-    constructor(settings = {}) {
+    public constructor(settings: { detailMessage: string }) {
         super(settings);
-
-        /**
-         * Used for serialization.
-         * @name JoynrRuntimeException#_typeName
-         * @type String
-         */
-        this._typeName = "joynr.exceptions.JoynrRuntimeException";
-        this.name = "JoynrRuntimeException";
     }
 
-    static _typeName = "joynr.exceptions.JoynrRuntimeException";
+    public static _typeName = "joynr.exceptions.JoynrRuntimeException";
 }
 
-module.exports = JoynrRuntimeException;
+export = JoynrRuntimeException;

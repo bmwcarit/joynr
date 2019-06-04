@@ -17,32 +17,29 @@
  * #L%
  */
 
-const JoynrRuntimeException = require("./JoynrRuntimeException");
+import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class IllegalAccessException extends JoynrRuntimeException {
+    public name = "IllegalAccessException";
+    /**
+     * Used for serialization.
+     */
+    public _typeName = "joynr.exceptions.IllegalAccessException";
+
     /**
      * Constructor of IllegalAccessException object used for reporting
      * error conditions due to access restrictions that should be reported
      * back to consumer side.
      *
-     * @param {Object} [settings] the settings object for the constructor call
-     * @param {String} [settings.detailMessage] message containing details
+     * @param [settings] the settings object for the constructor call
+     * @param [settings.detailMessage] message containing details
      *            about the error
-     * @returns {IllegalAccessException} The newly created IllegalAccessException object
      */
-    constructor(settings) {
+    public constructor(settings: { detailMessage: string }) {
         super(settings);
-
-        /**
-         * Used for serialization.
-         * @name IllegalAccessException#_typeName
-         * @type String
-         */
-        this._typeName = "joynr.exceptions.IllegalAccessException";
-        this.name = "IllegalAccessException";
     }
 
-    static _typeName = "joynr.exceptions.IllegalAccessException";
+    public static _typeName = "joynr.exceptions.IllegalAccessException";
 }
 
-module.exports = IllegalAccessException;
+export = IllegalAccessException;

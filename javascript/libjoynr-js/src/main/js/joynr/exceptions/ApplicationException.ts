@@ -16,11 +16,23 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../util/Typing");
-const JoynrException = require("./JoynrException");
+import { checkProperty } from "../util/UtilInternal";
+import JoynrException from "./JoynrException";
 const defaultMessage = "This is an application exception.";
 
+interface ErrorEnum {
+    name: string;
+    value: string;
+}
+
 class ApplicationException extends JoynrException {
+    public error: any;
+    public name: string;
+
+    /**
+     * Used for serialization.
+     */
+    public _typeName: string;
     /**
      * Constructor of ApplicationException object used for reporting
      * error conditions from method implementations. The settings.error
@@ -28,33 +40,25 @@ class ApplicationException extends JoynrException {
      * of an enum object of the matching error enum type defined in
      * Franca.
      *
-     * @param {Object} [settings] the settings object for the constructor call
+     * @param [settings] the settings object for the constructor call
      * @param settings.error the error enum to be reported
-     * @param {String} [settings.detailMessage] message containing details
-     *            about the error
-     * @returns {ApplicationException} The newly created ApplicationException object
+     * @param [settings.detailMessage] message containing details about the error
      */
-    constructor(settings = {}) {
+    public constructor(settings: { detailMessage: string; error?: ErrorEnum }) {
         settings.detailMessage = settings.detailMessage || defaultMessage;
         super(settings);
 
-        /**
-         * Used for serialization.
-         * @name ApplicationException#_typeName
-         * @type String
-         */
-        this._typeName = "joynr.exceptions.ApplicationException";
         this.name = "ApplicationException";
-
+        this._typeName = "joynr.exceptions.ApplicationException";
         this.error = settings.error;
 
-        if (settings && settings.error) {
-            Typing.checkProperty(settings.error.name, "String", "settings.error.name");
-            Typing.checkProperty(settings.error.value, ["String", "Number"], "settings.error.value");
+        if (settings.error) {
+            checkProperty(settings.error.name, "String", "settings.error.name");
+            checkProperty(settings.error.value, ["String", "Number"], "settings.error.value");
         }
     }
 
-    static _typeName = "joynr.exceptions.ApplicationException";
+    public static _typeName = "joynr.exceptions.ApplicationException";
 }
 
-module.exports = ApplicationException;
+export = ApplicationException;
