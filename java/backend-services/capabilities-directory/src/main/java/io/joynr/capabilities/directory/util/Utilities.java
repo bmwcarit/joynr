@@ -57,7 +57,7 @@ public class Utilities {
     public static ValidateGBIDsEnum validateGbids(String[] gbids, String gcdGbId) {
         if (gcdGbId == null || gcdGbId.isEmpty()) {
             logger.error("Cant validate against empty gcdGbId: {}", gcdGbId);
-            throw new IllegalStateException();
+            throw new IllegalStateException("Cant validate against empty gcdGbId: " + gcdGbId);
         }
         if (gbids == null || gbids.length == 0) {
             logger.error("INVALID_GBID: provided list of GBIDs is null or empty.");
