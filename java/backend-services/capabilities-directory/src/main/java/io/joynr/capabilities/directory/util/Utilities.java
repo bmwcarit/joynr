@@ -18,15 +18,33 @@
  */
 package io.joynr.capabilities.directory.util;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GBIDS;
+import static io.joynr.messaging.MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE;
+
 import java.util.Arrays;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ProviderRuntimeException;
 
 public class Utilities {
     private static final Logger logger = LoggerFactory.getLogger(Utilities.class);
+
+    public static String[] loadDefaultGbidsFromDefaultMessagingProperties() {
+        Properties joynrDefaultProperties = PropertyLoader.loadProperties(DEFAULT_MESSAGING_PROPERTIES_FILE);
+        if (!joynrDefaultProperties.containsKey(PROPERTY_GBIDS)) {
+            logger.error("No GBIDs found in default properties: " + joynrDefaultProperties);
+            throw new JoynrIllegalStateException("No GBIDs found in default properties.");
+        }
+
+        return Arrays.stream(joynrDefaultProperties.getProperty(PROPERTY_GBIDS).split(","))
+                     .map(a -> a.trim())
+                     .toArray(String[]::new);
+    }
 
     public static enum ValidateGBIDsEnum {
         OK, INVALID, UNKNOWN

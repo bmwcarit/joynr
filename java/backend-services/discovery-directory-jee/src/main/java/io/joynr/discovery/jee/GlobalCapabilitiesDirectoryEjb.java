@@ -37,11 +37,8 @@ import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
 import io.joynr.capabilities.directory.util.Utilities;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
@@ -70,24 +67,18 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                           @SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher) {
         this.entityManager = entityManager;
         this.gcdSubPublisher = gcdSubPublisher;
+        this.gcdGbId = getGcdGbid();
+    }
+
+    private String getGcdGbid() {
         Properties envPropertiesAll = new Properties();
         envPropertiesAll.putAll(System.getenv());
         String gcdGbid = PropertyLoader.getPropertiesWithPattern(envPropertiesAll, CapabilitiesDirectoryImpl.GCD_GBID)
                                        .getProperty(CapabilitiesDirectoryImpl.GCD_GBID);
-        if (gcdGbid == null) {
-            gcdGbid = readDefaultGbidFromDefaultMessagingProperties();
+        if (gcdGbid == null || gcdGbid.isEmpty()) {
+            gcdGbid = Utilities.loadDefaultGbidsFromDefaultMessagingProperties()[0];
         }
-        this.gcdGbId = gcdGbid;
-    }
-
-    private String readDefaultGbidFromDefaultMessagingProperties() {
-        Properties joynrDefaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
-        if (!joynrDefaultProperties.containsKey(ConfigurableMessagingSettings.PROPERTY_GBIDS)) {
-            logger.error("No GBIDs found in default properties: " + joynrDefaultProperties);
-            throw new JoynrIllegalStateException("No GBIDs found in default properties.");
-        }
-
-        return joynrDefaultProperties.getProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS).split(",")[0].trim();
+        return gcdGbid;
     }
 
     @Override

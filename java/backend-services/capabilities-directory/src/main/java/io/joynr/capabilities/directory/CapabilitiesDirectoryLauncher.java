@@ -22,18 +22,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.util.Modules;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.capabilities.directory.util.Utilities;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.proxy.Future;
@@ -42,14 +38,12 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.types.ProviderQos;
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
-    private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryLauncher.class);
     private static int shutdownPort = Integer.parseInt(System.getProperty("joynr.capabilitiesdirectorylauncher.shutdownport",
                                                                           "9999"));
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
@@ -59,14 +53,8 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
         joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
 
-        Properties joynrDefaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
-        if (!joynrDefaultProperties.containsKey(ConfigurableMessagingSettings.PROPERTY_GBIDS)) {
-            logger.error("No GBIDs found in default properties: " + joynrDefaultProperties);
-            throw new JoynrIllegalStateException("No GBIDs found in default properties.");
-        }
-        String defaultGbid = joynrDefaultProperties.getProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS)
-                                                   .split(",")[0].trim();
-        joynrConfig.put(CapabilitiesDirectoryImpl.GCD_GBID, defaultGbid);
+        joynrConfig.put(CapabilitiesDirectoryImpl.GCD_GBID,
+                        Utilities.loadDefaultGbidsFromDefaultMessagingProperties()[0]);
 
         return Modules.override(new JpaPersistModule("CapabilitiesDirectory"), new CCInProcessRuntimeModule())
                       .with(new MqttPahoModule(), new CapabilitiesDirectoryModule());
