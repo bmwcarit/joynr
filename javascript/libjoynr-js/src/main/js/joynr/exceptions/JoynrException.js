@@ -16,8 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
-
 class JoynrException extends Error {
     /**
      * Constructor of JoynrException object used for reporting
@@ -46,8 +44,8 @@ class JoynrException extends Error {
          */
         this.detailMessage = settings.detailMessage;
     }
-}
 
-TypeRegistrySingleton.getInstance().addType("joynr.exceptions.JoynrException", JoynrException);
+    static _typeName = "joynr.exceptions.JoynrException";
+}
 
 module.exports = JoynrException;

@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 
@@ -46,8 +45,8 @@ class PublicationMissedException extends JoynrRuntimeException {
         this.name = "PublicationMissedException";
         this.subscriptionId = settings.subscriptionId;
     }
-}
 
-TypeRegistrySingleton.getInstance().addType("joynr.exceptions.PublicationMissedException", PublicationMissedException);
+    static _typeName = "joynr.exceptions.PublicationMissedException";
+}
 
 module.exports = PublicationMissedException;

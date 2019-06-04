@@ -16,11 +16,8 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
-const UtilInternal = require("../util/UtilInternal");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
-const defaultSettings = {};
 
 class MethodInvocationException extends JoynrRuntimeException {
     /**
@@ -58,8 +55,8 @@ class MethodInvocationException extends JoynrRuntimeException {
             Typing.checkPropertyIfDefined(settings.providerVersion, "Version", "settings.providerVersion");
         }
     }
-}
 
-TypeRegistrySingleton.getInstance().addType("joynr.exceptions.MethodInvocationException", MethodInvocationException);
+    static _typeName = "joynr.exceptions.MethodInvocationException";
+}
 
 module.exports = MethodInvocationException;

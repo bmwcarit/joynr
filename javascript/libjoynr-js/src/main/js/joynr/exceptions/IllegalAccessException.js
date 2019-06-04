@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
+
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 
 class IllegalAccessException extends JoynrRuntimeException {
@@ -41,10 +41,8 @@ class IllegalAccessException extends JoynrRuntimeException {
         this._typeName = "joynr.exceptions.IllegalAccessException";
         this.name = "IllegalAccessException";
     }
+
+    static _typeName = "joynr.exceptions.IllegalAccessException";
 }
-
-TypeRegistrySingleton.getInstance().addType("joynr.exceptions.IllegalAccessException", IllegalAccessException);
-
-IllegalAccessException.prototype.name = "IllegalAccessException";
 
 module.exports = IllegalAccessException;

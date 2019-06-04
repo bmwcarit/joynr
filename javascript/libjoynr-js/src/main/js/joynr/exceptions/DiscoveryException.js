@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 
 class DiscoveryException extends JoynrRuntimeException {
@@ -40,8 +39,8 @@ class DiscoveryException extends JoynrRuntimeException {
         this._typeName = "joynr.exceptions.DiscoveryException";
         this.name = "DiscoveryException";
     }
-}
 
-TypeRegistrySingleton.getInstance().addType("joynr.exceptions.DiscoveryException", DiscoveryException);
+    static _typeName = "joynr.exceptions.DiscoveryException";
+}
 
 module.exports = DiscoveryException;

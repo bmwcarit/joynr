@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 
@@ -49,8 +48,8 @@ class SubscriptionException extends JoynrRuntimeException {
             Typing.checkPropertyIfDefined(settings.subscriptionId, "String", "settings.subscriptionId");
         }
     }
-}
 
-TypeRegistrySingleton.getInstance().addType("joynr.exceptions.SubscriptionException", SubscriptionException);
+    static _typeName = "joynr.exceptions.SubscriptionException";
+}
 
 module.exports = SubscriptionException;

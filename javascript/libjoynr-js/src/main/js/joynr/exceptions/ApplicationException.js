@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const Typing = require("../util/Typing");
 const JoynrException = require("./JoynrException");
 const defaultMessage = "This is an application exception.";
@@ -54,8 +53,8 @@ class ApplicationException extends JoynrException {
             Typing.checkProperty(settings.error.value, ["String", "Number"], "settings.error.value");
         }
     }
-}
 
-TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ApplicationException", ApplicationException);
+    static _typeName = "joynr.exceptions.ApplicationException";
+}
 
 module.exports = ApplicationException;

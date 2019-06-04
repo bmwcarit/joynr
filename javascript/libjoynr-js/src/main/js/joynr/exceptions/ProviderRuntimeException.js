@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const JoynrRuntimeException = require("./JoynrRuntimeException");
 
 class ProviderRuntimeException extends JoynrRuntimeException {
@@ -41,8 +40,8 @@ class ProviderRuntimeException extends JoynrRuntimeException {
         this._typeName = "joynr.exceptions.ProviderRuntimeException";
         this.name = "ProviderRuntimeException";
     }
-}
 
-TypeRegistrySingleton.getInstance().addType("joynr.exceptions.ProviderRuntimeException", ProviderRuntimeException);
+    static _typeName = "joynr.exceptions.ProviderRuntimeException";
+}
 
 module.exports = ProviderRuntimeException;

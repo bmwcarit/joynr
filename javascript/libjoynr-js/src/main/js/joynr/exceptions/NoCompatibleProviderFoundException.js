@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-const TypeRegistrySingleton = require("../../joynr/types/TypeRegistrySingleton");
 const DiscoveryException = require("./DiscoveryException");
 
 class NoCompatibleProviderFoundException extends DiscoveryException {
@@ -59,11 +58,8 @@ class NoCompatibleProviderFoundException extends DiscoveryException {
          */
         this.interfaceName = settings.interfaceName;
     }
-}
 
-TypeRegistrySingleton.getInstance().addType(
-    "joynr.exceptions.NoCompatibleProviderFoundException",
-    NoCompatibleProviderFoundException
-);
+    static _typeName = "joynr.exceptions.NoCompatibleProviderFoundException";
+}
 
 module.exports = NoCompatibleProviderFoundException;
