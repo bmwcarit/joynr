@@ -18,6 +18,9 @@
  */
 package io.joynr.messaging.websocket;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -39,8 +42,12 @@ public class WebSocketMulticastAddressCalculator implements MulticastAddressCalc
     }
 
     @Override
-    public Address calculate(ImmutableMessage message) {
-        return globalAddress;
+    public Set<Address> calculate(ImmutableMessage message) {
+        Set<Address> resultSet = new HashSet<>();
+        if (globalAddress != null) {
+            resultSet.add(globalAddress);
+        }
+        return resultSet;
     }
 
     @Override

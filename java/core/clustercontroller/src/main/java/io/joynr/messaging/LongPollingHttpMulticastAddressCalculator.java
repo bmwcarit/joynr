@@ -20,6 +20,8 @@ package io.joynr.messaging;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,16 +55,16 @@ public class LongPollingHttpMulticastAddressCalculator implements MulticastAddre
     }
 
     @Override
-    public Address calculate(ImmutableMessage message) {
+    public Set<Address> calculate(ImmutableMessage message) {
         if (true) {
             throw new UnsupportedOperationException("Multicasts are not yet supported for HTTP long polling.");
         }
-        ChannelAddress multicastAddress = null;
+        Set<Address> multicastAddresses = new HashSet<>();
         if (globalAddress != null) {
             try {
                 String multicastChannelId = URLEncoder.encode(message.getSender() + "/" + message.getRecipient(),
                                                               UTF_8);
-                multicastAddress = new ChannelAddress(globalAddress.getMessagingEndpointUrl(), multicastChannelId);
+                multicastAddresses.add(new ChannelAddress(globalAddress.getMessagingEndpointUrl(), multicastChannelId));
             } catch (UnsupportedEncodingException e) {
                 logger.error("Unable to encode multicast channel from message {}", message, e);
             }
@@ -70,7 +72,7 @@ public class LongPollingHttpMulticastAddressCalculator implements MulticastAddre
             logger.warn("Unable to calculate multicast address for message {} because no global address was found for long polling.",
                         message);
         }
-        return multicastAddress;
+        return multicastAddresses;
     }
 
     @Override

@@ -151,10 +151,8 @@ public class AddressManager {
     }
 
     private void addMulticastReceiverAddressFromAddressCalculator(ImmutableMessage message, Set<Address> result) {
-        Address calculatedAddress = multicastAddressCalculator.calculate(message);
-        if (calculatedAddress != null) {
-            result.add(calculatedAddress);
-        }
+        Set<Address> calculatedAddresses = multicastAddressCalculator.calculate(message);
+        result.addAll(calculatedAddresses);
     }
 
     private void addLocalMulticastReceiverAddressesFromRegistry(ImmutableMessage message, Set<Address> result) {

@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.Set;
+
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
@@ -31,7 +33,7 @@ public interface MulticastAddressCalculator {
      *
      * @return the address calculated, or null if this wasn't possible.
      */
-    Address calculate(ImmutableMessage message);
+    Set<Address> calculate(ImmutableMessage message);
 
     /**
      * Used to determine if the address calculator supports providing multicast addresses for a given transport.

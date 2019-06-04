@@ -18,6 +18,9 @@
  */
 package io.joynr.messaging.mqtt;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -29,7 +32,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttMulticastAddressCalculator implements MulticastAddressCalculator {
 
-    private MqttAddress globalAddress;
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private final String[] gbidArray;
 
@@ -41,11 +43,11 @@ public class MqttMulticastAddressCalculator implements MulticastAddressCalculato
     }
 
     @Override
-    public Address calculate(ImmutableMessage message) {
-        Address result = null;
-        if (globalAddress != null) {
-            String topic = mqttTopicPrefixProvider.getMulticastTopicPrefix() + message.getRecipient();
-            result = new MqttAddress(globalAddress.getBrokerUri(), topic);
+    public Set<Address> calculate(ImmutableMessage message) {
+        Set<Address> result = new HashSet<>();
+        String topic = mqttTopicPrefixProvider.getMulticastTopicPrefix() + message.getRecipient();
+        for (String gbid : gbidArray) {
+            result.add(new MqttAddress(gbid, topic));
         }
         return result;
     }
