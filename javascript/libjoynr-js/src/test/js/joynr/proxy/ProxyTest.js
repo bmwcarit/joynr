@@ -75,21 +75,17 @@ describe("libjoynr-js.joynr.proxy.Proxy", () => {
     });
 
     it("RadioProxy provides API to access used datatypes", done => {
-        expect(RadioProxy.getUsedDatatypes).toBeDefined();
+        expect(RadioProxy.getUsedJoynrtypes).toBeDefined();
         done();
     });
 
-    it("RadioProxy.getUsedDatatype can be used to synchronize to the successful registration of all used datatypes", done => {
-        expect(RadioProxy.getUsedDatatypes).toBeDefined();
-        const datatypePromises = RadioProxy.getUsedDatatypes().map(datatype => {
-            return typeRegistry.getTypeRegisteredPromise(datatype, 1000);
-        });
-        Promise.all(datatypePromises)
-            .then(() => {
-                done();
-                return null;
+    it("RadioProxy.getUsedJoynrtypes can be used to register all used datatypes", done => {
+        expect(RadioProxy.getUsedJoynrtypes).toBeDefined();
+        expect(() =>
+            RadioProxy.getUsedJoynrtypes().map(datatype => {
+                return typeRegistry.addType(datatype);
             })
-            .catch(fail);
+        ).not.toThrow();
     });
 
     it("RadioProxy saves settings object", done => {

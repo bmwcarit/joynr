@@ -205,7 +205,7 @@ class Arbitrator {
      * @function
      *
      * @param {Object} settings the settings object
-     * @param {String} settings.domains the domains to discover the provider
+     * @param {Array<String>} settings.domains the domains to discover the provider
      * @param {String} settings.interfaceName the interfaceName to discover the provider
      * @param {DiscoveryQos} settings.discoveryQos
      * @param {Boolean} [settings.staticArbitration] shall the arbitrator use staticCapabilities or contact the discovery provider
