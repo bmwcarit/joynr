@@ -16,24 +16,26 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider");
-const ProviderBuilder = require("../../../../main/js/joynr/provider/ProviderBuilder");
-const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
+
+import RadioProvider from "../../../generated/joynr/vehicle/RadioProvider";
+import ProviderBuilder from "../../../../main/js/joynr/provider/ProviderBuilder";
+import ProviderOperation from "../../../../main/js/joynr/provider/ProviderOperation";
+import TypeRegistrySingleton from "../../../../main/js/joynr/types/TypeRegistrySingleton";
+const typeRegistry = TypeRegistrySingleton.getInstance();
 
 describe("libjoynr-js.joynr.provider.ProviderBuilder", () => {
-    let providerBuilder = null;
-    let implementation = null;
+    let providerBuilder: ProviderBuilder;
+    let implementation: any;
 
     beforeEach(() => {
-        providerBuilder = new ProviderBuilder();
+        providerBuilder = new ProviderBuilder({ typeRegistry });
         implementation = {
             isOn: {
                 value: false,
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -42,7 +44,7 @@ describe("libjoynr-js.joynr.provider.ProviderBuilder", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -51,7 +53,7 @@ describe("libjoynr-js.joynr.provider.ProviderBuilder", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -60,7 +62,7 @@ describe("libjoynr-js.joynr.provider.ProviderBuilder", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -69,9 +71,9 @@ describe("libjoynr-js.joynr.provider.ProviderBuilder", () => {
                     return undefined;
                 }
             },
-            addFavoriteStation: jasmine.createSpy("addFavoriteStation"),
-            weakSignal: jasmine.createSpy("weakSignal"),
-            methodProvidedImpl: jasmine.createSpy("methodProvidedImpl")
+            addFavoriteStation: jest.fn(),
+            weakSignal: jest.fn(),
+            methodProvidedImpl: jest.fn()
         };
     });
 
