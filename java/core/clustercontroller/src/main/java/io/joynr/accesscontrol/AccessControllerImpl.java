@@ -37,10 +37,12 @@ import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 
 public class AccessControllerImpl implements AccessController {
     private static final Logger logger = LoggerFactory.getLogger(AccessControllerImpl.class);
@@ -157,8 +159,15 @@ public class AccessControllerImpl implements AccessController {
 
             @Override
             public void onError(Throwable e) {
-                logger.error("Failed to get capability for participant id {} for acl check", message.getRecipient());
+                logger.error("Failed to get capability for participant id {} for acl check: {}",
+                             message.getRecipient(),
+                             e);
                 hasConsumerPermissionCallback.hasConsumerPermission(false);
+            }
+
+            @Override
+            public void onError(DiscoveryError error) {
+                onError(new ProviderRuntimeException(error.toString()));
             }
         });
     }

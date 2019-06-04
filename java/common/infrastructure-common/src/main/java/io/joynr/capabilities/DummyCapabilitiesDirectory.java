@@ -39,6 +39,7 @@ import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 
 public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirectory {
     private static final Logger logger = LoggerFactory.getLogger(DummyCapabilitiesDirectory.class);
@@ -99,6 +100,11 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
             @Override
             public void onError(Throwable e) {
                 deferred.reject(new ProviderRuntimeException(e.toString()));
+            }
+
+            @Override
+            public void onError(DiscoveryError error) {
+                deferred.reject(new ProviderRuntimeException(error.toString()));
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());

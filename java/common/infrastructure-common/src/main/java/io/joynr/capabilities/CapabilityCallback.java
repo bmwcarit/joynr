@@ -21,14 +21,16 @@ package io.joynr.capabilities;
 import javax.annotation.CheckForNull;
 
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 
 /**
  * Callback interface used by arbitrators to generate callbacks for capability
  * lookup.
- * 
  */
 public interface CapabilityCallback {
     void processCapabilityReceived(@CheckForNull DiscoveryEntryWithMetaInfo capability);
 
     void onError(Throwable e);
+
+    void onError(DiscoveryError error);
 }

@@ -506,6 +506,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             public void onError(Throwable e) {
                 deferred.reject(new ProviderRuntimeException(e.toString()));
             }
+
+            @Override
+            public void onError(DiscoveryError error) {
+                // TODO
+                deferred.reject(new ProviderRuntimeException(error.toString()));
+            }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
         lookup(domains,
@@ -732,6 +738,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             @Override
             public void onError(Throwable e) {
                 lookupFuture.onFailure(new JoynrRuntimeException(e));
+            }
+
+            @Override
+            public void onError(DiscoveryError error) {
+                // TODO
+                lookupFuture.onFailure(new ProviderRuntimeException(error.toString()));
             }
         });
         DiscoveryEntryWithMetaInfo retrievedCapabilitiyEntry = null;
