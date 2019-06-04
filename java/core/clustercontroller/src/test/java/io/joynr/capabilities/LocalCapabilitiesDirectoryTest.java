@@ -83,10 +83,13 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.util.StringArrayMatcher;
+import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.DiscoveryProvider.Add1Deferred;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -103,7 +106,7 @@ public class LocalCapabilitiesDirectoryTest {
     private static final long defaultDiscoveryRetryIntervalMs = 2000L;
     private Long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
     private String publicKeyId = "publicKeyId";
-    private String[] gbids = { "testgbid1", "testgbid2" };
+    private String[] knownGbids = { "testgbid1", "testgbid2" };
 
     @Mock
     JoynrRuntime runtime;
@@ -231,7 +234,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         capabilitiesFreshnessUpdateExecutor,
                                                                         defaultDiscoveryRetryIntervalMs,
                                                                         shutdownNotifier,
-                                                                        gbids);
+                                                                        knownGbids);
         verify(expiredDiscoveryEntryCacheCleaner).scheduleCleanUpForCaches(Mockito.<ExpiredDiscoveryEntryCacheCleaner.CleanupAction> any(),
                                                                            argThat(new DiscoveryEntryStoreVarargMatcher(globalDiscoveryEntryCacheMock,
                                                                                                                         localDiscoveryEntryStoreMock)));
@@ -266,23 +269,132 @@ public class LocalCapabilitiesDirectoryTest {
                                                         channelAddressSerialized);
     }
 
+    private void checkCallToGlobalCapabilitiesDirectoryClient(DiscoveryEntry discoveryEntry, String[] expectedGbids) {
+        ArgumentCaptor<GlobalDiscoveryEntry> argumentCaptor = ArgumentCaptor.forClass(GlobalDiscoveryEntry.class);
+        verify(globalCapabilitiesDirectoryClient,
+               timeout(200)).add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                 argumentCaptor.capture(),
+                                 argThat(new StringArrayMatcher(expectedGbids)));
+        GlobalDiscoveryEntry capturedGlobalDiscoveryEntry = argumentCaptor.getValue();
+        assertNotNull(capturedGlobalDiscoveryEntry);
+        assertEquals(discoveryEntry.getDomain(), capturedGlobalDiscoveryEntry.getDomain());
+        assertEquals(discoveryEntry.getInterfaceName(), capturedGlobalDiscoveryEntry.getInterfaceName());
+    }
+
     @SuppressWarnings("unchecked")
     @Test(timeout = 1000)
     public void addCapability() throws InterruptedException {
         when(globalAddressProvider.get()).thenReturn(channelAddress);
 
         final boolean awaitGlobalRegistration = true;
-        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+        String[] expectedGbids = new String[]{ knownGbids[0] };
 
-        ArgumentCaptor<GlobalDiscoveryEntry> argumentCaptor = ArgumentCaptor.forClass(GlobalDiscoveryEntry.class);
-        verify(globalCapabilitiesDirectoryClient,
-               timeout(200)).add(org.mockito.Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                 argumentCaptor.capture(),
-                                 org.mockito.Matchers.<String[]> any());
-        GlobalDiscoveryEntry capturedGlobalDiscoveryEntry = argumentCaptor.getValue();
-        assertNotNull(capturedGlobalDiscoveryEntry);
-        assertEquals(discoveryEntry.getDomain(), capturedGlobalDiscoveryEntry.getDomain());
-        assertEquals(discoveryEntry.getInterfaceName(), capturedGlobalDiscoveryEntry.getInterfaceName());
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+        checkCallToGlobalCapabilitiesDirectoryClient(discoveryEntry, expectedGbids);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithSingleNonDefaultGbid() throws InterruptedException {
+        when(globalAddressProvider.get()).thenReturn(channelAddress);
+
+        String[] expectedGbids = new String[]{ knownGbids[1] };
+        final boolean awaitGlobalRegistration = true;
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, expectedGbids);
+        checkCallToGlobalCapabilitiesDirectoryClient(discoveryEntry, expectedGbids);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithMultipleGbids() throws InterruptedException {
+        when(globalAddressProvider.get()).thenReturn(channelAddress);
+
+        // expectedGbids element order intentionally differs from knownGbids element order
+        String[] expectedGbids = new String[]{ knownGbids[1], knownGbids[0] };
+        final boolean awaitGlobalRegistration = true;
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, expectedGbids);
+        checkCallToGlobalCapabilitiesDirectoryClient(discoveryEntry, expectedGbids);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithAddToAll() throws InterruptedException {
+        when(globalAddressProvider.get()).thenReturn(channelAddress);
+
+        String[] expectedGbids = new String[]{ knownGbids[0], knownGbids[1] };
+        final boolean awaitGlobalRegistration = true;
+        localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
+        checkCallToGlobalCapabilitiesDirectoryClient(discoveryEntry, expectedGbids);
+    }
+
+    private void checkDiscoveryError(Promise<Add1Deferred> promise, DiscoveryError expectedDiscoveryError) {
+        assertEquals(promise.isRejected(), true);
+        promise.then(new PromiseListener() {
+            @Override
+            public void onFulfillment(Object... values) {
+                Assert.fail("localCapabilitiesDirectory.add succeeded unexpectedly ");
+            }
+
+            @Override
+            public void onRejection(JoynrException error) {
+                assertTrue(error instanceof ApplicationException);
+                assertTrue(((ApplicationException) error).getError() == expectedDiscoveryError);
+            }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithNullGbids() throws InterruptedException {
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids = null;
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
+        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithGbidsWithoutElements() throws InterruptedException {
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids = new String[]{};
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
+        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithGbidsWithNullEntry() throws InterruptedException {
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids = new String[]{ knownGbids[0], null };
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
+        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithGbidsWithEmptyStringEntry() throws InterruptedException {
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids = new String[]{ knownGbids[0], "" };
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
+        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithGbidsWithDuplicateStringEntries() throws InterruptedException {
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids = new String[]{ knownGbids[0], knownGbids[0] };
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
+        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 1000)
+    public void addCapabilityWithUnknownGbidEntry() throws InterruptedException {
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids = new String[]{ knownGbids[0], "unknownGbid" };
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
+        checkDiscoveryError(promise, DiscoveryError.UNKNOWN_GBID);
     }
 
     @SuppressWarnings("unchecked")
