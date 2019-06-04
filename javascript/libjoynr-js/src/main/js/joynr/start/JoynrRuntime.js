@@ -194,7 +194,9 @@ class JoynrRuntime {
         // typedCapabilites can be undefined in case of InProcessRuntime
         this._arbitrator = new Arbitrator(this._discovery, typedCapabilities);
 
-        this.providerBuilder = new ProviderBuilder();
+        this.providerBuilder = new ProviderBuilder({
+            typeRegistry: this.typeRegistry
+        });
 
         this.proxyBuilder = new ProxyBuilder(
             {

@@ -20,7 +20,6 @@
 /* istanbul ignore file */
 
 import JoynrObject from "./joynr/types/JoynrObject";
-import TypeRegistrySingleton from "./joynr/types/TypeRegistrySingleton";
 import GenerationUtil from "./joynr/util/GenerationUtil";
 
 import JoynrRuntime from "./joynr/start/JoynrRuntime";
@@ -230,18 +229,6 @@ class Joynr implements Partial<Pick<JoynrRuntime, JoynrKeys>> {
         } catch (error1) {
             return Promise.reject(error1);
         }
-    }
-
-    /**
-     * Adds a typeName to constructor entry in the type registry.
-     * @see TypeRegistry#addType
-     *
-     * @param name - the joynr type name that is sent on the wire.
-     * @param type - the corresponding JavaScript constructor for this type.
-     * @param isEnum - optional flag if the added type is an enumeration type
-     */
-    public addType(name: string, type: Function, isEnum: boolean): void {
-        TypeRegistrySingleton.getInstance().addType(name, type, isEnum);
     }
 
     public selectRuntime(runtime: string): void {

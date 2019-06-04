@@ -111,9 +111,9 @@ class InProcessRuntime extends JoynrRuntime {
         const defaultClusterControllerCapabilities = clusterControllerSettings.capabilities || [];
 
         untypedCapabilities = untypedCapabilities.concat(defaultClusterControllerCapabilities);
-        // allow use of _typeName once
-        this.typeRegistry.addType(new ChannelAddress()._typeName, ChannelAddress, false);
-        this.typeRegistry.addType(new MqttAddress()._typeName, MqttAddress, false);
+
+        this.typeRegistry.addType(ChannelAddress);
+        this.typeRegistry.addType(MqttAddress);
 
         const typedCapabilities = [];
         for (let i = 0; i < untypedCapabilities.length; i++) {

@@ -20,6 +20,23 @@
 
 import * as UtilInternal from "../util/UtilInternal";
 
+import ApplicationException from "../exceptions/ApplicationException";
+import DiscoveryException from "../exceptions/DiscoveryException";
+import IllegalAccessException from "../exceptions/IllegalAccessException";
+import JoynrException from "../exceptions/JoynrException";
+import JoynrRuntimeException from "../exceptions/JoynrRuntimeException";
+import MethodInvocationException from "../exceptions/MethodInvocationException";
+import NoCompatibleProviderFoundException from "../exceptions/NoCompatibleProviderFoundException";
+import ProviderRuntimeException from "../exceptions/ProviderRuntimeException";
+import PublicationMissedException from "../exceptions/PublicationMissedException";
+import SubscriptionException from "../exceptions/SubscriptionException";
+import JoynrEnum = require("../types/JoynrEnum");
+
+interface TypeConstructor {
+    new (...args: any[]): any;
+    _typeName: string;
+}
+
 class TypeRegistry {
     private registryPromise: Record<string, any> = {};
     private enumRegistry: Record<string, any> = {};
@@ -35,24 +52,34 @@ class TypeRegistry {
      *
      * @constructor
      */
-    public constructor() {}
+    public constructor() {
+        this.addType(ApplicationException)
+            .addType(DiscoveryException)
+            .addType(IllegalAccessException)
+            .addType(JoynrException)
+            .addType(JoynrRuntimeException)
+            .addType(MethodInvocationException)
+            .addType(NoCompatibleProviderFoundException)
+            .addType(ProviderRuntimeException)
+            .addType(PublicationMissedException)
+            .addType(SubscriptionException);
+    }
 
     /**
      * Adds a typeName to constructor entry in the type registry.
      *
-     * @param joynrTypeName - the joynr type name that is sent on the wire.
      * @param typeConstructor - the corresponding JavaScript constructor for this type.
-     * @param isEnum - optional flag if the added type is an enumeration type
      * @returns typeRegistry for chained calls.
      */
-    public addType(joynrTypeName: string, typeConstructor: Function, isEnum?: boolean): TypeRegistry {
-        if (isEnum) {
-            this.enumRegistry[joynrTypeName] = typeConstructor;
+    public addType(typeConstructor: TypeConstructor): TypeRegistry {
+        const typeName = typeConstructor._typeName;
+        if (typeConstructor.prototype instanceof JoynrEnum) {
+            this.enumRegistry[typeName] = typeConstructor;
         }
-        this.registry[joynrTypeName] = typeConstructor;
-        if (this.registryPromise[joynrTypeName]) {
-            this.registryPromise[joynrTypeName].resolve(typeConstructor);
-            clearTimeout(this.registryPromise[joynrTypeName].timeoutTimer);
+        this.registry[typeName] = typeConstructor;
+        if (this.registryPromise[typeName]) {
+            this.registryPromise[typeName].resolve(typeConstructor);
+            clearTimeout(this.registryPromise[typeName].timeoutTimer);
         }
         return this;
     }
