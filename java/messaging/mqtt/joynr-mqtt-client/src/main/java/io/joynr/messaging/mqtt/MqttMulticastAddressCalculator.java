@@ -21,6 +21,7 @@ package io.joynr.messaging.mqtt;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
@@ -30,11 +31,12 @@ public class MqttMulticastAddressCalculator implements MulticastAddressCalculato
 
     private MqttAddress globalAddress;
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
+    private final String[] gbidArray;
 
     @Inject
-    public MqttMulticastAddressCalculator(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress globalAddress,
+    public MqttMulticastAddressCalculator(@Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbidArray,
                                           MqttTopicPrefixProvider mqttTopicPrefixProvider) {
-        this.globalAddress = (MqttAddress) globalAddress;
+        this.gbidArray = gbidArray.clone();
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
     }
 
