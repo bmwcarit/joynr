@@ -31,7 +31,7 @@ import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.Discovery;
 import joynr.system.DiscoveryProvider;
 import joynr.system.RoutingTypes.Address;
-import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
@@ -52,9 +52,9 @@ public class InProcessCapabilitiesProvisioning extends DefaultCapabilitiesProvis
     }
 
     @Override
-    public Collection<DiscoveryEntry> getDiscoveryEntries() {
+    public Collection<GlobalDiscoveryEntry> getDiscoveryEntries() {
 
-        List<DiscoveryEntry> provisionedList = new ArrayList<>();
+        List<GlobalDiscoveryEntry> provisionedList = new ArrayList<>();
         String defaultPulicKeyId = "";
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);

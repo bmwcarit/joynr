@@ -61,7 +61,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     private static Logger logger = LoggerFactory.getLogger(StaticCapabilitiesProvisioning.class);
     private final ResourceContentProvider resourceContentProvider;
 
-    private Collection<DiscoveryEntry> discoveryEntries;
+    private Collection<GlobalDiscoveryEntry> discoveryEntries;
 
     @Inject
     public StaticCapabilitiesProvisioning(@Named(PROPERTY_PROVISIONED_CAPABILITIES_FILE) String provisionedCapabilitiesFile,
@@ -70,7 +70,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                                           RoutingTable routingTable,
                                           LegacyCapabilitiesProvisioning legacyCapabilitiesProvisioning,
                                           ResourceContentProvider resourceContentProvider) {
-        discoveryEntries = new HashSet<DiscoveryEntry>();
+        discoveryEntries = new HashSet<>();
         this.resourceContentProvider = resourceContentProvider;
         addEntriesFromJson(provisionedCapabilitiesFile, objectMapper, localChannelId);
         logger.trace("{} provisioned discovery entries loaded from JSON: {}",
@@ -101,12 +101,12 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     }
 
     private void overrideEntriesFromLegacySettings(LegacyCapabilitiesProvisioning legacyCapabilitiesProvisioning) {
-        DiscoveryEntry globalCapabilitiesEntry = legacyCapabilitiesProvisioning.getDiscoveryEntryForInterface(GlobalCapabilitiesDirectory.class);
+        GlobalDiscoveryEntry globalCapabilitiesEntry = legacyCapabilitiesProvisioning.getDiscoveryEntryForInterface(GlobalCapabilitiesDirectory.class);
         if (globalCapabilitiesEntry != null) {
             removeExistingEntryForInterface(GlobalCapabilitiesDirectory.INTERFACE_NAME);
             discoveryEntries.add(globalCapabilitiesEntry);
         }
-        DiscoveryEntry domainAccessControllerEntry = legacyCapabilitiesProvisioning.getDiscoveryEntryForInterface(GlobalDomainAccessController.class);
+        GlobalDiscoveryEntry domainAccessControllerEntry = legacyCapabilitiesProvisioning.getDiscoveryEntryForInterface(GlobalDomainAccessController.class);
         if (domainAccessControllerEntry != null) {
             removeExistingEntryForInterface(GlobalDomainAccessController.INTERFACE_NAME);
             discoveryEntries.add(domainAccessControllerEntry);
@@ -162,7 +162,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     }
 
     @Override
-    public Collection<DiscoveryEntry> getDiscoveryEntries() {
+    public Collection<GlobalDiscoveryEntry> getDiscoveryEntries() {
         return discoveryEntries;
     }
 

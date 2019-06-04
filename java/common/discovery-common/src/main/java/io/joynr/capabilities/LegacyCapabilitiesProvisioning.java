@@ -44,7 +44,7 @@ import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
-import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -114,7 +114,7 @@ public class LegacyCapabilitiesProvisioning {
         }
     }
 
-    private Map<Class<?>, DiscoveryEntry> legacyDiscoveryEntries = new HashMap<>();
+    private Map<Class<?>, GlobalDiscoveryEntry> legacyDiscoveryEntries = new HashMap<>();
     private Map<Class<?>, Address> legacyAddresses = new HashMap<>();
 
     @Inject
@@ -164,16 +164,16 @@ public class LegacyCapabilitiesProvisioning {
                 address = new MqttAddress(urlForAddress, channelId);
             }
             JoynrVersion interfaceVersion = interfaceClass.getAnnotation(JoynrVersion.class);
-            DiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(interfaceVersion.major(),
-                                                                                                interfaceVersion.minor()),
-                                                                                    domain,
-                                                                                    interfaceName,
-                                                                                    participantId,
-                                                                                    new ProviderQos(),
-                                                                                    System.currentTimeMillis(),
-                                                                                    Long.MAX_VALUE,
-                                                                                    "",
-                                                                                    address);
+            GlobalDiscoveryEntry discoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(interfaceVersion.major(),
+                                                                                                      interfaceVersion.minor()),
+                                                                                          domain,
+                                                                                          interfaceName,
+                                                                                          participantId,
+                                                                                          new ProviderQos(),
+                                                                                          System.currentTimeMillis(),
+                                                                                          Long.MAX_VALUE,
+                                                                                          "",
+                                                                                          address);
             logger.debug("Created legacy discovery entry: {}", discoveryEntry);
             legacyDiscoveryEntries.put(interfaceClass, discoveryEntry);
             legacyAddresses.put(interfaceClass, address);
@@ -186,7 +186,7 @@ public class LegacyCapabilitiesProvisioning {
         return value != null && !value.trim().isEmpty();
     }
 
-    public DiscoveryEntry getDiscoveryEntryForInterface(Class<?> serviceInterface) {
+    public GlobalDiscoveryEntry getDiscoveryEntryForInterface(Class<?> serviceInterface) {
         return legacyDiscoveryEntries.get(serviceInterface);
     }
 

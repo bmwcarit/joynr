@@ -44,8 +44,8 @@ import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -84,8 +84,8 @@ public class AccessControllerTest {
                                                     localDomainAccessController,
                                                     new CapabilitiesProvisioning() {
                                                         @Override
-                                                        public Collection<DiscoveryEntry> getDiscoveryEntries() {
-                                                            return new ArrayList<DiscoveryEntry>();
+                                                        public Collection<GlobalDiscoveryEntry> getDiscoveryEntries() {
+                                                            return new ArrayList<GlobalDiscoveryEntry>();
                                                         }
                                                     },
                                                     discoveryProviderParticipantId,

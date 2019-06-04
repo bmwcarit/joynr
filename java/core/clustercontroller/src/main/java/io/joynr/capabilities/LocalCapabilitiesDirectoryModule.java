@@ -20,12 +20,21 @@ package io.joynr.capabilities;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+
+import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 
 public class LocalCapabilitiesDirectoryModule extends AbstractModule {
 
     @Override
     protected void configure() {
         bind(LocalCapabilitiesDirectory.class).to(LocalCapabilitiesDirectoryImpl.class).in(Singleton.class);
-        bind(DiscoveryEntryStore.class).to(DiscoveryEntryStoreInMemory.class);
+        bind(new TypeLiteral<DiscoveryEntryStore<DiscoveryEntry>>() {
+        }).to(new TypeLiteral<DiscoveryEntryStoreInMemory<DiscoveryEntry>>() {
+        });
+        bind(new TypeLiteral<DiscoveryEntryStore<GlobalDiscoveryEntry>>() {
+        }).to(new TypeLiteral<DiscoveryEntryStoreInMemory<GlobalDiscoveryEntry>>() {
+        });
     }
 }

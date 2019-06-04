@@ -114,9 +114,9 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private ProxyBuilderFactory proxyBuilderFactoryMock;
     @Mock
-    private DiscoveryEntryStore localDiscoveryEntryStoreMock;
+    private DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStoreMock;
     @Mock
-    private DiscoveryEntryStore globalDiscoveryEntryCacheMock;
+    private DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCacheMock;
     @Mock
     private GlobalAddressProvider globalAddressProvider;
     @Mock
@@ -142,11 +142,12 @@ public class LocalCapabilitiesDirectoryTest {
         public static final String INTERFACE_NAME = "interfaceName";
     }
 
-    private static class DiscoveryEntryStoreVarargMatcher extends ArgumentMatcher<DiscoveryEntryStore[]>
-            implements VarargMatcher {
-        private final DiscoveryEntryStore[] matchAgainst;
+    private static class DiscoveryEntryStoreVarargMatcher
+            extends ArgumentMatcher<DiscoveryEntryStore<? extends DiscoveryEntry>[]> implements VarargMatcher {
+        private static final long serialVersionUID = 1L;
+        private final DiscoveryEntryStore<? extends DiscoveryEntry>[] matchAgainst;
 
-        private DiscoveryEntryStoreVarargMatcher(DiscoveryEntryStore... matchAgainst) {
+        private DiscoveryEntryStoreVarargMatcher(DiscoveryEntryStore<?>... matchAgainst) {
             this.matchAgainst = matchAgainst;
         }
 
@@ -187,32 +188,32 @@ public class LocalCapabilitiesDirectoryTest {
         String capabiltitiesDirectoryChannelId = "dirchannelId";
         String domainAccessControllerParticipantId = "domainAccessControllerParticipantId";
         String domainAccessControllerChannelId = "domainAccessControllerChannelId";
-        DiscoveryEntry globalCapabilitiesDirectoryDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0,
-                                                                                                                       1),
-                                                                                                           discoveryDirectoriesDomain,
-                                                                                                           GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                                                           capabilitiesDirectoryParticipantId,
-                                                                                                           new ProviderQos(),
-                                                                                                           System.currentTimeMillis(),
-                                                                                                           expiryDateMs,
-                                                                                                           domainAccessControllerChannelId,
-                                                                                                           new ChannelAddress(TEST_URL,
-                                                                                                                              capabiltitiesDirectoryChannelId));
+        GlobalDiscoveryEntry globalCapabilitiesDirectoryDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0,
+                                                                                                                             1),
+                                                                                                                 discoveryDirectoriesDomain,
+                                                                                                                 GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                                                                 capabilitiesDirectoryParticipantId,
+                                                                                                                 new ProviderQos(),
+                                                                                                                 System.currentTimeMillis(),
+                                                                                                                 expiryDateMs,
+                                                                                                                 domainAccessControllerChannelId,
+                                                                                                                 new ChannelAddress(TEST_URL,
+                                                                                                                                    capabiltitiesDirectoryChannelId));
 
-        DiscoveryEntry domainAccessControllerDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
-                                                                                                      discoveryDirectoriesDomain,
-                                                                                                      GlobalDomainAccessController.INTERFACE_NAME,
-                                                                                                      domainAccessControllerParticipantId,
-                                                                                                      new ProviderQos(),
-                                                                                                      System.currentTimeMillis(),
-                                                                                                      expiryDateMs,
-                                                                                                      domainAccessControllerChannelId,
-                                                                                                      new ChannelAddress(TEST_URL,
-                                                                                                                         domainAccessControllerChannelId));
+        GlobalDiscoveryEntry domainAccessControllerDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0,
+                                                                                                                        1),
+                                                                                                            discoveryDirectoriesDomain,
+                                                                                                            GlobalDomainAccessController.INTERFACE_NAME,
+                                                                                                            domainAccessControllerParticipantId,
+                                                                                                            new ProviderQos(),
+                                                                                                            System.currentTimeMillis(),
+                                                                                                            expiryDateMs,
+                                                                                                            domainAccessControllerChannelId,
+                                                                                                            new ChannelAddress(TEST_URL,
+                                                                                                                               domainAccessControllerChannelId));
 
-        when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(new HashSet<DiscoveryEntry>(Arrays.asList(globalCapabilitiesDirectoryDiscoveryEntry,
-                                                                                                                  domainAccessControllerDiscoveryEntry)));
-
+        when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(new HashSet<GlobalDiscoveryEntry>(Arrays.asList(globalCapabilitiesDirectoryDiscoveryEntry,
+                                                                                                                        domainAccessControllerDiscoveryEntry)));
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
                                                                         globalAddressProvider,
@@ -259,7 +260,6 @@ public class LocalCapabilitiesDirectoryTest {
                                                         channelAddressSerialized);
     }
 
-    @SuppressWarnings("unchecked")
     @Test(timeout = 1000)
     public void addCapability() throws InterruptedException {
         when(globalAddressProvider.get()).thenReturn(channelAddress);
@@ -275,7 +275,6 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(discoveryEntry.getInterfaceName(), capturedGlobalDiscoveryEntry.getInterfaceName());
     }
 
-    @SuppressWarnings("unchecked")
     @Test(timeout = 2000)
     public void addLocalOnlyCapability() throws InterruptedException {
 
@@ -297,7 +296,6 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalCapabilitiesClient, never()).add(any(Callback.class), any(GlobalDiscoveryEntry.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test(timeout = 1000)
     public void addGlobalCapSucceeds_NextAddShallNotAddGlobalAgain() throws InterruptedException {
 
@@ -349,7 +347,6 @@ public class LocalCapabilitiesDirectoryTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test(timeout = 1000)
     public void addGlobalCapFails_NextAddShallAddGlobalAgain() throws InterruptedException {
 
@@ -459,7 +456,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         when(globalDiscoveryEntryCacheMock.lookup(eq(new String[]{
                 domain1 }), eq(interfaceName1), eq(discoveryQos.getCacheMaxAgeMs())))
-                                                                                     .thenReturn(new ArrayList<DiscoveryEntry>());
+                                                                                     .thenReturn(new ArrayList<GlobalDiscoveryEntry>());
         doAnswer(createAnswer(caps)).when(globalCapabilitiesClient).lookup(any(Callback.class),
                                                                            eq(new String[]{ domain1 }),
                                                                            eq(interfaceName1),
@@ -892,7 +889,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
                                                   eq(interfaceName),
-                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(new ArrayList<DiscoveryEntry>());
+                                                  eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(new ArrayList<GlobalDiscoveryEntry>());
 
         localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos, capabilitiesCallback);
 
@@ -911,7 +908,7 @@ public class LocalCapabilitiesDirectoryTest {
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
         CapabilitiesCallback capabilitiesCallback = mock(CapabilitiesCallback.class);
 
-        List<DiscoveryEntry> entries = new ArrayList<>();
+        List<GlobalDiscoveryEntry> entries = new ArrayList<>();
         for (String domain : domains) {
             GlobalDiscoveryEntry entry = new GlobalDiscoveryEntry();
             entry.setDomain(domain);
@@ -942,7 +939,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         GlobalDiscoveryEntry entry = new GlobalDiscoveryEntry();
         entry.setDomain("domain1");
-        Collection<DiscoveryEntry> entries = Arrays.asList(entry);
+        Collection<GlobalDiscoveryEntry> entries = Arrays.asList(entry);
         when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
                                                   eq(interfaceName),
                                                   eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
@@ -971,7 +968,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         GlobalDiscoveryEntry globalEntry = new GlobalDiscoveryEntry();
         globalEntry.setDomain("domain2");
-        Collection<DiscoveryEntry> entries = Arrays.asList(globalEntry);
+        Collection<GlobalDiscoveryEntry> entries = Arrays.asList(globalEntry);
         when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
                                                   eq(interfaceName),
                                                   eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(entries);
@@ -1109,7 +1106,7 @@ public class LocalCapabilitiesDirectoryTest {
         // cached global DiscoveryEntry
         GlobalDiscoveryEntry cachedGlobalEntry = new GlobalDiscoveryEntry();
         cachedGlobalEntry.setDomain(globalDomain);
-        Collection<DiscoveryEntry> cachedEntries = Arrays.asList(cachedGlobalEntry);
+        Collection<GlobalDiscoveryEntry> cachedEntries = Arrays.asList(cachedGlobalEntry);
         when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
                                                   eq(interfaceName),
                                                   eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(cachedEntries);

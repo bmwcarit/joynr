@@ -118,7 +118,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
         assertEquals(4, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName1");
@@ -150,7 +150,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
         assertEquals(2, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
@@ -169,7 +169,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
         assertEquals(2, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries,
@@ -194,24 +194,37 @@ public class StaticCapabilitiesProvisioningTest {
         fail("Expecting legacy capabilities provisioning to fail fast.");
     }
 
-    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries, String interfaceName) {
+    private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries, String interfaceName) {
         assertContainsEntryFor(entries, interfaceName, null, null);
     }
 
-    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries,
+    private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries,
                                         String interfaceName,
                                         String participantId,
-                                        String url) {
+                                        String channelAddressUri) {
+        assertContainsEntryFor(entries, interfaceName, participantId, channelAddressUri, null);
+    }
+
+    private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries,
+                                        String interfaceName,
+                                        String participantId,
+                                        String channelAddressUri,
+                                        String mqttAddressUri) {
         boolean found = false;
         for (DiscoveryEntry entry : entries) {
             if (entry instanceof GlobalDiscoveryEntry) {
                 GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) entry;
                 if (globalDiscoveryEntry.getInterfaceName().equals(interfaceName)
                         && (participantId == null || participantId.equals(globalDiscoveryEntry.getParticipantId()))) {
-                    if (url != null) {
+                    if (channelAddressUri != null) {
                         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
                         assertTrue(address instanceof ChannelAddress);
-                        assertEquals(url, ((ChannelAddress) address).getMessagingEndpointUrl());
+                        assertEquals(channelAddressUri, ((ChannelAddress) address).getMessagingEndpointUrl());
+                    }
+                    if (mqttAddressUri != null) {
+                        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+                        assertTrue(address instanceof MqttAddress);
+                        assertEquals(mqttAddressUri, ((MqttAddress) address).getBrokerUri());
                     }
                     found = true;
                 }

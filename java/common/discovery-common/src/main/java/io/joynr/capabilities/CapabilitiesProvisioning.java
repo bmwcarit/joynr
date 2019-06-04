@@ -20,10 +20,10 @@ package io.joynr.capabilities;
 
 import java.util.Collection;
 
-import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 
 public interface CapabilitiesProvisioning {
 
-    Collection<DiscoveryEntry> getDiscoveryEntries();
+    Collection<GlobalDiscoveryEntry> getDiscoveryEntries();
 
 }
