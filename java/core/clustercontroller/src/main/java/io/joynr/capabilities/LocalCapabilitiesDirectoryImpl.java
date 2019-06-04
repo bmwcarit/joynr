@@ -93,9 +93,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private ScheduledExecutorService freshnessUpdateScheduler;
 
-    private DiscoveryEntryStore localDiscoveryEntryStore;
+    private DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
-    private DiscoveryEntryStore globalDiscoveryEntryCache;
+    private DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache;
     private final Map<String, Set<String>> globalProviderParticipantIdToGbidSetMap;
     private final long defaultDiscoveryRetryInterval;
 
@@ -147,8 +147,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LocalCapabilitiesDirectoryImpl(CapabilitiesProvisioning capabilitiesProvisioning,
                                           GlobalAddressProvider globalAddressProvider,
-                                          DiscoveryEntryStore localDiscoveryEntryStore,
-                                          DiscoveryEntryStore globalDiscoveryEntryCache,
+                                          DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStore,
+                                          DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache,
                                           MessageRouter messageRouter,
                                           GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient,
                                           ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner,

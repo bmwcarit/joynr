@@ -23,25 +23,25 @@ import java.util.Set;
 
 import joynr.types.DiscoveryEntry;
 
-public interface DiscoveryEntryStore {
+public interface DiscoveryEntryStore<T extends DiscoveryEntry> {
 
-    public abstract void add(DiscoveryEntry discoveryEntry);
+    public abstract void add(T discoveryEntry);
 
-    public abstract void add(Collection<? extends DiscoveryEntry> interfaces);
+    public abstract void add(Collection<T> interfaces);
 
     public abstract boolean remove(String participantId);
 
     public abstract void remove(Collection<String> participantIds);
 
-    public abstract Collection<DiscoveryEntry> lookup(String[] domain, String interfaceName, long cacheMaxAge);
+    public abstract Collection<T> lookup(String[] domain, String interfaceName, long cacheMaxAge);
 
-    public abstract Collection<DiscoveryEntry> lookup(String[] domain, String interfaceName);
+    public abstract Collection<T> lookup(String[] domain, String interfaceName);
 
-    public abstract DiscoveryEntry lookup(String participantId, long cacheMaxAge);
+    public abstract T lookup(String participantId, long cacheMaxAge);
 
-    public abstract Set<DiscoveryEntry> getAllDiscoveryEntries();
+    public abstract Set<T> getAllDiscoveryEntries();
 
-    public abstract boolean hasDiscoveryEntry(DiscoveryEntry discoveryEntry);
+    public abstract boolean hasDiscoveryEntry(T discoveryEntry);
 
     public abstract void touch(String clusterControllerId);
 }

@@ -74,7 +74,7 @@ public class ExpiredDiscoveryEntryCacheCleaner {
         this.cacheCleanupIntervalInMinutes = cacheCleanupIntervalInMinutes;
     }
 
-    public void scheduleCleanUpForCaches(final CleanupAction cleanupAction, final DiscoveryEntryStore... caches) {
+    public void scheduleCleanUpForCaches(final CleanupAction cleanupAction, final DiscoveryEntryStore<?>... caches) {
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -89,10 +89,10 @@ public class ExpiredDiscoveryEntryCacheCleaner {
         }, cacheCleanupIntervalInMinutes, cacheCleanupIntervalInMinutes, TimeUnit.MINUTES);
     }
 
-    private void doCleanupFor(CleanupAction cleanupAction, DiscoveryEntryStore... caches) {
+    private void doCleanupFor(CleanupAction cleanupAction, DiscoveryEntryStore<?>... caches) {
         Set<DiscoveryEntry> expiredDiscoveryEntries = new HashSet<>();
         long now = System.currentTimeMillis();
-        for (DiscoveryEntryStore cache : caches) {
+        for (DiscoveryEntryStore<? extends DiscoveryEntry> cache : caches) {
             for (DiscoveryEntry discoveryEntry : cache.getAllDiscoveryEntries()) {
                 if (discoveryEntry.getExpiryDateMs() < now) {
                     expiredDiscoveryEntries.add(discoveryEntry);

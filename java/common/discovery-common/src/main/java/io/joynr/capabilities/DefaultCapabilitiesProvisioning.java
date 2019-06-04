@@ -21,12 +21,12 @@ package io.joynr.capabilities;
 import java.util.Collection;
 import java.util.Collections;
 
-import joynr.types.DiscoveryEntry;
+import joynr.types.GlobalDiscoveryEntry;
 
 public class DefaultCapabilitiesProvisioning implements CapabilitiesProvisioning {
 
     @Override
-    public Collection<DiscoveryEntry> getDiscoveryEntries() {
+    public Collection<GlobalDiscoveryEntry> getDiscoveryEntries() {
         return Collections.emptyList();
     }
 

@@ -128,7 +128,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
         assertEquals(4, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName1");
@@ -160,7 +160,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
         assertEquals(2, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
@@ -179,7 +179,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
         assertEquals(2, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries,
@@ -206,18 +206,18 @@ public class StaticCapabilitiesProvisioningTest {
         fail("Expecting legacy capabilities provisioning to fail fast.");
     }
 
-    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries, String interfaceName) {
+    private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries, String interfaceName) {
         assertContainsEntryFor(entries, interfaceName, null, null);
     }
 
-    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries,
+    private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries,
                                         String interfaceName,
                                         String participantId,
                                         String channelAddressUri) {
         assertContainsEntryFor(entries, interfaceName, participantId, channelAddressUri, null);
     }
 
-    private void assertContainsEntryFor(Collection<DiscoveryEntry> entries,
+    private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries,
                                         String interfaceName,
                                         String participantId,
                                         String channelAddressUri,
@@ -263,7 +263,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                null,
@@ -296,7 +296,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                null,
@@ -318,7 +318,7 @@ public class StaticCapabilitiesProvisioningTest {
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<DiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
         assertEquals(3, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,

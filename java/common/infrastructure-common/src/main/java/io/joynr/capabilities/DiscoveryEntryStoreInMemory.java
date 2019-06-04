@@ -43,14 +43,14 @@ import joynr.types.GlobalDiscoveryEntry;
  * The DiscoveryEntryStore stores a list of providers and the interfaces
  * they offer.
  */
-public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
+public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements DiscoveryEntryStore<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(DiscoveryEntryStoreInMemory.class);
 
     Map<String, Long> registeredCapabilitiesTime = new HashMap<String, Long>();
     Map<String, List<String>> interfaceAddressToCapabilityMapping = new HashMap<String, List<String>>();
     Map<String, String> participantIdToCapabilityMapping = new HashMap<String, String>();
-    Map<String, DiscoveryEntry> capabilityKeyToCapabilityMapping = new HashMap<String, DiscoveryEntry>();
+    Map<String, T> capabilityKeyToCapabilityMapping = new HashMap<String, T>();
     Map<Address, List<String>> endPointAddressToCapabilityMapping = new HashMap<Address, List<String>>();
 
     // Do not sychronize on a Boolean
@@ -69,7 +69,7 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
      * capabilities .DiscoveryEntry)
      */
     @Override
-    public synchronized void add(DiscoveryEntry discoveryEntry) {
+    public synchronized void add(T discoveryEntry) {
         if (discoveryEntry.getDomain() == null || discoveryEntry.getInterfaceName() == null
                 || discoveryEntry.getParticipantId() == null) {
             String message = "discoveryEntry being registered is not complete: " + discoveryEntry;
@@ -81,7 +81,7 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
             String discoveryEntryId = domainInterfaceParticipantIdKey(discoveryEntry.getDomain(),
                                                                       discoveryEntry.getInterfaceName(),
                                                                       discoveryEntry.getParticipantId());
-            DiscoveryEntry entry = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
+            T entry = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
             // check if a DiscoveryEntry with the same Id already exists
             if (entry != null) {
                 remove(discoveryEntry.getParticipantId());
@@ -115,9 +115,9 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
     }
 
     @Override
-    public void add(Collection<? extends DiscoveryEntry> entries) {
+    public void add(Collection<T> entries) {
         if (entries != null) {
-            for (DiscoveryEntry entry : entries) {
+            for (T entry : entries) {
                 add(entry);
             }
         }
@@ -141,14 +141,14 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
         if (discoveryEntryId == null) {
             return false;
         }
-        DiscoveryEntry capability = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
+        T capability = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
 
         if (capability == null) {
             return false;
         }
 
         String domainInterfaceId = domainInterfaceKey(capability.getDomain(), capability.getInterfaceName());
-        DiscoveryEntry entry = capabilityKeyToCapabilityMapping.remove(discoveryEntryId);
+        T entry = capabilityKeyToCapabilityMapping.remove(discoveryEntryId);
         // check if a discoveryEntry with the same ID already exists
         if (entry == null) {
             return false;
@@ -190,13 +190,13 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
     }
 
     @Override
-    public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName) {
+    public Collection<T> lookup(final String[] domains, final String interfaceName) {
         return lookup(domains, interfaceName, DiscoveryQos.NO_MAX_AGE);
     }
 
     @Override
-    public Collection<DiscoveryEntry> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
-        ArrayList<DiscoveryEntry> capabilitiesList = new ArrayList<DiscoveryEntry>();
+    public Collection<T> lookup(final String[] domains, final String interfaceName, long cacheMaxAge) {
+        ArrayList<T> capabilitiesList = new ArrayList<T>();
 
         synchronized (storeLock) {
             for (String domain : domains) {
@@ -205,7 +205,7 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
                 if (matchingDiscoveryEntries != null) {
                     // check that sure cache age is OK
                     for (String capId : matchingDiscoveryEntries) {
-                        DiscoveryEntry discoveryEntry = capabilityKeyToCapabilityMapping.get(capId);
+                        T discoveryEntry = capabilityKeyToCapabilityMapping.get(capId);
 
                         if (discoveryEntry instanceof GlobalDiscoveryEntry
                                 && !checkAge(registeredCapabilitiesTime.get(capId), cacheMaxAge)) {
@@ -224,7 +224,7 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
 
     @Override
     @CheckForNull
-    public DiscoveryEntry lookup(String participantId, long cacheMaxAge) {
+    public T lookup(String participantId, long cacheMaxAge) {
 
         synchronized (storeLock) {
             String discoveryEntryId = participantIdToCapabilityMapping.get(participantId);
@@ -232,7 +232,7 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
                 return null;
             }
 
-            DiscoveryEntry discoveryEntry = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
+            T discoveryEntry = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
 
             logger.debug("Capability for participantId {} found: {}", participantId, discoveryEntry);
             if (discoveryEntry instanceof GlobalDiscoveryEntry
@@ -245,8 +245,8 @@ public class DiscoveryEntryStoreInMemory implements DiscoveryEntryStore {
     }
 
     @Override
-    public HashSet<DiscoveryEntry> getAllDiscoveryEntries() {
-        HashSet<DiscoveryEntry> allDiscoveryEntries = new HashSet<DiscoveryEntry>();
+    public HashSet<T> getAllDiscoveryEntries() {
+        HashSet<T> allDiscoveryEntries = new HashSet<T>();
 
         return allDiscoveryEntries;
 
