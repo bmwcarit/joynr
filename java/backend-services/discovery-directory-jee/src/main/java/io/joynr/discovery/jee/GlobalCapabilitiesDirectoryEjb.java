@@ -60,14 +60,14 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @SuppressWarnings("unused")
     private GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher;
 
-    private String gcdGbId;
+    private String gcdGbid;
 
     @Inject
     public GlobalCapabilitiesDirectoryEjb(EntityManager entityManager,
                                           @SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher) {
         this.entityManager = entityManager;
         this.gcdSubPublisher = gcdSubPublisher;
-        this.gcdGbId = getGcdGbid();
+        this.gcdGbid = getGcdGbid();
     }
 
     private String getGcdGbid() {
@@ -95,7 +95,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         logger.debug("Adding global discovery entry {}", globalDiscoveryEntry);
-        addInternal(globalDiscoveryEntry, gcdGbId);
+        addInternal(globalDiscoveryEntry, gcdGbid);
     }
 
     private void addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) {
@@ -128,7 +128,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) throws ApplicationException {
-        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        switch (Utilities.validateGbids(gbids, gcdGbid)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
@@ -171,7 +171,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                          String interfaceName,
                                          String[] gbids) throws ApplicationException {
         GlobalDiscoveryEntry[] globalDiscoveryEntries = null;
-        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        switch (Utilities.validateGbids(gbids, gcdGbid)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
@@ -194,7 +194,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
-        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        switch (Utilities.validateGbids(gbids, gcdGbid)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
@@ -228,7 +228,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void remove(String participantId, String[] gbids) throws ApplicationException {
-        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        switch (Utilities.validateGbids(gbids, gcdGbid)) {
         case INVALID:
             logger.error("Unable to remove participantId {}: INVALID GBIDs: {}", participantId, Arrays.toString(gbids));
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
