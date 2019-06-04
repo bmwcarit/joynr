@@ -152,7 +152,7 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
-    public void registerMultipleCapabilitiesAsArray() throws InterruptedException {
+    public void addMultipleCapabilitiesAsArray() throws InterruptedException {
 
         GlobalDiscoveryEntry[] interfaces2And3 = { discoveryEntry2, discoveryEntry3 };
         capabilitiesDirectory.add(interfaces2And3);
@@ -170,7 +170,7 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
-    public void registerCapabilityWithGBIDs() throws InterruptedException {
+    public void addAndLookupAndRemoveWithGbids_validGbid() throws InterruptedException {
         String[] gbids = { "joynrdefaultgbid" };
         PromiseKeeper addPromiseKeeper = new PromiseKeeper();
         capabilitiesDirectory.add(discoveryEntry1, gbids).then(addPromiseKeeper);
@@ -187,8 +187,8 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void registerCapabilityWithWrongGBIDs() throws InterruptedException {
-        String gbids[] = { "WRONG-GBID" };
+    public void addAndLookupAndRemoveWithGbids_unknownGbid() throws InterruptedException {
+        String gbids[] = { "unknownGbid" };
         PromiseKeeper addPromiseKeeper = new PromiseKeeper();
         PromiseKeeper lookupCapInfo = new PromiseKeeper();
         capabilitiesDirectory.add(discoveryEntry1, gbids).then(addPromiseKeeper);
@@ -201,7 +201,7 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
-    public void registerProviderAndRequestChannels() throws Exception {
+    public void addAndLookup() throws Exception {
         capabilitiesDirectory.add(discoveryEntry1);
 
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
