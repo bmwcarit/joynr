@@ -26,12 +26,10 @@ import io.joynr.capabilities.CustomParameterPersisted;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.DiscoveryEntryStorePersisted;
 import io.joynr.capabilities.ProviderQosPersisted;
-import io.joynr.endpoints.AddressPersisted;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.system.RoutingTypes.Address;
 import joynr.types.CustomParameter;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -44,7 +42,6 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
         bind(DiscoveryEntryStore.class).annotatedWith(Persisted.class).to(DiscoveryEntryStorePersisted.class);
         bind(CustomParameter.class).to(CustomParameterPersisted.class);
         bind(ProviderQos.class).to(ProviderQosPersisted.class);
-        bind(Address.class).to(AddressPersisted.class);
     }
 
     @Provides
