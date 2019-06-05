@@ -52,12 +52,12 @@ public class GcdUtilities {
 
     /**
      * @param gbids an array of gbids
-     * @param gcdGbId the name of gbid of the global capability directory
+     * @param gcdGbid the name of gbid of the global capability directory
      */
-    public static ValidateGBIDsEnum validateGbids(String[] gbids, String gcdGbId) {
-        if (gcdGbId == null || gcdGbId.isEmpty()) {
-            logger.error("Cant validate against empty gcdGbId: {}", gcdGbId);
-            throw new IllegalStateException("Cant validate against empty gcdGbId: " + gcdGbId);
+    public static ValidateGBIDsEnum validateGbids(String[] gbids, String gcdGbid) {
+        if (gcdGbid == null || gcdGbid.isEmpty()) {
+            logger.error("Cannot validate against empty gcdGbid: {}", gcdGbid);
+            throw new IllegalStateException("Cannot validate against empty gcdGbid: " + gcdGbid);
         }
         if (gbids == null || gbids.length == 0) {
             logger.error("INVALID_GBID: provided list of GBIDs is null or empty.");
@@ -68,7 +68,7 @@ public class GcdUtilities {
         } else if (gbids[0] == null || gbids[0].isEmpty()) {
             logger.error("INVALID_GBID: provided GBID is null or empty: {}.", gbids[0]);
             return ValidateGBIDsEnum.INVALID;
-        } else if (!gcdGbId.equals(gbids[0])) {
+        } else if (!gcdGbid.equals(gbids[0])) {
             logger.error("UNKNOWN_GBID: {}", gbids[0]);
             return ValidateGBIDsEnum.UNKNOWN;
         }
