@@ -18,6 +18,10 @@
  */
 package io.joynr.accesscontrol.global;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Properties;
@@ -27,7 +31,7 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
+import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
@@ -36,10 +40,14 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
+import joynr.infrastructure.GlobalDomainAccessControlListEditorProvider;
 import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
+import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 import joynr.infrastructure.GlobalDomainRoleControllerAbstractProvider;
+import joynr.infrastructure.GlobalDomainRoleControllerProvider;
 import joynr.types.ProviderQos;
 
 public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplication {
@@ -67,6 +75,26 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
     private static Module getRuntimeModule(Properties joynrConfig) {
         joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
         joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+
+        Properties joynrDefaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
+
+        if (joynrDefaultProperties.containsKey(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID)) {
+            joynrConfig.put(ParticipantIdKeyUtil.getProviderParticipantIdKey("io.joynr",
+                                                                             GlobalDomainAccessControllerProvider.class),
+                            joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID));
+        }
+
+        if (joynrDefaultProperties.containsKey(PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID)) {
+            joynrConfig.put(ParticipantIdKeyUtil.getProviderParticipantIdKey("io.joynr",
+                                                                             GlobalDomainAccessControlListEditorProvider.class),
+                            joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID));
+        }
+
+        if (joynrDefaultProperties.containsKey(PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID)) {
+            joynrConfig.put(ParticipantIdKeyUtil.getProviderParticipantIdKey("io.joynr",
+                                                                             GlobalDomainRoleControllerProvider.class),
+                            joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID));
+        }
 
         return Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule(),
                                                                      new GlobalDomainAccessControllerModule());
