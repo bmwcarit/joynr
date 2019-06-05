@@ -30,8 +30,8 @@ import com.google.inject.name.Named;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityUtils;
-import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
+import io.joynr.capabilities.GlobalDiscoveryEntryPersistedStorePersisted;
 import io.joynr.capabilities.directory.util.GcdUtilities;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -53,11 +53,11 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryImpl.class);
     public static final String GCD_GBID = "joynr.gcd.gbid";
 
-    private DiscoveryEntryStore discoveryEntryStore;
+    private GlobalDiscoveryEntryPersistedStorePersisted discoveryEntryStore;
     private String gcdGbId;
 
     @Inject
-    public CapabilitiesDirectoryImpl(@Persisted DiscoveryEntryStore discoveryEntryStore,
+    public CapabilitiesDirectoryImpl(GlobalDiscoveryEntryPersistedStorePersisted discoveryEntryStore,
                                      @Named(GCD_GBID) String gcdGbId) {
         this.discoveryEntryStore = discoveryEntryStore;
         this.gcdGbId = gcdGbId;
@@ -191,7 +191,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                      domains,
                      interfaceName,
                      Arrays.toString(gbids));
-        Collection<DiscoveryEntry> discoveryEntries = discoveryEntryStore.lookup(domains, interfaceName);
+        Collection<GlobalDiscoveryEntryPersisted> discoveryEntries = discoveryEntryStore.lookup(domains, interfaceName);
         GlobalDiscoveryEntry[] globalDiscoveryEntries = new GlobalDiscoveryEntry[discoveryEntries.size()];
         int index = 0;
         for (DiscoveryEntry discoveryEntry : discoveryEntries) {

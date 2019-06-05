@@ -66,7 +66,7 @@ public class DiscoveryEntryStorePersistedTest {
 
             @Override
             protected void configure() {
-                bind(DiscoveryEntryStore.class).to(DiscoveryEntryStorePersisted.class);
+                bind(DiscoveryEntryStore.class).to(GlobalDiscoveryEntryPersistedStorePersisted.class);
                 bind(DiscoveryEntry.class).to(GlobalDiscoveryEntryPersisted.class);
                 bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
             }

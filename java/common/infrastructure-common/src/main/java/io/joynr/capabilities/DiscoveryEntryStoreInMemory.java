@@ -41,7 +41,7 @@ import joynr.types.GlobalDiscoveryEntry;
 
 /**
  * The DiscoveryEntryStore stores a list of providers and the interfaces
- * they offer.
+ * they offer (DiscoveryEntry).
  */
 public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements DiscoveryEntryStore<T> {
 
