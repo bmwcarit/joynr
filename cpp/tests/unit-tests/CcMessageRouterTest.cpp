@@ -34,6 +34,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
@@ -50,6 +51,7 @@
 #include "tests/mock/MockAccessController.h"
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
+#include "tests/mock/MockMessageSender.h"
 #include "tests/mock/MockMessagingMulticastSubscriber.h"
 
 using ::testing::_;
@@ -474,7 +476,7 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
 
     Mock::VerifyAndClearExpectations(messagingStubFactory.get());
 
-    // when the next publication is routed, the factory is no longer asked to create a 
+    // when the next publication is routed, the factory is no longer asked to create a
     // WebSocketMessagingStub for the first runtime, since there are no subscribers
     // left related to this runtime
 
@@ -1563,4 +1565,90 @@ TEST_F(CcMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedInRoutin
     EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
     EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
 
+}
+
+TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable)
+{
+    const std::string subscriberParticipantId("subscriberPartId");
+    const std::string providerParticipantId("providerParticipantId");
+    const std::string consumerRuntimeWebSocketClientAddressString(
+            "ConsumerRuntimeWebSocketAddress1");
+    const std::string providerRuntimeWebSocketClientAddressString(
+            "ProviderRuntimeWebSocketAddress1");
+
+    auto subscriberAddress =
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
+                    consumerRuntimeWebSocketClientAddressString);
+    auto providerAddress =
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
+                    providerRuntimeWebSocketClientAddressString);
+
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    const bool isProviderGloballyVisible = false;
+
+    auto mockMessageSender = std::make_shared<MockMessageSender>();
+
+    messageRouter->setMessageSender(mockMessageSender);
+
+    messageRouter->addNextHop(
+                subscriberParticipantId,
+                subscriberAddress,
+                DEFAULT_IS_GLOBALLY_VISIBLE,
+                expiryDateMs,
+                isSticky);
+    messageRouter->addNextHop(
+                providerParticipantId,
+                providerAddress,
+                isProviderGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    // Prepare a SubcriptionPublication message from provider to subscriber
+
+    std::string subscriptionId = "subscriptionId";
+    MutableMessageFactory mutableMessageFactory;
+    MessagingQos qos = MessagingQos(456000);
+    SubscriptionPublication subscriptionPublication;
+    subscriptionPublication.setSubscriptionId(subscriptionId);
+    MutableMessage subscriptionPublicationMutableMessage =
+        mutableMessageFactory.createSubscriptionPublication(
+                providerParticipantId,
+                subscriberParticipantId,
+                qos,
+                subscriptionPublication
+        );
+
+    // consumer runtime is unreachable, so the creation of a WebSocketMessagingStub fails;
+    // the factory returns an empty IMessagingStub in this case
+
+    EXPECT_CALL(
+            *messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
+                                    Eq(consumerRuntimeWebSocketClientAddressString)))))))
+            .Times(1)
+            .WillRepeatedly(Return(std::shared_ptr<IMessagingStub>()));
+
+    // messageSender should be invoked to send faked SubscriptionStop message for same subscriptionId
+    // from subscriber to the provider to end the ghost subscription
+
+    EXPECT_CALL(
+            *mockMessageSender,
+            sendSubscriptionStop(
+                Eq(subscriberParticipantId), // sender participantId
+                Eq(providerParticipantId), // recipient participantId
+                _, // MessagingQos
+                Property(&SubscriptionStop::getSubscriptionId, Eq(subscriptionId)) // SubscriptionStop object to send
+                )).Times(1);
+
+    messageRouter->route(subscriptionPublicationMutableMessage.getImmutableMessage());
+    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+
+    // cleanup
+    messageRouter->removeNextHop(subscriberParticipantId);
+    messageRouter->removeNextHop(providerParticipantId);
 }
