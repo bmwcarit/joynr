@@ -32,7 +32,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
-import io.joynr.capabilities.directory.util.Utilities;
+import io.joynr.capabilities.directory.util.GcdUtilities;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
@@ -81,7 +81,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public Promise<Add1Deferred> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
         Add1Deferred deferred = new Add1Deferred();
         Promise<Add1Deferred> promise = new Promise<Add1Deferred>(deferred);
-        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbId)) {
         case INVALID:
             deferred.reject(DiscoveryError.INVALID_GBID);
             break;
@@ -152,7 +152,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public Promise<Remove1Deferred> remove(String participantId, String[] gbids) {
         Remove1Deferred deferred = new Remove1Deferred();
         Promise<Remove1Deferred> promise = new Promise<Remove1Deferred>(deferred);
-        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbId)) {
         case INVALID:
             deferred.reject(DiscoveryError.INVALID_GBID);
             break;
@@ -208,7 +208,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         Lookup2Deferred deferred = new Lookup2Deferred();
         Promise<Lookup2Deferred> promise = new Promise<Lookup2Deferred>(deferred);
         GlobalDiscoveryEntry[] globalDiscoveryEntries = null;
-        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbId)) {
         case INVALID:
             deferred.reject(DiscoveryError.INVALID_GBID);
             break;
@@ -254,7 +254,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
         Lookup4Deferred deferred = new Lookup4Deferred();
         Promise<Lookup4Deferred> promise = new Promise<Lookup4Deferred>(deferred);
-        switch (Utilities.validateGbids(gbids, gcdGbId)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbId)) {
         case INVALID:
             deferred.reject(DiscoveryError.INVALID_GBID);
             break;

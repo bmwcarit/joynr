@@ -28,7 +28,7 @@ import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.util.Modules;
 
-import io.joynr.capabilities.directory.util.Utilities;
+import io.joynr.capabilities.directory.util.GcdUtilities;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
@@ -54,7 +54,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
 
         joynrConfig.put(CapabilitiesDirectoryImpl.GCD_GBID,
-                        Utilities.loadDefaultGbidsFromDefaultMessagingProperties()[0]);
+                        GcdUtilities.loadDefaultGbidsFromDefaultMessagingProperties()[0]);
 
         return Modules.override(new JpaPersistModule("CapabilitiesDirectory"), new CCInProcessRuntimeModule())
                       .with(new MqttPahoModule(), new CapabilitiesDirectoryModule());

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
-import io.joynr.capabilities.directory.util.Utilities;
+import io.joynr.capabilities.directory.util.GcdUtilities;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import io.joynr.runtime.PropertyLoader;
@@ -76,7 +76,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         String gcdGbid = PropertyLoader.getPropertiesWithPattern(envPropertiesAll, CapabilitiesDirectoryImpl.GCD_GBID)
                                        .getProperty(CapabilitiesDirectoryImpl.GCD_GBID);
         if (gcdGbid == null || gcdGbid.isEmpty()) {
-            gcdGbid = Utilities.loadDefaultGbidsFromDefaultMessagingProperties()[0];
+            gcdGbid = GcdUtilities.loadDefaultGbidsFromDefaultMessagingProperties()[0];
         }
         return gcdGbid;
     }
@@ -128,7 +128,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) throws ApplicationException {
-        switch (Utilities.validateGbids(gbids, gcdGbid)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
@@ -171,7 +171,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                          String interfaceName,
                                          String[] gbids) throws ApplicationException {
         GlobalDiscoveryEntry[] globalDiscoveryEntries = null;
-        switch (Utilities.validateGbids(gbids, gcdGbid)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
@@ -194,7 +194,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     @Override
     public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
-        switch (Utilities.validateGbids(gbids, gcdGbid)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
@@ -228,7 +228,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void remove(String participantId, String[] gbids) throws ApplicationException {
-        switch (Utilities.validateGbids(gbids, gcdGbid)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid)) {
         case INVALID:
             logger.error("Unable to remove participantId {}: INVALID GBIDs: {}", participantId, Arrays.toString(gbids));
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
