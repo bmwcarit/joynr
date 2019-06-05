@@ -41,8 +41,6 @@ import joynr.infrastructure.GlobalDomainAccessControlListEditorAbstractProvider;
 public class GlobalDomainAccessControlListEditorProviderImpl
         extends GlobalDomainAccessControlListEditorAbstractProvider {
 
-    private static final String DUMMY_USERID = "dummyUserId";
-
     private final DomainAccessControlStore domainAccessStore;
     private GlobalDomainAccessControllerProviderImpl domainAccessControllerProvider;
 
@@ -68,8 +66,7 @@ public class GlobalDomainAccessControlListEditorProviderImpl
         UpdateMasterAccessControlEntryDeferred deferred = new UpdateMasterAccessControlEntryDeferred();
 
         // Unless the userId has Role.MASTER, they may not change Master ACL
-        // TODO: we need the user ID of the user that is updating the ACE
-        if (!hasRoleMaster(DUMMY_USERID, updatedMasterAccessControlEntry.getDomain())) {
+        if (!hasRoleMaster(getCallContext().getPrincipal(), updatedMasterAccessControlEntry.getDomain())) {
             deferred.resolve(false);
         } else {
             boolean updateSuccess = domainAccessStore.updateMasterAccessControlEntry(updatedMasterAccessControlEntry);
@@ -130,8 +127,7 @@ public class GlobalDomainAccessControlListEditorProviderImpl
         UpdateMediatorAccessControlEntryDeferred deferred = new UpdateMediatorAccessControlEntryDeferred();
 
         // Unless the userId has Role.MASTER, they may not change Mediator ACL
-        // TODO: we need the user ID of the user that is updating the ACE
-        if (!hasRoleMaster(DUMMY_USERID, updatedMediatorAccessControlEntry.getDomain())) {
+        if (!hasRoleMaster(getCallContext().getPrincipal(), updatedMediatorAccessControlEntry.getDomain())) {
             deferred.resolve(false);
         } else {
             boolean updateSuccess = domainAccessStore.updateMediatorAccessControlEntry(updatedMediatorAccessControlEntry);
@@ -184,8 +180,7 @@ public class GlobalDomainAccessControlListEditorProviderImpl
         UpdateOwnerAccessControlEntryDeferred deferred = new UpdateOwnerAccessControlEntryDeferred();
 
         // Unless the userId has Role.MASTER, they may not change Owner ACL
-        // TODO: we need the user ID of the user that is updating the ACE
-        if (!hasRoleMaster(DUMMY_USERID, updatedOwnerAccessControlEntry.getDomain())) {
+        if (!hasRoleMaster(getCallContext().getPrincipal(), updatedOwnerAccessControlEntry.getDomain())) {
             deferred.resolve(false);
         } else {
             boolean updateSuccess = domainAccessStore.updateOwnerAccessControlEntry(updatedOwnerAccessControlEntry);

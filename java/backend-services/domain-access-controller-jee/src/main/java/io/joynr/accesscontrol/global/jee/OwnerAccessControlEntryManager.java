@@ -97,6 +97,7 @@ public class OwnerAccessControlEntryManager {
         if (!domainRoleEntryManager.hasCurrentUserGotRoleForDomain(Role.OWNER, updatedOwnerAce.getDomain())) {
             return null;
         }
+        // TODO validate updateOwnerAce with AceValidator, see GlobalDomainAccessControlListEditorProviderImpl.updateOwnerAccessControlEntry and DomainAccessControlStoreEhCache.updateOwnerAccessControlEntry
         OwnerAccessControlEntryEntity entity = findByUserIdDomainInterfaceNameAndOperation(updatedOwnerAce.getUid(),
                                                                                            updatedOwnerAce.getDomain(),
                                                                                            updatedOwnerAce.getInterfaceName(),

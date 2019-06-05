@@ -62,6 +62,7 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
+import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.infrastructure.GlobalDomainAccessControlListEditorProxy;
 import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.test.JoynrTestLoggingRule;
@@ -214,6 +215,8 @@ public class AccessControllerEnd2EndTest {
         testEntry.setInterfaceName(interfaceName);
         testEntry.setDefaultConsumerPermission(permission);
         testEntry.setOperation(operationName);
+        testEntry.setPossibleConsumerPermissions(new Permission[]{ Permission.YES, Permission.NO });
+        testEntry.setPossibleRequiredTrustLevels(new TrustLevel[]{ testEntry.getDefaultRequiredTrustLevel() });
 
         List<MasterAccessControlEntry> provisionedACEs = new ArrayList<MasterAccessControlEntry>();
         provisionedACEs.add(testEntry);
