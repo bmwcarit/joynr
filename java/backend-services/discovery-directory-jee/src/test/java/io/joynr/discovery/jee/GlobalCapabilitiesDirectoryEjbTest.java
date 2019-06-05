@@ -394,7 +394,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void testRemoveWithGbids_invalidGbid_wmptyGbidsArray() throws ApplicationException {
+    public void testRemoveWithGbids_invalidGbid_emptyGbidsArray() throws ApplicationException {
         final String[] invalidGbidsArray = {};
         testRemoveWithGbids_invalidGbid(invalidGbidsArray);
     }
