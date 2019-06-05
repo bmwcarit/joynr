@@ -24,12 +24,8 @@
 		<jta-data-source>joynr/DiscoveryDirectoryDS</jta-data-source>
 
 		<class>io.joynr.capabilities.GlobalDiscoveryEntryPersisted</class>
-		<class>joynr.types.ProviderQos</class>
-		<class>io.joynr.capabilities.CapabilityEntryPersisted</class>
 		<class>io.joynr.capabilities.CustomParameterPersisted</class>
 		<class>io.joynr.capabilities.ProviderQosPersisted</class>
-		<class>io.joynr.endpoints.EndpointAddressBasePersisted</class>
-		<class>io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted</class>
 
 		<properties>
 			<property name="javax.persistence.schema-generation.database.action" value="drop-and-create" />

@@ -28,11 +28,8 @@
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
 		<class>io.joynr.capabilities.GlobalDiscoveryEntryPersisted</class>
-		<class>io.joynr.capabilities.CapabilityEntryPersisted</class>
 		<class>io.joynr.capabilities.CustomParameterPersisted</class>
 		<class>io.joynr.capabilities.ProviderQosPersisted</class>
-		<class>io.joynr.endpoints.EndpointAddressBasePersisted</class>
-		<class>io.joynr.endpoints.JoynrMessagingEndpointAddressPersisted</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver" />
