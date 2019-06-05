@@ -21,7 +21,6 @@ package io.joynr.tools.generator.gradle
 
 
 import io.joynr.generator.Executor
-import io.joynr.generator.util.InvocationArguments
 import org.gradle.api.logging.Logger
 
 open class JoynrGeneratorHandler(private val logger: Logger,
@@ -35,7 +34,7 @@ open class JoynrGeneratorHandler(private val logger: Logger,
         if (!joynrGeneratorArgumentHandler.shouldGeneratorBeExecuted())
             return
         logger.quiet("Executing Joynr generator with argument hash " +
-                "<${generatorArguments.parameterHashCode}>")
+                "<${generatorArguments.hashCodeForParameterCombination}>")
         val executor = Executor(generatorArguments)
         executor.generate()
         logger.info("Joynr generator gradle plugin executed successfully!")

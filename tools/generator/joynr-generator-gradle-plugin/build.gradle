@@ -35,9 +35,12 @@ repositories {
 }
 
 dependencies {
-    compile gradleApi()
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compile "io.joynr.tools.generator:generator-framework:$joynrVersion"
+    implementation gradleApi()
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "io.joynr.tools.generator:generator-framework:$joynrVersion"
+    implementation "io.joynr.tools.generator:java-generator:$joynrVersion"
+    // force same version of antlr as generator in order to avoid conflicts
+    implementation "org.antlr:antlr-runtime:3.2"
 }
 
 compileKotlin {
@@ -67,3 +70,11 @@ publishing {
         }
     }
 }
+
+// publish to Maven local only if compilation was successful
+publishToMavenLocal.onlyIf {
+    !tasks.compileKotlin.state.failure
+}
+
+// finalize compilation by publishing to Maven local
+compileKotlin.finalizedBy 'publishToMavenLocal'

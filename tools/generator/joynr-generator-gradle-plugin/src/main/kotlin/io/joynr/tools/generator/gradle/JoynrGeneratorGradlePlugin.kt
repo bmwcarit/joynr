@@ -18,25 +18,66 @@
  */
 package io.joynr.tools.generator.gradle
 
-
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class JoynrGeneratorGradlePlugin : Plugin<Project> {
 
+    companion object {
+        const val JOYNR_GENERATOR_EXTENSION_NAME = "joynrGenerator"
+        const val JOYNR_GENERATE_TASK_NAME = "joynrGenerate"
+        const val CLEAN_TASK_NAME = "clean"
+        private const val COMPILE_TASK = "compile"
+        const val TASK_NAME_MATCHER_STRING = "^$COMPILE_TASK\\w*"
+    }
+
     override fun apply(project: Project) {
-        val extension = project.extensions.create("joynrGenerator", JoynrGeneratorPluginExtension::class.java, project)
-        val joynrGeneratorArgumentHandler = JoynrGeneratorArgumentHandler(project.logger,
-                extension.modelPath, extension.outputPath, extension.generationLanguage,
-                extension.rootGenerator, extension.generationId, extension.skip,
-                extension.addVersionTo, extension.extraParameters)
-        project.tasks.create("joynr-generate", JoynrGeneratorTask::class.java) { generatorTask ->
-            generatorTask.joynrGeneratorHandler = JoynrGeneratorHandler(project.logger, joynrGeneratorArgumentHandler)
+        val extension = project.extensions.create(
+            JOYNR_GENERATOR_EXTENSION_NAME,
+            JoynrGeneratorPluginExtension::class.java,
+            project
+        )
+
+        val joynrGeneratorArgumentHandler = JoynrGeneratorArgumentHandler(
+            project.logger,
+            extension.modelPath, extension.outputPath, extension.generationLanguage,
+            extension.rootGenerator, extension.generationId, extension.skip,
+            extension.addVersionTo, extension.extraParameters
+        )
+
+        project.tasks.create(
+            JOYNR_GENERATE_TASK_NAME,
+            JoynrGeneratorTask::class.java
+        ) { generatorTask ->
+            generatorTask.joynrGeneratorHandler =
+                JoynrGeneratorHandler(project.logger, joynrGeneratorArgumentHandler)
         }
-        project.tasks.getByName("clean").doLast {
-            joynrGeneratorArgumentHandler.setClean(true)
-            val generatorHandler = JoynrGeneratorHandler(project.logger, joynrGeneratorArgumentHandler)
-            generatorHandler.execute()
+
+        project.tasks.findByName(CLEAN_TASK_NAME)?.let {
+            it.doLast {
+                joynrGeneratorArgumentHandler.setClean(true)
+                val generatorHandler =
+                    JoynrGeneratorHandler(project.logger, joynrGeneratorArgumentHandler)
+                generatorHandler.execute()
+            }
+        }
+
+        project.afterEvaluate {
+            project.tasks.forEach {
+                when {
+                    it.name.matches(TASK_NAME_MATCHER_STRING.toRegex()) -> {
+                        // add joynr generate task as a dependency for the appropriate tasks, so we
+                        // automatically generate code when developers build project with a correctly
+                        // configured joynr generator
+                        it.dependsOn(project.tasks.getByName(JOYNR_GENERATE_TASK_NAME))
+                    }
+
+                    else -> {
+                        // do nothing
+                    }
+                }
+            }
         }
     }
+
 }

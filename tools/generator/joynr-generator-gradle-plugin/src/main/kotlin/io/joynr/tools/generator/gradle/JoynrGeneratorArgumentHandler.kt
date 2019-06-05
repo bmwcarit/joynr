@@ -47,6 +47,13 @@ class JoynrGeneratorArgumentHandler(private val logger: Logger,
                                     var addVersionTo: Property<String>,
                                     var extraParameters: Property<Map<*, *>>) {
 
+    companion object {
+        // default values for code generation
+        private const val DEFAULT_LANGUAGE = "java"
+        private const val DEFAULT_MODEL_PATH = "app/src/main/model/"
+        private const val DEFAULT_OUTPUT_PATH = "app/src/main/java/"
+    }
+
     private var doClean: Boolean = false
 
     val isSkipFlagSet: Boolean
@@ -58,16 +65,20 @@ class JoynrGeneratorArgumentHandler(private val logger: Logger,
         if (extraParameters.isPresent) {
             extraParametersStringMap = extractStringEntriesFromMap(extraParameters.get())
         }
+        val defaultLanguage = if (generationLanguage.orNull == null) DEFAULT_LANGUAGE else generationLanguage.get()
+        val defaultModelPath = if (modelPath.orNull == null) DEFAULT_MODEL_PATH else modelPath.get()
+        val defaultOutputPath = if (outputPath.orNull == null) DEFAULT_OUTPUT_PATH else outputPath.get()
+
         invocationArguments.let {
             it.setClean(doClean)
             it.setGenerate(!doClean)
-            it.modelPath = modelPath.orNull
-            it.outputPath = outputPath.orNull
+            it.modelPath = defaultModelPath
+            it.outputPath = defaultOutputPath
             it.rootGenerator = rootGenerator.orNull
             try {
-                it.setGenerationLanguage(generationLanguage.orNull)
+                it.setGenerationLanguage(defaultLanguage)
             } catch (e: IllegalArgumentException) {
-                logger.error("""The specified generation language is not valid: ${generationLanguage.orNull}""")
+                logger.error("The specified generation language is not valid: $defaultLanguage")
                 e.printStackTrace()
             }
             it.generationId = generationId.orNull
