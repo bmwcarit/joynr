@@ -233,8 +233,8 @@ class ProxyOperation {
      * @name ProxyOperation
      *
      * @param {Object} parent is the proxy object that contains this attribute
-     * @param {String} parent.fromParticipantId of the proxy itself
-     * @param {String} parent.toParticipantId of the provider being addressed
+     * @param {String} parent.proxyParticipantId - participantId of the proxy itself
+     * @param {String} parent.providerDiscoveryEntry.participantId - participantId of the provider being addressed
      * @param {Object} settings the settings object for this function call
      * @param {DiscoveryQos} settings.discoveryQos the Quality of Service parameters for arbitration
      * @param {MessagingQos} settings.messagingQos the Quality of Service parameters for messaging
