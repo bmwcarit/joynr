@@ -26,14 +26,14 @@ const asRead = (function() {
 
     function curryGet(context) {
         /**
-                 * Getter for attribute
-                 *
-                 * @name ProxyAttribute#get
-                 * @function
-                 *
-                 * @param {Object} [settings] the settings object for this function call
-                 * @returns {Object} returns an A+ promise object
-                 */
+         * Getter for attribute
+         *
+         * @name ProxyAttribute#get
+         * @function
+         *
+         * @param {Object} [settings] the settings object for this function call
+         * @returns {Object} returns an A+ promise object
+         */
         return function get(settings) {
             // ensure settings variable holds a valid object and initialize
             // deferred object
@@ -169,8 +169,8 @@ class ProxyAttribute {
      * @name ProxyAttribute
      *
      * @param {Object} parent - the proxy object that contains this attribute
-     * @param {String} parent.fromParticipantId - participantId of the proxy itself
-     * @param {String} parent.toParticipantId - participantId of the provider being addressed
+     * @param {String} parent.proxyParticipantId - participantId of the proxy itself
+     * @param {String} parent.providerDiscoveryEntry.participantId - participantId of the provider being addressed
      * @param {Object} settings - the settings object for this function call
      * @param {Object} settings.dependencies - the dependencies object for this function call
      * @param {RequestReplyManager} settings.dependencies.requestReplyManager
