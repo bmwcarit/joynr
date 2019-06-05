@@ -23,8 +23,6 @@ import com.google.inject.Provides;
 import com.google.inject.name.Named;
 
 import io.joynr.capabilities.CustomParameterPersisted;
-import io.joynr.capabilities.DiscoveryEntryStore;
-import io.joynr.capabilities.DiscoveryEntryStorePersisted;
 import io.joynr.capabilities.ProviderQosPersisted;
 import io.joynr.endpoints.AddressPersisted;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -41,7 +39,6 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
-        bind(DiscoveryEntryStore.class).annotatedWith(Persisted.class).to(DiscoveryEntryStorePersisted.class);
         bind(CustomParameter.class).to(CustomParameterPersisted.class);
         bind(ProviderQos.class).to(ProviderQosPersisted.class);
         bind(Address.class).to(AddressPersisted.class);

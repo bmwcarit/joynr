@@ -29,8 +29,8 @@ import com.google.inject.Singleton;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityUtils;
-import io.joynr.capabilities.DiscoveryEntryStore;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
+import io.joynr.capabilities.GlobalDiscoveryEntryPersistedStorePersisted;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
@@ -50,10 +50,10 @@ import joynr.types.GlobalDiscoveryEntry;
 public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryImpl.class);
 
-    private DiscoveryEntryStore discoveryEntryStore;
+    private GlobalDiscoveryEntryPersistedStorePersisted discoveryEntryStore;
 
     @Inject
-    public CapabilitiesDirectoryImpl(@Persisted DiscoveryEntryStore discoveryEntryStore) {
+    public CapabilitiesDirectoryImpl(GlobalDiscoveryEntryPersistedStorePersisted discoveryEntryStore) {
         this.discoveryEntryStore = discoveryEntryStore;
     }
 
@@ -121,8 +121,16 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<Lookup1Deferred> lookup(final String[] domains, final String interfaceName) {
         Lookup1Deferred deferred = new Lookup1Deferred();
-        logger.debug("Searching channels for domains: {} interfaceName: {}", domains, interfaceName);
-        Collection<DiscoveryEntry> discoveryEntries = discoveryEntryStore.lookup(domains, interfaceName);
+        GlobalDiscoveryEntry[] globalDiscoveryEntries = lookupInternal(domains, interfaceName);
+        deferred.resolve(globalDiscoveryEntries);
+        return new Promise<Lookup1Deferred>(deferred);
+    }
+
+    private GlobalDiscoveryEntry[] lookupInternal(final String[] domains, final String interfaceName) {
+        logger.debug("Searching for global discovery entries for domains: {} interfaceName: {}",
+                     domains,
+                     interfaceName);
+        Collection<GlobalDiscoveryEntryPersisted> discoveryEntries = discoveryEntryStore.lookup(domains, interfaceName);
         GlobalDiscoveryEntry[] globalDiscoveryEntries = new GlobalDiscoveryEntry[discoveryEntries.size()];
         int index = 0;
         for (DiscoveryEntry discoveryEntry : discoveryEntries) {
@@ -131,8 +139,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             globalDiscoveryEntries[index] = new GlobalDiscoveryEntry((GlobalDiscoveryEntry) discoveryEntry);
             index++;
         }
-        deferred.resolve(globalDiscoveryEntries);
-        return new Promise<Lookup1Deferred>(deferred);
+        return globalDiscoveryEntries;
     }
 
     @Override
