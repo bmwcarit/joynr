@@ -19,7 +19,6 @@
 package io.joynr.examples.jee;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -50,8 +49,6 @@ public class RadioConsumerRestEndpoint {
     private ServiceLocator serviceLocator;
 
     private volatile RadioSync radioClient;
-
-    private ReentrantLock radioClientLock = new ReentrantLock();
 
     @Inject
     public RadioConsumerRestEndpoint(ServiceLocator serviceLocator) {
@@ -98,8 +95,7 @@ public class RadioConsumerRestEndpoint {
 
     private RadioSync getRadioClient() {
         if (radioClient == null) {
-            radioClientLock.lock();
-            try {
+            synchronized (this) {
                 if (radioClient == null) {
                     CompletableFuture<RadioSync> future = serviceLocator.builder(RadioSync.class,
                                                                                  "io.joynr.examples.jee.provider")
@@ -115,8 +111,6 @@ public class RadioConsumerRestEndpoint {
                         throw new RuntimeException("Radio proxy creation failed.", e);
                     }
                 }
-            } finally {
-                radioClientLock.unlock();
             }
         }
         return radioClient;
