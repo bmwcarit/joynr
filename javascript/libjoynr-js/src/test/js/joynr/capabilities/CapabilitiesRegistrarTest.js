@@ -69,7 +69,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             supportsOnChangeSubscriptions: true
         });
 
-        provider.myAttribute = new ProviderAttribute(
+        provider.myAttribute = new ProviderAttribute.ProviderReadWriteNotifyAttribute(
             provider,
             {
                 dependencies: {
@@ -77,8 +77,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
                 }
             },
             "myAttribute",
-            "Boolean",
-            "NOTIFYREADWRITE"
+            "Boolean"
         );
         domain = "testdomain";
         participantId = "myParticipantId";

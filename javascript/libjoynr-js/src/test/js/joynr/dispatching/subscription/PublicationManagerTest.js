@@ -192,28 +192,25 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
             selective: false
         });
 
-        testAttribute = new ProviderAttribute(
+        testAttribute = new ProviderAttribute.ProviderReadWriteNotifyAttribute(
             provider,
             providerSettings,
             testAttributeName,
-            "Boolean",
-            "NOTIFYREADWRITE"
+            "Boolean"
         );
 
-        asyncTestAttribute = new ProviderAttribute(
+        asyncTestAttribute = new ProviderAttribute.ProviderReadWriteNotifyAttribute(
             provider,
             providerSettings,
             asyncTestAttributeName,
-            "Boolean",
-            "NOTIFYREADWRITE"
+            "Boolean"
         );
 
-        testAttributeNotNotifiable = new ProviderAttribute(
+        testAttributeNotNotifiable = new ProviderAttribute.ProviderReadWriteAttribute(
             provider,
             providerSettings,
             testAttributeNotNotifiableName,
-            "Boolean",
-            "READWRITE"
+            "Boolean"
         );
 
         provider[testAttributeName] = testAttribute;
