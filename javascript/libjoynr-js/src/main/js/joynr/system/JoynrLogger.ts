@@ -56,19 +56,12 @@ export default class JoynrLogger {
 
     private name: string;
 
-    // ts-ignore to keep interface without ?
-    // @ts-ignore
-    public trace: LoggingFunction;
-    // @ts-ignore
-    public debug: LoggingFunction;
-    // @ts-ignore
-    public info: LoggingFunction;
-    // @ts-ignore
-    public warn: LoggingFunction;
-    // @ts-ignore
-    public error: LoggingFunction;
-    // @ts-ignore
-    public fatal: LoggingFunction;
+    public trace!: LoggingFunction;
+    public debug!: LoggingFunction;
+    public info!: LoggingFunction;
+    public warn!: LoggingFunction;
+    public error!: LoggingFunction;
+    public fatal!: LoggingFunction;
 
     private static trace: LoggingFunction = JoynrLogger.createLog(JoynrLogger.LogLevel.TRACE);
     private static debug: LoggingFunction = JoynrLogger.createLog(JoynrLogger.LogLevel.DEBUG);
@@ -80,8 +73,7 @@ export default class JoynrLogger {
     private static level: LogLevel = "off";
     private static output: Function = noop;
 
-    // @ts-ignore
-    private log: Function;
+    private log!: Function;
     private format?: Function;
 
     public constructor(name: string = "root") {
