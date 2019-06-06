@@ -10,6 +10,12 @@ None.
 ## Other changes
 * **[JS]** Fixed a bug where fixed participantIds used for provider registrations
   were not getting stored causing provider unregistration to fail.
+* **[C++]** Clustercontroller attempts to auto-unsubcribe a consumer proxy's
+  attribute or filtered (selective) broadcast subscription at the associated provider
+  when a providers's publication for that subscriptionId cannot be delivered via websocket
+  to the consumer proxy (e.g. because the related application has exited without graceful
+  shutdown). This is an emergency measure and currently only available when unencrypted
+  messaging is used.
 
 ## Configuration property changes
 * **[Java]** Renamed property `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS` to
