@@ -443,6 +443,76 @@ __IMPORTANT__: if you intend to have your logic make multiple calls to the same
 provider, then you should locally cache the proxy instance returned by the
 ServiceLocator, as the operation of creating a proxy is expensive.
 
+#### Proxy Futures and Callbacks
+
+When using the builder API you can optinally also provide a callback instance or request you be
+returned a `CompletableFuture` for the proxy in order to be able to wait until the proxy is actually
+connected to the provider (i.e. arbitration is completed), or be notified of any failures in
+connecting the proxy. This way your application is able to either wait until it knows that messages
+can be sent to the provider, or react in some way to the proxy never being successfully created.
+
+It is possible to use both a callback and the future at the same time, but if you want to do that
+make sure to call `.withCallback(...)` before calling `.useFuture()`, otherwise you will encounter
+an exception at runtime.
+
+Here are some simple examples of both using a callback and using the future API:
+
+	@Singleton
+	public class MyConsumer {
+
+		private static final Logger LOGGER = LoggerFactory.getLogger(MyConsumer.class);
+
+		@Inject
+		private ServiceLocator serviceLocator;
+
+		private MyServiceSync proxy;
+
+		@PostConstruct
+		public void initialise() {
+			// Using a callback
+			proxy = serviceLocator.builder(MyServiceSync.class, "my.service.domain")
+				.withCallback(new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
+					@Override
+					public void onProxyCreationFinished(MyServiceSync result) {
+						LOGGER.info("Proxy created successfully.");
+					}
+					@Override
+					public void onProxyCreationError(JoynrRuntimeException error) {
+						LOGGER.error("Unable to create proxy.", error);
+					}
+				})
+				.build();
+
+			// Using a completable future
+			CompletableFuture<MyServiceSync> future = serviceLocator.builder(
+					MyServiceSync.class, "my.service.domain"
+				)
+				.useFuture()
+				.build();
+
+			// ... non blocking
+			future.whenCompleteAsync((proxy, error) -> {
+				if (proxy != null) {
+					MyConsumer.this.proxy = proxy;
+					LOGGER.info("Proxy created successfully.");
+				} else if (error != null) {
+					LOGGER.error("Unable to create proxy.", error);
+				}
+			});
+
+			// ... blocking
+			try {
+				proxy = future.get();
+			} catch (ExecutionException e) {
+				LOGGER.error("Unable to create proxy.", error.getCause());
+			}
+		}
+	}
+
+See the JavaDoc of `io.joynr.jeeintegration.api.ServiceLocator` and
+`io.joynr.jeeintegration.JeeJoynrServiceLocator` for more details.
+
+
 #### Stateless Async
 
 If you want to call a service in a stateless fashion, i.e. any node in a cluster

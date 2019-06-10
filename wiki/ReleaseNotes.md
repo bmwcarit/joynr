@@ -5,7 +5,10 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.9.0
 
 ## API relevant changes
-None.
+* **[JEE]** ServiceLocator builder now provides the ability to specify a callback when creating a
+  proxy, so that you can be notified of proxy creation success or failure. See JEE wiki for details.
+* **[JEE]** ServiceLocator builder now allows building a `CompletableFuture<>` of the proxy in order
+  to be able to await successful proxy creation before using it. See JEE wiki for details.
 
 ## Other changes
 * **[JS]** Fixed a bug where fixed participantIds used for provider registrations
