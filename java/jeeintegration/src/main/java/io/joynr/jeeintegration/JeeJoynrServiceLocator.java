@@ -152,6 +152,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         private MessagingQos messagingQos = new MessagingQos();
         private DiscoveryQos discoveryQos = new DiscoveryQos();
         private String useCase;
+        private ProxyBuilder.ProxyCreatedCallback<T> callback;
 
         private JeeJoynrServiceProxyBuilder(Class<T> serviceInterface, Set<String> domains) {
             this.serviceInterface = serviceInterface;
@@ -183,13 +184,19 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         }
 
         @Override
+        public ServiceProxyBuilder<T> withCallback(ProxyBuilder.ProxyCreatedCallback<T> callback) {
+            this.callback = callback;
+            return this;
+        }
+
+        @Override
         public ServiceProxyBuilder<CompletableFuture<T>> useFuture() {
             return new JeeJoynrServiceFutureProxyBuilder<>(this);
         }
 
         @Override
         public T build() {
-            return get(serviceInterface, domains, messagingQos, discoveryQos, useCase);
+            return get(serviceInterface, domains, messagingQos, discoveryQos, useCase, callback);
         }
     }
 
@@ -226,6 +233,11 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         }
 
         @Override
+        public ServiceProxyBuilder<CompletableFuture<T>> withCallback(ProxyBuilder.ProxyCreatedCallback<CompletableFuture<T>> callback) {
+            throw new IllegalStateException("The builder is using a future. Attach any callback you want to use in addition to the future before calling useFuture().");
+        }
+
+        @Override
         public ServiceProxyBuilder<CompletableFuture<CompletableFuture<T>>> useFuture() {
             throw new IllegalStateException("The builder will already provide a future. Ensure that you only call useFuture() once.");
         }
@@ -242,11 +254,17 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                     @Override
                     public void onProxyCreationFinished(T result) {
                         future.complete(result);
+                        if (wrappedBuilder.callback != null) {
+                            wrappedBuilder.callback.onProxyCreationFinished(result);
+                        }
                     }
 
                     @Override
                     public void onProxyCreationError(JoynrRuntimeException error) {
                         future.completeExceptionally(error);
+                        if (wrappedBuilder.callback != null) {
+                            wrappedBuilder.callback.onProxyCreationError(error);
+                        }
                     }
                 });
             return future;

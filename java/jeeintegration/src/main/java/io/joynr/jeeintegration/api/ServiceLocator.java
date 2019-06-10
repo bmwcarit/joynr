@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.ProxyBuilder;
 
 /**
  * The container runtime will provide an instance of this which can be injected and then used in order to obtain client
@@ -219,11 +220,24 @@ public interface ServiceLocator {
         ServiceProxyBuilder<T> withUseCase(String useCase);
 
         /**
+         * Set the callback to use when creating the proxy. The callback can be used to be informed of when the proxy
+         * is successfully attached to the provider or in the case that this fails.
+         *
+         * @param callback the callback to use when building the proxy.
+         * @return the builder.
+         */
+        ServiceProxyBuilder<T> withCallback(ProxyBuilder.ProxyCreatedCallback<T> callback);
+
+        /**
          * If you want to have a <code>CompletableFuture</code> returned which will complete when the proxy has been
          * fully created and initialised successfully, then call this method before calling {@link #build()}.
          *
          * This also allows you to react to any error encountered while attempting to initialise the proxy, such as
          * encountering discovery timeouts if the requested provider isn't available in time.
+         *
+         * If you want to additionally use a {@link #withCallback(ProxyBuilder.ProxyCreatedCallback) callback}
+         * make sure to set the callback on the builder before calling this method, as it will not be possible any
+         * more after the call to <code>useFuture()</code>.
          *
          * @return returns a version of the proxy builder which returns a <code>CompletableFuture</code> for the proxy
          * rather than the proxy itself.

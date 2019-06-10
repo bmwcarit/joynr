@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.inject.spi.Bean;
@@ -301,6 +302,140 @@ public class JeeJoynrServiceLocatorTest {
         verify(proxyBuilderSync).build(callbackCaptor.capture());
         ProxyBuilder.ProxyCreatedCallback value = callbackCaptor.getValue();
         value.onProxyCreationError(new JoynrRuntimeException("test"));
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
+        try {
+            future.get();
+            fail("Should never get this far.");
+        } catch (ExecutionException e) {
+            if (!(e.getCause() instanceof JoynrRuntimeException)) {
+                fail("Nested exception not of expected type.");
+            }
+        }
+    }
+
+    @Test
+    public void testBuildWithCallback() throws Exception {
+        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
+            @Override
+            public void onProxyCreationFinished(MyServiceSync result) {
+                countDownLatch.countDown();
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("Should never get called.");
+            }
+        };
+
+        subject.builder(MyServiceSync.class, "local").withCallback(callback).build();
+
+        ArgumentCaptor<ProxyBuilder.ProxyCreatedCallback> callbackCaptor = ArgumentCaptor.forClass(ProxyBuilder.ProxyCreatedCallback.class);
+        verify(proxyBuilderSync).build(callbackCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback capturedCallback = callbackCaptor.getValue();
+        capturedCallback.onProxyCreationFinished(myJoynrProxy);
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testBuildWithCallbackFails() throws Exception {
+        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
+            @Override
+            public void onProxyCreationFinished(MyServiceSync result) {
+                fail("Should never get called.");
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                countDownLatch.countDown();
+            }
+        };
+
+        subject.builder(MyServiceSync.class, "local").withCallback(callback).build();
+
+        ArgumentCaptor<ProxyBuilder.ProxyCreatedCallback> callbackCaptor = ArgumentCaptor.forClass(ProxyBuilder.ProxyCreatedCallback.class);
+        verify(proxyBuilderSync).build(callbackCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback capturedCallback = callbackCaptor.getValue();
+        capturedCallback.onProxyCreationError(new JoynrRuntimeException());
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testBuildWithFutureAndCallback() throws Exception {
+        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(2);
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
+            @Override
+            public void onProxyCreationFinished(MyServiceSync result) {
+                countDownLatch.countDown();
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("Should never get called");
+            }
+        };
+
+        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local")
+                                                         .withCallback(callback)
+                                                         .useFuture()
+                                                         .build();
+
+        future.whenCompleteAsync((proxy, error) -> {
+            if (proxy != null && error == null) {
+                countDownLatch.countDown();
+            }
+        });
+
+        ArgumentCaptor<ProxyBuilder.ProxyCreatedCallback> callbackCaptor = ArgumentCaptor.forClass(ProxyBuilder.ProxyCreatedCallback.class);
+        verify(proxyBuilderSync).build(callbackCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback capturedCallback = callbackCaptor.getValue();
+        capturedCallback.onProxyCreationFinished(myJoynrProxy);
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testBuildWithFutureAndCallbackFails() throws Exception {
+        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(2);
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
+            @Override
+            public void onProxyCreationFinished(MyServiceSync result) {
+                fail("Should never get called");
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                countDownLatch.countDown();
+            }
+        };
+
+        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local")
+                                                         .withCallback(callback)
+                                                         .useFuture()
+                                                         .build();
+
+        future.whenCompleteAsync((proxy, error) -> {
+            if (proxy == null && error != null) {
+                countDownLatch.countDown();
+            }
+        });
+
+        ArgumentCaptor<ProxyBuilder.ProxyCreatedCallback> callbackCaptor = ArgumentCaptor.forClass(ProxyBuilder.ProxyCreatedCallback.class);
+        verify(proxyBuilderSync).build(callbackCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback capturedCallback = callbackCaptor.getValue();
+        capturedCallback.onProxyCreationError(new JoynrRuntimeException());
 
         countDownLatch.await(100L, TimeUnit.MILLISECONDS);
     }
