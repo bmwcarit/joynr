@@ -79,7 +79,7 @@
         <!-- Libraries -->
         <dependency>
             <groupId>io.joynr.java.messaging.mqtt</groupId>
-            <artifactId>joynr-mqtt-client</artifactId>
+            <artifactId>paho-mqtt-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -1,18 +1,17 @@
-package io.joynr.messaging.mqtt.mqttbee.client;
+package io.joynr.messaging.mqtt.hivemq.client;
 
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.mqttbee.api.mqtt.datatypes.MqttQos;
-import org.mqttbee.api.mqtt.mqtt3.Mqtt3Client;
-import org.mqttbee.api.mqtt.mqtt3.message.connect.Mqtt3Connect;
-import org.mqttbee.api.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAck;
-import org.mqttbee.api.mqtt.mqtt3.message.publish.Mqtt3Publish;
-import org.mqttbee.api.mqtt.mqtt3.message.subscribe.Mqtt3Subscribe;
-import org.mqttbee.api.mqtt.mqtt3.message.subscribe.Mqtt3Subscription;
-import org.mqttbee.api.mqtt.mqtt3.message.unsubscribe.Mqtt3Unsubscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hivemq.client.mqtt.datatypes.MqttQos;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3RxClient;
+import com.hivemq.client.mqtt.mqtt3.message.connect.Mqtt3Connect;
+import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
+import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscribe;
+import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscription;
+import com.hivemq.client.mqtt.mqtt3.message.unsubscribe.Mqtt3Unsubscribe;
 
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
@@ -35,11 +34,11 @@ import io.reactivex.Flowable;
  * - mqtt-bee offers better backpressure handling via rxJava, hence revisit this issue to see how we can make use
  *   of this for our own backpressure handling
  */
-public class MqttBeeClient implements JoynrMqttClient {
+public class HivemqMqttClient implements JoynrMqttClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(MqttBeeClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClient.class);
 
-    private final Mqtt3Client client;
+    private final Mqtt3RxClient client;
 
     private Consumer<Mqtt3Publish> publishConsumer;
 
@@ -47,7 +46,7 @@ public class MqttBeeClient implements JoynrMqttClient {
 
     private int keepAliveTimeSeconds;
 
-    public MqttBeeClient(Mqtt3Client client, int keepAliveTimeSeconds) {
+    public HivemqMqttClient(Mqtt3RxClient client, int keepAliveTimeSeconds) {
         this.client = client;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
     }
@@ -55,20 +54,16 @@ public class MqttBeeClient implements JoynrMqttClient {
     @Override
     public synchronized void start() {
         logger.info("Initialising MQTT client {} -> {}", this, client);
-        while (!client.getClientData().isConnected()) {
+        while (!client.getConfig().getState().isConnected()) {
             Mqtt3Connect mqtt3Connect = Mqtt3Connect.builder()
                                                     .cleanSession(true)
-                                                    .keepAlive(keepAliveTimeSeconds, TimeUnit.SECONDS)
+                                                    .keepAlive(keepAliveTimeSeconds)
                                                     .build();
-            Mqtt3ConnAck mqtt3ConnAck = client.connect(mqtt3Connect)
-                                              .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.",
-                                                                                  client,
-                                                                                  connAck))
-                                              .doOnError(throwable -> logger.error("Unable to connect MQTT client {}.",
-                                                                                   client,
-                                                                                   throwable))
-                                              .blockingGet();
-            if (client.getClientData().isConnected()) {
+            client.connect(mqtt3Connect)
+                  .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.", client, connAck))
+                  .doOnError(throwable -> logger.error("Unable to connect MQTT client {}.", client, throwable))
+                  .blockingGet();
+            if (client.getConfig().getState().isConnected()) {
                 logger.info("MQTT client {} connected.", client);
             }
         }
@@ -104,9 +99,9 @@ public class MqttBeeClient implements JoynrMqttClient {
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
         logger.info("Publishing to {} with qos {} using {}", topic, qosLevel, publishConsumer);
         Mqtt3Publish mqtt3Publish = Mqtt3Publish.builder()
-                                                .payload(serializedMessage)
-                                                .qos(MqttQos.fromCode(qosLevel))
                                                 .topic(topic)
+                                                .qos(MqttQos.fromCode(qosLevel))
+                                                .payload(serializedMessage)
                                                 .build();
         publishConsumer.accept(mqtt3Publish);
     }
@@ -119,8 +114,8 @@ public class MqttBeeClient implements JoynrMqttClient {
                                                           .qos(MqttQos.AT_LEAST_ONCE) // TODO make configurable
                                                           .build();
         Mqtt3Subscribe subscribe = Mqtt3Subscribe.builder().addSubscription(subscription).build();
-        client.subscribeWithStream(subscribe)
-              .doOnSingle((mqtt3SubAck, sub) -> logger.debug("Subscribed to {} with result {}", sub, mqtt3SubAck))
+        client.subscribeStream(subscribe)
+              .doOnSingle(mqtt3SubAck -> logger.debug("Subscribed to {} with result {}", subscription, mqtt3SubAck))
               .doOnNext(mqtt3Publish -> messagingSkeleton.transmit(mqtt3Publish.getPayloadAsBytes(),
                                                                    throwable -> logger.error("Unable to transmit {}",
                                                                                              mqtt3Publish,
@@ -136,6 +131,11 @@ public class MqttBeeClient implements JoynrMqttClient {
               .doOnComplete(() -> logger.debug("Unsubscribed from {}", topic))
               .doOnError(throwable -> logger.error("Unable to unsubscribe from {}", topic, throwable))
               .subscribe();
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return false;
     }
 
     private void setPublishConsumer(Consumer<Mqtt3Publish> publishConsumer) {

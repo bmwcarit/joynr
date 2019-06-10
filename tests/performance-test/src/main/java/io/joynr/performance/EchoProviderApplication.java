@@ -21,6 +21,7 @@ package io.joynr.performance;
 
 import java.util.Properties;
 
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,6 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.performance.EchoProviderInvocationParameters.BackendConfig;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -178,7 +178,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
         Module backendTransportModules = Modules.EMPTY_MODULE;
         switch (invocationParams.getBackendTransportMode()) {
         case MQTT:
-            return Modules.combine(backendTransportModules, new MqttPahoModule());
+            return Modules.combine(backendTransportModules, new HivemqMqttClientModule());
         default:
             throw new Exception("Unknown backend requested");
         }

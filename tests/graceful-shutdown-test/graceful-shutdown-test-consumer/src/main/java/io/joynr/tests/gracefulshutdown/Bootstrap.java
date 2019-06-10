@@ -22,6 +22,7 @@ import static io.joynr.runtime.AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LO
 
 import java.util.Properties;
 
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -45,7 +45,7 @@ public class Bootstrap {
         joynrProperties.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "consumer-joynr.properties");
         joynrProperties.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "gracefulshutdown_consumer_local_domain");
-        Module runtimeModule = Modules.combine(new CCInProcessRuntimeModule(), new MqttPahoModule());
+        Module runtimeModule = Modules.combine(new CCInProcessRuntimeModule(), new HivemqMqttClientModule());
         JoynrInjectorFactory joynrInjectorFactory = new JoynrInjectorFactory(joynrProperties, runtimeModule);
         JoynrApplication application = joynrInjectorFactory.createApplication(ConsumerApplication.class);
 

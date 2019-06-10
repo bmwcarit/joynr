@@ -30,7 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
@@ -68,7 +68,7 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
         joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
         joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
 
-        return Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule(),
+        return Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule(),
                                                                      new GlobalDomainAccessControllerModule());
     }
 
