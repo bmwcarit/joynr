@@ -1,15 +1,17 @@
-package io.joynr.messaging.mqtt.mqttbee.client;
+package io.joynr.messaging.mqtt.hivemq.client;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.inject.Singleton;
+import com.hivemq.client.mqtt.MqttClient;
+import com.hivemq.client.mqtt.MqttClientExecutorConfig;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3ClientBuilder;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3RxClient;
 import io.joynr.messaging.routing.MessageRouter;
 import io.reactivex.schedulers.Schedulers;
-import org.mqttbee.api.mqtt.MqttClient;
-import org.mqttbee.api.mqtt.MqttClientExecutorConfig;
-import org.mqttbee.api.mqtt.mqtt3.Mqtt3Client;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -20,7 +22,6 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import joynr.system.RoutingTypes.MqttAddress;
-import org.mqttbee.api.mqtt.mqtt3.Mqtt3ClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +40,9 @@ import org.slf4j.LoggerFactory;
  * - Document usage and configuration of mqtt-bee variant
  */
 @Singleton
-public class MqttBeeClientFactory implements MqttClientFactory {
+public class HivemqMqttClientFactory implements MqttClientFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(MqttBeeClientFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientFactory.class);
 
     private final MqttAddress ownAddress;
     private final boolean separateConnections;
@@ -53,11 +54,11 @@ public class MqttBeeClientFactory implements MqttClientFactory {
     private JoynrMqttClient receiver;
 
     @Inject
-    public MqttBeeClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
-                                @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimeSeconds,
-                                @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
-                                MqttClientIdProvider mqttClientIdProvider) {
+    public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
+                                   @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
+                                   @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimeSeconds,
+                                   @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
+                                   MqttClientIdProvider mqttClientIdProvider) {
         this.ownAddress = ownAddress;
         this.separateConnections = separateConnections;
         this.scheduledExecutorService = scheduledExecutorService;
@@ -114,8 +115,8 @@ public class MqttBeeClientFactory implements MqttClientFactory {
             if (serverUri.getScheme().equals("ssl") || serverUri.getScheme().equals("tls")) {
                 clientBuilder.useSslWithDefaultConfig();
             }
-            Mqtt3Client client = clientBuilder.buildReactive();
-            return new MqttBeeClient(client, keepAliveTimeSeconds);
+            Mqtt3RxClient client = clientBuilder.buildRx();
+            return new HivemqMqttClient(client, keepAliveTimeSeconds);
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + ownAddress.getBrokerUri(), e);
         }

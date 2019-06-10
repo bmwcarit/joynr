@@ -42,7 +42,6 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.PropertyLoader;
@@ -73,7 +72,7 @@ public class DefaultMqttTopicPrefixProviderTest {
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, expectedReplyToPrefix);
         properties.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, expectedUnicastPrefix);
 
-        Module testModule = Modules.override(new MqttPahoModule()).with(new AbstractModule() {
+        Module testModule = Modules.override(new MqttModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
                 Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);

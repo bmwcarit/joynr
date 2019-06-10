@@ -34,7 +34,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
@@ -95,7 +95,7 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
                             joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID));
         }
 
-        return Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule(),
+        return Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule(),
                                                                      new GlobalDomainAccessControllerModule());
     }
 

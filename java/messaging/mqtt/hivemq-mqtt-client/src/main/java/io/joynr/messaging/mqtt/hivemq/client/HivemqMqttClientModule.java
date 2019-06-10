@@ -1,4 +1,4 @@
-package io.joynr.messaging.mqtt.mqttbee.client;
+package io.joynr.messaging.mqtt.hivemq.client;
 
 import com.google.inject.AbstractModule;
 import io.joynr.messaging.mqtt.MqttClientFactory;
@@ -19,12 +19,12 @@ import io.joynr.messaging.mqtt.MqttModule;
  * - Document how to choose which implementation your runtime uses, and also what the pros and cons of each
  *   are
  */
-public class MqttBeeModule extends AbstractModule {
+public class HivemqMqttClientModule extends AbstractModule {
 
     @Override
     protected void configure() {
         install(new MqttModule());
-        bind(MqttClientFactory.class).to(MqttBeeClientFactory.class);
+        bind(MqttClientFactory.class).to(HivemqMqttClientFactory.class);
     }
 
 }

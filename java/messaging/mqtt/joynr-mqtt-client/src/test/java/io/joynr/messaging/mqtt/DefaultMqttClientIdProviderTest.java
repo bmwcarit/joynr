@@ -43,7 +43,6 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.PropertyLoader;
@@ -73,7 +72,7 @@ public class DefaultMqttClientIdProviderTest {
         MockitoAnnotations.initMocks(this);
         Properties properties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
 
-        Module testModule = Modules.override(new MqttPahoModule()).with(new AbstractModule() {
+        Module testModule = Modules.override(new MqttModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
                 Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);

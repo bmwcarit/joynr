@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.performance.ConsumerInvocationParameters.BackendConfig;
 import io.joynr.performance.ConsumerInvocationParameters.COMMUNICATIONMODE;
@@ -103,7 +103,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
                 joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+                backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             } else {
                 // HTTP
                 backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());

@@ -31,7 +31,7 @@ import com.google.inject.util.Modules;
 import io.joynr.capabilities.directory.util.GcdUtilities;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -74,7 +74,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         joynrConfig.put(CapabilitiesDirectoryImpl.VALID_GBIDS, validGbidsString);
 
         return Modules.override(new JpaPersistModule("CapabilitiesDirectory"), new CCInProcessRuntimeModule())
-                      .with(new MqttPahoModule(), new CapabilitiesDirectoryModule());
+                      .with(new HivemqMqttClientModule(), new CapabilitiesDirectoryModule());
     }
 
     @Inject

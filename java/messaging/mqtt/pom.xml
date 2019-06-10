@@ -32,5 +32,7 @@
 
 	<modules>
 		<module>joynr-mqtt-client</module>
+		<module>paho-mqtt-client</module>
+		<module>hivemq-mqtt-client</module>
 	</modules>
 </project>

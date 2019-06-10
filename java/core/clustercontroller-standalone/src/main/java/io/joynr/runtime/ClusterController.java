@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.Set;
 
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -41,7 +42,6 @@ import com.google.inject.util.Modules;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import joynr.types.DiscoveryEntry;
 
@@ -134,7 +134,7 @@ public class ClusterController {
                     ccConfig.put("joynr.messaging.mqtt.brokerUri", brokerUri);
                     ccConfig.put("joynr.messaging.primaryglobaltransport", "mqtt");
                 }
-                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+                backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }
             runtimeModule = Modules.override(runtimeModule).with(backendTransportModules);
         }
