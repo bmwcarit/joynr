@@ -24,6 +24,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonFactory {
@@ -33,6 +34,7 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                         MqttAddress ownAddress,
                                         int maxIncomingMqttRequests,
                                         MessageRouter messageRouter,
+                                        ReplyToAddressRegistrar replyToAddressRegistrar,
                                         MqttClientFactory mqttClientFactory,
                                         MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                         RawMessagingPreprocessor rawMessagingPreprocessor,
@@ -44,6 +46,7 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                        new MqttMessagingSkeleton(ownAddress.getTopic(),
                                                                  maxIncomingMqttRequests,
                                                                  messageRouter,
+                                                                 replyToAddressRegistrar,
                                                                  mqttClientFactory,
                                                                  mqttTopicPrefixProvider,
                                                                  rawMessagingPreprocessor,

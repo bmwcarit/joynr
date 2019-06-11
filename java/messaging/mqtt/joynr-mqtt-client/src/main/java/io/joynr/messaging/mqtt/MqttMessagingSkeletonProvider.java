@@ -42,6 +42,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -63,6 +64,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private int backpressureIncomingMqttRequestsLowerThreshold;
     private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
+    private ReplyToAddressRegistrar replyToAddressRegistrar;
     private String channelId;
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
@@ -81,6 +83,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
+                                         ReplyToAddressRegistrar replyToAddressRegistrar,
                                          MqttClientFactory mqttClientFactory,
                                          @Named(CHANNELID) String channelId,
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -97,6 +100,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
+        this.replyToAddressRegistrar = replyToAddressRegistrar;
         this.mqttClientFactory = mqttClientFactory;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
@@ -117,6 +121,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                        backpressureIncomingMqttRequestsLowerThreshold,
                                                                        replyToAddress,
                                                                        messageRouter,
+                                                                       replyToAddressRegistrar,
                                                                        mqttClientFactory,
                                                                        channelId,
                                                                        mqttTopicPrefixProvider,
@@ -128,6 +133,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                 ownAddress,
                                                 maxIncomingMqttRequests,
                                                 messageRouter,
+                                                replyToAddressRegistrar,
                                                 mqttClientFactory,
                                                 mqttTopicPrefixProvider,
                                                 rawMessagingPreprocessor,

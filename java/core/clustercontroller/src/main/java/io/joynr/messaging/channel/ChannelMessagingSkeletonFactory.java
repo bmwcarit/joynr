@@ -20,24 +20,32 @@ package io.joynr.messaging.channel;
 
 import java.util.Set;
 
+import javax.inject.Named;
+
 import com.google.inject.Inject;
 
 import io.joynr.messaging.AbstractMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessageReceiver;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 
 public class ChannelMessagingSkeletonFactory extends AbstractMessagingSkeletonFactory {
 
     @Inject
     public ChannelMessagingSkeletonFactory(MessageRouter messageRouter,
+                                           ReplyToAddressRegistrar replyToAddressRegistrar,
                                            MessageReceiver messageReceiver,
-                                           Set<JoynrMessageProcessor> messageProcessors) {
+                                           Set<JoynrMessageProcessor> messageProcessors,
+                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbidsArray) {
         super();
         IMessagingSkeleton messagingSkeleton = new ChannelMessagingSkeleton(messageRouter,
+                                                                            replyToAddressRegistrar,
                                                                             messageReceiver,
-                                                                            messageProcessors);
+                                                                            messageProcessors,
+                                                                            gbidsArray[0]);
         messagingSkeletonList.add(messagingSkeleton);
     }
 

@@ -24,6 +24,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonFactory {
@@ -37,6 +38,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                            int backpressureIncomingMqttRequestsLowerThreshold,
                                                            MqttAddress replyToAddress,
                                                            MessageRouter messageRouter,
+                                                           ReplyToAddressRegistrar replyToAddressRegistrar,
                                                            MqttClientFactory mqttClientFactory,
                                                            String channelId,
                                                            MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -53,6 +55,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                                                     backpressureIncomingMqttRequestsLowerThreshold,
                                                                                     replyToAddress.getTopic(),
                                                                                     messageRouter,
+                                                                                    replyToAddressRegistrar,
                                                                                     mqttClientFactory,
                                                                                     channelId,
                                                                                     mqttTopicPrefixProvider,

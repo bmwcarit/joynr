@@ -59,7 +59,6 @@ import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 abstract public class AbstractMessageRouter implements MessageRouter, ShutdownListener {
@@ -242,7 +241,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     @Override
     public void route(final ImmutableMessage message) {
         checkExpiry(message);
-        registerGlobalRoutingEntryIfRequired(message);
         routeInternal(message, 0, 0);
     }
 
@@ -269,31 +267,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                 throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
                         + message.getRecipient());
             }
-        }
-    }
-
-    private void registerGlobalRoutingEntryIfRequired(final ImmutableMessage message) {
-        if (!message.isReceivedFromGlobal()) {
-            return;
-        }
-
-        String messageType = message.getType();
-
-        if (!messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
-            return;
-        }
-
-        String replyTo = message.getReplyTo();
-        if (replyTo != null && !replyTo.isEmpty()) {
-            Address address = RoutingTypesUtil.fromAddressString(replyTo);
-            // If the message was received from global, the sender is globally visible by definition.
-            final boolean isGloballyVisible = true;
-            final long expiryDateMs = message.getTtlMs();
-
-            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs);
         }
     }
 

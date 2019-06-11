@@ -37,6 +37,7 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -50,6 +51,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     protected final int maxIncomingMqttRequests;
     private final MessageRouter messageRouter;
+    private final ReplyToAddressRegistrar replyToAddressRegistrar;
     private JoynrMqttClient mqttClient;
     private final MqttClientFactory mqttClientFactory;
     private final String ownTopic;
@@ -66,6 +68,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
     public MqttMessagingSkeleton(String ownTopic,
                                  int maxIncomingMqttRequests,
                                  MessageRouter messageRouter,
+                                 ReplyToAddressRegistrar replyToAddressRegistrar,
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
@@ -75,6 +78,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
         this.ownTopic = ownTopic;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
+        this.replyToAddressRegistrar = replyToAddressRegistrar;
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
@@ -171,6 +175,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             }
 
             try {
+                replyToAddressRegistrar.registerGlobalRoutingEntry(message, ownGbid);
                 messageRouter.route(message);
             } catch (Exception e) {
                 LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());

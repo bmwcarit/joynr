@@ -58,6 +58,7 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import joynr.ImmutableMessage;
 import joynr.Message;
 
@@ -72,6 +73,9 @@ public class MqttMessagingSkeletonTest {
 
     @Mock
     private MessageRouter messageRouter;
+
+    @Mock
+    private ReplyToAddressRegistrar replyToAddressRegistrar;
 
     @Mock
     private MqttClientFactory mqttClientFactory;
@@ -92,6 +96,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
+                                            replyToAddressRegistrar,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
@@ -175,6 +180,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
+                                            replyToAddressRegistrar,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             preprocessor,
@@ -201,6 +207,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
+                                            replyToAddressRegistrar,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
@@ -316,6 +323,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequestsNoLimit,
                                             messageRouter,
+                                            replyToAddressRegistrar,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),

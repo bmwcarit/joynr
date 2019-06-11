@@ -92,6 +92,7 @@ public class JeeHttpMessagingModule extends AbstractModule {
         bind(HttpRequestFactory.class).to(ApacheHttpRequestFactory.class);
 
         bind(MessageRouter.class).to(CcMessageRouter.class).in(Singleton.class);
+
         bind(MessageSender.class).to(CcMessageSender.class);
         bind(MessageReceiver.class).to(JeeServletMessageReceiver.class);
         bind(ServletMessageReceiver.class).to(JeeServletMessageReceiver.class);

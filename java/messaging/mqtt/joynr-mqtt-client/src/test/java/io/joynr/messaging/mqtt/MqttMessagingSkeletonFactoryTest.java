@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -39,6 +38,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -52,6 +52,8 @@ public class MqttMessagingSkeletonFactoryTest {
     private MqttAddress ownAddress;
     @Mock
     private MessageRouter messageRouter;
+    @Mock
+    private ReplyToAddressRegistrar replyToAddressRegistrar;
     @Mock
     private MqttClientFactory mqttClientFactory;
     @Mock
@@ -67,6 +69,7 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 ownAddress,
                                                                                 maxIncomingMqttRequests,
                                                                                 messageRouter,
+                                                                                replyToAddressRegistrar,
                                                                                 mqttClientFactory,
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
@@ -156,6 +159,7 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 ownAddress,
                                                                                 maxIncomingMqttRequests,
                                                                                 messageRouter,
+                                                                                replyToAddressRegistrar,
                                                                                 mqttClientFactory,
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
@@ -179,6 +183,7 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                                                       backpressureIncomingMqttRequestsLowerThreshold,
                                                                                                                       replyToAddress,
                                                                                                                       messageRouter,
+                                                                                                                      replyToAddressRegistrar,
                                                                                                                       mqttClientFactory,
                                                                                                                       channelId,
                                                                                                                       mqttTopicPrefixProvider,

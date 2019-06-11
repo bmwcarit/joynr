@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
@@ -39,6 +40,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import io.joynr.runtime.JoynrInjectionConstants;
 import joynr.system.RoutingTypes.Address;
 
@@ -74,6 +76,8 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))
                                             .toInstance(scheduledExecutorService);
         bind(ExecutorService.class).toInstance(scheduledExecutorService);
+
+        bind(ReplyToAddressRegistrar.class).in(Singleton.class);
 
         MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {

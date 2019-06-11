@@ -33,6 +33,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 
 /**
  * Overrides the standard {@link MqttMessagingSkeleton} in order to customise the topic subscription strategy in the
@@ -62,6 +63,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     int backpressureIncomingMqttRequestsLowerThreshold,
                                                     String replyToTopic,
                                                     MessageRouter messageRouter,
+                                                    ReplyToAddressRegistrar replyToAddressRegistrar,
                                                     MqttClientFactory mqttClientFactory,
                                                     String channelId,
                                                     MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -72,6 +74,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         super(ownTopic,
               maxIncomingMqttRequests,
               messageRouter,
+              replyToAddressRegistrar,
               mqttClientFactory,
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,

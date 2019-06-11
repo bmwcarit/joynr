@@ -41,6 +41,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import joynr.Message;
 
 /**
@@ -68,6 +69,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     private MessageRouter messageRouter;
 
     @Mock
+    private ReplyToAddressRegistrar replyToAddressRegistrar;
+
+    @Mock
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Mock
@@ -89,6 +93,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                backpressureIncomingMqttRequestsLowerThreshold,
                                                                replyToTopic,
                                                                messageRouter,
+                                                               replyToAddressRegistrar,
                                                                mqttClientFactory,
                                                                channelId,
                                                                mqttTopicPrefixProvider,

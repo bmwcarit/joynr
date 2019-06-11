@@ -23,8 +23,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
@@ -33,6 +31,7 @@ import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.ReceiverStatusListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import joynr.ImmutableMessage;
 
 public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingMulticastSubscriber {
@@ -40,17 +39,21 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
 
     private static final Logger logger = LoggerFactory.getLogger(ChannelMessagingSkeleton.class);
 
+    private final ReplyToAddressRegistrar replyToAddressRegistrar;
     private MessageReceiver messageReceiver;
-
     private Set<JoynrMessageProcessor> messageProcessors;
+    private final String ownGbid;
 
-    @Inject
     public ChannelMessagingSkeleton(MessageRouter messageRouter,
+                                    ReplyToAddressRegistrar replyToAddressRegistrar,
                                     MessageReceiver messageReceiver,
-                                    Set<JoynrMessageProcessor> messageProcessors) {
+                                    Set<JoynrMessageProcessor> messageProcessors,
+                                    String ownGbid) {
         this.messageRouter = messageRouter;
+        this.replyToAddressRegistrar = replyToAddressRegistrar;
         this.messageReceiver = messageReceiver;
         this.messageProcessors = messageProcessors;
+        this.ownGbid = ownGbid;
     }
 
     private void forwardMessage(ImmutableMessage message, FailureAction failureAction) {
@@ -63,6 +66,7 @@ public class ChannelMessagingSkeleton implements IMessagingSkeleton, IMessagingM
         logger.debug("<<< INCOMING <<< {}", message);
         try {
             message.setReceivedFromGlobal(true);
+            replyToAddressRegistrar.registerGlobalRoutingEntry(message, ownGbid);
             messageRouter.route(message);
         } catch (Exception exception) {
             logger.error("Error processing incoming message. Message will be dropped: {} ", exception);
