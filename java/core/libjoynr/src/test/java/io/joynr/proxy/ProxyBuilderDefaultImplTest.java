@@ -223,21 +223,21 @@ public class ProxyBuilderDefaultImplTest {
     }
 
     @Test
-    public void setDiscoveryQosCreatesNewArbitrator() throws Exception {
+    public void setDiscoveryQosCreatesNewDiscoveryQos() throws Exception {
         setup(new HashSet<String>(Arrays.asList("domain")));
         DiscoveryQos dQos = new DiscoveryQos();
 
-        Field oldArbitratorField = subject.getClass().getDeclaredField("arbitrator");
-        oldArbitratorField.setAccessible(true);
-        Arbitrator oldArbitrator = (Arbitrator) oldArbitratorField.get(subject);
+        Field oldDiscoveryQosField = subject.getClass().getDeclaredField("discoveryQos");
+        oldDiscoveryQosField.setAccessible(true);
+        DiscoveryQos oldDiscoveryQos = (DiscoveryQos) oldDiscoveryQosField.get(subject);
 
         subject.setDiscoveryQos(dQos);
 
-        Field newArbitratorField = subject.getClass().getDeclaredField("arbitrator");
-        newArbitratorField.setAccessible(true);
-        Arbitrator newArbitrator = (Arbitrator) newArbitratorField.get(subject);
+        Field newDiscoveryQosField = subject.getClass().getDeclaredField("discoveryQos");
+        newDiscoveryQosField.setAccessible(true);
+        DiscoveryQos newDiscoveryQos = (DiscoveryQos) newDiscoveryQosField.get(subject);
 
-        assertNotEquals(oldArbitrator, newArbitrator);
+        assertNotEquals(oldDiscoveryQos, newDiscoveryQos);
     }
 
     @Test

@@ -96,9 +96,6 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.domains = domains;
 
-        setDiscoveryQos(new DiscoveryQos());
-
-        messagingQos = new MessagingQos();
         buildCalled = false;
 
     }
@@ -139,13 +136,6 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             discoveryQos.setRetryIntervalMs(minimumArbitrationRetryDelay);
         }
         this.discoveryQos = discoveryQos;
-
-        arbitrator = ArbitratorFactory.create(domains,
-                                              interfaceName,
-                                              interfaceVersion,
-                                              discoveryQos,
-                                              localDiscoveryAggregator);
-
         return this;
     }
 
@@ -209,6 +199,23 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     @Override
     public T build(final ProxyCreatedCallback<T> callback) {
         try {
+            // provide defaults in case setter has not been used
+            if (discoveryQos == null) {
+                setDiscoveryQos(new DiscoveryQos());
+            }
+            if (messagingQos == null) {
+                messagingQos = new MessagingQos();
+            }
+
+            // keep possibly existing mocked arbitrator injected via reflection in unit tests
+            if (arbitrator == null) {
+                arbitrator = ArbitratorFactory.create(domains,
+                                                      interfaceName,
+                                                      interfaceVersion,
+                                                      discoveryQos,
+                                                      localDiscoveryAggregator);
+            }
+
             ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler(callback);
             proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
             proxyInvocationHandler.registerProxy(proxy);
