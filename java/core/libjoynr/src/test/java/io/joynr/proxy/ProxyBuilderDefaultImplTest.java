@@ -18,6 +18,7 @@
  */
 package io.joynr.proxy;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -268,6 +269,41 @@ public class ProxyBuilderDefaultImplTest {
         dQosField.setAccessible(true);
         DiscoveryQos newQos = (DiscoveryQos) dQosField.get(subject);
         assertEquals(MINIMUM_RETRY_DELAY_MS, newQos.getRetryIntervalMs());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setGbidsThrowsOnNull() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        subject.setGbids(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setGbidsThrowsOnEmptyStringArray() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        String[] gbids = new String[0];
+        subject.setGbids(gbids);
+    }
+
+    @Test
+    public void defaultGbidsIsNull() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        Field dGbidsField = subject.getClass().getDeclaredField("gbids");
+        dGbidsField.setAccessible(true);
+        String[] gbids = (String[]) dGbidsField.get(subject);
+        assertEquals(null, gbids);
+    }
+
+    @Test
+    public void setGbidsSetsCorrectValues() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        String[] gbids = new String[]{ "gbid1", "gbid2" };
+        subject.setGbids(gbids);
+
+        Field dGbidsField = subject.getClass().getDeclaredField("gbids");
+        dGbidsField.setAccessible(true);
+        String[] newGbids = (String[]) dGbidsField.get(subject);
+
+        assertArrayEquals(gbids, newGbids);
     }
 
 }

@@ -93,6 +93,14 @@ public interface ProxyBuilder<T> {
     ProxyBuilder<T> setStatelessAsyncCallbackUseCase(String useCase);
 
     /**
+     * Sets the Gbids which will be used to discover the provider
+     *
+     * @param gbids an array of gbids
+     * @return Returns the ProxyBuilder
+     */
+    ProxyBuilder<T> setGbids(String[] gbids);
+
+    /**
      * Final step to create a proxy object. Make sure all QoS parameters have been set before this method is called. Non
      * blocking.
      *

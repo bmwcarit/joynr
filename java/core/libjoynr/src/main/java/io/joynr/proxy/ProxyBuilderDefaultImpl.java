@@ -60,6 +60,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
     private String statelessAsyncCallbackUseCase;
     private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
+    private String[] gbids;
     private T proxy;
 
     // CHECKSTYLE:OFF
@@ -169,6 +170,21 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     @Override
     public ProxyBuilder<T> setStatelessAsyncCallbackUseCase(String statelessAsyncCallbackUseCase) {
         this.statelessAsyncCallbackUseCase = statelessAsyncCallbackUseCase;
+        return this;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * io.joynr.proxy.ProxyBuilder#setGbids(String[] gbids)
+     */
+    @Override
+    public ProxyBuilder<T> setGbids(final String[] gbids) {
+        if (gbids == null || gbids.length == 0) {
+            throw new IllegalArgumentException("gbids array must not be null or empty");
+        }
+        this.gbids = gbids.clone();
         return this;
     }
 
