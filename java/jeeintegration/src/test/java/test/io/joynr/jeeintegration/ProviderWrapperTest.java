@@ -63,7 +63,7 @@ import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.JoynrJeeMessageMetaInfo;
 import io.joynr.jeeintegration.ProviderWrapper;
-import io.joynr.jeeintegration.api.ProviderQosFactory;
+import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
@@ -202,16 +202,23 @@ public class ProviderWrapperTest {
 
     }
 
-    public static class TestProviderQosFactory implements ProviderQosFactory {
+    public static class TestProviderSettingsFactory implements ProviderRegistrationSettingsFactory {
         private ProviderQos providerQos;
+        private String[] gbidsForGlobalRegistration;
 
-        public TestProviderQosFactory(ProviderQos providerQos) {
+        public TestProviderSettingsFactory(ProviderQos providerQos, String[] gbidsForGlobalRegistration) {
             this.providerQos = providerQos;
+            this.gbidsForGlobalRegistration = gbidsForGlobalRegistration;
         }
 
         @Override
-        public ProviderQos create() {
+        public ProviderQos createProviderQos() {
             return providerQos;
+        }
+
+        @Override
+        public String[] createGbids() {
+            return gbidsForGlobalRegistration;
         }
 
         @Override

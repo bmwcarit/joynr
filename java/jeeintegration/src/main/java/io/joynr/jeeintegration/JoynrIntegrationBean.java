@@ -41,7 +41,7 @@ import com.google.inject.Injector;
 
 import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.jeeintegration.api.ProviderDomain;
-import io.joynr.jeeintegration.api.ProviderQosFactory;
+import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
@@ -103,7 +103,8 @@ public class JoynrIntegrationBean {
     }
 
     private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
-        Set<ProviderQosFactory> providerQosFactories = getProviderQosFactories();
+        Set<ProviderRegistrationSettingsFactory> providerSettingsFactories = getProviderRegistrationSettingsFactories();
+
         for (Bean<?> bean : serviceProviderBeans) {
             Class<?> beanClass = bean.getBeanClass();
             ServiceProvider providerService = beanClass.getAnnotation(ServiceProvider.class);
@@ -118,25 +119,38 @@ public class JoynrIntegrationBean {
                                                      new ProviderWrapper(bean,
                                                                          beanManager,
                                                                          joynrRuntimeFactory.getInjector()));
-            ProviderQos providerQos = null;
-            for (ProviderQosFactory factory : providerQosFactories) {
-                if (factory.providesFor(serviceInterface)) {
-                    providerQos = factory.create();
-                    break;
-                }
-            }
-            if (providerQos == null) {
-                providerQos = new ProviderQos();
-            }
 
             ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(providerService.serviceInterface(),
                                                                                                    ProvidesJoynrTypesInfo.class);
 
-            runtime.registerProvider(getDomainForProvider(beanClass),
-                                     provider,
-                                     providerQos,
-                                     false,
-                                     providesJoynrTypesInfoAnnotation.interfaceClass());
+            // try to find customized settings for the registration
+            ProviderQos providerQos = null;
+            String[] gbids = null;
+
+            for (ProviderRegistrationSettingsFactory factory : providerSettingsFactories) {
+                if (factory.providesFor(serviceInterface)) {
+                    providerQos = factory.createProviderQos();
+                    gbids = factory.createGbids();
+                    break;
+                }
+            }
+
+            if (providerQos == null) {
+                providerQos = new ProviderQos();
+            }
+
+            if (gbids == null) {
+                // default registration (in default backend)
+                runtime.registerProvider(getDomainForProvider(beanClass),
+                                         provider,
+                                         providerQos,
+                                         false,
+                                         providesJoynrTypesInfoAnnotation.interfaceClass());
+
+            } else {
+                // TODO register with GBIDs
+            }
+
             registeredProviders.add(provider);
         }
     }
@@ -152,17 +166,24 @@ public class JoynrIntegrationBean {
         return domain;
     }
 
+    /**
+     * A util method to find factories which provide some customized settings needed for
+     * registration of joynr providers, i.e. implementations of the interface
+     * {@link ProviderRegistrationSettingsFactory}.
+     *
+     * @return set of factories implementing the interface
+     */
     @SuppressWarnings({ "rawtypes", "unchecked", "serial" })
-    private Set<ProviderQosFactory> getProviderQosFactories() {
-        Set<Bean<?>> providerQosFactoryBeans = beanManager.getBeans(ProviderQosFactory.class,
-                                                                    new AnnotationLiteral<Any>() {
-                                                                    });
-        Set<ProviderQosFactory> providerQosFactories = new HashSet<>();
-        for (Bean providerQosFactoryBean : providerQosFactoryBeans) {
-            ProviderQosFactory factory = (ProviderQosFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
-            providerQosFactories.add(factory);
+    private Set<ProviderRegistrationSettingsFactory> getProviderRegistrationSettingsFactories() {
+        Set<Bean<?>> providerSettingsFactoryBeans = beanManager.getBeans(ProviderRegistrationSettingsFactory.class,
+                                                                         new AnnotationLiteral<Any>() {
+                                                                         });
+        Set<ProviderRegistrationSettingsFactory> providerSettingsFactories = new HashSet<>();
+        for (Bean providerQosFactoryBean : providerSettingsFactoryBeans) {
+            ProviderRegistrationSettingsFactory factory = (ProviderRegistrationSettingsFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
+            providerSettingsFactories.add(factory);
         }
-        return providerQosFactories;
+        return providerSettingsFactories;
     }
 
     @PreDestroy
