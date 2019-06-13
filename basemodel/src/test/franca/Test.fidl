@@ -614,16 +614,6 @@ interface test {
 		}
 	}
 
-	<**
-		@description: Broadcast which has the same name as an attribute for
-			testing possible conflicts.
-	**>
-	broadcast location {
-		out {
-			GpsLocation location
-		}
-	}
-
 	broadcast broadcastWithEnumOutput {
 		out {
 			testTypes.TestEnum testEnum

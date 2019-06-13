@@ -233,21 +233,6 @@ TEST_F(ProxyTest, subscribeToAttribute)
     testSubscribeToAttribute();
 }
 
-TEST_F(ProxyTest, subscribeToBroadcastWithInvalidPartitionsReturnsError)
-{
-    auto testProxy = std::dynamic_pointer_cast<tests::testProxy>(createFixture());
-    auto subscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
-    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
-
-    EXPECT_CALL(*subscriptionListener, onError(A<const exceptions::JoynrRuntimeException&>()));
-
-    std::shared_ptr<Future<std::string>> subscriptionFuture =
-            testProxy->subscribeToLocationBroadcast(
-                    subscriptionListener, subscriptionQos, {"invalid / partition"});
-    std::string subscriptionId;
-    EXPECT_THROW(subscriptionFuture->get(subscriptionId), exceptions::JoynrRuntimeException);
-}
-
 TEST_F(ProxyTest, versionIsSetCorrectly)
 {
     std::uint32_t expectedMajorVersion = 47;

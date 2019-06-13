@@ -25,7 +25,6 @@
 class MyTestProvider : public joynr::tests::DefaulttestProvider {
 public:
     using testAbstractProvider::locationChanged;
-    using testAbstractProvider::fireLocation;
     using testAbstractProvider::fireBroadcastWithEnumOutput;
     using testAbstractProvider::fireLocationUpdate;
     using testAbstractProvider::fireEmptyBroadcast;

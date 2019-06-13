@@ -75,10 +75,3 @@ TEST(ProviderTest, defaultVersionIsSetCorrectly)
     EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProvider::MAJOR_VERSION);
     EXPECT_EQ(expectedDefaultMinorVersion, tests::TestWithoutVersionProvider::MINOR_VERSION);
 }
-
-TEST(ProviderTest, fireBroadcastWithInvalidPartionsThrows)
-{
-    MyTestProvider provider;
-    EXPECT_THROW(provider.fireLocation(types::Localisation::GpsLocation(), {"invalid / partition"}),
-                 std::invalid_argument);
-}
