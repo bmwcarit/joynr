@@ -258,6 +258,8 @@ we want to provide an implementation, then:
     	...
     }
 
+#### Customizing the provider QoS parameters for registration
+
 In order to set Provider QoS parameters, provide an implementation of the
 `ProviderQosFactory` interface. You can provide multiple beans implementing
 the `ProviderQosFactory` interface. The first one found which returns `true`
@@ -288,18 +290,7 @@ Here's an example of what that could look like for the `MyService` we used above
 
 	}
 
-#### Injecting the calling principal
-
-In order to find out who is calling you, you can inject the `JoynrCallingPrincipal`
-to your EJB. This will only ever be set if your EJB is called via joynr (i.e. if you
-are also calling your EJB via other routes, e.g. JAX-RS, then the principal will not
-be set).
-
-See the
-[System Integration Test](../tests/system-integration-test/sit-jee-app/src/main/java/io/joynr/systemintegrationtest/jee/SystemIntegrationTestBean.java)
-for an example of its usage.
-
-#### <a name="provider_domain"></a> Customising the registration domain
+#### <a name="provider_domain"></a> Customizing the registration domain
 
 In some cases you might want to register your providers under a different domain than the
 application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
@@ -348,6 +339,17 @@ Here is an example of what that looks like:
 See also the
 [Radio JEE provider bean](../examples/radio-jee/radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java)
 for a working example.
+
+#### Injecting the calling principal
+
+In order to find out who is calling you, you can inject the `JoynrCallingPrincipal`
+to your EJB. This will only ever be set if your EJB is called via joynr (i.e. if you
+are also calling your EJB via other routes, e.g. JAX-RS, then the principal will not
+be set).
+
+See the
+[System Integration Test](../tests/system-integration-test/sit-jee-app/src/main/java/io/joynr/systemintegrationtest/jee/SystemIntegrationTestBean.java)
+for an example of its usage.
 
 #### Injecting a RawMessagingPreprocessor
 
