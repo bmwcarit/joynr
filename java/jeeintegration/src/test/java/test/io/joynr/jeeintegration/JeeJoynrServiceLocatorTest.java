@@ -99,6 +99,7 @@ public class JeeJoynrServiceLocatorTest {
         when(proxyBuilderSync.setMessagingQos(Mockito.any())).thenReturn(proxyBuilderSync);
         when(proxyBuilderSync.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilderSync);
         when(proxyBuilderSync.setStatelessAsyncCallbackUseCase(Mockito.anyString())).thenReturn(proxyBuilderSync);
+        when(proxyBuilderSync.setGbids(Mockito.<String[]> any())).thenReturn(proxyBuilderSync);
         when(proxyBuilderSync.build()).thenReturn(myJoynrProxy);
         when(joynrRuntime.getProxyBuilder(new HashSet<String>(Arrays.asList("local")),
                                           MyServiceSync.class)).thenReturn(proxyBuilderSync);
@@ -220,6 +221,7 @@ public class JeeJoynrServiceLocatorTest {
                                           MyServiceStatelessAsync.class)).thenReturn(proxyBuilderStatelessAsync);
         when(proxyBuilderStatelessAsync.setMessagingQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
         when(proxyBuilderStatelessAsync.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
+        when(proxyBuilderStatelessAsync.setGbids(Mockito.<String[]> any())).thenReturn(proxyBuilderStatelessAsync);
         when(proxyBuilderStatelessAsync.build()).thenReturn(myJoynrProxy);
         doAnswer(invocation -> {
             invocation.getArgumentAt(1, MessageIdCallback.class).accept("messageId");
@@ -259,6 +261,7 @@ public class JeeJoynrServiceLocatorTest {
                                           MyServiceStatelessAsync.class)).thenReturn(proxyBuilderStatelessAsync);
         when(proxyBuilderStatelessAsync.setMessagingQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
         when(proxyBuilderStatelessAsync.setDiscoveryQos(Mockito.any())).thenReturn(proxyBuilderStatelessAsync);
+        when(proxyBuilderStatelessAsync.setGbids(Mockito.<String[]> any())).thenReturn(proxyBuilderStatelessAsync);
         subject.builder(MyServiceStatelessAsync.class, "local").build();
         fail("Should not be able to build stateless async proxy without a use case specified.");
     }
@@ -440,4 +443,24 @@ public class JeeJoynrServiceLocatorTest {
         countDownLatch.await(100L, TimeUnit.MILLISECONDS);
     }
 
+    @Test
+    public void testBuildWithGbids() {
+        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+
+        String[] gbids = new String[]{ "gbid1", "gbid2" };
+        subject.builder(MyServiceSync.class, "local").withGbids(gbids).build();
+        verify(proxyBuilderSync).setGbids(gbids);
+    }
+
+    @Test
+    public void testBuildWithFutureAndWithGbids() {
+        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+
+        String[] gbids = new String[]{ "gbid1", "gbid2" };
+        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local")
+                                                         .useFuture()
+                                                         .withGbids(gbids)
+                                                         .build();
+        verify(proxyBuilderSync).setGbids(gbids);
+    }
 }

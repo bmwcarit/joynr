@@ -241,6 +241,14 @@ public interface ServiceLocator {
         ServiceProxyBuilder<T> withUseCase(String useCase);
 
         /**
+         * Set the GBIDs to use when looking up the service which the proxy will talk to.
+         *
+         * @param gbids an array of GBIDs
+         * @return the builder.
+         */
+        ServiceProxyBuilder<T> withGbids(String[] gbids);
+
+        /**
          * Set the callback to use when creating the proxy. The callback can be used to be informed of when the proxy
          * is successfully attached to the provider or in the case that this fails.
          *

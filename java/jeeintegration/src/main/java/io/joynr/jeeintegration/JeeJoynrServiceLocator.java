@@ -110,7 +110,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                      MessagingQos messagingQos,
                      DiscoveryQos discoveryQos,
                      String useCase) {
-        return get(serviceInterface, domains, messagingQos, discoveryQos, useCase, null);
+        return get(serviceInterface, domains, messagingQos, discoveryQos, useCase, null, null);
     }
 
     private <I> I get(Class<I> serviceInterface,
@@ -118,6 +118,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                       MessagingQos messagingQos,
                       DiscoveryQos discoveryQos,
                       String useCase,
+                      String[] gbids,
                       ProxyBuilder.ProxyCreatedCallback<I> proxyCreatedCallback) {
         if (joynrIntegrationBean.getRuntime() == null) {
             throw new IllegalStateException("You can't get service proxies until the joynr runtime has been initialised.");
@@ -125,7 +126,8 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         ProxyBuilder<I> proxyBuilder = joynrIntegrationBean.getRuntime()
                                                            .getProxyBuilder(domains, serviceInterface)
                                                            .setMessagingQos(messagingQos)
-                                                           .setDiscoveryQos(discoveryQos);
+                                                           .setDiscoveryQos(discoveryQos)
+                                                           .setGbids(gbids);
 
         if (useCase != null) {
             if (serviceInterface.getAnnotation(StatelessAsync.class) == null) {
@@ -159,6 +161,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         private MessagingQos messagingQos = new MessagingQos();
         private DiscoveryQos discoveryQos = new DiscoveryQos();
         private String useCase;
+        private String[] gbids;
         private ProxyBuilder.ProxyCreatedCallback<T> callback;
 
         private JeeJoynrServiceProxyBuilder(Class<T> serviceInterface, Set<String> domains) {
@@ -191,6 +194,15 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         }
 
         @Override
+        public ServiceProxyBuilder<T> withGbids(String[] gbids) {
+            if (gbids == null || gbids.length == 0) {
+                throw new IllegalArgumentException("gbids array must not be null or empty");
+            }
+            this.gbids = gbids.clone();
+            return this;
+        }
+
+        @Override
         public ServiceProxyBuilder<T> withCallback(ProxyBuilder.ProxyCreatedCallback<T> callback) {
             this.callback = callback;
             return this;
@@ -203,7 +215,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
 
         @Override
         public T build() {
-            return get(serviceInterface, domains, messagingQos, discoveryQos, useCase, callback);
+            return get(serviceInterface, domains, messagingQos, discoveryQos, useCase, gbids, callback);
         }
     }
 
@@ -240,6 +252,12 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         }
 
         @Override
+        public ServiceProxyBuilder<CompletableFuture<T>> withGbids(String[] gbids) {
+            wrappedBuilder.withGbids(gbids);
+            return this;
+        }
+
+        @Override
         public ServiceProxyBuilder<CompletableFuture<T>> withCallback(ProxyBuilder.ProxyCreatedCallback<CompletableFuture<T>> callback) {
             throw new IllegalStateException("The builder is using a future. Attach any callback you want to use in addition to the future before calling useFuture().");
         }
@@ -257,6 +275,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                 wrappedBuilder.messagingQos,
                 wrappedBuilder.discoveryQos,
                 wrappedBuilder.useCase,
+                wrappedBuilder.gbids,
                 new ProxyBuilder.ProxyCreatedCallback<T>() {
                     @Override
                     public void onProxyCreationFinished(T result) {
