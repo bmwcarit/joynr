@@ -45,6 +45,7 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.PropertyLoader;
 
 /**
@@ -64,6 +65,9 @@ public class DefaultMqttClientIdProviderTest {
     @Mock
     private MessageRouter mockMessageRouter;
 
+    @Mock
+    private RoutingTable mockRoutingTable;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -75,6 +79,7 @@ public class DefaultMqttClientIdProviderTest {
                 Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);
                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
                 bind(MessageRouter.class).toInstance(mockMessageRouter);
+                bind(RoutingTable.class).toInstance(mockRoutingTable);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(Executors.newScheduledThreadPool(10));
                 bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))

@@ -1,0 +1,146 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2019 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package io.joynr.messaging.routing;
+
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Field;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
+
+@RunWith(MockitoJUnitRunner.class)
+public class ReplyToAddressRegistrarTest {
+
+    private ReplyToAddressRegistrar subject;
+
+    private ObjectMapper objectMapper;
+
+    private final String[] gbidsArray = { "joynrtestgbid1", "joynrtestgbid2" };
+
+    @Mock
+    private ImmutableMessage immutableMessage;
+
+    @Mock
+    private RoutingTable routingTable;
+
+    @Before
+    public void setUp() throws Exception {
+        objectMapper = new ObjectMapper();
+        Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
+        objectMapperField.setAccessible(true);
+        objectMapperField.set(RoutingTypesUtil.class, objectMapper);
+
+        // create test subject
+        subject = new ReplyToAddressRegistrar(routingTable);
+    }
+
+    @Test
+    public void testRegisteringGlobalRoutingEntryForRequestMqttAddress() throws Exception {
+        final String brokerUri = "testBrokerUri";
+        final String topic = "testTopic";
+        final MqttAddress address = new MqttAddress(brokerUri, topic);
+
+        final String expectedBrokerUri = gbidsArray[0];
+        final MqttAddress expectedAddress = new MqttAddress(expectedBrokerUri, topic);
+
+        testRegisteringGlobalRoutingEntryForRequestTypes(address, expectedAddress);
+    }
+
+    @Test
+    public void testRegisteringGlobalRoutingEntryRequestChannelAddress() throws Exception {
+        final String messagingEndpointUrl = "messagingEndpointUrl";
+        final String channelId = "channelId";
+        final ChannelAddress address = new ChannelAddress(messagingEndpointUrl, channelId);
+        final ChannelAddress expectedAddress = new ChannelAddress(address);
+
+        testRegisteringGlobalRoutingEntryForRequestTypes(address, expectedAddress);
+    }
+
+    private void testRegisteringGlobalRoutingEntryForRequestTypes(final Address address,
+                                                                  final Address expectedAddress) throws JsonProcessingException {
+        testRegisteringGlobalRoutingEntry(address, expectedAddress, Message.VALUE_MESSAGE_TYPE_REQUEST);
+        testRegisteringGlobalRoutingEntry(address,
+                                          expectedAddress,
+                                          Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+        testRegisteringGlobalRoutingEntry(address,
+                                          expectedAddress,
+                                          Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+        testRegisteringGlobalRoutingEntry(address, expectedAddress, Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+    }
+
+    private void testRegisteringGlobalRoutingEntry(final Address address,
+                                                   final Address expectedAddress,
+                                                   String messageType) throws JsonProcessingException {
+        final long ttlMs = 1000L;
+        final boolean isGloballyVisible = true;
+
+        when(immutableMessage.getType()).thenReturn(messageType);
+        when(immutableMessage.getReplyTo()).thenReturn(objectMapper.writeValueAsString(address));
+        when(immutableMessage.getSender()).thenReturn("fromParticipantId");
+        when(immutableMessage.getTtlMs()).thenReturn(ttlMs);
+
+        subject.registerGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
+
+        verify(routingTable).put(immutableMessage.getSender(), expectedAddress, isGloballyVisible, ttlMs);
+        reset(routingTable);
+    }
+
+    @Test
+    public void testRegisteringGlobalRoutingEntryForNonRequestTypes() throws Exception {
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_ONE_WAY);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_PUBLICATION);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_REPLY);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
+    }
+
+    private void testRegisteringGlobalRoutingEntryForNonRequestType(String nonRequestType) {
+        when(immutableMessage.getType()).thenReturn(nonRequestType);
+
+        subject.registerGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
+
+        verify(immutableMessage, times(0)).getReplyTo();
+        verify(immutableMessage, times(0)).getSender();
+        verify(immutableMessage, times(0)).getTtlMs();
+        verify(routingTable, times(0)).put(anyString(), anyObject(), anyBoolean(), anyLong());
+    }
+
+}

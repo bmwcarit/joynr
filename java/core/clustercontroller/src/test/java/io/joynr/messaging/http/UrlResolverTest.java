@@ -36,6 +36,7 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.AtmosphereMessagingModule;
@@ -44,6 +45,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingTestModule;
 import io.joynr.messaging.http.operation.HttpDefaultRequestConfigProvider;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.RoutingTable;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UrlResolverTest {
@@ -51,12 +53,16 @@ public class UrlResolverTest {
     private String channelId = "UrlResolverTest_" + createUuidString();
     @Mock
     private MessageRouter mockMessageRouter;
+    @Mock
+    private RoutingTable mockRoutingTable;
     private UrlResolver urlResolver;
+    private String[] gbidArray;
 
     @Before
     public void setUp() throws Exception {
 
         Properties properties = new Properties();
+        gbidArray = new String[]{};
         properties.put(MessagingPropertyKeys.CHANNELID, channelId);
 
         Injector injector = Guice.createInjector(new JoynrPropertiesModule(properties),
@@ -65,6 +71,9 @@ public class UrlResolverTest {
                                                  new AbstractModule() {
                                                      @Override
                                                      protected void configure() {
+                                                         bind(RoutingTable.class).toInstance(mockRoutingTable);
+                                                         bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                                                             .toInstance(gbidArray);
                                                          bind(RequestConfig.class).toProvider(HttpDefaultRequestConfigProvider.class)
                                                                                   .in(Singleton.class);
                                                          bind(MessageRouter.class).toInstance(mockMessageRouter);

@@ -84,6 +84,7 @@ import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttPahoClientTest {
@@ -103,6 +104,8 @@ public class MqttPahoClientTest {
     private IMqttMessagingSkeleton mockReceiver;
     @Mock
     private MessageRouter mockMessageRouter;
+    @Mock
+    private RoutingTable mockRoutingTable;
     private JoynrMqttClient joynrMqttClient;
     private Properties properties;
     private byte[] serializedMessage;
@@ -280,6 +283,7 @@ public class MqttPahoClientTest {
             @Override
             protected void configure() {
                 bind(MessageRouter.class).toInstance(mockMessageRouter);
+                bind(RoutingTable.class).toInstance(mockRoutingTable);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(Executors.newScheduledThreadPool(10));
                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
@@ -605,6 +609,7 @@ public class MqttPahoClientTest {
                                             @Override
                                             protected void configure() {
                                                 bind(MessageRouter.class).toInstance(mockMessageRouter);
+                                                bind(RoutingTable.class).toInstance(mockRoutingTable);
                                                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                                                     .toInstance(Executors.newScheduledThreadPool(10));
                                                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
