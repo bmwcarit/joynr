@@ -36,11 +36,12 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
-import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -122,7 +123,10 @@ public class Arbitrator {
     }
 
     void attemptArbitration() {
-        logger.debug("DISCOVERY lookup for domain: {}, interface: {}", domains, interfaceName);
+        logger.debug("DISCOVERY lookup for domains: {}, interface: {}, gbids: {}",
+                     domains,
+                     interfaceName,
+                     Arrays.toString(gbids));
         localDiscoveryAggregator.lookup(new DiscoveryCallback(),
                                         domains.toArray(new String[domains.size()]),
                                         interfaceName,
@@ -130,7 +134,8 @@ public class Arbitrator {
                                                                      arbitrationDeadline - System.currentTimeMillis(),
                                                                      joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
                                                                                                                     .name()),
-                                                                     discoveryQos.getProviderMustSupportOnChange()));
+                                                                     discoveryQos.getProviderMustSupportOnChange()),
+                                        gbids);
     }
 
     /**
@@ -191,7 +196,14 @@ public class Arbitrator {
         Throwable reason;
         if (arbitrationListenerSemaphore.tryAcquire()) {
             if (exception != null) {
-                reason = exception;
+                if (exception instanceof ApplicationException) {
+                    DiscoveryError discoveryError = ((ApplicationException) exception).getError();
+                    reason = new DiscoveryException("Unable to find provider due to DiscoveryError: " + discoveryError
+                            + " interface: " + interfaceName + " domains: " + domains + "gbids: "
+                            + Arrays.toString(gbids));
+                } else {
+                    reason = exception;
+                }
             } else if (discoveredVersions == null || discoveredVersions.isEmpty()) {
                 reason = new DiscoveryException("Unable to find provider in time: interface: " + interfaceName
                         + " domains: " + domains);
@@ -297,11 +309,40 @@ public class Arbitrator {
         return true;
     }
 
-    private class DiscoveryCallback extends Callback<DiscoveryEntryWithMetaInfo[]> {
+    private class DiscoveryCallback extends CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> {
 
         @Override
         public void onFailure(JoynrRuntimeException error) {
             Arbitrator.this.onError(error);
+        }
+
+        @Override
+        public void onFailure(DiscoveryError error) {
+            switch (error) {
+            case NO_ENTRY_FOR_PARTICIPANT:
+            case NO_ENTRY_FOR_SELECTED_BACKENDS:
+                logger.trace("DISCOVERY lookup for domains: {}, interface: {}, gbids: {} returned DiscoveryError {}, continuing",
+                             domains,
+                             interfaceName,
+                             Arrays.toString(gbids),
+                             error);
+                if (isArbitrationInTime()) {
+                    restartArbitration();
+                } else {
+                    arbitrationFailed();
+                }
+                break;
+            case UNKNOWN_GBID:
+            case INVALID_GBID:
+            default:
+                logger.trace("DISCOVERY lookup for domains: {}, interface: {}, gbids: {} returned DiscoveryError {}, giving up",
+                             domains,
+                             interfaceName,
+                             Arrays.toString(gbids),
+                             error);
+                Arbitrator.this.onError(new ApplicationException(error));
+                break;
+            }
         }
 
         @Override

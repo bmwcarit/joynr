@@ -64,6 +64,7 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
@@ -72,6 +73,7 @@ import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -128,10 +130,12 @@ public class ArbitrationTest {
                 localDiscoveryAggregatorSemaphore.release();
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
-                                                 eq(new String[]{ domain }),
-                                                 eq(interfaceName),
-                                                 discoveryQosCaptor.capture());
+        }).when(localDiscoveryAggregator)
+          .lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                  eq(new String[]{ domain }),
+                  eq(interfaceName),
+                  discoveryQosCaptor.capture(),
+                  Mockito.<String[]> any());
 
         Field discoveryEntryVersionFilterField = ArbitratorFactory.class.getDeclaredField("discoveryEntryVersionFilter");
         discoveryEntryVersionFilterField.setAccessible(true);
@@ -697,10 +701,12 @@ public class ArbitrationTest {
                 localDiscoveryAggregatorSemaphore.release();
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
-                                                 eq(new String[]{ domain }),
-                                                 eq(interfaceName),
-                                                 Mockito.<joynr.types.DiscoveryQos> any());
+        }).when(localDiscoveryAggregator)
+          .lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                  eq(new String[]{ domain }),
+                  eq(interfaceName),
+                  Mockito.<joynr.types.DiscoveryQos> any(),
+                  Mockito.<String[]> any());
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
 
@@ -766,10 +772,12 @@ public class ArbitrationTest {
                 localDiscoveryAggregatorSemaphore.release();
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
-                                                 any(String[].class),
-                                                 eq(interfaceName),
-                                                 Mockito.<joynr.types.DiscoveryQos> any());
+        }).when(localDiscoveryAggregator)
+          .lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                  any(String[].class),
+                  eq(interfaceName),
+                  Mockito.<joynr.types.DiscoveryQos> any(),
+                  Mockito.<String[]> any());
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos, domain1, domain2);
 
