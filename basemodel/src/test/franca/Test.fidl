@@ -99,6 +99,8 @@ interface TestWithoutVersion {
 	map MapInsideInterfaceWithoutVersion {
 		String to Int32
 	}
+
+    broadcast emptyBroadcast {}
 }
 
 interface TestWithVersion {
@@ -115,6 +117,8 @@ interface TestWithVersion {
 	map MapInsideInterfaceWithVersion {
 		String to Int32
 	}
+
+    broadcast emptyBroadcast {}
 }
 
 //this interface starts in lower case (in contrary to our modelling guidelines) for testing purposes
