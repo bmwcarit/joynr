@@ -46,6 +46,7 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
     private ProxyBuilder<T> builder = null;
     private InitRuntimeTask runtimeInitTask;
     private String statelessAsyncCallbackUseCase;
+    private String[] gbids;
 
     public AndroidProxyBuilder(InitRuntimeTask runtimeInitTask,
                                Set<String> domains,
@@ -79,7 +80,7 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
         if (participantId != null) {
             builder.setParticipantId(participantId);
         }
-        T proxy = builder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build(callback);
+        T proxy = builder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).setGbids(gbids).build(callback);
         Log.d("JAS", "Returning Proxy");
         return proxy;
     }
@@ -129,6 +130,15 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
     @Override
     public ProxyBuilder<T> setStatelessAsyncCallbackUseCase(String useCase) {
         this.statelessAsyncCallbackUseCase = statelessAsyncCallbackUseCase;
+        return this;
+    }
+
+    @Override
+    public ProxyBuilder<T> setGbids(String[] gbids) {
+        if (gbids == null || gbids.length == 0) {
+            throw new IllegalArgumentException("gbids array must not be null or empty");
+        }
+        this.gbids = gbids.clone();
         return this;
     }
 
