@@ -14,6 +14,10 @@ the versioning scheme [here](JoynrVersioning.md).
   proxy, so that you can be notified of proxy creation success or failure. See JEE wiki for details.
 * **[JEE]** ServiceLocator builder now allows building a `CompletableFuture<>` of the proxy in order
   to be able to await successful proxy creation before using it. See JEE wiki for details.
+* **[JEE]** Interface `ProviderQosFactory` was renamed to `ProviderRegistrationSettingsFactory` as
+  now other settings like GBID(s) can be specified as well. You can still provide a single or
+  multiple implementations of this interface in order to customize how joynr registers a provider.
+  See the Javadoc of the interface as well as the [JEE documentation](jee.md) for more details.
 
 ## Other changes
 * **[JS]** Fixed a bug where fixed participantIds used for provider registrations
