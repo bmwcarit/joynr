@@ -65,31 +65,37 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
     }
 
     @Override
+    @Deprecated
     public <I> I get(Class<I> serviceInterface, String domain) {
         return get(serviceInterface, domain, new MessagingQos(), new DiscoveryQos());
     }
 
     @Override
+    @Deprecated
     public <I> I get(Class<I> serviceInterface, String domain, long ttl) {
         return get(serviceInterface, domain, new MessagingQos(ttl), new DiscoveryQos());
     }
 
     @Override
+    @Deprecated
     public <I> I get(Class<I> serviceInterface, Set<String> domains) {
         return get(serviceInterface, domains, new MessagingQos(), new DiscoveryQos());
     }
 
     @Override
+    @Deprecated
     public <I> I get(Class<I> serviceInterface, Set<String> domains, long ttl) {
         return get(serviceInterface, domains, new MessagingQos(ttl), new DiscoveryQos());
     }
 
     @Override
+    @Deprecated
     public <I> I get(Class<I> serviceInterface, String domain, MessagingQos messagingQos, DiscoveryQos discoveryQos) {
         return get(serviceInterface, new HashSet<String>(Arrays.asList(domain)), messagingQos, discoveryQos);
     }
 
     @Override
+    @Deprecated
     public <I> I get(Class<I> serviceInterface,
                      Set<String> domains,
                      MessagingQos messagingQos,
@@ -98,6 +104,7 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
     }
 
     @Override
+    @Deprecated
     public <I> I get(Class<I> serviceInterface,
                      Set<String> domains,
                      MessagingQos messagingQos,

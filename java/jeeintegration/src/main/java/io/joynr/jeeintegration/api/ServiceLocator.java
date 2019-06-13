@@ -44,7 +44,10 @@ public interface ServiceLocator {
      *            the domain in which the service implementation must be available.
      *
      * @return the client proxy, which can be used to call methods on the service service.
+     *
+     * @deprecated prefer using the builder.
      */
+    @Deprecated
     <I> I get(Class<I> serviceInterface, String domain);
 
     /**
@@ -63,7 +66,10 @@ public interface ServiceLocator {
      *            takes longer to deliver), then an exception is thrown.
      *
      * @return the client proxy, which can be used to call methods on the service interface.
+     *
+     * @deprecated prefer using the builder.
      */
+    @Deprecated
     <I> I get(Class<I> serviceInterface, String domain, long ttl);
 
     /**
@@ -83,7 +89,10 @@ public interface ServiceLocator {
      *            the discovery quality of service information to use when communicating to the service.
      *
      * @return the client proxy, which can be used to call methods on the service service.
+     *
+     * @deprecated prefer using the builder.
      */
+    @Deprecated
     <I> I get(Class<I> serviceInterface, String domain, MessagingQos messagingQos, DiscoveryQos discoveryQos);
 
     /**
@@ -99,7 +108,10 @@ public interface ServiceLocator {
      *            the set of domains in which the service implementations must be available.
      *
      * @return the client proxy, which can be used to call methods on the BCI service.
+     *
+     * @deprecated prefer using the builder.
      */
+    @Deprecated
     <I> I get(Class<I> serviceInterface, Set<String> domains);
 
     /**
@@ -118,7 +130,10 @@ public interface ServiceLocator {
      *            takes longer to deliver), then an exception is thrown.
      *
      * @return the client proxy, which can be used to call methods on the BCI service.
+     *
+     * @deprecated prefer using the builder.
      */
+    @Deprecated
     <I> I get(Class<I> serviceInterface, Set<String> domains, long ttl);
 
     /**
@@ -138,7 +153,10 @@ public interface ServiceLocator {
      *            the discovery quality of service information to use when communicating to the service.
      *
      * @return the client proxy, which can be used to call methods on the BCI service.
+     *
+     * @deprecated prefer using the builder.
      */
+    @Deprecated
     <I> I get(Class<I> serviceInterface, Set<String> domains, MessagingQos messagingQos, DiscoveryQos discoveryQos);
 
     /**
@@ -161,7 +179,10 @@ public interface ServiceLocator {
      *                processing stateless async replies received for requests made from this proxy.
      *
      * @return the client proxy, which can be used to call methods on the BCI service.
+     *
+     * @deprecated prefer using the builder.
      */
+    @Deprecated
     <I> I get(Class<I> serviceInterface,
               Set<String> domains,
               MessagingQos messagingQos,
