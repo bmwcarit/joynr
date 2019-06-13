@@ -18,8 +18,6 @@
  */
 /* istanbul ignore file */
 
-import * as UtilInternal from "../util/UtilInternal";
-
 import ApplicationException from "../exceptions/ApplicationException";
 import DiscoveryException from "../exceptions/DiscoveryException";
 import IllegalAccessException from "../exceptions/IllegalAccessException";
@@ -102,29 +100,6 @@ class TypeRegistry {
      */
     public getConstructor(joynrTypeName: string): any {
         return this.registry[joynrTypeName];
-    }
-
-    /**
-     * Returns an A+ promise, which is resolved once the type has been added to the typeRegistry
-     *
-     * @param joynrTypeName - the joynr type name that is to be resolved
-     * @param timeout - if timeout exceed before required joynr type is registered,
-     *            the returning promise will be rejected
-     * @returns an A+ promise object
-     */
-    public getTypeRegisteredPromise(joynrTypeName: string, timeout: number): Promise<any> {
-        if (this.registry[joynrTypeName]) {
-            return Promise.resolve();
-        }
-        this.registryPromise[joynrTypeName] = UtilInternal.createDeferred();
-        if (timeout && timeout > 0) {
-            this.registryPromise[joynrTypeName].timeoutTimer = setTimeout((): void => {
-                this.registryPromise[joynrTypeName].reject(
-                    new Error(`joynr/start/TypeRegistry: ${joynrTypeName} is not registered in the joynr type registry`)
-                );
-            }, timeout);
-        }
-        return this.registryPromise[joynrTypeName].promise;
     }
 
     /**

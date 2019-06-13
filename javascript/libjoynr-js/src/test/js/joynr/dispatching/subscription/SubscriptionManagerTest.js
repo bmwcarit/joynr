@@ -51,7 +51,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
     /**
      * Called before each test.
      */
-    beforeEach(done => {
+    beforeEach(() => {
         providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
             providerVersion: new Version({ majorVersion: 0, minorVersion: 23 }),
             domain: "testProviderDomain",
@@ -134,13 +134,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
          * automatically generated code called async methods.
          * Execution might be still in progress.
          */
-        TypeRegistrySingleton.getInstance()
-            .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(() => {
-                done();
-                return null;
-            })
-            .catch(fail);
+        TypeRegistrySingleton.getInstance().addType(TestEnum);
     });
 
     afterEach(() => {

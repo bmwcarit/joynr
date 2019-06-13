@@ -27,6 +27,8 @@ const Date = require("../../../../../test/js/global/Date");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
 const nanoid = require("nanoid");
+const typeRegistry = require("../../../../../main/js/joynr/types/TypeRegistrySingleton").getInstance();
+typeRegistry.addType(BrowserAddress).addType(ChannelAddress);
 let fakeTime;
 
 function increaseFakeTime(time_ms) {
@@ -204,11 +206,9 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             .then(returnedAddress => {
                 expect(returnedAddress).toEqual(browserAddress);
                 done();
-                return null;
             })
             .catch(error => {
                 fail(`got reject from resolveNextHop: ${error}`);
-                return null;
             });
         increaseFakeTime(1);
     });

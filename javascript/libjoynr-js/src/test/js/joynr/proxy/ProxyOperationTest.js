@@ -58,7 +58,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
         }
     }
 
-    beforeEach(done => {
+    beforeEach(() => {
         requestReplyManagerSpy = jasmine.createSpyObj("requestReplyManager", ["sendRequest", "sendOneWayRequest"]);
         requestReplyManagerSpy.sendRequest.and.callFake((settings, callbackSettings) => {
             const response = { result: "resultValue" };
@@ -117,19 +117,7 @@ describe("libjoynr-js.joynr.proxy.ProxyOperation", () => {
             ]
         ).buildFunction();
 
-        /*
-         * Make sure 'TestEnum' is properly registered as a type.
-         * Just requiring the module is insufficient since the
-         * automatically generated code called async methods.
-         * Execution might be still in progress.
-         */
-        TypeRegistrySingleton.getInstance()
-            .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(() => {
-                done();
-                return null;
-            })
-            .catch(fail);
+        TypeRegistrySingleton.getInstance().addType(TestEnum);
     });
 
     it("is of correct type", done => {

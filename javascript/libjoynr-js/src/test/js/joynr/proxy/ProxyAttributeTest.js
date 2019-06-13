@@ -65,7 +65,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
         });
     }
 
-    beforeEach(done => {
+    beforeEach(() => {
         subscriptionQos = new OnChangeWithKeepAliveSubscriptionQos();
         messagingQos = new MessagingQos();
 
@@ -124,13 +124,7 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
         isOnReadOnly = new ProxyAttribute(proxy, settings, "isOnReadOnly", "Boolean", "READONLY");
         isOnWriteOnly = new ProxyAttribute(proxy, settings, "isOnWriteOnly", "Boolean", "WRITEONLY");
 
-        TypeRegistrySingleton.getInstance()
-            .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(() => {
-                done();
-                return null;
-            })
-            .catch(fail);
+        TypeRegistrySingleton.getInstance().addType(TestEnum);
     });
 
     it("got initialized", done => {

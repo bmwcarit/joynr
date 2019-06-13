@@ -29,6 +29,17 @@ const ChannelAddress = require("../../../../../main/js/generated/joynr/system/Ro
 const Version = require("../../../../../main/js/generated/joynr/types/Version");
 const waitsFor = require("../../../../../test/js/global/WaitsFor");
 const CapabilitiesUtil = require("../../../../../main/js/joynr/util/CapabilitiesUtil");
+const typeRegistry = require("../../../../../main/js/joynr/types/TypeRegistrySingleton").getInstance();
+typeRegistry
+    .addType(DiscoveryQos)
+    .addType(ProviderQos)
+    .addType(CustomParameter)
+    .addType(ProviderScope)
+    .addType(DiscoveryScope)
+    .addType(DiscoveryEntry)
+    .addType(GlobalDiscoveryEntry)
+    .addType(ChannelAddress)
+    .addType(Version);
 
 let domain, interfaceName, discoveryQos;
 let discoveryEntries, discoveryEntriesReturned, globalDiscoveryEntries, globalDiscoveryEntriesReturned;
@@ -382,13 +393,12 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         return capabilityDiscovery
             .lookup([domain], interfaceName, discoveryQos)
             .then(fulfilledWith => {
-                let i;
                 const endDateMs = Date.now();
                 if (expectedReturnValue === undefined) {
                     fail("no return value was expected");
                 } else {
                     expect(fulfilledWith.length).toEqual(expectedReturnValue.length);
-                    for (i = 0; i < fulfilledWith.length; i++) {
+                    for (let i = 0; i < fulfilledWith.length; i++) {
                         assertDiscoveryEntryEquals(expectedReturnValue[i], fulfilledWith[i]);
                         expect(fulfilledWith[i].lastSeenDateMs >= startDateMs).toBeTruthy();
                         expect(fulfilledWith[i].lastSeenDateMs <= endDateMs).toBeTruthy();
@@ -402,222 +412,175 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
             });
     }
 
-    it("discovers correct discoveryEntries according to discoveryScope", done => {
-        const promises = [];
-        promises.push(testDiscoveryResult("00", DiscoveryScope.LOCAL_THEN_GLOBAL, [], [], [], []));
-        promises.push(
-            testDiscoveryResult(
-                "01",
-                DiscoveryScope.LOCAL_THEN_GLOBAL,
-                [discoveryEntries[1]],
-                [],
-                [],
-                [discoveryEntries[1]]
-            )
+    it("discovers correct discoveryEntries according to discoveryScope", async () => {
+        await testDiscoveryResult("00", DiscoveryScope.LOCAL_THEN_GLOBAL, [], [], [], []);
+        await testDiscoveryResult(
+            "01",
+            DiscoveryScope.LOCAL_THEN_GLOBAL,
+            [discoveryEntries[1]],
+            [],
+            [],
+            [discoveryEntries[1]]
         );
-        promises.push(
-            testDiscoveryResult(
-                "02",
-                DiscoveryScope.LOCAL_THEN_GLOBAL,
-                [],
-                [globalDiscoveryEntries[1]],
-                [],
-                [globalDiscoveryEntriesReturned[1]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "03",
-                DiscoveryScope.LOCAL_THEN_GLOBAL,
-                [],
-                [],
-                [globalDiscoveryEntries[2]],
-                [globalDiscoveryEntriesReturned[2]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "04",
-                DiscoveryScope.LOCAL_THEN_GLOBAL,
-                [discoveryEntries[3]],
-                [],
-                [globalDiscoveryEntries[3]],
-                [discoveryEntriesReturned[3]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "05",
-                DiscoveryScope.LOCAL_THEN_GLOBAL,
-                [discoveryEntries[3]],
-                [globalDiscoveryEntries[1]],
-                [globalDiscoveryEntries[3]],
-                [discoveryEntriesReturned[3]]
-            )
-        );
-        promises.push(testDiscoveryResult("06", DiscoveryScope.LOCAL_ONLY, [], [], [], []));
-        promises.push(
-            testDiscoveryResult(
-                "07",
-                DiscoveryScope.LOCAL_ONLY,
-                [discoveryEntries[5]],
-                [],
-                [],
-                [discoveryEntriesReturned[5]]
-            )
-        );
-        promises.push(testDiscoveryResult("08", DiscoveryScope.LOCAL_ONLY, [], [], [globalDiscoveryEntries[6]], []));
-        promises.push(testDiscoveryResult("09", DiscoveryScope.LOCAL_ONLY, [], [globalDiscoveryEntries[5]], [], []));
-        promises.push(
-            testDiscoveryResult(
-                "10",
-                DiscoveryScope.LOCAL_ONLY,
-                [],
-                [globalDiscoveryEntries[5]],
-                [globalDiscoveryEntries[6]],
-                []
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "11",
-                DiscoveryScope.LOCAL_ONLY,
-                [discoveryEntries[7]],
-                [],
-                [globalDiscoveryEntries[7]],
-                [discoveryEntriesReturned[7]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "12",
-                DiscoveryScope.LOCAL_ONLY,
-                [discoveryEntries[7]],
-                [globalDiscoveryEntries[1]],
-                [globalDiscoveryEntries[7]],
-                [discoveryEntriesReturned[7]]
-            )
-        );
-        promises.push(testDiscoveryResult("13", DiscoveryScope.GLOBAL_ONLY, [], [], [], []));
-        promises.push(
-            testDiscoveryResult(
-                "14",
-                DiscoveryScope.GLOBAL_ONLY,
-                [],
-                [globalDiscoveryEntries[9]],
-                [],
-                [globalDiscoveryEntriesReturned[9]]
-            )
-        );
-        promises.push(testDiscoveryResult("15", DiscoveryScope.GLOBAL_ONLY, [discoveryEntries[9]], [], [], []));
-        promises.push(
-            testDiscoveryResult(
-                "16",
-                DiscoveryScope.GLOBAL_ONLY,
-                [],
-                [globalDiscoveryEntries[10]],
-                [globalDiscoveryEntries[10]],
-                [globalDiscoveryEntriesReturned[10]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "17",
-                DiscoveryScope.GLOBAL_ONLY,
-                [],
-                [],
-                [globalDiscoveryEntries[10]],
-                [globalDiscoveryEntriesReturned[10]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "18",
-                DiscoveryScope.GLOBAL_ONLY,
-                [],
-                [globalDiscoveryEntries[11]],
-                [globalDiscoveryEntries[11]],
-                [globalDiscoveryEntriesReturned[11]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "19",
-                DiscoveryScope.GLOBAL_ONLY,
-                [discoveryEntries[10]],
-                [globalDiscoveryEntries[11]],
-                [globalDiscoveryEntries[11]],
-                [globalDiscoveryEntriesReturned[11]]
-            )
-        );
-        promises.push(testDiscoveryResult("20", DiscoveryScope.LOCAL_AND_GLOBAL, [], [], [], []));
-        promises.push(
-            testDiscoveryResult(
-                "21",
-                DiscoveryScope.LOCAL_AND_GLOBAL,
-                [discoveryEntries[1]],
-                [],
-                [],
-                [discoveryEntriesReturned[1]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "22",
-                DiscoveryScope.LOCAL_AND_GLOBAL,
-                [],
-                [globalDiscoveryEntries[1]],
-                [],
-                [globalDiscoveryEntriesReturned[1]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "23",
-                DiscoveryScope.LOCAL_AND_GLOBAL,
-                [],
-                [],
-                [globalDiscoveryEntries[2]],
-                [globalDiscoveryEntriesReturned[2]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "24",
-                DiscoveryScope.LOCAL_AND_GLOBAL,
-                [discoveryEntries[3]],
-                [globalDiscoveryEntries[4]],
-                [],
-                [discoveryEntriesReturned[3], globalDiscoveryEntriesReturned[4]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "25",
-                DiscoveryScope.LOCAL_AND_GLOBAL,
-                [discoveryEntries[3]],
-                [],
-                [globalDiscoveryEntries[4]],
-                [discoveryEntriesReturned[3], globalDiscoveryEntriesReturned[4]]
-            )
-        );
-        promises.push(
-            testDiscoveryResult(
-                "26",
-                DiscoveryScope.LOCAL_AND_GLOBAL,
-                [discoveryEntries[3]],
-                [globalDiscoveryEntries[1]],
-                [globalDiscoveryEntries[3]],
-                [discoveryEntriesReturned[3], globalDiscoveryEntriesReturned[1]]
-            )
+        await testDiscoveryResult(
+            "02",
+            DiscoveryScope.LOCAL_THEN_GLOBAL,
+            [],
+            [globalDiscoveryEntries[1]],
+            [],
+            [globalDiscoveryEntriesReturned[1]]
         );
 
-        Promise.all(promises)
-            .then(() => {
-                done();
-                return null;
-            })
-            .catch(fail);
+        await testDiscoveryResult(
+            "03",
+            DiscoveryScope.LOCAL_THEN_GLOBAL,
+            [],
+            [],
+            [globalDiscoveryEntries[2]],
+            [globalDiscoveryEntriesReturned[2]]
+        );
+        await testDiscoveryResult(
+            "04",
+            DiscoveryScope.LOCAL_THEN_GLOBAL,
+            [discoveryEntries[3]],
+            [],
+            [globalDiscoveryEntries[3]],
+            [discoveryEntriesReturned[3]]
+        );
+        await testDiscoveryResult(
+            "05",
+            DiscoveryScope.LOCAL_THEN_GLOBAL,
+            [discoveryEntries[3]],
+            [globalDiscoveryEntries[1]],
+            [globalDiscoveryEntries[3]],
+            [discoveryEntriesReturned[3]]
+        );
+        await testDiscoveryResult("06", DiscoveryScope.LOCAL_ONLY, [], [], [], []);
+        await testDiscoveryResult(
+            "07",
+            DiscoveryScope.LOCAL_ONLY,
+            [discoveryEntries[5]],
+            [],
+            [],
+            [discoveryEntriesReturned[5]]
+        );
+        await testDiscoveryResult("08", DiscoveryScope.LOCAL_ONLY, [], [], [globalDiscoveryEntries[6]], []);
+        await testDiscoveryResult("09", DiscoveryScope.LOCAL_ONLY, [], [globalDiscoveryEntries[5]], [], []);
+        await testDiscoveryResult(
+            "10",
+            DiscoveryScope.LOCAL_ONLY,
+            [],
+            [globalDiscoveryEntries[5]],
+            [globalDiscoveryEntries[6]],
+            []
+        );
+        await testDiscoveryResult(
+            "11",
+            DiscoveryScope.LOCAL_ONLY,
+            [discoveryEntries[7]],
+            [],
+            [globalDiscoveryEntries[7]],
+            [discoveryEntriesReturned[7]]
+        );
+        await testDiscoveryResult(
+            "12",
+            DiscoveryScope.LOCAL_ONLY,
+            [discoveryEntries[7]],
+            [globalDiscoveryEntries[1]],
+            [globalDiscoveryEntries[7]],
+            [discoveryEntriesReturned[7]]
+        );
+        await testDiscoveryResult("13", DiscoveryScope.GLOBAL_ONLY, [], [], [], []);
+        await testDiscoveryResult(
+            "14",
+            DiscoveryScope.GLOBAL_ONLY,
+            [],
+            [globalDiscoveryEntries[9]],
+            [],
+            [globalDiscoveryEntriesReturned[9]]
+        );
+        await testDiscoveryResult("15", DiscoveryScope.GLOBAL_ONLY, [discoveryEntries[9]], [], [], []);
+        await testDiscoveryResult(
+            "16",
+            DiscoveryScope.GLOBAL_ONLY,
+            [],
+            [globalDiscoveryEntries[10]],
+            [globalDiscoveryEntries[10]],
+            [globalDiscoveryEntriesReturned[10]]
+        );
+        await testDiscoveryResult(
+            "17",
+            DiscoveryScope.GLOBAL_ONLY,
+            [],
+            [],
+            [globalDiscoveryEntries[10]],
+            [globalDiscoveryEntriesReturned[10]]
+        );
+        await testDiscoveryResult(
+            "18",
+            DiscoveryScope.GLOBAL_ONLY,
+            [],
+            [globalDiscoveryEntries[11]],
+            [globalDiscoveryEntries[11]],
+            [globalDiscoveryEntriesReturned[11]]
+        );
+        await testDiscoveryResult(
+            "19",
+            DiscoveryScope.GLOBAL_ONLY,
+            [discoveryEntries[10]],
+            [globalDiscoveryEntries[11]],
+            [globalDiscoveryEntries[11]],
+            [globalDiscoveryEntriesReturned[11]]
+        );
+        await testDiscoveryResult("20", DiscoveryScope.LOCAL_AND_GLOBAL, [], [], [], []);
+        await testDiscoveryResult(
+            "21",
+            DiscoveryScope.LOCAL_AND_GLOBAL,
+            [discoveryEntries[1]],
+            [],
+            [],
+            [discoveryEntriesReturned[1]]
+        );
+        await testDiscoveryResult(
+            "22",
+            DiscoveryScope.LOCAL_AND_GLOBAL,
+            [],
+            [globalDiscoveryEntries[1]],
+            [],
+            [globalDiscoveryEntriesReturned[1]]
+        );
+        await testDiscoveryResult(
+            "23",
+            DiscoveryScope.LOCAL_AND_GLOBAL,
+            [],
+            [],
+            [globalDiscoveryEntries[2]],
+            [globalDiscoveryEntriesReturned[2]]
+        );
+        await testDiscoveryResult(
+            "24",
+            DiscoveryScope.LOCAL_AND_GLOBAL,
+            [discoveryEntries[3]],
+            [globalDiscoveryEntries[4]],
+            [],
+            [discoveryEntriesReturned[3], globalDiscoveryEntriesReturned[4]]
+        );
+        await testDiscoveryResult(
+            "25",
+            DiscoveryScope.LOCAL_AND_GLOBAL,
+            [discoveryEntries[3]],
+            [],
+            [globalDiscoveryEntries[4]],
+            [discoveryEntriesReturned[3], globalDiscoveryEntriesReturned[4]]
+        );
+        await testDiscoveryResult(
+            "26",
+            DiscoveryScope.LOCAL_AND_GLOBAL,
+            [discoveryEntries[3]],
+            [globalDiscoveryEntries[1]],
+            [globalDiscoveryEntries[3]],
+            [discoveryEntriesReturned[3], globalDiscoveryEntriesReturned[1]]
+        );
     });
 
     function getDiscoveryEntryWithScope(scope) {

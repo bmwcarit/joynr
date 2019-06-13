@@ -38,6 +38,7 @@ const Version = require("../../../../main/js/generated/joynr/types/Version");
 const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
 const nanoid = require("nanoid");
 const LoggingManager = require("../../../../main/js/joynr/system/LoggingManager");
+const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
 
 const providerId = "providerId";
 const proxyId = "proxyId";
@@ -63,7 +64,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
     /**
      * Called before each test.
      */
-    beforeEach(done => {
+    beforeEach(() => {
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
             providerVersion: new Version({ majorVersion: 0, minorVersion: 23 }),
             domain: "testProviderDomain",
@@ -126,20 +127,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
 
         loggerSpy = LoggingManager.getLogger.calls.mostRecent().returnValue;
         spyOn(loggerSpy, "error");
-
-        /*
-         * Make sure 'TestEnum' is properly registered as a type.
-         * Just requiring the module is insufficient since the
-         * automatically generated code called async methods.
-         * Execution might be still in progress.
-         */
-        TypeRegistrySingleton.getInstance()
-            .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(() => {
-                done();
-                return null;
-            })
-            .catch(fail);
+        TypeRegistrySingleton.getInstance().addType(TestEnum);
     });
 
     it("is instantiable and of correct type", done => {

@@ -29,7 +29,7 @@ const waitsFor = require("../../../../test/js/global/WaitsFor");
 describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
     let implementation, myOperation, operationSpy, operationName, provider, thenSpy, catchSpy;
 
-    beforeEach(done => {
+    beforeEach(() => {
         provider = {};
         operationName = "myOperation";
         implementation = jasmine.createSpy("implementation");
@@ -68,13 +68,7 @@ describe("libjoynr-js.joynr.provider.ProviderOperation", () => {
          * automatically generated code called async methods.
          * Execution might be still in progress.
          */
-        TypeRegistrySingleton.getInstance()
-            .getTypeRegisteredPromise("joynr.tests.testTypes.TestEnum", 1000)
-            .then(() => {
-                done();
-                return null;
-            })
-            .catch(fail);
+        TypeRegistrySingleton.getInstance().addType(TestEnum);
     });
 
     it("is of correct type", done => {
