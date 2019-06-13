@@ -67,6 +67,8 @@ public final class ArbitratorFactory {
      *            Arbitration settings like arbitration strategy, timeout and strategy specific parameters.
      * @param localDiscoveryAggregator
      *            Source for capabilities lookup.
+     * @param gbids
+     *            Array of GBID strings
      * @return the created Arbitrator object
      * @throws DiscoveryException
      *             if arbitration strategy is unknown
@@ -75,7 +77,8 @@ public final class ArbitratorFactory {
                                     final String interfaceName,
                                     final Version interfaceVersion,
                                     final DiscoveryQos discoveryQos,
-                                    DiscoveryAsync localDiscoveryAggregator) throws DiscoveryException {
+                                    DiscoveryAsync localDiscoveryAggregator,
+                                    String[] gbids) throws DiscoveryException {
 
         ArbitrationStrategyFunction arbitrationStrategyFunction;
         switch (discoveryQos.getArbitrationStrategy()) {
@@ -104,7 +107,8 @@ public final class ArbitratorFactory {
                               discoveryQos,
                               localDiscoveryAggregator,
                               arbitrationStrategyFunction,
-                              discoveryEntryVersionFilter);
+                              discoveryEntryVersionFilter,
+                              gbids);
     }
 
     public static synchronized void start() {

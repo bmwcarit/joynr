@@ -71,14 +71,17 @@ public class Arbitrator {
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
     private final Map<String, Set<Version>> discoveredVersions = new HashMap<>();
+    private String[] gbids;
 
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public Arbitrator(final Set<String> domains,
                       final String interfaceName,
                       final Version interfaceVersion,
                       final DiscoveryQos discoveryQos,
                       DiscoveryAsync localDiscoveryAggregator,
                       ArbitrationStrategyFunction arbitrationStrategyFunction,
-                      DiscoveryEntryVersionFilter discoveryEntryVersionFilter) {
+                      DiscoveryEntryVersionFilter discoveryEntryVersionFilter,
+                      String[] gbids) {
         this.domains = domains;
         this.interfaceName = interfaceName;
         this.interfaceVersion = interfaceVersion;
@@ -87,6 +90,11 @@ public class Arbitrator {
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeoutMs();
         this.discoveryEntryVersionFilter = discoveryEntryVersionFilter;
+        if (gbids == null) {
+            this.gbids = new String[0];
+        } else {
+            this.gbids = gbids.clone();
+        }
     }
 
     protected void onError(Throwable exception) {

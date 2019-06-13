@@ -183,6 +183,7 @@ public class ArbitrationTest {
                                                                  String... domains) throws InterruptedException {
         try {
             Set<String> domainsSet;
+            String[] gbids = null;
 
             if (domains.length == 0) {
                 domainsSet = new HashSet<String>(Arrays.asList(domain));
@@ -194,7 +195,8 @@ public class ArbitrationTest {
                                                              interfaceName,
                                                              interfaceVersion,
                                                              discoveryQos,
-                                                             localDiscoveryAggregator);
+                                                             localDiscoveryAggregator,
+                                                             gbids);
             arbitrator.setArbitrationListener(arbitrationCallback);
             arbitrator.scheduleArbitration();
 
@@ -783,6 +785,7 @@ public class ArbitrationTest {
 
     @Test
     public void useRemainingDiscoveryTimeoutAsTtlForLookupRetries() throws InterruptedException {
+        String[] gbids = null;
         discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryTimeoutMs(ARBITRATION_TIMEOUT);
         final long retryInterval = ARBITRATION_TIMEOUT / 3 * 2;
@@ -793,7 +796,8 @@ public class ArbitrationTest {
                                                          interfaceName,
                                                          interfaceVersion,
                                                          discoveryQos,
-                                                         localDiscoveryAggregator);
+                                                         localDiscoveryAggregator,
+                                                         gbids);
         arbitrator.setArbitrationListener(arbitrationCallback);
 
         arbitrator.scheduleArbitration();
@@ -812,6 +816,7 @@ public class ArbitrationTest {
 
     @Test
     public void doNotRetryLookupIfRetryIntervalIsLargerThanRemainingTimeout() throws InterruptedException {
+        String[] gbids = null;
         discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryTimeoutMs(ARBITRATION_TIMEOUT);
         final long retryInterval = ARBITRATION_TIMEOUT / 3 * 2;
@@ -822,7 +827,8 @@ public class ArbitrationTest {
                                                          interfaceName,
                                                          interfaceVersion,
                                                          discoveryQos,
-                                                         localDiscoveryAggregator);
+                                                         localDiscoveryAggregator,
+                                                         gbids);
         arbitrator.setArbitrationListener(arbitrationCallback);
 
         Thread.sleep(ARBITRATION_TIMEOUT - retryInterval + 1);

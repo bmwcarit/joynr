@@ -229,7 +229,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                                                       interfaceName,
                                                       interfaceVersion,
                                                       discoveryQos,
-                                                      localDiscoveryAggregator);
+                                                      localDiscoveryAggregator,
+                                                      gbids);
             }
 
             ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler(callback);
