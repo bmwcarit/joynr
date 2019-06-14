@@ -8,6 +8,16 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
+* **[JEE]** Fixed bug for making stateless-async calls to JEE providers which was resulting in an
+  IllegalArgumentException because the method signature was not found in the callback due to the
+  void result being wrongly translated to a `null` value.
+
+# joynr 1.8.1
+
+## API relevant changes
+None.
+
+## Other changes
 * **[JS]** Fixed a bug where fixed participantIds used for provider registrations
   were not getting stored causing provider unregistration to fail.
 
