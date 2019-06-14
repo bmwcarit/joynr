@@ -141,7 +141,7 @@ public class ProviderWrapper implements InvocationHandler {
                 joynrException = getJoynrExceptionFromInvocationException(e);
             }
             if (delegate != this) {
-                AbstractDeferred deferred = createAndResolveOrRejectDeferred(method, result, joynrException);
+                AbstractDeferred deferred = createAndResolveOrRejectDeferred(delegateToMethod, result, joynrException);
                 Promise<AbstractDeferred> promiseResult = new Promise<>(deferred);
                 return promiseResult;
             }
@@ -158,7 +158,7 @@ public class ProviderWrapper implements InvocationHandler {
                                                               Object result,
                                                               JoynrException joynrException) {
         AbstractDeferred deferred;
-        if (result == null && method.getReturnType().equals(Void.class)) {
+        if (result == null && method.getReturnType().getTypeName().equals("void")) {
             deferred = new DeferredVoid();
             if (joynrException == null) {
                 ((DeferredVoid) deferred).resolve();
