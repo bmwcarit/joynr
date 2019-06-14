@@ -19,6 +19,10 @@ It consists of the following sub-projects:
 * `stateless-async-jee-consumer`
 	* The clustered, JEE-based consumer for the service
 	* Provides a control REST API, which can be used to trigger the various calls
+* `stateless-async-jee-car-sim`
+    * A JEE-based version of the car simulator
+	* This runs as a single node and is not clustered
+	* Can be used in place of the plain-java version
 
 ## Scenario
 
