@@ -59,6 +59,14 @@ public class TestRuntime implements JoynrRuntime {
     }
 
     @Override
+    public Future<Void> registerInAllKnownBackends(String domain,
+                                                   Object provider,
+                                                   ProviderQos providerQos,
+                                                   boolean awaitGlobalRegistration) {
+        return null;
+    }
+
+    @Override
     public void unregisterProvider(String domain, Object provider) {
 
     }

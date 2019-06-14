@@ -121,8 +121,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     public Future<Void> addToAll(CallbackWithModeledError<Void, DiscoveryError> callback,
                                  DiscoveryEntry discoveryEntry,
                                  Boolean awaitGlobalRegistration) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        return getDefaultDiscoveryProxy().addToAll(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
     @Override

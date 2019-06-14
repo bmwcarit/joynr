@@ -63,5 +63,24 @@ public interface CapabilitiesRegistrar {
                                   String[] gbids,
                                   boolean awaitGlobalRegistration);
 
+    /**
+     * Registers a provider at the capabilities directory for all known backends to make it available at other cluster controllers and the
+     * messaging endpoint directory to dispatch incoming requests.
+     *
+     * @param domain
+     *            Domain of the provided service.
+     * @param provider
+     *            Provider instance.
+     * @param providerQos
+     *            Provider quality of service.
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout, if required.
+     * @return registration future
+     */
+    Future<Void> registerInAllKnownBackends(final String domain,
+                                            Object provider,
+                                            ProviderQos providerQos,
+                                            boolean awaitGlobalRegistration);
+
     Future<Void> unregisterProvider(String domain, Object provider);
 }

@@ -137,6 +137,14 @@ public class CapabilitiesRegistrarTest {
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
+    private void verifyRegisterInallKnownBackendsResults(boolean awaitGlobalRegistration) {
+        verify(localDiscoveryAggregator).addToAll(any(CallbackWithModeledError.class),
+                                                  discoveryEntryCaptor.capture(),
+                                                  eq(awaitGlobalRegistration));
+        DiscoveryEntry actual = discoveryEntryCaptor.getValue();
+        verifyDiscoveryEntry(actual);
+        verify(providerDirectory).add(eq(participantId), eq(providerContainer));
+    }
 
     private void verifyDiscoveryEntry(DiscoveryEntry discoveryEntry) {
         Assert.assertEquals(discoveryEntry.getProviderVersion(), testVersion);
@@ -171,6 +179,20 @@ public class CapabilitiesRegistrarTest {
         String[] gbids = new String[]{ "testgbid1" };
         registrar.registerProvider(domain, testProvider, providerQos, gbids, awaitGlobalRegistration);
         verifyRegisterProviderResults(awaitGlobalRegistration, gbids);
+    }
+
+    @Test
+    public void testRegisterInAllKnownBackendsWithoutAwaitGlobalRegistration() {
+        boolean awaitGlobalRegistration = false;
+        registrar.registerInAllKnownBackends(domain, testProvider, providerQos, awaitGlobalRegistration);
+        verifyRegisterInallKnownBackendsResults(awaitGlobalRegistration);
+    }
+
+    @Test
+    public void testRegisterInAllKnownBackendsWithAwaitGlobalRegistration() {
+        boolean awaitGlobalRegistration = true;
+        registrar.registerInAllKnownBackends(domain, testProvider, providerQos, awaitGlobalRegistration);
+        verifyRegisterInallKnownBackendsResults(awaitGlobalRegistration);
     }
 
     @SuppressWarnings("unchecked")

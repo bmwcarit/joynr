@@ -104,6 +104,16 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration, gbids);
     }
 
+    @Override
+    public Future<Void> registerInAllKnownBackends(final String domain,
+                                                   Object provider,
+                                                   ProviderQos providerQos,
+                                                   boolean awaitGlobalRegistration) {
+        DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
+        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback();
+        return localDiscoveryAggregator.addToAll(callback, discoveryEntry, awaitGlobalRegistration);
+    }
+
     private DiscoveryEntry buildDiscoveryEntryAndAddLocalParticipantEntries(final String domain,
                                                                             Object provider,
                                                                             ProviderQos providerQos) {
@@ -145,7 +155,6 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             @Override
             public void onFailure(DiscoveryError errorEnum) {
                 logger.error("Unexpected Error while registering Provider:", errorEnum);
-
             }
         };
     }

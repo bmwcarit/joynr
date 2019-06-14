@@ -260,6 +260,35 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
     }
 
+    /**
+     * Registers a provider in the joynr framework for all known GBIDs.
+     *
+     * @param domain
+     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
+     *            the provider.
+     * @param provider
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     * @param providerQos
+     *            the provider's quality of service settings
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout, if required.
+     * @return Returns a Future which can be used to check the registration status.
+     */
+    @Override
+    public Future<Void> registerInAllKnownBackends(String domain,
+                                                   Object provider,
+                                                   ProviderQos providerQos,
+                                                   boolean awaitGlobalRegistration) {
+        JoynrInterface joynrInterfaceAnnotatation = AnnotationUtil.getAnnotation(provider.getClass(),
+                                                                                 JoynrInterface.class);
+        if (joynrInterfaceAnnotatation == null) {
+            throw new IllegalArgumentException("The provider object must have a JoynrInterface annotation");
+        }
+        Class interfaceClass = joynrInterfaceAnnotatation.provides();
+        registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
+        return capabilitiesRegistrar.registerInAllKnownBackends(domain, provider, providerQos, awaitGlobalRegistration);
+    }
+
     @Override
     public void unregisterProvider(String domain, Object provider) {
 

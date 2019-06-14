@@ -115,6 +115,25 @@ public interface JoynrRuntime {
                                   final Class<?> interfaceClass);
 
     /**
+     * Registers a provider in the joynr framework for all known GBIDs.
+     *
+     * @param domain
+     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
+     *            the provider.
+     * @param provider
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     * @param providerQos
+     *            the provider's quality of service settings
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout, if required.
+     * @return Returns a Future which can be used to check the registration status.
+     */
+    public Future<Void> registerInAllKnownBackends(String domain,
+                                                   Object provider,
+                                                   ProviderQos providerQos,
+                                                   boolean awaitGlobalRegistration);
+
+    /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
      *
      * @param domain
