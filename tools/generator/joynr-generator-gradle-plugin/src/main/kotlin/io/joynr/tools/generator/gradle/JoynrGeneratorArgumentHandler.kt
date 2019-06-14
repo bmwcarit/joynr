@@ -51,7 +51,6 @@ class JoynrGeneratorArgumentHandler(private val logger: Logger,
         // default values for code generation
         private const val DEFAULT_LANGUAGE = "java"
         private const val DEFAULT_MODEL_PATH = "app/src/main/model/"
-        private const val DEFAULT_OUTPUT_PATH = "app/src/main/java/"
     }
 
     private var doClean: Boolean = false
@@ -67,13 +66,12 @@ class JoynrGeneratorArgumentHandler(private val logger: Logger,
         }
         val defaultLanguage = if (generationLanguage.orNull == null) DEFAULT_LANGUAGE else generationLanguage.get()
         val defaultModelPath = if (modelPath.orNull == null) DEFAULT_MODEL_PATH else modelPath.get()
-        val defaultOutputPath = if (outputPath.orNull == null) DEFAULT_OUTPUT_PATH else outputPath.get()
 
         invocationArguments.let {
             it.setClean(doClean)
             it.setGenerate(!doClean)
             it.modelPath = defaultModelPath
-            it.outputPath = defaultOutputPath
+            it.outputPath = outputPath.orNull
             it.rootGenerator = rootGenerator.orNull
             try {
                 it.setGenerationLanguage(defaultLanguage)
