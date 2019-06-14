@@ -100,12 +100,31 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
 
     @Override
     public Future<Void> registerProvider(String domain,
+                                         Object provider,
+                                         ProviderQos providerQos,
+                                         String[] gbids,
+                                         boolean awaitGlobalRegistration) {
+        JoynrRuntime runtime = getJoynrRuntime();
+        return runtime.registerProvider(domain, provider, providerQos, gbids, awaitGlobalRegistration);
+    }
+
+    @Override
+    public Future<Void> registerProvider(String domain,
             Object provider,
             ProviderQos providerQos,
             boolean awaitGlobalRegistration,
             final Class<?> interfaceClass) {
         JoynrRuntime runtime = getJoynrRuntime();
         return runtime.registerProvider(domain, provider, providerQos, awaitGlobalRegistration, interfaceClass);
+    }
+
+    @Override
+    public Future<Void> registerInAllKnownBackends(String domain,
+                                                   Object provider,
+                                                   ProviderQos providerQos,
+                                                   boolean awaitGlobalRegistration) {
+        JoynrRuntime runtime = getJoynrRuntime();
+        return runtime.registerInAllKnownBackends(domain, provider, providerQos, awaitGlobalRegistration);
     }
 
     @Override
