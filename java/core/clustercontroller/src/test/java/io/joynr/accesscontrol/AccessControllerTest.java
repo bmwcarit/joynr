@@ -56,6 +56,7 @@ import joynr.types.Version;
 public class AccessControllerTest {
 
     private static final int ONE_MINUTE_IN_MS = 60 * 1000;
+    private static final String[] gbids = new String[]{ "testGbid1", "testGbid2" };
 
     @Mock
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
@@ -89,7 +90,8 @@ public class AccessControllerTest {
                                                         }
                                                     },
                                                     discoveryProviderParticipantId,
-                                                    routingProviderParticipantId);
+                                                    routingProviderParticipantId,
+                                                    gbids);
 
         when(messageMock.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
         when(messageMock.getRecipient()).thenReturn(toParticipantId);
@@ -111,12 +113,12 @@ public class AccessControllerTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                CapabilityCallback callback = (CapabilityCallback) invocation.getArguments()[2];
+                CapabilityCallback callback = (CapabilityCallback) invocation.getArguments()[3];
                 callback.processCapabilityReceived(discoveryEntry);
                 return null;
             }
         }).when(localCapabilitiesDirectory)
-          .lookup(eq(toParticipantId), any(DiscoveryQos.class), any(CapabilityCallback.class));
+          .lookup(eq(toParticipantId), any(DiscoveryQos.class), eq(gbids), any(CapabilityCallback.class));
 
     }
 

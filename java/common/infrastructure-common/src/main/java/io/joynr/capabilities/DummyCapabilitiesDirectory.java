@@ -111,6 +111,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
         lookup(domains,
                interfaceName,
                new DiscoveryQos(30000, ArbitrationStrategy.NotSet, discoveryQos.getCacheMaxAge(), discoveryScope),
+               new String[0],
                callback);
 
         return new Promise<Lookup1Deferred>(deferred);
@@ -142,6 +143,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     public void lookup(String[] domains,
                        String interfaceName,
                        DiscoveryQos discoveryQos,
+                       String[] gbids,
                        CapabilitiesCallback capabilitiesCallback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilities async");
         ArrayList<DiscoveryEntryWithMetaInfo> foundCapabilities = new ArrayList<>();
@@ -166,7 +168,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
 
     @Override
     @CheckForNull
-    public void lookup(String participantId, DiscoveryQos discoveryQos, CapabilityCallback callback) {
+    public void lookup(String participantId, DiscoveryQos discoveryQos, String[] gbids, CapabilityCallback callback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
     }
 

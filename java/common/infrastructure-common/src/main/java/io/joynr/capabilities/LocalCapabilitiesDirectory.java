@@ -74,28 +74,31 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownL
     void removeCapabilityListener(CapabilityListener listener);
 
     /**
-     * Searches for capabilities by domain and interface name.
+     * Searches for capabilities by domain and interface name and gbids.
      *
      * @param domains The Domains for which the search is to be done.
      * @param interfaceName The interface for which the search is to be done.
      * @param discoveryQos The discovery quality of service for the search.
+     * @param gbids Global Backend IDs for which (global) providers should be returned.
      * @param capabilitiesCallback Callback to deliver the results asynchronously.
      */
     void lookup(String[] domains,
                 String interfaceName,
                 DiscoveryQos discoveryQos,
+                String[] gbids,
                 CapabilitiesCallback capabilitiesCallback);
 
     /**
-     * Searches for capability by participantId. This is an asynchronous method.
+     * Searches for capability by participantId and gbids. This is an asynchronous method.
      *
      * @param participantId The participant id to search for.
      * @param discoveryQos The discovery quality of service for the search.
+     * @param gbids Global Backend IDs for which (global) provider should be returned.
      * @param callback called if the capability with the given participant ID
      *      is retrieved. Or null if not found.
      */
     @CheckForNull
-    void lookup(String participantId, DiscoveryQos discoveryQos, CapabilityCallback callback);
+    void lookup(String participantId, DiscoveryQos discoveryQos, String[] gbids, CapabilityCallback callback);
 
     /**
      * Searches for capability by participantId.

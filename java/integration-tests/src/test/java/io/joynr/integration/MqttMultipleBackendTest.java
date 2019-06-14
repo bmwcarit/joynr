@@ -51,6 +51,7 @@ import org.mockito.stubbing.Answer;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.name.Names;
 
 import io.joynr.JoynrVersion;
 import io.joynr.arbitration.DiscoveryQos;
@@ -60,6 +61,7 @@ import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -80,6 +82,7 @@ public class MqttMultipleBackendTest {
 
     private final String TESTGBID1 = "testgbid1";
     private final String TESTGBID2 = "testgbid2";
+    private final String[] gbids = new String[]{ TESTGBID1, TESTGBID2 };
     private final String TESTDOMAIN = "testDomain";
     private final String TESTTOPIC = "testTopic";
 
@@ -154,6 +157,8 @@ public class MqttMultipleBackendTest {
                                                                             protected void configure() {
                                                                                 bind(MqttClientFactory.class).toInstance(mqttPahoClientFactory);
                                                                                 bind(GlobalCapabilitiesDirectoryClient.class).toInstance(gcdClient);
+                                                                                bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                                                                                    .toInstance(gbids);
                                                                             }
                                                                         }));
     }

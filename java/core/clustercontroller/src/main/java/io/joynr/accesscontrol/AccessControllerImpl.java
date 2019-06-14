@@ -34,6 +34,7 @@ import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -51,15 +52,18 @@ public class AccessControllerImpl implements AccessController {
     private final LocalDomainAccessController localDomainAccessController;
 
     private Set<String> whitelistedParticipantIds = new HashSet<String>();
+    private final String[] knownGbids;
 
     @Inject
     AccessControllerImpl(LocalCapabilitiesDirectory localCapabilitiesDirectory,
                          LocalDomainAccessController localDomainAccessController,
                          CapabilitiesProvisioning capabilitiesProvisioning,
                          @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
-                         @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId) {
+                         @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId,
+                         @Named(MessagingPropertyKeys.GBID_ARRAY) String[] knownGbids) {
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.localDomainAccessController = localDomainAccessController;
+        this.knownGbids = knownGbids;
 
         defineAndRegisterCapabilityListener();
         whitelistProvisionedEntries(capabilitiesProvisioning);
@@ -188,6 +192,6 @@ public class AccessControllerImpl implements AccessController {
                                                      DiscoveryScope.LOCAL_THEN_GLOBAL);
 
         String participantId = message.getRecipient();
-        localCapabilitiesDirectory.lookup(participantId, discoveryQos, callback);
+        localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids, callback);
     }
 }
