@@ -258,29 +258,36 @@ we want to provide an implementation, then:
     	...
     }
 
-#### Customizing the provider QoS parameters for registration
+#### Customizing the provider registration parameters
 
-In order to set Provider QoS parameters, provide an implementation of the
-`ProviderQosFactory` interface. You can provide multiple beans implementing
-the `ProviderQosFactory` interface. The first one found which returns `true`
-to `providesFor(Class)` for a given service interface will be used to obtain
-a `ProviderQos` instance via the `create()` method in order to perform the
-service registration. There is no guarantee in which order the factories will
-be asked, so it's safer to just provide one factory for a given service
-interface type. If no factory is found to provide the QoS information,
-then the default values are used.
+In order to set parameters like Provider QoS or GBID(s), provide an implementation of the
+`ProviderRegistrationSettingsFactory` interface. You can provide multiple beans implementing this
+interface. The first one found which returns `true` to `providesFor(Class)` for a given service
+interface will be used by joynr to obtain settings needed to perform the service registration.
+There is no guarantee in which order the factories will be asked, so it's safer to just provide
+one factory for a given service interface type. If no factory is found to provide settings, then
+the joynr runtime uses default values.
 
-Here's an example of what that could look like for the `MyService` we used above:
+Note that you can also implement the interface just partially with the settings you care about. For
+the rest the default methods of the interface will be invoked. Here is an example of what a (full)
+implementation could look like for the `MyService` we used above:
 
 	@Singleton
-	public class MyServiceQosProviderFactory implements ProviderQosFactory {
+	public class MyServiceProviderSettingsFactory implements ProviderRegistrationSettingsFactory {
 
 	    @Override
-	    public ProviderQos create() {
+	    public ProviderQos createProviderQos() {
 	        ProviderQos providerQos = new ProviderQos();
 	        providerQos.setCustomParameters(new CustomParameter[]{ new CustomParameter("name", "value") });
 	        providerQos.setPriority(1L);
 	        return providerQos;
+	    }
+
+	    @Override
+	    public String[] createGbids() {
+	        // Make sure these GBIDs are valid and are part of ConfigurableMessagingSettings.PROPERTY_GBIDS
+	        String[] gbidsForRegistration = { "testbackend1", "testbackend2" };
+	        return gbidsForRegistration;
 	    }
 
 	    @Override
