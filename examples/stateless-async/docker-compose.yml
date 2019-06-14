@@ -7,6 +7,8 @@ services:
     container_name: mqttbroker
     environment:
       - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+    ports:
+      - "1883:1883"
 
   postgresql:
     image: 'postgres:9-alpine'
@@ -27,6 +29,10 @@ services:
   carsim:
     image: "stateless-async-car-sim:latest"
     container_name: carsim
+
+  jee-carsim:
+    image: "stateless-async-jee-car-sim:latest"
+    container_name: jee-carsim
 
   jee-consumer-1:
     image: "stateless-async-jee-consumer:latest"
