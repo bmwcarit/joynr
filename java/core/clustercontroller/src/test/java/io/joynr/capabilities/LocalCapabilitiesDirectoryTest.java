@@ -141,8 +141,8 @@ public class LocalCapabilitiesDirectoryTest {
     private ArgumentCaptor<Runnable> runnableCaptor;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
-    private ChannelAddress channelAddress;
-    private String channelAddressSerialized;
+    private MqttAddress globalAddress;
+    private String globalAddressSerialized;
     private DiscoveryEntry discoveryEntry;
     private GlobalDiscoveryEntry globalDiscoveryEntry;
 
@@ -170,9 +170,9 @@ public class LocalCapabilitiesDirectoryTest {
     @Before
     public void setUp() throws Exception {
 
-        channelAddress = new ChannelAddress(TEST_URL, "testChannelId");
+        globalAddress = new MqttAddress(knownGbids[0], "testTopic");
         ObjectMapper objectMapper = new ObjectMapper();
-        channelAddressSerialized = objectMapper.writeValueAsString(channelAddress);
+        globalAddressSerialized = objectMapper.writeValueAsString(globalAddress);
 
         Field objectMapperField = CapabilityUtils.class.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);
@@ -258,7 +258,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                         System.currentTimeMillis(),
                                                         expiryDateMs,
                                                         publicKeyId,
-                                                        channelAddressSerialized);
+                                                        globalAddressSerialized);
     }
 
     private void checkCallToGlobalCapabilitiesDirectoryClient(DiscoveryEntry discoveryEntry, String[] expectedGbids) {
@@ -275,7 +275,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Test(timeout = 1000)
     public void addCapability() throws InterruptedException {
-        when(globalAddressProvider.get()).thenReturn(channelAddress);
+        when(globalAddressProvider.get()).thenReturn(globalAddress);
 
         final boolean awaitGlobalRegistration = true;
         String[] expectedGbids = new String[]{ knownGbids[0] };
@@ -286,7 +286,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Test(timeout = 1000)
     public void addCapabilityWithSingleNonDefaultGbid() throws InterruptedException {
-        when(globalAddressProvider.get()).thenReturn(channelAddress);
+        when(globalAddressProvider.get()).thenReturn(globalAddress);
 
         String[] expectedGbids = new String[]{ knownGbids[1] };
         final boolean awaitGlobalRegistration = true;
@@ -296,7 +296,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Test(timeout = 1000)
     public void addCapabilityWithMultipleGbids() throws InterruptedException {
-        when(globalAddressProvider.get()).thenReturn(channelAddress);
+        when(globalAddressProvider.get()).thenReturn(globalAddress);
 
         // expectedGbids element order intentionally differs from knownGbids element order
         String[] expectedGbids = new String[]{ knownGbids[1], knownGbids[0] };
@@ -307,7 +307,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Test(timeout = 1000)
     public void addCapabilityWithAddToAll() throws InterruptedException {
-        when(globalAddressProvider.get()).thenReturn(channelAddress);
+        when(globalAddressProvider.get()).thenReturn(globalAddress);
 
         String[] expectedGbids = new String[]{ knownGbids[0], knownGbids[1] };
         final boolean awaitGlobalRegistration = true;
@@ -393,7 +393,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                         System.currentTimeMillis(),
                                                         expiryDateMs,
                                                         publicKeyId,
-                                                        channelAddressSerialized);
+                                                        globalAddressSerialized);
 
         localCapabilitiesDirectory.add(discoveryEntry);
         Thread.sleep(1000);
@@ -428,7 +428,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                         System.currentTimeMillis(),
                                                         expiryDateMs,
                                                         publicKeyId,
-                                                        channelAddressSerialized);
+                                                        globalAddressSerialized);
 
         final boolean awaitGlobalRegistration = true;
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
@@ -485,7 +485,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                         System.currentTimeMillis(),
                                                         expiryDateMs,
                                                         publicKeyId,
-                                                        channelAddressSerialized);
+                                                        globalAddressSerialized);
 
         Mockito.doAnswer(createAddAnswerWithError())
                .when(globalCapabilitiesDirectoryClient)
@@ -646,7 +646,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                 System.currentTimeMillis(),
                                                                 expiryDateMs,
                                                                 publicKeyId,
-                                                                channelAddressSerialized);
+                                                                globalAddressSerialized);
         caps.add(capInfo);
         doAnswer(createLookupAnswer(caps)).when(globalCapabilitiesDirectoryClient)
                                           .lookup(any(Callback.class),
@@ -772,7 +772,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                 System.currentTimeMillis(),
                                                                 expiryDateMs,
                                                                 publicKeyId,
-                                                                channelAddressSerialized);
+                                                                globalAddressSerialized);
         caps.add(capInfo);
         Mockito.doAnswer(createLookupAnswer(caps))
                .when(globalCapabilitiesDirectoryClient)
@@ -931,7 +931,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                 System.currentTimeMillis(),
                                                                 expiryDateMs,
                                                                 publicKeyId,
-                                                                channelAddressSerialized);
+                                                                globalAddressSerialized);
         caps.add(capInfo);
         doAnswer(createLookupAnswer(caps)).when(globalCapabilitiesDirectoryClient)
                                           .lookup(any(Callback.class),
@@ -1016,7 +1016,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                 currentTime,
                                                                 expiryDateMs,
                                                                 publicKeyId,
-                                                                channelAddressSerialized);
+                                                                globalAddressSerialized);
 
         doReturn(Arrays.asList(capInfo)).when(globalDiscoveryEntryCacheMock)
                                         .lookup(eq(domainsForLookup),
@@ -1112,7 +1112,7 @@ public class LocalCapabilitiesDirectoryTest {
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
         CapabilitiesCallback capabilitiesCallback = mock(CapabilitiesCallback.class);
 
-        when(globalAddressProvider.get()).thenReturn(channelAddress);
+        when(globalAddressProvider.get()).thenReturn(globalAddress);
         List<GlobalDiscoveryEntry> entries = new ArrayList<>();
         for (String domain : domains) {
             GlobalDiscoveryEntry entry = new GlobalDiscoveryEntry();
@@ -1153,7 +1153,7 @@ public class LocalCapabilitiesDirectoryTest {
         entry.setParticipantId("participantId1");
         entry.setInterfaceName(interfaceName);
         entry.setDomain("domain1");
-        entry.setAddress(channelAddressSerialized);
+        entry.setAddress(globalAddressSerialized);
         doReturn(Arrays.asList(entry)).when(globalDiscoveryEntryCacheMock)
                                       .lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAgeMs()));
 
@@ -1188,7 +1188,7 @@ public class LocalCapabilitiesDirectoryTest {
         globalEntry.setParticipantId("participantIdCached");
         globalEntry.setInterfaceName(interfaceName);
         globalEntry.setDomain("domain2");
-        globalEntry.setAddress(channelAddressSerialized);
+        globalEntry.setAddress(globalAddressSerialized);
         doReturn(Arrays.asList(globalEntry)).when(globalDiscoveryEntryCacheMock)
                                             .lookup(eq(domains),
                                                     eq(interfaceName),
@@ -1202,7 +1202,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                 System.currentTimeMillis(),
                                                                                 System.currentTimeMillis() + 10000L,
                                                                                 "publicKeyId",
-                                                                                channelAddressSerialized);
+                                                                                globalAddressSerialized);
 
         doAnswer(createLookupAnswer(Arrays.asList(remoteGlobalEntry))).when(globalCapabilitiesDirectoryClient)
                                                                       .lookup(org.mockito.Matchers.<Callback<List<GlobalDiscoveryEntry>>> any(),
@@ -1264,7 +1264,7 @@ public class LocalCapabilitiesDirectoryTest {
         cachedGlobalEntry.setDomain(globalDomain);
         cachedGlobalEntry.setInterfaceName(interfaceName);
         cachedGlobalEntry.setParticipantId(participantId);
-        cachedGlobalEntry.setAddress(channelAddressSerialized);
+        cachedGlobalEntry.setAddress(globalAddressSerialized);
         when(globalDiscoveryEntryCacheMock.lookup(eq(participantId),
                                                   eq(discoveryQos.getCacheMaxAgeMs()))).thenReturn(cachedGlobalEntry);
 
@@ -1292,7 +1292,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                 System.currentTimeMillis(),
                                                                                 System.currentTimeMillis() + 10000L,
                                                                                 "publicKeyId",
-                                                                                channelAddressSerialized);
+                                                                                globalAddressSerialized);
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
@@ -1334,7 +1334,7 @@ public class LocalCapabilitiesDirectoryTest {
         cachedGlobalEntry.setParticipantId("participantIdCached");
         cachedGlobalEntry.setInterfaceName(interfaceName);
         cachedGlobalEntry.setDomain(globalDomain);
-        cachedGlobalEntry.setAddress(channelAddressSerialized);
+        cachedGlobalEntry.setAddress(globalAddressSerialized);
         DiscoveryEntryWithMetaInfo cachedGlobalEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                        cachedGlobalEntry);
         doReturn(Arrays.asList(cachedGlobalEntry)).when(globalDiscoveryEntryCacheMock)
@@ -1351,7 +1351,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                 System.currentTimeMillis(),
                                                                                 System.currentTimeMillis() + 10000L,
                                                                                 "publicKeyId",
-                                                                                channelAddressSerialized);
+                                                                                globalAddressSerialized);
         DiscoveryEntryWithMetaInfo remoteGlobalEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                        remoteGlobalEntry);
         doAnswer(createLookupAnswer(Arrays.asList(remoteGlobalEntry))).when(globalCapabilitiesDirectoryClient)
