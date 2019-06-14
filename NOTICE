@@ -177,6 +177,7 @@ This project has dependencies to:
   io.joynr.examples:stateless-async-api under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-car-sim under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:stateless-async-jee-car-sim under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-jee-consumer under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android-runtime under The Apache Software License, Version 2.0
