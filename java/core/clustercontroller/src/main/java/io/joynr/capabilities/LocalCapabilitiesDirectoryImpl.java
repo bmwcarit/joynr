@@ -263,7 +263,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     deferredVoid.reject((ProviderRuntimeException) exception);
                 } else {
                     deferredVoid.reject(new ProviderRuntimeException("Unknown error registering provider "
-                            + discoveryEntry.getParticipantId() + " in all default backend: " + exception));
+                            + discoveryEntry.getParticipantId() + " in default backend: " + exception));
                 }
             }
 
@@ -275,17 +275,15 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return new Promise<>(deferredVoid);
     }
 
-    private void validateGbids(Add1Deferred deferred, final String[] gbids) {
+    private DiscoveryError validateGbids(final String[] gbids) {
         if (gbids == null || gbids.length == 0) {
-            deferred.reject(DiscoveryError.INVALID_GBID);
-            return;
+            return DiscoveryError.INVALID_GBID;
         }
 
         HashSet<String> gbidSet = new HashSet<String>();
         for (String gbid : gbids) {
             if (gbid == null || gbid.isEmpty() || gbidSet.contains(gbid)) {
-                deferred.reject(DiscoveryError.INVALID_GBID);
-                return;
+                return DiscoveryError.INVALID_GBID;
             }
             gbidSet.add(gbid);
 
@@ -297,24 +295,26 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
             }
             if (!found) {
-                deferred.reject(DiscoveryError.UNKNOWN_GBID);
-                return;
+                return DiscoveryError.UNKNOWN_GBID;
             }
         }
+        return null;
     }
 
     @Override
     public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
         final Add1Deferred deferred = new Add1Deferred();
 
-        validateGbids(deferred, gbids);
-        if (deferred.isRejected()) {
+        DiscoveryError validationResult = validateGbids(gbids);
+        if (validationResult != null) {
+            deferred.reject(validationResult);
             return new Promise<>(deferred);
         }
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)) {
                 // in this case, no further need for global registration is required. Registration completed.
+                // TODO provider might still be registered globally if it was registered globally before
                 deferred.resolve();
                 return new Promise<>(deferred);
             }
