@@ -37,11 +37,13 @@ import io.joynr.provider.ProviderAnnotations;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryError;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
@@ -77,6 +79,14 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         this.libjoynrMessagingAddress = dispatcherAddress;
     }
 
+    @Override
+    public Future<Void> registerProvider(final String domain,
+                                         Object provider,
+                                         ProviderQos providerQos,
+                                         boolean awaitGlobalRegistration) {
+        return registerProvider(domain, provider, providerQos, new String[]{}, awaitGlobalRegistration);
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -87,7 +97,16 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     public Future<Void> registerProvider(final String domain,
                                          Object provider,
                                          ProviderQos providerQos,
+                                         String[] gbids,
                                          boolean awaitGlobalRegistration) {
+        DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
+        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback();
+        return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration, gbids);
+    }
+
+    private DiscoveryEntry buildDiscoveryEntryAndAddLocalParticipantEntries(final String domain,
+                                                                            Object provider,
+                                                                            ProviderQos providerQos) {
         if (providerQos == null) {
             throw new JoynrRuntimeException("providerQos == null. It must not be null");
         }
@@ -107,8 +126,11 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         final boolean isGloballyVisible = (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
         messageRouter.addNextHop(participantId, libjoynrMessagingAddress, isGloballyVisible);
         providerDirectory.add(participantId, providerContainer);
+        return discoveryEntry;
+    }
 
-        Callback<Void> callback = new Callback<Void>() {
+    private CallbackWithModeledError<Void, DiscoveryError> buildCallback() {
+        return new CallbackWithModeledError<Void, DiscoveryError>() {
             @Override
             public void onSuccess(@CheckForNull Void result) {
 
@@ -119,8 +141,13 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                 logger.error("Unexpected Error while registering Provider:", runtimeException);
 
             }
+
+            @Override
+            public void onFailure(DiscoveryError errorEnum) {
+                logger.error("Unexpected Error while registering Provider:", errorEnum);
+
+            }
         };
-        return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
     @Override

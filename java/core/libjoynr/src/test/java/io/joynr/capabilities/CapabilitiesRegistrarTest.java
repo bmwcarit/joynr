@@ -47,7 +47,9 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryError;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -125,20 +127,26 @@ public class CapabilitiesRegistrarTest {
         discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);
     }
 
-    private void verifyResults(boolean awaitGlobalRegistration) {
-        verify(localDiscoveryAggregator).add(any(Callback.class),
+    private void verifyRegisterProviderResults(boolean awaitGlobalRegistration, String[] gbids) {
+        verify(localDiscoveryAggregator).add(any(CallbackWithModeledError.class),
                                              discoveryEntryCaptor.capture(),
-                                             eq(awaitGlobalRegistration));
+                                             eq(awaitGlobalRegistration),
+                                             eq(gbids));
         DiscoveryEntry actual = discoveryEntryCaptor.getValue();
-        Assert.assertEquals(actual.getProviderVersion(), testVersion);
-        Assert.assertEquals(actual.getDomain(), domain);
-        Assert.assertEquals(actual.getInterfaceName(), TestProvider.INTERFACE_NAME);
-        Assert.assertEquals(actual.getParticipantId(), participantId);
-        Assert.assertEquals(actual.getQos(), providerQos);
-        Assert.assertTrue((System.currentTimeMillis() - actual.getLastSeenDateMs()) < 5000);
-        Assert.assertTrue((actual.getExpiryDateMs() - expiryDateMs) < 5000);
-        Assert.assertEquals(actual.getPublicKeyId(), publicKeyId);
+        verifyDiscoveryEntry(actual);
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
+    }
+
+
+    private void verifyDiscoveryEntry(DiscoveryEntry discoveryEntry) {
+        Assert.assertEquals(discoveryEntry.getProviderVersion(), testVersion);
+        Assert.assertEquals(discoveryEntry.getDomain(), domain);
+        Assert.assertEquals(discoveryEntry.getInterfaceName(), TestProvider.INTERFACE_NAME);
+        Assert.assertEquals(discoveryEntry.getParticipantId(), participantId);
+        Assert.assertEquals(discoveryEntry.getQos(), providerQos);
+        Assert.assertTrue((System.currentTimeMillis() - discoveryEntry.getLastSeenDateMs()) < 5000);
+        Assert.assertTrue((discoveryEntry.getExpiryDateMs() - expiryDateMs) < 5000);
+        Assert.assertEquals(discoveryEntry.getPublicKeyId(), publicKeyId);
     }
 
     @SuppressWarnings("unchecked")
@@ -146,7 +154,7 @@ public class CapabilitiesRegistrarTest {
     public void registerWithCapRegistrarWithoutAwaitGlobalRegistration() {
         boolean awaitGlobalRegistration = false;
         registrar.registerProvider(domain, testProvider, providerQos, awaitGlobalRegistration);
-        verifyResults(awaitGlobalRegistration);
+        verifyRegisterProviderResults(awaitGlobalRegistration, new String[]{});
     }
 
     @SuppressWarnings("unchecked")
@@ -154,7 +162,15 @@ public class CapabilitiesRegistrarTest {
     public void registerWithCapRegistrarWithAwaitGlobalRegistration() {
         boolean awaitGlobalRegistration = true;
         registrar.registerProvider(domain, testProvider, providerQos, awaitGlobalRegistration);
-        verifyResults(awaitGlobalRegistration);
+        verifyRegisterProviderResults(awaitGlobalRegistration, new String[]{});
+    }
+
+    @Test
+    public void registerWithCapRegistrarWithAwaitGlobalRegistrationAndGbids() {
+        boolean awaitGlobalRegistration = true;
+        String[] gbids = new String[]{ "testgbid1" };
+        registrar.registerProvider(domain, testProvider, providerQos, gbids, awaitGlobalRegistration);
+        verifyRegisterProviderResults(awaitGlobalRegistration, gbids);
     }
 
     @SuppressWarnings("unchecked")

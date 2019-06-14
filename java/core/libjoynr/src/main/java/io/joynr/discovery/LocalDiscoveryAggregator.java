@@ -114,8 +114,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                             DiscoveryEntry discoveryEntry,
                             Boolean awaitGlobalRegistration,
                             String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        return getDefaultDiscoveryProxy().add(callback, discoveryEntry, awaitGlobalRegistration, gbids);
     }
 
     @Override
