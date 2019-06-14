@@ -928,44 +928,6 @@ public class CcMessageRouterTest {
     }
 
     @Test
-    public void testReplyToAddressOfGlobalRequestIsAddedToRoutingTable() throws Exception {
-        final ObjectMapper objectMapper = injector.getInstance(ObjectMapper.class);
-
-        final String brokerUri = "testBrokerUri";
-        final String topic = "testTopic";
-        final MqttAddress replyToAddress = new MqttAddress(brokerUri, topic);
-        final String replyTo = objectMapper.writeValueAsString(replyToAddress);
-
-        joynrMessage.setReplyTo(replyTo);
-        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
-        immutableMessage.setReceivedFromGlobal(true);
-
-        messageRouter.route(immutableMessage);
-
-        verify(routingTable).put(fromParticipantId, replyToAddress, true, joynrMessage.getTtlMs(), false);
-    }
-
-    @Test
-    public void testReplyToAddressOfLocalRequestIsNotAddedToRoutingTable() throws Exception {
-        final ObjectMapper objectMapper = injector.getInstance(ObjectMapper.class);
-
-        final String brokerUri = "testBrokerUri";
-        final String topic = "testTopic";
-        final MqttAddress replyToAddress = new MqttAddress(brokerUri, topic);
-        final String replyTo = objectMapper.writeValueAsString(replyToAddress);
-
-        joynrMessage.setReplyTo(replyTo);
-        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
-        immutableMessage.setReceivedFromGlobal(false);
-
-        messageRouter.route(immutableMessage);
-
-        verify(routingTable, times(0)).put(eq(fromParticipantId), eq(replyToAddress), anyBoolean(), anyLong());
-        verify(routingTable,
-               times(0)).put(eq(fromParticipantId), eq(replyToAddress), anyBoolean(), anyLong(), anyBoolean());
-    }
-
-    @Test
     public void setToKnownDoesNotChangeRoutingTable() {
         final String participantId = "setToKnownParticipantId";
         messageRouter.setToKnown(participantId);
