@@ -24,6 +24,9 @@ the versioning scheme [here](JoynrVersioning.md).
   IllegalArgumentException because the method signature was not found in the callback due to the
   void result being wrongly translated to a `null` value.
 
+# joynr 1.8.2
+
+
 # joynr 1.8.1
 
 ## API relevant changes
