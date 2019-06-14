@@ -276,7 +276,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private DiscoveryError validateGbids(final String[] gbids) {
-        if (gbids == null || gbids.length == 0) {
+        if (gbids == null) {
             return DiscoveryError.INVALID_GBID;
         }
 
@@ -309,6 +309,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (validationResult != null) {
             deferred.reject(validationResult);
             return new Promise<>(deferred);
+        }
+        if (gbids.length == 0) {
+            // register provider in default backend
+            gbids = new String[]{ knownGbids[0] };
         }
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {

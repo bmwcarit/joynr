@@ -288,9 +288,10 @@ public class LocalCapabilitiesDirectoryTest {
     public void addCapabilityWithSingleNonDefaultGbid() throws InterruptedException {
         when(globalAddressProvider.get()).thenReturn(globalAddress);
 
-        String[] expectedGbids = new String[]{ knownGbids[1] };
+        String[] gbids = new String[]{ knownGbids[1] };
+        String[] expectedGbids = gbids.clone();
         final boolean awaitGlobalRegistration = true;
-        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, expectedGbids);
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
         checkCallToGlobalCapabilitiesDirectoryClient(discoveryEntry, expectedGbids);
     }
 
@@ -299,9 +300,21 @@ public class LocalCapabilitiesDirectoryTest {
         when(globalAddressProvider.get()).thenReturn(globalAddress);
 
         // expectedGbids element order intentionally differs from knownGbids element order
-        String[] expectedGbids = new String[]{ knownGbids[1], knownGbids[0] };
+        String[] gbids = new String[]{ knownGbids[1], knownGbids[0] };
+        String[] expectedGbids = gbids.clone();
         final boolean awaitGlobalRegistration = true;
-        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, expectedGbids);
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
+        checkCallToGlobalCapabilitiesDirectoryClient(discoveryEntry, expectedGbids);
+    }
+
+    @Test(timeout = 1000)
+    public void addCapabilityWithGbidsWithoutElements() throws InterruptedException {
+        when(globalAddressProvider.get()).thenReturn(globalAddress);
+
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids = new String[]{};
+        String[] expectedGbids = new String[]{ knownGbids[0] };
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
         checkCallToGlobalCapabilitiesDirectoryClient(discoveryEntry, expectedGbids);
     }
 
@@ -335,14 +348,6 @@ public class LocalCapabilitiesDirectoryTest {
     public void addCapabilityWithNullGbids() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = null;
-        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test(timeout = 1000)
-    public void addCapabilityWithGbidsWithoutElements() throws InterruptedException {
-        final boolean awaitGlobalRegistration = true;
-        String[] gbids = new String[]{};
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
         checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
     }
