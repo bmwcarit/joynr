@@ -1,5 +1,7 @@
 package io.joynr.messaging.mqtt.hivemq.client;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -39,33 +41,38 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClient.class);
 
     private final Mqtt3RxClient client;
-
+    private final boolean cleanSession;
     private Consumer<Mqtt3Publish> publishConsumer;
-
     private IMqttMessagingSkeleton messagingSkeleton;
-
     private int keepAliveTimeSeconds;
+    private volatile boolean shuttingDown;
 
-    public HivemqMqttClient(Mqtt3RxClient client, int keepAliveTimeSeconds) {
+    private Map<String, Mqtt3Subscription> subscriptions = new ConcurrentHashMap<>();
+
+    public HivemqMqttClient(Mqtt3RxClient client, int keepAliveTimeSeconds, boolean cleanSession) {
         this.client = client;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
+        this.cleanSession = cleanSession;
     }
 
     @Override
     public synchronized void start() {
         logger.info("Initialising MQTT client {} -> {}", this, client);
-        while (!client.getConfig().getState().isConnected()) {
-            Mqtt3Connect mqtt3Connect = Mqtt3Connect.builder()
-                                                    .cleanSession(true)
-                                                    .keepAlive(keepAliveTimeSeconds)
-                                                    .build();
-            client.connect(mqtt3Connect)
-                  .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.", client, connAck))
-                  .doOnError(throwable -> logger.error("Unable to connect MQTT client {}.", client, throwable))
-                  .blockingGet();
-            if (client.getConfig().getState().isConnected()) {
-                logger.info("MQTT client {} connected.", client);
+        if (!client.getConfig().getState().isConnected()) {
+            while (!client.getConfig().getState().isConnected()) {
+                logger.info("Attempting to connect client {} ...", client);
+                Mqtt3Connect mqtt3Connect = Mqtt3Connect.builder()
+                                                        .cleanSession(cleanSession)
+                                                        .keepAlive(keepAliveTimeSeconds)
+                                                        .build();
+                client.connect(mqtt3Connect)
+                      .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.", client, connAck))
+                      .doOnError(throwable -> logger.error("Unable to connect MQTT client {}.", client, throwable))
+                      .blockingGet();
             }
+            logger.info("MQTT client {} connected.", client);
+        } else {
+            logger.info("MQTT client {} already connected - skipping.", client);
         }
         if (publishConsumer == null) {
             logger.info("Setting up publishConsumer for {}", client);
@@ -77,6 +84,8 @@ public class HivemqMqttClient implements JoynrMqttClient {
                   .doOnNext(mqtt3PublishResult -> logger.info("Publish result: {}", mqtt3PublishResult))
                   .doOnError(throwable -> logger.error("Publish encountered error.", throwable))
                   .subscribe();
+        } else {
+            logger.info("publishConsumer already set up for {} - skipping.", client);
         }
     }
 
@@ -86,13 +95,14 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
+        this.shuttingDown = true;
         client.disconnect().blockingAwait();
     }
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage) {
-        publishMessage(topic, serializedMessage, MqttQos.AT_MOST_ONCE.getCode());
+        publishMessage(topic, serializedMessage, MqttQos.AT_MOST_ONCE.getCode()); // TODO map to joynr messaging qos
     }
 
     @Override
@@ -109,10 +119,15 @@ public class HivemqMqttClient implements JoynrMqttClient {
     @Override
     public void subscribe(String topic) {
         logger.info("Subscribing to {}", topic);
-        Mqtt3Subscription subscription = Mqtt3Subscription.builder()
-                                                          .topicFilter(topic)
-                                                          .qos(MqttQos.AT_LEAST_ONCE) // TODO make configurable
-                                                          .build();
+        Mqtt3Subscription subscription = subscriptions.computeIfAbsent(topic,
+                                                                       (t) -> Mqtt3Subscription.builder()
+                                                                                               .topicFilter(t)
+                                                                                               .qos(MqttQos.AT_LEAST_ONCE) // TODO make configurable
+                                                                                               .build());
+        doSubscribe(subscription);
+    }
+
+    private void doSubscribe(Mqtt3Subscription subscription) {
         Mqtt3Subscribe subscribe = Mqtt3Subscribe.builder().addSubscription(subscription).build();
         client.subscribeStream(subscribe)
               .doOnSingle(mqtt3SubAck -> logger.debug("Subscribed to {} with result {}", subscription, mqtt3SubAck))
@@ -123,9 +138,16 @@ public class HivemqMqttClient implements JoynrMqttClient {
               .subscribe();
     }
 
+    public void resubscribe() {
+        subscriptions.forEach((topic, subscription) -> {
+            doSubscribe(subscription);
+        });
+    }
+
     @Override
     public void unsubscribe(String topic) {
         logger.info("Unsubscribing from {}", topic);
+        subscriptions.remove(topic);
         Mqtt3Unsubscribe unsubscribe = Mqtt3Unsubscribe.builder().addTopicFilter(topic).build();
         client.unsubscribe(unsubscribe)
               .doOnComplete(() -> logger.debug("Unsubscribed from {}", topic))
@@ -134,8 +156,8 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     @Override
-    public boolean isShutdown() {
-        return false;
+    public synchronized boolean isShutdown() {
+        return shuttingDown;
     }
 
     private void setPublishConsumer(Consumer<Mqtt3Publish> publishConsumer) {

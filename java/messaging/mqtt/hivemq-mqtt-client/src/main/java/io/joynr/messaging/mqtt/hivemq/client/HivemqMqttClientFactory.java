@@ -4,26 +4,27 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ScheduledExecutorService;
 
-import com.google.inject.Singleton;
-import com.hivemq.client.mqtt.MqttClient;
-import com.hivemq.client.mqtt.MqttClientExecutorConfig;
-import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
-import com.hivemq.client.mqtt.mqtt3.Mqtt3ClientBuilder;
-import com.hivemq.client.mqtt.mqtt3.Mqtt3RxClient;
-import io.joynr.messaging.routing.MessageRouter;
-import io.reactivex.schedulers.Schedulers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.hivemq.client.mqtt.MqttClient;
+import com.hivemq.client.mqtt.MqttClientExecutorConfig;
+import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext;
+import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedListener;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3ClientBuilder;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3RxClient;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.routing.MessageRouter;
+import io.reactivex.schedulers.Schedulers;
 import joynr.system.RoutingTypes.MqttAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This factory class is responsible for producing joynr MQTT clients using the mqtt-bee library.
@@ -49,6 +50,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private final MqttClientIdProvider mqttClientIdProvider;
     private final ScheduledExecutorService scheduledExecutorService;
     private final int keepAliveTimeSeconds;
+    private final boolean cleanSession;
 
     private JoynrMqttClient sender;
     private JoynrMqttClient receiver;
@@ -57,6 +59,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimeSeconds,
+                                   @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider) {
         this.ownAddress = ownAddress;
@@ -64,6 +67,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         this.scheduledExecutorService = scheduledExecutorService;
         this.mqttClientIdProvider = mqttClientIdProvider;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
+        this.cleanSession = cleanSession;
     }
 
     @Override
@@ -106,19 +110,39 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                                               .nettyExecutor(scheduledExecutorService)
                                                                               .applicationScheduler(Schedulers.from(scheduledExecutorService))
                                                                               .build();
+            ResubscribeHandler resubscribeHandler = new ResubscribeHandler();
             Mqtt3ClientBuilder clientBuilder = MqttClient.builder()
                                                          .useMqttVersion3()
                                                          .identifier(clientId)
                                                          .serverHost(serverUri.getHost())
                                                          .serverPort(serverUri.getPort())
+                                                         .automaticReconnectWithDefaultConfig()
+                                                         .addConnectedListener(resubscribeHandler)
                                                          .executorConfig(executorConfig);
             if (serverUri.getScheme().equals("ssl") || serverUri.getScheme().equals("tls")) {
-                clientBuilder.useSslWithDefaultConfig();
+                clientBuilder.sslWithDefaultConfig();
             }
             Mqtt3RxClient client = clientBuilder.buildRx();
-            return new HivemqMqttClient(client, keepAliveTimeSeconds);
+            HivemqMqttClient result = new HivemqMqttClient(client, keepAliveTimeSeconds, cleanSession);
+            resubscribeHandler.setClient(result);
+            return result;
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + ownAddress.getBrokerUri(), e);
         }
+    }
+
+    static class ResubscribeHandler implements MqttClientConnectedListener {
+
+        private HivemqMqttClient client;
+
+        void setClient(HivemqMqttClient client) {
+            this.client = client;
+        }
+
+        @Override
+        public void onConnected(MqttClientConnectedContext context) {
+            client.resubscribe();
+        }
+
     }
 }
