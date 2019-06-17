@@ -67,13 +67,14 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
-import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.tests.testProxy;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.Version;
 
@@ -207,17 +208,20 @@ public class MqttMultipleBackendTest {
 
         doAnswer(new Answer<Void>() {
 
-            @SuppressWarnings("unchecked")
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                Callback<List<GlobalDiscoveryEntry>> callback = (Callback<List<GlobalDiscoveryEntry>>) invocation.getArguments()[0];
+                @SuppressWarnings("unchecked")
+                CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError> callback = (CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>) invocation.getArguments()[0];
                 List<GlobalDiscoveryEntry> globalDiscoveryEntryList = new ArrayList<>();
                 globalDiscoveryEntryList.add(globalDiscoveryEntry);
                 callback.onSuccess(globalDiscoveryEntryList);
                 return null;
             }
-        }).when(gcdClient)
-          .lookup(Matchers.<Callback<List<GlobalDiscoveryEntry>>> any(), any(String[].class), anyString(), anyLong());
+        }).when(gcdClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                  any(String[].class),
+                                  anyString(),
+                                  anyLong(),
+                                  any(String[].class));
 
         ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(TESTDOMAIN, testProxy.class);
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -238,6 +242,7 @@ public class MqttMultipleBackendTest {
             }
         });
         assertTrue(semaphore.tryAcquire(10, TimeUnit.SECONDS));
+        reset(gcdClient);
         return proxy;
     }
 

@@ -37,7 +37,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -121,35 +120,32 @@ public class GlobalCapabilitiesDirectoryClient {
     }
 
     // lookup methods
-    public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long ttl) {
-        lookup(callback, participantId, ttl, allGbids[0]);
-    }
-
-    public void lookup(Callback<GlobalDiscoveryEntry> callback, String participantId, long ttl, String targetGbid) {
+    public void lookup(CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError> callback,
+                       String participantId,
+                       long ttl,
+                       String[] targetGbids) {
         MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttl);
-        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
-        getGcdProxy().lookup(callback, participantId, qosWithGbidCustomHeader);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbids[0]);
+        getGcdProxy().lookup(callback, participantId, targetGbids, qosWithGbidCustomHeader);
     }
 
-    public void lookup(final Callback<List<GlobalDiscoveryEntry>> callback,
-                       String[] domains,
-                       String interfaceName,
-                       long ttl) {
-        lookup(callback, domains, interfaceName, ttl, allGbids[0]);
-    }
-
-    public void lookup(final Callback<List<GlobalDiscoveryEntry>> callback,
+    public void lookup(final CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError> callback,
                        String[] domains,
                        String interfaceName,
                        long ttl,
-                       String targetGbid) {
+                       String[] targetGbids) {
         MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttl);
-        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbids[0]);
 
-        getGcdProxy().lookup(new Callback<GlobalDiscoveryEntry[]>() {
+        getGcdProxy().lookup(new CallbackWithModeledError<GlobalDiscoveryEntry[], DiscoveryError>() {
             @Override
             public void onFailure(JoynrRuntimeException error) {
                 callback.onFailure(error);
+            }
+
+            @Override
+            public void onFailure(DiscoveryError errorEnum) {
+                callback.onFailure(errorEnum);
             }
 
             @Override
@@ -164,7 +160,7 @@ public class GlobalCapabilitiesDirectoryClient {
                 callback.onSuccess(globalDiscoveryEntryList);
             }
 
-        }, domains, interfaceName, qosWithGbidCustomHeader);
+        }, domains, interfaceName, targetGbids, qosWithGbidCustomHeader);
 
     }
 

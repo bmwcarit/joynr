@@ -119,9 +119,16 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
 
     @Override
     public Promise<Lookup3Deferred> lookup(String participantId) {
+        logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
         Lookup3Deferred deferred = new Lookup3Deferred();
-        DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
-        deferred.resolve(discoveryEntry);
+
+        for (DiscoveryEntryWithMetaInfo entry : registeredCapabilities) {
+            if (entry.getParticipantId().equals(participantId)) {
+                deferred.resolve(entry);
+                break;
+            }
+        }
+
         return new Promise<Lookup3Deferred>(deferred);
     }
 
@@ -176,20 +183,6 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
         // TODO
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
-    @Override
-    @CheckForNull
-    public DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos) {
-        logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
-        DiscoveryEntryWithMetaInfo retrievedDiscoveryEntry = null;
-        for (DiscoveryEntryWithMetaInfo entry : registeredCapabilities) {
-            if (entry.getParticipantId().equals(participantId)) {
-                retrievedDiscoveryEntry = entry;
-                break;
-            }
-        }
-        return retrievedDiscoveryEntry;
     }
 
     @Override

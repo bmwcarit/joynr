@@ -28,7 +28,6 @@ import io.joynr.provider.Promise;
 import io.joynr.runtime.ShutdownListener;
 import joynr.system.DiscoveryProvider;
 import joynr.types.DiscoveryEntry;
-import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownListener {
     public static final String JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS = "joynr.scheduler.capabilities.freshness";
@@ -99,16 +98,6 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownL
      */
     @CheckForNull
     void lookup(String participantId, DiscoveryQos discoveryQos, String[] gbids, CapabilityCallback callback);
-
-    /**
-     * Searches for capability by participantId.
-     *
-     * @param participantId The participant id to search for.
-     * @param discoveryQos The discovery quality of service for the search.
-     * @return the capability with the given participant ID. Or null if not found.
-     */
-    @CheckForNull
-    DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos);
 
     /**
      *

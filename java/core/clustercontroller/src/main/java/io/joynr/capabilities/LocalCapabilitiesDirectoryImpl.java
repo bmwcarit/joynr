@@ -57,9 +57,7 @@ import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
-import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
-import io.joynr.proxy.Future;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
@@ -250,7 +248,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public Promise<DeferredVoid> add(final DiscoveryEntry discoveryEntry, final Boolean awaitGlobalRegistration) {
-        Promise<Add1Deferred> addPromise = add(discoveryEntry, awaitGlobalRegistration, new String[]{ knownGbids[0] });
+        Promise<Add1Deferred> addPromise = add(discoveryEntry, awaitGlobalRegistration, new String[]{});
         DeferredVoid deferredVoid = new DeferredVoid();
         addPromise.then(new PromiseListener() {
             @Override
@@ -519,7 +517,50 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     public Promise<Lookup1Deferred> lookup(String[] domains,
                                            String interfaceName,
                                            joynr.types.DiscoveryQos discoveryQos) {
-        final Lookup1Deferred deferred = new Lookup1Deferred();
+        Promise<Lookup2Deferred> lookupPromise = lookup(domains, interfaceName, discoveryQos, new String[]{});
+        Lookup1Deferred lookup1Deferred = new Lookup1Deferred();
+        lookupPromise.then(new PromiseListener() {
+            @Override
+            public void onRejection(JoynrException exception) {
+                if (exception instanceof ApplicationException) {
+                    DiscoveryError error = ((ApplicationException) exception).getError();
+                    lookup1Deferred.reject(new ProviderRuntimeException("Error discovering provider for domain "
+                            + Arrays.toString(domains) + " and interface " + interfaceName + " in all backends: "
+                            + error));
+                } else if (exception instanceof ProviderRuntimeException) {
+                    lookup1Deferred.reject((ProviderRuntimeException) exception);
+                } else {
+                    lookup1Deferred.reject(new ProviderRuntimeException("Unknown error discovering provider for domain "
+                            + Arrays.toString(domains) + " and interface " + interfaceName + " in all backends: "
+                            + exception));
+                }
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                lookup1Deferred.resolve((DiscoveryEntryWithMetaInfo[]) values[0]);
+            }
+        });
+        return new Promise<>(lookup1Deferred);
+    }
+
+    @Override
+    public Promise<Lookup2Deferred> lookup(String[] domains,
+                                           String interfaceName,
+                                           joynr.types.DiscoveryQos discoveryQos,
+                                           String[] gbids) {
+        final Lookup2Deferred deferred = new Lookup2Deferred();
+
+        DiscoveryError validationResult = validateGbids(gbids);
+        if (validationResult != null) {
+            deferred.reject(validationResult);
+            return new Promise<>(deferred);
+        }
+        if (gbids.length == 0) {
+            // lookup provider in all known backends
+            gbids = knownGbids;
+        }
+
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
             public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntryWithMetaInfo> capabilities) {
@@ -537,8 +578,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
             @Override
             public void onError(DiscoveryError error) {
-                // TODO
-                deferred.reject(new ProviderRuntimeException(error.toString()));
+                deferred.reject(error);
             }
         };
         DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
@@ -549,19 +589,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                 ArbitrationStrategy.NotSet,
                                 discoveryQos.getCacheMaxAge(),
                                 discoveryScope),
-               knownGbids,
+               gbids,
                callback);
 
         return new Promise<>(deferred);
-    }
-
-    @Override
-    public Promise<Lookup2Deferred> lookup(String[] domains,
-                                           String interfaceName,
-                                           joynr.types.DiscoveryQos discoveryQos,
-                                           String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
     private boolean isEntryForGbids(GlobalDiscoveryEntry entry, Set<String> gbidSet) {
@@ -793,51 +824,62 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public Promise<Lookup3Deferred> lookup(String participantId) {
-        Lookup3Deferred deferred = new Lookup3Deferred();
-        DiscoveryEntryWithMetaInfo discoveryEntry = lookup(participantId, DiscoveryQos.NO_FILTER);
-        deferred.resolve(discoveryEntry);
-        return new Promise<>(deferred);
+        Promise<Lookup4Deferred> lookupPromise = lookup(participantId, new String[]{});
+        Lookup3Deferred lookup3Deferred = new Lookup3Deferred();
+        lookupPromise.then(new PromiseListener() {
+            @Override
+            public void onRejection(JoynrException exception) {
+                if (exception instanceof ApplicationException) {
+                    DiscoveryError error = ((ApplicationException) exception).getError();
+                    lookup3Deferred.reject(new ProviderRuntimeException("Error discovering provider " + participantId
+                            + " in all backends: " + error));
+                } else if (exception instanceof ProviderRuntimeException) {
+                    lookup3Deferred.reject((ProviderRuntimeException) exception);
+                } else {
+                    lookup3Deferred.reject(new ProviderRuntimeException("Unknown error discovering provider "
+                            + participantId + " in all backends: " + exception));
+                }
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                lookup3Deferred.resolve((DiscoveryEntryWithMetaInfo) values[0]);
+            }
+        });
+        return new Promise<>(lookup3Deferred);
     }
 
     @Override
     public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
+        Lookup4Deferred deferred = new Lookup4Deferred();
+        DiscoveryError validationResult = validateGbids(gbids);
+        if (validationResult != null) {
+            deferred.reject(validationResult);
+            return new Promise<>(deferred);
+        }
+        if (gbids.length == 0) {
+            // lookup provider in all known backends
+            gbids = knownGbids;
+        }
 
-    @Override
-    @CheckForNull
-    public DiscoveryEntryWithMetaInfo lookup(String participantId, DiscoveryQos discoveryQos) {
-        final Future<DiscoveryEntryWithMetaInfo> lookupFuture = new Future<>();
-        lookup(participantId, discoveryQos, knownGbids, new CapabilityCallback() {
+        lookup(participantId, DiscoveryQos.NO_FILTER, gbids, new CapabilityCallback() {
 
             @Override
             public void processCapabilityReceived(DiscoveryEntryWithMetaInfo capability) {
-                lookupFuture.onSuccess(capability);
+                deferred.resolve(capability);
             }
 
             @Override
             public void onError(Throwable e) {
-                lookupFuture.onFailure(new JoynrRuntimeException(e));
+                deferred.reject(new ProviderRuntimeException(e.toString()));
             }
 
             @Override
             public void onError(DiscoveryError error) {
-                // TODO
-                lookupFuture.onFailure(new ProviderRuntimeException(error.toString()));
+                deferred.reject(error);
             }
         });
-        DiscoveryEntryWithMetaInfo retrievedCapabilitiyEntry = null;
-
-        try {
-            retrievedCapabilitiyEntry = lookupFuture.get();
-        } catch (InterruptedException e1) {
-            logger.error("interrupted while retrieving capability entry by participant ID", e1);
-        } catch (ApplicationException e1) {
-            // should not be reachable since ApplicationExceptions are not used internally
-            logger.error("ApplicationException while retrieving capability entry by participant ID", e1);
-        }
-        return retrievedCapabilitiyEntry;
+        return new Promise<>(deferred);
     }
 
     @Override
@@ -857,7 +899,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                  localDiscoveryEntry));
             } else {
-                capabilityCallback.processCapabilityReceived(null);
+                logger.debug("Local only lookup for participantId {} failed with DiscoveryError: {}",
+                             participantId,
+                             DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                capabilityCallback.onError(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
             }
             break;
         case LOCAL_THEN_GLOBAL:
@@ -894,7 +939,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                             final String participantId,
                                             DiscoveryQos discoveryQos,
                                             final CapabilityCallback capabilitiesCallback) {
-
         GlobalDiscoveryEntry cachedGlobalCapability = globalDiscoveryEntryCache.lookup(participantId,
                                                                                        discoveryQos.getCacheMaxAgeMs());
 
@@ -903,30 +947,37 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                cachedGlobalCapability));
         } else {
-            globalCapabilitiesDirectoryClient.lookup(new Callback<GlobalDiscoveryEntry>() {
+            globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>() {
 
                 @Override
-                public void onSuccess(@CheckForNull GlobalDiscoveryEntry newGlobalDiscoveryEntry) {
+                public void onSuccess(GlobalDiscoveryEntry newGlobalDiscoveryEntry) {
                     if (newGlobalDiscoveryEntry != null) {
                         registerIncomingEndpoints(Arrays.asList(newGlobalDiscoveryEntry));
                         globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
-                        if (isEntryForGbids(newGlobalDiscoveryEntry, new HashSet<>(Arrays.asList(gbids)))) {
-                            capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                               newGlobalDiscoveryEntry));
-                        } else {
-                            capabilitiesCallback.onError(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
-                        }
+                        // No need to filter the received GDE by GBIDs: already done in GCD
+                        capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                           newGlobalDiscoveryEntry));
                     } else {
                         capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
                     }
                 }
 
                 @Override
-                public void onFailure(JoynrRuntimeException exception) {
-                    capabilitiesCallback.onError(exception);
-
+                public void onFailure(DiscoveryError errorEnum) {
+                    logger.debug("Global lookup for participantId {} failed with DiscoveryError: {}",
+                                 participantId,
+                                 errorEnum);
+                    capabilitiesCallback.onError(errorEnum);
                 }
-            }, participantId, discoveryQos.getDiscoveryTimeoutMs());
+
+                @Override
+                public void onFailure(JoynrRuntimeException exception) {
+                    logger.debug("Global lookup for participantId {} failed with exception: {}",
+                                 participantId,
+                                 exception);
+                    capabilitiesCallback.onError(exception);
+                }
+            }, participantId, discoveryQos.getDiscoveryTimeoutMs(), gbids);
         }
 
     }
@@ -945,7 +996,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 ? new LinkedList<DiscoveryEntryWithMetaInfo>()
                 : localDiscoveryEntries2;
 
-        globalCapabilitiesDirectoryClient.lookup(new Callback<List<GlobalDiscoveryEntry>>() {
+        globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>() {
 
             @Override
             public void onSuccess(List<GlobalDiscoveryEntry> globalDiscoverEntries) {
@@ -954,6 +1005,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     globalDiscoveryEntryCache.add(globalDiscoverEntries);
                     Collection<DiscoveryEntryWithMetaInfo> allDisoveryEntries = new ArrayList<DiscoveryEntryWithMetaInfo>(globalDiscoverEntries.size()
                             + localDiscoveryEntries.size());
+                    // No need to filter the received GDEs by GBIDs: already done in GCD
                     allDisoveryEntries.addAll(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoList(false,
                                                                                                       globalDiscoverEntries));
                     allDisoveryEntries.addAll(localDiscoveryEntries);
@@ -964,10 +1016,23 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
 
             @Override
+            public void onFailure(DiscoveryError errorEnum) {
+                logger.debug("Global lookup for domains {} and interface {} failed with DiscoveryError: {}",
+                             Arrays.toString(domains),
+                             interfaceName,
+                             errorEnum);
+                capabilitiesCallback.onError(errorEnum);
+            }
+
+            @Override
             public void onFailure(JoynrRuntimeException exception) {
+                logger.debug("Global lookup for domains {} and interface {} failed with exception: {}",
+                             Arrays.toString(domains),
+                             interfaceName,
+                             exception);
                 capabilitiesCallback.onError(exception);
             }
-        }, domains, interfaceName, discoveryTimeout);
+        }, domains, interfaceName, discoveryTimeout, gbids);
     }
 
     @Override
@@ -997,7 +1062,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                         @Override
                         public void onFailure(DiscoveryError errorEnum) {
-
                         }
 
                     };

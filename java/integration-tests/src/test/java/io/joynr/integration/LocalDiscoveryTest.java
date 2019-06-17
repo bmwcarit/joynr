@@ -45,6 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -78,6 +79,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.ConnectorFactory;
 import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.Future;
@@ -103,6 +105,7 @@ import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testProxy;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 
@@ -307,10 +310,11 @@ public class LocalDiscoveryTest {
 
     private void verifyGlobalLookup(String interfaceName, String testDomain) {
         ArgumentCaptor<String[]> globalDomainCaptor = ArgumentCaptor.forClass(String[].class);
-        verify(globalCapabilitiesDirectoryClientMock).lookup(org.mockito.Matchers.<Callback<List<GlobalDiscoveryEntry>>> any(),
+        verify(globalCapabilitiesDirectoryClientMock).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                              globalDomainCaptor.capture(),
                                                              eq(interfaceName),
-                                                             anyLong());
+                                                             anyLong(),
+                                                             any(String[].class));
         List<String[]> globalDomainCaptorValues = globalDomainCaptor.getAllValues();
         assertEquals(1, globalDomainCaptorValues.size());
         assertEquals(1, globalDomainCaptorValues.get(0).length);
@@ -365,10 +369,11 @@ public class LocalDiscoveryTest {
                                                               any(MessagingQos.class),
                                                               eq(null));
             verify(globalCapabilitiesDirectoryClientMock,
-                   times(0)).lookup(org.mockito.Matchers.<Callback<List<GlobalDiscoveryEntry>>> any(),
+                   times(0)).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                     Mockito.<String[]> any(),
                                     anyString(),
-                                    anyLong());
+                                    anyLong(),
+                                    any(String[].class));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -394,10 +399,11 @@ public class LocalDiscoveryTest {
         doReturn(new HashSet<DiscoveryEntry>()).when(globalDiscoveryEntryCacheMock)
                                                .lookup(any(String[].class), eq(interfaceName), anyLong());
         doAnswer(createLookupAnswer(globalDiscoveryEntries)).when(globalCapabilitiesDirectoryClientMock)
-                                                            .lookup(org.mockito.Matchers.<Callback<List<GlobalDiscoveryEntry>>> any(),
+                                                            .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                                     any(String[].class),
                                                                     eq(interfaceName),
-                                                                    anyLong());
+                                                                    anyLong(),
+                                                                    any(String[].class));
 
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomain, testProxy.class);
         final Future<Void> future = new Future<Void>();
@@ -495,10 +501,11 @@ public class LocalDiscoveryTest {
                                                                                                            eq(interfaceName),
                                                                                                            eq(discoveryQos.getCacheMaxAgeMs()));
         doAnswer(createLookupAnswer(remoteDiscoveryEntries)).when(globalCapabilitiesDirectoryClientMock)
-                                                            .lookup(org.mockito.Matchers.<Callback<List<GlobalDiscoveryEntry>>> any(),
+                                                            .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                                     any(String[].class),
                                                                     eq(interfaceName),
-                                                                    anyLong());
+                                                                    anyLong(),
+                                                                    any(String[].class));
 
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomains, testProxy.class);
         final Future<Void> future = new Future<Void>();
