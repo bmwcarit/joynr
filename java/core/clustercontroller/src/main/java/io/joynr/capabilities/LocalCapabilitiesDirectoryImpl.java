@@ -1070,15 +1070,18 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         }
 
                     };
+
                     List<String> participantIds = discoveryEntries.stream()
                                                                   .filter(Objects::nonNull)
                                                                   .map(dEntry -> dEntry.getParticipantId())
                                                                   .collect(Collectors.toList());
                     for (String participantId : participantIds) {
-                        globalCapabilitiesDirectoryClient.remove(callback,
-                                                                 participantId,
-                                                                 globalProviderParticipantIdToGbidSetMap.get(participantId)
-                                                                                                        .toArray(new String[0]));
+                        if (globalProviderParticipantIdToGbidSetMap.containsKey(participantId)) {
+                            globalCapabilitiesDirectoryClient.remove(callback,
+                                                                     participantId,
+                                                                     globalProviderParticipantIdToGbidSetMap.get(participantId)
+                                                                                                            .toArray(new String[0]));
+                        }
                     }
                 } catch (DiscoveryException e) {
                     logger.debug("error removing discovery entries", e);
