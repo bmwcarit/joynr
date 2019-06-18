@@ -25,5 +25,6 @@ module.exports = {
     coverageDirectory: ".build/coverage/ts",
     collectCoverageFrom: ["src/main/js/**/*.ts", "!src/**/*.d.ts"],
     coveragePathIgnorePatterns: ["/src/main/js/generated", "/node_modules"],
-    coverageReporters: ["cobertura", "lcov"]
+    coverageReporters: ["cobertura", "lcov"],
+    modulePathIgnorePatterns: ["target"]
 };
