@@ -257,7 +257,11 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         }
 
         registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
-        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
+        return capabilitiesRegistrar.registerProvider(domain,
+                                                      provider,
+                                                      providerQos,
+                                                      new String[]{},
+                                                      awaitGlobalRegistration);
     }
 
     /**

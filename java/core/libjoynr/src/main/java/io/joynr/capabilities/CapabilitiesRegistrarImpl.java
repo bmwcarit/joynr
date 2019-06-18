@@ -79,14 +79,6 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         this.libjoynrMessagingAddress = dispatcherAddress;
     }
 
-    @Override
-    public Future<Void> registerProvider(final String domain,
-                                         Object provider,
-                                         ProviderQos providerQos,
-                                         boolean awaitGlobalRegistration) {
-        return registerProvider(domain, provider, providerQos, new String[]{}, awaitGlobalRegistration);
-    }
-
     /*
      * (non-Javadoc)
      *

@@ -76,10 +76,12 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
         capabilitiesRegistrar.registerProvider(systemServicesDomain,
                                                localCapabilitiesDirectory,
                                                providerQos,
+                                               new String[]{},
                                                awaitGlobalRegistration);
         capabilitiesRegistrar.registerProvider(systemServicesDomain,
                                                routingProvider,
                                                providerQos,
+                                               new String[]{},
                                                awaitGlobalRegistration);
     }
 }

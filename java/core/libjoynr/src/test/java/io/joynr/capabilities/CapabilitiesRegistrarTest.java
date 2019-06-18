@@ -161,7 +161,7 @@ public class CapabilitiesRegistrarTest {
     @Test
     public void registerWithCapRegistrarWithoutAwaitGlobalRegistration() {
         boolean awaitGlobalRegistration = false;
-        registrar.registerProvider(domain, testProvider, providerQos, awaitGlobalRegistration);
+        registrar.registerProvider(domain, testProvider, providerQos, new String[]{}, awaitGlobalRegistration);
         verifyRegisterProviderResults(awaitGlobalRegistration, new String[]{});
     }
 
@@ -169,7 +169,7 @@ public class CapabilitiesRegistrarTest {
     @Test
     public void registerWithCapRegistrarWithAwaitGlobalRegistration() {
         boolean awaitGlobalRegistration = true;
-        registrar.registerProvider(domain, testProvider, providerQos, awaitGlobalRegistration);
+        registrar.registerProvider(domain, testProvider, providerQos, new String[]{}, awaitGlobalRegistration);
         verifyRegisterProviderResults(awaitGlobalRegistration, new String[]{});
     }
 

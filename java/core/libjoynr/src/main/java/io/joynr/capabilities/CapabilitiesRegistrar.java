@@ -23,25 +23,6 @@ import joynr.types.ProviderQos;
 
 public interface CapabilitiesRegistrar {
     /**
-     * Registers a provider at the capabilities directory for the default backend to make it available at other cluster controllers and the
-     * messaging endpoint directory to dispatch incoming requests.
-     *
-     * @param domain
-     *            Domain of the provided service.
-     * @param provider
-     *            Provider instance.
-     * @param providerQos
-     *            Provider quality of service.
-     * @param awaitGlobalRegistration
-     *            If true, wait for global registration to complete or timeout, if required.
-     * @return registration future
-     */
-    Future<Void> registerProvider(String domain,
-                                  Object provider,
-                                  ProviderQos providerQos,
-                                  boolean awaitGlobalRegistration);
-
-    /**
      * Registers a provider at the capabilities directory for the provided backends to make it available at other cluster controllers and the
      * messaging endpoint directory to dispatch incoming requests.
      *
