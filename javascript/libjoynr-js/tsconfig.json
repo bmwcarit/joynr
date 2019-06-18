@@ -23,5 +23,9 @@
   "include": [
     "src/main/**/*",
     "src/test/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "target"
   ]
 }
