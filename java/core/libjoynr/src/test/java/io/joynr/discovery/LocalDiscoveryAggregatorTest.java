@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.JoynrVersion;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -54,6 +56,7 @@ import joynr.system.Discovery;
 import joynr.system.DiscoveryProxy;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryError;
 import joynr.types.DiscoveryQos;
 import joynr.types.DiscoveryScope;
 import joynr.types.ProviderQos;
@@ -87,11 +90,7 @@ public class LocalDiscoveryAggregatorTest {
     @Mock
     Callback<Void> addCallback;
     @Mock
-    private Callback<DiscoveryEntryWithMetaInfo[]> lookupCallback;
-    @Mock
-    private Callback<DiscoveryEntryWithMetaInfo> lookupParticipantCallback;
-    @Mock
-    private Callback<Void> removeCallback;
+    private CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> lookupCallbackWithModeledError;
 
     @Before
     public void setUp() {
@@ -183,12 +182,14 @@ public class LocalDiscoveryAggregatorTest {
         // Double Decla. allDomains = new String[]{ anotherDomain, systemServicesDomain };
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
-        Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = localDiscoveryAggregator.lookup(lookupCallback,
+        String[] gbids = new String[0];
+        Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = localDiscoveryAggregator.lookup(lookupCallbackWithModeledError,
                                                                                                     oneDomain,
                                                                                                     Discovery.INTERFACE_NAME,
-                                                                                                    discoveryQos);
+                                                                                                    discoveryQos,
+                                                                                                    gbids);
         ArgumentCaptor<DiscoveryEntry[]> discoveryEntriesCaptor = ArgumentCaptor.forClass(DiscoveryEntry[].class);
-        verify(lookupCallback).resolve((Object) discoveryEntriesCaptor.capture());
+        verify(lookupCallbackWithModeledError).resolve((Object) discoveryEntriesCaptor.capture());
         DiscoveryEntry[] discoveryEntriesPassed = discoveryEntriesCaptor.getValue();
         assertEquals(1, discoveryEntriesPassed.length);
         assertEquals(discoveryProviderEntry.getDomain(), discoveryEntriesPassed[0].getDomain());
@@ -207,10 +208,11 @@ public class LocalDiscoveryAggregatorTest {
         assertEquals(discoveryProviderEntry.getParticipantId(), discoveryEntriesPassed[0].getParticipantId());
         assertEquals(discoveryProviderEntry.getQos(), discoveryEntriesPassed[0].getQos());
         assertEquals(discoveryProviderEntry.getProviderVersion(), discoveryEntriesPassed[0].getProviderVersion());
-        verify(discoveryProxyMock, never()).lookup(any(Callback.class),
+        verify(discoveryProxyMock, never()).lookup(any(CallbackWithModeledError.class),
                                                    any(String[].class),
                                                    anyString(),
                                                    any(DiscoveryQos.class),
+                                                   Mockito.<String[]> any(),
                                                    any(MessagingQos.class));
     }
 
@@ -230,16 +232,19 @@ public class LocalDiscoveryAggregatorTest {
                 callback.onSuccess(discoveryProviderEntries);
                 return null;
             }
-        }).when(discoveryProxyMock).lookup(any(Callback.class),
+        }).when(discoveryProxyMock).lookup(any(CallbackWithModeledError.class),
                                            any(String[].class),
                                            anyString(),
                                            any(DiscoveryQos.class),
+                                           Mockito.<String[]> any(),
                                            any(MessagingQos.class));
 
-        Future<DiscoveryEntryWithMetaInfo[]> discoveryEntriesFuture = localDiscoveryAggregator.lookup(lookupCallback,
+        String[] gbids = new String[0];
+        Future<DiscoveryEntryWithMetaInfo[]> discoveryEntriesFuture = localDiscoveryAggregator.lookup(lookupCallbackWithModeledError,
                                                                                                       allDomains,
                                                                                                       Discovery.INTERFACE_NAME,
-                                                                                                      discoveryQos);
+                                                                                                      discoveryQos,
+                                                                                                      gbids);
 
         assertNotNull(discoveryEntriesFuture);
         DiscoveryEntry[] result = discoveryEntriesFuture.get();
@@ -252,10 +257,11 @@ public class LocalDiscoveryAggregatorTest {
         assertTrue(containsByInterfaceDomain(result,
                                              anotherDiscoveryProviderEntry.getInterfaceName(),
                                              anotherDiscoveryProviderEntry.getDomain()));
-        verify(discoveryProxyMock).lookup(any(Callback.class),
+        verify(discoveryProxyMock).lookup(any(CallbackWithModeledError.class),
                                           eq(missingDomains),
                                           eq(Discovery.INTERFACE_NAME),
                                           eq(discoveryQos),
+                                          Mockito.<String[]> any(),
                                           any(MessagingQos.class));
     }
 
@@ -272,14 +278,17 @@ public class LocalDiscoveryAggregatorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void doesNotQueryProvisionedEntry() {
-        localDiscoveryAggregator.lookup(lookupCallback,
+        String[] gbids = new String[0];
+        localDiscoveryAggregator.lookup(lookupCallbackWithModeledError,
                                         new String[]{ systemServicesDomain },
                                         Discovery.INTERFACE_NAME,
-                                        new DiscoveryQos());
-        verify(discoveryProxyMock, never()).lookup(any(Callback.class),
+                                        new DiscoveryQos(),
+                                        gbids);
+        verify(discoveryProxyMock, never()).lookup(any(CallbackWithModeledError.class),
                                                    any(String[].class),
                                                    anyString(),
                                                    any(DiscoveryQos.class),
+                                                   Mockito.<String[]> any(),
                                                    any(MessagingQos.class));
     }
 }

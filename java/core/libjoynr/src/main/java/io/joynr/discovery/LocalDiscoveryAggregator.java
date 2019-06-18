@@ -40,7 +40,7 @@ import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
-import joynr.exceptions.ProviderRuntimeException;
+import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
 import joynr.system.DiscoveryProvider;
 import joynr.system.DiscoveryProxy;
@@ -129,6 +129,41 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                        String[] domains,
                                                        String interfaceName,
                                                        DiscoveryQos discoveryQos) {
+        CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callbackWithModeledError = new CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>() {
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                callback.onFailure(error);
+            }
+
+            @Override
+            public void onFailure(DiscoveryError errorEnum) {
+                callback.onFailure(new JoynrRuntimeException("lookup failed with error " + errorEnum));
+            }
+
+            @Override
+            public void onSuccess(DiscoveryEntryWithMetaInfo[] result) {
+                callback.onSuccess(result);
+            }
+        };
+
+        return lookup(callbackWithModeledError, domains, interfaceName, discoveryQos, new String[0]);
+    }
+
+    private void resolveDiscoveryEntriesFutureWithEntries(Future<DiscoveryEntryWithMetaInfo[]> future,
+                                                          Set<DiscoveryEntryWithMetaInfo> discoveryEntries,
+                                                          Callback<DiscoveryEntryWithMetaInfo[]> callback) {
+        DiscoveryEntryWithMetaInfo[] discoveryEntriesArray = new DiscoveryEntryWithMetaInfo[discoveryEntries.size()];
+        discoveryEntries.toArray(discoveryEntriesArray);
+        future.resolve((Object) discoveryEntriesArray);
+        callback.resolve((Object) discoveryEntriesArray);
+    }
+
+    @Override
+    public Future<DiscoveryEntryWithMetaInfo[]> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callback,
+                                                       String[] domains,
+                                                       String interfaceName,
+                                                       DiscoveryQos discoveryQos,
+                                                       String[] gbids) {
         final Set<DiscoveryEntryWithMetaInfo> discoveryEntries = new HashSet<>();
         Set<String> missingDomains = new HashSet<>();
         for (String domain : domains) {
@@ -143,13 +178,20 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         final Future<DiscoveryEntryWithMetaInfo[]> discoveryEntryFuture = new Future<>();
         if (!missingDomains.isEmpty()) {
             logger.trace("Did not find entries for the following domains: {}", missingDomains);
-            Callback<DiscoveryEntryWithMetaInfo[]> newCallback = new Callback<DiscoveryEntryWithMetaInfo[]>() {
+            CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> newCallback = new CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>() {
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
                     logger.trace("discoveryProxy.lookup onFailure: {}", error);
                     callback.onFailure(error);
                     discoveryEntryFuture.onFailure(error);
+                }
+
+                @Override
+                public void onFailure(DiscoveryError error) {
+                    logger.trace("discoveryProxy.lookup onFailure: {}", error);
+                    callback.onFailure(error);
+                    discoveryEntryFuture.onFailure(new ApplicationException(error));
                 }
 
                 @Override
@@ -169,6 +211,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                               missingDomainsArray,
                                               interfaceName,
                                               discoveryQos,
+                                              gbids,
                                               messagingQos);
         } else {
             resolveDiscoveryEntriesFutureWithEntries(discoveryEntryFuture, discoveryEntries, callback);
@@ -176,42 +219,38 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         return discoveryEntryFuture;
     }
 
-    private void resolveDiscoveryEntriesFutureWithEntries(Future<DiscoveryEntryWithMetaInfo[]> future,
-                                                          Set<DiscoveryEntryWithMetaInfo> discoveryEntries,
-                                                          Callback<DiscoveryEntryWithMetaInfo[]> callback) {
-        DiscoveryEntryWithMetaInfo[] discoveryEntriesArray = new DiscoveryEntryWithMetaInfo[discoveryEntries.size()];
-        discoveryEntries.toArray(discoveryEntriesArray);
-        future.resolve((Object) discoveryEntriesArray);
-        callback.resolve((Object) discoveryEntriesArray);
-    }
-
-    @Override
-    public Future<DiscoveryEntryWithMetaInfo[]> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callback,
-                                                       String[] domains,
-                                                       String interfaceName,
-                                                       DiscoveryQos discoveryQos,
-                                                       String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
-    }
-
     @Override
     public Future<DiscoveryEntryWithMetaInfo> lookup(Callback<DiscoveryEntryWithMetaInfo> callback,
                                                      String participantId) {
-        return getDefaultDiscoveryProxy().lookup(callback, participantId);
-    }
+        CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError> callbackWithModeledError = new CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>() {
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                callback.onFailure(error);
+            }
 
-    @Override
-    public Future<Void> remove(Callback<Void> callback, String participantId) {
-        return getDefaultDiscoveryProxy().remove(callback, participantId);
+            @Override
+            public void onFailure(DiscoveryError errorEnum) {
+                callback.onFailure(new JoynrRuntimeException("lookup failed with error " + errorEnum));
+            }
+
+            @Override
+            public void onSuccess(DiscoveryEntryWithMetaInfo result) {
+                callback.onSuccess(result);
+            }
+        };
+        return lookup(callbackWithModeledError, participantId, new String[0]);
     }
 
     @Override
     public Future<DiscoveryEntryWithMetaInfo> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError> callback,
                                                      String participantId,
                                                      String[] gbids) {
-        // TODO
-        throw new ProviderRuntimeException("NOT IMPLEMENTED");
+        return getDefaultDiscoveryProxy().lookup(callback, participantId, gbids);
+    }
+
+    @Override
+    public Future<Void> remove(Callback<Void> callback, String participantId) {
+        return getDefaultDiscoveryProxy().remove(callback, participantId);
     }
 
     public void forceQueryOfDiscoveryProxy() {
