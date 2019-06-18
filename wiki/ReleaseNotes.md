@@ -5,6 +5,11 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.9.0
 
 ## API relevant changes
+* **[Java]** Introduced new registerProvider() method with GBIDs in the JoynrRuntime.
+  This enables using non-default GBIDs for provider registration. The provided GBIDs must
+  be configured in `PROPERTY_GBIDS` on the cluster-controller side.
+* **[Java]** Introduced new registerInAllKnowBackends() method in the JoynrRuntime.
+  This allows the registration of a provider in all backends known to the cluster-controller.
 * **[JEE]** ServiceLocator builder now provides the ability to specify a callback when creating a
   proxy, so that you can be notified of proxy creation success or failure. See JEE wiki for details.
 * **[JEE]** ServiceLocator builder now allows building a `CompletableFuture<>` of the proxy in order

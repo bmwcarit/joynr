@@ -1329,6 +1329,48 @@ change again in the future.
 > If the provider has already been registered with a generated (default) participantId before, the
 > persistence file or the entry for the provider has to be deleted to enable the fixed participantId.
 
+### Register provider in non-default backends
+
+If not specified otherwise, a new provider is registered in the default backend (The first one defined
+in `PROPERTY_GBIDS` [Joynr Java Settings](JavaSettings.md). If this property is not set by the user,
+then a default value is used for it.).
+To register a provider in different backends, the respective GBIDs have to be passed
+to the registerProvider() method.
+
+```java
+...
+@Override
+public void run() {
+...
+    String[] gbids = new String[] { "gbid1","gbid2" };
+    boolean awaitGlobalRegistration = true;
+    Future<Void> future = runtime.registerProvider(localDomain, <interface>Provider, providerQos, gbids,
+            awaitGlobalRegistration);
+    try {
+        future.get();
+    }
+    catch (ApplicationException a) {
+        switch ((DiscoveryError) a.getError()) {
+            case DiscoveryError.UNKNOWN_GBID:
+                // handle error
+            case DiscoveryError.INTERNAL_ERROR:
+                // handle error
+            ...
+            default:
+                // handle default
+        }
+    }
+    catch (JoynrRuntimeException e) {
+        // handle JoynrRuntimeException
+    }
+...
+}
+
+```
+
+The passed GBIDs have to be known to the cluster-controller, which means that they also have to be
+defined in `PROPERTY_GBIDS`[Joynr Java Settings](JavaSettings.md).
+
 ### The shutdown method
 The ```shutdown``` method should be called on exit of the application. It should cleanly unregister
 any providers the application had registered earlier.
