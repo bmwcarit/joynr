@@ -46,11 +46,13 @@ import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.JoynrRuntimeFactory;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.ProviderDomain;
+import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
+import joynr.types.ProviderQos;
 
 /**
  * Unit tests for the {@link JoynrIntegrationBean}.
@@ -86,6 +88,37 @@ public class JoynrIntegrationBeanTest {
         @Override
         public void callMeWithException() throws ApplicationException {
             throw new ApplicationException(null);
+        }
+    }
+
+    private static class MyProviderSettingsFactory implements ProviderRegistrationSettingsFactory {
+        @Override
+        public ProviderQos createProviderQos() {
+            ProviderQos providerQos = new ProviderQos();
+            providerQos.setPriority(100L);
+            return providerQos;
+        }
+
+        @Override
+        public String[] createGbids() {
+            //TODO also test with GBIDs
+            return null;
+        }
+
+        @Override
+        public boolean providesFor(Class<?> serviceInterface) {
+            //TODO Why is the incoming parameter "serviceInterface" equal
+            // MyServiceProvider.class and not MyServiceSync.class?
+            //
+            // See also the log output:
+            // 15:08:34.666 [main] DEBUG i.j.j.JoynrIntegrationBean - Registering Mock for Bean, hashCode: 318857719
+            // as provider with joynr runtime for service interface interface joynr.jeeintegration.servicelocator.MyServiceProvider.
+            //
+            // The stuff above seems inconsistent with the declaration: 
+            // @ServiceProvider(serviceInterface = MyServiceSync.class)
+            // private static class MyServiceBean implements MyServiceSync {
+            // ...
+            return MyServiceProvider.class.isAssignableFrom(serviceInterface);
         }
     }
 
@@ -159,5 +192,40 @@ public class JoynrIntegrationBeanTest {
         subject.initialise();
 
         verify(joynrRuntime).registerProvider(eq(MY_CUSTOM_DOMAIN), any(), any(), eq(false), any());
+    }
+
+    @Test
+    public void testRegisterProviderUsingSettingsFromFactory() {
+        // given we have a bean implementing a joynr provider...
+        Set<Bean<?>> serviceProviderBeans = new HashSet<>();
+        Bean bean = mock(Bean.class);
+        when(bean.getBeanClass()).thenReturn(MyServiceBean.class);
+        serviceProviderBeans.add(bean);
+        when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
+
+        // ...and a factory for customized provider registration settings
+        MyProviderSettingsFactory settingsFactory = new MyProviderSettingsFactory();
+
+        //... and the bean manager mock returns this factory wrapped in a bean
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Bean beanFac = mock(Bean.class);
+                when(beanFac.getBeanClass()).thenReturn(MyProviderSettingsFactory.class);
+                when(beanFac.create(null)).thenReturn(settingsFactory);
+
+                Set<Bean<?>> providerSettingsFactoryBeans = new HashSet<>();
+                providerSettingsFactoryBeans.add(beanFac);
+                return providerSettingsFactoryBeans;
+            }
+        }).when(beanManager).getBeans(eq(ProviderRegistrationSettingsFactory.class), any());
+
+        // when we initialize the subject (and register providers)
+        subject.initialise();
+
+        // then the runtime is called with the correct parameters from the factory
+        ProviderQos expectedProviderQos = new ProviderQos();
+        expectedProviderQos.setPriority(100L);
+        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN), any(), eq(expectedProviderQos), eq(false), any());
     }
 }
