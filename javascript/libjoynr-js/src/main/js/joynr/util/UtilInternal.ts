@@ -241,7 +241,7 @@ export const timeoutPromise = util.promisify(timeoutPromiseHelper);
 export interface Deferred {
     resolve: Function;
     reject: Function;
-    promise: Promise<void>;
+    promise: Promise<any>;
 }
 
 function defer(this: Deferred, resolve: Function, reject: Function): void {
@@ -307,3 +307,52 @@ export function augmentConfig(config: any): any {
 }
 
 export function emptyFunction(): void {}
+
+export function checkProperty(obj: any, type: string | string[] | Function, description: string): void {
+    if (obj === undefined) {
+        throw new Error(`${description} is undefined`);
+    }
+    const objectType = getObjectType(obj);
+    if (typeof type === "string" && objectType !== type) {
+        throw new Error(`${description} is not of type ${type}. Actual type is ${objectType}`);
+    }
+    if (Array.isArray(type) && !objectType.match(`^${type.join("$|^")}$`)) {
+        throw new Error(`${description} is not of a type from ${type}. Actual type is ${objectType}`);
+    }
+    if (typeof type === "function" && !(obj instanceof type)) {
+        throw new Error(`${description} is not of type ${getObjectType(type)}. Actual type is ${objectType}`);
+    }
+}
+
+/**
+ * Checks if the variable is of specified type
+ *
+ * @param obj the object
+ * @param type a string representation of the the data type (e.g. "Boolean", "Number",
+ *             "String", "Array", "Object", "Function"
+ *            "MyCustomType", "Object|MyCustomType") or a constructor function to check against
+ *             using instanceof (e.g. obj
+ *            instanceof type)
+ * @param description a description for the thrown error
+ * @throws an
+ *             error if the object not of the given type
+ */
+export function checkPropertyIfDefined(obj: any, type: string | string[] | Function, description: string): void {
+    if (obj !== undefined && obj !== null) {
+        checkProperty(obj, type, description);
+    }
+}
+
+/**
+ * @param obj the object to determine the type of
+ * @returns the object type
+ */
+export function getObjectType(obj: any): string {
+    if (obj === null || obj === undefined) {
+        throw new Error("cannot determine the type of an undefined object");
+    }
+    if (Array.isArray(obj)) {
+        return "Array";
+    }
+    return obj.constructor.name || "";
+}
