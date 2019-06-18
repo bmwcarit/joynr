@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -40,8 +39,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Assert;
@@ -49,6 +50,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -172,22 +174,8 @@ public class MqttMessagingSkeletonTest {
         verify(mqttClientReceiver).unsubscribe("one/two/#");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testMessageRouterIsCalled() throws Exception {
-        RawMessagingPreprocessor preprocessor = mock(RawMessagingPreprocessor.class);
-        when(preprocessor.process(any(byte[].class), anyMap())).then(returnsFirstArg());
-        subject = new MqttMessagingSkeleton(ownTopic,
-                                            maxIncomingMqttRequests,
-                                            messageRouter,
-                                            replyToAddressRegistrar,
-                                            mqttClientFactory,
-                                            mqttTopicPrefixProvider,
-                                            preprocessor,
-                                            new HashSet<JoynrMessageProcessor>(),
-                                            mqttStatusReceiver,
-                                            ownGbid);
-
         ImmutableMessage rqMessage = createTestRequestMessage();
 
         subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
@@ -196,6 +184,48 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter).route(captor.capture());
 
         assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
+    }
+
+    @Test
+    public void testReplyToAddressRegistrarIsCalled() throws Exception {
+        ImmutableMessage rqMessage = createTestRequestMessage();
+
+        subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
+
+        ArgumentCaptor<ImmutableMessage> immutableMessageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
+        verify(replyToAddressRegistrar).registerGlobalRoutingEntry(immutableMessageCaptor.capture(), eq(ownGbid));
+
+        assertArrayEquals(rqMessage.getSerializedMessage(), immutableMessageCaptor.getValue().getSerializedMessage());
+        assertTrue(immutableMessageCaptor.getValue().isReceivedFromGlobal());
+
+        verify(messageRouter).route(eq(immutableMessageCaptor.getValue()));
+    }
+
+    @Test
+    public void testRawMessageProcessorIsCalled() throws Exception {
+        RawMessagingPreprocessor rawMessagingPreprocessorMock = mock(RawMessagingPreprocessor.class);
+        when(rawMessagingPreprocessorMock.process(any(byte[].class),
+                                                  Matchers.<Map<String, Serializable>> any())).then(returnsFirstArg());
+
+        subject = new MqttMessagingSkeleton(ownTopic,
+                                            maxIncomingMqttRequests,
+                                            messageRouter,
+                                            replyToAddressRegistrar,
+                                            mqttClientFactory,
+                                            mqttTopicPrefixProvider,
+                                            rawMessagingPreprocessorMock,
+                                            new HashSet<JoynrMessageProcessor>(),
+                                            mqttStatusReceiver,
+                                            ownGbid);
+
+        ImmutableMessage rqMessage = createTestRequestMessage();
+
+        subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
+
+        ArgumentCaptor<byte[]> argCaptor = ArgumentCaptor.forClass(byte[].class);
+        verify(rawMessagingPreprocessorMock).process(argCaptor.capture(), Matchers.<Map<String, Serializable>> any());
+
+        Assert.assertArrayEquals(rqMessage.getSerializedMessage(), argCaptor.getValue());
     }
 
     @Test
