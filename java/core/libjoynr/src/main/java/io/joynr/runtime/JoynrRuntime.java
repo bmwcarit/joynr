@@ -161,7 +161,7 @@ public interface JoynrRuntime {
      * Returns a proxy builder instance to build a proxy object for one or more
      * providers in the given domain. Generally, you will get a proxy for just
      * one provider, if one is found, but you can also provide custom
-     * {@link ArbitrationStrategyFunction arbitration} in the
+     * {@link io.joynr.arbitration.ArbitrationStrategyFunction arbitration} in the
      * {@link ProxyBuilder#setDiscoveryQos(io.joynr.arbitration.DiscoveryQos) discovery QoS}
      * in order to match against multiple providers.
      * In this case, calling a method on the proxy will call that method on all

@@ -164,7 +164,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     }
 
     /**
-     * Registers a provider in the joynr framework for the provided GBIDs
+     * Registers a provider in the joynr framework for the default GBID
      *
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
@@ -182,14 +182,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                                          Object provider,
                                          ProviderQos providerQos,
                                          boolean awaitGlobalRegistration) {
-        JoynrInterface joynrInterfaceAnnotatation = AnnotationUtil.getAnnotation(provider.getClass(),
-                                                                                 JoynrInterface.class);
-        if (joynrInterfaceAnnotatation == null) {
-            throw new IllegalArgumentException("The provider object must have a JoynrInterface annotation");
-        }
-        Class interfaceClass = joynrInterfaceAnnotatation.provides();
-
-        return registerProvider(domain, provider, providerQos, awaitGlobalRegistration, interfaceClass);
+        final String[] emptyGbids = new String[0];
+        return registerProvider(domain, provider, providerQos, emptyGbids, awaitGlobalRegistration);
     }
 
     /**
@@ -217,7 +211,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                                          boolean awaitGlobalRegistration) {
         for (String gbid : gbids) {
             if (gbid == null || gbid.equals("")) {
-                throw new IllegalArgumentException("Provided gbids must not be empty!");
+                throw new IllegalArgumentException("Provided gbid value(s) must not be empty!");
             }
         }
         JoynrInterface joynrInterfaceAnnotatation = AnnotationUtil.getAnnotation(provider.getClass(),
