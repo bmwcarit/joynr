@@ -467,14 +467,18 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             remove(entryToRemove);
             deferred.resolve();
         } else {
-            deferred.reject(new ProviderRuntimeException("Failed to remove participantId: " + participantId));
+            logger.debug("Failed to remove participantId: {}. Particpant is not registered in cluster controller.",
+                         participantId);
+            deferred.reject(new ProviderRuntimeException("Failed to remove participantId: " + participantId
+                    + ".  Particpant is not registered in cluster controller."));
         }
         return new Promise<>(deferred);
     }
 
     @Override
     public void remove(final DiscoveryEntry discoveryEntry) {
-        localDiscoveryEntryStore.remove(discoveryEntry.getParticipantId());
+        final String participantId = discoveryEntry.getParticipantId();
+        localDiscoveryEntryStore.remove(participantId);
         notifyCapabilityRemoved(discoveryEntry);
         // Remove from the global capabilities directory if needed
         if (discoveryEntry.getQos().getScope() != ProviderScope.LOCAL) {
@@ -484,33 +488,34 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 @Override
                 public void onSuccess(Void result) {
                     synchronized (globalDiscoveryEntryCache) {
-                        globalDiscoveryEntryCache.remove(discoveryEntry.getParticipantId());
-                        globalProviderParticipantIdToGbidSetMap.remove(discoveryEntry.getParticipantId());
+                        globalDiscoveryEntryCache.remove(participantId);
+                        globalProviderParticipantIdToGbidSetMap.remove(participantId);
                     }
                 }
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
                     // do nothing
+                    logger.warn("Failed to remove participantId {}: {}", participantId, error);
                 }
 
                 @Override
                 public void onFailure(DiscoveryError errorEnum) {
-
+                    // do nothing
+                    logger.warn("Failed to remove participantId {}: {}", participantId, errorEnum);
                 }
             };
-            String participantId = discoveryEntry.getParticipantId();
             if (globalProviderParticipantIdToGbidSetMap.containsKey(participantId)) {
                 String[] gbidsToRemove = globalProviderParticipantIdToGbidSetMap.get(participantId)
                                                                                 .toArray(new String[0]);
                 globalCapabilitiesDirectoryClient.remove(callback, participantId, gbidsToRemove);
             } else {
-                logger.warn("Participant " + participantId + " is not registered and cannot be removed!");
+                logger.warn("Participant {} is not registered globally and cannot be removed!", participantId);
             }
         }
 
         // Remove endpoint addresses
-        messageRouter.removeNextHop(discoveryEntry.getParticipantId());
+        messageRouter.removeNextHop(participantId);
     }
 
     @Override
