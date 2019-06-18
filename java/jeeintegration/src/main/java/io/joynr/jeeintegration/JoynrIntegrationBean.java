@@ -140,16 +140,16 @@ public class JoynrIntegrationBean {
             }
 
             if (gbids == null) {
-                // default registration (in default backend)
-                runtime.registerProvider(getDomainForProvider(beanClass),
-                                         provider,
-                                         providerQos,
-                                         false,
-                                         providesJoynrTypesInfoAnnotation.interfaceClass());
-
-            } else {
-                // TODO register with GBIDs
+                // empty array for default registration (i.e. in default backend)
+                gbids = new String[0];
             }
+
+            runtime.registerProvider(getDomainForProvider(beanClass),
+                                     provider,
+                                     providerQos,
+                                     gbids,
+                                     false,
+                                     providesJoynrTypesInfoAnnotation.interfaceClass());
 
             registeredProviders.add(provider);
         }
