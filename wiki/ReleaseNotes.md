@@ -29,24 +29,24 @@ the versioning scheme [here](JoynrVersioning.md).
   `joynr.discovery.minimumretryintervalms`. This change indicates that the property
   is related to `DiscoveryQos.retryIntervalMs`.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** DISCOVERYDIRECTORYURL renamed to PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL and
-  joynr.messaging.discoverydirectoryurl changed to joynr.messaging.gcd.url.  
+* **[Java]** `DISCOVERYDIRECTORYURL` renamed to `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` and
+  `joynr.messaging.discoverydirectoryurl` changed to `joynr.messaging.gcd.url`.
   See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** DOMAINACCESSCONTROLLERURL renamed to PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL
-  and joynr.messaging.domainaccesscontrollerurl changed to joynr.messaging.gdac.url.  
+* **[Java]** `DOMAINACCESSCONTROLLERURL` renamed to `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL`
+  and `joynr.messaging.domainaccesscontrollerurl` changed to `joynr.messaging.gdac.url`.
   See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** Added property PROPERTY_GBIDS, which is configurable with joynr.messaging.gbids.  
+* **[Java]** Added property `PROPERTY_GBIDS`, which is configurable with `joynr.messaging.gbids`.
   See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** PROPERTY_KEY_MQTT_BROKER_URI renamed to PROPERTY_MQTT_BROKER_URIS and
-  joynr.messaging.mqtt.brokeruri changed to joynr.messaging.mqtt.brokeruris.
+* **[Java]** `PROPERTY_KEY_MQTT_BROKER_URI` renamed to `PROPERTY_MQTT_BROKER_URIS` and
+  `joynr.messaging.mqtt.brokeruri` changed to `joynr.messaging.mqtt.brokeruris`.
   Now, multiple Broker URIs can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC renamed to PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC and
-  joynr.messaging.mqtt.keepalivetimersec changed to joynr.messaging.mqtt.keepalivetimerssec.
+* **[Java]** `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC` renamed to `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC` and
+  `joynr.messaging.mqtt.keepalivetimersec` changed to `joynr.messaging.mqtt.keepalivetimerssec`.
   Now, multiple keep alive timers can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC renamed to PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC and
-  joynr.messaging.mqtt.connectiontimeoutssec changed to joynr.messaging.mqtt.connectiontimeoutssec.
+* **[Java]** `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC` renamed to `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC` and
+  `joynr.messaging.mqtt.connectiontimeoutssec` changed to `joynr.messaging.mqtt.connectiontimeoutssec`.
   Now, multiple connection timeouts can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
 
@@ -62,7 +62,7 @@ None.
   Fedora 27 with openssl 1.1.0, MoCOCrW branch openssl1.1, flatbuffers 1.10.0, smrf 0.3.3
   and websocketpp 0.8.1.
 * **[C++, Java, JS]** Updated smrf version to 0.3.3
-* **[C++]** The JOYNR_DEFAULT_RUNTIME_LOG_LEVEL for Release builds has been changed to
+* **[C++]** The `JOYNR_DEFAULT_RUNTIME_LOG_LEVEL` for Release builds has been changed to
   "DEBUG" to support message tracking.
 * **[FIDL]** Introduce support for multiple backends in GlobalCapabilitiesDirectory FIDL. See
   `docs/gcd-in-multiple-be.md` for additional documentation.
