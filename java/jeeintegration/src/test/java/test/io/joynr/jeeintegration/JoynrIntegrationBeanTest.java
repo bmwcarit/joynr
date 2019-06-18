@@ -101,8 +101,7 @@ public class JoynrIntegrationBeanTest {
 
         @Override
         public String[] createGbids() {
-            //TODO also test with GBIDs
-            return null;
+            return new String[]{ "gbid1", "gbid2" };
         }
 
         @Override
@@ -178,7 +177,7 @@ public class JoynrIntegrationBeanTest {
 
         subject.initialise();
 
-        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN), any(), any(), eq(false), any());
+        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN), any(), any(), any(), eq(false), any());
     }
 
     @Test
@@ -191,7 +190,7 @@ public class JoynrIntegrationBeanTest {
 
         subject.initialise();
 
-        verify(joynrRuntime).registerProvider(eq(MY_CUSTOM_DOMAIN), any(), any(), eq(false), any());
+        verify(joynrRuntime).registerProvider(eq(MY_CUSTOM_DOMAIN), any(), any(), any(), eq(false), any());
     }
 
     @Test
@@ -226,6 +225,12 @@ public class JoynrIntegrationBeanTest {
         // then the runtime is called with the correct parameters from the factory
         ProviderQos expectedProviderQos = new ProviderQos();
         expectedProviderQos.setPriority(100L);
-        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN), any(), eq(expectedProviderQos), eq(false), any());
+        String[] expcectedGbids = new String[]{ "gbid1", "gbid2" };
+        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN),
+                                              any(),
+                                              eq(expectedProviderQos),
+                                              eq(expcectedGbids),
+                                              eq(false),
+                                              any());
     }
 }
