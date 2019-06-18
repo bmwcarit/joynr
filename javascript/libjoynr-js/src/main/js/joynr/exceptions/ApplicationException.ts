@@ -22,7 +22,7 @@ const defaultMessage = "This is an application exception.";
 
 interface ErrorEnum {
     name: string;
-    value: string;
+    value: string | number;
 }
 
 class ApplicationException extends JoynrException {
