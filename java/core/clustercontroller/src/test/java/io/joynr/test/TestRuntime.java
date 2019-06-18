@@ -53,6 +53,7 @@ public class TestRuntime implements JoynrRuntime {
     public Future<Void> registerProvider(String domain,
                                          Object provider,
                                          ProviderQos providerQos,
+                                         String[] gbids,
                                          boolean awaitGlobalRegistration,
                                          final Class<?> interfaceClass) {
         return null;

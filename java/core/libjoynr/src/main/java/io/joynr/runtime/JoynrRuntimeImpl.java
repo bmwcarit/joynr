@@ -234,6 +234,9 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
      *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
      * @param providerQos
      *            the provider's quality of service settings
+     * @param gbids
+     *            The GBIDs in which the provider shall be registered. If no GBID is provided then the provider is
+     *            registered in the default backend.
      * @param awaitGlobalRegistration
      *            If true, wait for global registration to complete or timeout, if required.
      * @param interfaceClass
@@ -244,6 +247,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     public Future<Void> registerProvider(String domain,
                                          Object provider,
                                          ProviderQos providerQos,
+                                         String[] gbids,
                                          boolean awaitGlobalRegistration,
                                          final Class<?> interfaceClass) {
         if (interfaceClass == null) {
@@ -251,11 +255,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         }
 
         registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
-        return capabilitiesRegistrar.registerProvider(domain,
-                                                      provider,
-                                                      providerQos,
-                                                      new String[]{},
-                                                      awaitGlobalRegistration);
+        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, gbids, awaitGlobalRegistration);
     }
 
     /**
