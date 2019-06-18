@@ -17,24 +17,33 @@
  * #L%
  */
 
-const nanoid = require("nanoid");
+import nanoid from "nanoid";
 
 const rrBase = nanoid();
 let rrIndex = 0;
 
+interface RequestParams {
+    requestReplyId?: string;
+    methodName: string;
+    paramDatatypes?: string[];
+    params?: any[];
+}
+
+export interface Request {
+    requestReplyId: string;
+    methodName: string;
+    paramDatatypes: string[];
+    params?: any[];
+    _typeName: string;
+}
+
 /**
- * @name Request
- * @constructor
- *
- * @param {Object} settings
- * @param {String} settings.requestReplyId
- * @param {String} settings.methodName
- * @param {Array} [settings.paramDatatypes] parameter datatypes
- * @param {String} settings.paramDatatypes.array
- * @param {Array} [settings.params] parameters
- * @param {?} settings.params.array
+ * @param settings.requestReplyId
+ * @param settings.methodName
+ * @param [settings.paramDatatypes] parameter datatypes
+ * @param [settings.params] parameters
  */
-function Request(settings) {
+export function create(settings: RequestParams): Request {
     settings.requestReplyId = settings.requestReplyId || `${rrBase}_${rrIndex++}`;
 
     if (!settings.paramDatatypes) {
@@ -47,8 +56,6 @@ function Request(settings) {
      * @name Request#_typeName
      * @type String
      */
-    settings._typeName = "joynr.Request";
-
-    return settings;
+    (settings as Request)._typeName = "joynr.Request";
+    return settings as Request;
 }
-exports.create = Request;

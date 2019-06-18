@@ -71,7 +71,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	«val events = getEvents(francaIntf)»
 
 	«IF attributes.length > 0»
-	import ProxyAttribute from "joynr/joynr/proxy/ProxyAttribute";
+	import {«FOR attributeType: attributes.proxyAttributeNames SEPARATOR ','»«attributeType» «ENDFOR»} from "joynr/joynr/proxy/ProxyAttribute";
 	«ENDIF»
 	«IF methodNames.length > 0»
 	import ProxyOperation from "joynr/joynr/proxy/ProxyOperation";
@@ -119,8 +119,8 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		 * @name «proxyName»#«attributeName»
 		 * @summary The «attributeName» attribute is GENERATED FROM THE INTERFACE DESCRIPTION
 		 «appendJSDocSummaryAndWriteSeeAndDescription(attribute, "* ")»
-		*/
-		public «attributeName»: ProxyAttribute;
+		 */
+		public «attributeName»: «attribute.proxyAttributeName»<«attribute.tsTypeName»>;
 	«ENDFOR»
 
 	«FOR operationName : methodNames»
@@ -179,7 +179,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 			this.settings = settings;
 			«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
-			this.«attributeName» = new ProxyAttribute(this, settings, "«attributeName»", "«attribute.joynrTypeName»","«getAttributeCaps(attribute)»");
+			this.«attributeName» = new «attribute.proxyAttributeName»<«attribute.tsTypeName»>(this, settings, "«attributeName»", "«attribute.joynrTypeName»");
 			«ENDFOR»
 
 			«FOR operationName : methodNames»
@@ -257,14 +257,6 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		 * The MINOR_VERSION of the proxy is GENERATED FROM THE INTERFACE DESCRIPTION
 		 */
 		public static MINOR_VERSION = «minorVersion»;
-
-		public static getUsedDatatypes(): string[] {
-			return [
-				«FOR datatype : francaIntf.getAllComplexTypes SEPARATOR ','»
-				"«datatype.joynrTypeName»"
-				«ENDFOR»
-			];
-		}
 
 		public static getUsedJoynrtypes(): any[] {
 			return [
