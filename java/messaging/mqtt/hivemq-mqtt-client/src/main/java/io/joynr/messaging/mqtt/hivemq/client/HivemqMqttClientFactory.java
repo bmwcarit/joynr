@@ -28,18 +28,17 @@ import io.reactivex.schedulers.Schedulers;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
- * This factory class is responsible for producing joynr MQTT clients using the mqtt-bee library.
- * The mqtt-bee library is explicitly intended for use in backend applications, so using it on
+ * This factory class is responsible for producing joynr MQTT clients using the HiveMQ MQTT Client library.
+ * The HiveMQ MQTT Client library is explicitly intended for use in backend applications, so using it on
  * constrained devices might not work well. Consider using the Paho client in those circumstances.
  *
- * Currently mqtt-bee is pre 1.0. Here are a list of things that need doing once the relevant missing
- * feature have been completed in mqtt-bee and we want to make this integration production ready:
+ * Here are a list of things that need doing once the relevant missing
+ * feature have been completed in HiveMQ MQTT Client and we want to make this integration production ready:
  *
  * TODO
  * - Add ability to configure SSL setup (trust store / key store etc)
- * - When auto-reconnect feature exists, then enable it
  * - When persistent session configuration exists, then enable configuration thereof
- * - Document usage and configuration of mqtt-bee variant
+ * - Document usage and configuration of HiveMQ MQTT Client variant
  */
 @Singleton
 public class HivemqMqttClientFactory implements MqttClientFactory {
