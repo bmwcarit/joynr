@@ -300,10 +300,11 @@ public class ProxyTest {
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
-        }).when(localDiscoveryAggregator).lookup(Mockito.<Callback> any(),
+        }).when(localDiscoveryAggregator).lookup(Mockito.<CallbackWithModeledError> any(),
                                                  Mockito.<String[]> any(),
                                                  Mockito.<String> any(),
-                                                 Mockito.<joynr.types.DiscoveryQos> any());
+                                                 Mockito.<joynr.types.DiscoveryQos> any(),
+                                                 Mockito.<String[]> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
