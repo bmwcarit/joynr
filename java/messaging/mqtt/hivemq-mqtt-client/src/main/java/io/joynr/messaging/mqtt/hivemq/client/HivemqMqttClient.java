@@ -21,20 +21,18 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 
 /**
- * This implements the {@link JoynrMqttClient} using the mqtt-bee library.
+ * This implements the {@link JoynrMqttClient} using the HiveMQ MQTT Client library.
  *
- * Currently mqtt-bee is pre 1.0. Here are a list of things that need doing once the relevant missing
- * feature have been completed in mqtt-bee and we want to make this integration production ready:
+ * Currently HiveMQ MQTT Client is pre 1.0. Here are a list of things that need doing once the relevant missing
+ * feature have been completed in HiveMQ MQTT Client and we want to make this integration production ready:
  *
  * TODO
  * - Logging is currently implemented proof-of-concept style, needs to be re-worked to be production ready
  * - Re-think how we deal with the various failure scenarios, where we might want to throw exceptions instead of
  *   just logging
- * - Once automatic reconnect feature is available in mqtt-bee, see if this implementation needs to be adapted to
- *   be able to use it
  * - Re-visit setting of QoS levels on subscriptions and publishing, only implemented proof-of-concept style for now
- * - mqtt-bee offers better backpressure handling via rxJava, hence revisit this issue to see how we can make use
- *   of this for our own backpressure handling
+ * - HiveMQ MQTT Client offers better backpressure handling via rxJava, hence revisit this issue to see how we can make
+ *   use of this for our own backpressure handling
  */
 public class HivemqMqttClient implements JoynrMqttClient {
 
