@@ -17,10 +17,9 @@
  * #L%
  */
 // This data file is used in Test[ProxyProvider]Operation
-require("../../node-unit-test-helper");
-const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
-const ErrorList = require("../../../generated/joynr/vehicle/radiotypes/ErrorList");
-const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+import RadioStation from "../../../generated/joynr/vehicle/radiotypes/RadioStation";
+import ErrorList from "../../../generated/joynr/vehicle/radiotypes/ErrorList";
+import TestEnum from "../../../generated/joynr/tests/testTypes/TestEnum";
 
 const radioStationVar = new RadioStation({
     name: "asdf",
@@ -237,4 +236,4 @@ const testData = [
     }
 ];
 
-module.exports = testData;
+export = testData;

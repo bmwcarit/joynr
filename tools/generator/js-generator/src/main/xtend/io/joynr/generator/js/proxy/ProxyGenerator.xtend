@@ -83,13 +83,31 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	import MessagingQos from "joynr/joynr/messaging/MessagingQos";
 	import JoynrDiscoveryQos from "joynr/joynr/proxy/DiscoveryQos";
 
-	interface ProxySettings {
-	    domain: string;
-	    joynrName: string;
-	    discoveryQos: JoynrDiscoveryQos;
-	    messagingQos: MessagingQos;
-	    dependencies: any;
-	    proxyParticipantId: string;
+	namespace «proxyName» {
+		export interface ProxySettings {
+			domain: string;
+			joynrName: string;
+			discoveryQos: JoynrDiscoveryQos;
+			messagingQos: MessagingQos | MessagingQos.Settings;
+			dependencies: any;
+			proxyParticipantId: string;
+		}
+
+		«FOR operationName : methodNames»
+			«val operations = getMethods(francaIntf, operationName)»
+			«FOR i : 1..operations.size»
+			«val operation = operations.get(i - 1)»
+			export interface «operationName.toFirstUpper»Args«i» {«
+				FOR param: getInputParameters(operation)»«
+					param.joynrName»: «param.tsTypeName»;«ENDFOR» }
+			export interface «operationName.toFirstUpper»Returns«i» {«
+				FOR param: getOutputParameters(operation)»«
+					param.joynrName»: «param.tsTypeName»; «ENDFOR»}
+			«ENDFOR»
+			export type «operationName.toFirstUpper»Signature = «FOR i : 1..operations.size BEFORE "(" SEPARATOR ")|(" AFTER ")"
+			»(settings: «proxyName».«operationName.toFirstUpper»Args«i») => «proxyName».«operationName.toFirstUpper»Returns«i»«
+			ENDFOR»
+		«ENDFOR»
 	}
 
 	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
@@ -106,11 +124,12 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	class «proxyName» {
 
 		public interfaceName: string = "«francaIntf.fullyQualifiedName»";
-		public settings: ProxySettings;
+		public settings: «proxyName».ProxySettings;
 		public domain: string;
 		public messagingQos: MessagingQos;
 
-		public providerDiscoveryEntry: any;
+		/** set by ProxyBuilder after Arbitration **/
+		public providerDiscoveryEntry!: { participantId: string };
 		public proxyParticipantId: string;
 
 	«FOR attribute : attributes»
@@ -142,7 +161,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 			 */
 		«ENDIF»
 		«ENDFOR»
-		public «operationName»: Function;
+		public «operationName»: «operationName.toFirstUpper»Signature;
 	«ENDFOR»
 
 	«FOR event: events»
@@ -172,18 +191,17 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		 * @param settings.dependencies instances of the internal objects needed by the proxy to interface with joynr
 		 * @param settings.proxyParticipantId unique identifier of the proxy
 		 */
-		public constructor(settings: ProxySettings){
+		public constructor(settings: «proxyName».ProxySettings){
 			this.domain = settings.domain;
-			this.messagingQos = settings.messagingQos;
+			this.messagingQos = new MessagingQos(settings.messagingQos);
 			this.proxyParticipantId = settings.proxyParticipantId;
 			this.settings = settings;
 			«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
-			this.«attributeName» = new «attribute.proxyAttributeName»<«attribute.tsTypeName»>(this, settings, "«attributeName»", "«attribute.joynrTypeName»");
+			this.«attributeName» = new «attribute.proxyAttributeName»<«attribute.tsTypeName»>(this, "«attributeName»", "«attribute.joynrTypeName»");
 			«ENDFOR»
-
 			«FOR operationName : methodNames»
-			this.«operationName» = new ProxyOperation(this, settings, "«operationName»", [
+			this.«operationName» = new ProxyOperation(this, "«operationName»", [
 				«FOR operation: getMethods(francaIntf, operationName) SEPARATOR ","»
 				{
 					inputParameter: [
@@ -204,7 +222,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					],
 					fireAndForget: «IF operation.fireAndForget»true«ELSE»false«ENDIF»
 				}«ENDFOR»
-			]).buildFunction();
+			]).buildFunction() as any;
 			«ENDFOR»
 
 			«FOR event: events»
@@ -225,7 +243,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					}
 					«ENDFOR»
 				],
-				messagingQos : settings.messagingQos,
+				messagingQos : this.messagingQos,
 				discoveryQos : settings.discoveryQos,
 				«IF event.selective»
 				dependencies: {
@@ -241,7 +259,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 				«ENDIF»
 				«ELSE»
 				dependencies: {
-						subscriptionManager: settings.dependencies.subscriptionManager
+					subscriptionManager: settings.dependencies.subscriptionManager
 				}
 				«ENDIF»
 			});
