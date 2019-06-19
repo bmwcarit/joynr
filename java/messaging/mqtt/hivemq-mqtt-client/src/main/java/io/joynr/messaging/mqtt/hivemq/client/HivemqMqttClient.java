@@ -100,7 +100,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage) {
-        publishMessage(topic, serializedMessage, MqttQos.AT_MOST_ONCE.getCode()); // TODO map to joynr messaging qos
+        publishMessage(topic, serializedMessage, MqttQos.AT_MOST_ONCE.getCode());
     }
 
     @Override
@@ -133,11 +133,14 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                                    throwable -> logger.error("Unable to transmit {}",
                                                                                              mqtt3Publish,
                                                                                              throwable)))
+              .doOnError(throwable -> logger.error("Error encountered for subscription {}.", subscription, throwable))
               .subscribe();
     }
 
     public void resubscribe() {
+        logger.info("Resubscribe triggered.");
         subscriptions.forEach((topic, subscription) -> {
+            logger.info("Resubscribing to {}", topic);
             doSubscribe(subscription);
         });
     }
