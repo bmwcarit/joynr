@@ -107,20 +107,21 @@ public class JoynrIntegrationBean {
 
         for (Bean<?> bean : serviceProviderBeans) {
             Class<?> beanClass = bean.getBeanClass();
-            ServiceProvider providerService = beanClass.getAnnotation(ServiceProvider.class);
-            Class<?> serviceInterface = serviceProviderDiscovery.getProviderInterfaceFor(providerService.serviceInterface());
+            Class<?> serviceInterface = beanClass.getAnnotation(ServiceProvider.class).serviceInterface();
+            Class<?> providerInterface = serviceProviderDiscovery.getProviderInterfaceFor(serviceInterface);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(format("Registering %s as provider with joynr runtime for service interface %s.",
+                LOG.debug(format("Registering in joynr runtime the bean %s as provider %s for service %s.",
                                  bean,
+                                 providerInterface,
                                  serviceInterface));
             }
             Object provider = Proxy.newProxyInstance(beanClass.getClassLoader(),
-                                                     new Class<?>[]{ serviceInterface },
+                                                     new Class<?>[]{ providerInterface },
                                                      new ProviderWrapper(bean,
                                                                          beanManager,
                                                                          joynrRuntimeFactory.getInjector()));
 
-            ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(providerService.serviceInterface(),
+            ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(serviceInterface,
                                                                                                    ProvidesJoynrTypesInfo.class);
 
             // try to find customized settings for the registration
@@ -128,7 +129,7 @@ public class JoynrIntegrationBean {
             String[] gbids = null;
 
             for (ProviderRegistrationSettingsFactory factory : providerSettingsFactories) {
-                if (factory.providesFor(providerService.serviceInterface())) {
+                if (factory.providesFor(serviceInterface)) {
                     providerQos = factory.createProviderQos();
                     gbids = factory.createGbids();
                     break;
