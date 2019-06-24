@@ -510,7 +510,7 @@ function start_js_bundle_consumer {
 
 function start_consumers {
 	start_java_consumer_cc $1
-	start_java_consumer_ws $1
+	#start_java_consumer_ws $1
 	start_cpp_consumer $1
 	start_javascript_consumer $1
 	start_js_bundle_consumer $1
