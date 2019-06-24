@@ -24,6 +24,9 @@ the versioning scheme [here](JoynrVersioning.md).
 ## Other changes
 None. 
 
+## Configuration property changes
+None.
+
 # joynr 1.8.2
 
 ## API relevant changes
@@ -33,6 +36,9 @@ None.
 * **[JEE]** Fixed bug for making stateless-async calls to JEE providers which was resulting in an
   IllegalArgumentException because the method signature was not found in the callback due to the
   void result being wrongly translated to a `null` value.
+
+## Configuration property changes
+None.
 
 # joynr 1.8.1
 
