@@ -41,6 +41,9 @@ log(`domain: ${domain}`);
 describe("Consumer test", () => {
     let joynr = require("joynr");
     const provisioning = testbase.provisioning_common;
+    provisioning.persistency = {
+        clearPersistency: true
+    };
     let testInterfaceProxy;
 
     async function loadJoynr(compressed) {
