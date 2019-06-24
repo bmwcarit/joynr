@@ -26,7 +26,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.RoutingTable;
-import joynr.types.DiscoveryEntry;
+import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
@@ -49,19 +49,18 @@ public class StaticCapabilitiesProvisioningWithRoutingTableInsertion extends Sta
     }
 
     private void addAddressesToRoutingTable(RoutingTable routingTable) {
-        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-            if (discoveryEntry instanceof GlobalDiscoveryEntry) {
-                GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) discoveryEntry;
+        for (GlobalDiscoveryEntry globalDiscoveryEntry : discoveryEntries) {
+            if (GlobalCapabilitiesDirectory.INTERFACE_NAME.equals(globalDiscoveryEntry.getInterfaceName())) {
                 routingTable.setGcdParticipantId(globalDiscoveryEntry.getParticipantId());
-                boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
-                final long expiryDateMs = Long.MAX_VALUE;
-                final boolean isSticky = true;
-                routingTable.put(globalDiscoveryEntry.getParticipantId(),
-                                 CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
-                                 isGloballyVisible,
-                                 expiryDateMs,
-                                 isSticky);
             }
+            boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
+            final long expiryDateMs = Long.MAX_VALUE;
+            final boolean isSticky = true;
+            routingTable.put(globalDiscoveryEntry.getParticipantId(),
+                             CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
+                             isGloballyVisible,
+                             expiryDateMs,
+                             isSticky);
         }
     }
 }
