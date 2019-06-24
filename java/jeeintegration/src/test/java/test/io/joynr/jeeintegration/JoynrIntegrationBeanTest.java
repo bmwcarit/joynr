@@ -106,18 +106,7 @@ public class JoynrIntegrationBeanTest {
 
         @Override
         public boolean providesFor(Class<?> serviceInterface) {
-            //TODO Why is the incoming parameter "serviceInterface" equal
-            // MyServiceProvider.class and not MyServiceSync.class?
-            //
-            // See also the log output:
-            // 15:08:34.666 [main] DEBUG i.j.j.JoynrIntegrationBean - Registering Mock for Bean, hashCode: 318857719
-            // as provider with joynr runtime for service interface interface joynr.jeeintegration.servicelocator.MyServiceProvider.
-            //
-            // The stuff above seems inconsistent with the declaration: 
-            // @ServiceProvider(serviceInterface = MyServiceSync.class)
-            // private static class MyServiceBean implements MyServiceSync {
-            // ...
-            return MyServiceProvider.class.isAssignableFrom(serviceInterface);
+            return MyServiceSync.class.isAssignableFrom(serviceInterface);
         }
     }
 
