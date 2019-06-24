@@ -97,19 +97,18 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
     }
 
     private void addAddressesToRoutingTable(RoutingTable routingTable) {
-        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-            if (discoveryEntry instanceof GlobalDiscoveryEntry) {
-                GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) discoveryEntry;
+        for (GlobalDiscoveryEntry globalDiscoveryEntry : discoveryEntries) {
+            if (GlobalCapabilitiesDirectory.INTERFACE_NAME.equals(globalDiscoveryEntry.getInterfaceName())) {
                 routingTable.setGcdParticipantId(globalDiscoveryEntry.getParticipantId());
-                boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
-                final long expiryDateMs = Long.MAX_VALUE;
-                final boolean isSticky = true;
-                routingTable.put(globalDiscoveryEntry.getParticipantId(),
-                                 CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
-                                 isGloballyVisible,
-                                 expiryDateMs,
-                                 isSticky);
             }
+            boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
+            final long expiryDateMs = Long.MAX_VALUE;
+            final boolean isSticky = true;
+            routingTable.put(globalDiscoveryEntry.getParticipantId(),
+                             CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
+                             isGloballyVisible,
+                             expiryDateMs,
+                             isSticky);
         }
     }
 

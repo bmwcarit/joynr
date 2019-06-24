@@ -30,6 +30,8 @@ import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -42,6 +44,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
@@ -79,6 +82,7 @@ public class StaticCapabilitiesProvisioningTest {
     private static final String PROVISIONED_GBID = "brokerUri";
     private static final String GCD_PARTICIPANT_ID = "capdir_participant_id";
     private static final String GDAC_PARTICIPANT_ID = "acl_participant_id";
+    private static final String TEST_PARTICIPANT_ID = "particpantId";
 
     private ObjectMapper objectMapper;
 
@@ -96,7 +100,6 @@ public class StaticCapabilitiesProvisioningTest {
 
     private Set<DiscoveryEntry> createDiscoveryEntries(String domain, String... interfaceNames) {
         Set<DiscoveryEntry> discoveryEntries = new HashSet<DiscoveryEntry>();
-        String participantId = "participantId";
         ProviderQos qos = new ProviderQos();
         Long lastSeenDateMs = 0L;
         Long expiryDateMs = 0L;
@@ -106,7 +109,7 @@ public class StaticCapabilitiesProvisioningTest {
             GlobalDiscoveryEntry entry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                                  domain,
                                                                                  interfaceName,
-                                                                                 participantId,
+                                                                                 interfaceName + TEST_PARTICIPANT_ID,
                                                                                  qos,
                                                                                  lastSeenDateMs,
                                                                                  expiryDateMs,
@@ -115,95 +118,6 @@ public class StaticCapabilitiesProvisioningTest {
             discoveryEntries.add(entry);
         }
         return discoveryEntries;
-    }
-
-    @Test
-    public void testLoadingExtraSerializedDiscoveryEntriesPlusLegacy() throws Exception {
-        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("domain", "interfaceName1", "interfaceName2");
-
-        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
-
-        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
-        logger.debug("Serialised entries: " + serializedDiscoveryEntries);
-        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
-
-        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
-
-        assertEquals(4, provisionedDiscoveryEntries.size());
-        assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName1");
-        assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName2");
-        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
-        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
-    }
-
-    private LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder createLegacyProvisioningPropertiesHolder() {
-        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
-        properties.discoveryDirectoryUri = TEST_GBID;
-        properties.domainAccessControllerUri = TEST_GBID;
-        properties.capabilitiesDirectoryChannelId = "capdir_channel_id";
-        properties.capabilitiesDirectoryParticipantId = GCD_PARTICIPANT_ID;
-        properties.channelId = "local_channel_id";
-        properties.discoveryDirectoriesDomain = "io.joynr";
-        properties.domainAccessControllerChannelId = "acl_channel_id";
-        properties.domainAccessControllerParticipantId = GDAC_PARTICIPANT_ID;
-        return properties;
-    }
-
-    @Test
-    public void testLoadingSerializedDiscoveryEntriesNoLegacy() throws Exception {
-        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                      GlobalDomainAccessController.INTERFACE_NAME);
-
-        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
-        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
-
-        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
-
-        assertEquals(2, provisionedDiscoveryEntries.size());
-        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
-        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
-    }
-
-    @Test
-    public void testOverrideJsonWithLegacy() throws IOException {
-        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                      GlobalDomainAccessController.INTERFACE_NAME);
-
-        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
-
-        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
-        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
-
-        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
-        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
-
-        assertEquals(2, provisionedDiscoveryEntries.size());
-        assertContainsEntryFor(provisionedDiscoveryEntries,
-                               GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                               properties.capabilitiesDirectoryParticipantId,
-                               null,
-                               properties.discoveryDirectoryUri);
-        assertContainsEntryFor(provisionedDiscoveryEntries,
-                               GlobalDomainAccessController.INTERFACE_NAME,
-                               properties.domainAccessControllerParticipantId,
-                               null,
-                               properties.domainAccessControllerUri);
-    }
-
-    @Test(expected = CreationException.class)
-    public void testIncompleteLegacySettings() throws IOException {
-        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
-        properties.capabilitiesDirectoryParticipantId = "";
-        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                      GlobalDomainAccessController.INTERFACE_NAME);
-        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
-        createInjectorForJsonValue(serializedDiscoveryEntries, properties);
-        fail("Expecting legacy capabilities provisioning to fail fast.");
     }
 
     private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries, String interfaceName) {
@@ -244,6 +158,99 @@ public class StaticCapabilitiesProvisioningTest {
         }
         assertTrue("Couldn't find " + interfaceName + ((participantId == null ? "" : " / " + participantId)) + " in "
                 + entries, found);
+    }
+
+    @Test
+    public void testLoadingExtraSerializedDiscoveryEntriesPlusLegacy() throws Exception {
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("domain", "interfaceName1", "interfaceName2");
+
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
+
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        logger.debug("Serialised entries: " + serializedDiscoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
+
+        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+
+        assertEquals(4, provisionedDiscoveryEntries.size());
+        assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName1");
+        assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName2");
+        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
+        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
+    }
+
+    @Test
+    public void testLoadingSerializedDiscoveryEntriesNoLegacy() throws Exception {
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
+
+        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+
+        assertEquals(2, provisionedDiscoveryEntries.size());
+        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
+        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
+    }
+
+    @Test
+    public void testSetGcdParticipantIdInRoutingTableCalledOnlyForGcdDiscoveryEntry() throws Exception {
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
+
+        injector.getInstance(CapabilitiesProvisioning.class);
+
+        ArgumentCaptor<String> gcdParticipantIdCaptor = ArgumentCaptor.forClass(String.class);
+        verify(routingTable, times(1)).setGcdParticipantId(gcdParticipantIdCaptor.capture());
+        String gcdParticpantId = gcdParticipantIdCaptor.getValue();
+        assertTrue(gcdParticpantId.contains(GlobalCapabilitiesDirectory.INTERFACE_NAME));
+    }
+
+    @Test
+    public void testOverrideJsonWithLegacy() throws IOException {
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
+
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
+
+        CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
+        Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
+
+        assertEquals(2, provisionedDiscoveryEntries.size());
+        assertContainsEntryFor(provisionedDiscoveryEntries,
+                               GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                               properties.capabilitiesDirectoryParticipantId,
+                               null,
+                               properties.discoveryDirectoryUri);
+        assertContainsEntryFor(provisionedDiscoveryEntries,
+                               GlobalDomainAccessController.INTERFACE_NAME,
+                               properties.domainAccessControllerParticipantId,
+                               null,
+                               properties.domainAccessControllerUri);
+    }
+
+    @Test(expected = CreationException.class)
+    public void testIncompleteLegacySettings() throws IOException {
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
+        properties.capabilitiesDirectoryParticipantId = "";
+        Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
+                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+        final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
+        createInjectorForJsonValue(serializedDiscoveryEntries, properties);
+        fail("Expecting legacy capabilities provisioning to fail fast.");
     }
 
     @Test(expected = CreationException.class)
@@ -310,10 +317,6 @@ public class StaticCapabilitiesProvisioningTest {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
         final String testInterface = "test/interface";
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr", testInterface);
-        final String testParticipantId = "testParticipantId";
-        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-            discoveryEntry.setParticipantId(testParticipantId);
-        }
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
 
@@ -330,19 +333,36 @@ public class StaticCapabilitiesProvisioningTest {
                                GDAC_PARTICIPANT_ID,
                                null,
                                TEST_GBID);
-        assertContainsEntryFor(provisionedDiscoveryEntries, testInterface, testParticipantId, null, PROVISIONED_GBID);
+        assertContainsEntryFor(provisionedDiscoveryEntries,
+                               testInterface,
+                               testInterface + TEST_PARTICIPANT_ID,
+                               null,
+                               PROVISIONED_GBID);
+    }
+
+    private LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder createLegacyProvisioningPropertiesHolder() {
+        LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
+        properties.capabilitiesDirectoryParticipantId = GCD_PARTICIPANT_ID;
+        properties.domainAccessControllerParticipantId = GDAC_PARTICIPANT_ID;
+        properties.discoveryDirectoryUri = TEST_GBID;
+        properties.domainAccessControllerUri = TEST_GBID;
+        properties.channelId = "local_channel_id";
+        properties.domainAccessControllerChannelId = "acl_channel_id";
+        properties.capabilitiesDirectoryChannelId = "capdir_channel_id";
+        properties.discoveryDirectoriesDomain = "io.joynr";
+        return properties;
     }
 
     private Injector createInjectorForJsonValue(final String jsonValue) throws IOException {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder propertiesHolder = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
-        propertiesHolder.domainAccessControllerParticipantId = "";
         propertiesHolder.capabilitiesDirectoryParticipantId = GCD_PARTICIPANT_ID;
-        propertiesHolder.domainAccessControllerChannelId = "";
-        propertiesHolder.discoveryDirectoriesDomain = "";
-        propertiesHolder.channelId = "";
-        propertiesHolder.capabilitiesDirectoryChannelId = "";
+        propertiesHolder.domainAccessControllerParticipantId = "";
         propertiesHolder.discoveryDirectoryUri = "";
         propertiesHolder.domainAccessControllerUri = "";
+        propertiesHolder.channelId = "";
+        propertiesHolder.capabilitiesDirectoryChannelId = "";
+        propertiesHolder.domainAccessControllerChannelId = "";
+        propertiesHolder.discoveryDirectoriesDomain = "";
         return createInjectorForJsonValue(jsonValue, propertiesHolder);
     }
 
