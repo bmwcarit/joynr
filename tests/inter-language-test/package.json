@@ -12,10 +12,16 @@
     "test-base": "file:../test-base/target/classes"
   },
   "devDependencies": {
-    "eslint": "4.15.0",
-    "eslint-plugin-promise": "3.5.0",
+    "eslint": "5.16.0",
+    "eslint-config-prettier": "4.2.0",
+    "eslint-plugin-jest": "22.5.1",
+    "eslint-plugin-prettier": "3.0.1",
+    "eslint-plugin-promise": "3.8.0",
     "jasmine": "3.1.0",
-    "prettier": "1.13.2"
+    "prettier": "1.13.2",
+    "typescript": "3.4.3",
+    "@typescript-eslint/eslint-plugin": "1.7.0",
+    "@typescript-eslint/parser": "1.7.0"
   },
   "config": {
     "domain": "joynr-inter-language-test-domain",
@@ -29,7 +35,7 @@
     "startjasminebundle": "export domain=$npm_package_config_domain && export browserify=true && node src/main/js/runIltConsumerSpec.js",
     "build:fast": "npm run install:browserify && npm i && npm run format && npm run lint",
     "build": "npm run clean && npm run build:fast",
-    "format": "node_modules/.bin/prettier --write --config ../../javascript/libjoynr-js/scripts/prettier.config.json $npm_package_config_glob",
+    "format": "node_modules/.bin/prettier --write $npm_package_config_glob",
     "lint": "node_modules/.bin/eslint $npm_package_config_glob",
     "lint:fix": "node_modules/.bin/eslint $npm_package_config_glob --fix"
   }
