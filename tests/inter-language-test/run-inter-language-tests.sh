@@ -274,9 +274,9 @@ function start_cluster_controller {
 		cd $CLUSTER_CONTROLLER_DIR
 		if [ "$BACKEND_SERVICES" = "HTTP" ]
 		then
-			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="http" -Djoynr.messaging.gcd.url="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
+			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="-t http" -Djoynr.messaging.gcd.url="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
 		else
-			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
+			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="-t mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
 		fi
 	else
 		log '# starting C++ clustercontroller'
