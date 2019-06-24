@@ -209,12 +209,12 @@ public class JoynrIntegrationBeanTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                Bean beanFac = mock(Bean.class);
-                when(beanFac.getBeanClass()).thenReturn(MyProviderSettingsFactory.class);
-                when(beanFac.create(null)).thenReturn(settingsFactory);
+                Bean factoryAsBean = mock(Bean.class);
+                when(factoryAsBean.getBeanClass()).thenReturn(MyProviderSettingsFactory.class);
+                when(factoryAsBean.create(null)).thenReturn(settingsFactory);
 
                 Set<Bean<?>> providerSettingsFactoryBeans = new HashSet<>();
-                providerSettingsFactoryBeans.add(beanFac);
+                providerSettingsFactoryBeans.add(factoryAsBean);
                 return providerSettingsFactoryBeans;
             }
         }).when(beanManager).getBeans(eq(ProviderRegistrationSettingsFactory.class), any());
