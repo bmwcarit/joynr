@@ -63,7 +63,6 @@ import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.jeeintegration.JoynrJeeMessageMetaInfo;
 import io.joynr.jeeintegration.ProviderWrapper;
-import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.security.JoynrCallingPrincipal;
 import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
@@ -79,7 +78,6 @@ import io.joynr.provider.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
-import joynr.types.ProviderQos;
 
 /**
  * Unit tests for {@link ProviderWrapper}.
@@ -200,31 +198,6 @@ public class ProviderWrapperTest {
             return new MultiOutResult();
         }
 
-    }
-
-    public static class TestProviderSettingsFactory implements ProviderRegistrationSettingsFactory {
-        private ProviderQos providerQos;
-        private String[] gbidsForGlobalRegistration;
-
-        public TestProviderSettingsFactory(ProviderQos providerQos, String[] gbidsForGlobalRegistration) {
-            this.providerQos = providerQos;
-            this.gbidsForGlobalRegistration = gbidsForGlobalRegistration;
-        }
-
-        @Override
-        public ProviderQos createProviderQos() {
-            return providerQos;
-        }
-
-        @Override
-        public String[] createGbids() {
-            return gbidsForGlobalRegistration;
-        }
-
-        @Override
-        public boolean providesFor(Class<?> serviceInterface) {
-            return TestServiceInterface.class.isAssignableFrom(serviceInterface);
-        }
     }
 
     @Mock
