@@ -34,9 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.proxy.ProxyBuilder;
@@ -56,13 +54,10 @@ public class MqttMultipleBackendDiscoveryLookupTest extends MqttMultipleBackendD
         String gcdTopic = getGcdTopic();
 
         CountDownLatch publishCountDownLatch = new CountDownLatch(1);
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                publishCountDownLatch.countDown();
-                return null;
-            }
-        }).when(expectedClient).publishMessage(eq(gcdTopic), any(byte[].class), anyInt());
+        doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(expectedClient)
+                                                                  .publishMessage(eq(gcdTopic),
+                                                                                  any(byte[].class),
+                                                                                  anyInt());
 
         ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(TESTDOMAIN, testProxy.class);
         proxyBuilder.setDiscoveryQos(discoveryQos);

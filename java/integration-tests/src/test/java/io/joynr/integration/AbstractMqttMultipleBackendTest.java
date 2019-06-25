@@ -22,10 +22,13 @@ import static com.google.inject.util.Modules.override;
 import static org.mockito.Mockito.doReturn;
 
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -144,6 +147,16 @@ public abstract class AbstractMqttMultipleBackendTest {
                                                                                 }
                                                                             }));
         joynrRuntime = injector.getInstance(JoynrRuntime.class);
+    }
+
+    protected Answer<Void> createVoidCountDownAnswer(CountDownLatch countDownLatch) {
+        return new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                countDownLatch.countDown();
+                return null;
+            }
+        };
     }
 
 }
