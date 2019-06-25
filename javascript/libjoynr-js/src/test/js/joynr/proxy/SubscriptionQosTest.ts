@@ -16,14 +16,13 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const SubscriptionQos = require("../../../../main/js/joynr/proxy/SubscriptionQos");
-const PeriodicSubscriptionQos = require("../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
-const OnChangeSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
-const OnChangeWithKeepAliveSubscriptionQos = require("../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-const MulticastSubscriptionQos = require("../../../../main/js/joynr/proxy/MulticastSubscriptionQos");
-const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
-const Date = require("../../../../test/js/global/Date");
+import SubscriptionQos from "../../../../main/js/joynr/proxy/SubscriptionQos";
+import PeriodicSubscriptionQos from "../../../../main/js/joynr/proxy/PeriodicSubscriptionQos";
+import OnChangeSubscriptionQos from "../../../../main/js/joynr/proxy/OnChangeSubscriptionQos";
+import OnChangeWithKeepAliveSubscriptionQos from "../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos";
+import MulticastSubscriptionQos from "../../../../main/js/joynr/proxy/MulticastSubscriptionQos";
+import * as UtilInternal from "../../../../main/js/joynr/util/UtilInternal";
+import Date from "../../../../test/js/global/Date";
 describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
     const qosSettings = {
         minIntervalMs: 50,
@@ -47,33 +46,8 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         done();
     });
 
-    function createPeriodicSubscriptionQos(periodMs, expiryDateMs, alertAfterIntervalMs, publicationTtlMs) {
-        return new PeriodicSubscriptionQos({
-            periodMs,
-            expiryDateMs,
-            alertAfterIntervalMs,
-            publicationTtlMs
-        });
-    }
-
-    function createOnChangeWithKeepAliveSubscriptionQos(
-        minIntervalMs,
-        maxIntervalMs,
-        expiryDateMs,
-        alertAfterIntervalMs,
-        publicationTtlMs
-    ) {
-        return new OnChangeWithKeepAliveSubscriptionQos({
-            minIntervalMs,
-            maxIntervalMs,
-            expiryDateMs,
-            alertAfterIntervalMs,
-            publicationTtlMs
-        });
-    }
-
     // compare existing member values of subscriptionQos to the corresponding ones in expectedOutput
-    function compareSubscriptionQosSettings(subscriptionQos, expectedOutput, specification) {
+    function compareSubscriptionQosSettings(subscriptionQos: any, expectedOutput: any, specification?: any) {
         // fields expiryDateMs and publicationTtlMs should exist in any case
         expect(subscriptionQos.expiryDateMs).toEqual(expectedOutput.expiryDateMs);
         expect(subscriptionQos.publicationTtlMs).toEqual(expectedOutput.publicationTtlMs);
@@ -99,53 +73,39 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
     }
 
     // for each input: Call constructors of SubscriptionQos and every subclass and check output
-    function checkSettingsInSubscriptionQosAndChildren(input, expectedOutput) {
-        {
-            // check if SubscriptionQos is constructed with correct member values
-            const subscriptionQos = new SubscriptionQos({
+    function checkSettingsInSubscriptionQosAndChildren(input: any, expectedOutput: any) {
+        // check if SubscriptionQos is constructed with correct member values
+        compareSubscriptionQosSettings(
+            new SubscriptionQos({
                 expiryDateMs: input.expiryDateMs,
                 publicationTtlMs: input.publicationTtlMs
-            });
-            compareSubscriptionQosSettings(subscriptionQos, expectedOutput);
-        }
-        {
-            // check if MulticastSubscriptionQos is constructed with correct member values
-            const subscriptionQos = new MulticastSubscriptionQos({
+            }),
+            expectedOutput
+        );
+
+        compareSubscriptionQosSettings(new MulticastSubscriptionQos(input), expectedOutput);
+        compareSubscriptionQosSettings(
+            new PeriodicSubscriptionQos({
                 expiryDateMs: input.expiryDateMs,
-                publicationTtlMs: input.publicationTtlMs
-            });
-            compareSubscriptionQosSettings(subscriptionQos, expectedOutput);
-        }
-        {
-            // check if PeriodicSubscriptionQos is constructed with correct member values
-            const subscriptionQos = new createPeriodicSubscriptionQos(
-                input.periodMs,
-                input.expiryDateMs,
-                input.periodicAlertAfterIntervalMs,
-                input.publicationTtlMs
-            );
-            compareSubscriptionQosSettings(subscriptionQos, expectedOutput, "PeriodicSubscriptionQos");
-        }
-        {
-            // check if OnChangeSubscriptionQos is constructed with correct member values
-            const subscriptionQos = new OnChangeSubscriptionQos({
-                expiryDateMs: input.expiryDateMs,
+                alertAfterIntervalMs: input.periodicAlertAfterIntervalMs,
                 publicationTtlMs: input.publicationTtlMs,
-                minIntervalMs: input.minIntervalMs
-            });
-            compareSubscriptionQosSettings(subscriptionQos, expectedOutput, "OnChangeSubscriptionQos");
-        }
-        {
-            // check if OnChangeWithKeepAliveSubscriptionQos is constructed with correct member values
-            const subscriptionQos = new createOnChangeWithKeepAliveSubscriptionQos(
-                input.minIntervalMs,
-                input.maxIntervalMs,
-                input.expiryDateMs,
-                input.onChangeAlertAfterIntervalMs,
-                input.publicationTtlMs
-            );
-            compareSubscriptionQosSettings(subscriptionQos, expectedOutput, "OnChangeWithKeepAliveSubscriptionQos");
-        }
+                periodMs: input.periodMs
+            }),
+            expectedOutput,
+            "PeriodicSubscriptionQos"
+        );
+        compareSubscriptionQosSettings(new OnChangeSubscriptionQos(input), expectedOutput, "OnChangeSubscriptionQos");
+        compareSubscriptionQosSettings(
+            new OnChangeWithKeepAliveSubscriptionQos({
+                minIntervalMs: input.minIntervalMs,
+                maxIntervalMs: input.maxIntervalMs,
+                expiryDateMs: input.expiryDateMs,
+                alertAfterIntervalMs: input.onChangeAlertAfterIntervalMs,
+                publicationTtlMs: input.publicationTtlMs
+            }),
+            expectedOutput,
+            "OnChangeWithKeepAliveSubscriptionQos"
+        );
     }
 
     const defaultTestSettings = {
@@ -159,7 +119,7 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
     };
 
     // add non-existing keys in settings
-    function addDefaultKeys(settings) {
+    function addDefaultKeys(settings: any) {
         if (settings.expiryDateMs === undefined) {
             settings.expiryDateMs = defaultTestSettings.expiryDateMs;
         }
@@ -267,12 +227,14 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
         }
         // periodMs < PeriodicSubscriptionQos.MIN_PERIOD_MS
         expect(() => {
-            PeriodicSubscriptionQos(addDefaultKeys({ periodMs: PeriodicSubscriptionQos.MIN_PERIOD_MS - 1 }));
+            // eslint-disable-next-line no-new
+            new PeriodicSubscriptionQos(addDefaultKeys({ periodMs: PeriodicSubscriptionQos.MIN_PERIOD_MS - 1 }));
         }).toThrow();
 
         // periodMs > PeriodicSubscriptionQos.MAX_PERIOD_MS
         expect(() => {
-            PeriodicSubscriptionQos(addDefaultKeys({ periodMs: PeriodicSubscriptionQos.MAX_PERIOD_MS + 1 }));
+            // eslint-disable-next-line no-new
+            new PeriodicSubscriptionQos(addDefaultKeys({ periodMs: PeriodicSubscriptionQos.MAX_PERIOD_MS + 1 }));
         }).toThrow();
 
         // PeriodicSubscriptionQos.alertAfterIntervalMs !== PeriodicSubscriptionQos.NO_ALERT_AFTER_INTERVAL && PeriodicSubscriptionQos.alertAfterIntervalMs < periodMs
@@ -484,157 +446,14 @@ describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
     it("subscription qos accepts validity instead of expiry date as constructor member", done => {
         const fakeTime = 374747473;
         const validityMs = 23232;
-        spyOn(Date, "now").and.callFake(() => {
+        jest.spyOn(Date, "now").mockImplementation(() => {
             return fakeTime;
         });
 
         const fixture = new OnChangeWithKeepAliveSubscriptionQos({
             validityMs
         });
-        expect(fixture.validityMs).toBe(undefined);
         expect(fixture.expiryDateMs).toBe(fakeTime + validityMs);
-        done();
-    });
-
-    // Checks if all SubscriptionQos and subclasses that have the specified field
-    // throw an exception if their constructor is called with the specified values.
-    // If no field is specified, no exception should be thrown.
-    function allConcernedThrowOnIncorrectType(
-        expiryDateMs,
-        publicationTtlMs,
-        periodMs,
-        alertAfterIntervalMs,
-        minIntervalMs,
-        maxIntervalMs,
-        specification
-    ) {
-        switch (specification) {
-            case "expiryDateMs":
-            // all SubscriptionQos have the fields expiryDateMs and publicationTtlMs and thus should throw an exception
-            // fall through
-            case "publicationTtlMs":
-                expect(() => {
-                    SubscriptionQos({ expiryDateMs, publicationTtlMs });
-                }).toThrow();
-                expect(() => {
-                    MulticastSubscriptionQos({ expiryDateMs, publicationTtlMs });
-                }).toThrow();
-                expect(() => {
-                    OnChangeSubscriptionQos({
-                        expiryDateMs,
-                        publicationTtlMs,
-                        minIntervalMs
-                    });
-                }).toThrow();
-            // fall through
-            case "alertAfterIntervalMs":
-                // only PeriodicSubscriptionQos and OnChangeWithKeepAliveSubscriptionQos have the field alertAfterIntervalMs
-                expect(() => {
-                    OnChangeWithKeepAliveSubscriptionQos({
-                        expiryDateMs,
-                        publicationTtlMs,
-                        alertAfterIntervalMs,
-                        minIntervalMs,
-                        maxIntervalMs
-                    });
-                }).toThrow();
-            // fall through
-            case "periodMs":
-                // only PeriodicSubscriptionQos has the field periodMs
-                expect(() => {
-                    PeriodicSubscriptionQos({
-                        expiryDateMs,
-                        publicationTtlMs,
-                        alertAfterIntervalMs,
-                        periodMs
-                    });
-                }).toThrow();
-                break;
-            case "minIntervalMs":
-                // only OnChangeSubscriptionQos and OnChangeWithKeepAliveSubscriptionQos should
-                // throw an exception with uncorrectly typed field minIntervalMs
-                expect(() => {
-                    OnChangeSubscriptionQos({
-                        expiryDateMs,
-                        publicationTtlMs,
-                        minIntervalMs
-                    });
-                }).toThrow();
-            // fall through
-            case "maxIntervalMs":
-                // only OnChangeWithKeepAliveSubscriptionQos should throw an exception with uncorrectly typed field maxIntervalMs
-                expect(() => {
-                    OnChangeWithKeepAliveSubscriptionQos({
-                        expiryDateMs,
-                        publicationTtlMs,
-                        alertAfterIntervalMs,
-                        minIntervalMs,
-                        maxIntervalMs
-                    });
-                }).toThrow();
-                break;
-            default:
-                // no constructor call should throw an exception
-                /* eslint-disable no-new */
-                expect(() => {
-                    new SubscriptionQos({ expiryDateMs, publicationTtlMs });
-                }).not.toThrow();
-                expect(() => {
-                    new MulticastSubscriptionQos({ expiryDateMs, publicationTtlMs });
-                }).not.toThrow();
-                expect(() => {
-                    new PeriodicSubscriptionQos({
-                        expiryDateMs,
-                        publicationTtlMs,
-                        alertAfterIntervalMs,
-                        periodMs
-                    });
-                }).not.toThrow();
-                expect(() => {
-                    new OnChangeSubscriptionQos({
-                        expiryDateMs,
-                        publicationTtlMs,
-                        minIntervalMs
-                    });
-                }).not.toThrow();
-                expect(() => {
-                    new OnChangeWithKeepAliveSubscriptionQos({
-                        expiryDateMs,
-                        publicationTtlMs,
-                        alertAfterIntervalMs,
-                        minIntervalMs,
-                        maxIntervalMs
-                    });
-                }).not.toThrow();
-                break;
-        }
-    }
-
-    it("throws on incorrectly typed values", done => {
-        // all arguments typed ok
-        allConcernedThrowOnIncorrectType(4, 100, 50, 80, 1, 50);
-
-        // no arguments defined
-        allConcernedThrowOnIncorrectType(undefined, undefined, undefined, undefined, undefined, undefined);
-
-        // argument expiryDateMs wrongly typed
-        allConcernedThrowOnIncorrectType({}, 100, 50, 80, 1, 50, "expiryDateMs");
-
-        // argument publicationTtlMs wrongly typed
-        allConcernedThrowOnIncorrectType(4, {}, 50, 80, 1, 50, "publicationTtlMs");
-
-        // argument periodMs wrongly typed
-        allConcernedThrowOnIncorrectType(4, 100, {}, 80, 1, 50, "periodMs");
-
-        // argument alertAfterIntervalMs wrongly typed
-        allConcernedThrowOnIncorrectType(4, 100, 50, {}, 1, 50, "alertAfterIntervalMs");
-
-        // argument minIntervalMs wrongly typed
-        allConcernedThrowOnIncorrectType(4, 100, 50, 80, {}, 50, "minIntervalMs");
-
-        // argument maxIntervalMs wrongly typed
-        allConcernedThrowOnIncorrectType(4, 100, 50, 80, 1, {}, "maxIntervalMs");
-
         done();
     });
 });
