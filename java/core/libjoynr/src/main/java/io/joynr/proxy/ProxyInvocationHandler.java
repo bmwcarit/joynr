@@ -69,13 +69,13 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     protected final MessagingQos qosSettings;
     private ConnectorStatus connectorStatus;
     private Lock connectorStatusLock = new ReentrantLock();
-    private Condition connectorSuccessfullyFinished = connectorStatusLock.newCondition();
+    private Condition connectorFinished = connectorStatusLock.newCondition();
     private DiscoveryQos discoveryQos;
     protected ConnectorInvocationHandler connector;
     protected final String proxyParticipantId;
     private ConcurrentLinkedQueue<MethodInvocation<?>> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation<?>>();
     private ConcurrentLinkedQueue<SubscriptionAction> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionAction>();
-    private ConcurrentLinkedQueue<UnsubscribeInvocation> queuedUnsubscripeInvocationList = new ConcurrentLinkedQueue<UnsubscribeInvocation>();
+    private ConcurrentLinkedQueue<UnsubscribeInvocation> queuedUnsubscribeInvocationList = new ConcurrentLinkedQueue<UnsubscribeInvocation>();
     private ConcurrentLinkedQueue<StatelessAsyncMethodInvocation> queuedStatelessAsyncInvocationList = new ConcurrentLinkedQueue<>();
     private String interfaceName;
     private Set<String> domains;
@@ -158,7 +158,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                                            Object[] args,
                                            ConnectorCaller connectorCaller) throws ApplicationException {
         try {
-            if (waitForConnectorFinished()) {
+            if (waitForConnectorFinished() && throwable == null) {
                 if (connector == null) {
                     final String errorMsg = "connector was null although arbitration finished successfully";
                     logger.error("Failed to execute sync method {}: {}", method.getName(), errorMsg);
@@ -207,7 +207,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                 return true;
             }
 
-            return connectorSuccessfullyFinished.await(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
+            return connectorFinished.await(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
 
         } finally {
             connectorStatusLock.unlock();
@@ -253,7 +253,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
 
     private void sendQueuedUnsubscribeInvocations() {
         while (true) {
-            UnsubscribeInvocation unsubscribeInvocation = queuedUnsubscripeInvocationList.poll();
+            UnsubscribeInvocation unsubscribeInvocation = queuedUnsubscribeInvocationList.poll();
             if (unsubscribeInvocation == null) {
                 return;
             }
@@ -314,7 +314,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         connectorStatusLock.lock();
         try {
             connectorStatus = ConnectorStatus.ConnectorSuccesful;
-            connectorSuccessfullyFinished.signalAll();
+            connectorFinished.signalAll();
 
             if (connector != null) {
                 sendQueuedInvocations();
@@ -469,7 +469,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         connectorStatusLock.lock();
         try {
             if (!isConnectorReady()) {
-                queuedUnsubscripeInvocationList.offer(unsubscribeInvocation);
+                queuedUnsubscribeInvocationList.offer(unsubscribeInvocation);
                 return unsubscribeInvocation;
             }
         } finally {
@@ -527,6 +527,14 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     public void abort(JoynrRuntimeException exception) {
         setThrowableForInvoke(exception);
 
+        connectorStatusLock.lock();
+        try {
+            connectorStatus = ConnectorStatus.ConnectorFailed;
+            connectorFinished.signalAll();
+        } finally {
+            connectorStatusLock.unlock();
+        }
+
         for (Iterator<MethodInvocation<?>> iterator = queuedRpcList.iterator(); iterator.hasNext();) {
             MethodInvocation<?> invocation = iterator.next();
             try {
@@ -544,13 +552,14 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             invocation.getFuture().onFailure(exception);
         }
 
-        for (Iterator<UnsubscribeInvocation> iterator = queuedUnsubscripeInvocationList.iterator(); iterator.hasNext();) {
+        for (Iterator<UnsubscribeInvocation> iterator = queuedUnsubscribeInvocationList.iterator(); iterator.hasNext();) {
             Invocation<String> invocation = iterator.next();
             invocation.getFuture().onFailure(exception);
         }
         for (SubscriptionAction subscriptionAction : queuedSubscriptionInvocationList) {
             subscriptionAction.fail(exception);
         }
+        // TODO: abort StatelessAsyncMethodInvocations (queuedStatelessAsyncInvocationList) 
     }
 
     abstract void createConnector(ArbitrationResult result);
