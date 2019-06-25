@@ -96,7 +96,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache;
-    private final Map<String, Set<String>> globalProviderParticipantIdToGbidSetMap;
+    private final Map<String, List<String>> globalProviderParticipantIdToGbidListMap;
     private final long defaultDiscoveryRetryInterval;
 
     private MessageRouter messageRouter;
@@ -157,7 +157,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS) long defaultDiscoveryRetryInterval,
                                           ShutdownNotifier shutdownNotifier,
                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] knownGbids) {
-        globalProviderParticipantIdToGbidSetMap = new HashMap<>();
+        globalProviderParticipantIdToGbidListMap = new HashMap<>();
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.defaultDiscoveryRetryInterval = defaultDiscoveryRetryInterval;
@@ -203,19 +203,16 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private void mapGbidsToGlobalProviderParticipantId(String participantId, String[] gbids) {
-        if (globalProviderParticipantIdToGbidSetMap.containsKey(participantId)) {
-            for (String gbid : gbids) {
-                if (!globalProviderParticipantIdToGbidSetMap.get(participantId).contains(gbid)) {
-                    globalProviderParticipantIdToGbidSetMap.get(participantId).add(gbid);
-                }
-            }
-        } else {
-            Set<String> gbidSetForParticipantId = new HashSet<String>();
-            for (String gbid : gbids) {
-                gbidSetForParticipantId.add(gbid);
-            }
-            globalProviderParticipantIdToGbidSetMap.put(participantId, gbidSetForParticipantId);
+        List<String> newGbidsList = Arrays.asList(gbids);
+        if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
+            List<String> nonDuplicateOldGbids = globalProviderParticipantIdToGbidListMap.get(participantId)
+                                                                                        .stream()
+                                                                                        .filter(gbid -> !newGbidsList.contains(gbid))
+                                                                                        .collect(Collectors.toList());
+            newGbidsList.addAll(nonDuplicateOldGbids);
         }
+        globalProviderParticipantIdToGbidListMap.put(participantId, newGbidsList);
+
     }
 
     private void setUpPeriodicFreshnessUpdate(final long freshnessUpdateIntervalMs) {
@@ -489,7 +486,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 public void onSuccess(Void result) {
                     synchronized (globalDiscoveryEntryCache) {
                         globalDiscoveryEntryCache.remove(participantId);
-                        globalProviderParticipantIdToGbidSetMap.remove(participantId);
+                        globalProviderParticipantIdToGbidListMap.remove(participantId);
                     }
                 }
 
@@ -505,10 +502,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     logger.warn("Failed to remove participantId {}: {}", participantId, errorEnum);
                 }
             };
-            if (globalProviderParticipantIdToGbidSetMap.containsKey(participantId)) {
-                String[] gbidsToRemove = globalProviderParticipantIdToGbidSetMap.get(participantId)
-                                                                                .toArray(new String[0]);
-                globalCapabilitiesDirectoryClient.remove(callback, participantId, gbidsToRemove);
+            if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
+                List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(participantId);
+                globalCapabilitiesDirectoryClient.remove(callback,
+                                                         participantId,
+                                                         gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
             } else {
                 logger.warn("Participant {} is not registered globally and cannot be removed!", participantId);
             }
@@ -624,7 +622,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
         Set<String> gbidSet = new HashSet<>(Arrays.asList(gbids));
         for (GlobalDiscoveryEntry entry : globalEntries) {
-            Set<String> entryBackends = globalProviderParticipantIdToGbidSetMap.get(entry.getParticipantId());
+            List<String> entryBackends = globalProviderParticipantIdToGbidListMap.get(entry.getParticipantId());
             if (entryBackends != null) {
                 // local provider which is globally registered
                 if (gbidSet.stream().noneMatch(gbid -> entryBackends.contains(gbid))) {
@@ -1076,11 +1074,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                   .map(dEntry -> dEntry.getParticipantId())
                                                                   .collect(Collectors.toList());
                     for (String participantId : participantIds) {
-                        if (globalProviderParticipantIdToGbidSetMap.containsKey(participantId)) {
+                        if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
                             globalCapabilitiesDirectoryClient.remove(callback,
                                                                      participantId,
-                                                                     globalProviderParticipantIdToGbidSetMap.get(participantId)
-                                                                                                            .toArray(new String[0]));
+                                                                     globalProviderParticipantIdToGbidListMap.get(participantId)
+                                                                                                             .toArray(new String[0]));
                         }
                     }
                 } catch (DiscoveryException e) {
