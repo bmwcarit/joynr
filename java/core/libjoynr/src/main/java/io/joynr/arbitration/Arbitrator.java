@@ -103,7 +103,7 @@ public class Arbitrator {
             arbitrationFailed(exception);
         } else if (exception instanceof JoynrRuntimeException) {
             if (isArbitrationInTime()) {
-                restartArbitration();
+                restartArbitration(exception);
             } else {
                 arbitrationFailed(exception);
             }
@@ -178,9 +178,13 @@ public class Arbitrator {
     }
 
     protected void restartArbitration() {
+        restartArbitration(null);
+    }
+
+    protected void restartArbitration(Throwable exception) {
         retryDelay = discoveryQos.getRetryIntervalMs();
         if (System.currentTimeMillis() + retryDelay > arbitrationDeadline) {
-            arbitrationFailed();
+            arbitrationFailed(exception);
             return;
         }
         logger.trace("Rescheduling arbitration with delay {}ms", retryDelay);
@@ -327,9 +331,9 @@ public class Arbitrator {
                              Arrays.toString(gbids),
                              error);
                 if (isArbitrationInTime()) {
-                    restartArbitration();
+                    restartArbitration(new ApplicationException(error));
                 } else {
-                    arbitrationFailed();
+                    arbitrationFailed(new ApplicationException(error));
                 }
                 break;
             case UNKNOWN_GBID:
@@ -340,7 +344,7 @@ public class Arbitrator {
                              interfaceName,
                              Arrays.toString(gbids),
                              error);
-                Arbitrator.this.onError(new ApplicationException(error));
+                arbitrationFailed(new ApplicationException(error));
                 break;
             }
         }
