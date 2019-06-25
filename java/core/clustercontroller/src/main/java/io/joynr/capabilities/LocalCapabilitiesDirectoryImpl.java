@@ -498,8 +498,23 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(DiscoveryError errorEnum) {
-                    // do nothing
-                    logger.warn("Failed to remove participantId {}: {}", participantId, errorEnum);
+                    switch (errorEnum) {
+                    case NO_ENTRY_FOR_PARTICIPANT:
+                    case NO_ENTRY_FOR_SELECTED_BACKENDS:
+                        // already removed globally
+                        logger.warn("Error removing participantId {} globally: {}. Removing local entry.",
+                                    participantId,
+                                    errorEnum);
+                        globalDiscoveryEntryCache.remove(participantId);
+                        globalProviderParticipantIdToGbidListMap.remove(participantId);
+                        break;
+                    case INVALID_GBID:
+                    case UNKNOWN_GBID:
+                    case INTERNAL_ERROR:
+                    default:
+                        // do nothing
+                        logger.warn("Failed to remove participantId {}: {}", participantId, errorEnum);
+                    }
                 }
             };
             if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
