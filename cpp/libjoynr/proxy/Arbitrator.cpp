@@ -83,9 +83,11 @@ void Arbitrator::startArbitration(
 
     startTimePoint = std::chrono::steady_clock::now();
     JOYNR_LOG_INFO(logger(),
-                   "Arbitration started for domain = {} and interface = {}.",
+                   "Arbitration started for domain = {}, interface = {}, version = {}.{}.",
                    domains.at(0),
-                   interfaceName);
+                   interfaceName,
+                   std::to_string(interfaceVersion.getMajorVersion()),
+                   std::to_string(interfaceVersion.getMinorVersion()));
 
     arbitrationRunning = true;
     keepArbitrationRunning = true;
