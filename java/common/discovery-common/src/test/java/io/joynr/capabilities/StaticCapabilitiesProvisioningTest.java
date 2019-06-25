@@ -96,7 +96,7 @@ public class StaticCapabilitiesProvisioningTest {
 
     private Set<DiscoveryEntry> createDiscoveryEntries(String domain, String... interfaceNames) {
         Set<DiscoveryEntry> discoveryEntries = new HashSet<DiscoveryEntry>();
-        String participantId = "particpantId";
+        String participantId = "participantId";
         ProviderQos qos = new ProviderQos();
         Long lastSeenDateMs = 0L;
         Long expiryDateMs = 0L;

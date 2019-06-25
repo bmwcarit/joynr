@@ -159,8 +159,8 @@ public class AddressManagerTest {
         when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
-        Set<String> particpantIds = new HashSet<>(Arrays.asList("one"));
-        when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(particpantIds);
+        Set<String> participantIds = new HashSet<>(Arrays.asList("one"));
+        when(multicastReceiverRegistry.getReceivers(multicastId)).thenReturn(participantIds);
         Address one = mock(Address.class);
         when(routingTable.get("one")).thenReturn(one);
 
