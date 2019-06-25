@@ -82,7 +82,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     private GlobalDiscoveryEntry testGlobalDiscoveryEntry;
-    final private String testParticpantId = "participantId";
+    final private String testParticipantId = "participantId";
     final private String domain = "com";
     final private String[] domains = { domain };
     final private String interfaceName = "interfaceName";
@@ -102,7 +102,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         testGlobalDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                            domain,
                                                                            interfaceName,
-                                                                           testParticpantId,
+                                                                           testParticipantId,
                                                                            new ProviderQos(),
                                                                            System.currentTimeMillis(),
                                                                            System.currentTimeMillis() + 1000L,
@@ -128,13 +128,13 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     @Test
     public void testAddAndLookup_byParticipantId_singleDiscoveryEntry() {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
         assertNull(resultBeforeAdd);
 
         subject.add(testGlobalDiscoveryEntry);
         entityManager.flush();
         entityManager.clear();
-        GlobalDiscoveryEntry result = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
         assertNotNull(result);
         assertTrue(result instanceof GlobalDiscoveryEntry);
         assertFalse(result instanceof GlobalDiscoveryEntryPersisted);
@@ -167,37 +167,37 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     @Test
     public void testAddAndRemove_singleDiscoveryEntry() {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
         assertNull(resultBeforeAdd);
 
         subject.add(testGlobalDiscoveryEntry);
         entityManager.flush();
         entityManager.clear();
 
-        GlobalDiscoveryEntry result = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
         assertNotNull(result);
         GlobalDiscoveryEntry persisted = (GlobalDiscoveryEntry) result;
         checkDiscoveryEntry(expectedEntry, persisted, validGbidsArray[0]);
 
-        subject.remove(testParticpantId);
+        subject.remove(testParticipantId);
         entityManager.flush();
         entityManager.clear();
 
-        GlobalDiscoveryEntry resultAfterRemove = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry resultAfterRemove = subject.lookup(testParticipantId);
         assertNull(resultAfterRemove);
     }
 
     @Test
     public void testAddWithGbids_validGbid() throws ApplicationException {
         GlobalDiscoveryEntry expectedDiscoveryEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
         assertNull(resultBeforeAdd);
 
         subject.add(testGlobalDiscoveryEntry, validGbidsArray);
         entityManager.flush();
         entityManager.clear();
 
-        GlobalDiscoveryEntry result = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
         assertNotNull(result);
         checkDiscoveryEntry(expectedDiscoveryEntry, result, validGbidsArray[0]);
     }
@@ -213,7 +213,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         entityManager.flush();
         entityManager.clear();
 
-        GlobalDiscoveryEntry result = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
         assertNull(result);
     }
 
@@ -226,7 +226,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         entityManager.flush();
         entityManager.clear();
 
-        GlobalDiscoveryEntry result = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
         assertNull(result);
     }
 
@@ -257,7 +257,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     @Test
     public void testLookupWithGbids_validGbid() throws ApplicationException {
         GlobalDiscoveryEntry expectedDiscoveryEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
         assertNull(resultBeforeAdd);
 
         subject.add(testGlobalDiscoveryEntry, validGbidsArray);
@@ -313,7 +313,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
     private void testLookupWithGbids_byParticipantId_invalidGbid(String[] invalidGbidsArray) {
         try {
-            subject.lookup(testParticpantId, invalidGbidsArray);
+            subject.lookup(testParticipantId, invalidGbidsArray);
         } catch (ApplicationException e) {
             assertEquals(DiscoveryError.INVALID_GBID, e.getError());
         }
@@ -345,14 +345,14 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
     @Test
     public void testRemoveWithGbids_validGbid() throws ApplicationException {
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticpantId);
+        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
         assertNull(resultBeforeAdd);
 
         subject.add(testGlobalDiscoveryEntry, validGbidsArray);
         GlobalDiscoveryEntry[] globalDiscoveryEntries = subject.lookup(domains, interfaceName, validGbidsArray);
         assertEquals(1, globalDiscoveryEntries.length);
 
-        subject.remove(testParticpantId, validGbidsArray);
+        subject.remove(testParticipantId, validGbidsArray);
 
         globalDiscoveryEntries = subject.lookup(domains, interfaceName, validGbidsArray);
         assertEquals(0, globalDiscoveryEntries.length);
@@ -369,7 +369,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
     private void testRemoveWithGbids_invalidGbid(String[] invalidGbidsArray) {
         try {
-            subject.remove(testParticpantId, invalidGbidsArray);
+            subject.remove(testParticipantId, invalidGbidsArray);
         } catch (ApplicationException e) {
             assertEquals(DiscoveryError.INVALID_GBID, e.getError());
         }

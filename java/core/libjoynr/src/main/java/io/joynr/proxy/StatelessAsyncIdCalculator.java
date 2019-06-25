@@ -93,7 +93,7 @@ public interface StatelessAsyncIdCalculator {
      * {@link #calculateParticipantId(String, StatelessAsyncCallback)}
      * which can then be added to the {@link joynr.Reply#setStatelessAsyncCallbackId(String) reply}.
      *
-     * @param statelessParticipantId the particpant ID
+     * @param statelessParticipantId the participant ID
      * @return the stateless callback ID which can be used to lookup the relevant callback.
      */
     String fromParticipantUuid(String statelessParticipantId);
