@@ -36,9 +36,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.messaging.FailureAction;
@@ -93,13 +91,10 @@ public class MqttMultipleBackendDiscoveryRemoveTest extends MqttMultipleBackendD
         final String gcdTopic = getGcdTopic();
 
         CountDownLatch publishCountDownLatch = new CountDownLatch(1);
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                publishCountDownLatch.countDown();
-                return null;
-            }
-        }).when(expectedClient).publishMessage(eq(gcdTopic), any(byte[].class), anyInt());
+        doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(expectedClient)
+                                                                  .publishMessage(eq(gcdTopic),
+                                                                                  any(byte[].class),
+                                                                                  anyInt());
 
         DefaulttestProvider provider = new DefaulttestProvider();
         Future<Void> future;
@@ -141,13 +136,10 @@ public class MqttMultipleBackendDiscoveryRemoveTest extends MqttMultipleBackendD
         final String gcdTopic = getGcdTopic();
 
         CountDownLatch publishCountDownLatch = new CountDownLatch(1);
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                publishCountDownLatch.countDown();
-                return null;
-            }
-        }).when(expectedClient).publishMessage(eq(gcdTopic), any(byte[].class), anyInt());
+        doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(expectedClient)
+                                                                  .publishMessage(eq(gcdTopic),
+                                                                                  any(byte[].class),
+                                                                                  anyInt());
 
         joynrRuntime.unregisterProvider(TESTDOMAIN, provider);
 
