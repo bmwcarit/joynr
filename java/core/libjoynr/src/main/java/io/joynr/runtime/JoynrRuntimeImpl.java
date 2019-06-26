@@ -138,7 +138,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
             throw new IllegalArgumentException("Cannot create ProxyBuilder: domain was not set");
         }
         if (interfaceClass == null) {
-            throw new IllegalArgumentException("Cannot create ProxyBuilder: interfaceClass may not be NULL");
+            throw new IllegalArgumentException("Cannot create ProxyBuilder: interfaceClass must not be null");
         }
 
         registerInterfaceClassTypes(interfaceClass, "Cannot create ProxyBuilder");
@@ -197,8 +197,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
      * @param providerQos
      *            the provider's quality of service settings
      * @param gbids
-     *            The GBIDs in which the provider shall be registered. If no GBID is provided then the provider is
-     *            registered in the default backend. Provided GBIDs must not be empty.
+     *            The GBIDs in which the provider shall be registered. This parameter may be provided as
+     *            String array with zero elements, in which case the provider is registered in the default backend.
      * @param awaitGlobalRegistration
      *            If true, wait for global registration to complete or timeout, if required.
      * @return Returns a Future which can be used to check the registration status.
@@ -209,9 +209,12 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                                          ProviderQos providerQos,
                                          String[] gbids,
                                          boolean awaitGlobalRegistration) {
+        if (gbids == null) {
+            throw new IllegalArgumentException("Cannot registerProvider: gbids must not be null");
+        }
         for (String gbid : gbids) {
             if (gbid == null || gbid.equals("")) {
-                throw new IllegalArgumentException("Provided gbid value(s) must not be empty!");
+                throw new IllegalArgumentException("Cannot registerProvider: gbid value(s) must not be null or empty");
             }
         }
         JoynrInterface joynrInterfaceAnnotatation = AnnotationUtil.getAnnotation(provider.getClass(),
@@ -235,8 +238,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
      * @param providerQos
      *            the provider's quality of service settings
      * @param gbids
-     *            The GBIDs in which the provider shall be registered. If no GBID is provided then the provider is
-     *            registered in the default backend.
+     *            The GBIDs in which the provider shall be registered. This parameter may be provided as
+     *            String array with zero elements, in which case the provider is registered in the default backend.
      * @param awaitGlobalRegistration
      *            If true, wait for global registration to complete or timeout, if required.
      * @param interfaceClass
@@ -250,8 +253,16 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                                          String[] gbids,
                                          boolean awaitGlobalRegistration,
                                          final Class<?> interfaceClass) {
+        if (gbids == null) {
+            throw new IllegalArgumentException("Cannot registerProvider: gbids must not be null");
+        }
+        for (String gbid : gbids) {
+            if (gbid == null || gbid.equals("")) {
+                throw new IllegalArgumentException("Cannot registerProvider: gbid value(s) must not be null or empty");
+            }
+        }
         if (interfaceClass == null) {
-            throw new IllegalArgumentException("Cannot registerProvider: interfaceClass may not be NULL");
+            throw new IllegalArgumentException("Cannot registerProvider: interfaceClass must not be null");
         }
 
         registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
@@ -303,7 +314,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         }
         final Class<?> stateProxyClass = usedByAnnotation.value();
         if (stateProxyClass == null) {
-            throw new IllegalArgumentException("Cannot registerStatelessAsyncCallback: stateProxyClass may not be NULL");
+            throw new IllegalArgumentException("Cannot registerStatelessAsyncCallback: stateProxyClass must not be null");
         }
         registerInterfaceClassTypes(stateProxyClass, "Cannot registerStatelessAsyncCallback");
         statelessAsyncCallbackDirectory.register(statelessAsyncCallback);
