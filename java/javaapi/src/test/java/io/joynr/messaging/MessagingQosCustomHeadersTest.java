@@ -64,6 +64,7 @@ public class MessagingQosCustomHeadersTest {
                 { new String("key"), new String("one*two"), new Boolean(true) },
                 { new String("key"), new String("one/two"), new Boolean(true) },
                 { new String("key"), new String("one\\two"), new Boolean(true) },
+                { new String("key"), new String("one_two"), new Boolean(true) },
                 { new String("key"), new String("wrongvalue§"), new Boolean(false) },
                 { new String("key"), new String("wrongvalue$"), new Boolean(false) },
                 { new String("key"), new String("wrongvalue%"), new Boolean(false) },

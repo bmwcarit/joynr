@@ -188,7 +188,7 @@ public class MessagingQos {
      */
     private void checkKeyAndValue(String key, String value) {
         String keyPattern = "^[a-zA-Z0-9\\-]*$";
-        String valuePattern = "^[a-zA-Z0-9 ;:,+&\\?\\-\\.\\*\\/\\\\]*$";
+        String valuePattern = "^[a-zA-Z0-9 ;:,+&\\?\\-\\.\\*\\/\\\\_]*$";
         if (!key.matches(keyPattern)) {
             throw new IllegalArgumentException("key may only contain alphanumeric characters");
         }
