@@ -22,8 +22,6 @@ import java.util.Set;
 
 import com.google.inject.Injector;
 
-import io.joynr.runtime.JoynrRuntime;
-
 /**
  * Used by the JEE integration bean in order to obtain the joynr application to use. This can principally be a new
  * instance every time, but a singleton probably makes more sense.
@@ -42,7 +40,7 @@ public interface JoynrRuntimeFactory {
      *
      * @return the instance of the joynr application this factory provides.
      */
-    JoynrRuntime create(Set<Class<?>> providerInterfaceClasses);
+    JeeJoynrRuntime create(Set<Class<?>> providerInterfaceClasses);
 
     /**
      * Provides the name of the local domain with which all providers will be registered.

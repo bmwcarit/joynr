@@ -43,8 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -75,7 +75,6 @@ import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.JoynrRuntime;
 import io.joynr.statusmetrics.StatusReceiver;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -213,13 +212,13 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     }
 
     @Override
-    public JoynrRuntime create(Set<Class<?>> providerInterfaceClasses) {
+    public JeeJoynrRuntime create(Set<Class<?>> providerInterfaceClasses) {
         LOG.info("Creating clusterable participant IDs for discovered providers.");
         createClusterableParticipantIds(providerInterfaceClasses);
         LOG.info("Provisioning access control for {}", providerInterfaceClasses);
         provisionAccessControl(joynrProperties, joynrLocalDomain, getProviderInterfaceNames(providerInterfaceClasses));
         LOG.info(format("Creating application with joynr properties:%n%s", joynrProperties));
-        JoynrRuntime runtime = getInjector().getInstance(JoynrRuntime.class);
+        JeeJoynrRuntime runtime = getInjector().getInstance(JeeJoynrRuntime.class);
         LOG.info("Created runtime: {}", runtime);
         return runtime;
     }

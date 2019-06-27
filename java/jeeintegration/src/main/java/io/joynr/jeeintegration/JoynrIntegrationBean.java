@@ -43,6 +43,7 @@ import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.provider.JoynrProvider;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.AnnotationUtil;
@@ -69,7 +70,7 @@ public class JoynrIntegrationBean {
 
     private Set<Object> registeredProviders = new HashSet<>();
 
-    private JoynrRuntime joynrRuntime;
+    private JeeJoynrRuntime joynrRuntime;
 
     private boolean deregisterOnShutdown = false;
 
@@ -102,7 +103,7 @@ public class JoynrIntegrationBean {
         });
     }
 
-    private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
+    private void registerProviders(Set<Bean<?>> serviceProviderBeans, JeeJoynrRuntime runtime) {
         Set<ProviderRegistrationSettingsFactory> providerSettingsFactories = getProviderRegistrationSettingsFactories();
 
         for (Bean<?> bean : serviceProviderBeans) {
@@ -115,11 +116,12 @@ public class JoynrIntegrationBean {
                                  providerInterface,
                                  serviceInterface));
             }
-            Object provider = Proxy.newProxyInstance(beanClass.getClassLoader(),
-                                                     new Class<?>[]{ providerInterface },
-                                                     new ProviderWrapper(bean,
-                                                                         beanManager,
-                                                                         joynrRuntimeFactory.getInjector()));
+            JoynrProvider provider = (JoynrProvider) Proxy.newProxyInstance(beanClass.getClassLoader(),
+                                                                            new Class<?>[]{ providerInterface,
+                                                                                    JoynrProvider.class },
+                                                                            new ProviderWrapper(bean,
+                                                                                                beanManager,
+                                                                                                joynrRuntimeFactory.getInjector()));
 
             ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(serviceInterface,
                                                                                                    ProvidesJoynrTypesInfo.class);
