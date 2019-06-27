@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package test.io.joynr.jeeintegration.messaging;
+package io.joynr.jeeintegration.messaging;
 
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;

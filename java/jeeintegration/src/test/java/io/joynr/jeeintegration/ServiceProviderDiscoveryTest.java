@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package test.io.joynr.jeeintegration;
+package io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,11 +42,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-
-import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 
 /**
  * Unit tests for {@link ServiceProviderDiscovery}.
