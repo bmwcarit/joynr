@@ -96,22 +96,30 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		«FOR operationName : methodNames»
 			«val operations = getMethods(francaIntf, operationName)»
 			«FOR i : 1..operations.size»
-			«val operation = operations.get(i - 1)»
-			export interface «operationName.toFirstUpper»Args«i» {«
-				FOR param: getInputParameters(operation)»«
-					param.joynrName»: «param.tsTypeName»;«ENDFOR» }
-			export interface «operationName.toFirstUpper»Returns«i» {«
-				FOR param: getOutputParameters(operation)»«
-					param.joynrName»: «param.tsTypeName»; «ENDFOR»}
+				«val operation = operations.get(i - 1)»
+				«IF getInputParameters(operation).length == 0»
+					export type «operationName.toFirstUpper»Args«i» = void;
+				«ELSE»
+					export interface «operationName.toFirstUpper»Args«i» {«
+						FOR param: getInputParameters(operation)»«
+							param.joynrName»: «param.tsTypeName»;«ENDFOR» }
+				«ENDIF»
+				«IF getOutputParameters(operation).length == 0»
+					export type «operationName.toFirstUpper»Returns«i» = void;
+				«ELSE»
+					export interface «operationName.toFirstUpper»Returns«i» {«
+						FOR param: getOutputParameters(operation)»«
+							param.joynrName»: «param.tsTypeName»; «ENDFOR»}
+				«ENDIF»
 			«ENDFOR»
-			export type «operationName.toFirstUpper»Signature = «FOR i : 1..operations.size BEFORE "(" SEPARATOR ")|(" AFTER ")"
-			»(settings: «proxyName».«operationName.toFirstUpper»Args«i») => «proxyName».«operationName.toFirstUpper»Returns«i»«
+			export type «operationName.toFirstUpper»Signature = «FOR i : 1..operations.size BEFORE "(" SEPARATOR ")&(" AFTER ")"
+			»(settings: «operationName.toFirstUpper»Args«i») => Promise<«operationName.toFirstUpper»Returns«i»>«
 			ENDFOR»
 		«ENDFOR»
 	}
 
 	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-	import «datatype.name» from "«relativePathToBase() + datatype.getDependencyPath()»";
+	import «datatype.joynrName» from "«relativePathToBase() + datatype.getDependencyPath()»";
 	«ENDFOR»
 
 	/**
@@ -161,7 +169,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 			 */
 		«ENDIF»
 		«ENDFOR»
-		public «operationName»: «operationName.toFirstUpper»Signature;
+		public «operationName»: «proxyName».«operationName.toFirstUpper»Signature;
 	«ENDFOR»
 
 	«FOR event: events»
@@ -247,7 +255,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 				discoveryQos : settings.discoveryQos,
 				«IF event.selective»
 				dependencies: {
-						subscriptionManager: settings.dependencies.subscriptionManager
+					subscriptionManager: settings.dependencies.subscriptionManager
 				},
 				selective : «event.selective»,
 				«IF filterParameters.size > 0»
@@ -279,7 +287,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		public static getUsedJoynrtypes(): any[] {
 			return [
 				«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes) SEPARATOR ','»
-				«datatype.name»
+					«datatype.joynrName»
 				«ENDFOR»
 			];
 		}

@@ -29,7 +29,7 @@ function createErrorMessage(objectType: string, name: string, type: string): str
  */
 export function transformParameterMapToArray(
     operationArguments: Record<string, any>,
-    parameters: any[]
+    parameters: { name: string; type: string }[]
 ): { paramDatatypes: any[]; params: any[] } {
     const params = [];
     const paramDatatypes = [];
