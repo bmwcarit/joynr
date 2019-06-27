@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package test.io.joynr.jeeintegration.messaging;
+package io.joynr.jeeintegration.messaging;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

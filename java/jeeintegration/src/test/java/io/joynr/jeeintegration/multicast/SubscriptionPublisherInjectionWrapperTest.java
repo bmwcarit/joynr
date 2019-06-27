@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package test.io.joynr.jeeintegration.multicast;
+package io.joynr.jeeintegration.multicast;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;

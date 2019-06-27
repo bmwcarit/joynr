@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package test.io.joynr.jeeintegration;
+package io.joynr.jeeintegration;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -57,6 +57,8 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.jeeintegration.JeeJoynrServiceLocator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
+import io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
+import io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.MessageIdCallback;
 import io.joynr.proxy.ProxyBuilder;
@@ -67,9 +69,6 @@ import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceProxy;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsync;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-
-import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
-import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
 
 /**
  * Unit tests for {@link JeeJoynrServiceLocator}.

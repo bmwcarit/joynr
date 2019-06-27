@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package test.io.joynr.jeeintegration.servicelocator;
+package io.joynr.jeeintegration.servicelocator;
 
 /**
  * Dummy service interface which deliberately doesn't have a proxy interface.

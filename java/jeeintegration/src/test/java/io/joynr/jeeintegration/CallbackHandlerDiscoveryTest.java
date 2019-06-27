@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package test.io.joynr.jeeintegration;
+package io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -41,10 +41,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.api.CallbackHandler;
+import io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
 import io.joynr.proxy.StatelessAsyncCallback;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsyncCallback;
-
-import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CallbackHandlerDiscoveryTest {

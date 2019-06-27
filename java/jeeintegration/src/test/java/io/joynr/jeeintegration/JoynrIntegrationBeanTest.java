@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package test.io.joynr.jeeintegration;
+package io.joynr.jeeintegration;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -41,14 +41,9 @@ import org.mockito.stubbing.Answer;
 
 import com.google.inject.Guice;
 
-import io.joynr.jeeintegration.CallbackHandlerDiscovery;
-import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.jeeintegration.JoynrRuntimeFactory;
-import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
-import io.joynr.runtime.JoynrRuntime;
 import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
@@ -117,7 +112,7 @@ public class JoynrIntegrationBeanTest {
     private JoynrRuntimeFactory joynrRuntimeFactory;
 
     @Mock
-    private JoynrRuntime joynrRuntime;
+    private JeeJoynrRuntime joynrRuntime;
 
     @Mock
     private ServiceProviderDiscovery serviceProviderDiscovery;
