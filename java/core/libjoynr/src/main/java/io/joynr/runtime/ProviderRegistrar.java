@@ -106,7 +106,7 @@ public class ProviderRegistrar {
         }
         for (String gbid : gbids) {
             if (gbid == null || gbid.equals("")) {
-                throw new IllegalArgumentException("Provided gbid value(s) must not be empty!");
+                throw new IllegalArgumentException("Provided gbid value(s) must not be null or empty!");
             }
         }
         this.gbids = gbids.clone();

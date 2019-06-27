@@ -69,7 +69,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     private final StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
 
     @Inject
-    private CapabilitiesRegistrar capabilitiesRegistrar;
+    protected CapabilitiesRegistrar capabilitiesRegistrar;
 
     private Dispatcher dispatcher;
 
@@ -83,8 +83,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     private Queue<Future<Void>> unregisterProviderQueue = new ConcurrentLinkedQueue<Future<Void>>();
 
-    // CHECKSTYLE:OFF
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
                             ProxyBuilderFactory proxyBuilderFactory,
                             Dispatcher dispatcher,
@@ -196,18 +196,20 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     /**
      * Registers a provider in the joynr framework for the provided GBIDs
      *
-     * @param domain                  The domain the provider should be registered for. Has to be identical at the
-     *                                client to be able to find the provider.
-     * @param provider                Instance of the provider implementation (has to extend a generated
-     *                                ...AbstractProvider).
-     *                                It is assumed that the provided implementation offers the following annotations in its
-     *                                (inherited) class definition:
-     *                                {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
-     * @param providerQos             the provider's quality of service settings.
-     * @param gbids                   The GBIDs in which the provider shall be registered. This parameter may be
-     *                                provided as String array with zero elements, in which case the provider is
-     *                                registered in the default backend.
-     * @param awaitGlobalRegistration If true, wait for global registration to complete or timeout in case of problems.
+     * @param domain
+     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
+     *            the provider.
+     * @param provider
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     *            It is assumed that the provided implementation offers the following annotations in its
+     *            (inherited) class definition: {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
+     * @param providerQos
+     *            The provider's quality of service settings.
+     * @param gbids
+     *            The GBIDs in which the provider shall be registered. This parameter may be provided as String
+     *            array with zero elements, in which case the provider is registered in the default backend.
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout in case of problems.
      * @return Returns a Future which can be used to check the registration status.
      */
     @Override
@@ -230,52 +232,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         if (joynrInterfaceAnnotatation == null) {
             throw new IllegalArgumentException("The provider object must have a JoynrInterface annotation");
         }
-        Class interfaceClass = joynrInterfaceAnnotatation.provides();
-        registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
-        return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, gbids, awaitGlobalRegistration);
-    }
-
-    /**
-     * Registers a provider in the joynr framework (for internal use by JEE integration)
-     *
-     * @param domain
-     *            The domain the provider should be registered for. Has to be identical at the client to be able to find
-     *            the provider.
-     * @param provider
-     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
-     *            It is assumed that the provided implementation offers the following annotations in its
-     *            (inherited) class definition: {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
-     * @param providerQos
-     *            The provider's quality of service settings.
-     * @param gbids
-     *            The GBIDs in which the provider shall be registered. This parameter may be provided as String
-     *            array with zero elements, in which case the provider is registered in the default backend.
-     * @param awaitGlobalRegistration
-     *            If true, wait for global registration to complete or timeout in case of problems.
-     * @param interfaceClass
-     *            The interface class of the provider.
-     * @return Returns a Future which can be used to check the registration status.
-     */
-    @Override
-    @Deprecated
-    public Future<Void> registerProvider(String domain,
-                                         Object provider,
-                                         ProviderQos providerQos,
-                                         String[] gbids,
-                                         boolean awaitGlobalRegistration,
-                                         final Class<?> interfaceClass) {
-        if (gbids == null) {
-            throw new IllegalArgumentException("Cannot registerProvider: gbids must not be null");
-        }
-        for (String gbid : gbids) {
-            if (gbid == null || gbid.equals("")) {
-                throw new IllegalArgumentException("Cannot registerProvider: gbid value(s) must not be null or empty");
-            }
-        }
-        if (interfaceClass == null) {
-            throw new IllegalArgumentException("Cannot registerProvider: interfaceClass must not be null");
-        }
-
+        Class<?> interfaceClass = joynrInterfaceAnnotatation.provides();
         registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
         return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, gbids, awaitGlobalRegistration);
     }
@@ -291,7 +248,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
      *            It is assumed that the provided implementation offers the following annotations in its
      *            (inherited) class definition: {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
      * @return After setting additional parameters, e.g. ProviderQos, Gbids, the returned ProviderRegistrar can be used
-     *         to register the provider instance.
+     *            to register the provider instance.
      */
     public ProviderRegistrar getProviderRegistrar(String domain, JoynrProvider provider) {
         JoynrInterface joynrInterfaceAnnotatation = AnnotationUtil.getAnnotation(provider.getClass(),
@@ -299,7 +256,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         if (joynrInterfaceAnnotatation == null) {
             throw new IllegalArgumentException("The provider object must have a JoynrInterface annotation");
         }
-        Class interfaceClass = joynrInterfaceAnnotatation.provides();
+        Class<?> interfaceClass = joynrInterfaceAnnotatation.provides();
         registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
         return new ProviderRegistrar(capabilitiesRegistrar, domain, provider);
     }
@@ -353,11 +310,12 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         shutdownNotifier.prepareForShutdown();
     }
 
-    private synchronized void registerInterfaceClassTypes(final Class<?> interfaceClass, String errorPrefix) {
+    protected synchronized void registerInterfaceClassTypes(final Class<?> interfaceClass, String errorPrefix) {
         try {
             ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(interfaceClass,
                                                                                                    ProvidesJoynrTypesInfo.class);
             Method m = providesJoynrTypesInfoAnnotation.interfaceClass().getDeclaredMethod("getDataTypes");
+            @SuppressWarnings("unchecked")
             Set<Class<?>> subClasses = (Set<Class<?>>) m.invoke(null);
             objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

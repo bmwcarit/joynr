@@ -66,6 +66,7 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(JeeJoynrRuntime.class).to(JeeJoynrRuntimeImpl.class).in(Singleton.class);
         bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS))
                         .toInstance(jeeGlobalAddAndRemoveTtlMs);
 
