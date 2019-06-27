@@ -47,7 +47,7 @@ export abstract class JoynrProvider extends JoynrObject {
             }
             if (elem instanceof ProviderOperation) {
                 if (!elem.checkOperation()) {
-                    missingInImplementation.push(elem._operationName);
+                    missingInImplementation.push(elem.operationName);
                 }
             }
         });
