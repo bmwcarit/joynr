@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
-const BroadcastFilterParameters = require("../../../../main/js/joynr/proxy/BroadcastFilterParameters");
+
+import ProviderEvent from "../../../../main/js/joynr/provider/ProviderEvent";
+import BroadcastFilterParameters from "../../../../main/js/joynr/proxy/BroadcastFilterParameters";
 
 describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
-    let weakSignal;
+    let weakSignal: any;
 
     beforeEach(() => {
         weakSignal = new ProviderEvent({
@@ -59,12 +59,6 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
         done();
     });
 
-    function buildObserver(spy) {
-        return function(data) {
-            spy(data);
-        };
-    }
-
     it("implements the observer concept correctly", done => {
         const value = {
             key: "value",
@@ -72,14 +66,11 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
             object: {}
         };
 
-        const spy1 = jasmine.createSpy("spy1");
-        const spy2 = jasmine.createSpy("spy2");
+        const spy1 = jest.fn();
+        const spy2 = jest.fn();
 
-        const func1 = buildObserver(spy1);
-        const func2 = buildObserver(spy2);
-
-        weakSignal.registerObserver(func1);
-        weakSignal.registerObserver(func2);
+        weakSignal.registerObserver(spy1);
+        weakSignal.registerObserver(spy2);
 
         expect(spy1).not.toHaveBeenCalled();
         expect(spy2).not.toHaveBeenCalled();
@@ -97,41 +88,21 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
         expect(spy2).toHaveBeenCalled();
         expect(spy2).toHaveBeenCalledWith(data);
 
-        weakSignal.unregisterObserver(func2);
+        weakSignal.unregisterObserver(spy2);
 
         weakSignal.fire(value);
 
-        expect(spy1.calls.count()).toEqual(2);
-        expect(spy2.calls.count()).toEqual(1);
+        expect(spy1.mock.calls.length).toEqual(2);
+        expect(spy2.mock.calls.length).toEqual(1);
 
-        weakSignal.unregisterObserver(func1);
+        weakSignal.unregisterObserver(spy1);
 
         weakSignal.fire(value);
 
-        expect(spy1.calls.count()).toEqual(2);
-        expect(spy2.calls.count()).toEqual(1);
+        expect(spy1.mock.calls.length).toEqual(2);
+        expect(spy2.mock.calls.length).toEqual(1);
         done();
     });
-
-    function buildObserver2(spy) {
-        return function(data) {
-            const filters = data.filters;
-            const broadcastOutputParameters = data.broadcastOutputParameters;
-            const filterParameters = {};
-            let i;
-
-            for (i = 0; i < filters.length; i++) {
-                filters[i](broadcastOutputParameters, filterParameters);
-            }
-            spy(data);
-        };
-    }
-
-    function buildObserver3(spy) {
-        return function(broadcastOutputParameters, filterParameters) {
-            spy(broadcastOutputParameters, filterParameters);
-        };
-    }
 
     it("implements the broadcast filter list correctly", done => {
         const value = {
@@ -140,29 +111,37 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
             object: {}
         };
 
-        const spy1 = jasmine.createSpy("spy1");
-        const spy2 = jasmine.createSpy("spy2");
+        const observerFunction = jest.fn();
+        const filterFunction = jest.fn();
 
-        const observerFunc = buildObserver2(spy1);
-        const filterFunc = buildObserver3(spy2);
+        observerFunction.mockImplementation((data: any) => {
+            const filters = data.filters;
+            const broadcastOutputParameters = data.broadcastOutputParameters;
+            const filterParameters = {};
+            let i: any;
 
-        weakSignal.addBroadcastFilter(filterFunc);
-        weakSignal.registerObserver(observerFunc);
+            for (i = 0; i < filters.length; i++) {
+                filters[i](broadcastOutputParameters, filterParameters);
+            }
+        });
 
-        expect(spy1).not.toHaveBeenCalled();
-        expect(spy2).not.toHaveBeenCalled();
+        weakSignal.addBroadcastFilter(filterFunction);
+        weakSignal.registerObserver(observerFunction);
+
+        expect(observerFunction).not.toHaveBeenCalled();
+        expect(filterFunction).not.toHaveBeenCalled();
 
         const data = {
             broadcastOutputParameters: value,
-            filters: [filterFunc],
+            filters: [filterFunction],
             partitions: []
         };
         const filterParameters = {};
 
         weakSignal.fire(value);
 
-        expect(spy1).toHaveBeenCalledWith(data);
-        expect(spy2).toHaveBeenCalledWith(value, filterParameters);
+        expect(observerFunction).toHaveBeenCalledWith(data);
+        expect(filterFunction).toHaveBeenCalledWith(value, filterParameters);
         done();
     });
 
@@ -177,7 +156,7 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
         done();
     });
 
-    it("checkFilterParameters works", done => {
+    it("checkFilterParameters works", () => {
         const correctFilterParameters = new BroadcastFilterParameters({
             a: "String",
             b: "String",
@@ -210,7 +189,6 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
         expect(weakSignal.checkFilterParameters(correctFilterParameters).caughtErrors.length).toBe(0);
         expect(weakSignal.checkFilterParameters(missingOnefilterParameters).caughtErrors.length).toBe(1);
         expect(weakSignal.checkFilterParameters(missingTwofilterParameters).caughtErrors.length).toBe(2);
-        done();
     });
     it("throws error if fire is invoked with invalid partitions", () => {
         expect(() => {
