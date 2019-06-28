@@ -40,7 +40,6 @@ import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.types.ProviderQos;
 
 public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
@@ -100,8 +99,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
 
     @Override
     public void run() {
-        ProviderQos providerQos = new ProviderQos();
-        Future<Void> future = runtime.registerProvider(localDomain, capabilitiesDirectoryProvider, providerQos);
+        Future<Void> future = runtime.getProviderRegistrar(localDomain, capabilitiesDirectoryProvider).register();
         try {
             future.get();
         } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {

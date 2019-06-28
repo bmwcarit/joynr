@@ -51,6 +51,7 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
@@ -145,7 +146,10 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
         provider = new TestProvider();
         testProviderQos.setPriority(System.currentTimeMillis());
 
-        providerRuntime.registerProvider(domain, provider, testProviderQos).get(CONST_DEFAULT_TEST_TIMEOUT);
+        providerRuntime.getProviderRegistrar(domain, provider)
+                       .withProviderQos(testProviderQos)
+                       .register()
+                       .get(CONST_DEFAULT_TEST_TIMEOUT);
 
         logger.info("setup finished");
 

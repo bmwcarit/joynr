@@ -50,6 +50,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.exceptions.ApplicationException;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
@@ -90,12 +91,18 @@ public class ShutdownTest {
     @Test(expected = JoynrShutdownException.class)
     public void testRegisterAfterShutdown() {
         dummyApplication.shutdown();
-        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider, providerQos);
+        dummyApplication.getRuntime()
+                        .getProviderRegistrar("ShutdownTestdomain", provider)
+                        .withProviderQos(providerQos)
+                        .register();
     }
 
     @Test(expected = JoynrShutdownException.class)
     public void testUnregisterProviderAfterShutdown() {
-        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider, providerQos);
+        dummyApplication.getRuntime()
+                        .getProviderRegistrar("ShutdownTestdomain", provider)
+                        .withProviderQos(providerQos)
+                        .register();
         dummyApplication.shutdown();
         dummyApplication.getRuntime().unregisterProvider("ShutdownTestdomain", provider);
     }
@@ -110,9 +117,11 @@ public class ShutdownTest {
             providerQos.setScope(ProviderScope.LOCAL);
             providerQos.setPriority(System.currentTimeMillis());
             providers[i] = new DefaulttestProvider();
-            Future<Void> registerFinished = dummyApplication.getRuntime().registerProvider("ShutdownTestdomain" + i,
-                                                                                           providers[i],
-                                                                                           providerQos);
+            Future<Void> registerFinished = dummyApplication.getRuntime()
+                                                            .getProviderRegistrar("ShutdownTestdomain" + i,
+                                                                                  providers[i])
+                                                            .withProviderQos(providerQos)
+                                                            .register();
             registerFinished.get();
         }
         for (int i = 0; i < providers.length; i++) {
@@ -127,7 +136,10 @@ public class ShutdownTest {
     public void testProxyCallAfterShutdown() throws DiscoveryException, JoynrIllegalStateException,
                                              InterruptedException {
         Mockito.when(messageReceiverMock.getChannelId()).thenReturn("ShutdownTestChannelId");
-        dummyApplication.getRuntime().registerProvider("ShutdownTestdomain", provider, providerQos);
+        dummyApplication.getRuntime()
+                        .getProviderRegistrar("ShutdownTestdomain", provider)
+                        .withProviderQos(providerQos)
+                        .register();
         ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
                                                                                              testProxy.class);
         testProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))

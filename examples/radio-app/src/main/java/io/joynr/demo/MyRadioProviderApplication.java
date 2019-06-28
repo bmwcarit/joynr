@@ -322,8 +322,10 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(System.currentTimeMillis());
         providerQos.setScope(providerScope);
-        boolean awaitGlobalRegistration = true;
-        Future<Void> future = runtime.registerProvider(localDomain, provider, providerQos, awaitGlobalRegistration);
+        Future<Void> future = runtime.getProviderRegistrar(localDomain, provider)
+                                     .withProviderQos(providerQos)
+                                     .awaitGlobalRegistration()
+                                     .register();
         try {
             future.get();
         } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {

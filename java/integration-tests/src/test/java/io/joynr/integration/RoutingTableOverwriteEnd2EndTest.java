@@ -40,7 +40,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -55,6 +54,7 @@ import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import io.joynr.runtime.ProviderRegistrar;
 import io.joynr.servlet.ServletUtil;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
@@ -165,11 +165,10 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider1 = createCcRuntime("provider_initial", fixedParticipantIdProperty);
         DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
-        boolean awaitGlobalRegistration = true;
-        runtimeProvider1.registerProvider(providerDomain,
-                                          provider1,
-                                          createProviderQos(ProviderScope.GLOBAL),
-                                          awaitGlobalRegistration)
+        runtimeProvider1.getProviderRegistrar(providerDomain, provider1)
+                        .withProviderQos(createProviderQos(ProviderScope.GLOBAL))
+                        .awaitGlobalRegistration()
+                        .register()
                         .get();
 
         Future<testProxy> proxy1Future = new Future<>();
@@ -196,10 +195,10 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider2 = createCcRuntime("provider_override", fixedParticipantIdProperty);
         DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
-        runtimeProvider2.registerProvider(providerDomain,
-                                          provider2,
-                                          createProviderQos(ProviderScope.GLOBAL),
-                                          awaitGlobalRegistration)
+        runtimeProvider2.getProviderRegistrar(providerDomain, provider2)
+                        .withProviderQos(createProviderQos(ProviderScope.GLOBAL))
+                        .awaitGlobalRegistration()
+                        .register()
                         .get();
 
         Future<testProxy> proxy2Future = new Future<>();
@@ -252,7 +251,10 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider1 = createWsRuntime(fixedParticipantIdProperty);
         DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
-        runtimeProvider1.registerProvider(providerDomain, provider1, createProviderQos(ProviderScope.LOCAL)).get();
+        runtimeProvider1.getProviderRegistrar(providerDomain, provider1)
+                        .withProviderQos(createProviderQos(ProviderScope.LOCAL))
+                        .register()
+                        .get();
 
         Future<testProxy> proxy1Future = new Future<>();
         runtimeProxy.getProxyBuilder(providerDomain, testProxy.class)
@@ -278,7 +280,10 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider2 = createWsRuntime(fixedParticipantIdProperty);
         DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
-        runtimeProvider2.registerProvider(providerDomain, provider2, createProviderQos(ProviderScope.LOCAL)).get();
+        runtimeProvider2.getProviderRegistrar(providerDomain, provider2)
+                        .withProviderQos(createProviderQos(ProviderScope.LOCAL))
+                        .register()
+                        .get();
 
         proxy1.addNumbers(1, 2, 3);
         verify(provider1, never()).addNumbers(1, 2, 3);
@@ -323,11 +328,10 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider1 = createWsRuntime(fixedParticipantIdProperty);
         DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
-        boolean awaitGlobalRegistration = true;
-        runtimeProvider1.registerProvider(providerDomain,
-                                          provider1,
-                                          createProviderQos(ProviderScope.GLOBAL),
-                                          awaitGlobalRegistration)
+        runtimeProvider1.getProviderRegistrar(providerDomain, provider1)
+                        .withProviderQos(createProviderQos(ProviderScope.GLOBAL))
+                        .awaitGlobalRegistration()
+                        .register()
                         .get();
 
         Future<testProxy> proxy1Future = new Future<>();
@@ -354,10 +358,10 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider2 = createCcRuntime("provider2", fixedParticipantIdProperty);
         DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
-        runtimeProvider2.registerProvider(providerDomain,
-                                          provider2,
-                                          createProviderQos(ProviderScope.GLOBAL),
-                                          awaitGlobalRegistration)
+        runtimeProvider2.getProviderRegistrar(providerDomain, provider2)
+                        .withProviderQos(createProviderQos(ProviderScope.GLOBAL))
+                        .awaitGlobalRegistration()
+                        .register()
                         .get();
 
         proxy1.addNumbers(1, 2, 3);
@@ -405,11 +409,10 @@ public class RoutingTableOverwriteEnd2EndTest {
         JoynrRuntime runtimeProxyAndProvider1 = createCcWsRuntime("proxyAndProvider1", propertiesProxyAndProvider1);
 
         DefaulttestProvider provider1 = Mockito.spy(DefaulttestProvider.class);
-        boolean awaitGlobalRegistration = true;
-        runtimeProxyAndProvider1.registerProvider(providerDomain,
-                                                  provider1,
-                                                  createProviderQos(ProviderScope.GLOBAL),
-                                                  awaitGlobalRegistration)
+        runtimeProxyAndProvider1.getProviderRegistrar(providerDomain, provider1)
+                                .withProviderQos(createProviderQos(ProviderScope.GLOBAL))
+                                .awaitGlobalRegistration()
+                                .register()
                                 .get();
 
         Future<testProxy> proxy1Future = new Future<>();
@@ -436,10 +439,10 @@ public class RoutingTableOverwriteEnd2EndTest {
 
         JoynrRuntime runtimeProvider2 = createCcRuntime("provider2", fixedParticipantIdProperty);
         DefaulttestProvider provider2 = Mockito.spy(DefaulttestProvider.class);
-        runtimeProvider2.registerProvider(providerDomain,
-                                          provider2,
-                                          createProviderQos(ProviderScope.GLOBAL),
-                                          awaitGlobalRegistration)
+        runtimeProvider2.getProviderRegistrar(providerDomain, provider2)
+                        .withProviderQos(createProviderQos(ProviderScope.GLOBAL))
+                        .awaitGlobalRegistration()
+                        .register()
                         .get();
 
         proxy1.addNumbers(1, 2, 3);

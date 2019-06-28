@@ -55,6 +55,7 @@ public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
     private TestActivity activity;
     private ClusterControllerRuntime ccJoynrRuntime;
     private Properties webSocketConfig;
+    private ProviderQos providerQos;
 
     @Override
     @Before
