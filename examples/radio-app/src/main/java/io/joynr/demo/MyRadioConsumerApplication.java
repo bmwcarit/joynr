@@ -18,8 +18,8 @@
  */
 package io.joynr.demo;
 
-import java.io.Console;
 import java.util.Properties;
+import java.util.Scanner;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -567,31 +567,26 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                         + e.getClass().getSimpleName() + "!");
             }
 
-            Console console = System.console();
-            if (console != null) {
-                String key = "";
-                while (!key.equals("q")) {
-                    key = console.readLine();
+            Scanner scanner = new Scanner(System.in, "UTF-8");
+            String key = "";
+            while (!key.equals("q")) {
+                key = scanner.nextLine();
 
-                    switch (key) {
-                    case "s":
-                        radioProxy.shuffleStations();
-                        LOG.info("called shuffleStations");
-                        break;
-                    case "m":
-                        GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
-                        LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country
-                                + ", location: " + locationOfCurrentStation.location);
-                        break;
-                    default:
-                        LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
-                        break;
-                    }
+                switch (key) {
+                case "s":
+                    radioProxy.shuffleStations();
+                    LOG.info("called shuffleStations");
+                    break;
+                case "m":
+                    GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
+                    LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country
+                            + ", location: " + locationOfCurrentStation.location);
+                    break;
+                default:
+                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
+                    break;
                 }
-            } else {
-                LOG.info("\n\nNon-interactive mode detected.\n");
             }
-
         } catch (DiscoveryException e) {
             LOG.error("No provider found", e);
         } catch (JoynrCommunicationException e) {
