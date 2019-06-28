@@ -114,18 +114,6 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    @Deprecated
-    public Future<Void> registerProvider(String domain,
-            Object provider,
-            ProviderQos providerQos,
-            String[] gbids,
-            boolean awaitGlobalRegistration,
-            final Class<?> interfaceClass) {
-        JoynrRuntime runtime = getJoynrRuntime();
-        return runtime.registerProvider(domain, provider, providerQos, gbids, awaitGlobalRegistration, interfaceClass);
-    }
-
-    @Override
     public ProviderRegistrar getProviderRegistrar(String domain, JoynrProvider provider) {
         JoynrRuntime runtime = getJoynrRuntime();
         return runtime.getProviderRegistrar(domain, provider);
@@ -143,7 +131,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
 
     @Override
     public <T> ProxyBuilder<T> getProxyBuilder(String domain, Class<T> interfaceClass) {
-        return new AndroidProxyBuilder<T>(runtimeInitTask, new HashSet(Arrays.asList(domain)), interfaceClass, uiLogger);
+        return new AndroidProxyBuilder<T>(runtimeInitTask, new HashSet<String>(Arrays.asList(domain)), interfaceClass, uiLogger);
     }
 
     public void addLogListener(Messenger clientMessenger) {
