@@ -20,6 +20,7 @@ package io.joynr.runtime;
 
 import java.util.Set;
 
+import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.StatelessAsyncCallback;
@@ -37,13 +38,14 @@ public interface JoynrRuntime {
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
-     *            Instance of the provider implementation. It is assumed that the provided implementations offers
-     *            the following annotations in its (inherited) class definition: {@link io.joynr.provider.JoynrInterface}
-     *            and {@link io.joynr.JoynrVersion}.
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     *            It is assumed that the provided implementation offers the following annotations in its
+     *            (inherited) class definition: {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
      * @param providerQos
-     *            The providers quality of service settings.
+     *            The provider's quality of service settings.
      * @return Returns a Future which can be used to check the registration status.
      */
+    @Deprecated
     Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
     /**
@@ -53,13 +55,16 @@ public interface JoynrRuntime {
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
-     *            Instance of the provider implementation. It is assumed that the provided implementations offers
-     *            the following annotations in its (inherited) class definition: {@link io.joynr.provider.JoynrInterface}
-     *            and {@link io.joynr.JoynrVersion}.
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     *            It is assumed that the provided implementation offers the following annotations in its
+     *            (inherited) class definition: {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
      * @param providerQos
-     *            The providers quality of service settings.
+     *            The provider's quality of service settings.
+     * @param awaitGlobalRegistration
+     *            If true, wait for global registration to complete or timeout in case of problems.
      * @return Returns a Future which can be used to check the registration status.
      */
+    @Deprecated
     Future<Void> registerProvider(String domain,
                                   Object provider,
                                   ProviderQos providerQos,
@@ -72,18 +77,19 @@ public interface JoynrRuntime {
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
-     *            Instance of the provider implementation. It is assumed that the provided implementations offers
-     *            the following annotations in its (inherited) class definition: {@link io.joynr.provider.JoynrInterface}
-     *            and {@link io.joynr.JoynrVersion}.
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     *            It is assumed that the provided implementation offers the following annotations in its
+     *            (inherited) class definition: {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
      * @param providerQos
-     *            The providers quality of service settings.
+     *            The provider's quality of service settings.
      * @param gbids
-     *            The GBIDs in which the provider shall be registered. If no GBID is provided then the provider is
-     *            registered in the default backend. Provided GBIDs must not be empty.
+     *            The GBIDs in which the provider shall be registered. This parameter may be provided as String
+     *            array with zero elements, in which case the provider is registered in the default backend.
      * @param awaitGlobalRegistration
-     *            If true, wait for global registration to complete or timeout, if required.
+     *            If true, wait for global registration to complete or timeout in case of problems.
      * @return Returns a Future which can be used to check the registration status.
      */
+    @Deprecated
     Future<Void> registerProvider(String domain,
                                   Object provider,
                                   ProviderQos providerQos,
@@ -97,20 +103,21 @@ public interface JoynrRuntime {
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
-     *            Instance of the provider implementation. It is assumed that the provided implementations offers
-     *            the following annotations in its (inherited) class definition: {@link io.joynr.provider.JoynrInterface}
-     *            and {@link io.joynr.JoynrVersion}.
+     *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
+     *            It is assumed that the provided implementation offers the following annotations in its
+     *            (inherited) class definition: {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
      * @param providerQos
-     *            The providers quality of service settings.
+     *            The provider's quality of service settings.
      * @param gbids
-     *            The GBIDs in which the provider shall be registered. If no GBID is provided then the provider is
-     *            registered in the default backend.
+     *            The GBIDs in which the provider shall be registered. This parameter may be provided as String
+     *            array with zero elements, in which case the provider is registered in the default backend.
      * @param awaitGlobalRegistration
-     *            If true, wait for global registration to complete or timeout, if required.
+     *            If true, wait for global registration to complete or timeout in case of problems.
      * @param interfaceClass
      *            The interface class of the provider.
      * @return Returns a Future which can be used to check the registration status.
      */
+    @Deprecated
     Future<Void> registerProvider(String domain,
                                   Object provider,
                                   ProviderQos providerQos,
@@ -119,23 +126,19 @@ public interface JoynrRuntime {
                                   final Class<?> interfaceClass);
 
     /**
-     * Registers a provider in the joynr framework for all known GBIDs.
+     * Returns a provider registrar instance to register a provider in the given domain.
      *
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
      *            the provider.
      * @param provider
      *            Instance of the provider implementation (has to extend a generated ...AbstractProvider).
-     * @param providerQos
-     *            the provider's quality of service settings
-     * @param awaitGlobalRegistration
-     *            If true, wait for global registration to complete or timeout, if required.
-     * @return Returns a Future which can be used to check the registration status.
+     *            It is assumed that the provided implementation offers the following annotations in its
+     *            (inherited) class definition: {@link io.joynr.provider.JoynrInterface} and {@link io.joynr.JoynrVersion}.
+     * @return After setting additional parameters, e.g. ProviderQos, Gbids, the returned ProviderRegistrar can be used
+     *         to register the provider instance.
      */
-    public Future<Void> registerInAllKnownBackends(String domain,
-                                                   Object provider,
-                                                   ProviderQos providerQos,
-                                                   boolean awaitGlobalRegistration);
+    public ProviderRegistrar getProviderRegistrar(String domain, JoynrProvider provider);
 
     /**
      * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
