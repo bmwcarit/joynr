@@ -18,8 +18,8 @@
  */
 package io.joynr.demo;
 
-import java.io.Console;
 import java.util.Properties;
+import java.util.Scanner;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -333,37 +333,32 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             return;
         }
 
-        Console console = System.console();
-        if (console != null) {
-            String key = "";
-            while (!key.equals("q")) {
-                key = console.readLine();
+        Scanner scanner = new Scanner(System.in, "UTF-8");
+        String key = "";
+        while (!key.equals("q")) {
+            key = scanner.nextLine();
 
-                switch (key) {
-                case "s":
-                    provider.shuffleStations();
-                    break;
-                case "p":
-                    provider.fireWeakSignalEventWithPartition();
-                    break;
-                case "w":
-                    provider.fireWeakSignalEvent();
-                    break;
-                case "n":
-                    provider.fireNewStationDiscoveredEvent();
-                    break;
-                default:
-                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
-                            + " w\tto fire weak signal event\n"
-                            + " p\tto fire weak signal event with country of current station as partition\n"
-                            + " n\tto fire station discovered event\n");
-                    break;
-                }
+            switch (key) {
+            case "s":
+                provider.shuffleStations();
+                break;
+            case "p":
+                provider.fireWeakSignalEventWithPartition();
+                break;
+            case "w":
+                provider.fireWeakSignalEvent();
+                break;
+            case "n":
+                provider.fireNewStationDiscoveredEvent();
+                break;
+            default:
+                LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
+                        + " w\tto fire weak signal event\n"
+                        + " p\tto fire weak signal event with country of current station as partition\n"
+                        + " n\tto fire station discovered event\n");
+                break;
             }
-        } else {
-            LOG.info("\n\nNon-interactive mode detected.\n");
         }
-
     }
 
     @Override
