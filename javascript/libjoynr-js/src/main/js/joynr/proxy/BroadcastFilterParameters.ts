@@ -16,50 +16,45 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../util/Typing");
-const UtilInternal = require("../util/UtilInternal");
+import * as Typing from "../util/Typing";
 
-function makeSetterFunction(obj, parameterName) {
-    return function(arg) {
-        obj.filterParameters[parameterName] = arg;
+function makeSetterFunction(
+    obj: BroadcastFilterParameters,
+    parameterName: string
+): (arg: any) => BroadcastFilterParameters {
+    return function(arg: any): BroadcastFilterParameters {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        obj.filterParameters![parameterName] = arg;
         return obj;
     };
 }
 
+interface BroadcastFilterParameters {
+    /** setter functions **/
+    [key: string]: (arg: any) => BroadcastFilterParameters;
+}
+
 class BroadcastFilterParameters {
+    // @ts-ignore
+    public _typeName = "joynr.BroadcastFilterParameters";
+    // @ts-ignore
+    public filterParameters: Record<string, any> | null = {};
+
     /**
      * Constructor of BroadcastFilterParameters object used for subscriptions in generated proxy objects
      *
-     * @constructor
-     * @name BroadcastFilterParameters
-     *
-     * @param {Object} [filterParameters] the filterParameters object for the constructor call
+     * @param [filterParameterProperties] the filterParameters object for the constructor call
      *
      * @returns {BroadcastFilterParameters} a BroadcastFilterParameters Object for subscriptions on broadcasts
      */
-    constructor(filterParameterProperties) {
-        /**
-         * @name BroadcastFilterParameters#_typeName
-         * @type String
-         */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.BroadcastFilterParameters");
+    public constructor(filterParameterProperties: Record<string, any>) {
         Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
 
         let parameterName;
         let funcName;
 
         if (filterParameterProperties === undefined) {
-            let filterParameters = null;
-            Object.defineProperty(this, "filterParameters", {
-                enumerable: true,
-                configurable: false,
-                get() {
-                    return filterParameters;
-                },
-                set(value) {
-                    filterParameters = value;
-                }
-            });
+            this.filterParameters = null;
         } else {
             for (parameterName in filterParameterProperties) {
                 if (filterParameterProperties.hasOwnProperty(parameterName)) {
@@ -73,14 +68,8 @@ class BroadcastFilterParameters {
                     });
                 }
             }
-
-            /**
-             * @name BroadcastFilterParameters#filterParameters
-             * @type Object
-             */
-            this.filterParameters = {};
         }
     }
 }
 
-module.exports = BroadcastFilterParameters;
+export = BroadcastFilterParameters;
