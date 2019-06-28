@@ -92,7 +92,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
 
     @Override
     public void init() {
-        LOG.debug("Initializing MQTT skeleton ...");
+        LOG.debug("Initializing MQTT skeleton (ownGbid={}) ...", ownGbid);
 
         messageRouter.registerMessageProcessedListener(this);
 
@@ -154,7 +154,7 @@ public class MqttMessagingSkeleton implements IMqttMessagingSkeleton, MessagePro
             ImmutableMessage message = new ImmutableMessage(processedMessage);
             message.setContext(context);
 
-            LOG.debug("<<< INCOMING <<< {}", message);
+            LOG.debug("<<< INCOMING FROM {} <<< {}", ownGbid, message);
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {
