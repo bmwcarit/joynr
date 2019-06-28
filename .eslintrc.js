@@ -30,21 +30,22 @@ module.exports = {
         ecmaVersion: 2018,
         sourceType: "module"
     },
-    extends: [
-        "plugin:@typescript-eslint/recommended",
-        "plugin:jest/recommended",
-        "prettier/@typescript-eslint",
+    extends: [ // order matters. Later entries override earlier entries when conflicts arise
+        "eslint:recommended",
         "plugin:promise/recommended",
         "plugin:prettier/recommended",
-        "eslint:recommended"
+        "plugin:@typescript-eslint/recommended",
+        "plugin:jest/recommended",
+        "prettier/@typescript-eslint"
     ],
     plugins: ["promise", "jest"],
     rules: {
         indent: "off",
         quotes: "off",
         "no-empty": "off",
-        "linebreak-style": ["error", "unix"],
-        semi: ["error", "always"],
+        "no-extra-semi": "off",
+        "no-mixed-spaces-and-tabs": "off",
+        "no-unexpected-multiline": "off",
         "default-case": "error",
         "no-use-before-define": "off",
         "consistent-return": "off",
@@ -79,7 +80,6 @@ module.exports = {
         "no-useless-constructor": "error",
         "no-var": "error",
         "object-shorthand": "error",
-        "prefer-arrow-callback": "error",
         "prefer-const": "error",
         "prefer-destructuring": "off",
         "prefer-template": "error",
