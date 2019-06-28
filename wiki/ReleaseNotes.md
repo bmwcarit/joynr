@@ -2,13 +2,28 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.9.1
+
+## API relevant changes
+* **[Java]** Introduced new ProviderRegistrar class for provider registration in the JoynrRuntime.
+  This is to prevent future API bloat of the registerProvider() methods. An object of this class
+  is retrieved by executing the new getProviderRegistrar() method of the JoynrRuntime.
+  Usage of the class is documented in the [Java documentation](java.md).
+  Previous interfaces of the registerProvider() method are still available, but are now
+  considered deprecated.
+
+## Other changes
+None.
+
+
+
 # joynr 1.9.0
 
 ## API relevant changes
 * **[Java]** Introduced new registerProvider() method with GBIDs in the JoynrRuntime.
   This enables using non-default GBIDs for provider registration. The provided GBIDs must
   be configured in `PROPERTY_GBIDS` on the cluster-controller side.
-* **[Java]** Introduced new registerInAllKnowBackends() method in the JoynrRuntime.
+* **[Java]** Introduced new registerInAllKnownBackends() method in the JoynrRuntime.
   This allows the registration of a provider in all backends known to the cluster-controller.
 * **[JEE]** ServiceLocator builder now provides the ability to specify a callback when creating a
   proxy, so that you can be notified of proxy creation success or failure. See JEE wiki for details.

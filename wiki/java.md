@@ -1291,7 +1291,24 @@ public void run() {
     // set priorityValue
     providerQos.setPriority(priorityValue);
 
-    runtime.registerProvider(localDomain, <interface>Provider, providerQos);
+    Future<Void> future = runtime.getProviderRegistrar(localDomain, <interface>Provider)
+                                 // if no providerQos is set, a default providerQos will be used
+                                 .withProviderQos(providerQos)
+                                 .register();
+    try {
+        future.get();
+    }
+    catch (ApplicationException a) {
+        switch ((DiscoveryError) a.getError()) {
+            case DiscoveryError.UNKNOWN_GBID:
+                // handle error
+            case DiscoveryError.INTERNAL_ERROR:
+                // handle error
+            ...
+            default:
+                // handle default
+        }
+    }
 
     // loop here
 }
@@ -1334,18 +1351,18 @@ change again in the future.
 If not specified otherwise, a new provider is registered in the default backend (The first one defined
 in `PROPERTY_GBIDS` [Joynr Java Settings](JavaSettings.md). If this property is not set by the user,
 then a default value is used for it.).
-To register a provider in different backends, the respective GBIDs have to be passed
-to the registerProvider() method.
+To register a provider in different backends, the respective GBIDs have to be included.
 
 ```java
 ...
 @Override
 public void run() {
 ...
-    String[] gbids = new String[] { "gbid1","gbid2" };
-    boolean awaitGlobalRegistration = true;
-    Future<Void> future = runtime.registerProvider(localDomain, <interface>Provider, providerQos, gbids,
-            awaitGlobalRegistration);
+    Future<Void> future = runtime.getProviderRegistrar(localDomain, <interface>Provider)
+                                 .withProviderQos(someProviderQos)
+                                 .withGbids(new String[] { "gbid1","gbid2" })
+                                 .awaitGlobalRegistration()
+                                 .register();
     try {
         future.get();
     }
@@ -1370,6 +1387,21 @@ public void run() {
 
 The passed GBIDs have to be known to the cluster-controller, which means that they also have to be
 defined in `PROPERTY_GBIDS`[Joynr Java Settings](JavaSettings.md).
+
+To register a provider in all backends known to the cluster-controller,
+the registerInAllBackends() method can be used.
+
+```java
+...
+@Override
+public void run() {
+     Future<Void> future = runtime.getProviderRegistrar(localDomain, <interface>Provider)
+                                  .registerInAllBackends();
+     ...
+}
+...
+
+```
 
 ### The shutdown method
 The ```shutdown``` method should be called on exit of the application. It should cleanly unregister
