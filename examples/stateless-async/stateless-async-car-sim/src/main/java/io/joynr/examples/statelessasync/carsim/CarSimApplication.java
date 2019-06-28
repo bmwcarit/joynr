@@ -35,7 +35,9 @@ public class CarSimApplication extends AbstractJoynrApplication {
         VehicleStateService vehicleStateService = new VehicleStateService();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.GLOBAL);
-        runtime.registerProvider("io.joynr.examples.statelessasync.carsim", vehicleStateService, providerQos);
+        runtime.getProviderRegistrar("io.joynr.examples.statelessasync.carsim", vehicleStateService)
+               .withProviderQos(providerQos)
+               .register();
         while (true) {
             try {
                 Thread.sleep(1000L);

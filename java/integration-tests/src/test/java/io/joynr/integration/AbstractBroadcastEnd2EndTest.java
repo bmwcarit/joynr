@@ -55,19 +55,20 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
-import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testBroadcastInterface;
+import joynr.tests.testBroadcastInterface.LocationUpdateSelectiveBroadcastFilterParameters;
 import joynr.tests.testLocationUpdateSelectiveBroadcastFilter;
 import joynr.tests.testProxy;
 import joynr.tests.testTypes.TestEnum;
+import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
-import joynr.types.ProviderQos;
 
 public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private static final Logger logger = LoggerFactory.getLogger(AbstractBroadcastEnd2EndTest.class);
@@ -101,7 +102,6 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
     private JoynrRuntime providerRuntime;
     private JoynrRuntime consumerRuntime;
 
-    protected ProviderQos providerQos = new ProviderQos();
     protected MessagingQos messagingQos = new MessagingQos(10000);
     protected DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
@@ -140,7 +140,7 @@ public abstract class AbstractBroadcastEnd2EndTest extends JoynrEnd2EndTest {
                                      new StaticDomainAccessControlProvisioningModule());
 
         provider = new DefaulttestProvider();
-        Future<Void> voidFuture = providerRuntime.registerProvider(domain, provider, providerQos);//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
+        Future<Void> voidFuture = providerRuntime.getProviderRegistrar(domain, provider).register();//.waitForFullRegistration(CONST_DEFAULT_TEST_TIMEOUT);
         voidFuture.get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 

@@ -133,7 +133,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(System.currentTimeMillis());
 
-        runtime.registerProvider(localDomain, provider, providerQos);
+        runtime.getProviderRegistrar(localDomain, provider).withProviderQos(providerQos).register();
 
         while (!shutDownRequested) {
             try {

@@ -48,7 +48,6 @@ import joynr.infrastructure.GlobalDomainAccessControllerAbstractProvider;
 import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 import joynr.infrastructure.GlobalDomainRoleControllerAbstractProvider;
 import joynr.infrastructure.GlobalDomainRoleControllerProvider;
-import joynr.types.ProviderQos;
 
 public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplication {
     private static final String APP_ID = "GlobalDomainAccessControllerLauncher";
@@ -140,12 +139,11 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
                         justification = "static member startOk is read from static method start")
     public void run() {
         try {
-            ProviderQos providerQos = new ProviderQos();
-            runtime.registerProvider(localDomain, globalDomainAccessSyncProvider, providerQos).get();
+            runtime.getProviderRegistrar(localDomain, globalDomainAccessSyncProvider).register().get();
             globalDomainAccessSyncProviderRegistered = true;
-            runtime.registerProvider(localDomain, globalDomainRoleSyncProvider, providerQos).get();
+            runtime.getProviderRegistrar(localDomain, globalDomainRoleSyncProvider).register().get();
             globalDomainRoleSyncProviderRegistered = true;
-            runtime.registerProvider(localDomain, globalDomainAccessControlListEditorSyncProvider, providerQos).get();
+            runtime.getProviderRegistrar(localDomain, globalDomainAccessControlListEditorSyncProvider).register().get();
             globalDomainAccessControlListEditorSyncProviderRegistered = true;
             startOk = true;
         } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {

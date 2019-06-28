@@ -75,6 +75,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.ImmutableMessage;
 import joynr.MulticastSubscriptionQos;
 import joynr.exceptions.ApplicationException;
@@ -242,13 +243,17 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         // check that registerProvider does not block
         long startTime = System.currentTimeMillis();
-        boolean awaitGlobalRegistration = true;
-        providerRuntime.registerProvider(domain, provider, testProviderQos, awaitGlobalRegistration)
+        providerRuntime.getProviderRegistrar(domain, provider)
+                       .withProviderQos(testProviderQos)
+                       .awaitGlobalRegistration()
+                       .register()
                        .get(CONST_DEFAULT_PROVIDER_REGISTRATION_TIMEOUT);
         long endTime = System.currentTimeMillis();
         timeTookToRegisterProvider = endTime - startTime;
-
-        providerRuntime.registerProvider(domainAsync, providerAsync, testProviderQos, awaitGlobalRegistration)
+        providerRuntime.getProviderRegistrar(domainAsync, providerAsync)
+                       .withProviderQos(testProviderQos)
+                       .awaitGlobalRegistration()
+                       .register()
                        .get(CONST_DEFAULT_PROVIDER_REGISTRATION_TIMEOUT);
 
         // this sleep greatly speeds up the tests (400 ms vs 2500 / test) by

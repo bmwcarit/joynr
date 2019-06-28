@@ -47,11 +47,11 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testProxy;
-import joynr.types.ProviderQos;
 
 /*
  * This testClass registers one consumer and one provider both on the same runtime. It can be used to test local
@@ -89,8 +89,7 @@ public abstract class AbstractLocalCommunicationTest {
         provider = new SubscriptionTestsProviderImpl();
         domain = "TestDomain" + System.currentTimeMillis();
 
-        ProviderQos providerQos = new ProviderQos();
-        runtimeA.registerProvider(domain, provider, providerQos);
+        runtimeA.getProviderRegistrar(domain, provider).register();
 
         ProxyBuilder<testProxy> proxyBuilder;
 

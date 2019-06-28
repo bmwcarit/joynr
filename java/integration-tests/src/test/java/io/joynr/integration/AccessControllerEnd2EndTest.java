@@ -56,6 +56,7 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.ImmutableMessage;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -167,7 +168,7 @@ public class AccessControllerEnd2EndTest {
 
         testProvider = new TestProviderImpl();
 
-        runtime.registerProvider(TEST_DOMAIN, testProvider, providerQos);
+        runtime.getProviderRegistrar(TEST_DOMAIN, testProvider).withProviderQos(providerQos).register();
     }
 
     private testProxy createProxy(JoynrRuntime runtime) {

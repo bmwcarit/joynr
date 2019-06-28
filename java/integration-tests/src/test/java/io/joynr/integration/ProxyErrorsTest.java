@@ -51,7 +51,6 @@ import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
-import io.joynr.provider.JoynrInterface;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -59,7 +58,7 @@ import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.test;
-import joynr.tests.testProvider;
+import joynr.tests.testAbstractProvider;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -88,13 +87,8 @@ public class ProxyErrorsTest {
         void setEnumAttribute(TestEnum enumAttribute);
     }
 
-    @JoynrInterface(provider = TestProviderWrongVersion.class, provides = test.class, name = "tests/test")
-    @JoynrVersion(major = 1, minor = 0)
-    interface TestProviderWrongVersion extends testProvider {
-    }
-
     @Mock
-    TestProviderWrongVersion provider;
+    testAbstractProvider provider;
 
     private Semaphore waitOnExceptionAndErrorCallbackSemaphore;
     private String domain;
@@ -128,8 +122,8 @@ public class ProxyErrorsTest {
         runtime = getRuntime(joynrConfig);
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-        runtime.registerProvider(domain, provider, providerQos);
-        runtime.registerProvider(domain2, provider, providerQos);
+        runtime.getProviderRegistrar(domain, provider).withProviderQos(providerQos).register();
+        runtime.getProviderRegistrar(domain2, provider).withProviderQos(providerQos).register();
 
         discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);

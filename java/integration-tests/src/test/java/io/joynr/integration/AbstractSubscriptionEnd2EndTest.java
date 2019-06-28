@@ -68,6 +68,7 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
@@ -143,7 +144,10 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
 
         provider = new SubscriptionTestsProviderImpl();
         providerQos.setPriority(System.currentTimeMillis());
-        providerRuntime.registerProvider(domain, provider, providerQos).get(CONST_DEFAULT_TEST_TIMEOUT);
+        providerRuntime.getProviderRegistrar(domain, provider)
+                       .withProviderQos(providerQos)
+                       .register()
+                       .get(CONST_DEFAULT_TEST_TIMEOUT);
     }
 
     private void setupConsumerRuntime(String methodName) throws DiscoveryException, JoynrIllegalStateException,

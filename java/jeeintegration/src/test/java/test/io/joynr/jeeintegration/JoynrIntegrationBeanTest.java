@@ -165,7 +165,6 @@ public class JoynrIntegrationBeanTest {
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
         subject.initialise();
-
         verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN), any(), any(), any(), eq(false), any());
     }
 
@@ -178,7 +177,6 @@ public class JoynrIntegrationBeanTest {
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
         subject.initialise();
-
         verify(joynrRuntime).registerProvider(eq(MY_CUSTOM_DOMAIN), any(), any(), any(), eq(false), any());
     }
 

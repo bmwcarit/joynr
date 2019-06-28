@@ -128,7 +128,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
         LOG.info("adding shutdown hook");
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-        runtime.registerProvider(localDomain, provider, providerQos);
+        runtime.getProviderRegistrar(localDomain, provider).withProviderQos(providerQos).register();
 
         if (!runForever) {
             try {

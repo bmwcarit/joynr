@@ -155,7 +155,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         ProviderQos providerQos = new ProviderQos();
         provider = new MyGpsProvider();
         providerQos.setPriority(System.currentTimeMillis());
-        runtime.registerProvider(localDomain, provider, providerQos);
+        runtime.getProviderRegistrar(localDomain, provider).withProviderQos(providerQos).register();
 
         Console console = System.console();
         if (console != null) {

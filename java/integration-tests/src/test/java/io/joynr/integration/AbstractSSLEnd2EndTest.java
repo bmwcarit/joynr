@@ -45,10 +45,10 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
-import joynr.types.ProviderQos;
 
 public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
 
@@ -102,8 +102,7 @@ public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
         consumerRuntime = getRuntime(joynrConfigConsumer);
 
         provider = new DefaulttestProvider();
-        ProviderQos providerQos = new ProviderQos();
-        providerRuntime.registerProvider(domain, provider, providerQos);
+        providerRuntime.getProviderRegistrar(domain, provider).register();
 
         messagingQos = new MessagingQos(5000);
         discoveryQos = new DiscoveryQos(5000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);

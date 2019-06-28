@@ -52,6 +52,7 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.tests.AnonymousVersionedStruct2;
 import joynr.tests.AnonymousVersionedStruct;
 import joynr.tests.DefaultMultipleVersionsInterface2Provider;
@@ -149,7 +150,10 @@ public class AbstractMultipleVersionsEnd2EndTest {
     }
 
     void registerProvider(AbstractJoynrProvider provider, String domain) {
-        Future<Void> future = providerRuntime.registerProvider(domain, provider, providerQos, true);
+        Future<Void> future = providerRuntime.getProviderRegistrar(domain, provider)
+                                             .withProviderQos(providerQos)
+                                             .awaitGlobalRegistration()
+                                             .register();
 
         try {
             future.get(1000);
