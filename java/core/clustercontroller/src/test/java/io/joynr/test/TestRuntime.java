@@ -20,19 +20,23 @@ package io.joynr.test;
 
 import java.util.Set;
 
+import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.types.ProviderQos;
 
 public class TestRuntime implements JoynrRuntime {
     @Override
+    @Deprecated
     public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         return null;
     }
 
     @Override
+    @Deprecated
     public Future<Void> registerProvider(String domain,
                                          Object provider,
                                          ProviderQos providerQos,
@@ -41,6 +45,7 @@ public class TestRuntime implements JoynrRuntime {
     }
 
     @Override
+    @Deprecated
     public Future<Void> registerProvider(String domain,
                                          Object provider,
                                          ProviderQos providerQos,
@@ -50,20 +55,13 @@ public class TestRuntime implements JoynrRuntime {
     }
 
     @Override
+    @Deprecated
     public Future<Void> registerProvider(String domain,
                                          Object provider,
                                          ProviderQos providerQos,
                                          String[] gbids,
                                          boolean awaitGlobalRegistration,
                                          final Class<?> interfaceClass) {
-        return null;
-    }
-
-    @Override
-    public Future<Void> registerInAllKnownBackends(String domain,
-                                                   Object provider,
-                                                   ProviderQos providerQos,
-                                                   boolean awaitGlobalRegistration) {
         return null;
     }
 
@@ -92,6 +90,11 @@ public class TestRuntime implements JoynrRuntime {
 
     @Override
     public <T> ProxyBuilder<T> getProxyBuilder(Set<String> domains, Class<T> interfaceClass) {
+        return null;
+    }
+
+    @Override
+    public ProviderRegistrar getProviderRegistrar(String domain, JoynrProvider provider) {
         return null;
     }
 

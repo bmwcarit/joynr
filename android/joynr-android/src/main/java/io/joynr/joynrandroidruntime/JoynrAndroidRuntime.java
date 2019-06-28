@@ -32,10 +32,12 @@ import android.util.Log;
 
 import com.google.inject.Module;
 
+import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.types.ProviderQos;
 
 public class JoynrAndroidRuntime implements JoynrRuntime {
@@ -77,6 +79,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
+    @Deprecated
     public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
@@ -88,6 +91,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
+    @Deprecated
     public Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos, boolean awaitGlobalRegistration) {
         // this will block until the runtime is created successfully
         // TODO since the caller expects the register call to be async, we need to check if
@@ -99,6 +103,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
+    @Deprecated
     public Future<Void> registerProvider(String domain,
                                          Object provider,
                                          ProviderQos providerQos,
@@ -109,6 +114,7 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
+    @Deprecated
     public Future<Void> registerProvider(String domain,
             Object provider,
             ProviderQos providerQos,
@@ -120,12 +126,9 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     }
 
     @Override
-    public Future<Void> registerInAllKnownBackends(String domain,
-                                                   Object provider,
-                                                   ProviderQos providerQos,
-                                                   boolean awaitGlobalRegistration) {
+    public ProviderRegistrar getProviderRegistrar(String domain, JoynrProvider provider) {
         JoynrRuntime runtime = getJoynrRuntime();
-        return runtime.registerInAllKnownBackends(domain, provider, providerQos, awaitGlobalRegistration);
+        return runtime.getProviderRegistrar(domain, provider);
     }
 
     @Override
