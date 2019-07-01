@@ -91,9 +91,16 @@ enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 #define JOYNR_CONDITIONAL_SPDLOG(level, method, logger, ...)                                       \
     do {                                                                                           \
         joynr::LogLevel logLevel = level;                                                          \
+        if (logLevel == joynr::LogLevel::Debug && logger.getMapDebugToInfoLogsState()) {           \
+            logLevel = joynr::LogLevel::Info;                                                      \
+        }                                                                                          \
         joynr::LogLevel actualLogLevel = logger.getLogLevel();                                     \
         if (JOYNR_LOG_LEVEL <= logLevel && actualLogLevel <= logLevel) {                           \
-            logger.spdlog->method(__VA_ARGS__);                                                    \
+            if (logLevel == joynr::LogLevel::Info) {                                               \
+                logger.spdlog->info(__VA_ARGS__);                                                  \
+            } else {                                                                               \
+                logger.spdlog->method(__VA_ARGS__);                                                \
+            }                                                                                      \
         }                                                                                          \
     } while (false)
 
@@ -211,6 +218,24 @@ struct Logger
     inline joynr::LogLevel getLogLevel() const
     {
         return level;
+    }
+
+#ifdef JOYNR_DISABLE_DEBUG_TO_INFO_LOGGING
+#define JOYNR_MAP_DEBUG_TO_INFO_LOG_INITIAL_STATE false
+#else
+#define JOYNR_MAP_DEBUG_TO_INFO_LOG_INITIAL_STATE true
+#endif
+
+    static bool& getMapDebugToInfoLogsState()
+    {
+        static bool mapDebugToInfoLogsState = JOYNR_MAP_DEBUG_TO_INFO_LOG_INITIAL_STATE;
+        return mapDebugToInfoLogsState;
+    }
+
+    static void setMapDebugToInfoLogsState(bool enabled)
+    {
+        bool& mapDebugToInfoLogsState = getMapDebugToInfoLogsState();
+        mapDebugToInfoLogsState = enabled;
     }
 
     std::shared_ptr<spdlog::logger> spdlog;

@@ -157,6 +157,13 @@ option(
 message(STATUS "option JOYNR_ENABLE_STDOUT_LOGGING=" ${JOYNR_ENABLE_STDOUT_LOGGING})
 
 option(
+    JOYNR_DISABLE_DEBUG_TO_INFO_LOGGING
+    "Don't map debug loglevel to info loglevel?"
+    OFF
+)
+message(STATUS "option JOYNR_DISABLE_DEBUG_TO_INFO_LOGGING=" ${JOYNR_DISABLE_DEBUG_TO_INFO_LOGGING})
+
+option(
     USE_PLATFORM_SMRF
     "Resolve dependency to SMRF from the system?"
     ON
@@ -521,6 +528,10 @@ endif(JOYNR_ENABLE_STDOUT_LOGGING)
 if(JOYNR_ENABLE_DLT_LOGGING)
     add_definitions(-DJOYNR_ENABLE_DLT_LOGGING)
 endif(JOYNR_ENABLE_DLT_LOGGING)
+
+if(JOYNR_DISABLE_DEBUG_TO_INFO_LOGGING)
+    add_definitions(-DJOYNR_DISABLE_DEBUG_TO_INFO_LOGGING)
+endif(JOYNR_DISABLE_DEBUG_TO_INFO_LOGGING)
 
 if(EXISTS "/etc/fedora-release")
     message(STATUS "Fedora release detected, eNULL cipher not available - disabling.")
