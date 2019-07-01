@@ -16,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
-const CustomParameter = require("../../../../main/js/generated/joynr/types/CustomParameter");
+
+import ProviderQos from "../../../../main/js/generated/joynr/types/ProviderQos";
+import ProviderScope from "../../../../main/js/generated/joynr/types/ProviderScope";
+import CustomParameter from "../../../../main/js/generated/joynr/types/CustomParameter";
 
 describe("libjoynr-js.joynr.types.ProviderQos", () => {
     it("is instantiable", () => {
@@ -56,7 +56,13 @@ describe("libjoynr-js.joynr.types.ProviderQos", () => {
         expect(providerQos instanceof ProviderQos).toEqual(true);
     });
 
-    function testValues(customParameters, version, priority, scope, supportsOnChangeSubscriptions) {
+    function testValues(
+        customParameters: any,
+        _version: any,
+        priority: number,
+        scope: any,
+        supportsOnChangeSubscriptions?: any
+    ) {
         const providerQos = new ProviderQos({
             customParameters,
             priority,
