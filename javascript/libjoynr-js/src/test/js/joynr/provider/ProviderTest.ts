@@ -16,24 +16,16 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const RadioProvider = require("../../../generated/joynr/vehicle/RadioProvider");
-const RadioStation = require("../../../generated/joynr/vehicle/radiotypes/RadioStation");
-const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
-const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
-const ProviderOperation = require("../../../../main/js/joynr/provider/ProviderOperation");
-const ProviderEvent = require("../../../../main/js/joynr/provider/ProviderEvent");
-const nanoid = require("nanoid");
-const TestWithVersionProvider = require("../../../generated/joynr/tests/TestWithVersionProvider");
-const TestWithoutVersionProvider = require("../../../generated/joynr/tests/TestWithoutVersionProvider");
+
+import RadioProvider from "../../../generated/joynr/vehicle/RadioProvider";
+import RadioStation from "../../../generated/joynr/vehicle/radiotypes/RadioStation";
+import Country from "../../../generated/joynr/datatypes/exampleTypes/Country";
+import ProviderOperation from "../../../../main/js/joynr/provider/ProviderOperation";
+import ProviderEvent from "../../../../main/js/joynr/provider/ProviderEvent";
+import TestWithVersionProvider from "../../../generated/joynr/tests/TestWithVersionProvider";
+import TestWithoutVersionProvider from "../../../generated/joynr/tests/TestWithoutVersionProvider";
 describe("libjoynr-js.joynr.provider.Provider", () => {
-    let implementation = null;
-    const dependencies = {
-        ProviderAttribute,
-        ProviderOperation,
-        ProviderEvent,
-        nanoid
-    };
+    let implementation: any = null;
 
     beforeEach(() => {
         implementation = {
@@ -42,7 +34,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -51,7 +43,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -60,7 +52,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -69,7 +61,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -78,7 +70,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -87,7 +79,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -96,7 +88,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -105,7 +97,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -114,7 +106,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -135,7 +127,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -152,7 +144,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
@@ -161,27 +153,25 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
                 get() {
                     return this.value;
                 },
-                set(newValue) {
+                set(newValue: any) {
                     this.value = newValue;
                 }
             },
-            addFavoriteStation: jasmine.createSpy("addFavoriteStation"),
-            methodFireAndForgetWithoutParams: jasmine.createSpy("methodFireAndForgetWithoutParams"),
-            methodFireAndForget: jasmine.createSpy("methodFireAndForget"),
-            weakSignal: jasmine.createSpy("weakSignal"),
-            triggerBroadcasts: jasmine.createSpy("triggerBroadcasts"),
-            triggerBroadcastsWithPartitions: jasmine.createSpy("triggerBroadcastsWithPartitions"),
-            methodProvidedImpl: jasmine.createSpy("methodProvidedImpl"),
-            methodWithByteBuffer: jasmine.createSpy("methodWithByteBuffer"),
-            methodWithTypeDef: jasmine.createSpy("methodWithTypeDef"),
-            methodWithComplexMap: jasmine.createSpy("methodWithComplexMap"),
-            operationWithEnumsAsInputAndOutput: jasmine.createSpy("operationWithEnumsAsInputAndOutput"),
-            operationWithMultipleOutputParameters: jasmine.createSpy("operationWithMultipleOutputParameters"),
-            operationWithEnumsAsInputAndEnumArrayAsOutput: jasmine.createSpy(
-                "operationWithEnumsAsInputAndEnumArrayAsOutput"
-            ),
-            methodWithSingleArrayParameters: jasmine.createSpy("methodWithSingleArrayParameters"),
-            broadcastWithEnum: jasmine.createSpy("broadcastWithEnum")
+            addFavoriteStation: jest.fn(),
+            methodFireAndForgetWithoutParams: jest.fn(),
+            methodFireAndForget: jest.fn(),
+            weakSignal: jest.fn(),
+            triggerBroadcasts: jest.fn(),
+            triggerBroadcastsWithPartitions: jest.fn(),
+            methodProvidedImpl: jest.fn(),
+            methodWithByteBuffer: jest.fn(),
+            methodWithTypeDef: jest.fn(),
+            methodWithComplexMap: jest.fn(),
+            operationWithEnumsAsInputAndOutput: jest.fn(),
+            operationWithMultipleOutputParameters: jest.fn(),
+            operationWithEnumsAsInputAndEnumArrayAsOutput: jest.fn(),
+            methodWithSingleArrayParameters: jest.fn(),
+            broadcastWithEnum: jest.fn()
         };
     });
 
@@ -200,17 +190,17 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
     });
 
     it("RadioProvider does not throw when instantiated with different implementations", () => {
-        expect(() => new RadioProvider({}, dependencies)).not.toThrow();
-        expect(() => new RadioProvider({ isOn: {} }, dependencies)).not.toThrow();
+        expect(() => new RadioProvider({} as any)).not.toThrow();
+        expect(() => new RadioProvider({ isOn: {} } as any)).not.toThrow();
 
-        expect(() => new RadioProvider({ isOn: { get: () => false } }, dependencies)).not.toThrow();
-        expect(() => new RadioProvider({ isOn: { set: () => {} } }, dependencies)).not.toThrow();
-        expect(() => new RadioProvider({ isOn: { get: () => false, set: () => {} } }, dependencies)).not.toThrow();
-        expect(() => new RadioProvider({ addFavoriteStation: () => true }, dependencies)).not.toThrow();
+        expect(() => new RadioProvider({ isOn: { get: () => false } } as any)).not.toThrow();
+        expect(() => new RadioProvider({ isOn: { set: () => {} } } as any)).not.toThrow();
+        expect(() => new RadioProvider({ isOn: { get: () => false, set: () => {} } } as any)).not.toThrow();
+        expect(() => new RadioProvider({ addFavoriteStation: () => true } as any)).not.toThrow();
     });
 
     it("RadioProvider is instantiable", () => {
-        const radioProvider = new RadioProvider({}, dependencies);
+        const radioProvider = new RadioProvider({} as any);
         expect(radioProvider).toBeDefined();
         expect(radioProvider).not.toBeNull();
         expect(typeof radioProvider === "object").toBeTruthy();
@@ -218,7 +208,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
     });
 
     it("RadioProvider has all members", () => {
-        const radioProvider = new RadioProvider({}, dependencies);
+        const radioProvider = new RadioProvider({} as any);
         expect(radioProvider.isOn).toBeDefined();
         expect(radioProvider.enumAttribute).toBeDefined();
         expect(radioProvider.enumArrayAttribute).toBeDefined();
@@ -237,7 +227,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
     });
 
     it("RadioProvider recognizes a correct implementation", () => {
-        const radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(0);
@@ -245,7 +235,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
 
     it("RadioProvider recognizes an incorrect implementation", () => {
         delete implementation.addFavoriteStation;
-        const radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(1);
@@ -253,7 +243,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
 
     it("RadioProvider recognizes a missing getter", () => {
         delete implementation.isOn.get;
-        const radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(1);
@@ -261,7 +251,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
 
     it("RadioProvider recognizes a missing setter", () => {
         delete implementation.isOn.set;
-        const radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(1);
@@ -270,7 +260,7 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
     it("RadioProvider recognizes multiple missing implementation functions", () => {
         delete implementation.isOn.get;
         delete implementation.addFavoriteStation;
-        const radioProvider = new RadioProvider(implementation, dependencies);
+        const radioProvider = new RadioProvider(implementation);
         expect(radioProvider.checkImplementation).toBeDefined();
         expect(radioProvider.checkImplementation()).toBeTruthy();
         expect(radioProvider.checkImplementation().length).toEqual(2);
