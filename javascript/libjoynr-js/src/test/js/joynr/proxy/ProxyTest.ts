@@ -16,19 +16,17 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const RadioProxy = require("../../../generated/joynr/vehicle/RadioProxy");
-const ProxyAttribute = require("../../../../main/js/joynr/proxy/ProxyAttribute");
-const ProxyOperation = require("../../../../main/js/joynr/proxy/ProxyOperation");
-const ProxyEvent = require("../../../../main/js/joynr/proxy/ProxyEvent");
-const TypeRegistrySingleton = require("../../../../main/js/joynr/types/TypeRegistrySingleton");
-const DiscoveryQos = require("../../../../main/js/joynr/proxy/DiscoveryQos");
-const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
-const TestWithVersionProxy = require("../../../generated/joynr/tests/TestWithVersionProxy");
-const TestWithoutVersionProxy = require("../../../generated/joynr/tests/TestWithoutVersionProxy");
+
+import RadioProxy from "../../../generated/joynr/vehicle/RadioProxy";
+import ProxyEvent from "../../../../main/js/joynr/proxy/ProxyEvent";
+import TypeRegistrySingleton from "../../../../main/js/joynr/types/TypeRegistrySingleton";
+import DiscoveryQos from "../../../../main/js/joynr/proxy/DiscoveryQos";
+import MessagingQos from "../../../../main/js/joynr/messaging/MessagingQos";
+import TestWithVersionProxy from "../../../generated/joynr/tests/TestWithVersionProxy";
+import TestWithoutVersionProxy from "../../../generated/joynr/tests/TestWithoutVersionProxy";
 
 describe("libjoynr-js.joynr.proxy.Proxy", () => {
-    let settings, radioProxy;
+    let settings: any, radioProxy: any;
     const typeRegistry = TypeRegistrySingleton.getInstance();
 
     beforeEach(done => {
@@ -37,11 +35,6 @@ describe("libjoynr-js.joynr.proxy.Proxy", () => {
             interfaceName: "",
             discoveryQos: new DiscoveryQos(),
             messagingQos: new MessagingQos(),
-            proxyElementTypes: {
-                ProxyAttribute,
-                ProxyOperation,
-                ProxyEvent
-            },
             dependencies: {
                 subscriptionManager: {}
             }
@@ -79,10 +72,10 @@ describe("libjoynr-js.joynr.proxy.Proxy", () => {
         done();
     });
 
-    it("RadioProxy.getUsedJoynrtypes can be used to register all used datatypes", done => {
+    it("RadioProxy.getUsedJoynrtypes can be used to register all used datatypes", () => {
         expect(RadioProxy.getUsedJoynrtypes).toBeDefined();
         expect(() =>
-            RadioProxy.getUsedJoynrtypes().map(datatype => {
+            RadioProxy.getUsedJoynrtypes().map((datatype: any) => {
                 return typeRegistry.addType(datatype);
             })
         ).not.toThrow();
