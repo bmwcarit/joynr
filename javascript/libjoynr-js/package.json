@@ -50,7 +50,7 @@
     "node": ">=8.0.0"
   },
   "nyc": {
-    "check-coverage": true,
+    "check-coverage": false,
     "per-file": false,
     "lines": 80,
     "statements": 80,
