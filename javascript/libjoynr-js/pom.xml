@@ -378,6 +378,7 @@
 						<exclude>src/test/resources/spec/support/jasmine.json</exclude>
 						<exclude>tsconfig.json</exclude>
 						<exclude>jest.config.js</exclude>
+						<exclude>jest.config.integration.js</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

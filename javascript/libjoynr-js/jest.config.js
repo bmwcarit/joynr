@@ -4,6 +4,7 @@ module.exports = {
     },
     testEnvironment: "node",
     testRegex: "src/test/.*Test\\.ts$",
+    testPathIgnorePatterns: ["/node_modules/", "node_integration"],
     moduleFileExtensions: ["ts", "js", "json", "node"],
     reporters: [
         "default",
