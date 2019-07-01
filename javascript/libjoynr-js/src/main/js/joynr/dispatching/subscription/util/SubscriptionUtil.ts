@@ -17,16 +17,11 @@
  * #L%
  */
 /**
- * @exports SubscriptionUtil
- */
-const SubscriptionUtil = {};
-/**
- * @param {Map.<String, SubscriptionInformation>} subscriptions - Map&lt;String,
- *     SubscriptionInformation> containing the subscriptions to be serialized
+ * @param subscriptions - Map containing the subscriptions to be serialized
  *
- * @returns {String} serialized subscriptions
+ * @returns serialized subscriptions
  */
-SubscriptionUtil.serializeSubscriptions = function(subscriptions) {
+export function serializeSubscriptions(subscriptions: Record<string, any>): string {
     const result = [];
     for (const subscriptionId in subscriptions) {
         if (subscriptions.hasOwnProperty(subscriptionId)) {
@@ -35,15 +30,14 @@ SubscriptionUtil.serializeSubscriptions = function(subscriptions) {
     }
 
     return JSON.stringify(result);
-};
+}
 
 /**
- * @param {Map.<String, SubscriptionInformation>} subscriptions - Map&lt;String,
- *     SubscriptionInformation> containing the subscriptions to be serialized
+ * @param subscriptions - Map containing the subscriptions to be serialized
  *
- * @returns {String} serialized subscriptionIds
+ * @returns serialized subscriptionIds
  */
-SubscriptionUtil.serializeSubscriptionIds = function(subscriptions) {
+export function serializeSubscriptionIds(subscriptions: Record<string, any>): string {
     const result = [];
 
     for (const subscriptionId in subscriptions) {
@@ -53,17 +47,16 @@ SubscriptionUtil.serializeSubscriptionIds = function(subscriptions) {
     }
 
     return JSON.stringify(result);
-};
+}
 
 /**
- * @param {String} subscriptions - serialized subscriptions as String
+ * @param subscriptions - serialized subscriptions as String
  *
- * @returns {Map.<String, SubscriptionInformation>} deserialized subscriptions
- *     as Map.&lt;String, SubscriptionInformation>
+ * @returns deserialized subscriptions as Map
  */
-SubscriptionUtil.deserializeSubscriptions = function(subscriptions) {
+export function deserializeSubscriptions(subscriptions: string): Record<string, any> {
     let array;
-    const result = {};
+    const result: Record<string, any> = {};
     if (JSON && JSON.parse) {
         try {
             array = JSON.parse(subscriptions);
@@ -79,36 +72,31 @@ SubscriptionUtil.deserializeSubscriptions = function(subscriptions) {
         }
     }
     return result;
-};
+}
 
 /**
- * @param {String} subscriptions - serialized subscriptions as String
+ * @param subscriptions - serialized subscriptions as String
  *
- * @returns {Array.<String>} deserialized subscriptionIds as Array of String
+ * @returns deserialized subscriptionIds as Array of String
  */
-SubscriptionUtil.deserializeSubscriptionIds = function(subscriptions) {
-    let result = [];
-    if (JSON && JSON.parse) {
-        try {
-            result = JSON.parse(subscriptions);
-        } catch (err) {
-            throw new Error(err);
-        }
-    }
-
-    return result;
-};
+export function deserializeSubscriptionIds(subscriptions: string): string[] {
+    return JSON.parse(subscriptions);
+}
 
 /**
- * @param {Array} expectedFilterParameters - the expected filter parameters of a broadcast subscription
- * @param {Array} actualFilterParameters - the actual filter parameters of a broadcast subscription
- * @param {String} broadcastName - the name of the checked broadcast
+ * @param expectedFilterParameters - the expected filter parameters of a broadcast subscription
+ * @param actualFilterParameters - the actual filter parameters of a broadcast subscription
+ * @param broadcastName - the name of the checked broadcast
  *
- * @returns {Object} an object containing possible caughtErrors if the actualFilterParameters do not match
+ * @returns an object containing possible caughtErrors if the actualFilterParameters do not match
  *                   the expected filter parameters
  */
-SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actualFilterParameters, broadcastName) {
-    const result = {
+export function checkFilterParameters(
+    expectedFilterParameters: Record<string, any>,
+    actualFilterParameters: Record<string, any>,
+    broadcastName: string
+): { caughtErrors: string[] } {
+    const result: { caughtErrors: string[] } = {
         caughtErrors: []
     };
     if (
@@ -128,39 +116,40 @@ SubscriptionUtil.checkFilterParameters = function(expectedFilterParameters, actu
         }
     }
     return result;
-};
+}
 
 /**
- * @param {String} providerParticipantId - provider's participant ID
- * @param {String} multicastName - the name of the multicasts
- * @param {Array} paritions - partitions of this multicast
+ * @param providerParticipantId - provider's participant ID
+ * @param multicastName - the name of the multicasts
+ * @param partitions - partitions of this multicast
  */
-SubscriptionUtil.createMulticastId = function(providerParticipantId, multicastName, partitions) {
-    let i,
-        multicastId = `${providerParticipantId}/${multicastName}`;
+export function createMulticastId(providerParticipantId: string, multicastName: string, partitions: any[]): string {
+    let multicastId = `${providerParticipantId}/${multicastName}`;
     if (partitions !== undefined) {
-        for (i = 0; i < partitions.length; i++) {
+        for (let i = 0; i < partitions.length; i++) {
             multicastId += `/${partitions[i]}`;
         }
     }
     return multicastId;
-};
+}
+
+export const VALID_PARTITION_REGEX = /^[a-zA-Z0-9]+$/;
+export const SINGLE_POSITION_WILDCARD = "+";
+export const MULTI_LEVEL_WILDCARD = "*";
 
 /**
- *
  * validates if the provided partitions for multicast publications only contains valid characters
- * @param {String} partition
+ * @param partitions
  * @throws {Error} if partitions contains invalid characters
  */
-SubscriptionUtil.validatePartitions = function(partitions) {
-    let i, partition;
+export function validatePartitions(partitions?: string[]): void {
     if (partitions !== undefined) {
-        for (i = 0; i < partitions.length; i++) {
-            partition = partitions[i];
+        for (let i = 0; i < partitions.length; i++) {
+            const partition = partitions[i];
             if (
-                !partition.match(SubscriptionUtil.VALID_PARTITION_REGEX) &&
-                !(partition === SubscriptionUtil.SINGLE_POSITION_WILDCARD) &&
-                !(i + 1 === partitions.length && partition === SubscriptionUtil.MULTI_LEVEL_WILDCARD)
+                !partition.match(VALID_PARTITION_REGEX) &&
+                !(partition === SINGLE_POSITION_WILDCARD) &&
+                !(i + 1 === partitions.length && partition === MULTI_LEVEL_WILDCARD)
             ) {
                 throw new Error(
                     `Partition ${partitions[i]} contains invalid characters.%n` +
@@ -170,9 +159,4 @@ SubscriptionUtil.validatePartitions = function(partitions) {
             }
         }
     }
-};
-
-SubscriptionUtil.VALID_PARTITION_REGEX = /^[a-zA-Z0-9]+$/;
-SubscriptionUtil.SINGLE_POSITION_WILDCARD = "+";
-SubscriptionUtil.MULTI_LEVEL_WILDCARD = "*";
-module.exports = SubscriptionUtil;
+}
