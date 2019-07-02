@@ -22,8 +22,13 @@
 import { Provisioning } from "./joynr/start/interface/Provisioning";
 import JoynrObject from "./joynr/types/JoynrObject";
 
-import JoynrRuntime from "./joynr/start/JoynrRuntime";
-import JoynrApi from "./libjoynr-deps";
+import JoynrRuntime = require("./joynr/start/JoynrRuntime");
+import JoynrApi = require("./libjoynr-deps");
+import TypeRegistry = require("./joynr/start/TypeRegistry");
+import ProxyBuilder = require("./joynr/proxy/ProxyBuilder");
+import ProviderBuilder = require("./joynr/provider/ProviderBuilder");
+import loggingManager = require("./joynr/system/LoggingManager");
+import ParticipantIdStorage = require("./joynr/capabilities/ParticipantIdStorage");
 
 /**
  * copies all non private members and methods to joynr
@@ -52,9 +57,15 @@ type JoynrKeys =
     | "logging"
     | "typeRegistry";
 
-class Joynr extends JoynrApi implements Partial<Pick<JoynrRuntime, JoynrKeys>> {
-    public shutdown?: (settings: any) => Promise<any>;
-    public terminateAllSubscriptions?: (timeout?: number) => Promise<any>;
+class Joynr extends JoynrApi implements Pick<JoynrRuntime, JoynrKeys> {
+    public logging!: loggingManager;
+    public participantIdStorage!: ParticipantIdStorage;
+    public providerBuilder!: ProviderBuilder;
+    public proxyBuilder!: ProxyBuilder;
+    public registration: any;
+    public typeRegistry!: TypeRegistry;
+    public shutdown!: (settings?: any) => Promise<any>;
+    public terminateAllSubscriptions!: (timeout?: number) => Promise<any>;
 
     private loaded: boolean = false;
     public JoynrObject = JoynrObject;
@@ -104,5 +115,6 @@ class Joynr extends JoynrApi implements Partial<Pick<JoynrRuntime, JoynrKeys>> {
         this._selectedRuntime = runtime;
     }
 }
-
-export = new Joynr();
+type joynr = Joynr;
+const joynr = new Joynr();
+export = joynr;
