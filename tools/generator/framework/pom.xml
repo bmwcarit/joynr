@@ -162,6 +162,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
+							<createSourcesJar>true</createSourcesJar>
 							<artifactSet>
 								<includes>
 									<include>org.franca</include>

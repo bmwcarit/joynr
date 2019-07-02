@@ -31,6 +31,10 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+	<properties>
+		<franca.path>${basedir}/libs/org/franca/${franca.version}</franca.path>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -40,45 +44,48 @@
 				<inherited>false</inherited>
 				<executions>
 					<execution>
-						<id>install-franca-core-0.13.0</id>
+						<id>install-franca-core-${franca.version}</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
 						<configuration>
-							<file>${basedir}/libs/org/franca/0.13.0/org.franca.core_0.13.0.jar</file>
+							<file>${franca.path}/org.franca.core_${franca.version}.jar</file>
 							<groupId>org.franca</groupId>
 							<artifactId>org.franca.core</artifactId>
-							<version>0.13.0</version>
+							<version>${franca.version}</version>
 							<packaging>jar</packaging>
+							<sources>${franca.path}/org.franca.core-${franca.version}-sources.jar</sources>
 						</configuration>
 					</execution>
 					<execution>
-						<id>install-franca-dsl-0.13.0</id>
+						<id>install-franca-dsl-${franca.version}</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
 						<configuration>
-							<file>${basedir}/libs/org/franca/0.13.0/org.franca.core.dsl_0.13.0.jar</file>
+							<file>${franca.path}/org.franca.core.dsl_${franca.version}.jar</file>
 							<groupId>org.franca</groupId>
 							<artifactId>org.franca.core.dsl</artifactId>
-							<version>0.13.0</version>
+							<version>${franca.version}</version>
 							<packaging>jar</packaging>
+							<sources>${franca.path}/org.franca.core.dsl-${franca.version}-sources.jar</sources>
 						</configuration>
 					</execution>
 					<execution>
-						<id>install-franca-deploymodel-dsl-0.13.0</id>
+						<id>install-franca-deploymodel-dsl-${franca.version}</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
 						<configuration>
-							<file>${basedir}/libs/org/franca/0.13.0/org.franca.deploymodel.dsl_0.13.0.jar</file>
+							<file>${franca.path}/org.franca.deploymodel.dsl_${franca.version}.jar</file>
 							<groupId>org.franca</groupId>
 							<artifactId>org.franca.deploymodel.dsl</artifactId>
-							<version>0.13.0</version>
+							<version>${franca.version}</version>
 							<packaging>jar</packaging>
+							<sources>${franca.path}/org.franca.deploymodel.dsl-${franca.version}-sources.jar</sources>
 						</configuration>
 					</execution>
 				</executions>
