@@ -78,7 +78,10 @@ class Joynr extends JoynrApi implements Pick<JoynrRuntime, JoynrKeys> {
     public async load(provisioning: Provisioning): Promise<Joynr> {
         this.loaded = true;
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const Runtime = require("./joynr/Runtime");
+        const Runtime =
+            this._selectedRuntime === "websocket.libjoynr"
+                ? require("./joynr/start/WebSocketLibjoynrRuntime")
+                : require("./joynr/start/InProcessRuntime");
         const runtime = new Runtime();
         try {
             await runtime.start(provisioning);
