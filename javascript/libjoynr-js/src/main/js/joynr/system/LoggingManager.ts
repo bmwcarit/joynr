@@ -16,35 +16,11 @@
  * limitations under the License.
  * #L%
  */
+import { Logging } from "../start/interface/Provisioning";
 import ConsoleAppender from "./ConsoleAppenderNode";
 
 import JoynrLogger from "./JoynrLogger";
 import * as UtilInternal from "../util/UtilInternal";
-
-interface LoggingConfig {
-    configuration?: {
-        loggers?: {
-            root: {
-                level: string;
-            };
-        };
-        appenders?: {
-            appender: {
-                PatternLayout: {
-                    pattern: string;
-                };
-            }[];
-        };
-    };
-    /** supports only 1 appender */
-    appenderClasses?: {
-        [key: string]: {
-            prototype: {
-                append: Function;
-            };
-        };
-    };
-}
 
 const logLevelChangedCallbacks: Function[] = [];
 class LoggingManager {
@@ -70,7 +46,7 @@ class LoggingManager {
      * @param settings - log4j2-style JSON config, but as JavaScript object
      *            (i.e. already parsed)
      */
-    public configure(settings: LoggingConfig): void {
+    public configure(settings: Logging): void {
         const settingsProxy = UtilInternal.augmentConfig(settings);
 
         const level = settingsProxy.configuration.loggers.root.level();
@@ -97,7 +73,7 @@ class LoggingManager {
         logLevelChangedCallbacks.push(callback);
     }
 }
-
+type loggingManager = LoggingManager;
 const loggingManager = new LoggingManager();
 loggingManager.reset();
 
