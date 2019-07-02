@@ -20,18 +20,9 @@
 /* istanbul ignore file */
 
 import JoynrObject from "./joynr/types/JoynrObject";
-import GenerationUtil from "./joynr/util/GenerationUtil";
 
 import JoynrRuntime from "./joynr/start/JoynrRuntime";
-
-function populateJoynrApi(joynr: any, api: any): void {
-    let key;
-    for (key in api) {
-        if (api.hasOwnProperty(key)) {
-            joynr[key] = api[key];
-        }
-    }
-}
+import JoynrApi from "./libjoynr-deps";
 
 /**
  * copies all non private members and methods to joynr
@@ -182,13 +173,12 @@ type JoynrKeys =
     | "logging"
     | "typeRegistry";
 
-class Joynr implements Partial<Pick<JoynrRuntime, JoynrKeys>> {
+class Joynr extends JoynrApi implements Partial<Pick<JoynrRuntime, JoynrKeys>> {
     public shutdown?: (settings: any) => Promise<any>;
     public terminateAllSubscriptions?: (timeout?: number) => Promise<any>;
 
     private loaded: boolean = false;
     public JoynrObject = JoynrObject;
-    public util = { GenerationUtil };
     public _selectedRuntime = "websocket.libjoynr";
 
     /**
@@ -198,13 +188,10 @@ class Joynr implements Partial<Pick<JoynrRuntime, JoynrKeys>> {
     public async load(provisioning: Provisioning): Promise<Joynr> {
         this.loaded = true;
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const joynrapi = require("./libjoynr-deps");
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const Runtime = require("./joynr/Runtime");
         const runtime = new Runtime();
         try {
             await runtime.start(provisioning);
-            populateJoynrApi(this, joynrapi);
             wrapRuntime(this, runtime);
 
             // make sure the runtime is shutdown when process.exit(...)
