@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -125,6 +126,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertEquals(TOPIC_NAME, ((MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(actual)).getTopic());
     }
 
+    @Ignore
     @Test
     public void testAddAndLookup_byParticipantId_singleDiscoveryEntry() {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
@@ -143,6 +145,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         checkDiscoveryEntry(expectedEntry, persisted, validGbidsArray[0]);
     }
 
+    @Ignore
     @Test
     public void testAddAndLookup_byDomainInterface_singleDiscoveryEntry() throws Exception {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
@@ -164,6 +167,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         checkDiscoveryEntry(expectedEntry, result[0], validGbidsArray[0]);
     }
 
+    @Ignore
     @Test
     public void testAddAndRemove_singleDiscoveryEntry() {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
@@ -187,6 +191,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertNull(resultAfterRemove);
     }
 
+    @Ignore
     @Test
     public void testAddWithGbids_validGbid() throws ApplicationException {
         GlobalDiscoveryEntry expectedDiscoveryEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
@@ -203,6 +208,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
+    @Ignore
     public void testAddWithGbids_unknownGbid() {
         final String[] invalidGbidsArray = { "unknownGbid" };
         try {
@@ -230,30 +236,35 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertNull(result);
     }
 
+    @Ignore
     @Test
     public void testAddWithGbids_invalidGbid_emptyGbid() {
         final String[] invalidGbidsArray = { "" };
         testAddWithGbids_invalidGbid(invalidGbidsArray);
     }
 
+    @Ignore
     @Test
     public void testAddWithGbids_invalidGbid_nullGbid() {
         final String[] invalidGbidsArray = { null };
         testAddWithGbids_invalidGbid(invalidGbidsArray);
     }
 
+    @Ignore
     @Test
     public void testAddWithGbids_invalidGbid_nullGbidsArray() {
         final String[] invalidGbidsArray = null;
         testAddWithGbids_invalidGbid(invalidGbidsArray);
     }
 
+    @Ignore
     @Test
     public void testAddWithGbids_invalidGbid_emptyGbidsArray() {
         final String[] invalidGbidsArray = {};
         testAddWithGbids_invalidGbid(invalidGbidsArray);
     }
 
+    @Ignore
     @Test
     public void testLookupWithGbids_validGbid() throws ApplicationException {
         GlobalDiscoveryEntry expectedDiscoveryEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
@@ -331,6 +342,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
     }
 
+    @Ignore
     @Test
     public void testLookupWithGbids_byParticipantId_invalidGbid_nullGbidsArray() throws ApplicationException {
         final String[] invalidGbidsArray = null;
@@ -343,6 +355,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
     }
 
+    @Ignore
     @Test
     public void testRemoveWithGbids_validGbid() throws ApplicationException {
         GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
@@ -358,6 +371,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertEquals(0, globalDiscoveryEntries.length);
     }
 
+    @Ignore
     @Test
     public void testRemoveWithGbids_unknownParticipantId() throws ApplicationException {
         try {
@@ -399,6 +413,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         testRemoveWithGbids_invalidGbid(invalidGbidsArray);
     }
 
+    @Ignore
     @Test
     public void testTouch() throws InterruptedException {
         long initialLastSeen = testGlobalDiscoveryEntry.getLastSeenDateMs();
