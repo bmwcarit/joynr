@@ -20,6 +20,9 @@ package io.joynr.capabilities.directory;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,20 +31,20 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
-import io.joynr.capabilities.GlobalDiscoveryEntryPersistedStorePersisted;
+import io.joynr.capabilities.GlobalDiscoveryEntryStore;
 import io.joynr.capabilities.directory.util.GcdUtilities;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
+import io.joynr.provider.PromiseListener;
+import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
-import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 
@@ -51,37 +54,254 @@ import joynr.types.GlobalDiscoveryEntry;
 @Singleton
 public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryImpl.class);
-    public static final String GCD_GBID = "joynr.gcd.gbid";
+    public static final String PROPERTY_PREFIX = "joynr.gcd.";
+    public static final String GCD_GBID = PROPERTY_PREFIX + "gbid";
+    public static final String VALID_GBIDS = PROPERTY_PREFIX + "valid.gbids";
 
-    private GlobalDiscoveryEntryPersistedStorePersisted discoveryEntryStore;
-    private String gcdGbId;
+    private GlobalDiscoveryEntryStore<GlobalDiscoveryEntryPersisted> discoveryEntryStore;
+    private String gcdGbid;
+    private Set<String> validGbids;
 
     @Inject
-    public CapabilitiesDirectoryImpl(GlobalDiscoveryEntryPersistedStorePersisted discoveryEntryStore,
-                                     @Named(GCD_GBID) String gcdGbId) {
+    public CapabilitiesDirectoryImpl(GlobalDiscoveryEntryStore<GlobalDiscoveryEntryPersisted> discoveryEntryStore,
+                                     @Named(GCD_GBID) String gcdGbid,
+                                     @Named(VALID_GBIDS) String validGbidsString) {
         this.discoveryEntryStore = discoveryEntryStore;
-        this.gcdGbId = gcdGbId;
+        this.gcdGbid = gcdGbid;
+        this.validGbids = GcdUtilities.convertArrayStringToSet(validGbidsString, gcdGbid);
+    }
+
+    @Override
+    public Promise<DeferredVoid> add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
+        DeferredVoid deferred = new DeferredVoid();
+        if (globalDiscoveryEntries == null) {
+            logger.trace("Error adding GlobalDiscoveryEntries. List of entries is null");
+            deferred.reject(new ProviderRuntimeException("Error adding GlobalDiscoveryEntries. List of entries is null"));
+            return new Promise<DeferredVoid>(deferred);
+        }
+        for (GlobalDiscoveryEntry globalDiscoveryEntry : globalDiscoveryEntries) {
+            if (globalDiscoveryEntry == null) {
+                logger.trace("Error adding GlobalDiscoveryEntry. Entry is null");
+                deferred.reject(new ProviderRuntimeException("Error adding GlobalDiscoveryEntry. Entry is null"));
+                return new Promise<DeferredVoid>(deferred);
+            }
+        }
+        for (GlobalDiscoveryEntry globalDiscoveryEntry : globalDiscoveryEntries) {
+            add(globalDiscoveryEntry);
+        }
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
     public Promise<DeferredVoid> add(GlobalDiscoveryEntry globalDiscoveryEntry) {
+        logger.debug("Adding global discovery entry to own gbid {}: {}", gcdGbid, globalDiscoveryEntry);
         DeferredVoid deferred = new DeferredVoid();
         Promise<DeferredVoid> promise = new Promise<DeferredVoid>(deferred);
         try {
-            addInternal(globalDiscoveryEntry, gcdGbId);
+            addInternal(globalDiscoveryEntry, gcdGbid);
             deferred.resolve();
         } catch (ProviderRuntimeException e) {
-            logger.error("Error adding DiscoveryEntry for {}: {}", globalDiscoveryEntry.getParticipantId(), e);
             deferred.reject(e);
+        } catch (ApplicationException e) {
+            deferred.reject(new ProviderRuntimeException("INTERNAL_ERROR: Unable to add DiscoveryEntry for: "
+                    + globalDiscoveryEntry.getParticipantId()));
+        }
+        return promise;
+    }
+
+    private void addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) throws ApplicationException {
+        if (globalDiscoveryEntry.getDomain() == null || globalDiscoveryEntry.getInterfaceName() == null
+                || globalDiscoveryEntry.getParticipantId() == null || globalDiscoveryEntry.getAddress() == null) {
+            String message = "DiscoveryEntry being registered is not complete: " + globalDiscoveryEntry;
+            logger.error(message);
+            throw new ProviderRuntimeException(message);
+        }
+
+        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+        String clusterControllerId = "";
+        if (address instanceof MqttAddress) {
+            // not always the clusterControllerId. If a unicast topic prefix is set, this clusterControllerId is a part of the topic
+            clusterControllerId = ((MqttAddress) address).getTopic();
+        } else if (address instanceof ChannelAddress) {
+            clusterControllerId = ((ChannelAddress) address).getChannelId();
+        } else {
+            logger.error("Error adding DiscoveryEntry for " + globalDiscoveryEntry.getParticipantId()
+                    + ". Unknown address type: " + globalDiscoveryEntry.getAddress());
+            throw new ProviderRuntimeException("Unable to add DiscoveryEntry for "
+                    + globalDiscoveryEntry.getParticipantId() + ". Unknown address type: "
+                    + globalDiscoveryEntry.getAddress());
+        }
+
+        try {
+            // gbid will be set correctly in discoveryEntryStore
+            GlobalDiscoveryEntryPersisted gdep = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
+                                                                                   clusterControllerId,
+                                                                                   gcdGbid);
+            discoveryEntryStore.add(gdep, gbids);
+        } catch (Exception e) {
+            logger.error("Error adding discoveryEntry for {} and gbids {}: {}",
+                         globalDiscoveryEntry.getParticipantId(),
+                         Arrays.toString(gbids),
+                         e);
+            throw new ApplicationException(DiscoveryError.INTERNAL_ERROR);
+        }
+    }
+
+    @Override
+    public Promise<Add1Deferred> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
+        logger.debug("Adding global discovery entry to {}: {}", Arrays.toString(gbids), globalDiscoveryEntry);
+        Add1Deferred deferred = new Add1Deferred();
+        Promise<Add1Deferred> promise = new Promise<Add1Deferred>(deferred);
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
+        case INVALID:
+            deferred.reject(DiscoveryError.INVALID_GBID);
+            break;
+        case UNKNOWN:
+            deferred.reject(DiscoveryError.UNKNOWN_GBID);
+            break;
+        case OK:
+            break;
+        default:
+            break;
+        }
+        try {
+            addInternal(globalDiscoveryEntry, gbids);
+            deferred.resolve();
+        } catch (ProviderRuntimeException e) {
+            deferred.reject(e);
+        } catch (ApplicationException e) {
+            deferred.reject(e.getError());
         }
         return promise;
     }
 
     @Override
-    public Promise<Add1Deferred> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
-        Add1Deferred deferred = new Add1Deferred();
-        Promise<Add1Deferred> promise = new Promise<Add1Deferred>(deferred);
-        switch (GcdUtilities.validateGbids(gbids, gcdGbId)) {
+    public Promise<DeferredVoid> remove(String[] participantIds) {
+        DeferredVoid deferred = new DeferredVoid();
+        int deletedCount = 0;
+        for (String participantId : participantIds) {
+            removeInternal(participantId);
+            deletedCount += removeInternal(participantId);
+        }
+        logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    private int removeInternal(String participantId, String... gbids) {
+        if (gbids.length > 0) {
+            logger.debug("Removing global discovery entries with participantId {} from gbids {}",
+                         participantId,
+                         Arrays.toString(gbids));
+        } else {
+            logger.debug("Removing global discovery entries with participantId {} from own Gbid {}",
+                         participantId,
+                         gcdGbid);
+            gbids = new String[]{ gcdGbid };
+        }
+        return discoveryEntryStore.remove(participantId, gbids);
+    }
+
+    @Override
+    public Promise<DeferredVoid> remove(String participantId) {
+        DeferredVoid deferred = new DeferredVoid();
+        int deletedCount = removeInternal(participantId);
+        logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
+        deferred.resolve();
+        return new Promise<DeferredVoid>(deferred);
+    }
+
+    @Override
+    public Promise<Remove1Deferred> remove(String participantId, String[] gbids) {
+        Remove1Deferred deferred = new Remove1Deferred();
+        Promise<Remove1Deferred> promise = new Promise<Remove1Deferred>(deferred);
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
+        case INVALID:
+            logger.error("Error removing participantId {}: INVALID GBIDs: {}", participantId, Arrays.toString(gbids));
+            deferred.reject(DiscoveryError.INVALID_GBID);
+            break;
+        case UNKNOWN:
+            logger.error("Error removing participantId {}: UNKNOWN_GBID: {}", participantId, Arrays.toString(gbids));
+            deferred.reject(DiscoveryError.UNKNOWN_GBID);
+            break;
+        case OK:
+            break;
+        default:
+            break;
+        }
+        try {
+            int deletedCount = removeInternal(participantId, gbids);
+            switch (deletedCount) {
+            case 0:
+                logger.warn("Error removing participantId {}. Participant is not registered (NO_ENTRY_FOR_PARTICIPANT).");
+                deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                break;
+            case -1:
+                logger.warn("Error removing participantId {}. Participant is not registered in GBIDs {} (NO_ENTRY_FOR_SELECTED_BACKENDS).",
+                            participantId,
+                            Arrays.toString(gbids));
+                deferred.reject(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+                break;
+            default:
+                logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
+                deferred.resolve();
+            }
+        } catch (Exception e) {
+            logger.error("Error removing discoveryEntry for {} and gbids {}: {}",
+                         participantId,
+                         Arrays.toString(gbids),
+                         e);
+            deferred.reject(DiscoveryError.INTERNAL_ERROR);
+        }
+        return promise;
+    }
+
+    @Override
+    public Promise<Lookup1Deferred> lookup(final String[] domains, final String interfaceName) {
+        logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}",
+                     Arrays.toString(domains),
+                     interfaceName,
+                     gcdGbid);
+        Lookup1Deferred deferred = new Lookup1Deferred();
+        String[] gcdGbidArray = { gcdGbid };
+
+        lookup(domains, interfaceName, gcdGbidArray).then(new PromiseListener() {
+            @Override
+            public void onRejection(JoynrException exception) {
+                if (exception instanceof ApplicationException) {
+                    DiscoveryError error = ((ApplicationException) exception).getError();
+                    logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}: {}",
+                                 Arrays.toString(domains),
+                                 interfaceName,
+                                 gcdGbid,
+                                 exception);
+                    deferred.reject(new ProviderRuntimeException("Error on lookup: " + error));
+                } else if (exception instanceof ProviderRuntimeException) {
+                    deferred.reject((ProviderRuntimeException) exception);
+                } else {
+                    deferred.reject(new ProviderRuntimeException("Unknown error on lookup: " + exception));
+                }
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                deferred.resolve((GlobalDiscoveryEntry[]) values[0]);
+            }
+        });
+
+        return new Promise<Lookup1Deferred>(deferred);
+    }
+
+    @Override
+    public Promise<Lookup2Deferred> lookup(String[] domains, String interfaceName, String[] gbids) {
+        logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and Gbids {}",
+                     Arrays.toString(domains),
+                     interfaceName,
+                     Arrays.toString(gbids));
+        Lookup2Deferred deferred = new Lookup2Deferred();
+        Promise<Lookup2Deferred> promise = new Promise<Lookup2Deferred>(deferred);
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
             deferred.reject(DiscoveryError.INVALID_GBID);
             break;
@@ -90,171 +310,82 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             break;
         case OK:
             try {
-                addInternal(globalDiscoveryEntry, gbids);
-                deferred.resolve();
-            } catch (ProviderRuntimeException e) {
-                logger.error("Error adding DiscoveryEntry: {}", e);
-                deferred.reject(e);
+                Collection<GlobalDiscoveryEntryPersisted> lookupResult = discoveryEntryStore.lookup(domains,
+                                                                                                    interfaceName);
+                if (lookupResult.isEmpty()) {
+                    deferred.resolve(new GlobalDiscoveryEntryPersisted[0]);
+                    return promise;
+                }
+
+                Collection<GlobalDiscoveryEntryPersisted> filteredResult = filterByGbid(lookupResult, gbids);
+                if (filteredResult.isEmpty()) {
+                    deferred.reject(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+                    return promise;
+                }
+
+                GlobalDiscoveryEntry[] globalDiscoveryEntriesArray = GcdUtilities.chooseOneGlobalDiscoveryEntryPerParticipantId(filteredResult,
+                                                                                                                                gcdGbid);
+                deferred.resolve(globalDiscoveryEntriesArray);
+            } catch (Exception e) {
+                logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and Gbids {}: {}",
+                             Arrays.toString(domains),
+                             interfaceName,
+                             Arrays.toString(gbids),
+                             e);
+                deferred.reject(DiscoveryError.INTERNAL_ERROR);
             }
-        }
-        return promise;
-    }
-
-    @Override
-    public Promise<DeferredVoid> add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
-        DeferredVoid deferred = new DeferredVoid();
-        for (GlobalDiscoveryEntry globalDiscoveryEntry : globalDiscoveryEntries) {
-            add(globalDiscoveryEntry);
-        }
-        deferred.resolve();
-        return new Promise<DeferredVoid>(deferred);
-    }
-
-    private void addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) {
-        assert (gbids.length > 0);
-        String clusterControllerId = "";
-        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
-        if (address instanceof MqttAddress) {
-            // not always the clusterControllerId. If a unicast topic prefix is set, this clusterControllerId is a part of the topic
-            clusterControllerId = ((MqttAddress) address).getTopic();
-            ((MqttAddress) address).setBrokerUri(gbids[0]);
-            globalDiscoveryEntry.setAddress(RoutingTypesUtil.toAddressString(address));
-        } else if (address instanceof ChannelAddress) {
-            clusterControllerId = ((ChannelAddress) address).getChannelId();
-        } else {
-            throw new ProviderRuntimeException("Unable to add DiscoveryEntry for "
-                    + globalDiscoveryEntry.getParticipantId() + ". Unknown address type: "
-                    + globalDiscoveryEntry.getAddress());
-        }
-        GlobalDiscoveryEntryPersisted discoveryEntry = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
-                                                                                         clusterControllerId);
-        logger.debug("registered discovery entry: {}", discoveryEntry);
-        discoveryEntryStore.add(discoveryEntry);
-    }
-
-    @Override
-    public Promise<DeferredVoid> remove(String participantId) {
-        DeferredVoid deferred = new DeferredVoid();
-        removeInternal(participantId, gcdGbId);
-        deferred.resolve();
-        return new Promise<DeferredVoid>(deferred);
-    }
-
-    private boolean removeInternal(String participantId, String... gbids) {
-        assert (gbids.length > 0);
-        logger.debug("removing discovery entry with participantId: {} in backends {}",
-                     participantId,
-                     Arrays.toString(gbids));
-        return discoveryEntryStore.remove(participantId);
-    }
-
-    @Override
-    public Promise<Remove1Deferred> remove(String participantId, String[] gbids) {
-        Remove1Deferred deferred = new Remove1Deferred();
-        Promise<Remove1Deferred> promise = new Promise<Remove1Deferred>(deferred);
-        switch (GcdUtilities.validateGbids(gbids, gcdGbId)) {
-        case INVALID:
-            deferred.reject(DiscoveryError.INVALID_GBID);
-            break;
-        case UNKNOWN:
-            deferred.reject(DiscoveryError.UNKNOWN_GBID);
-            break;
-        case OK:
-            if (removeInternal(participantId, gbids)) {
-                deferred.resolve();
-            } else {
-                deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-            }
-        }
-        return promise;
-    }
-
-    @Override
-    public Promise<DeferredVoid> remove(String[] participantIds) {
-        DeferredVoid deferred = new DeferredVoid();
-        discoveryEntryStore.remove(Arrays.asList(participantIds));
-        deferred.resolve();
-        return new Promise<DeferredVoid>(deferred);
-    }
-
-    @Override
-    public Promise<Lookup1Deferred> lookup(final String[] domains, final String interfaceName) {
-        Lookup1Deferred deferred = new Lookup1Deferred();
-        GlobalDiscoveryEntry[] globalDiscoveryEntries = lookupInternal(domains, interfaceName, gcdGbId);
-        deferred.resolve(globalDiscoveryEntries);
-        return new Promise<Lookup1Deferred>(deferred);
-    }
-
-    private GlobalDiscoveryEntry[] lookupInternal(final String[] domains, final String interfaceName, String... gbids) {
-        assert (gbids.length > 0);
-        logger.debug("Searching for global discovery entries for domains: {} interfaceName: {} in backends {}",
-                     domains,
-                     interfaceName,
-                     Arrays.toString(gbids));
-        Collection<GlobalDiscoveryEntryPersisted> discoveryEntries = discoveryEntryStore.lookup(domains, interfaceName);
-        GlobalDiscoveryEntry[] globalDiscoveryEntries = new GlobalDiscoveryEntry[discoveryEntries.size()];
-        int index = 0;
-        for (DiscoveryEntry discoveryEntry : discoveryEntries) {
-            // entries from persisted store are of type GlobalDiscoveryEntryPersisted.
-            // Copy required or else _typeName will be incorrect
-            globalDiscoveryEntries[index] = new GlobalDiscoveryEntry((GlobalDiscoveryEntry) discoveryEntry);
-            index++;
-        }
-        return globalDiscoveryEntries;
-    }
-
-    @Override
-    public Promise<Lookup2Deferred> lookup(String[] domains, String interfaceName, String[] gbids) {
-        Lookup2Deferred deferred = new Lookup2Deferred();
-        Promise<Lookup2Deferred> promise = new Promise<Lookup2Deferred>(deferred);
-        GlobalDiscoveryEntry[] globalDiscoveryEntries = null;
-        switch (GcdUtilities.validateGbids(gbids, gcdGbId)) {
-        case INVALID:
-            deferred.reject(DiscoveryError.INVALID_GBID);
-            break;
-        case UNKNOWN:
-            deferred.reject(DiscoveryError.UNKNOWN_GBID);
-            break;
-        case OK:
-            globalDiscoveryEntries = lookupInternal(domains, interfaceName, gbids);
-            if (globalDiscoveryEntries.length == 0) {
-                logger.debug("No Global Discovery Entries found for backends {} in domains: {} and for interface {}",
-                             gbids,
-                             domains,
-                             interfaceName);
-            }
-            deferred.resolve(globalDiscoveryEntries);
-            break;
         }
         return promise;
     }
 
     @Override
     public Promise<Lookup3Deferred> lookup(String participantId) {
+        logger.debug("Looking up global discovery entry for participantId {} and own Gbid {}", participantId, gcdGbid);
         Lookup3Deferred deferred = new Lookup3Deferred();
-        GlobalDiscoveryEntry discoveryEntry = lookupInternal(participantId, gcdGbId);
-        if (discoveryEntry == null) {
-            deferred.reject(new ProviderRuntimeException("No Entry found for participantId " + participantId));
-        } else {
-            deferred.resolve(discoveryEntry);
-        }
+        String[] gcdGbidArray = { gcdGbid };
+
+        lookup(participantId, gcdGbidArray).then(new PromiseListener() {
+            @Override
+            public void onRejection(JoynrException exception) {
+                if (exception instanceof ApplicationException) {
+                    DiscoveryError error = ((ApplicationException) exception).getError();
+                    logger.error("Error looking up global discovery entry for participantId {} and own Gbid {}: {}",
+                                 participantId,
+                                 gcdGbid,
+                                 exception);
+                    deferred.reject(new ProviderRuntimeException("Error on lookup: " + error));
+                } else if (exception instanceof ProviderRuntimeException) {
+                    deferred.reject((ProviderRuntimeException) exception);
+                } else {
+                    deferred.reject(new ProviderRuntimeException("Unknown error on lookup: " + exception));
+                }
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                deferred.resolve((GlobalDiscoveryEntry) values[0]);
+            }
+        });
         return new Promise<Lookup3Deferred>(deferred);
     }
 
-    private GlobalDiscoveryEntry lookupInternal(String forParticipantId, String... gbids) {
-        assert (gbids.length > 0);
-        logger.debug("Searching discovery entries for participantId: {} in backends: {}...",
-                     forParticipantId,
-                     Arrays.toString(gbids));
-        return (GlobalDiscoveryEntry) discoveryEntryStore.lookup(forParticipantId,
-                                                                 DiscoveryQos.NO_FILTER.getCacheMaxAgeMs());
+    private Collection<GlobalDiscoveryEntryPersisted> filterByGbid(Collection<GlobalDiscoveryEntryPersisted> queryResult,
+                                                                   String[] gbids) {
+        Set<String> gbidSet = new HashSet<>(Arrays.asList(gbids));
+        Collection<GlobalDiscoveryEntryPersisted> filteredResult = queryResult.stream()
+                                                                              .filter(gdep -> gbidSet.contains(gdep.getGbid()))
+                                                                              .collect(Collectors.toList());
+        return filteredResult;
     }
 
     @Override
     public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
+        logger.debug("Looking up global discovery entry for participantId {} and Gbids {}",
+                     participantId,
+                     Arrays.toString(gbids));
         Lookup4Deferred deferred = new Lookup4Deferred();
         Promise<Lookup4Deferred> promise = new Promise<Lookup4Deferred>(deferred);
-        switch (GcdUtilities.validateGbids(gbids, gcdGbId)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
             deferred.reject(DiscoveryError.INVALID_GBID);
             break;
@@ -262,11 +393,24 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             deferred.reject(DiscoveryError.UNKNOWN_GBID);
             break;
         case OK:
-            GlobalDiscoveryEntry discoveryEntry = lookupInternal(participantId, gbids);
-            if (discoveryEntry == null) {
-                deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-            } else {
-                deferred.resolve(discoveryEntry);
+            try {
+                Collection<GlobalDiscoveryEntryPersisted> lookupResult = discoveryEntryStore.lookup(participantId);
+                if (lookupResult.isEmpty()) {
+                    deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                    return promise;
+                }
+                Collection<GlobalDiscoveryEntryPersisted> filteredResult = filterByGbid(lookupResult, gbids);
+                if (filteredResult.isEmpty()) {
+                    deferred.reject(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+                    return promise;
+                }
+                deferred.resolve(GcdUtilities.chooseOneGlobalDiscoveryEntry(filteredResult, gcdGbid));
+            } catch (Exception e) {
+                logger.error("Error looking up global discovery entry for participantId {} and Gbids {}: {}",
+                             participantId,
+                             Arrays.toString(gbids),
+                             e);
+                deferred.reject(DiscoveryError.INTERNAL_ERROR);
             }
         }
         return promise;
