@@ -18,14 +18,17 @@
  */
 package io.joynr.discovery.jee;
 
+import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.GCD_GBID;
+import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.VALID_GBIDS;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
@@ -35,11 +38,10 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
-import io.joynr.capabilities.directory.CapabilitiesDirectoryImpl;
 import io.joynr.capabilities.directory.util.GcdUtilities;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
-import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySubscriptionPublisher;
@@ -53,7 +55,7 @@ import joynr.types.GlobalDiscoveryEntry;
 
 @Stateless
 @ServiceProvider(serviceInterface = GlobalCapabilitiesDirectorySync.class)
-@Transactional
+@Transactional(rollbackOn = Exception.class)
 public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirectoryService {
     private static final Logger logger = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryEjb.class);
     private EntityManager entityManager;
@@ -61,24 +63,17 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     private GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher;
 
     private String gcdGbid;
+    private Set<String> validGbids;
 
     @Inject
     public GlobalCapabilitiesDirectoryEjb(EntityManager entityManager,
-                                          @SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher) {
+                                          @SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher,
+                                          @Named(GCD_GBID) String gcdGbid,
+                                          @Named(VALID_GBIDS) String validGbidsString) {
         this.entityManager = entityManager;
         this.gcdSubPublisher = gcdSubPublisher;
-        this.gcdGbid = getGcdGbid();
-    }
-
-    private String getGcdGbid() {
-        Properties envPropertiesAll = new Properties();
-        envPropertiesAll.putAll(System.getenv());
-        String gcdGbid = PropertyLoader.getPropertiesWithPattern(envPropertiesAll, CapabilitiesDirectoryImpl.GCD_GBID)
-                                       .getProperty(CapabilitiesDirectoryImpl.GCD_GBID);
-        if (gcdGbid == null || gcdGbid.isEmpty()) {
-            gcdGbid = GcdUtilities.loadDefaultGbidsFromDefaultMessagingProperties()[0];
-        }
-        return gcdGbid;
+        this.gcdGbid = gcdGbid;
+        this.validGbids = GcdUtilities.convertArrayStringToSet(validGbidsString, gcdGbid);
     }
 
     @Override
@@ -94,52 +89,95 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
-        logger.debug("Adding global discovery entry {}", globalDiscoveryEntry);
-        addInternal(globalDiscoveryEntry, gcdGbid);
+        logger.debug("Adding global discovery entry to own gbid {}: {}", gcdGbid, globalDiscoveryEntry);
+        if (!addInternal(globalDiscoveryEntry, gcdGbid)) {
+            throw new ProviderRuntimeException("INTERNAL_ERROR: Unable to add DiscoveryEntry for "
+                    + globalDiscoveryEntry.getParticipantId());
+        }
     }
 
-    private void addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) {
-        assert (gbids.length > 0);
+    private boolean addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) {
+        if (globalDiscoveryEntry.getDomain() == null || globalDiscoveryEntry.getInterfaceName() == null
+                || globalDiscoveryEntry.getParticipantId() == null || globalDiscoveryEntry.getAddress() == null) {
+            String message = "DiscoveryEntry being registered is not complete: " + globalDiscoveryEntry;
+            logger.error(message);
+            throw new ProviderRuntimeException(message);
+        }
+
         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
         String clusterControllerId = "";
         if (address instanceof MqttAddress) {
+            // not always the clusterControllerId. If a unicast topic prefix is set, this clusterControllerId is a part of the topic
             clusterControllerId = ((MqttAddress) address).getTopic();
-            ((MqttAddress) address).setBrokerUri(gbids[0]);
-            globalDiscoveryEntry.setAddress(RoutingTypesUtil.toAddressString(address));
         } else if (address instanceof ChannelAddress) {
             clusterControllerId = ((ChannelAddress) address).getChannelId();
         } else {
-            logger.error("Error adding DiscoveryEntry: " + globalDiscoveryEntry.getParticipantId()
+            logger.error("Error adding DiscoveryEntry for " + globalDiscoveryEntry.getParticipantId()
                     + ". Unknown address type: " + globalDiscoveryEntry.getAddress());
             throw new ProviderRuntimeException("Unable to add DiscoveryEntry for "
                     + globalDiscoveryEntry.getParticipantId() + ". Unknown address type: "
                     + globalDiscoveryEntry.getAddress());
         }
-        GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
-                                                                                 clusterControllerId);
-        GlobalDiscoveryEntryPersisted persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class,
-                                                                     entity.getParticipantId());
-        if (persisted == null) {
-            entityManager.persist(entity);
-        } else {
-            entityManager.merge(entity);
+
+        String participantId = globalDiscoveryEntry.getParticipantId();
+        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId AND gdep.gbid = :gbid";
+        try {
+            for (String gbid : gbids) {
+                List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
+                                                                                            GlobalDiscoveryEntryPersisted.class)
+                                                                               .setParameter("participantId",
+                                                                                             participantId)
+                                                                               .setParameter("gbid", gbid)
+                                                                               .getResultList();
+
+                if (queryResult.size() > 1) {
+                    logger.error("There should be max only one discovery entry! Found {} discovery entries: {}",
+                                 queryResult.size(),
+                                 queryResult);
+                    throw new JoynrIllegalStateException("There should be max only one discovery entry! Found "
+                            + queryResult.size() + " discovery entries");
+                }
+
+                if (address instanceof MqttAddress) {
+                    ((MqttAddress) address).setBrokerUri(gbid);
+                    globalDiscoveryEntry.setAddress(RoutingTypesUtil.toAddressString(address));
+                }
+                GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
+                                                                                         clusterControllerId,
+                                                                                         gbid);
+                if (queryResult.isEmpty()) {
+                    logger.trace("adding new discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
+                    entityManager.persist(entity);
+                } else {
+                    logger.trace("merging discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
+                    entityManager.merge(entity);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error adding discoveryEntry for {} and gbids {}: {}",
+                         participantId,
+                         Arrays.toString(gbids),
+                         e);
+            return false;
         }
+        return true;
     }
 
     @Override
     public void add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) throws ApplicationException {
-        switch (GcdUtilities.validateGbids(gbids, gcdGbid)) {
+        logger.debug("Adding global discovery entry to {}: {}", Arrays.toString(gbids), globalDiscoveryEntry);
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
             throw new ApplicationException(DiscoveryError.UNKNOWN_GBID);
         case OK:
-            try {
-                addInternal(globalDiscoveryEntry, gbids);
-            } catch (ProviderRuntimeException e) {
-                logger.error("Error adding DiscoveryEntry: {}", e);
-                throw e;
-            }
+            break;
+        default:
+            break;
+        }
+        if (!addInternal(globalDiscoveryEntry, gbids)) {
+            throw new ApplicationException(DiscoveryError.INTERNAL_ERROR);
         }
     }
 
@@ -150,59 +188,150 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName) {
-        logger.debug("Looking up global discovery entries for domains {} and interface name {}",
-                     domains,
-                     interfaceName);
-        String queryString = "from GlobalDiscoveryEntryPersisted gdep where gdep.domain in :domains and gdep.interfaceName = :interfaceName";
-        List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
-                                                                                    GlobalDiscoveryEntryPersisted.class)
-                                                                       .setParameter("domains",
-                                                                                     new HashSet<String>(Arrays.asList(domains)))
-                                                                       .setParameter("interfaceName", interfaceName)
-                                                                       .getResultList();
-        logger.debug("Found discovery entries: {}", queryResult);
-        return queryResult.stream().map(entry -> {
-            return new GlobalDiscoveryEntry(entry);
-        }).collect(Collectors.toSet()).toArray(new GlobalDiscoveryEntry[queryResult.size()]);
+        logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}",
+                     Arrays.toString(domains),
+                     interfaceName,
+                     gcdGbid);
+
+        String[] gcdGbidArray = { gcdGbid };
+        GlobalDiscoveryEntry[] globalDiscoveryEntries = null;
+        try {
+            globalDiscoveryEntries = lookup(domains, interfaceName, gcdGbidArray);
+        } catch (ApplicationException e) {
+            logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}: {}",
+                         Arrays.toString(domains),
+                         interfaceName,
+                         gcdGbid,
+                         e);
+            throw new ProviderRuntimeException("Error on lookup: " + e.getError());
+        }
+        return globalDiscoveryEntries;
     }
 
     @Override
     public GlobalDiscoveryEntry[] lookup(String[] domains,
                                          String interfaceName,
                                          String[] gbids) throws ApplicationException {
-        GlobalDiscoveryEntry[] globalDiscoveryEntries = null;
-        switch (GcdUtilities.validateGbids(gbids, gcdGbid)) {
+        logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and Gbids {}",
+                     Arrays.toString(domains),
+                     interfaceName,
+                     Arrays.toString(gbids));
+
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
             throw new ApplicationException(DiscoveryError.UNKNOWN_GBID);
         case OK:
-            globalDiscoveryEntries = lookup(domains, interfaceName);
+            break;
+        default:
+            break;
         }
-        return globalDiscoveryEntries;
+
+        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep "
+                + "WHERE gdep.domain IN :domains AND gdep.interfaceName = :interfaceName AND gdep.gbid IN :gbids "
+                + "ORDER BY gdep.participantId";
+        try {
+            List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
+                                                                                        GlobalDiscoveryEntryPersisted.class)
+                                                                           .setParameter("domains",
+                                                                                         new HashSet<String>(Arrays.asList(domains)))
+                                                                           .setParameter("interfaceName", interfaceName)
+                                                                           .setParameter("gbids", Arrays.asList(gbids))
+                                                                           .getResultList();
+
+            if (queryResult.isEmpty()) {
+                String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep " + "WHERE "
+                        + "gdep.domain IN :domains AND gdep.interfaceName = :interfaceName";
+                long numberOfEntriesInAllGbids = entityManager.createQuery(queryCountString, Long.class)
+                                                              .setParameter("domains",
+                                                                            new HashSet<String>(Arrays.asList(domains)))
+                                                              .setParameter("interfaceName", interfaceName)
+                                                              .getSingleResult();
+                if (numberOfEntriesInAllGbids > 0) {
+
+                    throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+                }
+            }
+
+            GlobalDiscoveryEntry[] globalDiscoveryEntriesArray = GcdUtilities.chooseOneGlobalDiscoveryEntryPerParticipantId(queryResult,
+                                                                                                                            gcdGbid);
+            return globalDiscoveryEntriesArray;
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and Gbids {}: {}",
+                         Arrays.toString(domains),
+                         interfaceName,
+                         Arrays.toString(gbids),
+                         e);
+            throw new ApplicationException(DiscoveryError.INTERNAL_ERROR);
+        }
     }
 
     @Override
     public GlobalDiscoveryEntry lookup(String participantId) {
-        logger.debug("Looking up global discovery entry for participant ID {}", participantId);
-        GlobalDiscoveryEntryPersisted queryResult = entityManager.find(GlobalDiscoveryEntryPersisted.class,
-                                                                       participantId);
-        logger.debug("Found entry {}", queryResult);
-        return queryResult == null ? null : new GlobalDiscoveryEntry(queryResult);
+        logger.debug("Looking up global discovery entry for participantId {} and own Gbid {}", participantId, gcdGbid);
+        String[] gcdGbidArray = { gcdGbid };
+        try {
+            return lookup(participantId, gcdGbidArray);
+        } catch (ApplicationException e) {
+            logger.error("Error looking up global discovery entry for participantId {} and own Gbid {}: {}",
+                         participantId,
+                         gcdGbid,
+                         e);
+            throw new ProviderRuntimeException("Error on lookup: " + e.getError());
+        }
     }
 
     @Override
     public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
-        GlobalDiscoveryEntry globalDiscoveryEntry = null;
-        switch (GcdUtilities.validateGbids(gbids, gcdGbid)) {
+        logger.debug("Looking up global discovery entry for participantId {} and Gbids {}",
+                     participantId,
+                     Arrays.toString(gbids));
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
             throw new ApplicationException(DiscoveryError.UNKNOWN_GBID);
         case OK:
-            globalDiscoveryEntry = lookup(participantId);
+            break;
+        default:
+            break;
         }
-        return globalDiscoveryEntry;
+        try {
+            String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE "
+                    + "gdep.participantId = :participantId AND " + "gdep.gbid IN :gbids";
+
+            List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
+                                                                                        GlobalDiscoveryEntryPersisted.class)
+                                                                           .setParameter("participantId", participantId)
+                                                                           .setParameter("gbids", Arrays.asList(gbids))
+                                                                           .getResultList();
+
+            if (queryResult.isEmpty()) {
+                String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep " + "WHERE "
+                        + "gdep.participantId = :participantId";
+                long numberOfEntriesInAllGbids = entityManager.createQuery(queryCountString, Long.class)
+                                                              .setParameter("participantId", participantId)
+                                                              .getSingleResult();
+                if (numberOfEntriesInAllGbids > 0) {
+                    throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+                } else {
+                    throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                }
+            }
+
+            return GcdUtilities.chooseOneGlobalDiscoveryEntry(queryResult, gcdGbid);
+        } catch (ApplicationException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error looking up global discovery entry for participantId {} and Gbids {}: {}",
+                         participantId,
+                         Arrays.toString(gbids),
+                         e);
+            throw new ApplicationException(DiscoveryError.INTERNAL_ERROR);
+        }
     }
 
     @Override
@@ -211,13 +340,32 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
     }
 
-    private int removeInternal(String... participantIds) {
-        logger.debug("Removing global discovery entries with IDs {}", Arrays.toString(participantIds));
-        String queryString = "delete from GlobalDiscoveryEntryPersisted gdep where gdep.participantId in :participantIds";
-        int deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
+    private int removeInternal(String[] participantIds, String... gbids) {
+        int deletedCount = 0;
+        if (gbids.length > 0) {
+            logger.debug("Removing global discovery entries with participantIds {} from gbids {}",
+                         Arrays.toString(participantIds),
+                         Arrays.toString(gbids));
+            String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE "
+                    + "gdep.participantId IN :participantIds AND gdep.gbid IN :gbids";
+            deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
                                         .setParameter("participantIds",
                                                       new HashSet<String>(Arrays.asList(participantIds)))
+                                        .setParameter("gbids", new HashSet<String>(Arrays.asList(gbids)))
                                         .executeUpdate();
+        } else {
+            logger.debug("Removing global discovery entries with participantIds {} from own Gbid {}",
+                         Arrays.toString(participantIds),
+                         gcdGbid);
+            String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE "
+                    + "gdep.participantId IN :participantIds AND gdep.gbid = :gbid";
+            deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
+                                        .setParameter("participantIds",
+                                                      new HashSet<String>(Arrays.asList(participantIds)))
+                                        .setParameter("gbid", gcdGbid)
+                                        .executeUpdate();
+        }
+
         return deletedCount;
     }
 
@@ -228,21 +376,44 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void remove(String participantId, String[] gbids) throws ApplicationException {
-        switch (GcdUtilities.validateGbids(gbids, gcdGbid)) {
+        switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
-            logger.error("Unable to remove participantId {}: INVALID GBIDs: {}", participantId, Arrays.toString(gbids));
+            logger.error("Error removing participantId {}: INVALID GBIDs: {}", participantId, Arrays.toString(gbids));
             throw new ApplicationException(DiscoveryError.INVALID_GBID);
         case UNKNOWN:
-            logger.error("Unable to remove participantId {}: UNKNOWN_GBID: {}", participantId, Arrays.toString(gbids));
+            logger.error("Error removing participantId {}: UNKNOWN_GBID: {}", participantId, Arrays.toString(gbids));
             throw new ApplicationException(DiscoveryError.UNKNOWN_GBID);
         case OK:
-            int deletedCount = removeInternal(participantId);
+            break;
+        default:
+            break;
+        }
+        try {
+            int deletedCount = removeInternal(new String[]{ participantId }, gbids);
             if (deletedCount == 0) {
-                logger.error("Participant is not registered, NO_ENTRY_FOR_PARTICIPANT {} to be removed", participantId);
-                throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                logger.warn("Error removing participantId {}. Participant is not registered in GBIDs {}.",
+                            participantId,
+                            Arrays.toString(gbids));
+
+                String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep " + "WHERE "
+                        + "gdep.participantId = :participantId";
+                long numberOfEntriesInAllGbids = entityManager.createQuery(queryCountString, Long.class)
+                                                              .setParameter("participantId", participantId)
+                                                              .getSingleResult();
+                if (numberOfEntriesInAllGbids > 0) {
+                    throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+                } else {
+                    throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                }
             } else {
                 logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
             }
+        } catch (Exception e) {
+            logger.error("Error removing discoveryEntry for {} and gbids {}: {}",
+                         participantId,
+                         Arrays.toString(gbids),
+                         e);
+            throw new ApplicationException(DiscoveryError.INTERNAL_ERROR);
         }
     }
 
@@ -250,7 +421,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     public void touch(String clusterControllerId) {
         logger.debug("Touch called. Updating discovery entries from cluster controller with id: "
                 + clusterControllerId);
-        String queryString = "select gdep from GlobalDiscoveryEntryPersisted gdep where gdep.clusterControllerId = :clusterControllerId";
+        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.clusterControllerId = :clusterControllerId";
         long now = System.currentTimeMillis();
         TypedQuery<GlobalDiscoveryEntryPersisted> query = entityManager.createQuery(queryString,
                                                                                     GlobalDiscoveryEntryPersisted.class);
