@@ -20,9 +20,13 @@ package io.joynr.capabilities.directory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 
 import io.joynr.capabilities.CustomParameterPersisted;
+import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
+import io.joynr.capabilities.GlobalDiscoveryEntryPersistedStorePersisted;
+import io.joynr.capabilities.GlobalDiscoveryEntryStore;
 import io.joynr.capabilities.ProviderQosPersisted;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -39,6 +43,9 @@ public class CapabilitiesDirectoryModule extends AbstractModule {
         bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
         bind(CustomParameter.class).to(CustomParameterPersisted.class);
         bind(ProviderQos.class).to(ProviderQosPersisted.class);
+        bind(new TypeLiteral<GlobalDiscoveryEntryStore<GlobalDiscoveryEntryPersisted>>() {
+        }).to(new TypeLiteral<GlobalDiscoveryEntryPersistedStorePersisted>() {
+        });
     }
 
     @Provides

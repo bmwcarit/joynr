@@ -21,15 +21,23 @@ package io.joynr.capabilities.directory.util;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GBIDS;
 import static io.joynr.messaging.MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.runtime.PropertyLoader;
-import joynr.exceptions.ProviderRuntimeException;
+import joynr.types.GlobalDiscoveryEntry;
 
 public class GcdUtilities {
     private static final Logger logger = LoggerFactory.getLogger(GcdUtilities.class);
@@ -46,6 +54,18 @@ public class GcdUtilities {
                      .toArray(String[]::new);
     }
 
+    public static Set<String> convertArrayStringToSet(String arrayString, String defaultElement) {
+
+        Set<String> validGbidsSet = new HashSet<>();
+        if (arrayString == null || arrayString.isEmpty()) {
+            validGbidsSet.add(defaultElement);
+        } else {
+            String[] validGbidsArray = Arrays.stream(arrayString.split(",")).map(a -> a.trim()).toArray(String[]::new);
+            validGbidsSet.addAll(Arrays.asList(validGbidsArray));
+        }
+        return validGbidsSet;
+    }
+
     public static enum ValidateGBIDsEnum {
         OK, INVALID, UNKNOWN
     };
@@ -54,7 +74,7 @@ public class GcdUtilities {
      * @param gbids an array of gbids
      * @param gcdGbid the name of gbid of the global capability directory
      */
-    public static ValidateGBIDsEnum validateGbids(String[] gbids, String gcdGbid) {
+    public static ValidateGBIDsEnum validateGbids(String[] gbids, String gcdGbid, Set<String> validGbids) {
         if (gcdGbid == null || gcdGbid.isEmpty()) {
             logger.error("Cannot validate against empty gcdGbid: {}", gcdGbid);
             throw new IllegalStateException("Cannot validate against empty gcdGbid: " + gcdGbid);
@@ -62,16 +82,60 @@ public class GcdUtilities {
         if (gbids == null || gbids.length == 0) {
             logger.error("INVALID_GBID: provided list of GBIDs is null or empty.");
             return ValidateGBIDsEnum.INVALID;
-        } else if (gbids.length > 1) {
-            logger.error("MULTIPLE GBIDs {} ARE NOT PERMITTED FOR THE MOMENT", Arrays.toString(gbids));
-            throw new ProviderRuntimeException("MULTIPLE GBIDs ARE NOT PERMITTED FOR THE MOMENT");
-        } else if (gbids[0] == null || gbids[0].isEmpty()) {
-            logger.error("INVALID_GBID: provided GBID is null or empty: {}.", gbids[0]);
-            return ValidateGBIDsEnum.INVALID;
-        } else if (!gcdGbid.equals(gbids[0])) {
-            logger.error("UNKNOWN_GBID: {}", gbids[0]);
-            return ValidateGBIDsEnum.UNKNOWN;
         }
+
+        HashSet<String> gbidSet = new HashSet<String>();
+        for (String gbid : gbids) {
+            if (gbid == null || gbid.isEmpty() || gbidSet.contains(gbid)) {
+                logger.error("INVALID_GBID: provided GBID is null or empty or duplicate: {}.", gbid);
+                return ValidateGBIDsEnum.INVALID;
+            }
+            gbidSet.add(gbid);
+
+            if (!validGbids.contains(gbid)) {
+                logger.error("UNKNOWN_GBID: provided GBID is unknown: {}.", gbid);
+                return ValidateGBIDsEnum.UNKNOWN;
+            }
+        }
+
         return ValidateGBIDsEnum.OK;
+    }
+
+    public static GlobalDiscoveryEntry[] chooseOneGlobalDiscoveryEntryPerParticipantId(Collection<GlobalDiscoveryEntryPersisted> queryResult,
+                                                                                       String preferredGbid) {
+        Map<String, List<GlobalDiscoveryEntryPersisted>> gdepGrouped = queryResult.stream()
+                                                                                  .collect(Collectors.groupingBy(GlobalDiscoveryEntryPersisted::getParticipantId));
+
+        List<GlobalDiscoveryEntry> globalDiscoveryEntries = new ArrayList<GlobalDiscoveryEntry>();
+        for (List<GlobalDiscoveryEntryPersisted> gdepListForSingleParticipantId : gdepGrouped.values()) {
+            globalDiscoveryEntries.add(GcdUtilities.chooseOneGlobalDiscoveryEntry(gdepListForSingleParticipantId,
+                                                                                  preferredGbid));
+        }
+
+        GlobalDiscoveryEntry[] globalDiscoveryEntriesArray = new GlobalDiscoveryEntry[globalDiscoveryEntries.size()];
+        globalDiscoveryEntriesArray = globalDiscoveryEntries.toArray(globalDiscoveryEntriesArray);
+        return globalDiscoveryEntriesArray;
+    }
+
+    public static GlobalDiscoveryEntry chooseOneGlobalDiscoveryEntry(Collection<GlobalDiscoveryEntryPersisted> gdepListPerParticipantId,
+                                                                     String preferredGbid) {
+        logger.debug("Number of entries stored in the list of GlobalDiscoveryEntryPersistedPerParticipandId {}",
+                     gdepListPerParticipantId.size());
+        if (gdepListPerParticipantId.isEmpty()) {
+            logger.error("FATAL: gdepListPerParticipantId is empty."); // should never happen
+            throw new JoynrIllegalStateException("FATAL: gdepListPerParticipantId is empty.");
+        }
+
+        GlobalDiscoveryEntryPersisted gdep = gdepListPerParticipantId.stream()
+                                                                     .filter(globalDiscoveryEntryPersisted -> preferredGbid.equals(globalDiscoveryEntryPersisted.getGbid()))
+                                                                     .findAny()
+                                                                     .orElse(gdepListPerParticipantId.iterator()
+                                                                                                     .next());
+
+        GlobalDiscoveryEntry selectedGlobalDiscoveryEntry = new GlobalDiscoveryEntry(gdep);
+
+        logger.debug("Selecting persisted GlobalDiscoveryEntry {}", selectedGlobalDiscoveryEntry);
+
+        return selectedGlobalDiscoveryEntry;
     }
 }

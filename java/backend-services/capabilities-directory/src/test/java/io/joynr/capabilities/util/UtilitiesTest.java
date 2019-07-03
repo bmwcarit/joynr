@@ -20,57 +20,65 @@ package io.joynr.capabilities.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.capabilities.directory.util.GcdUtilities;
 import io.joynr.capabilities.directory.util.GcdUtilities.ValidateGBIDsEnum;
 
 public class UtilitiesTest {
-    private final String validGcdGbId = "validGcdGbId";
-    private final String[] validGbids = { validGcdGbId };
+    private final String gcdGbId = "gcdGbId";
+    private final Set<String> validGbids = new HashSet<>();
+
+    @Before
+    public void setUp() {
+        validGbids.add(gcdGbId);
+    }
 
     @Test(expected = IllegalStateException.class)
     public void testFailureOnEmptyGcdGbId() {
-
-        GcdUtilities.validateGbids(validGbids, "");
+        GcdUtilities.validateGbids(new String[]{ gcdGbId }, "", validGbids);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testFailureOnNullGcdGbId() {
-        GcdUtilities.validateGbids(validGbids, null);
+        GcdUtilities.validateGbids(new String[]{ gcdGbId }, null, validGbids);
     }
 
     @Test
     public void testReturnInvalidOnNullGbids() {
-        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(null, validGcdGbId));
+        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(null, gcdGbId, validGbids));
     }
 
     @Test
     public void testReturnInvalidEmptyGbids() {
         final String[] invalidGbids = {};
-        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(invalidGbids, validGcdGbId));
+        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(invalidGbids, gcdGbId, validGbids));
     }
 
     @Test
     public void testReturnInvalidOnNullGbid() {
         final String[] invalidGbids = { null };
-        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(invalidGbids, validGcdGbId));
+        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(invalidGbids, gcdGbId, validGbids));
     }
 
     @Test
     public void testReturnInvalidOnEmptyGbid() {
         final String[] invalidGbids = { "" };
-        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(invalidGbids, validGcdGbId));
+        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(invalidGbids, gcdGbId, validGbids));
     }
 
     @Test
     public void testReturnUnknownOnUnknownGbid() {
         final String[] invalidGbids = { "wrong-gbid" };
-        assertEquals(ValidateGBIDsEnum.UNKNOWN, GcdUtilities.validateGbids(invalidGbids, validGcdGbId));
+        assertEquals(ValidateGBIDsEnum.UNKNOWN, GcdUtilities.validateGbids(invalidGbids, gcdGbId, validGbids));
     }
 
     @Test
     public void testReturnOKOnValidGbid() {
-        assertEquals(ValidateGBIDsEnum.OK, GcdUtilities.validateGbids(validGbids, validGcdGbId));
+        assertEquals(ValidateGBIDsEnum.OK, GcdUtilities.validateGbids(new String[]{ gcdGbId }, gcdGbId, validGbids));
     }
 }

@@ -38,6 +38,7 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 
@@ -52,8 +53,25 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
         joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
 
-        joynrConfig.put(CapabilitiesDirectoryImpl.GCD_GBID,
-                        GcdUtilities.loadDefaultGbidsFromDefaultMessagingProperties()[0]);
+        Properties userProperties = new Properties();
+        userProperties.putAll(System.getenv());
+        userProperties.putAll(PropertyLoader.getPropertiesWithPattern(System.getProperties(),
+                                                                      "^" + CapabilitiesDirectoryImpl.PROPERTY_PREFIX
+                                                                              + ".*$"));
+        String gcdGbid = PropertyLoader.getPropertiesWithPattern(userProperties, CapabilitiesDirectoryImpl.GCD_GBID)
+                                       .getProperty(CapabilitiesDirectoryImpl.GCD_GBID);
+        if (gcdGbid == null || gcdGbid.isEmpty()) {
+            gcdGbid = GcdUtilities.loadDefaultGbidsFromDefaultMessagingProperties()[0];
+        }
+        joynrConfig.put(CapabilitiesDirectoryImpl.GCD_GBID, gcdGbid);
+
+        String validGbidsString = PropertyLoader.getPropertiesWithPattern(userProperties,
+                                                                          CapabilitiesDirectoryImpl.VALID_GBIDS)
+                                                .getProperty(CapabilitiesDirectoryImpl.VALID_GBIDS);
+        if (validGbidsString == null || validGbidsString.isEmpty()) {
+            validGbidsString = gcdGbid;
+        }
+        joynrConfig.put(CapabilitiesDirectoryImpl.VALID_GBIDS, validGbidsString);
 
         return Modules.override(new JpaPersistModule("CapabilitiesDirectory"), new CCInProcessRuntimeModule())
                       .with(new MqttPahoModule(), new CapabilitiesDirectoryModule());
