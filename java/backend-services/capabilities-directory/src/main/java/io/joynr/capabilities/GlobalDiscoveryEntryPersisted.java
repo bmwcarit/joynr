@@ -18,32 +18,101 @@
  */
 package io.joynr.capabilities;
 
+import java.io.Serializable;
+
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
+@SuppressWarnings("serial")
+class GdepKey implements Serializable {
+    String gbid;
+    String participantId;
+
+    public String getGbid() {
+        return gbid;
+    }
+
+    public void setGbid(String gbid) {
+        this.gbid = gbid;
+    }
+
+    public String getParticipantId() {
+        return participantId;
+    }
+
+    public void setParticipantId(String participantId) {
+        this.participantId = participantId;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((gbid == null) ? 0 : gbid.hashCode());
+        result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        GdepKey other = (GdepKey) obj;
+        if (gbid == null) {
+            if (other.gbid != null)
+                return false;
+        } else if (!gbid.equals(other.gbid))
+            return false;
+        if (participantId == null) {
+            if (other.participantId != null)
+                return false;
+        } else if (!participantId.equals(other.participantId))
+            return false;
+        return true;
+    }
+}
+
 @Entity
+@IdClass(GdepKey.class)
 @Table(name = "discovery_entries")
+@Access(AccessType.PROPERTY)
 public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
     private static final long serialVersionUID = 1L;
     private ProviderQosPersisted providerQosPersisted;
     @JsonProperty("clusterControllerId")
     private String clusterControllerId;
 
+    @Access(AccessType.FIELD)
+    @Column
+    @Id
+    private String gbid;
+
     public GlobalDiscoveryEntryPersisted() {
     }
 
-    public GlobalDiscoveryEntryPersisted(GlobalDiscoveryEntry globalDiscoveryEntryObj, String clusterControllerId) {
+    public GlobalDiscoveryEntryPersisted(GlobalDiscoveryEntry globalDiscoveryEntryObj,
+                                         String clusterControllerId,
+                                         String gbid) {
         super(globalDiscoveryEntryObj);
         this.clusterControllerId = clusterControllerId;
+        this.gbid = gbid;
         providerQosPersisted = new ProviderQosPersisted(globalDiscoveryEntryObj.getQos());
     }
 
@@ -57,7 +126,8 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
                                   long expiryDateMs,
                                   String publicKeyId,
                                   String address,
-                                  String clusterControllerId) {
+                                  String clusterControllerId,
+                                  String gbid) {
         // CHECKSTYLE ON
         super(providerVersion,
               domain,
@@ -69,7 +139,16 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
               publicKeyId,
               address);
         this.clusterControllerId = clusterControllerId;
+        this.gbid = gbid;
         providerQosPersisted = new ProviderQosPersisted(qos);
+    }
+
+    public String getGbid() {
+        return gbid;
+    }
+
+    public void setGbid(String gbid) {
+        this.gbid = gbid;
     }
 
     @Override
@@ -155,6 +234,16 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((clusterControllerId == null) ? 0 : clusterControllerId.hashCode());
+        result = prime * result + ((gbid == null) ? 0 : gbid.hashCode());
+        result = prime * result + ((providerQosPersisted == null) ? 0 : providerQosPersisted.hashCode());
+        return result;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -168,14 +257,17 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
                 return false;
         } else if (!clusterControllerId.equals(other.clusterControllerId))
             return false;
+        if (gbid == null) {
+            if (other.gbid != null)
+                return false;
+        } else if (!gbid.equals(other.gbid))
+            return false;
+        if (providerQosPersisted == null) {
+            if (other.providerQosPersisted != null)
+                return false;
+        } else if (!providerQosPersisted.equals(other.providerQosPersisted))
+            return false;
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((clusterControllerId == null) ? 0 : clusterControllerId.hashCode());
-        return result;
-    }
 }
