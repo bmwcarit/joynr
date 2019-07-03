@@ -126,8 +126,10 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
         ProxyBuilder<I> proxyBuilder = joynrIntegrationBean.getRuntime()
                                                            .getProxyBuilder(domains, serviceInterface)
                                                            .setMessagingQos(messagingQos)
-                                                           .setDiscoveryQos(discoveryQos)
-                                                           .setGbids(gbids);
+                                                           .setDiscoveryQos(discoveryQos);
+        if (gbids != null) {
+            proxyBuilder.setGbids(gbids);
+        }
 
         if (useCase != null) {
             if (serviceInterface.getAnnotation(StatelessAsync.class) == null) {
