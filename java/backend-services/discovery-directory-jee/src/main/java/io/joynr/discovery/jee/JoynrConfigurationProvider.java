@@ -18,6 +18,8 @@
  */
 package io.joynr.discovery.jee;
 
+import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.GCD_GBID;
+import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.VALID_GBIDS;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID;
 
 import java.util.Map;
@@ -25,11 +27,13 @@ import java.util.Properties;
 
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Produces;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.capabilities.ParticipantIdKeyUtil;
+import io.joynr.capabilities.directory.util.GcdUtilities;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -120,5 +124,30 @@ public class JoynrConfigurationProvider {
     @JoynrLocalDomain
     public String getJoynrLocalDomain() {
         return "io.joynr";
+    }
+
+    @Produces
+    @Named(GCD_GBID)
+    public String getGcdGbid() {
+        Properties envPropertiesAll = new Properties();
+        envPropertiesAll.putAll(System.getenv());
+        String gcdGbid = PropertyLoader.getPropertiesWithPattern(envPropertiesAll, GCD_GBID).getProperty(GCD_GBID);
+        if (gcdGbid == null || gcdGbid.isEmpty()) {
+            gcdGbid = GcdUtilities.loadDefaultGbidsFromDefaultMessagingProperties()[0];
+        }
+        return gcdGbid;
+    }
+
+    @Produces
+    @Named(VALID_GBIDS)
+    public String getValidGbids() {
+        Properties envPropertiesAll = new Properties();
+        envPropertiesAll.putAll(System.getenv());
+        String validGbidsString = PropertyLoader.getPropertiesWithPattern(envPropertiesAll, VALID_GBIDS)
+                                                .getProperty(VALID_GBIDS);
+        if (validGbidsString == null || validGbidsString.isEmpty()) {
+            validGbidsString = getGcdGbid();
+        }
+        return validGbidsString;
     }
 }
