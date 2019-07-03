@@ -30,6 +30,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +48,7 @@ import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 import joynr.types.Version;
 
+@Ignore
 public class CapabilitiesDirectoryTest {
 
     private static final CustomParameter[] CUSTOM_PARAMETERS = {};
