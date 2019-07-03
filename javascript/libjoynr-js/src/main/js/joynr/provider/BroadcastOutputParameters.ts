@@ -16,50 +16,44 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../util/Typing");
-const UtilInternal = require("../util/UtilInternal");
+import * as Typing from "../util/Typing";
 
-function makeSetterFunction(obj, pos) {
-    return function(arg) {
+function makeSetterFunction(obj: BroadcastOutputParameters, pos: number): (arg: any) => BroadcastOutputParameters {
+    return function(arg: any) {
         obj.outputParameters[pos] = arg;
         return obj;
     };
 }
-function makeGetterFunction(obj, pos) {
+function makeGetterFunction(obj: BroadcastOutputParameters, pos: number): () => any {
     return function() {
         return obj.outputParameters[pos];
     };
 }
 
+interface BroadcastOutputParameters {
+    /** setter and getter functions **/
+    [key: string]: ((arg: any) => BroadcastOutputParameters) | (() => any);
+}
+
 class BroadcastOutputParameters {
+    // @ts-ignore
+    public outputParameters: any[];
+    // @ts-ignore
+    public _typeName = "joynr.BroadcastOutputParameters";
+
     /**
      * Constructor of BroadcastOutputParameters object used for subscriptions in generated provider objects
      *
-     * @constructor
-     * @name BroadcastOutputParameters
-     *
-     * @param {Object} [outputParameters] the outputParameters object for the constructor call
-     *
-     * @returns {BroadcastOutputParameters} a BroadcastOutputParameters Object for subscriptions on broadcasts
+     * @param {Object} [outputParameterProperties] the outputParameters object for the constructor call
      */
-    constructor(outputParameterProperties) {
-        /**
-         * @name BroadcastOutputParameters#_typeName
-         * @type String
-         */
-        UtilInternal.objectDefineProperty(this, "_typeName", "joynr.BroadcastOutputParameters");
+    public constructor(outputParameterProperties: Record<string, any>) {
         Typing.checkPropertyIfDefined(outputParameterProperties, "Array", "outputParameters");
 
-        let parameterName;
-        let setterFuncName;
-        let getterFuncName;
-        let i;
-
         //for (parameterName in outputParameterProperties) {
-        for (i = 0; i < outputParameterProperties.length; i++) {
+        for (let i = 0; i < outputParameterProperties.length; i++) {
             if (outputParameterProperties[i].hasOwnProperty("name")) {
-                parameterName = outputParameterProperties[i].name;
-                setterFuncName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
+                const parameterName = outputParameterProperties[i].name;
+                const setterFuncName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
                 //output[funcName] = makeSetterFunction(output, parameterName);
                 Object.defineProperty(this, setterFuncName, {
                     configurable: false,
@@ -67,7 +61,7 @@ class BroadcastOutputParameters {
                     enumerable: false,
                     value: makeSetterFunction(this, i)
                 });
-                getterFuncName = `get${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
+                const getterFuncName = `get${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
                 Object.defineProperty(this, getterFuncName, {
                     configurable: false,
                     writable: false,
@@ -77,12 +71,8 @@ class BroadcastOutputParameters {
             }
         }
 
-        /**
-         * @name BroadcastOutputParameters#outputParameters
-         * @type Array
-         */
         this.outputParameters = [];
     }
 }
 
-module.exports = BroadcastOutputParameters;
+export = BroadcastOutputParameters;
