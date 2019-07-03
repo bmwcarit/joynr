@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -44,35 +43,35 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
+
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
-public class DiscoveryEntryStorePersistedTest {
+@Ignore
+public class GlobalDiscoveryEntryPersistedStorePersistedTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(DiscoveryEntryStorePersistedTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlobalDiscoveryEntryPersistedStorePersistedTest.class);
 
-    private static final int CACHE_MAX_AGE = 10000;
     private PersistService service;
-    private DiscoveryEntryStore store;
+    private GlobalDiscoveryEntryPersistedStorePersisted store;
     private EntityManager entityManager;
+    private String gbid = "joynrdefaultgbid";
+    private String[] gbids = { gbid, "joynrtestgbid2" };
 
     @Before
     public void setUp() throws Exception {
 
         Injector injector = Guice.createInjector(new JpaPersistModule("CapabilitiesDirectory"), new AbstractModule() {
-
             @Override
             protected void configure() {
-                bind(DiscoveryEntryStore.class).to(GlobalDiscoveryEntryPersistedStorePersisted.class);
-                bind(DiscoveryEntry.class).to(GlobalDiscoveryEntryPersisted.class);
                 bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
             }
         });
         service = injector.getInstance(PersistService.class);
-        store = injector.getInstance(DiscoveryEntryStore.class);
+        store = injector.getInstance(GlobalDiscoveryEntryPersistedStorePersisted.class);
         entityManager = injector.getInstance(EntityManager.class);
     }
 
@@ -85,10 +84,9 @@ public class DiscoveryEntryStorePersistedTest {
     public void testAddDiscoveryEntry() throws Exception {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
 
-        store.add(discoveryEntry);
+        store.add(discoveryEntry, gbids);
         entityManager.clear();
         assertContains(discoveryEntry);
-
     }
 
     @Test
@@ -96,12 +94,11 @@ public class DiscoveryEntryStorePersistedTest {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
         logger.info("Discovery entry: " + discoveryEntry);
 
-        store.add(discoveryEntry);
+        store.add(discoveryEntry, gbids);
         entityManager.clear();
 
-        Collection<DiscoveryEntry> lookupResult = store.lookup(new String[]{ discoveryEntry.getDomain() },
-                                                               discoveryEntry.getInterfaceName(),
-                                                               CACHE_MAX_AGE);
+        Collection<GlobalDiscoveryEntryPersisted> lookupResult = store.lookup(new String[]{
+                discoveryEntry.getDomain() }, discoveryEntry.getInterfaceName());
         assertNotNull(lookupResult);
         assertEquals(1, lookupResult.size());
         DiscoveryEntry persistedEntry = lookupResult.iterator().next();
@@ -116,61 +113,25 @@ public class DiscoveryEntryStorePersistedTest {
     }
 
     @Test
-    public void testAddCollectionOfDiscoveryEntry() throws Exception {
-        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry("domain1",
-                                                                             "interfaceName1",
-                                                                             "participantId1");
-
-        GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry("domain2",
-                                                                             "interfaceName2",
-                                                                             "participantId2");
-
-        store.add(Arrays.asList(discoveryEntry1, discoveryEntry2));
-        entityManager.clear();
-        assertContains(discoveryEntry1, discoveryEntry2);
-    }
-
-    @Test
     public void testRemoveByParticipantId() throws Exception {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
-        store.add(discoveryEntry);
+        store.add(discoveryEntry, gbids);
         entityManager.clear();
         assertContains(discoveryEntry);
 
-        store.remove(discoveryEntry.getParticipantId());
+        store.remove(discoveryEntry.getParticipantId(), gbids);
         entityManager.clear();
         assertNotContains(discoveryEntry);
     }
 
     @Test
-    public void testRemoveByListOfParticipantIds() throws Exception {
-        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry("domain1",
-                                                                             "interfaceName1",
-                                                                             "participantId1");
-
-        GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry("domain2",
-                                                                             "interfaceName2",
-                                                                             "participantId2");
-
-        store.add(Arrays.asList(discoveryEntry1, discoveryEntry2));
-        entityManager.clear();
-        assertContains(discoveryEntry1, discoveryEntry2);
-
-        store.remove(Arrays.asList(discoveryEntry1.getParticipantId(), discoveryEntry2.getParticipantId()));
-        entityManager.clear();
-        assertNotContains(discoveryEntry1, discoveryEntry2);
-
-    }
-
-    @Test
-    @Ignore
     public void testLookupDomainInterface() throws Exception {
         String domain = "domain";
         String interfaceName = "interfaceName";
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry(domain, interfaceName, "participantId");
-        store.add(discoveryEntry);
+        store.add(discoveryEntry, gbids);
         entityManager.clear();
-        Collection<DiscoveryEntry> lookup = store.lookup(new String[]{ domain }, interfaceName);
+        Collection<GlobalDiscoveryEntryPersisted> lookup = store.lookup(new String[]{ domain }, interfaceName);
         assertTrue(lookup.contains(discoveryEntry));
     }
 
@@ -207,12 +168,12 @@ public class DiscoveryEntryStorePersistedTest {
                                                                              interfaceName + "1",
                                                                              "testTouchParticipantId1");
         discoveryEntry1.setClusterControllerId(clusterControllerId);
-        store.add(discoveryEntry1);
+        store.add(discoveryEntry1, gbids);
         GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry(domain + "2",
                                                                              interfaceName + "2",
                                                                              "testTouchParticipantId2");
         discoveryEntry2.setClusterControllerId(clusterControllerId);
-        store.add(discoveryEntry2);
+        store.add(discoveryEntry2, gbids);
 
         entityManager.clear();
 
@@ -220,15 +181,14 @@ public class DiscoveryEntryStorePersistedTest {
         // check: lastSeenDateMs < System.currentTimeMillis()
         long currentTimeMillisBefore = System.currentTimeMillis();
 
-        List<DiscoveryEntry> returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{
-                discoveryEntry1.getDomain() }, discoveryEntry1.getInterfaceName(), CACHE_MAX_AGE);
+        List<GlobalDiscoveryEntryPersisted> returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                discoveryEntry1.getDomain() }, discoveryEntry1.getInterfaceName());
         assertTrue(returnedEntries.contains(discoveryEntry1));
         assertTrue(returnedEntries.size() == 1);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
 
-        returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ discoveryEntry2.getDomain() },
-                                                              discoveryEntry2.getInterfaceName(),
-                                                              CACHE_MAX_AGE);
+        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                discoveryEntry2.getDomain() }, discoveryEntry2.getInterfaceName());
         assertTrue(returnedEntries.contains(discoveryEntry2));
         assertTrue(returnedEntries.size() == 1);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
@@ -241,18 +201,16 @@ public class DiscoveryEntryStorePersistedTest {
         Thread.sleep(1);
         long currentTimeMillisAfter = System.currentTimeMillis();
 
-        returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ discoveryEntry1.getDomain() },
-                                                              discoveryEntry1.getInterfaceName(),
-                                                              CACHE_MAX_AGE);
+        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                discoveryEntry1.getDomain() }, discoveryEntry1.getInterfaceName());
         assertFalse(returnedEntries.contains(discoveryEntry1));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 1);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() > currentTimeMillisBefore);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisAfter);
 
-        returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ discoveryEntry2.getDomain() },
-                                                              discoveryEntry2.getInterfaceName(),
-                                                              CACHE_MAX_AGE);
+        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                discoveryEntry2.getDomain() }, discoveryEntry2.getInterfaceName());
         assertFalse(returnedEntries.contains(discoveryEntry2));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 1);
@@ -269,19 +227,18 @@ public class DiscoveryEntryStorePersistedTest {
                                                                                    interfaceName,
                                                                                    "testTouchParticipantId1");
         touchedDiscoveryEntry.setClusterControllerId(clusterControllerId);
-        store.add(touchedDiscoveryEntry);
+        store.add(touchedDiscoveryEntry, gbids);
         GlobalDiscoveryEntryPersisted discoveryEntryFromDefaultClusterController = createDiscoveryEntry(domain,
                                                                                                         interfaceName,
                                                                                                         "testTouchParticipantIdFromDefaultClusterController");
-        store.add(discoveryEntryFromDefaultClusterController);
+        store.add(discoveryEntryFromDefaultClusterController, gbids);
         entityManager.clear();
 
         // wait some time to ensure new lastSeenDateMs
         Thread.sleep(1);
 
-        List<DiscoveryEntry> returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ domain },
-                                                                                   interfaceName,
-                                                                                   CACHE_MAX_AGE);
+        List<GlobalDiscoveryEntryPersisted> returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                domain }, interfaceName);
         assertTrue(returnedEntries.contains(touchedDiscoveryEntry));
         assertTrue(returnedEntries.contains(discoveryEntryFromDefaultClusterController));
         assertTrue(returnedEntries.size() == 2);
@@ -290,7 +247,7 @@ public class DiscoveryEntryStorePersistedTest {
         store.touch(clusterControllerId);
         Thread.sleep(1);
 
-        returnedEntries = (List<DiscoveryEntry>) store.lookup(new String[]{ domain }, interfaceName, CACHE_MAX_AGE);
+        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ domain }, interfaceName);
         assertFalse(returnedEntries.contains(touchedDiscoveryEntry));
         assertTrue(returnedEntries.contains(discoveryEntryFromDefaultClusterController));
         // touch should not insert additional entries
@@ -315,24 +272,23 @@ public class DiscoveryEntryStorePersistedTest {
                                                                                          expiryDateMs,
                                                                                          publicKeyId,
                                                                                          addressSerialized,
-                                                                                         "clusterControllerId");
+                                                                                         "clusterControllerId",
+                                                                                         gbid);
         return discoveryEntry;
     }
 
     private void assertContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<DiscoveryEntry> returnedEntries = store.lookup(new String[]{ discoveryEntry.getDomain() },
-                                                                      discoveryEntry.getInterfaceName(),
-                                                                      CACHE_MAX_AGE);
+            Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(new String[]{
+                    discoveryEntry.getDomain() }, discoveryEntry.getInterfaceName());
             assertTrue(returnedEntries.contains(discoveryEntry));
         }
     }
 
     private void assertNotContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<DiscoveryEntry> returnedEntries = store.lookup(new String[]{ discoveryEntry.getDomain() },
-                                                                      discoveryEntry.getInterfaceName(),
-                                                                      CACHE_MAX_AGE);
+            Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(new String[]{
+                    discoveryEntry.getDomain() }, discoveryEntry.getInterfaceName());
             assertFalse(returnedEntries.contains(discoveryEntry));
         }
     }

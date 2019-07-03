@@ -18,7 +18,6 @@
  */
 package io.joynr.capabilities;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,22 +37,21 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.persist.PersistService;
 
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 /**
  * The GlobalDiscoveryEntryPersistedStorePersisted stores a list of providers with their global
  * address and the interfaces they offer (GlobalDiscoveryEntryPersisted).
  */
 @Singleton
-public class GlobalDiscoveryEntryPersistedStorePersisted implements DiscoveryEntryStore<GlobalDiscoveryEntryPersisted> {
+public class GlobalDiscoveryEntryPersistedStorePersisted
+        implements GlobalDiscoveryEntryStore<GlobalDiscoveryEntryPersisted> {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalDiscoveryEntryPersistedStorePersisted.class);
     private EntityManager entityManager;
-
-    // Do not synchronize on a Boolean
-    // Fixes FindBug warning: DL: Synchronization on Boolean
-    private Object capsLock = new Object();
 
     @Inject
     public GlobalDiscoveryEntryPersistedStorePersisted(CapabilitiesProvisioning staticProvisioning,
@@ -61,130 +59,137 @@ public class GlobalDiscoveryEntryPersistedStorePersisted implements DiscoveryEnt
                                                        PersistService persistService) {
         persistService.start();
         entityManager = entityManagerProvider.get();
+
         logger.debug("creating CapabilitiesStore {} with static provisioning", this);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see io.joynr.capabilities.CapabilitiesStore#add(io.joynr.
-     * capabilities .DiscoveryEntry)
-     */
     @Override
-    public synchronized void add(GlobalDiscoveryEntryPersisted discoveryEntry) {
-        logger.debug("adding discovery entry: {}", discoveryEntry);
-        GlobalDiscoveryEntryPersisted globalDiscoveryEntry = (GlobalDiscoveryEntryPersisted) discoveryEntry;
-        if (globalDiscoveryEntry.getDomain() == null || globalDiscoveryEntry.getInterfaceName() == null
-                || globalDiscoveryEntry.getParticipantId() == null || globalDiscoveryEntry.getAddress() == null) {
-            String message = "discoveryEntry being registered is not complete: " + discoveryEntry;
-            logger.error(message);
-            throw new JoynrCommunicationException(message);
-        }
+    public synchronized void add(GlobalDiscoveryEntryPersisted globalDiscoveryEntry, String[] gbids) {
+        logger.debug("adding discovery entry: {}", globalDiscoveryEntry);
 
-        GlobalDiscoveryEntryPersisted discoveryEntryFound = entityManager.find(GlobalDiscoveryEntryPersisted.class,
-                                                                               discoveryEntry.getParticipantId());
+        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
+        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId AND gdep.gbid = :gbid";
+        String participantId = globalDiscoveryEntry.getParticipantId();
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            for (String gbid : gbids) {
+                List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
+                                                                                            GlobalDiscoveryEntryPersisted.class)
+                                                                               .setParameter("participantId",
+                                                                                             participantId)
+                                                                               .setParameter("gbid", gbid)
+                                                                               .getResultList();
+
+                if (queryResult.size() > 1) {
+                    logger.error("There should be max only one discovery entry! Found {} discovery entries: {}",
+                                 queryResult.size(),
+                                 queryResult);
+                    throw new JoynrIllegalStateException("There should be max only one discovery entry! Found "
+                            + queryResult.size() + " discovery entries");
+                }
+                GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
+                                                                                         globalDiscoveryEntry.getClusterControllerId(),
+                                                                                         gbid);
+                if (address instanceof MqttAddress) {
+                    ((MqttAddress) address).setBrokerUri(gbid);
+                    entity.setAddress(RoutingTypesUtil.toAddressString(address));
+                }
+
+                if (queryResult.isEmpty()) {
+                    logger.trace("adding new discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
+                    entityManager.persist(globalDiscoveryEntry);
+                } else {
+                    logger.trace("merging discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
+                    entityManager.merge(globalDiscoveryEntry);
+                }
+            }
+            transaction.commit();
+            logger.trace("add transaction for {} committed successfully", participantId);
+        } catch (Exception e) {
+            logger.trace("add transaction for {} failed: ", participantId, e);
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public synchronized int remove(String participantId, String[] gbids) {
+        int deletedCount = 0;
+        String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE "
+                + "gdep.participantId = :participantId AND gdep.gbid IN :gbids";
 
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
-            if (discoveryEntryFound != null) {
-                entityManager.merge(discoveryEntry);
-            } else {
-                entityManager.persist(discoveryEntry);
+            deletedCount = entityManager.createQuery(queryString)
+                                        .setParameter("participantId",
+                                                      new HashSet<String>(Arrays.asList(participantId)))
+                                        .setParameter("gbids", new HashSet<String>(Arrays.asList(gbids)))
+                                        .executeUpdate();
+
+            if (deletedCount == 0) {
+                logger.warn("Error removing participantId {}. Participant is not registered in GBIDs {}.",
+                            participantId,
+                            Arrays.toString(gbids));
+
+                String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep " + "WHERE "
+                        + "gdep.participantId = :participantId";
+                long numberOfEntriesInAllGbids = entityManager.createQuery(queryCountString, Long.class)
+                                                              .setParameter("participantId", participantId)
+                                                              .getSingleResult();
+                if (numberOfEntriesInAllGbids > 0) {
+                    // NO_ENTRY_FOR_SELECTED_BACKENDS
+                    return -1;
+                } else {
+                    // NO_ENTRY_FOR_PARTICIPANT
+                    return 0;
+                }
             }
+
             transaction.commit();
-        } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            logger.error("unable to add discoveryEntry: " + discoveryEntry, e);
-        }
-    }
-
-    @Override
-    public void add(Collection<GlobalDiscoveryEntryPersisted> entries) {
-        if (entries != null) {
-            for (GlobalDiscoveryEntryPersisted entry : entries) {
-                add(entry);
-            }
-        }
-    }
-
-    @Override
-    public boolean remove(String participantId) {
-        boolean removedSuccessfully = false;
-
-        synchronized (capsLock) {
-            removedSuccessfully = removeCapabilityFromStore(participantId);
-        }
-        if (!removedSuccessfully) {
-            logger.error("Could not find capability to remove with Id: {}", participantId);
-        }
-        return removedSuccessfully;
-    }
-
-    private boolean removeCapabilityFromStore(String participantId) {
-        GlobalDiscoveryEntryPersisted discoveryEntry = entityManager.find(GlobalDiscoveryEntryPersisted.class,
-                                                                          participantId);
-
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.remove(discoveryEntry);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-            logger.error("unable to remove capability: " + participantId, e);
-            return false;
+            logger.trace("remove transaction for {} committed successfully", participantId);
         } finally {
+            logger.trace("remove transaction for {} failed", participantId);
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
         }
-        return true;
+
+        return deletedCount;
     }
 
     @Override
-    public void remove(Collection<String> participantIds) {
-        for (String participantId : participantIds) {
-            remove(participantId);
-        }
-    }
-
-    @Override
-    public Collection<GlobalDiscoveryEntryPersisted> lookup(final String[] domains, final String interfaceName) {
-        return lookup(domains, interfaceName, DiscoveryQos.NO_MAX_AGE);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Collection<GlobalDiscoveryEntryPersisted> lookup(final String[] domains,
-                                                            final String interfaceName,
-                                                            long cacheMaxAge) {
-        String query = "from GlobalDiscoveryEntryPersisted where domain=:domain and interfaceName=:interfaceName";
-        List<GlobalDiscoveryEntryPersisted> result = new ArrayList<>();
-        for (String domain : domains) {
-            List<GlobalDiscoveryEntryPersisted> capabilitiesList = entityManager.createQuery(query)
-                                                                                .setParameter("domain", domain)
-                                                                                .setParameter("interfaceName",
-                                                                                              interfaceName)
-                                                                                .getResultList();
-            result.addAll(capabilitiesList);
-        }
-
-        logger.debug("looked up {}, {}, {} and found {}", Arrays.toString(domains), interfaceName, cacheMaxAge, result);
-        return result;
+    public synchronized Collection<GlobalDiscoveryEntryPersisted> lookup(final String[] domains,
+                                                                         final String interfaceName) {
+        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep "
+                + "WHERE gdep.domain IN :domains AND gdep.interfaceName = :interfaceName "
+                + "ORDER BY gdep.participantId";
+        List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
+                                                                                    GlobalDiscoveryEntryPersisted.class)
+                                                                       .setParameter("domains",
+                                                                                     new HashSet<String>(Arrays.asList(domains)))
+                                                                       .setParameter("interfaceName", interfaceName)
+                                                                       .getResultList();
+        return queryResult;
     }
 
     @Override
     @CheckForNull
-    public GlobalDiscoveryEntryPersisted lookup(String participantId, long cacheMaxAge) {
-        GlobalDiscoveryEntryPersisted result = entityManager.find(GlobalDiscoveryEntryPersisted.class, participantId);
-        logger.debug("looked up {}, {} and found {}", participantId, cacheMaxAge, result);
-        return result;
+    public synchronized Collection<GlobalDiscoveryEntryPersisted> lookup(String participantId) {
+        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE " + "gdep.participantId = :participantId";
+        List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
+                                                                                    GlobalDiscoveryEntryPersisted.class)
+                                                                       .setParameter("participantId", participantId)
+                                                                       .getResultList();
+        return queryResult;
     }
 
     @Override
     public Set<GlobalDiscoveryEntryPersisted> getAllDiscoveryEntries() {
-        List<GlobalDiscoveryEntryPersisted> allCapabilityEntries = entityManager.createQuery("Select discoveryEntry from GlobalDiscoveryEntryPersisted discoveryEntry",
+        List<GlobalDiscoveryEntryPersisted> allCapabilityEntries = entityManager.createQuery("FROM GlobalDiscoveryEntryPersisted gdep",
                                                                                              GlobalDiscoveryEntryPersisted.class)
                                                                                 .getResultList();
         Set<GlobalDiscoveryEntryPersisted> result = new HashSet<>(allCapabilityEntries);
@@ -194,15 +199,25 @@ public class GlobalDiscoveryEntryPersistedStorePersisted implements DiscoveryEnt
 
     @Override
     public boolean hasDiscoveryEntry(@Nonnull GlobalDiscoveryEntryPersisted discoveryEntry) {
-        GlobalDiscoveryEntryPersisted searchingForDiscoveryEntry = (GlobalDiscoveryEntryPersisted) discoveryEntry;
-        GlobalDiscoveryEntryPersisted foundCapability = entityManager.find(GlobalDiscoveryEntryPersisted.class,
-                                                                           searchingForDiscoveryEntry.getParticipantId());
-        return discoveryEntry.equals(foundCapability);
+        String query = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.clusterControllerId = :clusterControllerId";
+        String clusterControllerId = discoveryEntry.getClusterControllerId();
+        @SuppressWarnings("unchecked")
+        List<GlobalDiscoveryEntryPersisted> capabilitiesList = entityManager.createQuery(query)
+                                                                            .setParameter("clusterControllerId",
+                                                                                          clusterControllerId)
+                                                                            .getResultList();
+
+        if (capabilitiesList.size() > 1) {
+            logger.warn("There is {} discoveries entries for {}",
+                        capabilitiesList.size(),
+                        discoveryEntry.getParticipantId());
+        }
+        return discoveryEntry.equals(capabilitiesList.get(0));
     }
 
     @Override
-    public void touch(String clusterControllerId) {
-        String query = "from GlobalDiscoveryEntryPersisted where clusterControllerId=:clusterControllerId";
+    public synchronized void touch(String clusterControllerId) {
+        String query = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.clusterControllerId = :clusterControllerId";
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
