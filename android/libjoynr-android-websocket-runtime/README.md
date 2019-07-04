@@ -13,4 +13,4 @@ It's possible to implement the workarounds implemented in this project under the
 
 Add this line to build.gradle file and verify if you have mavenLocal() under your maven repositories list.
 
-<pre> implementation ('io.joynr.android:joynr-android:0.1') </pre>
+<pre> implementation ('io.joynr.android:joynr-android:1.10.0-SNAPSHOT') </pre>
