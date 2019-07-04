@@ -320,9 +320,20 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             synchronized (globalDiscoveryEntryCache) {
                 if (globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
                                                      DiscoveryQos.NO_MAX_AGE) != null) {
-                    mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
-                    deferred.resolve();
-                    return new Promise<>(deferred);
+                    List<String> mappedGbids = globalProviderParticipantIdToGbidListMap.get(discoveryEntry.getParticipantId());
+                    List<String> newGbids = new ArrayList<>();
+                    for (String gbid : gbids) {
+                        if (!mappedGbids.contains(gbid)) {
+                            newGbids.add(gbid);
+                        }
+                    }
+                    if (newGbids.size() == 0) {
+                        mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
+                        deferred.resolve();
+                        return new Promise<>(deferred);
+                    } else {
+                        gbids = newGbids.toArray(new String[newGbids.size()]);
+                    }
                 }
             }
             // in the other case, the global registration needs to be done
