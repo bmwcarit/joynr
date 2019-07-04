@@ -332,6 +332,7 @@ In case of communication errors, a ```JoynrCommunicationException``` is thrown.
 public void run() {
     DiscoveryQos discoveryQos = new DiscoveryQos();
     MessagingQos messagingQos = new MessagingQos();
+    String[] gbids = new String[] { "gbid1","gbid2" };
     // the qos can be fine tuned here by calling setters
 
     ProxyBuilder<<Interface>Proxy> proxyBuilder =
@@ -341,6 +342,7 @@ public void run() {
         <interface>Proxy = proxyBuilder.
             setMessagingQos(messagingQos). // optional
             setDiscoveryQos(discoveryQos). // optional
+            setGbids(gbids).               // optional
             build();
         // call methods, subscribe to broadcasts etc.
         // enter some event loop
@@ -374,6 +376,13 @@ So, for example, if we change the code above to target two domains, we get:
 		runtime.getProxyBuilder(domains, <Interface>Proxy.class);
 ...
 ```
+By default providers are looked up in all known backends.  
+In case of global discovery, the default backend connection is used (identified by the
+first GBID configured at the cluster controller).  
+The discovery of providers can be restricted to certain backends by specifying one or more
+global backend ids (GBIDs) using the setGbids(gbids) API.  
+If setGbids(gbids) API is used, then the global discovery will take place over the
+connection to the backend identified by the first gbid in the list of provided GBIDs.
 
 ## Synchronous Remote procedure calls
 While the provider executes the call asynchronously in any case, the consumer will wait until the call is finished, i.e. the thread will be blocked.
