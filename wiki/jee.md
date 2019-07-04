@@ -70,7 +70,7 @@ so that all nodes of the cluster are identified by the same channel ID.
 the backends to be used, e.g. `gbid1,gbid2`.
 * `MqttModule.PROPERTY_MQTT_BROKER_URIS` - use this to configure the URLs for
 the backends identified by `ConfigurableMessagingModule.PROPERTY_GBIDS`.
-If used, the number of configured broker-uris must be equal to the number of configured gbids.
+If used, the number of configured broker-uris must be equal to the number of configured GBIDs.
 E.g. `tcp://mqtt.mycompany.net:1883,tcp://mqtt.othercompany.net:1883`.
 
 #### Conditionally required Properties in case of HTTP based communication
@@ -162,7 +162,7 @@ concurrency when communicating joynr messages.
 
 As a rule of thumb consider
 
-```java
+```
 corepoolsize =
     (
         joynr.messaging.maximumParallelSends +
@@ -435,10 +435,8 @@ running in vehicles or providers of other JEE applications), inject the
 obtain a reference to a proxy of the business interface, and call the
 relevant methods on it.
 
-The service locator utility offers methods for obtaining service proxies
-for the most common use cases, along with a proxy builder for specifying
-the meta data to use in building the proxy in a fluent API style. See the
-stateless async section below for an example of how the builder is used.
+The service locator utility offers a proxy builder for specifying
+the meta data to use in building the proxy in a fluent API style.
 
 For example, if we wanted to call the `MyService` provider as implemented
 in the above example:
@@ -455,20 +453,47 @@ public class MyConsumer {
     }
 
     public void performCall() {
-        MyServiceSync myServiceProxy = serviceLocator.get(MyServiceSync.class, "my.service.domain");
+
+        // set optional gbids as required
+        String[] gbids = String[] { "gbid1", "gbid2", ... };
+
+        // set optional discoveryQos as required
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+
+        // set optional messagingQos as required
+        MessagingQos messagingQos = new MessagingQos();
+
+        MyServiceSync myServiceProxy =
+            serviceLocator.builder(MyServiceSync.class, "my.service.domain")
+            .withTtl(ttl).                   // optional, overrides .withMessagingQos(...)
+            .withMessagingQos(messagingQos). // optional, overrides .withTtl(...)
+            .withDiscoveryQos(discoveryQos). // optional,
+            .withGbids(gbids).               // optional
+            .withCallback(callback).         // optional, see below
+            .withUseCase(useCase).           // optional, see below
+            .build();
         myServiceProxy.myMethod();
     }
 
 }
 ```
 
-The time-to-live for joynr messages can be set through an additional parameter
-in the ServiceLocator.get method.
+The time-to-live for joynr messages can be set through either withTtl(ttl) API
+or inside messagingQos using withMessagingQos(messagingQos) API. Please use only
+one of both APIs, if at all, since they may override each others settings.
 
 It is also possible to target multiple providers with one proxy. You can achieve
 this by either spcifying a set of domains during lookup, or a custom
 `ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
 See the [Java Developer Guide](java.md) for details.
+
+By default providers are looked up in all known backends.  
+In case of global discovery, the default backend connection is used (identified by
+the first GBID configured at the cluster controller).  
+The withGbids(gbids) API can be used to discover providers registered for specific
+backend global ids (GBIDs).  
+If withGbids(gbids) API is used, then the global discovery will take place over the
+connection to the backend identified by the first gbid in the list of provided GBIDs.
 
 __IMPORTANT__: if you intend to have your logic make multiple calls to the same
 provider, then you should locally cache the proxy instance returned by the
