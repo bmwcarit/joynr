@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -39,7 +40,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -49,7 +49,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
+import io.joynr.capabilities.GlobalDiscoveryEntryPersistedKey;
 import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryError;
@@ -87,7 +89,8 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     final private String domain = "com";
     final private String[] domains = { domain };
     final private String interfaceName = "interfaceName";
-    final private String[] validGbidsArray = { "joynrdefaultgbid", "gbid2", "gbid3" };
+    final private String joynrdefaultgbid = "joynrdefaultgbid";
+    final private String[] validGbidsArray = { joynrdefaultgbid, "gbid2", "gbid3" };
 
     @Inject
     private GlobalCapabilitiesDirectorySync subject;
@@ -126,37 +129,29 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertEquals(TOPIC_NAME, ((MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(actual)).getTopic());
     }
 
-    @Ignore
     @Test
     public void testAddAndLookup_byParticipantId_singleDiscoveryEntry() {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
-        assertNull(resultBeforeAdd);
-
         subject.add(testGlobalDiscoveryEntry);
         entityManager.flush();
         entityManager.clear();
+
         GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
         assertNotNull(result);
         assertTrue(result instanceof GlobalDiscoveryEntry);
         assertFalse(result instanceof GlobalDiscoveryEntryPersisted);
         GlobalDiscoveryEntry persisted = (GlobalDiscoveryEntry) result;
 
-        checkDiscoveryEntry(expectedEntry, persisted, validGbidsArray[0]);
+        checkDiscoveryEntry(expectedEntry, persisted, joynrdefaultgbid);
     }
 
-    @Ignore
     @Test
     public void testAddAndLookup_byDomainInterface_singleDiscoveryEntry() throws Exception {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry[] resultBeforeAdd = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
-                                                                testGlobalDiscoveryEntry.getInterfaceName());
-        assertNotNull(resultBeforeAdd);
-        assertEquals(0, resultBeforeAdd.length);
-
         subject.add(testGlobalDiscoveryEntry);
         entityManager.flush();
         entityManager.clear();
+
         GlobalDiscoveryEntry[] result = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
                                                        testGlobalDiscoveryEntry.getInterfaceName());
         assertNotNull(result);
@@ -164,16 +159,12 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertTrue(result[0] instanceof GlobalDiscoveryEntry);
         assertFalse(result[0] instanceof GlobalDiscoveryEntryPersisted);
 
-        checkDiscoveryEntry(expectedEntry, result[0], validGbidsArray[0]);
+        checkDiscoveryEntry(expectedEntry, result[0], joynrdefaultgbid);
     }
 
-    @Ignore
     @Test
     public void testAddAndRemove_singleDiscoveryEntry() {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
-        assertNull(resultBeforeAdd);
-
         subject.add(testGlobalDiscoveryEntry);
         entityManager.flush();
         entityManager.clear();
@@ -181,22 +172,22 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
         assertNotNull(result);
         GlobalDiscoveryEntry persisted = (GlobalDiscoveryEntry) result;
-        checkDiscoveryEntry(expectedEntry, persisted, validGbidsArray[0]);
+        checkDiscoveryEntry(expectedEntry, persisted, joynrdefaultgbid);
 
         subject.remove(testParticipantId);
         entityManager.flush();
         entityManager.clear();
-
-        GlobalDiscoveryEntry resultAfterRemove = subject.lookup(testParticipantId);
-        assertNull(resultAfterRemove);
+        GlobalDiscoveryEntry resultAfterRemove = null;
+        try {
+            resultAfterRemove = subject.lookup(testParticipantId);
+        } catch (ProviderRuntimeException e) {
+            assertNull(resultAfterRemove);
+        }
     }
 
-    @Ignore
     @Test
     public void testAddWithGbids_validGbid() throws ApplicationException {
         GlobalDiscoveryEntry expectedDiscoveryEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
-        assertNull(resultBeforeAdd);
 
         subject.add(testGlobalDiscoveryEntry, validGbidsArray);
         entityManager.flush();
@@ -204,80 +195,171 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
         GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
         assertNotNull(result);
-        checkDiscoveryEntry(expectedDiscoveryEntry, result, validGbidsArray[0]);
+        checkDiscoveryEntry(expectedDiscoveryEntry, result, joynrdefaultgbid);
     }
 
     @Test
-    @Ignore
     public void testAddWithGbids_unknownGbid() {
         final String[] invalidGbidsArray = { "unknownGbid" };
         try {
             subject.add(testGlobalDiscoveryEntry, invalidGbidsArray);
+            entityManager.flush();
+            entityManager.clear();
         } catch (ApplicationException e) {
             assertEquals(DiscoveryError.UNKNOWN_GBID, e.getError());
         }
-        entityManager.flush();
-        entityManager.clear();
 
-        GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
-        assertNull(result);
     }
 
     private void testAddWithGbids_invalidGbid(String[] invalidGbidsArray) {
         try {
             subject.add(testGlobalDiscoveryEntry, invalidGbidsArray);
+            entityManager.flush();
+            entityManager.clear();
         } catch (ApplicationException e) {
             assertEquals(DiscoveryError.INVALID_GBID, e.getError());
         }
-        entityManager.flush();
-        entityManager.clear();
-
-        GlobalDiscoveryEntry result = subject.lookup(testParticipantId);
-        assertNull(result);
     }
 
-    @Ignore
     @Test
     public void testAddWithGbids_invalidGbid_emptyGbid() {
         final String[] invalidGbidsArray = { "" };
         testAddWithGbids_invalidGbid(invalidGbidsArray);
     }
 
-    @Ignore
     @Test
     public void testAddWithGbids_invalidGbid_nullGbid() {
         final String[] invalidGbidsArray = { null };
         testAddWithGbids_invalidGbid(invalidGbidsArray);
     }
 
-    @Ignore
     @Test
     public void testAddWithGbids_invalidGbid_nullGbidsArray() {
         final String[] invalidGbidsArray = null;
         testAddWithGbids_invalidGbid(invalidGbidsArray);
     }
 
-    @Ignore
     @Test
     public void testAddWithGbids_invalidGbid_emptyGbidsArray() {
         final String[] invalidGbidsArray = {};
         testAddWithGbids_invalidGbid(invalidGbidsArray);
     }
 
-    @Ignore
     @Test
-    public void testLookupWithGbids_validGbid() throws ApplicationException {
-        GlobalDiscoveryEntry expectedDiscoveryEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
-        assertNull(resultBeforeAdd);
+    public void testAddTwice() throws Exception {
+        subject.add(testGlobalDiscoveryEntry);
+        subject.add(testGlobalDiscoveryEntry);
+        entityManager.flush();
+        entityManager.clear();
 
+        GlobalDiscoveryEntry[] persisted = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
+                                                          testGlobalDiscoveryEntry.getInterfaceName());
+        assertNotNull(persisted);
+        assertEquals(1, persisted.length);
+    }
+
+    private void testLookupWithGbids_byParticipantId_invalidGbid(String[] invalidGbidsArray) {
+        try {
+            subject.lookup(testParticipantId, invalidGbidsArray);
+        } catch (ApplicationException e) {
+            assertEquals(DiscoveryError.INVALID_GBID, e.getError());
+        }
+    }
+
+    @Test
+    public void testLookupWithGbids_byParticipantId_invalidGbid_emptyGbid() throws ApplicationException {
+        final String[] invalidGbidsArray = { "" };
+        testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
+    }
+
+    @Test
+    public void testLookupWithGbids_byParticipantId_invalidGbid_nullGbid() throws ApplicationException {
+        final String[] invalidGbidsArray = { null };
+        testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
+    }
+
+    @Test
+    public void testLookupWithGbids_byParticipantId_invalidGbid_nullGbidsArray() throws ApplicationException {
+        final String[] invalidGbidsArray = null;
+        testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
+    }
+
+    @Test
+    public void testLookupWithGbids_byParticipantId_invalidGbid_emptyGbidsArray() throws ApplicationException {
+        final String[] invalidGbidsArray = {};
+        testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
+    }
+
+    private void checkLookupByParticipantId(String participantId, DiscoveryError expectedError) {
+        GlobalDiscoveryEntry result = null;
+        try {
+            result = subject.lookup(participantId);
+            fail("Should throw ProviderRuntimeException");
+        } catch (ProviderRuntimeException e) {
+            ProviderRuntimeException expected = new ProviderRuntimeException("Error on lookup: " + expectedError);
+            assertEquals(expected, e);
+            assertNull(result);
+        }
+    }
+
+    private void checkLookupByParticipantIdWithGbids(String participantId,
+                                                     String[] gbids,
+                                                     DiscoveryError expectedError) {
+        GlobalDiscoveryEntry result = null;
+        try {
+            result = subject.lookup(participantId, gbids);
+            fail("Should throw ApplicationException");
+        } catch (ApplicationException e) {
+            ApplicationException expected = new ApplicationException(expectedError);
+            assertEquals(expected, e);
+            assertNull(result);
+        }
+    }
+
+    @Test
+    public void testLookupParticipantId_NO_ENTRY_FOR_PARTICIPANT() {
+        checkLookupByParticipantId(testParticipantId, DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+    }
+
+    @Test
+    public void testLookupParticipantIdWithGbids_NO_ENTRY_FOR_PARTICIPANT() {
+        checkLookupByParticipantIdWithGbids(testParticipantId,
+                                            validGbidsArray,
+                                            DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+    }
+
+    @Test
+    public void testLookupParticipantId_NO_ENTRY_FOR_SELECTED_BACKENDS() throws ApplicationException {
+        subject.add(testGlobalDiscoveryEntry, new String[]{ validGbidsArray[1] });
+        entityManager.flush();
+        entityManager.clear();
+
+        checkLookupByParticipantId(testParticipantId, DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+    }
+
+    @Test
+    public void testLookupParticipantIdWithGbids_NO_ENTRY_FOR_SELECTED_BACKENDS() throws ApplicationException {
+        subject.add(testGlobalDiscoveryEntry, new String[]{ validGbidsArray[1] });
+        entityManager.flush();
+        entityManager.clear();
+
+        String[] queriedValidGbids = { validGbidsArray[0], validGbidsArray[2] };
+        checkLookupByParticipantIdWithGbids(testParticipantId,
+                                            queriedValidGbids,
+                                            DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+    }
+
+    @Test
+    public void testLookupDomainInterfaceWithGbids_validGbids() throws ApplicationException {
+        GlobalDiscoveryEntry expectedDiscoveryEntry = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry);
         subject.add(testGlobalDiscoveryEntry, validGbidsArray);
         entityManager.flush();
         entityManager.clear();
 
         GlobalDiscoveryEntry[] globalDiscoveryEntries = subject.lookup(domains, interfaceName, validGbidsArray);
         assertEquals(1, globalDiscoveryEntries.length);
-        checkDiscoveryEntry(expectedDiscoveryEntry, globalDiscoveryEntries[0], validGbidsArray[0]);
+        checkDiscoveryEntry(expectedDiscoveryEntry, globalDiscoveryEntries[0], joynrdefaultgbid);
+        checkLookupByParticipantId("unknownParticipantId", DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
     }
 
     @Test
@@ -322,46 +404,15 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         testLookupWithGbids_byDomainInterface_invalidGbid(invalidGbidsArray);
     }
 
-    private void testLookupWithGbids_byParticipantId_invalidGbid(String[] invalidGbidsArray) {
-        try {
-            subject.lookup(testParticipantId, invalidGbidsArray);
-        } catch (ApplicationException e) {
-            assertEquals(DiscoveryError.INVALID_GBID, e.getError());
-        }
-    }
-
-    @Test
-    public void testLookupWithGbids_byParticipantId_invalidGbid_emptyGbid() throws ApplicationException {
-        final String[] invalidGbidsArray = { "" };
-        testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
-    }
-
-    @Test
-    public void testLookupWithGbids_byParticipantId_invalidGbid_nullGbid() throws ApplicationException {
-        final String[] invalidGbidsArray = { null };
-        testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
-    }
-
-    @Ignore
-    @Test
-    public void testLookupWithGbids_byParticipantId_invalidGbid_nullGbidsArray() throws ApplicationException {
-        final String[] invalidGbidsArray = null;
-        testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
-    }
-
-    @Test
-    public void testLookupWithGbids_byParticipantId_invalidGbid_emptyGbidsArray() throws ApplicationException {
-        final String[] invalidGbidsArray = {};
-        testLookupWithGbids_byParticipantId_invalidGbid(invalidGbidsArray);
-    }
-
-    @Ignore
     @Test
     public void testRemoveWithGbids_validGbid() throws ApplicationException {
-        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
-        assertNull(resultBeforeAdd);
-
         subject.add(testGlobalDiscoveryEntry, validGbidsArray);
+        entityManager.flush();
+        entityManager.clear();
+
+        GlobalDiscoveryEntry resultBeforeAdd = subject.lookup(testParticipantId);
+        assertNotNull(resultBeforeAdd);
+
         GlobalDiscoveryEntry[] globalDiscoveryEntries = subject.lookup(domains, interfaceName, validGbidsArray);
         assertEquals(1, globalDiscoveryEntries.length);
 
@@ -371,7 +422,6 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertEquals(0, globalDiscoveryEntries.length);
     }
 
-    @Ignore
     @Test
     public void testRemoveWithGbids_unknownParticipantId() throws ApplicationException {
         try {
@@ -413,42 +463,29 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         testRemoveWithGbids_invalidGbid(invalidGbidsArray);
     }
 
-    @Ignore
     @Test
     public void testTouch() throws InterruptedException {
         long initialLastSeen = testGlobalDiscoveryEntry.getLastSeenDateMs();
         subject.add(testGlobalDiscoveryEntry);
-
         entityManager.flush();
         entityManager.clear();
 
-        GlobalDiscoveryEntryPersisted persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class,
-                                                                     testGlobalDiscoveryEntry.getParticipantId());
+        GlobalDiscoveryEntryPersistedKey primaryKey = new GlobalDiscoveryEntryPersistedKey();
+        primaryKey.setParticipantId(testGlobalDiscoveryEntry.getParticipantId());
+        primaryKey.setGbid(joynrdefaultgbid);
+        GlobalDiscoveryEntryPersisted persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class, primaryKey);
         assertNotNull(persisted);
         assertEquals((Long) initialLastSeen, persisted.getLastSeenDateMs());
 
         Thread.sleep(1L);
 
         subject.touch(TOPIC_NAME);
-
         entityManager.flush();
         entityManager.clear();
 
-        persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class,
-                                       testGlobalDiscoveryEntry.getParticipantId());
+        persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class, primaryKey);
         assertNotNull(persisted);
         assertTrue(initialLastSeen < persisted.getLastSeenDateMs());
-    }
-
-    @Test
-    public void testAddTwice() throws Exception {
-        subject.add(testGlobalDiscoveryEntry);
-        subject.add(testGlobalDiscoveryEntry);
-
-        GlobalDiscoveryEntry[] persisted = subject.lookup(new String[]{ testGlobalDiscoveryEntry.getDomain() },
-                                                          testGlobalDiscoveryEntry.getInterfaceName());
-        assertNotNull(persisted);
-        assertEquals(1, persisted.length);
     }
 
 }
