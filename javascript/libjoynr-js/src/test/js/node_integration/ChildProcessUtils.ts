@@ -17,73 +17,73 @@
  * limitations under the License.
  * #L%
  */
-const ChildProcessUtils = {};
 
-ChildProcessUtils.postReady = function() {
-    process.send({
+import joynr from "../../../main/js/joynr";
+
+export function postReady(): void {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    process.send!({
         type: "ready"
     });
-};
+}
 
-ChildProcessUtils.postError = errorMsg => {
-    process.send({
+export function postError(errorMsg: string): void {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    process.send!({
         type: "error",
         msg: errorMsg
     });
-};
+}
 
-ChildProcessUtils.postStarted = function(argument) {
-    const object = {
+export function postStarted(argument: any): void {
+    const object: any = {
         type: "started"
     };
     if (argument !== undefined) {
         object.argument = argument;
     }
-    process.send(object);
-};
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    process.send!(object);
+}
 
-ChildProcessUtils.postFinished = function() {
-    process.send({
+export function postFinished(): void {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    process.send!({
         type: "finished"
     });
-};
+}
 
-ChildProcessUtils.registerHandlers = function(initializeTest, startTest, terminateTest) {
-    let runtime;
-    const handler = async function(msg) {
-        console.log(JSON.stringify(msg));
+export function registerHandlers(initializeTest: Function, startTest: Function, terminateTest: Function): void {
+    const handler = async (msg: {
+        type: string;
+        provisioningSuffix: any;
+        domain: any;
+        processSpecialization: any;
+    }): Promise<void> => {
         if (msg.type === "initialize") {
             if (!initializeTest) {
                 throw new Error("cannot initialize test, child does not define an initializeTest method");
             }
             try {
-                const providedRuntime = await initializeTest(
-                    msg.provisioningSuffix,
-                    msg.domain,
-                    msg.processSpecialization
-                );
-                runtime = providedRuntime;
-                ChildProcessUtils.postReady();
+                await initializeTest(msg.provisioningSuffix, msg.domain, msg.processSpecialization);
+                postReady();
             } catch (e) {
-                ChildProcessUtils.postError(`failed to initialize child process: ${e}`);
+                postError(`failed to initialize child process: ${e}`);
             }
         } else if (msg.type === "start") {
             if (!startTest) {
                 throw new Error("cannot start test, child does not define a startTest method");
             }
-            startTest().then(argument => {
-                ChildProcessUtils.postStarted(argument);
-            });
+            const argument = await startTest();
+            postStarted(argument);
         } else if (msg.type === "terminate") {
             if (!terminateTest) {
                 throw new Error("cannot terminate test, child does not define a terminate method");
             }
             terminateTest()
-                .then(runtime.shutdown)
-                .then(ChildProcessUtils.postFinished);
+                .then(joynr.shutdown)
+                .then(postFinished);
         }
     };
     process.on("message", handler);
-};
-
-module.exports = ChildProcessUtils;
+}
