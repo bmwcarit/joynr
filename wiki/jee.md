@@ -32,11 +32,13 @@ Add the `io.joynr.java:jeeintegration` dependency to your project.
 
 For Maven, use the following dependency:
 
-    <dependency>
-      <groupId>io.joynr.java</groupId>
-      <artifactId>jeeintegration</artifactId>
-      <version>${joynr.version}</version>
-    </dependency>
+```xml
+<dependency>
+  <groupId>io.joynr.java</groupId>
+  <artifactId>jeeintegration</artifactId>
+  <version>${joynr.version}</version>
+</dependency>
+```
 
 For Gradle, in your build.gradle dependencies add:
 `compile 'io.joynr.java:jeeintegration:${joynr.version}'`
@@ -108,38 +110,40 @@ for details.
 
 An example of a configuration EJB is:
 
-	@Singleton
-	public class JoynrConfigurationProvider {
+```java
+@Singleton
+public class JoynrConfigurationProvider {
 
-	  @Produces
-	  @JoynrProperties
-	  public Properties joynrProperties() {
-		Properties joynrProperties = new Properties();
-		joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
-			"/myapp/messaging");
-		joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH,
-			"http://myapp.com:8080");
-		joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
-			"provider.domain");
-		joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
-			Boolean.TRUE.toString());
-		joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS,
-			"joynrdefaultgbid");
-		joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS,
-			"tcp://mqttbroker.com:1883");
-		joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
-			"http://joynrbackend/bounceproxy/");
+    @Produces
+    @JoynrProperties
+    public Properties joynrProperties() {
+        Properties joynrProperties = new Properties();
+        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
+            "/myapp/messaging");
+        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH,
+            "http://myapp.com:8080");
+        joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
+            "provider.domain");
+        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
+            Boolean.TRUE.toString());
+        joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS,
+            "joynrdefaultgbid");
+        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS,
+            "tcp://mqttbroker.com:1883");
+        joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
+            "http://joynrbackend/bounceproxy/");
 
-		return joynrProperties;
-	  }
+        return joynrProperties;
+    }
 
-	  @Produces
-	  @JoynrLocalDomain
-	  public String joynrLocalDomain() {
-		return "provider.domain";
-	  }
+    @Produces
+    @JoynrLocalDomain
+    public String joynrLocalDomain() {
+        return "provider.domain";
+    }
 
-	}
+}
+```
 
 
 ### JEE Container configuration
@@ -158,7 +162,7 @@ concurrency when communicating joynr messages.
 
 As a rule of thumb consider
 
-```
+```java
 corepoolsize =
     (
         joynr.messaging.maximumParallelSends +
@@ -183,12 +187,14 @@ each line is executed as if called with it. Hence, the content of the file will 
 
 When using the `payara-micro-maven-plugin`, specify the command line options as:
 
-	<commandLineOptions>
-		<option>
-			<key>--postbootcommandfile</key>
-			<value>${basedir}/post-boot.txt</value>
-		</option>
-	</commandLineOptions>
+```xml
+<commandLineOptions>
+    <option>
+        <key>--postbootcommandfile</key>
+        <value>${basedir}/post-boot.txt</value>
+    </option>
+</commandLineOptions>
+```
 
 Lastly, if you are using Docker to create a container with your Payara Micro application, then
 specify the `ENTRYPOINT` as:
@@ -208,38 +214,40 @@ activate an additional parameter in the joynr generator (see also [the generator
 
 Here's an example of what the plugin configuration might look like:
 
-	<plugin>
-		<groupId>io.joynr.tools.generator</groupId>
-		<artifactId>joynr-generator-maven-plugin</artifactId>
-		<version>${joynrVersion}</version>
-		<executions>
-		  <execution>
-			<id>generate-code</id>
-			<phase>generate-sources</phase>
-			<goals>
-			  <goal>generate</goal>
-			</goals>
-			<configuration>
-			  <model>${basedir}/src/main/resources/fidl</model>
-			  <generationLanguage>java</generationLanguage>
-			  <outputPath>${project.build.directory}/generated-sources</outputPath>
+```xml
+<plugin>
+  <groupId>io.joynr.tools.generator</groupId>
+  <artifactId>joynr-generator-maven-plugin</artifactId>
+  <version>${joynrVersion}</version>
+  <executions>
+    <execution>
+      <id>generate-code</id>
+      <phase>generate-sources</phase>
+      <goals>
+        <goal>generate</goal>
+      </goals>
+      <configuration>
+        <model>${basedir}/src/main/resources/fidl</model>
+        <generationLanguage>java</generationLanguage>
+        <outputPath>${project.build.directory}/generated-sources</outputPath>
 
-			  <!-- ACTIVATE THIS TO GENERATE JEE COMPATIBLE INTERFACES -->
-			  <parameter>
-				<jee>true</jee>
-			  </parameter>
+        <!-- ACTIVATE THIS TO GENERATE JEE COMPATIBLE INTERFACES -->
+        <parameter>
+          <jee>true</jee>
+        </parameter>
 
-			</configuration>
-		  </execution>
-		</executions>
-		<dependencies>
-		  <dependency>
-			<groupId>io.joynr.tools.generator</groupId>
-			<artifactId>java-generator</artifactId>
-			<version>${joynrVersion}</version>
-		  </dependency>
-		</dependencies>
-	</plugin>
+      </configuration>
+    </execution>
+  </executions>
+  <dependencies>
+    <dependency>
+      <groupId>io.joynr.tools.generator</groupId>
+      <artifactId>java-generator</artifactId>
+      <version>${joynrVersion}</version>
+    </dependency>
+  </dependencies>
+</plugin>
+```
 
 Note the `<parameter><jee>true</jee></parameter>` part. This is essential for
 generating artefacts which are compatible with the JEE integration.
@@ -252,11 +260,13 @@ JEE annotations (e.g. `@Stateless`).
 For example, if we have defined a `MyService` interface in Franca for which
 we want to provide an implementation, then:
 
-    @ServiceProvider(serviceInterface = MyServiceSync.class)
-    @Stateless
-    public class MyServiceImpl implements MyServiceSync {
-    	...
-    }
+```java
+@ServiceProvider(serviceInterface = MyServiceSync.class)
+@Stateless
+public class MyServiceImpl implements MyServiceSync {
+    ...
+}
+```
 
 #### Customizing the provider registration parameters
 
@@ -272,30 +282,32 @@ Note that you can also implement the interface just partially with the settings 
 the rest the default methods of the interface will be invoked. Here is an example of what a (full)
 implementation could look like for the `MyService` we used above:
 
-	@Singleton
-	public class MyServiceProviderSettingsFactory implements ProviderRegistrationSettingsFactory {
+```java
+@Singleton
+public class MyServiceProviderSettingsFactory implements ProviderRegistrationSettingsFactory {
 
-	    @Override
-	    public ProviderQos createProviderQos() {
-	        ProviderQos providerQos = new ProviderQos();
-	        providerQos.setCustomParameters(new CustomParameter[]{ new CustomParameter("name", "value") });
-	        providerQos.setPriority(1L);
-	        return providerQos;
-	    }
+    @Override
+    public ProviderQos createProviderQos() {
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setCustomParameters(new CustomParameter[]{ new CustomParameter("name", "value") });
+        providerQos.setPriority(1L);
+        return providerQos;
+    }
 
-	    @Override
-	    public String[] createGbids() {
-	        // Make sure these GBIDs are valid and are part of ConfigurableMessagingSettings.PROPERTY_GBIDS
-	        String[] gbidsForRegistration = { "testbackend1", "testbackend2" };
-	        return gbidsForRegistration;
-	    }
+    @Override
+    public String[] createGbids() {
+        // Make sure these GBIDs are valid and are part of ConfigurableMessagingSettings.PROPERTY_GBIDS
+        String[] gbidsForRegistration = { "testbackend1", "testbackend2" };
+        return gbidsForRegistration;
+    }
 
-	    @Override
-	    public boolean providesFor(Class<?> serviceInterface) {
-	        return MyServiceSync.class.equals(serviceInterface);
-	    }
+    @Override
+    public boolean providesFor(Class<?> serviceInterface) {
+        return MyServiceSync.class.equals(serviceInterface);
+    }
 
-	}
+}
+```
 
 #### <a name="provider_domain"></a> Customizing the registration domain
 
@@ -307,11 +319,13 @@ to the `@ServiceProvider` annotation. The value you provide will be used as the 
 registering the bean as a joynr provider.
 Here is an example of what that looks like:
 
-    @ServiceProvider(serviceInterface = MyServiceSync.class)
-    @ProviderDomain(MY_CUSTOM_DOMAIN)
-    private static class CustomDomainMyServiceBean implements MyServiceSync {
-        ...
-    }
+```java
+@ServiceProvider(serviceInterface = MyServiceSync.class)
+@ProviderDomain(MY_CUSTOM_DOMAIN)
+private static class CustomDomainMyServiceBean implements MyServiceSync {
+    ...
+}
+```
 
 #### <a name="publishing_multicasts"></a> Publishing Multicasts
 
@@ -325,23 +339,25 @@ publisher interface, and have to additionally decorate the injection with the
 
 Here is an example of what that looks like:
 
-    @Stateless
-    @ServiceProvider(serviceInterface = MyServiceSync.class)
-    public class MyBean implements MyServiceSync {
-        private MyServiceSubscriptionPublisher myServiceSubscriptionPublisher;
+```java
+@Stateless
+@ServiceProvider(serviceInterface = MyServiceSync.class)
+public class MyBean implements MyServiceSync {
+    private MyServiceSubscriptionPublisher myServiceSubscriptionPublisher;
 
-        @Inject
-        public MyBean(@SubscriptionPublisher MyServiceSubscriptionPublisher myServiceSubscriptionPublisher) {
-            this.myServiceSubscriptionPublisher = myServiceSubscriptionPublisher;
-        }
-
-        ... other method implementations ...
-
-        @Override
-        public void myMethod() {
-            myServiceSubscriptionPublisher.fireMyMulticast("Some value");
-        }
+    @Inject
+    public MyBean(@SubscriptionPublisher MyServiceSubscriptionPublisher myServiceSubscriptionPublisher) {
+        this.myServiceSubscriptionPublisher = myServiceSubscriptionPublisher;
     }
+
+    ... other method implementations ...
+
+    @Override
+    public void myMethod() {
+        myServiceSubscriptionPublisher.fireMyMulticast("Some value");
+    }
+}
+```
 
 See also the
 [Radio JEE provider bean](../examples/radio-jee/radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java)
@@ -366,17 +382,19 @@ message.
 
 For example:
 
-	@Produces
-	@JoynrRawMessagingPreprocessor
-	public RawMessagingPreprocessor rawMessagingPreprocessor() {
-		return new RawMessagingPreprocessor() {
-			@Override
-			public String process(String rawMessage, @Nonnull Map<String, Serializable> context) {
-				// do something with the message here, and add entries to the context
-				return rawMessage;
-			}
-		};
-	}
+```java
+@Produces
+@JoynrRawMessagingPreprocessor
+public RawMessagingPreprocessor rawMessagingPreprocessor() {
+    return new RawMessagingPreprocessor() {
+        @Override
+        public String process(String rawMessage, @Nonnull Map<String, Serializable> context) {
+            // do something with the message here, and add entries to the context
+            return rawMessage;
+        }
+    };
+}
+```
 
 #### Injecting a JoynrJeeMessageMetaInfo
 
@@ -385,25 +403,27 @@ headers) for a received message.
 
 The context can be accessed by calling `JoynrJeeMessageMetaInfo.getMessageContext()`:
 
-    @Stateless
-    @ServiceProvider(serviceInterface = MyServiceSync.class)
-    public class MyBean implements MyServiceSync {
-        private JoynrJeeMessageMetaInfo messageMetaInfo;
+```java
+@Stateless
+@ServiceProvider(serviceInterface = MyServiceSync.class)
+public class MyBean implements MyServiceSync {
+    private JoynrJeeMessageMetaInfo messageMetaInfo;
 
-        @Inject
-        public MyBean(JoynrJeeMessageMetaInfo messageMetaInfo) {
-            this.messageMetaInfo = messageMetaInfo;
-        }
-
-        ... other method implementations ...
-
-        @Override
-        public void myMethod() {
-            ...
-            Map<String, Serializable> context = messageMetaInfo.getMessageContext();
-            ...
-        }
+    @Inject
+    public MyBean(JoynrJeeMessageMetaInfo messageMetaInfo) {
+        this.messageMetaInfo = messageMetaInfo;
     }
+
+    ... other method implementations ...
+
+    @Override
+    public void myMethod() {
+        ...
+        Map<String, Serializable> context = messageMetaInfo.getMessageContext();
+        ...
+    }
+}
+```
 
 See also [examples/custom-headers](../examples/custom-headers/README.md).
 
@@ -423,22 +443,24 @@ stateless async section below for an example of how the builder is used.
 For example, if we wanted to call the `MyService` provider as implemented
 in the above example:
 
-	@Stateless
-	public class MyConsumer {
+```java
+@Stateless
+public class MyConsumer {
 
-		private final ServiceLocator serviceLocator;
+    private final ServiceLocator serviceLocator;
 
-        @Inject
-        public MyConsumer(ServiceLocator serviceLocator) {
-        	this.serviceLocator = serviceLocator;
-        }
-
-		public void performCall() {
-            MyServiceSync myServiceProxy = serviceLocator.get(MyServiceSync.class, "my.service.domain");
-            myServiceProxy.myMethod();
-        }
-
+    @Inject
+    public MyConsumer(ServiceLocator serviceLocator) {
+        this.serviceLocator = serviceLocator;
     }
+
+    public void performCall() {
+        MyServiceSync myServiceProxy = serviceLocator.get(MyServiceSync.class, "my.service.domain");
+        myServiceProxy.myMethod();
+    }
+
+}
+```
 
 The time-to-live for joynr messages can be set through an additional parameter
 in the ServiceLocator.get method.
@@ -466,57 +488,59 @@ an exception at runtime.
 
 Here are some simple examples of both using a callback and using the future API:
 
-	@Singleton
-	public class MyConsumer {
+```java
+@Singleton
+public class MyConsumer {
 
-		private static final Logger LOGGER = LoggerFactory.getLogger(MyConsumer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MyConsumer.class);
 
-		@Inject
-		private ServiceLocator serviceLocator;
+    @Inject
+    private ServiceLocator serviceLocator;
 
-		private MyServiceSync proxy;
+    private MyServiceSync proxy;
 
-		@PostConstruct
-		public void initialise() {
-			// Using a callback
-			proxy = serviceLocator.builder(MyServiceSync.class, "my.service.domain")
-				.withCallback(new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
-					@Override
-					public void onProxyCreationFinished(MyServiceSync result) {
-						LOGGER.info("Proxy created successfully.");
-					}
-					@Override
-					public void onProxyCreationError(JoynrRuntimeException error) {
-						LOGGER.error("Unable to create proxy.", error);
-					}
-				})
-				.build();
+    @PostConstruct
+    public void initialise() {
+        // Using a callback
+        proxy = serviceLocator.builder(MyServiceSync.class, "my.service.domain")
+            .withCallback(new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
+                @Override
+                public void onProxyCreationFinished(MyServiceSync result) {
+                    LOGGER.info("Proxy created successfully.");
+                }
+                @Override
+                public void onProxyCreationError(JoynrRuntimeException error) {
+                    LOGGER.error("Unable to create proxy.", error);
+                }
+            })
+            .build();
 
-			// Using a completable future
-			CompletableFuture<MyServiceSync> future = serviceLocator.builder(
-					MyServiceSync.class, "my.service.domain"
-				)
-				.useFuture()
-				.build();
+        // Using a completable future
+        CompletableFuture<MyServiceSync> future = serviceLocator.builder(
+                MyServiceSync.class, "my.service.domain"
+            )
+            .useFuture()
+            .build();
 
-			// ... non blocking
-			future.whenCompleteAsync((proxy, error) -> {
-				if (proxy != null) {
-					MyConsumer.this.proxy = proxy;
-					LOGGER.info("Proxy created successfully.");
-				} else if (error != null) {
-					LOGGER.error("Unable to create proxy.", error);
-				}
-			});
+        // ... non blocking
+        future.whenCompleteAsync((proxy, error) -> {
+            if (proxy != null) {
+                MyConsumer.this.proxy = proxy;
+                LOGGER.info("Proxy created successfully.");
+            } else if (error != null) {
+                LOGGER.error("Unable to create proxy.", error);
+            }
+        });
 
-			// ... blocking
-			try {
-				proxy = future.get();
-			} catch (ExecutionException e) {
-				LOGGER.error("Unable to create proxy.", error.getCause());
-			}
-		}
-	}
+        // ... blocking
+        try {
+            proxy = future.get();
+        } catch (ExecutionException e) {
+            LOGGER.error("Unable to create proxy.", error.getCause());
+        }
+    }
+}
+```
 
 See the JavaDoc of `io.joynr.jeeintegration.api.ServiceLocator` and
 `io.joynr.jeeintegration.JeeJoynrServiceLocator` for more details.
@@ -560,60 +584,62 @@ For a full example project, see
 The following are some code snippets to exemplify the usage of the stateless async
 API:
 
-	@Stateless
-	@CallbackHandler
-	public class MyServiceCallbackBean implements MyServiceStatelessAsyncCallback {
+```java
+@Stateless
+@CallbackHandler
+public class MyServiceCallbackBean implements MyServiceStatelessAsyncCallback {
 
-		private final static String MY_USE_CASE = "get-stuff-done";
+    private final static String MY_USE_CASE = "get-stuff-done";
 
-		@Inject
-		private MyContextService myContextService;
+    @Inject
+    private MyContextService myContextService;
 
-		@Override
-		public String getUseCase() {
-			return MY_USE_CASE;
-		}
+    @Override
+    public String getUseCase() {
+        return MY_USE_CASE;
+    }
 
-		// This method is called in response to receiving a reply for calls to the provider
-		// method 'myServiceMethod', and the reply context will contain the same message ID
-		// which the request was sent with. This is then used to retrieve some persisted
-		// context, which was created at the time of sending the request - potentially by
-		// a different node in the cluster.
-		@Override
-		public void myServiceMethodSuccess(String someParameter, ReplyContext replyContext) {
-			myContextService.handleReplyFor(replyContext.getMessageId(), someParameter);
-		}
+    // This method is called in response to receiving a reply for calls to the provider
+    // method 'myServiceMethod', and the reply context will contain the same message ID
+    // which the request was sent with. This is then used to retrieve some persisted
+    // context, which was created at the time of sending the request - potentially by
+    // a different node in the cluster.
+    @Override
+    public void myServiceMethodSuccess(String someParameter, ReplyContext replyContext) {
+        myContextService.handleReplyFor(replyContext.getMessageId(), someParameter);
+    }
 
-	}
+}
 
-	@Singleton
-	public class MyServiceBean {
+@Singleton
+public class MyServiceBean {
 
-		private MyServiceStatelessAsync proxy;
+    private MyServiceStatelessAsync proxy;
 
-		@Inject
-		private ServiceLocator serviceLocator;
+    @Inject
+    private ServiceLocator serviceLocator;
 
-		@Inject
-		private MyContextService myContextService;
+    @Inject
+    private MyContextService myContextService;
 
-		@PostConstruct
-		public void initialise() {
-			proxy = serviceLocator.builder(MyServiceStatelessAsync.class, "my-provider-domain")
-						.withUseCase(MyServiceCallbackBean.MY_USE_CASE)
-						.build();
-		}
+    @PostConstruct
+    public void initialise() {
+        proxy = serviceLocator.builder(MyServiceStatelessAsync.class, "my-provider-domain")
+                    .withUseCase(MyServiceCallbackBean.MY_USE_CASE)
+                    .build();
+    }
 
-		// Called by the application to trigger a call to the provider, persisting some
-		// context information for the given messageId, which can then be retrieved in the
-		// callback handler and used to process the reply.
-		public void trigger() {
-			proxy.myServiceMethod("some input value",
-									messageId -> myContextService.persistContext(messageId)
-			);
-		}
+    // Called by the application to trigger a call to the provider, persisting some
+    // context information for the given messageId, which can then be retrieved in the
+    // callback handler and used to process the reply.
+    public void trigger() {
+        proxy.myServiceMethod("some input value",
+                                messageId -> myContextService.persistContext(messageId)
+        );
+    }
 
-	}
+}
+```
 
 ## Clustering
 
@@ -671,22 +697,24 @@ which require a restart of an instance. In order to access this information,
 inject an object of type ```JoynrStatusMetrics```. See the documentation of
 ```JoynrStatusMetrics``` for more information.
 
-	import io.joynr.jeeintegration;
+```java
+import io.joynr.jeeintegration;
 
-	@Stateless
-	public class MyHealthCheck {
+@Stateless
+public class MyHealthCheck {
 
-		private final JoynrStatusMetrics joynrStatusMetrics;
+    private final JoynrStatusMetrics joynrStatusMetrics;
 
-		@Inject
-		public MyConsumer(JoynrStatusMetrics joynrStatusMetrics) {
-			this.joynrStatusMetrics = joynrStatusMetrics;
-		}
+    @Inject
+    public MyConsumer(JoynrStatusMetrics joynrStatusMetrics) {
+        this.joynrStatusMetrics = joynrStatusMetrics;
+    }
 
-		public boolean getVerdictExample() {
-			// Evaluate data from joynrStatusMetrics here
-		}
-	}
+    public boolean getVerdictExample() {
+        // Evaluate data from joynrStatusMetrics here
+    }
+}
+```
 
 ## Overriding Jackson library used at runtime
 
@@ -702,12 +730,14 @@ shipped with joynr.
 In order to do this, you must provide the following content in the
 `glassfish-web.xml` file (situated in the `WEB-INF` folder of your WAR):
 
-	<?xml version="1.0" encoding="UTF-8"?>
-	<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN"
-		"http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
-	<glassfish-web-app>
-	  <class-loader delegate="false" />
-	</glassfish-web-app>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN"
+    "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
+<glassfish-web-app>
+  <class-loader delegate="false" />
+</glassfish-web-app>
+```
 
 ... here, the `<class-loader delegate="false" />` part is the relevant bit.
 
@@ -720,41 +750,47 @@ the following, when you try to parse JSON within your application.
 
 To integrate your own dependency you need to disable the MoxyJson with the below code.
 
-    @ApplicationPath("/")
-    public class ApplicationConfig extends Application {
+```java
+@ApplicationPath("/")
+public class ApplicationConfig extends Application {
 
-      @Override
-      public Map<String, Object> getProperties() {
-        final Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put("jersey.config.server.disableMoxyJson", true);
+  @Override
+  public Map<String, Object> getProperties() {
+    final Map<String, Object> properties = new HashMap<String, Object>();
+    properties.put("jersey.config.server.disableMoxyJson", true);
 
-        return properties;
-      }
-    }
+    return properties;
+  }
+}
+```
 
 Then add your own dependencies, e.g. in this case only the following because the others
 are referenced by the joynr lib itself. Be aware to check the version of the joynr
 referenced libs.
 
-    <dependency>
-      <groupId>com.fasterxml.jackson.jaxrs</groupId>
-      <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>2.9.8</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-xml</artifactId>
-      <version>2.9.8</version>
-    </dependency>
+```xml
+<dependency>
+  <groupId>com.fasterxml.jackson.jaxrs</groupId>
+  <artifactId>jackson-jaxrs-json-provider</artifactId>
+  <version>2.9.8</version>
+</dependency>
+<dependency>
+  <groupId>com.fasterxml.jackson.dataformat</groupId>
+  <artifactId>jackson-dataformat-xml</artifactId>
+  <version>2.9.8</version>
+</dependency>
+```
 
 Finally in case you're using JSON: Not setting a value to the @JsonProperty annotations
 will cause a NoMessageBodyWriter found exception. To avoid that use the following on
 relevant getters of your class.
 
-    @JsonProperty("randomName")
-    public String getRandomName(){
-    ...
-    }
+```java
+@JsonProperty("randomName")
+public String getRandomName(){
+...
+}
+```
 
 Here are some references:
 
@@ -776,7 +812,7 @@ should only be, e.g., adding custom headers (via the `JoynrMessage#setCustomHead
 
 Here's an example of a message processor:
 
-```
+```java
 @Stateless
 public class MyMessageProcessor implements JoynrMessageProcessor {
     public MutableMessage processOutgoing(MutableMessage joynrMessage) {
@@ -829,14 +865,16 @@ producer of `@JoynrMessagePersister`.
 
 For example:
 
-	@Produces
-	@JoynrMessagePersister
-	public MessagePersister getMessagePersister() {
-		return new MessagePersister() {
-			@Override
-			...
-		};
-	}
+```java
+@Produces
+@JoynrMessagePersister
+public MessagePersister getMessagePersister() {
+    return new MessagePersister() {
+        @Override
+        ...
+    };
+}
+```
 
 See the [Java Developer Guide](./java.md#message_persistence) for details on how to implement
 message persister and how it works in the joynr runtime.
@@ -877,10 +915,10 @@ to persist data.
 For this example, we'll create a database on the JavaDB (based on Derby) database which is
 installed as part of Payara:
 ```
-    bin/asadmin create-jdbc-connection-pool \
-        --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
-        --restype javax.sql.XADataSource \
-        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
+bin/asadmin create-jdbc-connection-pool \
+    --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
+    --restype javax.sql.XADataSource \
+    --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
 ```
 Next, create a datasource resource pointing to that database connection. Here's an
 example of what that would look like when using the connection pool created above:
