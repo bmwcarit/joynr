@@ -422,7 +422,7 @@
 			are referenced.
 		-->
 		<jersey.version>1.19.4</jersey.version>
-		<jackson.version>2.9.8</jackson.version>
+		<jackson.version>2.9.9.1</jackson.version>
 		<guice.version>3.0</guice.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
@@ -879,7 +879,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -892,7 +892,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -906,7 +906,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -919,7 +919,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -932,7 +932,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -982,7 +982,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -1001,7 +1001,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -1596,10 +1596,10 @@
 							<exportAntProperties>true</exportAntProperties>
 							<target>
 								<condition property="skip.copy-notice-and-license-files" value="true" else="false">
-									<equals arg1="${project.packaging}" arg2="pom" />
+									<equals arg1="${project.packaging}" arg2="pom"/>
 								</condition>
 								<condition property="skip.unpack-license-info" value="true" else="false">
-									<equals arg1="${project.packaging}" arg2="pom" />
+									<equals arg1="${project.packaging}" arg2="pom"/>
 								</condition>
 							</target>
 						</configuration>
