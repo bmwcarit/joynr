@@ -182,8 +182,8 @@ public class JoynrIntegrationBean {
                                                                          new AnnotationLiteral<Any>() {
                                                                          });
         Set<ProviderRegistrationSettingsFactory> providerSettingsFactories = new HashSet<>();
-        for (Bean providerQosFactoryBean : providerSettingsFactoryBeans) {
-            ProviderRegistrationSettingsFactory factory = (ProviderRegistrationSettingsFactory) providerQosFactoryBean.create(beanManager.createCreationalContext(providerQosFactoryBean));
+        for (Bean providerSettingsFactoryBean : providerSettingsFactoryBeans) {
+            ProviderRegistrationSettingsFactory factory = (ProviderRegistrationSettingsFactory) providerSettingsFactoryBean.create(beanManager.createCreationalContext(providerSettingsFactoryBean));
             providerSettingsFactories.add(factory);
         }
         return providerSettingsFactories;
