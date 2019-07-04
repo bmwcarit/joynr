@@ -405,16 +405,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
 
             if (globalAddress == null) {
-                Add1Deferred deferredForQueueDiscoveryEntry;
-                if (awaitGlobalRegistration == true) {
-                    deferredForQueueDiscoveryEntry = deferred;
-                } else {
-                    // use an independent DeferredVoid we do not wait for
-                    deferredForQueueDiscoveryEntry = new Add1Deferred();
-                }
                 queuedDiscoveryEntries.add(new QueuedDiscoveryEntry(discoveryEntry,
                                                                     gbids,
-                                                                    deferredForQueueDiscoveryEntry,
+                                                                    deferred,
                                                                     awaitGlobalRegistration));
                 globalAddressProvider.registerGlobalAddressesReadyListener(this);
                 return;
