@@ -87,7 +87,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     final private String domain = "com";
     final private String[] domains = { domain };
     final private String interfaceName = "interfaceName";
-    final private String[] validGbidsArray = { "joynrdefaultgbid" };
+    final private String[] validGbidsArray = { "joynrdefaultgbid", "gbid2", "gbid3" };
 
     @Inject
     private GlobalCapabilitiesDirectorySync subject;
