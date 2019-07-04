@@ -26,7 +26,7 @@ publishing {
     publications {
         jar(MavenPublication) {
             groupId = 'io.joynr.android'
-            artifactId = 'joynr-android'            
+            artifactId = 'libjoynr-android-websocket-runtime'            
 
             from project.components.java
         }
