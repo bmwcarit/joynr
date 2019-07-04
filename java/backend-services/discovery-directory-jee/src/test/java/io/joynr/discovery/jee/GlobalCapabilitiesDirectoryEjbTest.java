@@ -76,7 +76,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         return ShrinkWrap.create(WebArchive.class)
                          .addClasses(EntityManagerProducer.class,
                                      GlobalCapabilitiesDirectoryEjb.class,
-                                     JoynrConfigurationProvider.class)
+                                     TestJoynrConfigurationProvider.class)
                          .addAsLibraries(files)
                          .addAsResource("META-INF/persistence.xml")
                          .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"));
