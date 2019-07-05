@@ -4,6 +4,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ScheduledExecutorService;
 
+import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext;
+import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,6 +112,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                                               .applicationScheduler(Schedulers.from(scheduledExecutorService))
                                                                               .build();
             ResubscribeHandler resubscribeHandler = new ResubscribeHandler();
+            DisconnectedListener disconnectedListener = new DisconnectedListener();
             Mqtt3ClientBuilder clientBuilder = MqttClient.builder()
                                                          .useMqttVersion3()
                                                          .identifier(clientId)
@@ -117,6 +120,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                          .serverPort(serverUri.getPort())
                                                          .automaticReconnectWithDefaultConfig()
                                                          .addConnectedListener(resubscribeHandler)
+                                                         .addDisconnectedListener(disconnectedListener)
                                                          .executorConfig(executorConfig);
             if (serverUri.getScheme().equals("ssl") || serverUri.getScheme().equals("tls")) {
                 clientBuilder.sslWithDefaultConfig();
@@ -124,6 +128,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             Mqtt3RxClient client = clientBuilder.buildRx();
             HivemqMqttClient result = new HivemqMqttClient(client, keepAliveTimeSeconds, cleanSession);
             resubscribeHandler.setClient(result);
+            disconnectedListener.setClient(result);
             return result;
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + ownAddress.getBrokerUri(), e);
@@ -144,4 +149,20 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         }
 
     }
+
+    static class DisconnectedListener implements MqttClientDisconnectedListener {
+
+        private HivemqMqttClient client;
+
+        void setClient(HivemqMqttClient client) {
+            this.client = client;
+        }
+
+        @Override
+        public void onDisconnected(MqttClientDisconnectedContext context) {
+            logger.info("Hive MQTT Client {} disconnected: {}", client, context);
+        }
+
+    }
+
 }
