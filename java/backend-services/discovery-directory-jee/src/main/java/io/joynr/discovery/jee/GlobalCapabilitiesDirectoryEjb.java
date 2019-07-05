@@ -388,8 +388,10 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         default:
             break;
         }
+        int deletedCount;
+        long numberOfEntriesInAllGbids = 0;
         try {
-            int deletedCount = removeInternal(new String[]{ participantId }, gbids);
+            deletedCount = removeInternal(new String[]{ participantId }, gbids);
             if (deletedCount == 0) {
                 logger.warn("Error removing participantId {}. Participant is not registered in GBIDs {}.",
                             participantId,
@@ -397,14 +399,9 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
                 String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep " + "WHERE "
                         + "gdep.participantId = :participantId";
-                long numberOfEntriesInAllGbids = entityManager.createQuery(queryCountString, Long.class)
-                                                              .setParameter("participantId", participantId)
-                                                              .getSingleResult();
-                if (numberOfEntriesInAllGbids > 0) {
-                    throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
-                } else {
-                    throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-                }
+                numberOfEntriesInAllGbids = entityManager.createQuery(queryCountString, Long.class)
+                                                         .setParameter("participantId", participantId)
+                                                         .getSingleResult();
             } else {
                 logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
             }
@@ -414,6 +411,13 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                          Arrays.toString(gbids),
                          e);
             throw new ApplicationException(DiscoveryError.INTERNAL_ERROR);
+        }
+        if (deletedCount == 0) {
+            if (numberOfEntriesInAllGbids > 0) {
+                throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+            } else {
+                throw new ApplicationException(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+            }
         }
     }
 
