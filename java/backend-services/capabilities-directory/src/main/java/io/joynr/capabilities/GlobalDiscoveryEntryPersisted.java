@@ -18,8 +18,6 @@
  */
 package io.joynr.capabilities;
 
-import java.io.Serializable;
-
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -36,61 +34,8 @@ import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
-@SuppressWarnings("serial")
-class GdepKey implements Serializable {
-    String gbid;
-    String participantId;
-
-    public String getGbid() {
-        return gbid;
-    }
-
-    public void setGbid(String gbid) {
-        this.gbid = gbid;
-    }
-
-    public String getParticipantId() {
-        return participantId;
-    }
-
-    public void setParticipantId(String participantId) {
-        this.participantId = participantId;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((gbid == null) ? 0 : gbid.hashCode());
-        result = prime * result + ((participantId == null) ? 0 : participantId.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        GdepKey other = (GdepKey) obj;
-        if (gbid == null) {
-            if (other.gbid != null)
-                return false;
-        } else if (!gbid.equals(other.gbid))
-            return false;
-        if (participantId == null) {
-            if (other.participantId != null)
-                return false;
-        } else if (!participantId.equals(other.participantId))
-            return false;
-        return true;
-    }
-}
-
 @Entity
-@IdClass(GdepKey.class)
+@IdClass(GlobalDiscoveryEntryPersistedKey.class)
 @Table(name = "discovery_entries")
 @Access(AccessType.PROPERTY)
 public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
