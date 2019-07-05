@@ -1,9 +1,17 @@
 ### What is this and why it exists
 
-This is a bundle of libraries reconfigured to do not depend on aop google guice dependency framework.
-The guice aop version is not supported on [Android]( https://github.com/google/guice/wiki/AOP#limitations) and it's necessary to configure joynr libraries to use the **no_aop** guice version.
-It's possible to implement the workarounds implemented in this project under the app's sources however by implementing this we remove this impediment/blocking situation from the android developers and allow them to focus on their internal development tasks.
+This is libjoynr's Android WebSocket runtime for Android applications. It corresponds to its Java  
+counterpart and should simplify joynr Android development.
 
+### Relevant changes from Java version
+ 
+#### Guice without AOP
+
+We bundle the Java library dependencies but exclude the AOP from Google's Guice dependency  
+framework.
+
+The Guice AOP version [is not supported in Android](https://github.com/google/guice/wiki/AOP#limitations)  
+and thus it's necessary to configure joynr libraries to use the provided **no_aop** Guice version.
 
 ### How to compile and publish it under local maven repository
 
@@ -11,6 +19,7 @@ It's possible to implement the workarounds implemented in this project under the
 
 ### How to use it
 
-Add this line to build.gradle file and verify if you have mavenLocal() under your maven repositories list.
+Add this line to build.gradle file and verify if you have mavenLocal() under your maven   
+repositories list.
 
-<pre> implementation ('io.joynr.android:joynr-android:1.10.0-SNAPSHOT') </pre>
+<pre> implementation ('io.joynr.android:libjoynr-android-websocket-runtime:1.10.0-SNAPSHOT')</pre>
