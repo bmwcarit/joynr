@@ -58,15 +58,19 @@ public class HivemqMqttClient implements JoynrMqttClient {
         logger.info("Initialising MQTT client {} -> {}", this, client);
         if (!client.getConfig().getState().isConnected()) {
             while (!client.getConfig().getState().isConnected()) {
-                logger.info("Attempting to connect client {} ...", client);
+                logger.info("Attempting to connect client {} (clean session {}) ...", client, cleanSession);
                 Mqtt3Connect mqtt3Connect = Mqtt3Connect.builder()
                                                         .cleanSession(cleanSession)
                                                         .keepAlive(keepAliveTimeSeconds)
                                                         .build();
-                client.connect(mqtt3Connect)
-                      .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.", client, connAck))
-                      .doOnError(throwable -> logger.error("Unable to connect MQTT client {}.", client, throwable))
-                      .blockingGet();
+                try {
+                    client.connect(mqtt3Connect)
+                          .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.", client, connAck))
+                          .doOnError(throwable -> logger.error("Unable to connect MQTT client {}.", client, throwable))
+                          .blockingGet();
+                } catch (RuntimeException e) {
+                    logger.error("Exception while connecting MQTT client.", e);
+                }
             }
             logger.info("MQTT client {} connected.", client);
         } else {
@@ -78,10 +82,13 @@ public class HivemqMqttClient implements JoynrMqttClient {
                 setPublishConsumer(publish -> flowableEmitter.onNext(publish));
             }, BackpressureStrategy.BUFFER);
             logger.info("Setting up publishing pipeline using {}", publishFlowable);
-            client.publish(publishFlowable)
-                  .doOnNext(mqtt3PublishResult -> logger.info("Publish result: {}", mqtt3PublishResult))
-                  .doOnError(throwable -> logger.error("Publish encountered error.", throwable))
-                  .subscribe();
+            client.publish(publishFlowable).doOnNext(mqtt3PublishResult -> {
+                logger.info("Publish result: {}", mqtt3PublishResult);
+                mqtt3PublishResult.getError().ifPresent(e -> {
+                    logger.info("Retrying {}", mqtt3PublishResult.getPublish());
+                    publishConsumer.accept(mqtt3PublishResult.getPublish());
+                });
+            }).doOnError(throwable -> logger.error("Publish encountered error.", throwable)).subscribe();
         } else {
             logger.info("publishConsumer already set up for {} - skipping.", client);
         }
@@ -129,12 +136,11 @@ public class HivemqMqttClient implements JoynrMqttClient {
         Mqtt3Subscribe subscribe = Mqtt3Subscribe.builder().addSubscription(subscription).build();
         client.subscribeStream(subscribe)
               .doOnSingle(mqtt3SubAck -> logger.debug("Subscribed to {} with result {}", subscription, mqtt3SubAck))
-              .doOnNext(mqtt3Publish -> messagingSkeleton.transmit(mqtt3Publish.getPayloadAsBytes(),
-                                                                   throwable -> logger.error("Unable to transmit {}",
-                                                                                             mqtt3Publish,
-                                                                                             throwable)))
-              .doOnError(throwable -> logger.error("Error encountered for subscription {}.", subscription, throwable))
-              .subscribe();
+              .subscribe(mqtt3Publish -> messagingSkeleton.transmit(mqtt3Publish.getPayloadAsBytes(),
+                                                                    throwable -> logger.error("Unable to transmit {}",
+                                                                                              mqtt3Publish,
+                                                                                              throwable)),
+                         throwable -> logger.error("Error encountered for subscription {}.", subscription, throwable));
     }
 
     public void resubscribe() {
