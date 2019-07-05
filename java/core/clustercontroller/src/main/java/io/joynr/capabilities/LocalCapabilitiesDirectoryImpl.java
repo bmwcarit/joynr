@@ -203,7 +203,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private void mapGbidsToGlobalProviderParticipantId(String participantId, String[] gbids) {
-        List<String> newGbidsList = Arrays.asList(gbids);
+        List<String> newGbidsList = new ArrayList<String>(Arrays.asList(gbids));
         if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
             List<String> nonDuplicateOldGbids = globalProviderParticipantIdToGbidListMap.get(participantId)
                                                                                         .stream()
