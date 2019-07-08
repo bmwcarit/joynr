@@ -842,7 +842,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public Promise<Lookup3Deferred> lookup(String participantId) {
-        Promise<Lookup4Deferred> lookupPromise = lookup(participantId, new String[]{});
+        joynr.types.DiscoveryQos discoveryQos = new joynr.types.DiscoveryQos();
+        Promise<Lookup4Deferred> lookupPromise = lookup(participantId, discoveryQos, new String[]{});
         Lookup3Deferred lookup3Deferred = new Lookup3Deferred();
         lookupPromise.then(new PromiseListener() {
             @Override
@@ -868,7 +869,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
+    public Promise<Lookup4Deferred> lookup(String participantId,
+                                           joynr.types.DiscoveryQos discoveryQos,
+                                           String[] gbids) {
         Lookup4Deferred deferred = new Lookup4Deferred();
         DiscoveryError validationResult = validateGbids(gbids);
         if (validationResult != null) {
