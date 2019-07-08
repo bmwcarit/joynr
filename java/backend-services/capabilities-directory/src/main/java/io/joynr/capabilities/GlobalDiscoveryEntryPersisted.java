@@ -178,6 +178,17 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
         this.clusterControllerId = clusterControllerId;
     }
 
+    /**
+     * Stringifies the class
+     *
+     * @return stringified class content
+     */
+    @Override
+    public String toString() {
+        return "GlobalDiscoveryEntryPersisted [" + super.toString() + ", " + "providerQosPersisted="
+                + providerQosPersisted + ", clusterControllerId=" + clusterControllerId + ", gbid=" + gbid + "]";
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
