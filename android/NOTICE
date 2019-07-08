@@ -54,6 +54,7 @@ This project has dependencies to:
   HtmlUnit CSS Parser under Apache License, Version 2.0
   HtmlUnit NekoHtml under Apache License, Version 2.0
   ICU4J under ICU License
+  io.joynr.android:libjoynr-android-websocket-runtime under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-integration-tests under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0

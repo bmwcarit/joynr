@@ -52,22 +52,16 @@ This project has dependencies to:
   Apache HttpClient Mime under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
   Apache Log4j under The Apache Software License, Version 2.0
-  asm under BSD
   ASM Analysis under BSD
   ASM Commons under BSD
   ASM Core under BSD
   ASM Tree under BSD
   ASM Util under BSD
-  asm-analysis under BSD
-  asm-commons under BSD
-  asm-tree under BSD
   AutoValue under Apache 2.0
-  Backport of JSR 166 under Public Domain
   Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs under Bouncy Castle Licence
   Bouncy Castle Provider under Bouncy Castle Licence
   bundletool under The Apache Software License, Version 2.0
   Checker Qual under The MIT License
-  classworlds under BSD Style License
   com.android.tools.build.transform-api under The Apache Software License, Version 2.0
   Commands under Eclipse Public License
   Common Eclipse Runtime under Eclipse Public License
@@ -80,7 +74,6 @@ This project has dependencies to:
   Core Runtime under Eclipse Public License
   Data Binding Base Library under The Apache Software License, Version 2.0
   Data Binding Compiler Common under The Apache Software License, Version 2.0
-  Default Plexus Container under Apache License, Version 2.0
   Eclipse Content Mechanism under Eclipse Public License - v 2.0
   Eclipse Jobs Mechanism under Eclipse Public License - v 2.0
   Eclipse Preferences Mechanism under Eclipse Public License
@@ -103,18 +96,9 @@ This project has dependencies to:
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   IntelliJ IDEA Annotations under The Apache Software License, Version 2.0
-  io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
   io.joynr.tools.generator:java-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-gradle-plugin under The Apache Software License, Version 2.0
-  io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
-  io.joynr.tools.generator:joynr-generator-standalone under The Apache Software License, Version 2.0
-  io.joynr.tools.generator:js-generator under The Apache Software License, Version 2.0
-  io.joynr.tools:build-resources under The Apache Software License, Version 2.0
-  io.joynr.tools:generator under The Apache Software License, Version 2.0
-  io.joynr.tools:license-check under The Apache Software License, Version 2.0
-  io.joynr:basemodel under The Apache Software License, Version 2.0
-  io.joynr:tools under The Apache Software License, Version 2.0
   istack common utility code runtime under CDDL 1.1 or GPL2 w/ CPE
   J2ObjC Annotations under The Apache Software License, Version 2.0
   Java Architecture for XML Binding under CDDL 1.1 or GPL2 w/ CPE
@@ -135,18 +119,6 @@ This project has dependencies to:
   JUnit under Eclipse Public License 1.0
   juniversalchardet under Mozilla Public License 1.1 (MPL 1.1)
   kXML 2 is a small XML pull parser based on the common XML pull API under BSD style or Public Domain
-  Maven Artifact under The Apache Software License, Version 2.0
-  Maven Artifact Manager under The Apache Software License, Version 2.0
-  Maven Local Settings Model under The Apache Software License, Version 2.0
-  Maven Model under The Apache Software License, Version 2.0
-  Maven Plugin API under The Apache Software License, Version 2.0
-  Maven Plugin Registry Model under The Apache Software License, Version 2.0
-  Maven Profile Model under The Apache Software License, Version 2.0
-  Maven Project Builder under The Apache Software License, Version 2.0
-  Maven Repository Metadata Model under The Apache Software License, Version 2.0
-  Maven Wagon API under The Apache Software License, Version 2.0
-  Mockito under The MIT License
-  Objenesis under MIT License
   org.eclipse.emf.common under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore.xmi under The Eclipse Public License Version 1.0
@@ -159,8 +131,6 @@ This project has dependencies to:
   org.jetbrains.kotlin:kotlin-stdlib-jdk7 under The Apache License, Version 2.0
   org.jetbrains.kotlin:kotlin-stdlib-jdk8 under The Apache License, Version 2.0
   OSGi System Bundle under Eclipse Public License - v 2.0
-  Plexus Common Utilities under The Apache Software License, Version 2.0
-  Plexus Interpolation API under The Apache Software License, Version 2.0
   Protocol Buffers [Core] under 3-Clause BSD License
   Protocol Buffers [Util] under 3-Clause BSD License
   Reflections under WTFPL or The New BSD License

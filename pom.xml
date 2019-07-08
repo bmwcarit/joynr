@@ -74,6 +74,12 @@
 			<modules>
 				<module>android</module>
 			</modules>
+			<repositories>
+				<repository>
+					<id>google-maven</id>
+					<url>https://maven.google.com/</url>
+				</repository>
+			</repositories>			
 		</profile>
 		<profile>
 			<!-- see comments of profile deploy-artifacts-to-sonatype -->
@@ -109,6 +115,7 @@
 				</property>
 			</activation>
 			<properties>
+				<sonatype.repo.url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</sonatype.repo.url>
 				<!--
 					This property will skip the execution of the maven-assembly-plugin during
 					deployment to Sonatype repositories. The plugin builds jar-with-dependencies
@@ -143,7 +150,7 @@
 				<repository>
 					<id>sonatype-nexus-staging</id>
 					<name>Nexus Release Repository</name>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+					<url>${sonatype.repo.url}</url>
 				</repository>
 			</distributionManagement>
 			<build>

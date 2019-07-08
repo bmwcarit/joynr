@@ -16,6 +16,9 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
+  [net.sf.proguard] proguard-base under GNU General Public License, Version 2
+  [net.sf.proguard] proguard-gradle under GNU General Public License, Version 2
+  aapt2-proto under The Apache Software License, Version 2.0
   Accessibility Test Framework under Apache License, Version 2.0
   Aether API under Eclipse Public License, Version 1.0
   Aether Connector Basic under Eclipse Public License, Version 1.0
@@ -24,13 +27,39 @@ This project has dependencies to:
   Aether Transport Wagon under Eclipse Public License, Version 1.0
   Aether Utilities under Eclipse Public License, Version 1.0
   android under Apache License, Version 2.0
+  Android APK Zip Library under The Apache Software License, Version 2.0
+  Android Builder library under The Apache Software License, Version 2.0
+  Android Builder Model library under The Apache Software License, Version 2.0
+  Android Builder Test API library under The Apache Software License, Version 2.0
+  Android Gradle API under The Apache Software License, Version 2.0
+  Android Jetifier Core under The Apache Software License, Version 2.0
+  Android Jetifier Processor under The Apache Software License, Version 2.0
+  Android Tools Analytics Crash Library under The Apache Software License, Version 2.0
+  Android Tools Analytics Protobufs under The Apache Software License, Version 2.0
+  Android Tools Analytics Shared Library under The Apache Software License, Version 2.0
+  Android Tools Analytics Tracker under The Apache Software License, Version 2.0
+  Android Tools Annotations library under The Apache Software License, Version 2.0
+  Android Tools apksig library under The Apache Software License, Version 2.0
+  Android Tools common library under The Apache Software License, Version 2.0
+  Android Tools ddmlib under The Apache Software License, Version 2.0
+  Android Tools dvlib under The Apache Software License, Version 2.0
+  Android Tools layoutlib-api under The Apache Software License, Version 2.0
+  Android Tools Lint Gradle Integration API under The Apache Software License, Version 2.0
+  Android Tools Manifest Merger library under The Apache Software License, Version 2.0
+  Android Tools repository under The Apache Software License, Version 2.0
+  Android Tools sdk-common library under The Apache Software License, Version 2.0
+  Android Tools sdklib under The Apache Software License, Version 2.0
+  Animal Sniffer Annotations under MIT license
   ant-launcher under Apache License, Version 2.0
   Antlr 3 Runtime under BSD License
+  ANTLR 4 Tool under The BSD License
   AntLR Parser Generator under BSD License
+  ANTLR StringTemplate under BSD licence
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
   Apache Commons CLI under Apache License, Version 2.0
   Apache Commons Collections under Apache License, Version 2.0
+  Apache Commons Compress under Apache License, Version 2.0
   Apache Commons IO under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
   Apache Commons Logging under The Apache Software License, Version 2.0
@@ -86,14 +115,19 @@ This project has dependencies to:
   atmosphere-guice under Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
+  AutoValue under Apache 2.0
   Backport of JSR 166 under Public Domain
   Bean Validation API under Apache License, Version 2.0
+  Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs under Bouncy Castle Licence
   Bouncy Castle Provider under Bouncy Castle Licence
+  bundletool under The Apache Software License, Version 2.0
   CDI APIs under Apache License, Version 2.0
+  Checker Qual under The MIT License
   classworlds under BSD Style License
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-standalone under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
+  com.android.tools.build.transform-api under The Apache Software License, Version 2.0
   Commands under Eclipse Public License
   Common Annotations 1.1 API under lgpl
   Common Eclipse Runtime under Eclipse Public License
@@ -108,6 +142,8 @@ This project has dependencies to:
   Core Hibernate O/RM functionality under GNU Lesser General Public License
   Core Resource Management under Eclipse Public License - v 2.0
   Core Runtime under Eclipse Public License
+  Data Binding Base Library under The Apache Software License, Version 2.0
+  Data Binding Compiler Common under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
   dom4j under BSD License
@@ -121,9 +157,13 @@ This project has dependencies to:
   EJB 3.1 API under lgpl
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
   Equinox Application Container under Eclipse Public License - v 2.0
+  error-prone annotations under Apache 2.0
   Expression Language under Eclipse Public License
   Expression Language 2.2 API under lgpl
+  Extended StAX API under Dual license consisting of the CDDL v1.1 and GPL v2
   Extension Registry Support under Eclipse Public License - v 2.0
+  fastinfoset under Apache License, Version 2.0
+  fastutil under Apache License, Version 2.0
   FindBugs-Annotations under GNU Lesser Public License
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   FlatBuffers Java API under Apache License V2.0
@@ -133,6 +173,7 @@ This project has dependencies to:
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   graceful-shutdown-test-backend-services under The Apache Software License, Version 2.0
+  Gradle Plug-in for Android under The Apache Software License, Version 2.0
   Groovy under The Apache Software License, Version 2.0
   Gson under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
@@ -149,10 +190,12 @@ This project has dependencies to:
   HttpMime under Apache License
   ICU4J under ICU License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
+  IntelliJ IDEA Annotations under The Apache Software License, Version 2.0
   inter-language-test-jee-api under The Apache Software License, Version 2.0
   inter-language-test-jee-consumer under The Apache Software License, Version 2.0
   inter-language-test-jee-provider under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
+  io.joynr.android:libjoynr-android-websocket-runtime under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-integration-tests under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0
   io.joynr.cpp:libjoynr under The Apache Software License, Version 2.0
@@ -263,6 +306,7 @@ This project has dependencies to:
   io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
   io.joynr.tools.generator:java-generator under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:joynr-generator-gradle-plugin under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-standalone under The Apache Software License, Version 2.0
   io.joynr.tools.generator:js-generator under The Apache Software License, Version 2.0
@@ -278,6 +322,8 @@ This project has dependencies to:
   io.joynr:joynr under The Apache Software License, Version 2.0
   io.joynr:tests under The Apache Software License, Version 2.0
   io.joynr:tools under The Apache Software License, Version 2.0
+  istack common utility code runtime under CDDL 1.1 or GPL2 w/ CPE
+  J2ObjC Annotations under The Apache Software License, Version 2.0
   JACC 1.4 API under lgpl
   Jackson under The Apache Software License, Version 2.0
   Jackson module: JAXB Annotations under The Apache Software License, Version 2.0
@@ -291,6 +337,7 @@ This project has dependencies to:
   Java API for XML Registries 1.0 under lgpl
   Java API for XML Web Services 2.2 under lgpl
   Java API for XML-Based RPC (JAX-RPC) 1.1 under lgpl
+  Java Architecture for XML Binding under CDDL 1.1 or GPL2 w/ CPE
   Java Architecture for XML Binding 2.2 under lgpl
   Java Compiler Apt under Eclipse Public License
   Java Compiler Tool Support under Eclipse Public License
@@ -300,10 +347,13 @@ This project has dependencies to:
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
+  JavaBeans Activation Framework under CDDL/GPLv2+CE
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaEE Application Deployment 1.2 API under lgpl
   JavaMail API under CDDL or GPLv2+CE
+  JavaPoet under Apache 2.0
   Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
+  JavaWriter under Apache 2.0
   javax.annotation API under CDDL + GPLv2 with classpath exception
   javax.inject under The Apache Software License, Version 2.0
   javax.inject:1 as OSGi bundle under CDDL + GPLv2 with classpath exception
@@ -311,10 +361,13 @@ This project has dependencies to:
   javax.servlet API v.3.0 under CDDL + GPLv2 with classpath exception
   javax.ws.rs-api under CDDL 1.1 or GPL2 w/ CPE
   JAX-RS Core API under Apache License, Version 2.0
+  JAXB Core under CDDL+GPL License
+  JAXB Runtime under CDDL+GPL License
   JBoss Java Authentication SPI for Containers 1.0 API under lgpl
   JBoss Java EE 6.0 API Aggregate under lgpl
   JBoss Java Server Pages 2.2 API under lgpl
   JBoss Logging 3 under Apache License, version 2.0
+  JDOM under Similar to Apache License but with the acknowledgment clause removed
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
   jersey-core-client under CDDL+GPL License
   jersey-core-common under CDDL+GPL License
@@ -338,8 +391,10 @@ This project has dependencies to:
   Jetty :: Websocket :: Server under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Websocket :: Servlet Interface under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: XML utilities under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
+  Jimfs under The Apache Software License, Version 2.0
   JMS 1.1 under The Apache Software License, Version 2.0
   JMS 1.1 API under lgpl
+  JOpt Simple under The MIT License
   JPA 2.0 API under Sun Binary Code License
   JSON (JavaScript Object Notation) under provided without support or warranty
   json-path under Apache 2.0
@@ -349,6 +404,8 @@ This project has dependencies to:
   jsr311-api under CDDL License
   JTA 1.1 under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
+  juniversalchardet under Mozilla Public License 1.1 (MPL 1.1)
+  kXML 2 is a small XML pull parser based on the common XML pull API under BSD style or Public Domain
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
@@ -388,6 +445,11 @@ This project has dependencies to:
   org.franca.core under Eclipse Public License v1.0
   org.franca.core.dsl under Eclipse Public License v1.0
   org.franca.deploymodel.dsl under Eclipse Public License v1.0
+  org.jetbrains.kotlin:kotlin-reflect under The Apache License, Version 2.0
+  org.jetbrains.kotlin:kotlin-stdlib under The Apache License, Version 2.0
+  org.jetbrains.kotlin:kotlin-stdlib-common under The Apache License, Version 2.0
+  org.jetbrains.kotlin:kotlin-stdlib-jdk7 under The Apache License, Version 2.0
+  org.jetbrains.kotlin:kotlin-stdlib-jdk8 under The Apache License, Version 2.0
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
   OSGi System Bundle under Eclipse Public License - v 2.0
   Payara Embedded-All under CDDL + GPLv2 with classpath exception
@@ -397,6 +459,8 @@ This project has dependencies to:
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Plexus Security Dispatcher Component under Apache Public License 2.0
   PostgreSQL JDBC Driver - JDBC 4.2 under BSD-2-Clause
+  Protocol Buffers [Core] under 3-Clause BSD License
+  Protocol Buffers [Util] under 3-Clause BSD License
   radio-jee-backend-services under The Apache Software License, Version 2.0
   Reflections under WTFPL or The New BSD License
   REST Assured under Apache 2.0
@@ -430,6 +494,7 @@ This project has dependencies to:
   TagSoup under Apache License 2.0
   Text under Eclipse Public License - v 2.0
   Transaction 1.1 API under lgpl
+  TXW2 Runtime under CDDL+GPL License
   vtd-xml under GNU GENERAL PUBLIC LICENSE Version 2, June 1991
   Xalan Java under The Apache Software License, Version 2.0
   Xalan Java Serializer under The Apache Software License, Version 2.0
