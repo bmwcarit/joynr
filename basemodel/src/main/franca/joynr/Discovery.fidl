@@ -209,6 +209,11 @@ interface Discovery {
 			String participantId
 
 			<**
+				@description: the QoS used for the lookup
+			**>
+			DiscoveryQos discoveryQos
+
+			<**
 				@description: Global Backend IDs for which providers should be returned. Only
 					Providers from the provided Global Backends will be returned.
 			**>
