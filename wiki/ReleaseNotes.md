@@ -11,6 +11,13 @@ the versioning scheme [here](JoynrVersioning.md).
   Usage of the class is documented in the [Java documentation](java.md).
   Previous interfaces of the registerProvider() method are still available, but are now
   considered deprecated.
+* **[Java, JEE]** Global discovery and registration now works as documented:
+  * By default, the communication with GlobalCapabilitiesDirectory takes place over the default
+    (first configured) backend connection, i.e. the connection identified by the first GBID
+    configured at the cluster controller (`PROPERTY_GBIDS`).
+  * If GBID(s) are provided to `ProxyBuilder` / `ServiceLocator` or `ProviderRegistrar` /
+    `ProviderRegistrationSettingsFactory`, the first one will be used to select the connection for
+    the communication with GlobalCapabilitiesDirectory.
 
 ## Other changes
 None.
@@ -34,7 +41,7 @@ None.
   multiple implementations of this interface in order to customize how joynr registers a provider.
   See the Javadoc of the interface as well as the [JEE documentation](jee.md) for more details.
 * **[Java]** Add setGbids to ProxyBuilder.
-* **[Java]** Countrary to the documentation, the default proxy for GlobalCapabilitiesDirectory will be picked.
+* **[Java]** Contrary to the documentation, the default proxy for GlobalCapabilitiesDirectory will be picked.
 
 ## Other changes
 None. 
