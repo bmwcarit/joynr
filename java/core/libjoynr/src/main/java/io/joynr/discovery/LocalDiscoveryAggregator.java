@@ -238,14 +238,15 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                 callback.onSuccess(result);
             }
         };
-        return lookup(callbackWithModeledError, participantId, new String[0]);
+        return lookup(callbackWithModeledError, participantId, new DiscoveryQos(), new String[0]);
     }
 
     @Override
     public Future<DiscoveryEntryWithMetaInfo> lookup(CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError> callback,
                                                      String participantId,
+                                                     DiscoveryQos discoveryQos,
                                                      String[] gbids) {
-        return getDefaultDiscoveryProxy().lookup(callback, participantId, gbids);
+        return getDefaultDiscoveryProxy().lookup(callback, participantId, new DiscoveryQos(), gbids);
     }
 
     @Override

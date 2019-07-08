@@ -180,7 +180,9 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     }
 
     @Override
-    public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
+    public Promise<Lookup4Deferred> lookup(String participantId,
+                                           joynr.types.DiscoveryQos discoveryQos,
+                                           String[] gbids) {
         // TODO
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
