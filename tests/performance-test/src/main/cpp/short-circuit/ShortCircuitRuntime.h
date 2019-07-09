@@ -185,6 +185,7 @@ public:
 
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
             const std::string& participantId,
+            const joynr::types::DiscoveryQos& discoveryQos,
             const std::vector<std::string>& gbids,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
                     nullptr,
@@ -195,6 +196,7 @@ public:
             boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override
     {
         std::ignore = participantId;
+        std::ignore = discoveryQos;
         std::ignore = gbids;
         std::ignore = onSuccess;
         std::ignore = onApplicationError;

@@ -131,6 +131,7 @@ public:
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
             const std::string& participantId,
+            const joynr::types::DiscoveryQos& discoveryQos,
             const std::vector<std::string>& gbids,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess =
                     nullptr,

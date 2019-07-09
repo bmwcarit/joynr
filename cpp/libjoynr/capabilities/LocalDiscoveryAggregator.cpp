@@ -190,6 +190,7 @@ std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscovery
 std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>
 LocalDiscoveryAggregator::lookupAsync(
         const std::string& participantId,
+        const joynr::types::DiscoveryQos& discoveryQos,
         const std::vector<std::string>& gbids,
         std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onApplicationError,
@@ -197,6 +198,7 @@ LocalDiscoveryAggregator::lookupAsync(
         boost::optional<joynr::MessagingQos> qos) noexcept
 {
     std::ignore = participantId;
+    std::ignore = discoveryQos;
     std::ignore = gbids;
     std::ignore = onSuccess;
     std::ignore = onApplicationError;
