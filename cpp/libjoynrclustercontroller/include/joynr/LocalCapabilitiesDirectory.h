@@ -191,6 +191,7 @@ public:
     // inherited method from joynr::system::DiscoveryProvider
     void lookup(
             const std::string& participantId,
+            const joynr::types::DiscoveryQos& discoveryQos,
             const std::vector<std::string>& gbids,
             std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)

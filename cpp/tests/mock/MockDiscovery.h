@@ -68,11 +68,12 @@ public:
             )
     );
 
-    MOCK_METHOD4(
+    MOCK_METHOD5(
             lookup,
             void(
                 joynr::types::DiscoveryEntryWithMetaInfo& result,
                 const std::string& participantId,
+                const joynr::types::DiscoveryQos& discoveryQos,
                 const std::vector<std::string>& gbids,
                 boost::optional<joynr::MessagingQos> qos
             )
@@ -226,6 +227,7 @@ public:
     );
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
                 const std::string& participantId,
+                const joynr::types::DiscoveryQos& discoveryQos,
                 const std::vector<std::string>& gbids,
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)>
                         onSuccess,
@@ -236,12 +238,13 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             ) noexcept override
     {
-        return lookupAsyncMock(participantId, gbids, std::move(onSuccess), std::move(onApplicationError), std::move(onRuntimeError), std::move(qos));
+        return lookupAsyncMock(participantId, discoveryQos, gbids, std::move(onSuccess), std::move(onApplicationError), std::move(onRuntimeError), std::move(qos));
     }
-    MOCK_METHOD6(
+    MOCK_METHOD7(
             lookupAsyncMock,
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>(
                 const std::string& participantId,
+                const joynr::types::DiscoveryQos& discoveryQos,
                 const std::vector<std::string>& gbids,
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)>
                         onSuccess,
