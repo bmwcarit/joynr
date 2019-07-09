@@ -27,5 +27,6 @@ module.exports = {
     collectCoverageFrom: ["src/main/js/**/*.ts", "!src/**/*.d.ts"],
     coveragePathIgnorePatterns: ["/src/main/js/generated", "/node_modules"],
     coverageReporters: ["cobertura", "lcov"],
-    modulePathIgnorePatterns: ["target"]
+    modulePathIgnorePatterns: ["target"],
+    testRunner: "jest-circus/runner"
 };

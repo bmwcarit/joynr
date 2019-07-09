@@ -23,7 +23,8 @@
     "jasmine": "3.2.0",
     "jasmine-core": "3.2.1",
     "jasmine-reporters": "2.1.1",
-    "jest": "24.7.1",
+    "jest": "24.8.0",
+    "jest-circus": "24.8.0",
     "jest-junit": "6.3.0",
     "joynr": "file:./src/main/js",
     "jsdoc": "3.5.5",
@@ -84,7 +85,7 @@
     "ts:check": "tsc --noEmit",
     "ts:test": "jest --config jest.config.js --silent",
     "ts:test:ci": "jest --config jest.config.js --coverage --no-cache",
-    "ts:test:sit": "jest --config jest.config.integration.js",
+    "ts:test:sit": "jest --config jest.config.integration.js -i",
     "ts:clean": "./scripts/ts-clean.js all",
     "ts:clean:test": "./scripts/ts-clean.js test",
     "ts:clean:main": "./scripts/ts-clean.js main"
