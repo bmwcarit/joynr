@@ -1,10 +1,22 @@
 package io.joynr.messaging.mqtt.hivemq.client;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.HashMap;
 
+import com.hivemq.client.mqtt.MqttClientSslConfigBuilder;
 import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext;
 import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedListener;
 import org.slf4j.Logger;
@@ -29,6 +41,9 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.reactivex.schedulers.Schedulers;
 import joynr.system.RoutingTypes.MqttAddress;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
+
 /**
  * This factory class is responsible for producing joynr MQTT clients using the HiveMQ MQTT Client library.
  * The HiveMQ MQTT Client library is explicitly intended for use in backend applications, so using it on
@@ -38,7 +53,6 @@ import joynr.system.RoutingTypes.MqttAddress;
  * feature have been completed in HiveMQ MQTT Client and we want to make this integration production ready:
  *
  * TODO
- * - Add ability to configure SSL setup (trust store / key store etc)
  * - When persistent session configuration exists, then enable configuration thereof
  * - Document usage and configuration of HiveMQ MQTT Client variant
  */
@@ -57,6 +71,30 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap;
     private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
     private final boolean cleanSession;
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
+    private String keyStorePath;
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH)
+    private String trustStorePath;
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_TYPE)
+    private String keyStoreType;
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE)
+    private String trustStoreType;
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD)
+    private String keyStorePWD;
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD)
+    private String trustStorePWD;
 
     @Inject
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
@@ -133,6 +171,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                          .executorConfig(executorConfig);
             if (serverUri.getScheme().equals("ssl") || serverUri.getScheme().equals("tls")) {
                 clientBuilder.sslWithDefaultConfig();
+                setupSslConfig(clientBuilder);
             }
             Mqtt3RxClient client = clientBuilder.buildRx();
             HivemqMqttClient result = new HivemqMqttClient(client,
@@ -144,6 +183,73 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + ownAddress.getBrokerUri(), e);
         }
+    }
+
+    private void setupSslConfig(Mqtt3ClientBuilder clientBuilder) {
+        MqttClientSslConfigBuilder.Nested<? extends Mqtt3ClientBuilder> sslConfig = clientBuilder.sslConfig();
+        if (trustStorePath != null && trustStorePWD != null) {
+            KeyStore trustStore = getKeystore(trustStorePath, trustStorePWD, trustStoreType);
+            logger.debug("Setting up trust manager with {} / {} (password omitted)", trustStorePath, trustStoreType);
+            if (trustStore != null) {
+                try {
+                    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    trustManagerFactory.init(trustStore);
+                    sslConfig.trustManagerFactory(trustManagerFactory);
+                } catch (NoSuchAlgorithmException | KeyStoreException e) {
+                    logger.error("Unable to create trust store factory.", e);
+                }
+            }
+        }
+        if (keyStorePath != null && keyStorePWD != null) {
+            logger.debug("Setting up key manager with {} / {} (password omitted)", keyStorePath, keyStoreType);
+            KeyStore keyStore = getKeystore(keyStorePath, keyStorePWD, keyStoreType);
+            if (keyStore != null) {
+                try {
+                    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                    keyManagerFactory.init(keyStore, keyStorePWD.toCharArray());
+                    sslConfig.keyManagerFactory(keyManagerFactory);
+                } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException e) {
+                    logger.error("Unable to create key manager factory.", e);
+                }
+            }
+        }
+        sslConfig.applySslConfig();
+    }
+
+    private KeyStore getKeystore(String storePath, String storePassword, String storeType) {
+        try {
+            KeyStore keyStore = KeyStore.getInstance(storeType == null ? KeyStore.getDefaultType() : storeType);
+            try (InputStream inputStream = getInputStream(storePath)) {
+                keyStore.load(inputStream, storePassword.toCharArray());
+            }
+            return keyStore;
+        } catch (SecurityException | KeyStoreException | IOException | NoSuchAlgorithmException
+                | CertificateException e) {
+            logger.error("Unable to load keystore from {} / {} (password omitted)", storePath, storeType, e);
+        }
+        return null;
+    }
+
+    private InputStream getInputStream(String path) throws IOException {
+        InputStream result = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+        if (result == null) {
+            ClassLoader.getSystemClassLoader().getResourceAsStream(path);
+        }
+        if (result == null) {
+            File file = new File(path);
+            if (file.exists()) {
+                result = new FileInputStream(file);
+            }
+        }
+        if (result == null) {
+            try {
+                URL url = new URL(path);
+                result = url.openStream();
+            } catch (MalformedURLException e) {
+                logger.debug("Attempt to interpret {} as URL failed. Ignoring.", path);
+            }
+        }
+        return result;
     }
 
     static class ResubscribeHandler implements MqttClientConnectedListener {
