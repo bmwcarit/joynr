@@ -71,6 +71,9 @@ class TypeRegistry {
      */
     public addType(typeConstructor: TypeConstructor): TypeRegistry {
         const typeName = typeConstructor._typeName;
+        if (typeName === undefined) {
+            throw new Error(`Trying to add invalid type: ${typeConstructor}`);
+        }
         if (typeConstructor.prototype instanceof JoynrEnum) {
             this.enumRegistry[typeName] = typeConstructor;
         }
