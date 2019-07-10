@@ -598,6 +598,17 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private boolean isEntryForGbids(GlobalDiscoveryEntry entry, Set<String> gbidSet) {
+        if (entry == null) {
+            return false;
+        }
+        List<String> entryBackends = globalProviderParticipantIdToGbidListMap.get(entry.getParticipantId());
+        if (entryBackends != null) {
+            // local provider which is globally registered
+            if (gbidSet.stream().anyMatch(gbid -> entryBackends.contains(gbid))) {
+                return true;
+            }
+        }
+        // globally looked up provider in wrong backend
         Address entryAddress;
         try {
             entryAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(entry);
@@ -609,8 +620,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             if (!gbidSet.contains(((MqttAddress) entryAddress).getBrokerUri())) {
                 return false;
             }
-        } else if (entry == null) {
-            return false;
         }
         // return true for all other address types
         return true;
@@ -621,14 +630,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
         Set<String> gbidSet = new HashSet<>(Arrays.asList(gbids));
         for (GlobalDiscoveryEntry entry : globalEntries) {
-            List<String> entryBackends = globalProviderParticipantIdToGbidListMap.get(entry.getParticipantId());
-            if (entryBackends != null) {
-                // local provider which is globally registered
-                if (gbidSet.stream().noneMatch(gbid -> entryBackends.contains(gbid))) {
-                    continue;
-                }
-            } else if (!isEntryForGbids(entry, gbidSet)) {
-                // globally looked up provider in wrong backend
+            if (!isEntryForGbids(entry, gbidSet)) {
                 continue;
             }
             result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));

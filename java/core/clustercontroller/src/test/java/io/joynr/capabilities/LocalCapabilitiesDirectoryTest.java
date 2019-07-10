@@ -1387,6 +1387,55 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test
+    public void testLookupByParticipantId_globalOnly_filtersLocalCachedEntriesByGbids() throws InterruptedException {
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
+
+        DiscoveryEntry localEntry = new DiscoveryEntry(new Version(47, 11),
+                                                       "domain",
+                                                       "interfaceName",
+                                                       "participantId1",
+                                                       new ProviderQos(),
+                                                       System.currentTimeMillis(),
+                                                       expiryDateMs,
+                                                       publicKeyId);
+        GlobalDiscoveryEntry cachedEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(localEntry,
+                                                                                               globalAddressWithoutGbid);
+        DiscoveryEntryWithMetaInfo expectedEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                       cachedEntry);
+
+        doReturn(cachedEntry).when(globalDiscoveryEntryCacheMock).lookup(eq(expectedEntry.getParticipantId()),
+                                                                         eq(Long.MAX_VALUE));
+
+        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(localEntry, true, knownGbids);
+        checkPromiseSuccess(promiseAdd, "add failed");
+
+        Promise<Lookup4Deferred> promiseLookup1 = localCapabilitiesDirectory.lookup(expectedEntry.getParticipantId(),
+                                                                                    discoveryQos,
+                                                                                    new String[]{ knownGbids[1] });
+
+        verify(globalDiscoveryEntryCacheMock).lookup(eq(expectedEntry.getParticipantId()), eq(Long.MAX_VALUE));
+        DiscoveryEntryWithMetaInfo result1 = (DiscoveryEntryWithMetaInfo) checkPromiseSuccess(promiseLookup1,
+                                                                                              "lookup failed")[0];
+        assertEquals(expectedEntry, result1);
+
+        Promise<Lookup4Deferred> promiseLookup2 = localCapabilitiesDirectory.lookup(expectedEntry.getParticipantId(),
+                                                                                    discoveryQos,
+                                                                                    new String[]{ knownGbids[0] });
+
+        DiscoveryEntryWithMetaInfo result2 = (DiscoveryEntryWithMetaInfo) checkPromiseSuccess(promiseLookup2,
+                                                                                              "lookup failed")[0];
+        assertEquals(expectedEntry, result2);
+
+        Promise<Lookup4Deferred> promiseLookup3 = localCapabilitiesDirectory.lookup(expectedEntry.getParticipantId(),
+                                                                                    discoveryQos,
+                                                                                    knownGbids);
+
+        DiscoveryEntryWithMetaInfo result3 = (DiscoveryEntryWithMetaInfo) checkPromiseSuccess(promiseLookup3,
+                                                                                              "lookup failed")[0];
+        assertEquals(expectedEntry, result3);
+    }
+
+    @Test
     public void testLookupMultipleDomainsLocalOnly() throws InterruptedException {
         String[] domains = new String[]{ "domain1", "domain2" };
         String interfaceName = "interface1";
