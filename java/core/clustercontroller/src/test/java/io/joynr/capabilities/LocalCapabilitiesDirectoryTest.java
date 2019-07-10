@@ -325,28 +325,12 @@ public class LocalCapabilitiesDirectoryTest {
         checkCallToGlobalCapabilitiesDirectoryClientAndCache(discoveryEntry, expectedGbids);
     }
 
-    private static void checkDiscoveryError(Promise<Add1Deferred> promise, DiscoveryError expectedDiscoveryError) {
-        assertEquals(promise.isRejected(), true);
-        promise.then(new PromiseListener() {
-            @Override
-            public void onFulfillment(Object... values) {
-                fail("localCapabilitiesDirectory.add succeeded unexpectedly ");
-            }
-
-            @Override
-            public void onRejection(JoynrException error) {
-                assertTrue(error instanceof ApplicationException);
-                assertTrue(((ApplicationException) error).getError() == expectedDiscoveryError);
-            }
-        });
-    }
-
     @Test(timeout = 1000)
     public void addCapabilityWithNullGbids() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = null;
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
     }
 
     @Test(timeout = 1000)
@@ -354,7 +338,7 @@ public class LocalCapabilitiesDirectoryTest {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0], null };
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
     }
 
     @Test(timeout = 1000)
@@ -362,7 +346,7 @@ public class LocalCapabilitiesDirectoryTest {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0], "" };
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
     }
 
     @Test(timeout = 1000)
@@ -370,7 +354,7 @@ public class LocalCapabilitiesDirectoryTest {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0], knownGbids[0] };
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkDiscoveryError(promise, DiscoveryError.INVALID_GBID);
+        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
     }
 
     @Test(timeout = 1000)
@@ -378,7 +362,7 @@ public class LocalCapabilitiesDirectoryTest {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0], "unknownGbid" };
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkDiscoveryError(promise, DiscoveryError.UNKNOWN_GBID);
+        checkPromiseError(promise, DiscoveryError.UNKNOWN_GBID);
     }
 
     @Test(timeout = 2000)
@@ -509,6 +493,94 @@ public class LocalCapabilitiesDirectoryTest {
                                                       Matchers.<String[]> any());
         checkPromiseSuccess(promise, "add failed");
 
+    }
+
+    private void testAddWithGbidsIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
+        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                  .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                       eq(globalDiscoveryEntry),
+                                                                       Matchers.<String[]> any());
+
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids = new String[]{ knownGbids[0] };
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
+        checkPromiseError(promise, expectedError);
+    }
+
+    private void testAddIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
+        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                  .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                       eq(globalDiscoveryEntry),
+                                                                       Matchers.<String[]> any());
+
+        final boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+        checkPromiseErrorInProviderRuntimeException(promise, expectedError);
+    }
+
+    @Test
+    public void testAddWithGbidsIsProperlyRejected_invalidGbid() throws InterruptedException {
+        testAddWithGbidsIsProperlyRejected(DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testAddWithGbidsIsProperlyRejected_unknownGbid() throws InterruptedException {
+        testAddWithGbidsIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testAddWithGbidsIsProperlyRejected_internalError() throws InterruptedException {
+        testAddWithGbidsIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
+    }
+
+    @Test
+    public void testAddIsProperlyRejected_invalidGbid() throws InterruptedException {
+        testAddIsProperlyRejected(DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testAddIsProperlyRejected_unknownGbid() throws InterruptedException {
+        testAddIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testAddIsProperlyRejected_internalError() throws InterruptedException {
+        testAddIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
+    }
+
+    private void testAddWithDiscoveryError(String[] gbids, DiscoveryError expectedError) throws InterruptedException {
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, true, gbids);
+        checkPromiseError(promise, expectedError);
+    }
+
+    @Test
+    public void testAddWithGbids_unknownGbid() throws InterruptedException {
+        String[] gbids = new String[]{ knownGbids[1], "unknown" };
+        testAddWithDiscoveryError(gbids, DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testAddWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
+        String[] gbids = new String[]{ knownGbids[1], "" };
+        testAddWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testAddWithGbids_invalidGbid_duplicateGbid() throws InterruptedException {
+        String[] gbids = new String[]{ knownGbids[1], knownGbids[1] };
+        testAddWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testAddWithGbids_invalidGbid_nullGbid() throws InterruptedException {
+        String[] gbids = new String[]{ knownGbids[1], null };
+        testAddWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testAddWithGbids_invalidGbid_nullGbidArray() throws InterruptedException {
+        String[] gbids = null;
+        testAddWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
     @Test
@@ -661,6 +733,58 @@ public class LocalCapabilitiesDirectoryTest {
                             any(GlobalDiscoveryEntry.class),
                             Matchers.<String[]> any());
         verify(localDiscoveryEntryStoreMock, times(1)).add(eq(discoveryEntry));
+    }
+
+    @Test
+    public void testAddToAllIsProperlyRejected_exception() throws InterruptedException {
+        doAnswer(createAddAnswerWithException()).when(globalCapabilitiesDirectoryClient)
+                                                .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                     eq(globalDiscoveryEntry),
+                                                     Matchers.<String[]> any());
+
+        Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
+
+        checkPromiseException(promise);
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(discoveryEntry.getParticipantId()));
+    }
+
+    @Test
+    public void testAddToAllIsProperlyRejected_internalError() throws InterruptedException {
+        doAnswer(createAddAnswerWithDiscoveryError(DiscoveryError.INTERNAL_ERROR)).when(globalCapabilitiesDirectoryClient)
+                                                                                  .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                                       eq(globalDiscoveryEntry),
+                                                                                       Matchers.<String[]> any());
+
+        Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
+
+        checkPromiseError(promise, DiscoveryError.INTERNAL_ERROR);
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(globalDiscoveryEntry.getParticipantId()));
+    }
+
+    @Test
+    public void testAddToAllIsProperlyRejected_invalidGbid() throws InterruptedException {
+        doAnswer(createAddAnswerWithDiscoveryError(DiscoveryError.INVALID_GBID)).when(globalCapabilitiesDirectoryClient)
+                                                                                .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                                     eq(globalDiscoveryEntry),
+                                                                                     Matchers.<String[]> any());
+
+        Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
+
+        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(globalDiscoveryEntry.getParticipantId()));
+    }
+
+    @Test
+    public void testAddToAllIsProperlyRejected_unknownGbid() throws InterruptedException {
+        doAnswer(createAddAnswerWithDiscoveryError(DiscoveryError.UNKNOWN_GBID)).when(globalCapabilitiesDirectoryClient)
+                                                                                .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                                     eq(globalDiscoveryEntry),
+                                                                                     Matchers.<String[]> any());
+
+        Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
+
+        checkPromiseError(promise, DiscoveryError.UNKNOWN_GBID);
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(globalDiscoveryEntry.getParticipantId()));
     }
 
     private static Answer<Future<List<GlobalDiscoveryEntry>>> createLookupAnswer(final List<GlobalDiscoveryEntry> caps) {
