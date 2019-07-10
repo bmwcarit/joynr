@@ -2,6 +2,8 @@
 
 echo "### start build_docker_image.sh for joynr-backend-jee-db ###"
 
+EXTRA_OPTIONS="--no-cache"
+
 set -e -x
 
 if [ -d target ]; then
@@ -22,7 +24,7 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 	exit 1
 fi
 
-docker build -t joynr-backend-jee-db:latest .
+docker build $EXTRA_OPTIONS -t joynr-backend-jee-db:latest .
 #docker image prune
 rm -rf target
 

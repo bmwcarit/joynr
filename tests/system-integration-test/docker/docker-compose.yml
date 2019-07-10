@@ -2,15 +2,33 @@ version: '2.0'
 
 services:
 
-  hivemq:
+  hivemq-1:
     image: 'peez/hivemq'
-    container_name: mqttbroker
+    container_name: mqttbroker-1
     environment:
       - HIVEMQ_DISABLE_AUTH_PLUGIN=true
 
-  joynrbackend:
-    image: "joynr-backend-jee:latest"
-    container_name: joynrbackend
+  hivemq-2:
+    image: 'peez/hivemq'
+    container_name: mqttbroker-2
+    environment:
+      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+
+  joynrbackend-1:
+    image: "joynr-backend-jee-1:latest"
+    container_name: joynrbackend-1
+    depends_on:
+      - "hivemq-1"
+      - "hivemq-2"
+      - "joynrbackend-db"
+
+  joynrbackend-2:
+    image: "joynr-backend-jee-2:latest"
+    container_name: joynrbackend-2
+    depends_on:
+      - "hivemq-1"
+      - "hivemq-2"
+      - "joynrbackend-db"
 
   joynrbackend-db:
     image: "joynr-backend-jee-db:latest"
@@ -19,24 +37,39 @@ services:
   jeeapp:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app
+    depends_on:
+      - "joynrbackend-1"
+      - "joynrbackend-2"
 
   sit-onboard-apps:
     image: "sit-onboard-apps:latest"
     container_name: sit-onboard-apps
     tty: true
+    depends_on:
+      - "joynrbackend-1"
+      - "joynrbackend-2"
 
   sit-jee-stateless-consumer-node-1:
     image: "sit-jee-stateless-consumer:latest"
     container_name: sit-jee-stateless-consumer-node-1
     environment:
       - RECEIVER_ID=stateless-cons-1
+    depends_on:
+      - "joynrbackend-1"
+      - "joynrbackend-2"
 
   sit-jee-stateless-consumer-node-2:
     image: "sit-jee-stateless-consumer:latest"
     container_name: sit-jee-stateless-consumer-node-2
     environment:
       - RECEIVER_ID=stateless-cons-2
+    depends_on:
+      - "joynrbackend-1"
+      - "joynrbackend-2"
 
   sit-controller:
     image: "sit-controller:latest"
     container_name: sit-controller
+    depends_on:
+      - "joynrbackend-1"
+      - "joynrbackend-2"

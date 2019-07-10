@@ -36,7 +36,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.jeeintegration.api.ServiceProvider;
-import io.joynr.messaging.MessagingQos;
 import joynr.test.SitControllerSync;
 import joynr.test.SystemIntegrationTestSync;
 
@@ -47,6 +46,7 @@ import joynr.test.SystemIntegrationTestSync;
 public class ControllerBean implements SitControllerSync {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerBean.class);
+    private static String[] gbids = new String[]{ "joynrdefaultgbid", "othergbid" };
 
     private ServiceLocator serviceLocator;
 
@@ -82,10 +82,10 @@ public class ControllerBean implements SitControllerSync {
         try {
             DiscoveryQos discoveryQos = new DiscoveryQos();
             discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
-            SystemIntegrationTestSync proxy = serviceLocator.get(SystemIntegrationTestSync.class,
-                                                                 domain,
-                                                                 new MessagingQos(),
-                                                                 discoveryQos);
+            SystemIntegrationTestSync proxy = serviceLocator.builder(SystemIntegrationTestSync.class, domain)
+                                                            .withDiscoveryQos(discoveryQos)
+                                                            .withGbids(gbids)
+                                                            .build();
             Integer additionResult = proxy.add(1, 1);
             if (additionResult != 2) {
                 throw new IllegalArgumentException("1 + 1 should be 2, got: " + additionResult);

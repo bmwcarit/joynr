@@ -18,6 +18,10 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GBIDS;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL;
+
 import java.util.Properties;
 
 import javax.ejb.Singleton;
@@ -38,15 +42,24 @@ public class JoynrConfigurationProvider {
     private static final Logger LOG = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
     private static final String SIT_JEE_LOCAL_DOMAIN_PREFIX_KEY = "SIT_JEE_LOCAL_DOMAIN_PREFIX";
     private static final String DEFAULT_SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
-    private static final String MQTT_BROKER_URI = "tcp://mqttbroker:1883";
+    private static final String MQTT_BROKER_URIS = "tcp://mqttbroker-1:1883,tcp://mqttbroker-2:1883";
+    private static final String GBIDS = "joynrdefaultgbid,othergbid";
 
     @Produces
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.systemintegrationtest.controller");
-        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URI);
+
+        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URIS);
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
+        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,60");
+        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "30,30");
+
+        joynrProperties.setProperty(PROPERTY_GBIDS, GBIDS);
+
+        joynrProperties.setProperty(PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL, "joynrdefaultgbid");
+        joynrProperties.setProperty(PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL, "joynrdefaultgbid");
 
         joynrProperties.setProperty(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES_FILE,
                                     "sit_provisioned_capabilities.json");

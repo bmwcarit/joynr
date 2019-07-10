@@ -8,7 +8,7 @@ WAR components deployed:
 * Access Control Manager
 
 The services need a mqtt broker listening on port 1883 in a docker
-container named mqttbroker (see ../docker-compose.yml).
+container named mqttbroker-1 (see ../docker-compose.yml).
 
 
 ## Building

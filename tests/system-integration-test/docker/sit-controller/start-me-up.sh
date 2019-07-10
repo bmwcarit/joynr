@@ -40,6 +40,9 @@ function call_consumer {
     exit $EXIT_CODE
 }
 
-call_consumer &
-
-asadmin start-domain --debug --verbose
+asadmin --interactive=false start-domain --debug --verbose &
+PID=$!
+sleep 40
+asadmin --interactive=false --user admin --passwordfile=/opt/payara41/pwdfile deploy /sit-controller.war
+call_consumer
+wait $PID

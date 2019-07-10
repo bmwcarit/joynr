@@ -18,6 +18,8 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GBIDS;
+
 import java.util.Properties;
 
 import javax.ejb.Singleton;
@@ -37,6 +39,7 @@ public class JoynrConfigurationProvider {
     static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
     private static final String CHANNEL_ID = SIT_DOMAIN_PREFIX + ".jee";
     private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
+    private static final String MQTT_BROKER_URIS = "tcp://mqttbroker-1:1883,tcp://mqttbroker-2:1883";
     static final String CONTROLLER_DOMAIN = CONTROLLER_DOMAIN_PREFIX + ".jee-app";
 
     private static final Logger LOG = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
@@ -46,7 +49,10 @@ public class JoynrConfigurationProvider {
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
-        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://mqttbroker:1883");
+        joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URIS);
+        joynrProperties.setProperty(PROPERTY_GBIDS, "joynrdefaultgbid,othergbid");
+        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,60");
+        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "30,30");
 
         return joynrProperties;
     }

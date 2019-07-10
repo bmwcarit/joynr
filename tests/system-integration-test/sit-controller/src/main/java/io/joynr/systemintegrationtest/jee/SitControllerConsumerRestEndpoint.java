@@ -53,6 +53,8 @@ public class SitControllerConsumerRestEndpoint {
     private static final String PARTICIPANT_ID_STATELESS_ASYNC_CONSUMER_NODE_1 = "sit-controller.stateless-cons-1";
     private static final String PARTICIPANT_ID_STATELESS_ASYNC_CONSUMER_NODE_2 = "sit-controller.stateless-cons-2";
 
+    private static final String[] gbids = new String[]{ "joynrdefaultgbid", "othergbid" };
+
     private ServiceLocator serviceLocator;
 
     DiscoveryQos discoveryQos;
@@ -84,6 +86,7 @@ public class SitControllerConsumerRestEndpoint {
         SitControllerSync sitApp = serviceLocator.builder(SitControllerSync.class, domain)
                                                  .withDiscoveryQos(discoveryQos)
                                                  .withMessagingQos(messagingQos)
+                                                 .withGbids(gbids)
                                                  .build();
         String result = "";
         while (tries > 0) {
@@ -143,6 +146,7 @@ public class SitControllerConsumerRestEndpoint {
                                                                            CONTROLLER_DOMAIN_PREFIX + ".jee-app")
                                                                   .withDiscoveryQos(discoveryQos)
                                                                   .withMessagingQos(messagingQos)
+                                                                  .withGbids(gbids)
                                                                   .build();
             result.append(new String(Base64.getDecoder()
                                            .decode(sitControllerJeeApp.triggerTests()
@@ -162,6 +166,7 @@ public class SitControllerConsumerRestEndpoint {
                                                                                                    + ".jee-stateless-consumer")
                                                                                   .withDiscoveryQos(statelessAsyncDiscoveryQos)
                                                                                   .withMessagingQos(messagingQos)
+                                                                                  .withGbids(gbids)
                                                                                   .build();
 
             statelessAsyncDiscoveryQos.addCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD,
@@ -171,6 +176,7 @@ public class SitControllerConsumerRestEndpoint {
                                                                                                    + ".jee-stateless-consumer")
                                                                                   .withDiscoveryQos(statelessAsyncDiscoveryQos)
                                                                                   .withMessagingQos(messagingQos)
+                                                                                  .withGbids(gbids)
                                                                                   .build();
 
             result.append(sitControllerJeeStatelessAsyncNode1.triggerTests());

@@ -17,7 +17,7 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 fi
 
 docker build -t sit-jee-app:latest .
-docker image prune
+#docker image prune
 rm sit-jee-app.war
 
 echo "### end build_docker_image.sh for sit-jee-app ###"

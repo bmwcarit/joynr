@@ -17,7 +17,6 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 fi
 
 docker build -t sit-jee-stateless-consumer:latest .
-docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm sit-jee-stateless-consumer.war
 
 echo "### end build_docker_image.sh for sit-jee-stateless-consumer ###"

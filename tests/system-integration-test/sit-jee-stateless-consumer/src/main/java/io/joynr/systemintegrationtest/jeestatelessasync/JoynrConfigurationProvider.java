@@ -18,6 +18,8 @@
  */
 package io.joynr.systemintegrationtest.jeestatelessasync;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GBIDS;
+
 import java.util.Properties;
 
 import javax.ejb.Singleton;
@@ -43,7 +45,7 @@ public class JoynrConfigurationProvider {
     private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
     static final String CONTROLLER_DOMAIN = CONTROLLER_DOMAIN_PREFIX + ".jee-stateless-consumer";
     private static final String CONTROLLER_PARTICIPANT_ID = "sit-controller." + System.getenv("RECEIVER_ID");
-    private static final String MQTT_BROKER_URIS = "tcp://mqttbroker:1883";
+    private static final String MQTT_BROKER_URIS = "tcp://mqttbroker-1:1883,tcp://mqttbroker-2:1883";
 
     @Produces
     @JoynrProperties
@@ -54,6 +56,9 @@ public class JoynrConfigurationProvider {
         LOG.debug("Using RECEIVER_ID: " + RECEIVER_ID);
         joynrProperties.setProperty(MessagingPropertyKeys.RECEIVERID, RECEIVER_ID);
         joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URIS);
+        joynrProperties.setProperty(PROPERTY_GBIDS, "joynrdefaultgbid,othergbid");
+        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,60");
+        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "30,30");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
         joynrProperties.setProperty(ParticipantIdKeyUtil.getProviderParticipantIdKey(CONTROLLER_DOMAIN,
                                                                                      SitControllerSync.class),

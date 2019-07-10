@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep 30
 
 asadmin --interactive=false start-domain --debug --verbose &
 PID=$!

@@ -17,7 +17,6 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 fi
 
 docker build -t sit-controller:latest .
-docker images --filter "dangling=true" -q | xargs docker rmi -f 2>/dev/null
 rm sit-controller.war
 
 echo "### end build_docker_image.sh for sit-controller ###"

@@ -1,6 +1,8 @@
 #!/bin/bash
 
-echo "### start build_docker_image.sh for joynr-backend-jee ###"
+echo "### start build_docker_image.sh for joynr-backend-jee-2 ###"
+
+EXTRA_OPTIONS="--no-cache"
 
 set -e -x
 
@@ -17,10 +19,10 @@ function copy_war {
 	cp $1 $2
 }
 
-DISCOVERY_WAR_FILE=../../../../java/backend-services/discovery-directory-jee/target/discovery-directory-jee-[0-9]*.war
+DISCOVERY_WAR_FILE=../../../../java/backend-services/discovery-directory-jee/target/discovery-directory-jee-shared-db*.war
 ACCESS_CTRL_WAR_FILE=../../../../java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee*.war
 
-copy_war $DISCOVERY_WAR_FILE target/discovery-directory-jee.war
+copy_war $DISCOVERY_WAR_FILE target/discovery-directory-jee-shared-db.war
 copy_war $ACCESS_CTRL_WAR_FILE target/domain-access-controller-jee.war
 
 if [ -z "$(docker version 2>/dev/null)" ]; then
@@ -28,8 +30,8 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 	exit 1
 fi
 
-docker build -t joynr-backend-jee:latest .
-docker image prune
+docker build $EXTRA_OPTIONS -t joynr-backend-jee-2:latest .
+#docker image prune
 rm -rf target
 
-echo "### end build_docker_image.sh for joynr-backend-jee ###"
+echo "### end build_docker_image.sh for joynr-backend-jee-2 ###"
