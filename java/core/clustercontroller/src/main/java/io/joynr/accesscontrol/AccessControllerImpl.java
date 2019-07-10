@@ -27,14 +27,13 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.provider.PromiseListener;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -44,6 +43,8 @@ import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.DiscoveryError;
+import joynr.types.DiscoveryQos;
+import joynr.types.DiscoveryScope;
 
 public class AccessControllerImpl implements AccessController {
     private static final Logger logger = LoggerFactory.getLogger(AccessControllerImpl.class);
@@ -184,14 +185,24 @@ public class AccessControllerImpl implements AccessController {
 
     // Get the capability entry for the given message
     private void getCapabilityEntry(ImmutableMessage message, CapabilityCallback callback) {
-
         long cacheMaxAge = Long.MAX_VALUE;
-        DiscoveryQos discoveryQos = new DiscoveryQos(DiscoveryQos.NO_MAX_AGE,
-                                                     ArbitrationStrategy.NotSet,
-                                                     cacheMaxAge,
-                                                     DiscoveryScope.LOCAL_THEN_GLOBAL);
-
+        long discoveryTimeout = Long.MAX_VALUE;
+        DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge,
+                                                     discoveryTimeout,
+                                                     DiscoveryScope.LOCAL_THEN_GLOBAL,
+                                                     false);
         String participantId = message.getRecipient();
-        localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids, callback);
+        localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids).then(new PromiseListener() {
+
+            @Override
+            public void onRejection(JoynrException error) {
+                callback.onError((Throwable) error);
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                callback.processCapabilityReceived((DiscoveryEntryWithMetaInfo) values[0]);
+            }
+        });
     }
 }

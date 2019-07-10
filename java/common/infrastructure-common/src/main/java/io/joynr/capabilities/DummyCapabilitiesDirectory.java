@@ -146,7 +146,6 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
 
     }
 
-    @Override
     public void lookup(String[] domains,
                        String interfaceName,
                        DiscoveryQos discoveryQos,
@@ -173,7 +172,6 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
-    @Override
     @CheckForNull
     public void lookup(String participantId, DiscoveryQos discoveryQos, String[] gbids, CapabilityCallback callback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");

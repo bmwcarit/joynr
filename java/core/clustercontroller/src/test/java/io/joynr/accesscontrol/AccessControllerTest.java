@@ -36,15 +36,17 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.provider.Promise;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.system.DiscoveryProvider.Lookup4Deferred;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.DiscoveryQos;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
@@ -110,15 +112,14 @@ public class AccessControllerTest {
                                                                                          testPublicKeyId,
                                                                                          false);
 
-        doAnswer(new Answer<Object>() {
+        doAnswer(new Answer<Promise<Lookup4Deferred>>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                CapabilityCallback callback = (CapabilityCallback) invocation.getArguments()[3];
-                callback.processCapabilityReceived(discoveryEntry);
-                return null;
+            public Promise<Lookup4Deferred> answer(InvocationOnMock invocation) throws Throwable {
+                Lookup4Deferred deferred = new Lookup4Deferred();
+                deferred.resolve(discoveryEntry);
+                return new Promise<>(deferred);
             }
-        }).when(localCapabilitiesDirectory)
-          .lookup(eq(toParticipantId), any(DiscoveryQos.class), eq(gbids), any(CapabilityCallback.class));
+        }).when(localCapabilitiesDirectory).lookup(eq(toParticipantId), any(DiscoveryQos.class), eq(gbids));
 
     }
 

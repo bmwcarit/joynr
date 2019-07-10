@@ -20,9 +20,6 @@ package io.joynr.capabilities;
 
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-
-import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.runtime.ShutdownListener;
@@ -71,33 +68,6 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownL
      * @param listener the listener to remove.
      */
     void removeCapabilityListener(CapabilityListener listener);
-
-    /**
-     * Searches for capabilities by domain and interface name and gbids.
-     *
-     * @param domains The Domains for which the search is to be done.
-     * @param interfaceName The interface for which the search is to be done.
-     * @param discoveryQos The discovery quality of service for the search.
-     * @param gbids Global Backend IDs for which (global) providers should be returned.
-     * @param capabilitiesCallback Callback to deliver the results asynchronously.
-     */
-    void lookup(String[] domains,
-                String interfaceName,
-                DiscoveryQos discoveryQos,
-                String[] gbids,
-                CapabilitiesCallback capabilitiesCallback);
-
-    /**
-     * Searches for capability by participantId and gbids. This is an asynchronous method.
-     *
-     * @param participantId The participant id to search for.
-     * @param discoveryQos The discovery quality of service for the search.
-     * @param gbids Global Backend IDs for which (global) provider should be returned.
-     * @param callback called if the capability with the given participant ID
-     *      is retrieved. Or null if not found.
-     */
-    @CheckForNull
-    void lookup(String participantId, DiscoveryQos discoveryQos, String[] gbids, CapabilityCallback callback);
 
     /**
      *
