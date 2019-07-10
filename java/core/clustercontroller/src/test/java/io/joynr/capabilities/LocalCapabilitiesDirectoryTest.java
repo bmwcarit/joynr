@@ -1668,6 +1668,48 @@ public class LocalCapabilitiesDirectoryTest {
                                any(String[].class));
     }
 
+    private void testRemoveUsesSameGbidOrderAsAdd(String[] selectedGbids) throws InterruptedException {
+        String[] expectedGbids = selectedGbids.clone();
+
+        String participantId = LocalCapabilitiesDirectoryTest.class.getName() + ".removeUsesSameGbidOrderAsAdd."
+                + Arrays.toString(selectedGbids);
+        String domain = "testDomain";
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setScope(ProviderScope.GLOBAL);
+        globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                        domain,
+                                                        TestInterface.INTERFACE_NAME,
+                                                        participantId,
+                                                        providerQos,
+                                                        System.currentTimeMillis(),
+                                                        expiryDateMs,
+                                                        publicKeyId,
+                                                        globalAddress1Serialized);
+
+        boolean awaitGlobalRegistration = true;
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(globalDiscoveryEntry,
+                                                                       awaitGlobalRegistration,
+                                                                       selectedGbids);
+        checkPromiseSuccess(promise, "add failed in testRemoveUsesSameGbidOrderAsAdd");
+
+        localCapabilitiesDirectory.remove(globalDiscoveryEntry);
+
+        verify(globalCapabilitiesDirectoryClient).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                         any(String.class),
+                                                         eq(expectedGbids));
+    }
+
+    @Test
+    public void testRemoveUsesSameGbidOrderAsAdd() throws InterruptedException {
+        testRemoveUsesSameGbidOrderAsAdd(new String[]{ knownGbids[0] });
+
+        testRemoveUsesSameGbidOrderAsAdd(new String[]{ knownGbids[1] });
+
+        testRemoveUsesSameGbidOrderAsAdd(new String[]{ knownGbids[0], knownGbids[1] });
+
+        testRemoveUsesSameGbidOrderAsAdd(new String[]{ knownGbids[1], knownGbids[0] });
+    }
+
     @Test
     public void callTouchPeriodically() throws InterruptedException {
         Runnable runnable = runnableCaptor.getValue();
