@@ -189,7 +189,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         MqttClientSslConfigBuilder.Nested<? extends Mqtt3ClientBuilder> sslConfig = clientBuilder.sslConfig();
         if (trustStorePath != null && trustStorePWD != null) {
             KeyStore trustStore = getKeystore(trustStorePath, trustStorePWD, trustStoreType);
-            logger.debug("Setting up trust manager with {} / {} (password omitted)", trustStorePath, trustStoreType);
+            logger.info("Setting up trust manager with {} / {} (password omitted)", trustStorePath, trustStoreType);
             if (trustStore != null) {
                 try {
                     TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -201,7 +201,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             }
         }
         if (keyStorePath != null && keyStorePWD != null) {
-            logger.debug("Setting up key manager with {} / {} (password omitted)", keyStorePath, keyStoreType);
+            logger.info("Setting up key manager with {} / {} (password omitted)", keyStorePath, keyStoreType);
             KeyStore keyStore = getKeystore(keyStorePath, keyStorePWD, keyStoreType);
             if (keyStore != null) {
                 try {
@@ -233,7 +233,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private InputStream getInputStream(String path) throws IOException {
         InputStream result = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
         if (result == null) {
-            ClassLoader.getSystemClassLoader().getResourceAsStream(path);
+            result = ClassLoader.getSystemClassLoader().getResourceAsStream(path);
         }
         if (result == null) {
             File file = new File(path);
