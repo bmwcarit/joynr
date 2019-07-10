@@ -247,7 +247,7 @@ class RequestReplyManager {
                                 exception = internalGetterSetterException;
                             } else {
                                 exception = new ProviderRuntimeException({
-                                    detailMessage: `getter/setter method of attribute ${attributeName} reported an error`
+                                    detailMessage: `getter/setter method of attribute ${attributeName} reported an error ${internalGetterSetterException}`
                                 });
                             }
                         }
