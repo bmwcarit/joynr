@@ -50,7 +50,7 @@ export function checkPropertyAllowObject(obj: any, type: string, description: st
  *             untyped object is not (Boolean|Number|String|Array|Object)
  */
 export function augmentTypes(untyped: any, typeHint?: string): any {
-    let i, typedObj;
+    let typedObj;
 
     // return nullable values immediately
     if (untyped === null || untyped === undefined) {
@@ -83,7 +83,7 @@ export function augmentTypes(untyped: any, typeHint?: string): any {
                 typeHint !== undefined && typeHint.length > 2 && typeHint.substr(typeHint.length - 2, 2) === "[]"
                     ? typeHint.substring(0, typeHint.length - 2)
                     : typeHint;
-            for (i = 0; i < untyped.length; ++i) {
+            for (let i = 0; i < untyped.length; ++i) {
                 typedObj.push(augmentTypes(untyped[i], filteredTypeHint));
             }
         }
@@ -105,17 +105,18 @@ export function augmentTypes(untyped: any, typeHint?: string): any {
             if (isEnumType && untyped.name !== undefined) {
                 typedObj = Constructor[untyped.name];
             } else {
-                typedObj = new Constructor();
-                // copy over and type each single member
-                for (i in untyped) {
+                const settings: Record<string, any> = {};
+
+                for (const i in untyped) {
                     if (untyped.hasOwnProperty(i)) {
                         if (Constructor.getMemberType !== undefined) {
-                            typedObj[i] = augmentTypes(untyped[i], Constructor.getMemberType(i));
+                            settings[i] = augmentTypes(untyped[i], Constructor.getMemberType(i));
                         } else {
-                            typedObj[i] = augmentTypes(untyped[i]);
+                            settings[i] = augmentTypes(untyped[i]);
                         }
                     }
                 }
+                typedObj = new Constructor(settings);
 
                 if (Constructor.checkMembers) {
                     Constructor.checkMembers(typedObj, checkProperty);
