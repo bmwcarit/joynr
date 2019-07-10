@@ -656,7 +656,15 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return result;
     }
 
-    @Override
+    /**
+     * Searches for capabilities by domain and interface name and gbids.
+     *
+     * @param domains The Domains for which the search is to be done.
+     * @param interfaceName The interface for which the search is to be done.
+     * @param discoveryQos The discovery quality of service for the search.
+     * @param gbids Global Backend IDs for which (global) providers should be returned.
+     * @param capabilitiesCallback Callback to deliver the results asynchronously.
+     */
     public void lookup(final String[] domains,
                        final String interfaceName,
                        final DiscoveryQos discoveryQos,
@@ -907,7 +915,15 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return new Promise<>(deferred);
     }
 
-    @Override
+    /**
+     * Searches for capability by participantId and gbids. This is an asynchronous method.
+     *
+     * @param participantId The participant id to search for.
+     * @param discoveryQos The discovery quality of service for the search.
+     * @param gbids Global Backend IDs for which (global) provider should be returned.
+     * @param callback called if the capability with the given participant ID
+     *      is retrieved. Or null if not found.
+     */
     @CheckForNull
     public void lookup(final String participantId,
                        final DiscoveryQos discoveryQos,
