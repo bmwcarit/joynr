@@ -83,6 +83,7 @@ import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.DiscoveryProvider.Add1Deferred;
@@ -90,6 +91,7 @@ import joynr.system.DiscoveryProvider.AddToAllDeferred;
 import joynr.system.DiscoveryProvider.Lookup1Deferred;
 import joynr.system.DiscoveryProvider.Lookup2Deferred;
 import joynr.system.DiscoveryProvider.Lookup3Deferred;
+import joynr.system.DiscoveryProvider.Lookup4Deferred;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.CustomParameter;
@@ -700,6 +702,22 @@ public class LocalCapabilitiesDirectoryTest {
                 Future<Void> result = new Future<Void>();
                 Object[] args = invocation.getArguments();
                 ((Callback<Void>) args[0]).onFailure(new JoynrRuntimeException("Simulating a JoynrRuntimeException on callback"));
+                result.onSuccess(null);
+                return result;
+            }
+        };
+    }
+
+    private static Answer<Future<Void>> createAddAnswerWithDiscoveryError(DiscoveryError error) {
+        return new Answer<Future<Void>>() {
+
+            @Override
+            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                Future<Void> result = new Future<Void>();
+                Object[] args = invocation.getArguments();
+                @SuppressWarnings("unchecked")
+                CallbackWithModeledError<Void, DiscoveryError> callback = ((CallbackWithModeledError<Void, DiscoveryError>) args[0]);
+                callback.onFailure(error);
                 result.onSuccess(null);
                 return result;
             }
@@ -1585,6 +1603,291 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(capabilities.contains(remoteGlobalEntryWithMetaInfo));
     }
 
+    @Test
+    public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_exception() throws InterruptedException {
+        String domain = "domain";
+        String[] domains = new String[]{ domain };
+        String interfaceName = "interface";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+
+        doAnswer(createAddAnswerWithException()).when(globalCapabilitiesDirectoryClient)
+                                                .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                        eq(domains),
+                                                        eq(interfaceName),
+                                                        anyLong(),
+                                                        Matchers.<String[]> any());
+
+        Promise<Lookup2Deferred> promise = localCapabilitiesDirectory.lookup(domains,
+                                                                             interfaceName,
+                                                                             discoveryQos,
+                                                                             knownGbids);
+
+        checkPromiseException(promise);
+    }
+
+    private void testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
+        String domain = "domain";
+        String[] domains = new String[]{ domain };
+        String interfaceName = "interface";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+
+        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                  .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                          eq(domains),
+                                                                          eq(interfaceName),
+                                                                          anyLong(),
+                                                                          Matchers.<String[]> any());
+
+        Promise<Lookup2Deferred> promise = localCapabilitiesDirectory.lookup(domains,
+                                                                             interfaceName,
+                                                                             discoveryQos,
+                                                                             knownGbids);
+
+        checkPromiseError(promise, expectedError);
+    }
+
+    private void testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
+        String domain = "domain";
+        String[] domains = new String[]{ domain };
+        String interfaceName = "interface";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+
+        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                  .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                          eq(domains),
+                                                                          eq(interfaceName),
+                                                                          anyLong(),
+                                                                          Matchers.<String[]> any());
+
+        Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
+
+        checkPromiseErrorInProviderRuntimeException(promise, expectedError);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceIsProperlyRejected_invalidGbid() throws InterruptedException {
+        testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceIsProperlyRejected_unknownGbid() throws InterruptedException {
+        testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceIsProperlyRejected_internalError() throws InterruptedException {
+        testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceIsProperlyRejected_noEntryForSelectedBackend() throws InterruptedException {
+        testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_invalidGbid() throws InterruptedException {
+        testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_unknownGbid() throws InterruptedException {
+        testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_internalError() throws InterruptedException {
+        testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_noEntryForSelectedBackend() throws InterruptedException {
+        testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbidsIsProperlyRejected_exception() throws InterruptedException {
+        String participantId = "participantId";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+
+        doAnswer(createAddAnswerWithException()).when(globalCapabilitiesDirectoryClient)
+                                                .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                                                        eq(participantId),
+                                                        anyLong(),
+                                                        Matchers.<String[]> any());
+
+        Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId,
+                                                                             new DiscoveryQos(),
+                                                                             knownGbids);
+
+        checkPromiseException(promise);
+    }
+
+    private void testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
+        String participantId = "participantId";
+
+        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                  .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                                                                          eq(participantId),
+                                                                          anyLong(),
+                                                                          Matchers.<String[]> any());
+
+        Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId,
+                                                                             new DiscoveryQos(),
+                                                                             knownGbids);
+
+        checkPromiseError(promise, expectedError);
+    }
+
+    private void testLookupByParticipantIdIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
+        String participantId = "participantId";
+
+        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                  .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                                                                          eq(participantId),
+                                                                          anyLong(),
+                                                                          Matchers.<String[]> any());
+
+        Promise<Lookup3Deferred> promise = localCapabilitiesDirectory.lookup(participantId);
+
+        checkPromiseErrorInProviderRuntimeException(promise, expectedError);
+    }
+
+    @Test
+    public void testLookupByParticipantIdIsProperlyRejected_invalidGbid() throws InterruptedException {
+        testLookupByParticipantIdIsProperlyRejected(DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdIsProperlyRejected_unknownGbid() throws InterruptedException {
+        testLookupByParticipantIdIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdIsProperlyRejected_internalError() throws InterruptedException {
+        testLookupByParticipantIdIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
+    }
+
+    @Test
+    public void testLookupByParticipantIdIsProperlyRejected_noEntryForSelectedBackend() throws InterruptedException {
+        testLookupByParticipantIdIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+    }
+
+    @Test
+    public void testLookupByParticipantIdIsProperlyRejected_noEntryForParticipant() throws InterruptedException {
+        testLookupByParticipantIdIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbidsIsProperlyRejected_invalidGbid() throws InterruptedException {
+        testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbidsIsProperlyRejected_unknownGbid() throws InterruptedException {
+        testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbidsIsProperlyRejected_internalError() throws InterruptedException {
+        testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbidsIsProperlyRejected_noEntryForSelectedBackend() throws InterruptedException {
+        testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbidsIsProperlyRejected_noEntryForParticipant() throws InterruptedException {
+        testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbids_unknownGbids() throws InterruptedException {
+        String[] gbids = new String[]{ "not", "known" };
+        testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbids_unknownGbids() throws InterruptedException {
+        String[] gbids = new String[]{ "not", "known" };
+        testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.UNKNOWN_GBID);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
+        String[] gbids = new String[]{ "" };
+        testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
+        String[] gbids = new String[]{ "" };
+        testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbids_invalidGbid__duplicateGbid() throws InterruptedException {
+        String[] gbids = new String[]{ knownGbids[1], knownGbids[0], knownGbids[1] };
+        testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbids_invalidGbid__duplicateGbid() throws InterruptedException {
+        String[] gbids = new String[]{ knownGbids[1], knownGbids[0], knownGbids[1] };
+        testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbids_invalidGbid_nullGbid() throws InterruptedException {
+        String[] gbids = new String[]{ null };
+        testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbids_invalidGbid_nullGbid() throws InterruptedException {
+        String[] gbids = new String[]{ null };
+        testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByDomainInterfaceWithGbids_invalidGbid_nullGbidArray() throws InterruptedException {
+        String[] gbids = null;
+        testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test
+    public void testLookupByParticipantIdWithGbids_invalidGbid_nullGbidArray() throws InterruptedException {
+        String[] gbids = null;
+        testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    private void testLookupByDomainInterfaceWithDiscoveryError(String[] gbids,
+                                                               DiscoveryError expectedError) throws InterruptedException {
+        String[] domains = new String[]{ "domain1", "domain2" };
+        String interfaceName = "interfaceName";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+
+        Promise<Lookup2Deferred> promise = localCapabilitiesDirectory.lookup(domains,
+                                                                             interfaceName,
+                                                                             discoveryQos,
+                                                                             gbids);
+
+        checkPromiseError(promise, expectedError);
+    }
+
+    private void testLookupByParticipantIdWithDiscoveryError(String[] gbids,
+                                                             DiscoveryError expectedError) throws InterruptedException {
+        String participantId = "participantId";
+        Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId, new DiscoveryQos(), gbids);
+
+        checkPromiseError(promise, expectedError);
+    }
+
     private static void checkPromiseException(Promise<?> promise) throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         promise.then(new PromiseListener() {
@@ -1593,6 +1896,53 @@ public class LocalCapabilitiesDirectoryTest {
             public void onRejection(JoynrException exception) {
                 assertTrue(JoynrRuntimeException.class.isInstance(exception));
                 countDownLatch.countDown();
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                fail("Unexpected fulfillment when expecting rejection.");
+            }
+        });
+        assertTrue(countDownLatch.await(1, TimeUnit.SECONDS));
+    }
+
+    private static void checkPromiseError(Promise<?> promise,
+                                          DiscoveryError exptectedError) throws InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        promise.then(new PromiseListener() {
+
+            @Override
+            public void onRejection(JoynrException exception) {
+                if (exception instanceof ApplicationException) {
+                    DiscoveryError error = ((ApplicationException) exception).getError();
+                    assertEquals(exptectedError, error);
+                    countDownLatch.countDown();
+                } else {
+                    fail("Did not receive an ApplicationException on rejection.");
+                }
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                fail("Unexpected fulfillment when expecting rejection.");
+            }
+        });
+        assertTrue(countDownLatch.await(1, TimeUnit.SECONDS));
+    }
+
+    private static void checkPromiseErrorInProviderRuntimeException(Promise<?> promise,
+                                                                    DiscoveryError exptectedError) throws InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        promise.then(new PromiseListener() {
+
+            @Override
+            public void onRejection(JoynrException exception) {
+                if (exception instanceof ProviderRuntimeException) {
+                    assertTrue(((ProviderRuntimeException) exception).getMessage().contains(exptectedError.name()));
+                    countDownLatch.countDown();
+                } else {
+                    fail("Did not receive a ProviderRuntimeException on rejection.");
+                }
             }
 
             @Override
