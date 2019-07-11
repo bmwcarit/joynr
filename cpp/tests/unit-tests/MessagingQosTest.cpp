@@ -46,7 +46,7 @@ TEST_F(MessagingQosTest, addCustomHeader_validData)
     EXPECT_EQ(1, headers.size());
     EXPECT_NE(headers.cend(), headers.find("test-header"));
     EXPECT_EQ(headers.cend(), headers.find("unknown"));
-    EXPECT_STREQ("test aA0-;:,+&?.*/\\", headers.at("test-header").c_str());
+    EXPECT_STREQ("test aA0-;:,+&?.*/\\_", headers.at("test-header").c_str());
 }
 
 TEST_F(MessagingQosTest, addCustomHeader_invalidKeyData)
