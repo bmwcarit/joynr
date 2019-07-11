@@ -85,7 +85,7 @@
     "ts:check": "tsc --noEmit",
     "ts:test": "jest --config jest.config.js --silent",
     "ts:test:ci": "jest --config jest.config.js --coverage --no-cache",
-    "ts:test:sit": "jest --config jest.config.integration.js -i",
+    "ts:test:sit": "jest --config jest.config.integration.js -i --force-exit",
     "ts:clean": "./scripts/ts-clean.js all",
     "ts:clean:test": "./scripts/ts-clean.js test",
     "ts:clean:main": "./scripts/ts-clean.js main"
