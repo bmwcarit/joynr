@@ -126,7 +126,7 @@ class MessagingQos {
  */
 function checkKeyAndValue(key, value) {
     const keyPattern = /^[a-zA-Z0-9\-]*$/;
-    const valuePattern = /^[a-zA-Z0-9 ;:,+&\?\-\.\*\/\\]*$/;
+    const valuePattern = /^[a-zA-Z0-9 ;:,+&\?\-\.\*\/\\_]*$/;
     const keyOk = keyPattern.test(key);
     const valueOk = valuePattern.test(value);
     if (!keyOk) {
