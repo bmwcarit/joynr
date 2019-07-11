@@ -16,11 +16,23 @@ module.exports = {
         ]
     ],
     coverageThreshold: {
-        "src/**/*.ts": {
+        global: {
             branches: 80,
             functions: 80,
             lines: 80,
             statements: 80
+        },
+        "src/main/js/joynr/exceptions": {
+            branches: 0,
+            functions: 0,
+            lines: 0,
+            statements: 0
+        },
+        "src/main/js/joynr/dispatching/subscription/util": {
+            branches: 40,
+            functions: 20,
+            lines: 40,
+            statements: 20
         }
     },
     coverageDirectory: ".build/coverage/ts",
