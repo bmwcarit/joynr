@@ -14,6 +14,8 @@
 	* [JEE Developer Guide](wiki/jee.md) -- Developing JEE applications with joynr
 	* [Java Configuration Reference](wiki/JavaSettings.md) -- a reference of the available
 	  configuration options for Java and JEE joynr applications
+	* [MQTT Clients](wiki/java_mqtt_clients.md) -- how to choose and configure the MQTT client to
+	  use for a Java runtime.
 * C++
 	* [C++ Developer Guide](wiki/cplusplus.md) -- Developing C++ applications with joynr
 	* [C++ cluster-controller Settings](wiki/ClusterControllerSettings.md) -- C++ cluster-controller settings

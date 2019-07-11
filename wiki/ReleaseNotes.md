@@ -2,6 +2,21 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Integration for HiveMQ MQTT Client. Also, the mqtt module is split up into the
+  base implementation, the Paho implementation and the new HiveMQ MQTT Client integration. The JEE
+  integration now uses the HiveMQ MQTT Client integration. IMPORTANT: JEE 7 based applications need
+  to exclude the HiveMQ MQTT Client library from CDI scanning
+  (see
+  examples/stateless-async/stateless-async-jee-consumer/src/main/webapp/WEB-INF/glassfish-web.xml
+  for an example of how to do this for Payara / Glassfish 5.x)
+* **[Docs]** Added documentation of configuring the [Java MQTT Clients](./java_mqtt_clients.md)
+
 # joynr 1.8.2
 
 ## API relevant changes
