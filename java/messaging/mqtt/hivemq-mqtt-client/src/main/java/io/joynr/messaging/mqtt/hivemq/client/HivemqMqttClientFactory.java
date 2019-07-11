@@ -1,3 +1,21 @@
+/*-
+ * #%L
+ * %%
+ * Copyright (C) 2019 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package io.joynr.messaging.mqtt.hivemq.client;
 
 import java.io.File;
@@ -49,12 +67,8 @@ import javax.net.ssl.TrustManagerFactory;
  * The HiveMQ MQTT Client library is explicitly intended for use in backend applications, so using it on
  * constrained devices might not work well. Consider using the Paho client in those circumstances.
  *
- * Here are a list of things that need doing once the relevant missing
- * feature have been completed in HiveMQ MQTT Client and we want to make this integration production ready:
- *
  * TODO
  * - When persistent session configuration exists, then enable configuration thereof
- * - Document usage and configuration of HiveMQ MQTT Client variant
  */
 @Singleton
 public class HivemqMqttClientFactory implements MqttClientFactory {
@@ -151,38 +165,37 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     }
 
     private JoynrMqttClient createClient(String gbid, String clientId) {
+        URI serverUri;
         try {
-            URI serverUri = new URI(ownAddress.getBrokerUri());
-            logger.info("Connecting to {}:{}", serverUri.getHost(), serverUri.getPort());
-            MqttClientExecutorConfig executorConfig = MqttClientExecutorConfig.builder()
-                                                                              .nettyExecutor(scheduledExecutorService)
-                                                                              .applicationScheduler(Schedulers.from(scheduledExecutorService))
-                                                                              .build();
-            ResubscribeHandler resubscribeHandler = new ResubscribeHandler();
-            DisconnectedListener disconnectedListener = new DisconnectedListener();
-            Mqtt3ClientBuilder clientBuilder = MqttClient.builder()
-                                                         .useMqttVersion3()
-                                                         .identifier(clientId)
-                                                         .serverHost(serverUri.getHost())
-                                                         .serverPort(serverUri.getPort())
-                                                         .automaticReconnectWithDefaultConfig()
-                                                         .addConnectedListener(resubscribeHandler)
-                                                         .addDisconnectedListener(disconnectedListener)
-                                                         .executorConfig(executorConfig);
-            if (serverUri.getScheme().equals("ssl") || serverUri.getScheme().equals("tls")) {
-                clientBuilder.sslWithDefaultConfig();
-                setupSslConfig(clientBuilder);
-            }
-            Mqtt3RxClient client = clientBuilder.buildRx();
-            HivemqMqttClient result = new HivemqMqttClient(client,
-                                                           mqttGbidToKeepAliveTimerSecMap.get(gbid),
-                                                           cleanSession);
-            resubscribeHandler.setClient(result);
-            disconnectedListener.setClient(result);
-            return result;
+            serverUri = new URI(ownAddress.getBrokerUri());
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + ownAddress.getBrokerUri(), e);
         }
+        logger.info("Connecting to {}:{}", serverUri.getHost(), serverUri.getPort());
+        MqttClientExecutorConfig executorConfig = MqttClientExecutorConfig.builder()
+                                                                          .nettyExecutor(scheduledExecutorService)
+                                                                          .applicationScheduler(Schedulers.from(scheduledExecutorService))
+                                                                          .build();
+        ResubscribeHandler resubscribeHandler = new ResubscribeHandler();
+        DisconnectedListener disconnectedListener = new DisconnectedListener();
+        Mqtt3ClientBuilder clientBuilder = MqttClient.builder()
+                                                     .useMqttVersion3()
+                                                     .identifier(clientId)
+                                                     .serverHost(serverUri.getHost())
+                                                     .serverPort(serverUri.getPort())
+                                                     .automaticReconnectWithDefaultConfig()
+                                                     .addConnectedListener(resubscribeHandler)
+                                                     .addDisconnectedListener(disconnectedListener)
+                                                     .executorConfig(executorConfig);
+        if (serverUri.getScheme().equals("ssl") || serverUri.getScheme().equals("tls")) {
+            clientBuilder.sslWithDefaultConfig();
+            setupSslConfig(clientBuilder);
+        }
+        Mqtt3RxClient client = clientBuilder.buildRx();
+        HivemqMqttClient result = new HivemqMqttClient(client, mqttGbidToKeepAliveTimerSecMap.get(gbid), cleanSession);
+        resubscribeHandler.setClient(result);
+        disconnectedListener.setClient(result);
+        return result;
     }
 
     private void setupSslConfig(Mqtt3ClientBuilder clientBuilder) {

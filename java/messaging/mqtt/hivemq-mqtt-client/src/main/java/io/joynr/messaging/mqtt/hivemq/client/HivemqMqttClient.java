@@ -1,3 +1,21 @@
+/*-
+ * #%L
+ * %%
+ * Copyright (C) 2019 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 package io.joynr.messaging.mqtt.hivemq.client;
 
 import java.util.Map;
@@ -23,14 +41,7 @@ import io.reactivex.Flowable;
 /**
  * This implements the {@link JoynrMqttClient} using the HiveMQ MQTT Client library.
  *
- * Currently HiveMQ MQTT Client is pre 1.0. Here are a list of things that need doing once the relevant missing
- * feature have been completed in HiveMQ MQTT Client and we want to make this integration production ready:
- *
  * TODO
- * - Logging is currently implemented proof-of-concept style, needs to be re-worked to be production ready
- * - Re-think how we deal with the various failure scenarios, where we might want to throw exceptions instead of
- *   just logging
- * - Re-visit setting of QoS levels on subscriptions and publishing, only implemented proof-of-concept style for now
  * - HiveMQ MQTT Client offers better backpressure handling via rxJava, hence revisit this issue to see how we can make
  *   use of this for our own backpressure handling
  */
@@ -83,9 +94,9 @@ public class HivemqMqttClient implements JoynrMqttClient {
             }, BackpressureStrategy.BUFFER);
             logger.info("Setting up publishing pipeline using {}", publishFlowable);
             client.publish(publishFlowable).doOnNext(mqtt3PublishResult -> {
-                logger.info("Publish result: {}", mqtt3PublishResult);
+                logger.debug("Publish result: {}", mqtt3PublishResult);
                 mqtt3PublishResult.getError().ifPresent(e -> {
-                    logger.info("Retrying {}", mqtt3PublishResult.getPublish());
+                    logger.debug("Retrying {}", mqtt3PublishResult.getPublish());
                     publishConsumer.accept(mqtt3PublishResult.getPublish());
                 });
             }).doOnError(throwable -> logger.error("Publish encountered error.", throwable)).subscribe();
@@ -112,7 +123,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
-        logger.info("Publishing to {} with qos {} using {}", topic, qosLevel, publishConsumer);
+        logger.debug("Publishing to {} with qos {} using {}", topic, qosLevel, publishConsumer);
         Mqtt3Publish mqtt3Publish = Mqtt3Publish.builder()
                                                 .topic(topic)
                                                 .qos(MqttQos.fromCode(qosLevel))
@@ -144,7 +155,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     public void resubscribe() {
-        logger.info("Resubscribe triggered.");
+        logger.debug("Resubscribe triggered.");
         subscriptions.forEach((topic, subscription) -> {
             logger.info("Resubscribing to {}", topic);
             doSubscribe(subscription);
