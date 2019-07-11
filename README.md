@@ -39,6 +39,8 @@ Have a peek at our documentation for more information:
 		* [Java Developer Guide](wiki/java.md) -- Developing Java applications with joynr
 		* [Java Configuration Reference](wiki/JavaSettings.md) -- a reference of the available
 			configuration options for Java and JEE joynr applications
+		* [MQTT Clients](wiki/java_mqtt_clients.md) -- how to choose and configure the MQTT client to
+			use for a Java runtime.
 		* [JEE Developer Guide](wiki/jee.md) -- Developing JEE applications with joynr
 		* [Glassfish Settings](wiki/Glassfish-settings.md) -- Settings you need to run joynr backend
 			services on Glassfish application servers

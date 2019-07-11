@@ -9,6 +9,7 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
+* **[Java, JEE]** Integration for HiveMQ MQTT Client. See joynr 1.8.3 - 1.8.6 for details.
 * **[Java/JEE]** Removed message worker status metrics (interface `StatusReceiver`), status metrics
   for MQTT (interface `MqttStatusReceiver`) are the only remaining status metrics.
 
