@@ -21,7 +21,6 @@ package io.joynr.performance;
 
 import java.util.Properties;
 
-import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +35,7 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.performance.EchoProviderInvocationParameters.BackendConfig;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;

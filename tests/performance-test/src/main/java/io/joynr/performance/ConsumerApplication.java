@@ -25,7 +25,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +40,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.performance.ConsumerInvocationParameters.BackendConfig;
 import io.joynr.performance.ConsumerInvocationParameters.COMMUNICATIONMODE;
