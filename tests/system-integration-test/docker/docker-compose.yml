@@ -12,6 +12,10 @@ services:
     image: "joynr-backend-jee:latest"
     container_name: joynrbackend
 
+  joynrbackend-db:
+    image: "joynr-backend-jee-db:latest"
+    container_name: joynrbackend-db
+
   jeeapp:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app
