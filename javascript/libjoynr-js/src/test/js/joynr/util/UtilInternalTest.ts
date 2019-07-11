@@ -194,7 +194,7 @@ describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
         });
         UtilInternal.timeoutPromise(promise, 200)
             .then(done)
-            .catch(fail);
+            .catch(() => done.fail());
         jest.advanceTimersByTime(101);
     });
 
@@ -203,7 +203,7 @@ describe("libjoynr-js.joynr.UtilInternal.timeoutPromise", () => {
             setTimeout(resolve, 200);
         });
         UtilInternal.timeoutPromise(promise, 100)
-            .then(fail)
+            .then(() => done.fail())
             .catch(() => done());
         jest.advanceTimersByTime(101);
     });
@@ -213,7 +213,7 @@ describe("libjoynr-js.joynr.UtilInternal.createDeferred", () => {
     it("create a correct Deferred Object", done => {
         const deferred = UtilInternal.createDeferred();
         deferred.resolve();
-        deferred.promise.then(done).catch(fail);
+        deferred.promise.then(done).catch(() => done.fail());
     });
 });
 
