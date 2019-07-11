@@ -104,7 +104,8 @@ void MessagingQos::checkCustomHeaderKeyValue(const std::string& key, const std::
         throw std::invalid_argument("key may only contain alphanumeric characters");
     }
     if (!std::regex_match(
-                value, std::regex(R"(^([a-zA-Z0-9 ;:,+&\?\.\*\/\\]|-)*$)", std::regex::extended))) {
+                value,
+                std::regex(R"(^([a-zA-Z0-9 ;:,+&\?\.\*\/\\_]|-)*$)", std::regex::extended))) {
         throw std::invalid_argument(
                 "value contains illegal character. See API docs for allowed characters");
     }

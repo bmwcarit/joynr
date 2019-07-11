@@ -41,7 +41,7 @@ protected:
 
 TEST_F(MessagingQosTest, addCustomHeader_validData)
 {
-    qos.putCustomMessageHeader("test-header", "test aA0-;:,+&?.*/\\");
+    qos.putCustomMessageHeader("test-header", "test aA0-;:,+&?.*/\\_");
     const auto& headers = qos.getCustomMessageHeaders();
     EXPECT_EQ(1, headers.size());
     EXPECT_NE(headers.cend(), headers.find("test-header"));
