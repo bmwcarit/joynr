@@ -311,36 +311,16 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
-            if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)) {
+            DiscoveryEntry localEntry = localDiscoveryEntryStore.lookup(discoveryEntry.getParticipantId(),
+                                                                        Long.MAX_VALUE);
+            if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL) && localEntry.equals(discoveryEntry)) {
                 // in this case, no further need for global registration is required. Registration completed.
-                // TODO provider might still be registered globally if it was registered globally before
                 deferred.resolve();
                 return new Promise<>(deferred);
             }
-            synchronized (globalDiscoveryEntryCache) {
-                if (globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
-                                                     DiscoveryQos.NO_MAX_AGE) != null) {
-                    List<String> mappedGbids = globalProviderParticipantIdToGbidListMap.get(discoveryEntry.getParticipantId());
-                    List<String> newGbids = new ArrayList<>();
-                    for (String gbid : gbids) {
-                        if (!mappedGbids.contains(gbid)) {
-                            newGbids.add(gbid);
-                        }
-                    }
-                    if (newGbids.size() == 0) {
-                        mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
-                        deferred.resolve();
-                        return new Promise<>(deferred);
-                    } else {
-                        gbids = newGbids.toArray(new String[newGbids.size()]);
-                    }
-                }
-            }
-            // in the other case, the global registration needs to be done
-        } else {
-            localDiscoveryEntryStore.add(discoveryEntry);
-            notifyCapabilityAdded(discoveryEntry);
         }
+        localDiscoveryEntryStore.add(discoveryEntry);
+        notifyCapabilityAdded(discoveryEntry);
 
         /*
          * In case awaitGlobalRegistration is true, a result for this 'add' call will not be returned before the call to
@@ -930,8 +910,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                        final String[] gbids,
                        final CapabilityCallback capabilityCallback) {
 
-        final DiscoveryEntry localDiscoveryEntry = localDiscoveryEntryStore.lookup(participantId,
-                                                                                   discoveryQos.getCacheMaxAgeMs());
+        final DiscoveryEntry localDiscoveryEntry = localDiscoveryEntryStore.lookup(participantId, Long.MAX_VALUE);
 
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         switch (discoveryScope) {
