@@ -21,10 +21,10 @@ package io.joynr.discovery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -89,9 +89,15 @@ public class LocalDiscoveryAggregatorTest {
     @Mock
     ProxyBuilder<DiscoveryProxy> proxyBuilder;
     @Mock
-    Callback<Void> addCallback;
+    Callback<Void> callback;
     @Mock
-    private CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> lookupCallbackWithModeledError;
+    CallbackWithModeledError<Void, DiscoveryError> addCallbackWithModeledError;
+    @Mock
+    CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> lookupCallbackWithModeledError;
+    @Mock
+    CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError> lookupByParticipantIdCallbackWithModeledError;
+
+    private String[] gbids = { "joynrdefaultgbid", "testGbid2", "testGbid3" };
 
     @Before
     public void setUp() {
@@ -143,7 +149,7 @@ public class LocalDiscoveryAggregatorTest {
                                                            System.currentTimeMillis(),
                                                            expiryDateMs,
                                                            publicKeyId);
-        localDiscoveryAggregator.add(addCallback, discoveryEntry);
+        localDiscoveryAggregator.add(callback, discoveryEntry);
         verify(discoveryProxyMock, times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                  eq(discoveryEntry),
                                                  eq(false));
@@ -158,7 +164,7 @@ public class LocalDiscoveryAggregatorTest {
                                                            System.currentTimeMillis(),
                                                            expiryDateMs,
                                                            publicKeyId);
-        localDiscoveryAggregator.add(addCallback, discoveryEntry, awaitGlobalRegistration);
+        localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration);
         verify(discoveryProxyMock, times(1)).add(Matchers.<Callback<Void>> any(),
                                                  eq(discoveryEntry),
                                                  eq(awaitGlobalRegistration));
@@ -176,8 +182,89 @@ public class LocalDiscoveryAggregatorTest {
         testAwaitGlobalRegistration(awaitGlobalRegistration);
     }
 
+    private void testAwaitGlobalRegistrationWithGbids(boolean awaitGlobalRegistration) {
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
+                                                           "anyDomain",
+                                                           "anyInterface",
+                                                           "anyParticipant",
+                                                           new ProviderQos(),
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs,
+                                                           publicKeyId);
+        DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
+        localDiscoveryAggregator.add(addCallbackWithModeledError,
+                                     discoveryEntry,
+                                     awaitGlobalRegistration,
+                                     gbids.clone());
+        verify(discoveryProxyMock, times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                 eq(expectedDiscoveryEntry),
+                                                 eq(awaitGlobalRegistration),
+                                                 eq(gbids));
+    }
+
     @Test
-    public void lookupByDomainInterface_findsProvisionedEntryForSingleDomain() {
+    public void add_handlesAwaitGlobalRegistrationWithGbids() {
+        boolean awaitGlobalRegistration = true;
+        testAwaitGlobalRegistrationWithGbids(awaitGlobalRegistration);
+    }
+
+    @Test
+    public void add_handlesDoNotAwaitGlobalRegistrationWithGbids() {
+        boolean awaitGlobalRegistration = false;
+        testAwaitGlobalRegistrationWithGbids(awaitGlobalRegistration);
+    }
+
+    @Test
+    public void addToAll_handlesAwaitGlobalRegistrationWithGbids() {
+        boolean awaitGlobalRegistration = true;
+        testAddToAllAwaitGlobalRegistration(awaitGlobalRegistration);
+    }
+
+    @Test
+    public void addToAll_handlesDoNotAwaitGlobalRegistrationWithGbids() {
+        boolean awaitGlobalRegistration = false;
+        testAddToAllAwaitGlobalRegistration(awaitGlobalRegistration);
+    }
+
+    private void testAddToAllAwaitGlobalRegistration(boolean awaitGlobalRegistration) {
+        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(0, 0),
+                                                           "anyDomain",
+                                                           "anyInterface",
+                                                           "anyParticipant",
+                                                           new ProviderQos(),
+                                                           System.currentTimeMillis(),
+                                                           expiryDateMs,
+                                                           publicKeyId);
+
+        DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
+
+        localDiscoveryAggregator.addToAll(addCallbackWithModeledError, discoveryEntry, awaitGlobalRegistration);
+        verify(discoveryProxyMock, times(1)).addToAll(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                      eq(expectedDiscoveryEntry),
+                                                      eq(awaitGlobalRegistration));
+    }
+
+    @Test
+    public void lookupByDomainInterfaceWithGbids_callsProxyForNonProvisionedEntries() {
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        DiscoveryQos expectedDiscoveryQos = new DiscoveryQos(discoveryQos);
+        localDiscoveryAggregator.lookup(lookupCallbackWithModeledError,
+                                        new String[]{ anotherDomain },
+                                        Discovery.INTERFACE_NAME,
+                                        discoveryQos,
+                                        gbids);
+
+        verify(discoveryProxyMock,
+               times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                                eq(new String[]{ anotherDomain }),
+                                eq(Discovery.INTERFACE_NAME),
+                                eq(expectedDiscoveryQos),
+                                eq(gbids),
+                                eq(new MessagingQos(expectedDiscoveryQos.getDiscoveryTimeout())));
+    }
+
+    @Test
+    public void lookupByDomainInterfaceWithGbids_findsProvisionedEntryForSingleDomain() {
         discoveryProviderEntries = new DiscoveryEntryWithMetaInfo[]{ discoveryProviderEntry };
         oneDomain = new String[]{ systemServicesDomain };
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -218,7 +305,7 @@ public class LocalDiscoveryAggregatorTest {
     }
 
     @Test
-    public void lookupByDomainInterface_findsProvisionedEntryForMultipleDomains() throws Exception {
+    public void lookupByDomainInterfaceWithGbids_findsProvisionedEntryForMultipleDomains() throws Exception {
         discoveryProviderEntries = new DiscoveryEntryWithMetaInfo[]{ anotherDiscoveryProviderEntry };
         allDomains = new String[]{ systemServicesDomain, anotherDomain };
         String[] missingDomains = new String[]{ anotherDomain };
@@ -278,7 +365,7 @@ public class LocalDiscoveryAggregatorTest {
     }
 
     @Test
-    public void lookupByDomainInterface_doesNotQueryProxyForProvisionedEntry() {
+    public void lookupByDomainInterfaceWithGbids_doesNotQueryProxyForProvisionedEntry() {
         String[] gbids = new String[0];
         localDiscoveryAggregator.lookup(lookupCallbackWithModeledError,
                                         new String[]{ systemServicesDomain },
@@ -292,5 +379,54 @@ public class LocalDiscoveryAggregatorTest {
                                any(DiscoveryQos.class),
                                Mockito.<String[]> any(),
                                any(MessagingQos.class));
+    }
+
+    @Test
+    public void lookupByParticipantIdWithGbids() {
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
+
+        DiscoveryQos expectedDiscoveryQos = new DiscoveryQos(discoveryQos);
+        localDiscoveryAggregator.lookup(lookupByParticipantIdCallbackWithModeledError,
+                                        discoveryProviderParticipantId,
+                                        discoveryQos,
+                                        gbids);
+
+        verify(discoveryProxyMock,
+               times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>> any(),
+                                eq(discoveryProviderParticipantId),
+                                eq(expectedDiscoveryQos),
+                                eq(gbids));
+    }
+
+    @Test
+    public void lookupByParticipantId() {
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
+        gbids = new String[0];
+
+        localDiscoveryAggregator.lookup(lookupByParticipantIdCallbackWithModeledError, discoveryProviderParticipantId);
+
+        verify(discoveryProxyMock,
+               times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>> any(),
+                                eq(discoveryProviderParticipantId),
+                                any(DiscoveryQos.class),
+                                eq(gbids));
+    }
+
+    @Test
+    public void removeByParticipantId() {
+        localDiscoveryAggregator.remove(callback, discoveryProviderParticipantId);
+        verify(discoveryProxyMock, times(1)).remove(Matchers.<Callback<Void>> any(),
+                                                    eq(discoveryProviderParticipantId));
+    }
+
+    @Test
+    public void forceQueryOfDiscoveryProxy() {
+        localDiscoveryAggregator.forceQueryOfDiscoveryProxy();
+        verify(proxyBuilderFactory).get(eq(systemServicesDomain), eq(DiscoveryProxy.class));
+        MessagingQos expectedMessagingQos = new MessagingQos(MessagingQos.DEFAULT_TTL + 10000);
+        verify(proxyBuilder).setMessagingQos(eq(expectedMessagingQos));
+        verify(proxyBuilder).build();
     }
 }
