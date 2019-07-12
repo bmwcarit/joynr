@@ -147,7 +147,7 @@ export function augmentTypes(untyped: any, typeHint?: string): any {
  *
  * @returns the same object with the typeName set
  */
-export function augmentTypeName(obj: any, packageName: string, memberName?: string): any {
+export function augmentTypeName(obj: any, packageName?: string, memberName?: string): any {
     packageName = packageName === undefined ? "" : `${packageName}.`;
     obj[memberName || "_typeName"] = packageName + getObjectType(obj);
     return obj;
