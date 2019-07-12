@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     @Override
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the connect via callbacks.")
     public synchronized void start() {
         logger.info("Initialising MQTT client {} -> {}", this, client);
         if (!client.getConfig().getState().isConnected()) {
@@ -90,7 +92,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         if (publishConsumer == null) {
             logger.info("Setting up publishConsumer for {}", client);
             Flowable<Mqtt3Publish> publishFlowable = Flowable.create(flowableEmitter -> {
-                setPublishConsumer(publish -> flowableEmitter.onNext(publish));
+                setPublishConsumer(flowableEmitter::onNext);
             }, BackpressureStrategy.BUFFER);
             logger.info("Setting up publishing pipeline using {}", publishFlowable);
             client.publish(publishFlowable).doOnNext(mqtt3PublishResult -> {
@@ -126,10 +128,18 @@ public class HivemqMqttClient implements JoynrMqttClient {
         logger.debug("Publishing to {} with qos {} using {}", topic, qosLevel, publishConsumer);
         Mqtt3Publish mqtt3Publish = Mqtt3Publish.builder()
                                                 .topic(topic)
-                                                .qos(MqttQos.fromCode(qosLevel))
+                                                .qos(safeParseQos(qosLevel))
                                                 .payload(serializedMessage)
                                                 .build();
         publishConsumer.accept(mqtt3Publish);
+    }
+
+    private MqttQos safeParseQos(int qosLevel) {
+        MqttQos result = MqttQos.fromCode(qosLevel);
+        if (result == null) {
+            result = MqttQos.AT_MOST_ONCE;
+        }
+        return result;
     }
 
     @Override
@@ -143,6 +153,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         doSubscribe(subscription);
     }
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the subscribe via callbacks.")
     private void doSubscribe(Mqtt3Subscription subscription) {
         Mqtt3Subscribe subscribe = Mqtt3Subscribe.builder().addSubscription(subscription).build();
         client.subscribeStream(subscribe)
