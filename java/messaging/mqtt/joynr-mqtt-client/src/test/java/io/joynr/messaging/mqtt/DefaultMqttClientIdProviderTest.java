@@ -67,6 +67,9 @@ public class DefaultMqttClientIdProviderTest {
     @Mock
     private RoutingTable mockRoutingTable;
 
+    @Mock
+    private MqttClientFactory mqttClientFactory;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -79,6 +82,7 @@ public class DefaultMqttClientIdProviderTest {
                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
                 bind(MessageRouter.class).toInstance(mockMessageRouter);
                 bind(RoutingTable.class).toInstance(mockRoutingTable);
+                bind(MqttClientFactory.class).toInstance(mqttClientFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(Executors.newScheduledThreadPool(10));
                 bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
