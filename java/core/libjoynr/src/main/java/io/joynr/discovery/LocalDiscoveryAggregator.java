@@ -34,18 +34,16 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.exceptions.ApplicationException;
+import joynr.system.Discovery;
 import joynr.system.DiscoveryAsync;
-import joynr.system.DiscoveryProvider;
 import joynr.system.DiscoveryProxy;
 import joynr.system.Routing;
-import joynr.system.RoutingProvider;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.DiscoveryError;
@@ -71,21 +69,19 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
         String defaultPublicKeyId = "";
-        provisionedDiscoveryEntries.put(systemServicesDomain
-                + ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
-                                        new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(DiscoveryProvider.class),
+        provisionedDiscoveryEntries.put(systemServicesDomain + Discovery.INTERFACE_NAME,
+                                        new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(Discovery.class),
                                                                        systemServicesDomain,
-                                                                       ProviderAnnotations.getInterfaceName(DiscoveryProvider.class),
+                                                                       Discovery.INTERFACE_NAME,
                                                                        discoveryProviderParticipantId,
                                                                        providerQos,
                                                                        System.currentTimeMillis(),
                                                                        NO_EXPIRY,
                                                                        defaultPublicKeyId,
                                                                        false));
-        // provision routing provider to prevent lookup via discovery proxy during
-        // startup.
+        // provision routing provider to prevent lookup via discovery proxy during startup.
         provisionedDiscoveryEntries.put(systemServicesDomain + Routing.INTERFACE_NAME,
-                                        new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(RoutingProvider.class),
+                                        new DiscoveryEntryWithMetaInfo(getVersionFromAnnotation(Routing.class),
                                                                        systemServicesDomain,
                                                                        Routing.INTERFACE_NAME,
                                                                        routingProviderParticipantId,
