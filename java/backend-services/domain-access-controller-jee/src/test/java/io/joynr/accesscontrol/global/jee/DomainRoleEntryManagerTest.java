@@ -72,7 +72,8 @@ public class DomainRoleEntryManagerTest {
                                      JoynrConfigurationProvider.class)
                          .addAsLibraries(files)
                          .addAsResource("test-persistence.xml", "META-INF/persistence.xml")
-                         .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"));
+                         .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"))
+                         .addAsWebInfResource(new File("src/test/resources/glassfish-web.xml"));
     }
 
     @Inject
