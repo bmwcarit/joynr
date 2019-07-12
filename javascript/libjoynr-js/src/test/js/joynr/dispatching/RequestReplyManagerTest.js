@@ -81,6 +81,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             value: "test.RadioStation"
         });
     }
+    RadioStation._typeName = "test.RadioStation";
 
     RadioStation.getMemberType = function() {};
 
@@ -107,6 +108,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             value: "test.ComplexTypeWithComplexAndSimpleProperties"
         });
     }
+    ComplexTypeWithComplexAndSimpleProperties._typeName = "test.ComplexTypeWithComplexAndSimpleProperties";
 
     ComplexTypeWithComplexAndSimpleProperties.getMemberType = function() {};
 
@@ -116,11 +118,8 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
     beforeEach(() => {
         dispatcherSpy = jasmine.createSpyObj("DispatcherSpy", ["sendOneWayRequest", "sendRequest"]);
         typeRegistry = TypeRegistrySingleton.getInstance();
-        typeRegistry.addType("test.RadioStation", RadioStation);
-        typeRegistry.addType(
-            "test.ComplexTypeWithComplexAndSimpleProperties",
-            ComplexTypeWithComplexAndSimpleProperties
-        );
+        typeRegistry.addType(RadioStation);
+        typeRegistry.addType(ComplexTypeWithComplexAndSimpleProperties);
         requestReplyManager = new RequestReplyManager(dispatcherSpy, typeRegistry);
     });
 

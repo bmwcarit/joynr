@@ -134,8 +134,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         });
 
         typeRegistry = new TypeRegistry();
-        typeRegistry.addType("joynr.system.RoutingTypes.ChannelAddress", ChannelAddress);
-        typeRegistry.addType("joynr.system.RoutingTypes.BrowserAddress", BrowserAddress);
+        typeRegistry.addType(ChannelAddress);
+        typeRegistry.addType(BrowserAddress);
 
         serializedTestGlobalClusterControllerAddress = "testGlobalAddress";
         routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
