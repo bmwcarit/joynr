@@ -71,7 +71,7 @@
     "lint": "node_modules/.bin/eslint $npm_package_config_glob --max-warnings 0",
     "lint:fix": "node_modules/.bin/eslint $npm_package_config_glob --fix",
     "karma": "node_modules/.bin/karma start src/test/karma/karma.integration.conf.js --single-run",
-    "test": "npm run ts:test:ci && npm run ts:clean:test && npm run test:unit && npm run test:sit && npm run karma",
+    "test": "npm run ts:test:ci && npm run ts:clean:test && npm run ts:copy:test && npm run test:unit && npm run ts:copy:sit && npm run ts:test:sit && npm run karma",
     "test:unit": "cd src/test/resources && nyc node node-run-unit-tests.js && cd -",
     "test:sit": "cd src/test/resources && node node-run-system-integration-tests.js && cd -",
     "build:fast": "npm run build:skip && npm run test",
