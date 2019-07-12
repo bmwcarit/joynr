@@ -20,7 +20,10 @@ the versioning scheme [here](JoynrVersioning.md).
     the communication with GlobalCapabilitiesDirectory.
 
 ## Other changes
-* **[Java,C++,JS]** Underscore is now allowed inside custom header values in MessagingQos
+* **[Java, C++, JS]** Underscore is now allowed inside custom header values in MessagingQos
+
+## Configuration property changes
+None.
 
 # joynr 1.9.0
 
