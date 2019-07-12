@@ -16,82 +16,79 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const BrowserMessagingStubFactory = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingStubFactory");
+
+import BrowserMessagingStubFactory from "../../../../../main/js/joynr/messaging/browser/BrowserMessagingStubFactory";
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", () => {
-    let returnValue, webMessagingStub, browserMessagingStubFactory;
-    let windowId, browserAddress, joynrMessage;
+    let returnValue: any, webMessagingStub: any, browserMessagingStubFactory: BrowserMessagingStubFactory;
+    let windowId: any, browserAddress: any, joynrMessage: any;
 
     beforeEach(done => {
         returnValue = {
             key: "returnValue"
         };
-        function WebMessagingStub() {}
+        class WebMessagingStub {}
         webMessagingStub = new WebMessagingStub();
-        webMessagingStub.transmit = jasmine.createSpy("transmit");
-        webMessagingStub.transmit.and.returnValue(returnValue);
+        webMessagingStub.transmit = jest.fn();
+        webMessagingStub.transmit.mockReturnValue(returnValue);
         browserMessagingStubFactory = new BrowserMessagingStubFactory({
             webMessagingStub
         });
         windowId = "windowId";
-        function BrowserAddress() {}
+        class BrowserAddress {}
         browserAddress = new BrowserAddress();
         browserAddress.windowId = windowId;
-        function JoynrMessage() {}
+        class JoynrMessage {}
         joynrMessage = new JoynrMessage();
         done();
     });
 
-    it("is instantiable and of correct type", done => {
+    it("is instantiable and of correct type", () => {
         expect(BrowserMessagingStubFactory).toBeDefined();
         expect(typeof BrowserMessagingStubFactory === "function").toBeTruthy();
         expect(browserMessagingStubFactory).toBeDefined();
         expect(browserMessagingStubFactory instanceof BrowserMessagingStubFactory).toBeTruthy();
         expect(browserMessagingStubFactory.build).toBeDefined();
         expect(typeof browserMessagingStubFactory.build === "function").toBeTruthy();
-        done();
     });
 
-    it("throws on missing or wrongly typed arguments in constructor", done => {
+    it("throws on missing or wrongly typed arguments in constructor", () => {
         expect(() => {
-            browserMessagingStubFactory = new BrowserMessagingStubFactory();
+            browserMessagingStubFactory = new BrowserMessagingStubFactory(undefined as any);
         }).toThrow(); // settings is undefined
         expect(() => {
-            browserMessagingStubFactory = new BrowserMessagingStubFactory("");
+            browserMessagingStubFactory = new BrowserMessagingStubFactory("" as any);
         }).toThrow(); // settings is of wrong type
         expect(() => {
-            browserMessagingStubFactory = new BrowserMessagingStubFactory({});
+            browserMessagingStubFactory = new BrowserMessagingStubFactory({} as any);
         }).toThrow(); // webMessagingStub is missing
         expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
                 webMessagingStub: {}
-            });
+            } as any);
         }).toThrow(); // webMessagingStub is of wrong type
         expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
                 webMessagingStub: ""
-            });
+            } as any);
         }).toThrow(); // webMessagingStub is of wrong type
         expect(() => {
             browserMessagingStubFactory = new BrowserMessagingStubFactory({
                 webMessagingStub
             });
         }).not.toThrow(); // correct call
-        done();
     });
 
-    it("throws on missing or wrongly typed arguments in build", done => {
+    it("throws on missing or wrongly typed arguments in build", () => {
         expect(() => {
-            browserMessagingStubFactory.build();
+            browserMessagingStubFactory.build(undefined as any);
         }).toThrow(); // address is undefined
         expect(() => {
             browserMessagingStubFactory.build(browserAddress);
         }).not.toThrow(); // correct call
-        done();
     });
 
-    it("creates a messaging stub and uses it correctly", done => {
+    it("creates a messaging stub and uses it correctly", () => {
         const browserMessagingStub = browserMessagingStubFactory.build(browserAddress);
         //expect(browserAddress.getTabId).toHaveBeenCalledWith();
 
@@ -101,6 +98,5 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStubFactory", () =
             message: joynrMessage
         });
         expect(result).toEqual(returnValue);
-        done();
     });
 });

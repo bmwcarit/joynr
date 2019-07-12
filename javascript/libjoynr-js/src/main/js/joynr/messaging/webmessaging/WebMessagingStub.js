@@ -16,31 +16,30 @@
  * limitations under the License.
  * #L%
  */
-const JSONSerializer = require("../../util/JSONSerializer");
-const LoggingManager = require("../../system/LoggingManager");
+import * as JSONSerializer from "../../util/JSONSerializer";
+
+import LoggingManager from "../../system/LoggingManager";
+import JoynrMessage = require("../JoynrMessage");
 
 const log = LoggingManager.getLogger("joynr/messaging/webmessaging/WebMessagingStub");
 
 class WebMessagingStub {
+    private settings: any;
     /**
-  * @name WebMessagingStub
-  * @constructor
-
-  * @param {Object} settings the settings object for this constructor call
-  * @param {Object} settings.window the default target window, the messages should be sent to
-  * @param {String} settings.origin the default origin, the messages should be sent to
-  */
-    constructor(settings) {
-        this._settings = settings;
+     * @constructor
+     *
+     * @param settings the settings object for this constructor call
+     * @param settings.window the default target window, the messages should be sent to
+     * @param settings.origin the default origin, the messages should be sent to
+     */
+    public constructor(settings: { window: Record<string, any>; origin: string }) {
+        this.settings = settings;
     }
 
     /**
-     * @name WebMessagingStub#transmit
-     * @function
-     *
-     * @param {Object|JoynrMessage} message the message to transmit
+     * @param message the message to transmit
      */
-    transmit(message) {
+    public transmit(message: { message: JoynrMessage; windowId?: string }): Promise<void> {
         //TODO: check why sending a JoynrMessage provokes the following error
         // maybe enumerability or visibility of members while using Object.defineProperties
         /*
@@ -52,10 +51,10 @@ class WebMessagingStub {
               __proto__: DOMException
               */
         log.debug(`transmit message: "${JSONSerializer.stringify(message)}"`);
-        this._settings.window.postMessage(JSON.parse(JSONSerializer.stringify(message)), this._settings.origin);
+        this.settings.window.postMessage(JSON.parse(JSONSerializer.stringify(message)), this.settings.origin);
 
         return Promise.resolve();
     }
 }
 
-module.exports = WebMessagingStub;
+export = WebMessagingStub;

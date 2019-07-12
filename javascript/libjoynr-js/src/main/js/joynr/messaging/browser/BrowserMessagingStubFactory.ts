@@ -16,36 +16,35 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../../util/Typing");
-const BrowserMessagingStub = require("./BrowserMessagingStub");
+import * as BrowserAddress from "../../../generated/joynr/system/RoutingTypes/BrowserAddress";
+import * as Typing from "../../util/Typing";
+import BrowserMessagingStub from "./BrowserMessagingStub";
+import WebMessagingStub = require("../webmessaging/WebMessagingStub");
 
 class BrowserMessagingStubFactory {
+    private readonly webMessagingStub: WebMessagingStub;
     /**
      * @constructor
-     * @name BrowserMessagingStubFactory
      *
-     * @param {Object} settings
-     * @param {WebMessagingStub} settings.webMessagingStub an initialized sender that has the default window already set
+     * @param settings
+     * @param settings.webMessagingStub an initialized sender that has the default window already set
      */
-    constructor(settings) {
+    public constructor(settings: { webMessagingStub: WebMessagingStub }) {
         Typing.checkProperty(settings, "Object", "settings");
         Typing.checkProperty(settings.webMessagingStub, "WebMessagingStub", "settings.webMessagingStub");
 
-        this._settings = settings;
+        this.webMessagingStub = settings.webMessagingStub;
     }
 
     /**
-     * @name BrowserMessagingStubFactory#build
-     * @function
-     *
-     * @param {BrowserMessagingAddress} address the address to generate a messaging stub for
+     * @param address the address to generate a messaging stub for
      */
-    build(address) {
+    public build(address: BrowserAddress): BrowserMessagingStub {
         return new BrowserMessagingStub({
             windowId: address.windowId,
-            webMessagingStub: this._settings.webMessagingStub
+            webMessagingStub: this.webMessagingStub
         });
     }
 }
 
-module.exports = BrowserMessagingStubFactory;
+export = BrowserMessagingStubFactory;

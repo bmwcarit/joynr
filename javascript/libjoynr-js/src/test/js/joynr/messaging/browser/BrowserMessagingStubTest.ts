@@ -16,23 +16,21 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const BrowserMessagingStub = require("../../../../../main/js/joynr/messaging/browser/BrowserMessagingStub");
+
+import BrowserMessagingStub from "../../../../../main/js/joynr/messaging/browser/BrowserMessagingStub";
 
 describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingStub", () => {
-    let webMessagingStub, browserMessagingStub, windowId, joynrMessage;
+    let webMessagingStub: any, browserMessagingStub: BrowserMessagingStub, windowId: any, joynrMessage: any;
 
     beforeEach(() => {
-        function WebMessagingStub() {}
-        webMessagingStub = new WebMessagingStub();
-        webMessagingStub.transmit = jasmine.createSpy("transmit");
+        webMessagingStub = { transmit: jest.fn() };
 
         browserMessagingStub = new BrowserMessagingStub({
             webMessagingStub
         });
 
         windowId = "mywindowId";
-        function JoynrMessage() {}
+        class JoynrMessage {}
         joynrMessage = new JoynrMessage();
     });
 

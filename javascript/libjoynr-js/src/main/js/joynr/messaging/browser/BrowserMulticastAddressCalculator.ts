@@ -16,31 +16,32 @@
  * limitations under the License.
  * #L%
  */
-/*eslint no-unused-vars: "off"*/
-const Typing = require("../../util/Typing");
+import * as BrowserAddress from "../../../generated/joynr/system/RoutingTypes/BrowserAddress";
+import * as Typing from "../../util/Typing";
+import JoynrMessage = require("../JoynrMessage");
 
 class BrowserMulticastAddressCalculator {
+    private settings: any;
     /**
      * @constructor BrowserMulticastAddressCalculator
-     * @param {Object} settings
-     * @param {BrowserAddress} settings.globalAddress
+     * @param settings
+     * @param settings.globalAddress
      */
-    constructor(settings) {
+    public constructor(settings: { globalAddress: BrowserAddress }) {
         Typing.checkProperty(settings, "Object", "settings");
         Typing.checkProperty(settings.globalAddress, "BrowserAddress", "settings.globalAddress");
-        this._settings = settings;
+        this.settings = settings;
     }
 
     /**
      * Calculates the multicast address for the submitted joynr message
-     * @function BrowserMulticastAddressCalculator#calculate
      *
-     * @param {JoynrMessage} message
+     * @param _message
      * @return {Address} the multicast address
      */
-    calculate(message) {
-        return this._settings.globalAddress;
+    public calculate(_message: JoynrMessage): BrowserAddress {
+        return this.settings.globalAddress;
     }
 }
 
-module.exports = BrowserMulticastAddressCalculator;
+export = BrowserMulticastAddressCalculator;
