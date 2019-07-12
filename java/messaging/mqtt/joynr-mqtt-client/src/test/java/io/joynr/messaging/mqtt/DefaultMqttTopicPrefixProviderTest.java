@@ -59,6 +59,9 @@ public class DefaultMqttTopicPrefixProviderTest {
     @Mock
     private MessageRouter mockMessageRouter;
 
+    @Mock
+    private MqttClientFactory mqttClientFactory;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -74,6 +77,7 @@ public class DefaultMqttTopicPrefixProviderTest {
                 Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);
                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
                 bind(MessageRouter.class).toInstance(mockMessageRouter);
+                bind(MqttClientFactory.class).toInstance(mqttClientFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(Executors.newScheduledThreadPool(10));
             }
