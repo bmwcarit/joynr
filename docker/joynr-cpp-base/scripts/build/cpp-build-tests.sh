@@ -108,7 +108,6 @@ then
     cd /data/src/
     mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests \
     --projects \
-    io.joynr.tools.generator:dependency-libs,\
     io.joynr.tools.generator:generator-framework,\
     io.joynr.tools.generator:joynr-generator-maven-plugin,\
     io.joynr.tools.generator:java-generator,\

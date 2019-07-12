@@ -114,13 +114,6 @@ Java, C++, etc. program code depending on the target language. A Franca file mus
 extension ".fidl" and be placed at the correct location in the source tree. The generated code is
 then used to implement the Application modelled by the corresponding Franca files.
 
->*Note: Since the necessary Franca dependencies are currently not available from
->[Maven Central Repository](http://search.maven.org/), we ship Franca dependencies together with the
->joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.*
->
->*If you build joynr yourself using the provided docker and / or Maven infrastructure, the Franca
->dependencies are installed to your local Maven repository during the build.*
-
 ## Runtime Environment
 joynr requires the following components to run:
 

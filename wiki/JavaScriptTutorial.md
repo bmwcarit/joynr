@@ -11,11 +11,7 @@ If you haven't built joynr yet, please do so first:
 * [Building joynr Java](java_building_joynr.md).
 
 This will install the necessary dependencies to your local Maven repository and generate the radio
-application source files. In particular, the
-[Franca IDL](https://code.google.com/a/eclipselabs.org/p/franca/) dependencies that are currently
-not available from [Maven Central Repository](http://search.maven.org/) are installed. Since Franca
-is needed for joynr code generation, we ship Franca dependencies together with the joynr source code
-in the `<JOYNR>/tools/generator/dependency-libs/` directory.
+application source files.
 
 ## Building joynr JavaScript
 

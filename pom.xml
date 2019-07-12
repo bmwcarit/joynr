@@ -430,7 +430,7 @@
 		<android.platform.version>8.0.0_r2</android.platform.version>
 		<android.platform.level>26</android.platform.level>
 		<skipTests>true</skipTests>
-		<franca.version>0.13.0</franca.version>
+		<franca.version>0.13.1</franca.version>
 		<xtend.version>2.16.0</xtend.version>
 		<xtext.version>2.16.0</xtext.version>
 		<maven.compiler.source>1.8</maven.compiler.source>

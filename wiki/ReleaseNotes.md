@@ -16,6 +16,12 @@ None.
   examples/stateless-async/stateless-async-jee-consumer/src/main/webapp/WEB-INF/glassfish-web.xml
   for an example of how to do this for Payara / Glassfish 5.x)
 * **[Docs]** Added documentation of configuring the [Java MQTT Clients](./java_mqtt_clients.md)
+* **[All]** Franca dependencies were updated and are now fetched from Maven Central. These  
+  dependencies are no longer packaged with joynr and should be fetched from Maven Central. Please  
+  make sure to upgrade any components accordingly to avoid possible version conflicts:
+  * org.franca:org.franca.core updated from version 0.13.0 to 0.13.1
+  * org.franca:org.franca.core.dsl updated from version 0.13.0 to 0.13.1
+  * org.franca:org.franca.deploymodel.dsl updated from version 0.13.0 to 0.13.1
 
 # joynr 1.8.2
 
