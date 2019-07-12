@@ -81,8 +81,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private final int keepAliveTimeSeconds;
     private final boolean cleanSession;
 
-    private JoynrMqttClient sender;
-    private JoynrMqttClient receiver;
+    private volatile JoynrMqttClient sender;
+    private volatile JoynrMqttClient receiver;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
