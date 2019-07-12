@@ -41,14 +41,14 @@ services:
       - "joynrbackend-1"
       - "joynrbackend-2"
 
-  sit-onboard-apps:
-    image: "sit-onboard-apps:latest"
-    container_name: sit-onboard-apps
-    tty: true
-    depends_on:
-      - "joynrbackend-1"
-      - "joynrbackend-2"
-
+#  sit-onboard-apps:
+#    image: "sit-onboard-apps:latest"
+#    container_name: sit-onboard-apps
+#    tty: true
+#    depends_on:
+#      - "joynrbackend-1"
+#      - "joynrbackend-2"
+#
   sit-jee-stateless-consumer-node-1:
     image: "sit-jee-stateless-consumer:latest"
     container_name: sit-jee-stateless-consumer-node-1
