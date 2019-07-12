@@ -54,6 +54,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -126,7 +127,10 @@ public class ArbitrationTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
                 assert (arguments[0] instanceof Callback);
-                ((Callback<?>) arguments[0]).resolve((Object) capabilitiesList.toArray(new DiscoveryEntryWithMetaInfo[0]));
+                assert (arguments[0] instanceof CallbackWithModeledError);
+                @SuppressWarnings("unchecked")
+                CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callback = (CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>) arguments[0];
+                callback.resolve((Object) capabilitiesList.toArray(new DiscoveryEntryWithMetaInfo[0]));
                 localDiscoveryAggregatorSemaphore.release();
                 return null;
             }
@@ -177,6 +181,11 @@ public class ArbitrationTest {
         }
     }
 
+    private void createArbitratorWithCallbackAndAwaitArbitration(DiscoveryQos discoveryQos,
+                                                                 String... domains) throws InterruptedException {
+        createArbitratorWithCallbackAndAwaitArbitration(discoveryQos, null, domains);
+    }
+
     /**
      * @param discoveryQos the DiscoveryQos used to create the arbitrator object
      * @param domains optional list of domains used to create the arbitrator object. If nothing is
@@ -184,11 +193,10 @@ public class ArbitrationTest {
      * @throws InterruptedException
      */
     private void createArbitratorWithCallbackAndAwaitArbitration(DiscoveryQos discoveryQos,
+                                                                 String[] gbids,
                                                                  String... domains) throws InterruptedException {
         try {
             Set<String> domainsSet;
-            String[] gbids = null;
-
             if (domains.length == 0) {
                 domainsSet = new HashSet<String>(Arrays.asList(domain));
             } else {
@@ -206,7 +214,7 @@ public class ArbitrationTest {
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(1000, TimeUnit.MILLISECONDS));
         } catch (DiscoveryException e) {
-            fail("A Joyn Arbitration Exception has been thrown");
+            fail("A Joynr Arbitration Exception has been thrown: " + e.getMessage());
         }
     }
 
@@ -554,7 +562,6 @@ public class ArbitrationTest {
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testCustomArbitrationFunction() throws InterruptedException {
         // Expected provider supports onChangeSubscriptions
@@ -573,8 +580,8 @@ public class ArbitrationTest {
         capabilitiesList.add(discoveryEntry);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class),
-                                                any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
+        when(arbitrationStrategyFunction.select(Matchers.<Map<String, String>> any(),
+                                                Matchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
@@ -588,7 +595,6 @@ public class ArbitrationTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testCustomArbitrationFunctionMultipleMatches() throws InterruptedException {
         // Expected provider supports onChangeSubscriptions
@@ -612,8 +618,8 @@ public class ArbitrationTest {
         }
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class),
-                                                any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
+        when(arbitrationStrategyFunction.select(Matchers.<Map<String, String>> any(),
+                                                Matchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
@@ -627,7 +633,6 @@ public class ArbitrationTest {
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testVersionFilterUsed() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
@@ -648,8 +653,8 @@ public class ArbitrationTest {
         }
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(any(Map.class),
-                                                any(Collection.class))).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
+        when(arbitrationStrategyFunction.select(Matchers.<Map<String, String>> any(),
+                                                Matchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
