@@ -107,6 +107,7 @@ import joynr.types.Version;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryTest {
+    private static final int TEST_TIMEOUT = 10000;
     private static final String TEST_URL = "http://testUrl";
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
     private static final long defaultDiscoveryRetryIntervalMs = 2000L;
@@ -278,7 +279,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalDiscoveryEntryCacheMock, times(1)).add(eq(globalDiscoveryEntry));
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapability() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] expectedGbids = new String[]{ knownGbids[0] };
@@ -287,7 +288,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkCallToGlobalCapabilitiesDirectoryClientAndCache(discoveryEntry, expectedGbids);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithSingleNonDefaultGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1] };
         String[] expectedGbids = gbids.clone();
@@ -296,7 +297,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkCallToGlobalCapabilitiesDirectoryClientAndCache(discoveryEntry, expectedGbids);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithMultipleGbids() throws InterruptedException {
         // expectedGbids element order intentionally differs from knownGbids element order
         String[] gbids = new String[]{ knownGbids[1], knownGbids[0] };
@@ -306,7 +307,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkCallToGlobalCapabilitiesDirectoryClientAndCache(discoveryEntry, expectedGbids);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithGbidsWithoutElements() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{};
@@ -315,7 +316,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkCallToGlobalCapabilitiesDirectoryClientAndCache(discoveryEntry, expectedGbids);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithAddToAll() throws InterruptedException {
         String[] expectedGbids = new String[]{ knownGbids[0], knownGbids[1] };
         final boolean awaitGlobalRegistration = true;
@@ -323,7 +324,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkCallToGlobalCapabilitiesDirectoryClientAndCache(discoveryEntry, expectedGbids);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithNullGbids() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = null;
@@ -331,7 +332,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseError(promise, DiscoveryError.INVALID_GBID);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithGbidsWithNullEntry() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0], null };
@@ -339,7 +340,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseError(promise, DiscoveryError.INVALID_GBID);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithGbidsWithEmptyStringEntry() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0], "" };
@@ -347,7 +348,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseError(promise, DiscoveryError.INVALID_GBID);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithGbidsWithDuplicateStringEntries() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0], knownGbids[0] };
@@ -355,7 +356,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseError(promise, DiscoveryError.INVALID_GBID);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addCapabilityWithUnknownGbidEntry() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0], "unknownGbid" };
@@ -363,7 +364,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseError(promise, DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test(timeout = 2000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addLocalOnlyCapability() throws InterruptedException {
 
         ProviderQos providerQos = new ProviderQos();
@@ -388,7 +389,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalDiscoveryEntryCacheMock, never()).add(Matchers.<GlobalDiscoveryEntry> any());
     }
 
-    @Test(timeout = 2000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addGlobalCapSucceeds_NextAddShallAddGlobalAgain() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
@@ -413,7 +414,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseSuccess(promise2, "add failed");
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = TEST_TIMEOUT)
     public void addGlobalCapFails_NextAddShallAddGlobalAgain() throws InterruptedException {
 
         ProviderQos providerQos = new ProviderQos();
@@ -492,32 +493,32 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseErrorInProviderRuntimeException(promise, expectedError);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGbidsIsProperlyRejected_invalidGbid() throws InterruptedException {
         testAddWithGbidsIsProperlyRejected(DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGbidsIsProperlyRejected_unknownGbid() throws InterruptedException {
         testAddWithGbidsIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGbidsIsProperlyRejected_internalError() throws InterruptedException {
         testAddWithGbidsIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddIsProperlyRejected_invalidGbid() throws InterruptedException {
         testAddIsProperlyRejected(DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddIsProperlyRejected_unknownGbid() throws InterruptedException {
         testAddIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddIsProperlyRejected_internalError() throws InterruptedException {
         testAddIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
     }
@@ -527,37 +528,37 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseError(promise, expectedError);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGbids_unknownGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1], "unknown" };
         testAddWithDiscoveryError(gbids, DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1], "" };
         testAddWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGbids_invalidGbid_duplicateGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1], knownGbids[1] };
         testAddWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGbids_invalidGbid_nullGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1], null };
         testAddWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGbids_invalidGbid_nullGbidArray() throws InterruptedException {
         String[] gbids = null;
         testAddWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void addSameGbidTwiceInARow() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0] };
@@ -588,7 +589,7 @@ public class LocalCapabilitiesDirectoryTest {
                              Matchers.<String[]> any());
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void addDifferentGbidsAfterEachOther() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids1 = new String[]{ knownGbids[0] };
@@ -651,7 +652,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(expectedEntry, result2[0]);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddKnownLocalEntryDoesNothing() throws InterruptedException {
         discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(discoveryEntry);
@@ -668,7 +669,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalCapabilitiesDirectoryClient, never()).add(any(), any(), any());
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddKnownLocalEntryWithDifferentExpiryDateAddsAgain() throws InterruptedException {
         discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(discoveryEntry);
@@ -686,7 +687,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalCapabilitiesDirectoryClient, never()).add(any(), any(), any());
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddWithGlobalAddressProviderThrowingException() throws InterruptedException {
         when(globalAddressProvider.get()).thenThrow(new JoynrRuntimeException());
 
@@ -699,7 +700,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalCapabilitiesDirectoryClient, times(0)).add(any(), any(), any());
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddToAll() throws InterruptedException {
         boolean awaitGlobalRegistration = true;
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
@@ -713,7 +714,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseSuccess(promise, "addToAll failed");
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddToAllLocal() throws InterruptedException {
         discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
         boolean awaitGlobalRegistration = true;
@@ -730,7 +731,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(localDiscoveryEntryStoreMock, times(1)).add(eq(discoveryEntry));
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddToAllIsProperlyRejected_exception() throws InterruptedException {
         doAnswer(createAddAnswerWithException()).when(globalCapabilitiesDirectoryClient)
                                                 .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -743,7 +744,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(discoveryEntry.getParticipantId()));
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddToAllIsProperlyRejected_internalError() throws InterruptedException {
         doAnswer(createAddAnswerWithDiscoveryError(DiscoveryError.INTERNAL_ERROR)).when(globalCapabilitiesDirectoryClient)
                                                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -756,7 +757,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(globalDiscoveryEntry.getParticipantId()));
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddToAllIsProperlyRejected_invalidGbid() throws InterruptedException {
         doAnswer(createAddAnswerWithDiscoveryError(DiscoveryError.INVALID_GBID)).when(globalCapabilitiesDirectoryClient)
                                                                                 .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -769,7 +770,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(globalDiscoveryEntry.getParticipantId()));
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testAddToAllIsProperlyRejected_unknownGbid() throws InterruptedException {
         doAnswer(createAddAnswerWithDiscoveryError(DiscoveryError.UNKNOWN_GBID)).when(globalCapabilitiesDirectoryClient)
                                                                                 .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -843,7 +844,7 @@ public class LocalCapabilitiesDirectoryTest {
         };
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = TEST_TIMEOUT)
     public void lookupWithScopeGlobalOnly() throws InterruptedException {
         List<GlobalDiscoveryEntry> caps = new ArrayList<GlobalDiscoveryEntry>();
         String domain1 = "domain1";
@@ -979,7 +980,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              eq(gbids));
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void lookupWithScopeLocalThenGlobal() throws InterruptedException {
         List<GlobalDiscoveryEntry> caps = new ArrayList<GlobalDiscoveryEntry>();
         String domain1 = "domain1";
@@ -1094,7 +1095,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              1); // 1 global entry
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void lookupByParticipantIdWithScopeLocalSync() throws InterruptedException {
         String domain1 = "domain1";
         String interfaceName1 = "interfaceName1";
@@ -1128,7 +1129,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(expectedDiscoveryEntry, retrievedCapabilityEntry);
     }
 
-    @Test(timeout = 3000)
+    @Test(timeout = TEST_TIMEOUT)
     public void lookupWithScopeLocalAndGlobal() throws InterruptedException {
         List<GlobalDiscoveryEntry> globalEntries = new ArrayList<GlobalDiscoveryEntry>();
         String domain1 = "domain1";
@@ -1229,7 +1230,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              2); // 1 local, 1 global entry
     }
 
-    @Test(timeout = 2000)
+    @Test(timeout = TEST_TIMEOUT)
     public void lookupLocalAndGlobalFiltersDuplicates() throws InterruptedException {
         String domain = "domain";
         String[] domainsForLookup = new String[]{ domain };
@@ -1277,7 +1278,7 @@ public class LocalCapabilitiesDirectoryTest {
                          .contains(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, discoveryEntry)));
     }
 
-    @Test(timeout = 4000)
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterface_globalOnly_filtersRemoteCachedEntriesByGbids() throws InterruptedException {
         String domain = "domain";
         String[] domainsForLookup = new String[]{ domain };
@@ -1327,7 +1328,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(expectedEntry1, result2[0]);
     }
 
-    @Test(timeout = 4000)
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterface_globalOnly_filtersLocalCachedEntriesByGbids() throws InterruptedException {
         String domain = "domain";
         String[] domainsForLookup = new String[]{ domain };
@@ -1386,7 +1387,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(expectedEntry, result3[0]);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantId_globalOnly_filtersLocalCachedEntriesByGbids() throws InterruptedException {
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
 
@@ -1435,7 +1436,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(expectedEntry, result3);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupMultipleDomainsLocalOnly() throws InterruptedException {
         String[] domains = new String[]{ "domain1", "domain2" };
         String interfaceName = "interface1";
@@ -1466,7 +1467,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(2, ((DiscoveryEntryWithMetaInfo[]) values[0]).length);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupMultipleDomainsGlobalOnly() throws InterruptedException {
         String[] domains = new String[]{ "domain1", "domain2" };
         String interfaceName = "interface1";
@@ -1495,7 +1496,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupMultipleDomainsGlobalOnlyAllCached() throws InterruptedException {
         String[] domains = new String[]{ "domain1", "domain2" };
         String interfaceName = "interface1";
@@ -1526,7 +1527,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              2); // 2 cached entries
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupMultipleDomainsGlobalOnlyOneCached() throws InterruptedException {
         String[] domains = new String[]{ "domain1", "domain2" };
         String interfaceName = "interface1";
@@ -1559,7 +1560,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              1);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupMultipleDomainsLocalThenGlobal() throws InterruptedException {
         String[] domains = new String[]{ "domain1", "domain2", "domain3" };
         String interfaceName = "interface1";
@@ -1613,7 +1614,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(captured.contains(new DiscoveryEntry(remoteGlobalEntry)));
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantId_localEntry_DiscoveryEntryWithMetaInfoContainsExpectedIsLocalValue() throws Exception {
         String participantId = "participantId";
         String interfaceName = "interfaceName";
@@ -1637,7 +1638,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(localEntryWithMetaInfo, capturedLocalEntry);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantId_cachedEntry_DiscoveryEntryWithMetaInfoContainsExpectedIsLocalValue() throws Exception {
         String participantId = discoveryEntry.getParticipantId();
         String interfaceName = "interfaceName";
@@ -1659,7 +1660,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(cachedGlobalEntryWithMetaInfo, capturedCachedGlobalEntry);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantId_globalEntry_DiscoveryEntryWithMetaInfoContainsExpectedIsLocalValue() throws Exception {
         String participantId = "participantId";
         String interfaceName = "interfaceName";
@@ -1700,7 +1701,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(remoteGlobalEntryWithMetaInfo, capturedRemoteGlobalEntry);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookup_DiscoveryEntriesWithMetaInfoContainExpectedIsLocalValue() throws InterruptedException {
         String globalDomain = "globaldomain";
         String remoteGlobalDomain = "remoteglobaldomain";
@@ -1759,7 +1760,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(capabilities.contains(remoteGlobalEntryWithMetaInfo));
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_exception() throws InterruptedException {
         String domain = "domain";
         String[] domains = new String[]{ domain };
@@ -1823,47 +1824,47 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseErrorInProviderRuntimeException(promise, expectedError);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceIsProperlyRejected_invalidGbid() throws InterruptedException {
         testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceIsProperlyRejected_unknownGbid() throws InterruptedException {
         testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceIsProperlyRejected_internalError() throws InterruptedException {
         testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceIsProperlyRejected_noEntryForSelectedBackend() throws InterruptedException {
         testLookupByDomainInterfaceIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_invalidGbid() throws InterruptedException {
         testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_unknownGbid() throws InterruptedException {
         testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_internalError() throws InterruptedException {
         testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbidsIsProperlyRejected_noEntryForSelectedBackend() throws InterruptedException {
         testLookupByDomainInterfaceWithGbidsIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbidsIsProperlyRejected_exception() throws InterruptedException {
         String participantId = "participantId";
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -1912,111 +1913,111 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseErrorInProviderRuntimeException(promise, expectedError);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdIsProperlyRejected_invalidGbid() throws InterruptedException {
         testLookupByParticipantIdIsProperlyRejected(DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdIsProperlyRejected_unknownGbid() throws InterruptedException {
         testLookupByParticipantIdIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdIsProperlyRejected_internalError() throws InterruptedException {
         testLookupByParticipantIdIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdIsProperlyRejected_noEntryForSelectedBackend() throws InterruptedException {
         testLookupByParticipantIdIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdIsProperlyRejected_noEntryForParticipant() throws InterruptedException {
         testLookupByParticipantIdIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbidsIsProperlyRejected_invalidGbid() throws InterruptedException {
         testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbidsIsProperlyRejected_unknownGbid() throws InterruptedException {
         testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbidsIsProperlyRejected_internalError() throws InterruptedException {
         testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.INTERNAL_ERROR);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbidsIsProperlyRejected_noEntryForSelectedBackend() throws InterruptedException {
         testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbidsIsProperlyRejected_noEntryForParticipant() throws InterruptedException {
         testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbids_unknownGbids() throws InterruptedException {
         String[] gbids = new String[]{ "not", "known" };
         testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbids_unknownGbids() throws InterruptedException {
         String[] gbids = new String[]{ "not", "known" };
         testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.UNKNOWN_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
         String[] gbids = new String[]{ "" };
         testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
         String[] gbids = new String[]{ "" };
         testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbids_invalidGbid__duplicateGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1], knownGbids[0], knownGbids[1] };
         testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbids_invalidGbid__duplicateGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1], knownGbids[0], knownGbids[1] };
         testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbids_invalidGbid_nullGbid() throws InterruptedException {
         String[] gbids = new String[]{ null };
         testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbids_invalidGbid_nullGbid() throws InterruptedException {
         String[] gbids = new String[]{ null };
         testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbids_invalidGbid_nullGbidArray() throws InterruptedException {
         String[] gbids = null;
         testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantIdWithGbids_invalidGbid_nullGbidArray() throws InterruptedException {
         String[] gbids = null;
         testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
@@ -2153,7 +2154,7 @@ public class LocalCapabilitiesDirectoryTest {
         return new MyCollectionMatcher(n);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = TEST_TIMEOUT)
     public void removeCapabilities() throws InterruptedException {
         when(globalAddressProvider.get()).thenReturn(new MqttAddress("testgbid", "testtopic"));
         localCapabilitiesDirectory.add(discoveryEntry);
@@ -2165,7 +2166,7 @@ public class LocalCapabilitiesDirectoryTest {
                                      any(String[].class));
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testGCDRemoveNotCalledIfParticipantIsNotRegistered() throws InterruptedException {
         localCapabilitiesDirectory.remove(discoveryEntry);
         verify(globalCapabilitiesDirectoryClient,
@@ -2205,7 +2206,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                          eq(expectedGbids));
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void testRemoveUsesSameGbidOrderAsAdd() throws InterruptedException {
         testRemoveUsesSameGbidOrderAsAdd(new String[]{ knownGbids[0] });
 
@@ -2216,7 +2217,7 @@ public class LocalCapabilitiesDirectoryTest {
         testRemoveUsesSameGbidOrderAsAdd(new String[]{ knownGbids[1], knownGbids[0] });
     }
 
-    @Test
+    @Test(timeout = TEST_TIMEOUT)
     public void callTouchPeriodically() throws InterruptedException {
         Runnable runnable = runnableCaptor.getValue();
         runnable.run();
