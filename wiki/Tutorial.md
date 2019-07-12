@@ -12,10 +12,7 @@ If you haven't built joynr yet, please do so first:
 * [Building joynr C++](cpp_building_joynr.md) for the C++ example.
 
 This will install the necessary dependencies to your local Maven repository and generate the radio
-application source files. In particular, the [Franca IDL](https://github.com/franca/franca)
-dependencies that are currently not available from [Maven Central Repository](http://search.maven.org/)
-are installed. Since Franca is needed for joynr code generation, we ship Franca dependencies together
-with the joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.
+application source files.
 
 # Exploring the demo
 The example project contains a java and c++ variation, letting you explore whichever one you find

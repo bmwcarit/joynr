@@ -2,6 +2,22 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.10.0
+
+## API relevant changes
+None.
+
+## Other changes
+* **[All]** Franca dependencies were updated and are now fetched from Maven Central. These  
+  dependencies are no longer packaged with joynr and should be fetched from Maven Central. Please  
+  make sure to upgrade any components accordingly to avoid possible version conflicts:
+  * org.franca:org.franca.core updated from version 0.13.0 to 0.13.1
+  * org.franca:org.franca.core.dsl updated from version 0.13.0 to 0.13.1
+  * org.franca:org.franca.deploymodel.dsl updated from version 0.13.0 to 0.13.1
+
+## Configuration property changes
+None.
+
 # joynr 1.9.1
 
 ## API relevant changes

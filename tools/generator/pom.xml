@@ -32,7 +32,6 @@
 	</parent>
 
 	<modules>
-		<module>dependency-libs</module>
 		<module>framework</module>
 		<module>cpp-generator</module>
 		<module>java-generator</module>

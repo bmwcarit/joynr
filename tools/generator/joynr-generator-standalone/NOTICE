@@ -58,9 +58,9 @@ This project has dependencies to:
   org.eclipse.emf.common under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore.xmi under The Eclipse Public License Version 1.0
-  org.franca.core under Eclipse Public License - v 1.0
-  org.franca.core.dsl under Eclipse Public License - v 1.0
-  org.franca.deploymodel.dsl under Eclipse Public License - v 1.0
+  org.franca.core under Eclipse Public License v1.0
+  org.franca.core.dsl under Eclipse Public License v1.0
+  org.franca.deploymodel.dsl under Eclipse Public License v1.0
   OSGi System Bundle under Eclipse Public License - v 2.0
   Reflections under WTFPL or The New BSD License
   SLF4J API Module under MIT License

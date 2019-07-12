@@ -5,13 +5,6 @@ Franca IDL files can be written in any text editor.
 We recommend using the Franca Eclipse tooling to simplify the process (syntax highlighting, code
 completion, model validation etc.): Franca IDL (https://github.com/franca/franca)
 
->*Note: Since the necessary Franca dependencies are currently not available from
->[Maven Central Repository](http://search.maven.org/), we ship Franca dependencies together with the
->joynr source code in the `<JOYNR>/tools/generator/dependency-libs/` directory.*
->
->*If you build joynr yourself using the provided docker and / or Maven infrastructure, the Franca
->dependencies are installed to your local Maven repository during the build.*
-
 The following sections provide a brief overview of Franca.
 
 ## Franca Data types
