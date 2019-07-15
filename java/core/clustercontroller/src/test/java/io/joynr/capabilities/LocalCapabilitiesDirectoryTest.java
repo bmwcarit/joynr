@@ -138,6 +138,7 @@ public class LocalCapabilitiesDirectoryTest {
     private MqttAddress globalAddress2;
     private String globalAddress2Serialized;
     private MqttAddress globalAddressWithoutGbid;
+    private String globalAddressWithoutGbidSerialized;
 
     private DiscoveryEntry discoveryEntry;
     private DiscoveryEntry expectedDiscoveryEntry;
@@ -255,6 +256,7 @@ public class LocalCapabilitiesDirectoryTest {
         globalAddress2 = new MqttAddress(knownGbids[1], "testTopic");
         globalAddress2Serialized = objectMapper.writeValueAsString(globalAddress2);
         globalAddressWithoutGbid = new MqttAddress("brokerUri", "testTopic");
+        globalAddressWithoutGbidSerialized = objectMapper.writeValueAsString(globalAddressWithoutGbid);
 
         Field objectMapperField = CapabilityUtils.class.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);
@@ -2050,6 +2052,118 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              1);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void testLookupMultipleDomains_localThenGlobal_oneLocalSameAndAnotherCached_sameParticipantIdsFromGcd() throws InterruptedException {
+        // TODO fix bug in LocalCapabilitiesDirectoryImpl
+        String localDomain = "localDomain";
+        String cachedDomain = "cachedDomain";
+        String remoteDomain = "remoteDomain";
+        String[] domains = new String[]{ localDomain, cachedDomain, remoteDomain };
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_THEN_GLOBAL);
+        discoveryQos.setCacheMaxAge(ONE_DAY_IN_MS);
+
+        // local entry for participantId1 and domain1
+        discoveryEntry.setParticipantId("participantId1");
+        discoveryEntry.setDomain(localDomain);
+        doReturn(Arrays.asList(discoveryEntry)).when(localDiscoveryEntryStoreMock)
+                                               .lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)),
+                                                       eq(INTERFACE_NAME));
+
+        // cached entry for local provider and cached entry for participantId2 for cachedDomain
+        GlobalDiscoveryEntry cachedLocalEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
+                                                                                                    globalAddressWithoutGbid);
+        GlobalDiscoveryEntry cachedRemoteEntry = new GlobalDiscoveryEntry();
+        cachedRemoteEntry.setParticipantId("participantId2");
+        cachedRemoteEntry.setInterfaceName(INTERFACE_NAME);
+        cachedRemoteEntry.setDomain(cachedDomain);
+        cachedRemoteEntry.setAddress(globalAddress1Serialized);
+        doReturn(Arrays.asList(cachedLocalEntry,
+                               cachedRemoteEntry)).when(globalDiscoveryEntryCacheMock)
+                                                  .lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)),
+                                                          eq(INTERFACE_NAME),
+                                                          eq(discoveryQos.getCacheMaxAge()));
+
+        // remote entries for local provider and for remoteDomain for participantIds 2 and 3
+        GlobalDiscoveryEntry remoteEntry1 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
+                                                                                                globalAddressWithoutGbid);
+        remoteEntry1.setDomain(remoteDomain);
+        GlobalDiscoveryEntry remoteEntry2 = new GlobalDiscoveryEntry(cachedRemoteEntry);
+        remoteEntry2.setDomain(remoteDomain);
+        remoteEntry2.setAddress(globalAddressWithoutGbidSerialized);
+        GlobalDiscoveryEntry remoteEntry3 = new GlobalDiscoveryEntry(cachedRemoteEntry);
+        remoteEntry3.setParticipantId("participantId3");
+        remoteEntry3.setDomain(remoteDomain);
+        remoteEntry3.setAddress(globalAddressWithoutGbidSerialized);
+        doAnswer(createLookupAnswer(Arrays.asList(remoteEntry1,
+                                                  remoteEntry2,
+                                                  remoteEntry3))).when(globalCapabilitiesDirectoryClient)
+                                                                 .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                         eq(new String[]{ remoteDomain }),
+                                                                         eq(INTERFACE_NAME),
+                                                                         eq(discoveryQos.getDiscoveryTimeout()),
+                                                                         eq(knownGbids));
+
+        Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, INTERFACE_NAME, discoveryQos);
+
+        verify(localDiscoveryEntryStoreMock).lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)),
+                                                    eq(INTERFACE_NAME));
+        verify(globalDiscoveryEntryCacheMock).lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)),
+                                                     eq(INTERFACE_NAME),
+                                                     eq(discoveryQos.getCacheMaxAge()));
+        verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                         eq(new String[]{ remoteDomain }),
+                                                         eq(INTERFACE_NAME),
+                                                         eq(discoveryQos.getDiscoveryTimeout()),
+                                                         eq(knownGbids));
+        Object[] values = verifyGcdLookupAndPromiseFulfillment(1,
+                                                               new String[]{ remoteDomain },
+                                                               INTERFACE_NAME,
+                                                               discoveryQos.getDiscoveryTimeout(),
+                                                               knownGbids,
+                                                               promise,
+                                                               3);
+        DiscoveryEntryWithMetaInfo[] result = (DiscoveryEntryWithMetaInfo[]) values[0];
+        // TODO check if result array contains the expected discovery entries (with meta info):
+        // discoveryEntry, remoteEntry2, remoteEntry3
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByDomainInterfaceWithGbids_localAndGlobal_localEntries_invokesGcd_returnsFilteredCombinedResult() throws Exception {
+        // TODO fix bug in LocalCapabilitiesDirectoryImpl
+        String[] domains = { discoveryEntry.getDomain() };
+        List<DiscoveryEntry> localDiscoveryEntries = Arrays.asList(discoveryEntry);
+        List<GlobalDiscoveryEntry> globalDiscoveryEntries = Arrays.asList(globalDiscoveryEntry);
+        final long cacheMaxAge = 10000L;
+        final long discoveryTimeout = 5000L;
+
+        DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge,
+                                                     discoveryTimeout,
+                                                     DiscoveryScope.LOCAL_AND_GLOBAL,
+                                                     false);
+        when(localDiscoveryEntryStoreMock.lookup(eq(domains), eq(INTERFACE_NAME))).thenReturn(localDiscoveryEntries);
+        doAnswer(createLookupAnswer(globalDiscoveryEntries)).when(globalCapabilitiesDirectoryClient)
+                                                            .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                    Mockito.<String[]> any(),
+                                                                    anyString(),
+                                                                    anyLong(),
+                                                                    any());
+
+        Promise<Lookup2Deferred> lookupPromise = localCapabilitiesDirectory.lookup(domains,
+                                                                                   INTERFACE_NAME,
+                                                                                   discoveryQos,
+                                                                                   new String[0]);
+
+        Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
+        DiscoveryEntryWithMetaInfo[] capturedDiscoveryEntries = (DiscoveryEntryWithMetaInfo[]) values[0];
+        assertEquals(1, capturedDiscoveryEntries.length);
+        verify(globalCapabilitiesDirectoryClient).lookup(any(),
+                                                         eq(domains),
+                                                         eq(INTERFACE_NAME),
+                                                         eq(discoveryTimeout),
+                                                         any());
     }
 
     @Test(timeout = TEST_TIMEOUT)
