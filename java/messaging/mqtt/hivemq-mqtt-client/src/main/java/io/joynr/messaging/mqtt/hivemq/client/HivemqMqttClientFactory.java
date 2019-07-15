@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -80,6 +81,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private final ScheduledExecutorService scheduledExecutorService;
     private final int keepAliveTimeSeconds;
     private final boolean cleanSession;
+    private final int connectionTimeoutSec;
 
     private volatile JoynrMqttClient sender;
     private volatile JoynrMqttClient receiver;
@@ -108,12 +110,21 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD)
     private String trustStorePWD;
 
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_USERNAME)
+    private String username = "";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_PASSWORD)
+    private String password = "";
+
     @Inject
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimeSeconds,
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
+                                   @Named(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC) int connectionTimeoutSec,
                                    MqttClientIdProvider mqttClientIdProvider) {
         this.ownAddress = ownAddress;
         this.separateConnections = separateConnections;
@@ -121,6 +132,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         this.mqttClientIdProvider = mqttClientIdProvider;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
         this.cleanSession = cleanSession;
+        this.connectionTimeoutSec = connectionTimeoutSec;
     }
 
     @Override
@@ -182,8 +194,17 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             clientBuilder.sslWithDefaultConfig();
             setupSslConfig(clientBuilder);
         }
+        if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
+            clientBuilder.simpleAuth()
+                         .username(username)
+                         .password(password.getBytes(StandardCharsets.UTF_8))
+                         .applySimpleAuth();
+        }
         Mqtt3RxClient client = clientBuilder.buildRx();
-        HivemqMqttClient result = new HivemqMqttClient(client, keepAliveTimeSeconds, cleanSession);
+        HivemqMqttClient result = new HivemqMqttClient(client,
+                                                       keepAliveTimeSeconds,
+                                                       cleanSession,
+                                                       connectionTimeoutSec);
         resubscribeHandler.setClient(result);
         disconnectedListener.setClient(result);
         return result;

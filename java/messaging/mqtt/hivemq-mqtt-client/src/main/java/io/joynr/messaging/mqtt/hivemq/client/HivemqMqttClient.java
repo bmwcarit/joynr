@@ -20,6 +20,7 @@ package io.joynr.messaging.mqtt.hivemq.client;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -55,14 +56,19 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private Consumer<Mqtt3Publish> publishConsumer;
     private IMqttMessagingSkeleton messagingSkeleton;
     private int keepAliveTimeSeconds;
+    private int connectionTimeoutSec;
     private volatile boolean shuttingDown;
 
     private Map<String, Mqtt3Subscription> subscriptions = new ConcurrentHashMap<>();
 
-    public HivemqMqttClient(Mqtt3RxClient client, int keepAliveTimeSeconds, boolean cleanSession) {
+    public HivemqMqttClient(Mqtt3RxClient client,
+                            int keepAliveTimeSeconds,
+                            boolean cleanSession,
+                            int connectionTimeoutSec) {
         this.client = client;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
         this.cleanSession = cleanSession;
+        this.connectionTimeoutSec = connectionTimeoutSec;
     }
 
     @Override
@@ -78,6 +84,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                         .build();
                 try {
                     client.connect(mqtt3Connect)
+                          .timeout(connectionTimeoutSec, TimeUnit.SECONDS)
                           .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.", client, connAck))
                           .doOnError(throwable -> logger.error("Unable to connect MQTT client {}.", client, throwable))
                           .blockingGet();
@@ -120,7 +127,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage) {
-        publishMessage(topic, serializedMessage, MqttQos.AT_MOST_ONCE.getCode());
+        publishMessage(topic, serializedMessage, MqttQos.AT_LEAST_ONCE.getCode());
     }
 
     @Override
@@ -137,7 +144,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private MqttQos safeParseQos(int qosLevel) {
         MqttQos result = MqttQos.fromCode(qosLevel);
         if (result == null) {
-            result = MqttQos.AT_MOST_ONCE;
+            result = MqttQos.AT_LEAST_ONCE;
         }
         return result;
     }

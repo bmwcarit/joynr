@@ -86,6 +86,9 @@ injected together at the same time joynr is only able to communicate over one gl
 middleware at the same time. The only exception are fire and forget method calls which do not
 expect an answer.
 
+For details on configuring MQTT as the transport layer, please see the
+[Java MQTT Clients](./java_mqtt_clients.md) documentation.
+
 After choosing which RuntimeModule you are using, override it with the
 ```AtmosphereMessagingModule``` or the ```MqttPahoModule```. See the Radio example, in particular
 ```MyRadioConsumerApplication``` and ```MyRadioProviderApplication``` for a detailed example of how

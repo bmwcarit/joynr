@@ -1,9 +1,9 @@
 # Java MQTT Clients
 
-By default joynr uses MQTT as its transport layer. In order to communicate from a Java joynr runtime
-with the MQTT broker, you have a choice of using the Paho MQTT client or the HiveMQ MQTT Client.
+If you want to use MQTT as joynr's transport layer, then
+you have a choice of using either the Paho MQTT client or the HiveMQ MQTT Client.
 
-If you use the JEE Integration, then this will use the HiveMQ MQTT Client.
+If you use the JEE Integration, then this will automatically use the HiveMQ MQTT Client.
 
 ## Choosing the client in Java
 
