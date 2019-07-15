@@ -35,7 +35,8 @@ public:
             : testSettingsFileNameNonExistent(
                       "test-resources/MessagingSettingsTest-nonexistent.settings"),
               testSettingsFileNameHttp("test-resources/HttpMessagingSettingsTest.settings"),
-              testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings")
+              testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings"),
+              testSettingsFileNameMqttWithGbid("test-resources/MqttMessagingSettingsWithGbidTest.settings")
     {
     }
 
@@ -44,6 +45,7 @@ protected:
     const std::string testSettingsFileNameNonExistent;
     const std::string testSettingsFileNameHttp;
     const std::string testSettingsFileNameMqtt;
+    const std::string testSettingsFileNameMqttWithGbid;
 };
 
 TEST_F(MessagingSettingsTest, intializedWithDefaultSettings)
@@ -125,6 +127,46 @@ void checkBrokerSettings(MessagingSettings messagingSettings, std::string expect
     EXPECT_EQ(expectedBrokerUrl, brokerUrl);
 }
 
+void checkGbidSettings(MessagingSettings messagingSettings, std::string expectedGbid)
+{
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_GBID()));
+
+    std::string gbid = messagingSettings.getGbid();
+    EXPECT_EQ(expectedGbid, gbid);
+}
+
+void checkAdditionalBackendUrlSettings(MessagingSettings messagingSettings, std::string expectedBrokerUrl, std::uint8_t index)
+{
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)));
+
+    std::string brokerUrl = messagingSettings.getAdditionalBackendBrokerUrlString(index);
+    EXPECT_EQ(expectedBrokerUrl, brokerUrl);
+}
+
+void checkAdditionalBackendGbidSettings(MessagingSettings messagingSettings, std::string expectedGbid, std::uint8_t index)
+{
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_ADDITIONAL_BACKEND_GBID(index)));
+
+    std::string gbid = messagingSettings.getAdditionalBackendGbid(index);
+
+    EXPECT_EQ(expectedGbid, gbid);
+}
+void checkAdditionalBackendMqttConnectionTimeout(MessagingSettings messagingSettings, std::chrono::milliseconds expectedBrokerMqttConnectionTimeout, std::uint8_t index)
+{
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)));
+
+    std::chrono::milliseconds brokerConnectionTimeoutMs = messagingSettings.getAdditionalBackendMqttConnectionTimeoutMs(index);
+
+    EXPECT_EQ(expectedBrokerMqttConnectionTimeout.count(), brokerConnectionTimeoutMs.count());
+}
+void checkAdditionalBackendMqttKeepAliveTimeSeconds(MessagingSettings messagingSettings, std::chrono::seconds expectedBrokerMqttKeepAliveTimeSeconds, std::uint8_t index)
+{
+    EXPECT_TRUE(messagingSettings.contains(MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index)));
+
+    std::chrono::seconds brokerKeepAliveTimeSeconds = messagingSettings.getAdditionalBackendMqttKeepAliveTimeSeconds(index);
+
+    EXPECT_EQ(expectedBrokerMqttKeepAliveTimeSeconds.count(), brokerKeepAliveTimeSeconds.count());
+}
 void checkDiscoveryDirectorySettings(MessagingSettings messagingSettings,
                                      std::string expectedCapabilitiesDirectoryChannelId)
 {
@@ -193,4 +235,123 @@ TEST_F(MessagingSettingsTest, discardUnroutableRepliesAndPublicationsValue)
     expectedValue = true;
     messagingSettings.setDiscardUnroutableRepliesAndPublications(expectedValue);
     EXPECT_EQ(expectedValue, messagingSettings.getDiscardUnroutableRepliesAndPublications());
+}
+
+TEST_F(MessagingSettingsTest, mqttWithGbid)
+{
+    std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
+    std::string expectedGbid("defaultGbid");
+
+    Settings testSettings(testSettingsFileNameMqttWithGbid);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    checkBrokerSettings(messagingSettings, expectedBrokerUrl);
+    checkGbidSettings(messagingSettings, expectedGbid);
+}
+
+TEST_F(MessagingSettingsTest, mqttWithAdditionalBackends)
+{
+    std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
+    std::string expectedGbid("defaultGbid");
+
+    std::string expectedAdditionalBackend0Url("mqtt://additional-backend-host-0:1883/");
+    std::string expectedAdditionalBackend0Gbid("additional-gbid-0");
+    std::chrono::seconds expectedAdditionalBackend0KeepAliveSeconds(10);
+    std::chrono::milliseconds expectedAdditionalBackend0ConnectionTimeoutMs(20);
+
+    std::string expectedAdditionalBackend1Url("mqtt://additional-backend-host-1:1883/");
+    std::string expectedAdditionalBackend1Gbid("additional-gbid-1");
+    std::chrono::seconds expectedAdditionalBackend1KeepAliveSeconds(30);
+    std::chrono::milliseconds expectedAdditionalBackend1ConnectionTimeoutMs(40);
+
+    Settings testSettings(testSettingsFileNameMqttWithGbid);
+    EXPECT_TRUE(testSettings.isLoaded());
+    MessagingSettings messagingSettings(testSettings);
+
+    checkAdditionalBackendUrlSettings(messagingSettings, expectedAdditionalBackend0Url, 0);
+    checkAdditionalBackendGbidSettings(messagingSettings, expectedAdditionalBackend0Gbid, 0);
+    checkAdditionalBackendMqttConnectionTimeout(messagingSettings, expectedAdditionalBackend0ConnectionTimeoutMs, 0);
+    checkAdditionalBackendMqttKeepAliveTimeSeconds(messagingSettings, expectedAdditionalBackend0KeepAliveSeconds, 0);
+
+    checkAdditionalBackendUrlSettings(messagingSettings, expectedAdditionalBackend1Url, 1);
+    checkAdditionalBackendGbidSettings(messagingSettings, expectedAdditionalBackend1Gbid, 1);
+    checkAdditionalBackendMqttConnectionTimeout(messagingSettings, expectedAdditionalBackend1ConnectionTimeoutMs, 1);
+    checkAdditionalBackendMqttKeepAliveTimeSeconds(messagingSettings, expectedAdditionalBackend1KeepAliveSeconds, 1);
+}
+
+TEST_F(MessagingSettingsTest, mqttWithAdditionalBackendsWithoutDefaultGbid)
+{
+    Settings testSettingsWithoutDefaultGbid(testSettingsFileNameMqtt);
+    std::string expectedAdditionalBackend0Url("mqtt://additional-backend-host-0:1883/");
+    std::string expectedAdditionalBackend0Gbid("additional-gbid-0");
+    testSettingsWithoutDefaultGbid.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_BROKER_URL(0), expectedAdditionalBackend0Url);
+    testSettingsWithoutDefaultGbid.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_GBID(0),
+                      expectedAdditionalBackend0Gbid);
+    EXPECT_THROW(MessagingSettings{ testSettingsWithoutDefaultGbid }, exceptions::JoynrRuntimeException);
+}
+
+TEST_F(MessagingSettingsTest, mqttWithAdditionalBackendsWithoutGbidForAdditionalBackend)
+{
+    Settings testSettingsAdditionalBrokerNoGbid(testSettingsFileNameMqttWithGbid);
+    std::string expectedAdditionalBackend2Url("mqtt://additional-backend-host-2:1883/");
+    testSettingsAdditionalBrokerNoGbid.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_BROKER_URL(2), expectedAdditionalBackend2Url);
+    EXPECT_TRUE(testSettingsAdditionalBrokerNoGbid.isLoaded());
+    EXPECT_THROW(MessagingSettings{testSettingsAdditionalBrokerNoGbid}, exceptions::JoynrRuntimeException);
+}
+
+TEST_F(MessagingSettingsTest, mqttWithAdditionalBackendsWithoutUrlForAdditionalBackend)
+{
+    Settings testSettingsAdditionalBrokerNoUrl(testSettingsFileNameMqttWithGbid);
+    std::string expectedAdditionalBackend2Gbid("additional-gbid-2");
+    testSettingsAdditionalBrokerNoUrl.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_GBID(2), expectedAdditionalBackend2Gbid);
+    EXPECT_TRUE(testSettingsAdditionalBrokerNoUrl.isLoaded());
+    EXPECT_THROW(MessagingSettings{testSettingsAdditionalBrokerNoUrl}, exceptions::JoynrRuntimeException);
+}
+
+TEST_F(MessagingSettingsTest, mqttWithAdditionalBackendsWithoutDefaultMqttInfo)
+{
+    Settings testSettingsAdditionalBroker(testSettingsFileNameMqttWithGbid);
+    std::string expectedAdditionalBackend2Url("mqtt://additional-backend-host-2:1883/");
+    std::string expectedAdditionalBackend2Gbid("additional-gbid-2");
+    std::chrono::seconds expectedAdditionalBackend2KeepAliveSeconds(MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS());
+    std::chrono::milliseconds expectedAdditionalBackend2ConnectionTimeoutMs(MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS());
+
+    std::string expectedAdditionalBackend3Url("mqtt://additional-backend-host-3:1883/");
+    std::string expectedAdditionalBackend3Gbid("additional-gbid-3");
+    std::chrono::seconds expectedAdditionalBackend3KeepAliveSeconds(20);
+    std::chrono::milliseconds expectedAdditionalBackend3ConnectionTimeoutMs(MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS());
+
+    std::string expectedAdditionalBackend4Url("mqtt://additional-backend-host-4:1883/");
+    std::string expectedAdditionalBackend4Gbid("additional-gbid-4");
+    std::chrono::seconds expectedAdditionalBackend4KeepAliveSeconds(MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS());
+    std::chrono::milliseconds expectedAdditionalBackend4ConnectionTimeoutMs(500);
+
+    testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_BROKER_URL(2), expectedAdditionalBackend2Url);
+    testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_GBID(2),
+                       expectedAdditionalBackend2Gbid);
+
+    testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_BROKER_URL(3), expectedAdditionalBackend3Url);
+    testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_GBID(3),
+                       expectedAdditionalBackend3Gbid);
+    testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(3),
+                       expectedAdditionalBackend3KeepAliveSeconds.count());
+
+    testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_BROKER_URL(4), expectedAdditionalBackend4Url);
+    testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_GBID(4),
+                       expectedAdditionalBackend4Gbid);
+    testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(4),
+                       expectedAdditionalBackend4ConnectionTimeoutMs.count());
+
+    MessagingSettings messagingSettings(testSettingsAdditionalBroker);
+    EXPECT_TRUE(testSettingsAdditionalBroker.isLoaded());
+
+    checkAdditionalBackendMqttConnectionTimeout(messagingSettings, expectedAdditionalBackend2ConnectionTimeoutMs, 2);
+    checkAdditionalBackendMqttKeepAliveTimeSeconds(messagingSettings, expectedAdditionalBackend2KeepAliveSeconds, 2);
+
+    checkAdditionalBackendMqttConnectionTimeout(messagingSettings, expectedAdditionalBackend3ConnectionTimeoutMs, 3);
+    checkAdditionalBackendMqttKeepAliveTimeSeconds(messagingSettings, expectedAdditionalBackend3KeepAliveSeconds, 3);
+
+    checkAdditionalBackendMqttConnectionTimeout(messagingSettings, expectedAdditionalBackend4ConnectionTimeoutMs, 4);
+    checkAdditionalBackendMqttKeepAliveTimeSeconds(messagingSettings, expectedAdditionalBackend4KeepAliveSeconds, 4);
 }

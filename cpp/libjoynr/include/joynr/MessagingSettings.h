@@ -40,6 +40,12 @@ public:
     ~MessagingSettings() = default;
 
     static const std::string& SETTING_BROKER_URL();
+    static const std::string& SETTING_GBID();
+    static std::string SETTING_ADDITIONAL_BACKEND_BROKER_URL(std::uint8_t index);
+    static std::string SETTING_ADDITIONAL_BACKEND_GBID(std::uint8_t index);
+    static std::string SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(std::uint8_t index);
+    static std::string SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(std::uint8_t index);
+
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
@@ -97,6 +103,7 @@ public:
     static const std::string& SETTING_SEND_MESSAGE_MAX_TTL();
     static const std::string& SETTING_TTL_UPLIFT_MS();
 
+    static const std::string& DEFAULT_GBID();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
@@ -128,6 +135,19 @@ public:
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
     void setBrokerUrl(const BrokerUrl& brokerUrl);
+
+    std::string getGbid() const;
+    void setGbid(const std::string& gbid);
+
+    BrokerUrl getAdditionalBackendBrokerUrl(std::uint8_t index) const;
+    std::string getAdditionalBackendBrokerUrlString(std::uint8_t index) const;
+    void setAdditionalBackendBrokerUrl(const BrokerUrl& brokerUrl, std::uint8_t index);
+    std::string getAdditionalBackendGbid(std::uint8_t index) const;
+    void setAdditionalBackendGbid(const std::string& gbid, std::uint8_t index);
+    std::chrono::seconds getAdditionalBackendMqttKeepAliveTimeSeconds(std::uint8_t index) const;
+    void setAdditionalBackendMqttKeepAliveTimeSeconds(std::chrono::seconds mqttKeepAliveTimeSeconds,
+                                                      std::uint8_t index);
+    std::chrono::milliseconds getAdditionalBackendMqttConnectionTimeoutMs(std::uint8_t index) const;
 
     std::string getDiscoveryDirectoriesDomain() const;
 
@@ -215,14 +235,21 @@ public:
 
     bool contains(const std::string& key) const;
 
+    bool settingsContainMultipleBackendsConfiguration() const;
+
     void printSettings() const;
+    void printAdditionalBackendsSettings() const;
+    std::uint8_t getAdditionalBackendsCount() const;
 
 private:
     void operator=(const MessagingSettings& other);
+    std::uint8_t additionalBackendsCount;
 
     Settings& settings;
     ADD_LOGGER(MessagingSettings)
     void checkSettings();
+    bool checkMultipleBackendsSettings();
+    void checkAndSetDefaultMqttSettings(std::uint8_t index);
 };
 
 } // namespace joynr

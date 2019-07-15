@@ -61,6 +61,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "MqttJoynrClusterControllerRuntimeTlsOnNoCertificatesTest.settings"
         "HttpMessagingSettingsTest.settings"
         "MqttMessagingSettingsTest.settings"
+        "MqttMessagingSettingsWithGbidTest.settings"
         "MessagingSettingsDiscoveryEntryExpiryIntervalMs.settings"
         "MessagingSettingsDiscardUnroutableRepliesAndPublications.settings"
         "libjoynrSystemIntegration1.settings"

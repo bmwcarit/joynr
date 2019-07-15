@@ -22,6 +22,7 @@
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/Settings.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {
@@ -41,6 +42,46 @@ const std::string& MessagingSettings::SETTING_BROKER_URL()
 {
     static const std::string value("messaging/broker-url");
     return value;
+}
+
+const std::string& MessagingSettings::SETTING_GBID()
+{
+    static const std::string value("messaging/gbid");
+    return value;
+}
+
+std::string MessagingSettings::SETTING_ADDITIONAL_BACKEND_BROKER_URL(std::uint8_t index)
+{
+    static const std::string valueSection("messaging/additional-backend-");
+    static const std::string valueName("-broker-url");
+    const std::string concatenatedValue = valueSection + std::to_string(index) + valueName;
+    return concatenatedValue;
+}
+
+std::string MessagingSettings::SETTING_ADDITIONAL_BACKEND_GBID(std::uint8_t index)
+{
+    static const std::string valueSection("messaging/additional-backend-");
+    static const std::string valueName("-gbid");
+    const std::string concatenatedValue = valueSection + std::to_string(index) + valueName;
+    return concatenatedValue;
+}
+
+std::string MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(
+        std::uint8_t index)
+{
+    static const std::string valueSection("messaging/additional-backend-");
+    static const std::string valueName("-mqtt-keep-alive-time-seconds");
+    const std::string concatenatedValue = valueSection + std::to_string(index) + valueName;
+    return concatenatedValue;
+}
+
+std::string MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(
+        std::uint8_t index)
+{
+    static const std::string valueSection("messaging/additional-backend-");
+    static const std::string valueName("-mqtt-connection-timeout-ms");
+    const std::string concatenatedValue = valueSection + std::to_string(index) + valueName;
+    return concatenatedValue;
 }
 
 const std::string& MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()
@@ -251,6 +292,12 @@ void MessagingSettings::setClientCertificatePassword(const std::string& clientCe
     settings.set(SETTING_CLIENT_CERTIFICATE_PASSWORD(), clientCertificatePassword);
 }
 
+const std::string& MessagingSettings::DEFAULT_GBID()
+{
+    static const std::string value("joynrdefaultgbid");
+    return value;
+}
+
 const std::string& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME()
 {
     static const std::string value("default-messaging.settings");
@@ -418,8 +465,67 @@ std::string MessagingSettings::getBrokerUrlString() const
 
 void MessagingSettings::setBrokerUrl(const BrokerUrl& brokerUrl)
 {
-    std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString();
+    const std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString();
     settings.set(SETTING_BROKER_URL(), url);
+}
+
+std::string MessagingSettings::getGbid() const
+{
+    return settings.get<std::string>(SETTING_GBID());
+}
+
+void MessagingSettings::setGbid(const std::string& gbid)
+{
+    settings.set(SETTING_GBID(), gbid);
+}
+
+BrokerUrl MessagingSettings::getAdditionalBackendBrokerUrl(std::uint8_t index) const
+{
+    return BrokerUrl(settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)));
+}
+
+std::string MessagingSettings::getAdditionalBackendBrokerUrlString(std::uint8_t index) const
+{
+    return settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index));
+}
+
+void MessagingSettings::setAdditionalBackendBrokerUrl(const BrokerUrl& brokerUrl,
+                                                      std::uint8_t index)
+{
+    const std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString();
+    settings.set(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index), url);
+}
+
+std::string MessagingSettings::getAdditionalBackendGbid(std::uint8_t index) const
+{
+    return settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_GBID(index));
+}
+
+void MessagingSettings::setAdditionalBackendGbid(const std::string& gbid, std::uint8_t index)
+{
+    settings.set(SETTING_ADDITIONAL_BACKEND_GBID(index), gbid);
+}
+
+std::chrono::seconds MessagingSettings::getAdditionalBackendMqttKeepAliveTimeSeconds(
+        std::uint8_t index) const
+{
+    return std::chrono::seconds(settings.get<std::int64_t>(
+            SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index)));
+}
+
+void MessagingSettings::setAdditionalBackendMqttKeepAliveTimeSeconds(
+        std::chrono::seconds mqttKeepAliveTimeSeconds,
+        std::uint8_t index)
+{
+    settings.set(SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index),
+                 mqttKeepAliveTimeSeconds.count());
+}
+
+std::chrono::milliseconds MessagingSettings::getAdditionalBackendMqttConnectionTimeoutMs(
+        std::uint8_t index) const
+{
+    return std::chrono::milliseconds(settings.get<std::int64_t>(
+            SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)));
 }
 
 std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
@@ -826,6 +932,145 @@ void MessagingSettings::checkSettings()
         settings.set(SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS(),
                      DEFAULT_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS());
     }
+
+    if (!checkMultipleBackendsSettings()) {
+        const std::string message =
+                "fatal failure in settings due to multiple backend configuration";
+        throw joynr::exceptions::JoynrRuntimeException(message);
+    }
+
+    if (!settings.contains(SETTING_GBID()) && !settingsContainMultipleBackendsConfiguration()) {
+        settings.set(SETTING_GBID(), DEFAULT_GBID());
+    };
+}
+
+void MessagingSettings::checkAndSetDefaultMqttSettings(std::uint8_t index)
+{
+    if (!settings.contains(SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index))) {
+        settings.set(SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index),
+                     DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
+        JOYNR_LOG_TRACE(logger(),
+                        "backend index {}: Setting {} set to default {}",
+                        index,
+                        SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index),
+                        settings.get<std::string>(
+                                SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)));
+    }
+    if (!settings.contains(SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index))) {
+        settings.set(SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index),
+                     DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS().count());
+        JOYNR_LOG_TRACE(logger(),
+                        "backend index {}: Setting {} set to default {}",
+                        index,
+                        SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index),
+                        settings.get<std::string>(
+                                SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index)));
+    }
+}
+
+bool MessagingSettings::checkMultipleBackendsSettings()
+{
+    bool configurationCorrect = true;
+    additionalBackendsCount = 0;
+    std::uint8_t& index = additionalBackendsCount;
+    for (;; index++) {
+        if (settings.contains(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)) &&
+            !settings.contains(SETTING_ADDITIONAL_BACKEND_GBID(index))) {
+            JOYNR_LOG_ERROR(logger(),
+                            "SETTING: {} = {} for index: {} is set but SETTING: {} = {} is "
+                            "not)",
+                            SETTING_ADDITIONAL_BACKEND_BROKER_URL(index),
+                            settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)),
+                            index,
+                            SETTING_ADDITIONAL_BACKEND_GBID(index),
+                            settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_GBID(index)));
+
+            configurationCorrect = false;
+        } else if (!settings.contains(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)) &&
+                   settings.contains(SETTING_ADDITIONAL_BACKEND_GBID(index))) {
+            JOYNR_LOG_ERROR(
+                    logger(),
+                    "SETTING: {} = {} for index: {} is set but SETTING: {} "
+                    "= {} is not)",
+                    SETTING_ADDITIONAL_BACKEND_GBID(index),
+                    settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_GBID(index)),
+                    index,
+                    SETTING_ADDITIONAL_BACKEND_BROKER_URL(index),
+                    settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)));
+
+            configurationCorrect = false;
+        } else if (!settings.contains(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)) &&
+                   !settings.contains(SETTING_ADDITIONAL_BACKEND_GBID(index))) {
+            // all additional backends checked
+            break;
+        }
+
+        checkAndSetDefaultMqttSettings(index);
+
+        JOYNR_LOG_TRACE(logger(),
+                        "Backend Index {}: {} = {}, {} = {}, {} = {}, {} = {}",
+                        index,
+                        SETTING_ADDITIONAL_BACKEND_GBID(index),
+                        settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_GBID(index)),
+                        SETTING_ADDITIONAL_BACKEND_BROKER_URL(index),
+                        settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)),
+                        SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index),
+                        settings.get<std::string>(
+                                SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)),
+                        SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index),
+                        settings.get<std::string>(
+                                SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index)));
+    }
+    if (settingsContainMultipleBackendsConfiguration() &&
+        !(settings.contains(SETTING_BROKER_URL()) && settings.contains(SETTING_GBID()))) {
+
+        JOYNR_LOG_ERROR(
+                logger(),
+                "Multiple Backends enabled, but default broker is not configured correctly: "
+                "{} = {}, {} = {})",
+                SETTING_GBID(),
+                settings.get<std::string>(SETTING_GBID()),
+                SETTING_BROKER_URL(),
+                settings.get<std::string>(SETTING_BROKER_URL()));
+
+        configurationCorrect = false;
+    }
+
+    return configurationCorrect;
+}
+
+bool MessagingSettings::settingsContainMultipleBackendsConfiguration() const
+{
+    return (additionalBackendsCount > 0);
+}
+
+std::uint8_t MessagingSettings::getAdditionalBackendsCount() const
+{
+    return additionalBackendsCount;
+}
+
+void MessagingSettings::printAdditionalBackendsSettings() const
+{
+    for (std::uint8_t index = 0; index < additionalBackendsCount; index++) {
+        JOYNR_LOG_INFO(logger(),
+                       "SETTING: {} = {})",
+                       SETTING_ADDITIONAL_BACKEND_GBID(index),
+                       settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_GBID(index)));
+        JOYNR_LOG_INFO(logger(),
+                       "SETTING: {} = {})",
+                       SETTING_ADDITIONAL_BACKEND_BROKER_URL(index),
+                       settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)));
+        JOYNR_LOG_INFO(logger(),
+                       "SETTING: {} = {})",
+                       SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index),
+                       settings.get<std::string>(
+                               SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)));
+        JOYNR_LOG_INFO(logger(),
+                       "SETTING: {} = {})",
+                       SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index),
+                       settings.get<std::string>(
+                               SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index)));
+    }
 }
 
 void MessagingSettings::printSettings() const
@@ -834,6 +1079,13 @@ void MessagingSettings::printSettings() const
                    "SETTING: {} = {})",
                    SETTING_BROKER_URL(),
                    settings.get<std::string>(SETTING_BROKER_URL()));
+
+    if (settings.contains(SETTING_GBID())) {
+        JOYNR_LOG_INFO(logger(),
+                       "SETTING: {} = {})",
+                       SETTING_GBID(),
+                       settings.get<std::string>(SETTING_GBID()));
+    }
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {})",
                    SETTING_DISCOVERY_DIRECTORIES_DOMAIN(),
@@ -921,6 +1173,7 @@ void MessagingSettings::printSettings() const
             "SETTING: {} = {})",
             SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS(),
             settings.get<std::string>(SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS()));
+    printAdditionalBackendsSettings();
 }
 
 } // namespace joynr
