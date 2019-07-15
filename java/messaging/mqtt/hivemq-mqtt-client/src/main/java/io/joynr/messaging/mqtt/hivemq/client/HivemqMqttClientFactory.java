@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -110,6 +111,14 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     @Named(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD)
     private String trustStorePWD;
 
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_USERNAME)
+    private String username = "";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_PASSWORD)
+    private String password = "";
+
     @Inject
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
@@ -191,8 +200,17 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             clientBuilder.sslWithDefaultConfig();
             setupSslConfig(clientBuilder);
         }
+        if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
+            clientBuilder.simpleAuth()
+                         .username(username)
+                         .password(password.getBytes(StandardCharsets.UTF_8))
+                         .applySimpleAuth();
+        }
         Mqtt3RxClient client = clientBuilder.buildRx();
-        HivemqMqttClient result = new HivemqMqttClient(client, mqttGbidToKeepAliveTimerSecMap.get(gbid), cleanSession);
+        HivemqMqttClient result = new HivemqMqttClient(client,
+                                                       mqttGbidToKeepAliveTimerSecMap.get(gbid),
+                                                       cleanSession,
+                                                       mqttGbidToConnectionTimeoutSecMap.get(gbid));
         resubscribeHandler.setClient(result);
         disconnectedListener.setClient(result);
         return result;
