@@ -94,11 +94,14 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
             DiscoveryQos discoveryQos = new DiscoveryQos();
             discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
 
+            String[] gbids = new String[]{ "joynrdefaultgbid", "othergbid" };
+
             SystemIntegrationTestStatelessAsync proxy = serviceLocator.builder(SystemIntegrationTestStatelessAsync.class,
                                                                                domain)
                                                                       .withUseCase(USE_CASE)
                                                                       .withDiscoveryQos(discoveryQos)
                                                                       .withMessagingQos(new MessagingQos())
+                                                                      .withGbids(gbids)
                                                                       .build();
 
             final int iterations = 10;
