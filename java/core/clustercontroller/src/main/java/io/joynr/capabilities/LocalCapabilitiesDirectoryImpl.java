@@ -451,7 +451,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             logger.debug("Failed to remove participantId: {}. ParticipantId is not registered in cluster controller.",
                          participantId);
             deferred.reject(new ProviderRuntimeException("Failed to remove participantId: " + participantId
-                    + ".  ParticipantId is not registered in cluster controller."));
+                    + ". ParticipantId is not registered in cluster controller."));
         }
         return new Promise<>(deferred);
     }

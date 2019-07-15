@@ -50,7 +50,7 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
     private ScheduledExecutorService scheduledExecutorService;
 
     @Mock
-    private DiscoveryEntryStore cache;
+    private DiscoveryEntryStore<DiscoveryEntry> cache;
 
     @Mock
     private ExpiredDiscoveryEntryCacheCleaner.CleanupAction cleanupAction;
