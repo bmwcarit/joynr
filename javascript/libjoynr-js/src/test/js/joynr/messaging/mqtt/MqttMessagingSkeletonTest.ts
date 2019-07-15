@@ -16,44 +16,36 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const MqttMessagingSkeleton = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingSkeleton");
-const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-const MessageRouter = require("../../../../../main/js/joynr/messaging/routing/MessageRouter");
+
+import MqttMessagingSkeleton from "../../../../../main/js/joynr/messaging/mqtt/MqttMessagingSkeleton";
+import JoynrMessage from "../../../../../main/js/joynr/messaging/JoynrMessage";
+import MessageRouter from "../../../../../main/js/joynr/messaging/routing/MessageRouter";
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", () => {
-    let sharedMqttClient, mqttMessagingSkeleton;
-    let messageRouterSpy;
+    let sharedMqttClient: any, mqttMessagingSkeleton: MqttMessagingSkeleton;
+    let messageRouterSpy: any;
 
     beforeEach(() => {
-        function SharedMqttClient() {
-            this.subscribe = function() {};
-        }
-
         messageRouterSpy = Object.create(MessageRouter.prototype);
-        messageRouterSpy.route = jasmine.createSpy("messageRouterSpy.route");
-        messageRouterSpy.route.and.returnValue(Promise.resolve());
+        messageRouterSpy.route = jest.fn();
+        messageRouterSpy.route.mockReturnValue(Promise.resolve());
 
-        function MqttAddress() {}
-
-        sharedMqttClient = new SharedMqttClient();
-
-        spyOn(sharedMqttClient, "subscribe");
+        sharedMqttClient = { subscribe: jest.fn() };
 
         mqttMessagingSkeleton = new MqttMessagingSkeleton({
-            address: new MqttAddress(),
+            address: { topic: "#kjg" } as any,
             client: sharedMqttClient,
             messageRouter: messageRouterSpy
         });
 
-        sharedMqttClient.subscribe.calls.reset();
+        sharedMqttClient.subscribe.mockClear();
     });
 
-    function testCorrectMulticastIdTransformation(multicastId, expectedTopic) {
+    function testCorrectMulticastIdTransformation(multicastId: any, expectedTopic: any) {
         mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
         expect(sharedMqttClient.subscribe).toHaveBeenCalled();
         expect(sharedMqttClient.subscribe).toHaveBeenCalledWith(expectedTopic);
-        sharedMqttClient.subscribe.calls.reset();
+        sharedMqttClient.subscribe.mockClear();
     }
 
     it("correctly transform multicastIds to mqtt topics", () => {
@@ -63,28 +55,31 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingSkeleton", () => {
         testCorrectMulticastIdTransformation("x/y/z/*", "x/y/z/#");
     });
 
-    function setsReceivedFromGlobal(message) {
-        messageRouterSpy.route.calls.reset();
+    function setsReceivedFromGlobal(message: any) {
+        messageRouterSpy.route.mockClear();
         expect(message.isReceivedFromGlobal).toEqual(false);
         expect(messageRouterSpy.route).not.toHaveBeenCalled();
         sharedMqttClient.onmessage("", message);
         expect(messageRouterSpy.route).toHaveBeenCalledTimes(1);
-        expect(messageRouterSpy.route.calls.argsFor(0)[0].isReceivedFromGlobal).toEqual(true);
+        expect(messageRouterSpy.route.mock.calls[0][0].isReceivedFromGlobal).toEqual(true);
     }
 
     it("sets receivedFromGlobal", () => {
         const requestMessage = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: "#mjga"
         });
         setsReceivedFromGlobal(requestMessage);
 
         const multicastMessage = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
+            payload: "#mjga"
         });
         setsReceivedFromGlobal(multicastMessage);
 
         const subscriptionRequestMessage = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+            payload: "#mjga"
         });
         setsReceivedFromGlobal(subscriptionRequestMessage);
     });

@@ -16,20 +16,18 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const SharedMqttClient = require("../../../../../main/js/joynr/messaging/mqtt/SharedMqttClient");
-const MqttAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
-const MqttMessagingStubFactory = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStubFactory");
-const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+
+import MqttAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress";
+import MqttMessagingStubFactory from "../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStubFactory";
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", () => {
-    let mqttMessagingStubFactory, mqttClient;
-    let mqttAddress, brokerUri, topic, joynrMessage;
+    let mqttMessagingStubFactory: MqttMessagingStubFactory, mqttClient: any;
+    let mqttAddress: MqttAddress, brokerUri: any, topic: any, joyrnMessageMock: any;
 
     beforeEach(done => {
-        mqttClient = Object.create(SharedMqttClient.prototype);
-        mqttClient.send = jasmine.createSpy("channelMessagingSender.send");
-        mqttClient.send.and.returnValue(Promise.resolve());
+        mqttClient = {
+            send: jest.fn().mockResolvedValue(undefined)
+        };
 
         mqttMessagingStubFactory = new MqttMessagingStubFactory({
             client: mqttClient
@@ -41,29 +39,22 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStubFactory", () => {
             brokerUri,
             topic
         });
-        joynrMessage = new JoynrMessage({
-            key: "joynrMessage" // TODO understand what is this key thing?
-        });
+        joyrnMessageMock = {};
 
         done();
     });
 
-    it("is instantiable and of correct type", done => {
+    it("is instantiable and of correct type", () => {
         expect(MqttMessagingStubFactory).toBeDefined();
         expect(typeof MqttMessagingStubFactory).toEqual("function");
         expect(mqttMessagingStubFactory).toBeDefined();
-        expect(mqttMessagingStubFactory instanceof MqttMessagingStubFactory).toEqual(true);
         expect(mqttMessagingStubFactory.build).toBeDefined();
         expect(typeof mqttMessagingStubFactory.build).toEqual("function");
-        done();
     });
 
-    it("creates a messaging stub and uses it correctly", done => {
+    it("creates a messaging stub and uses it correctly", async () => {
         const mqttMessagingStub = mqttMessagingStubFactory.build(mqttAddress);
-        mqttMessagingStub.transmit(joynrMessage).catch(() => {
-            return null;
-        });
-        expect(mqttClient.send).toHaveBeenCalledWith(jasmine.any(String), joynrMessage);
-        done();
+        await mqttMessagingStub.transmit(joyrnMessageMock);
+        expect(mqttClient.send).toHaveBeenCalledWith(expect.any(String), joyrnMessageMock);
     });
 });

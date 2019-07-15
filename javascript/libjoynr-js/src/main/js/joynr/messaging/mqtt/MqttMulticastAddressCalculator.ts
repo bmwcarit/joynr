@@ -16,34 +16,32 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../../util/Typing");
-const MqttAddress = require("../../../generated/joynr/system/RoutingTypes/MqttAddress");
+import MqttAddress from "../../../generated/joynr/system/RoutingTypes/MqttAddress";
+import JoynrMessage = require("../JoynrMessage");
 
 class MqttMulticastAddressCalculator {
+    private globalAddress: MqttAddress;
     /**
      * @constructor MqttMulticastAddressCalculator
-     * @param {Object} settings
-     * @param {WebSocketAddress} settings.globalAddress
+     * @param settings
+     * @param settings.globalAddress
      */
-    constructor(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.globalAddress, "MqttAddress", "settings.globalAddress");
-        this._settings = settings;
+    public constructor(settings: { globalAddress: MqttAddress }) {
+        this.globalAddress = settings.globalAddress;
     }
 
     /**
      * Calculates the multicast address for the submitted joynr message
-     * @function MqttMulticastAddressCalculator#calculate
      *
-     * @param {JoynrMessage} message
-     * @return {Address} the multicast address
+     * @param message
+     * @returns the multicast address
      */
-    calculate(message) {
+    public calculate(message: JoynrMessage): MqttAddress {
         return new MqttAddress({
-            brokerUri: this._settings.globalAddress,
+            brokerUri: this.globalAddress.brokerUri,
             topic: message.to
         });
     }
 }
 
-module.exports = MqttMulticastAddressCalculator;
+export = MqttMulticastAddressCalculator;

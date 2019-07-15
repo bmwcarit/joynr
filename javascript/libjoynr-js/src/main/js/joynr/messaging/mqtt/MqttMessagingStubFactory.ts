@@ -16,34 +16,28 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../../util/Typing");
-const MqttMessagingStub = require("./MqttMessagingStub");
+import * as MqttAddress from "../../../generated/joynr/system/RoutingTypes/MqttAddress";
+
+import MqttMessagingStub from "./MqttMessagingStub";
+import SharedMqttClient = require("./SharedMqttClient");
 
 class MqttMessagingStubFactory {
+    private readonly client: SharedMqttClient;
     /**
      * @constructor
-     * @name MqttMessagingStubFactory
-     * @param {Object} settings
-     * @param {SharedMqttClient} settings.client the mqtt client
+     * @param settings
+     * @param settings.client the mqtt client
      */
-    constructor(settings) {
-        Typing.checkProperty(settings, "Object", "settings");
-        Typing.checkProperty(settings.client, "SharedMqttClient", "client");
-        this._settings = settings;
+    public constructor(settings: { client: SharedMqttClient }) {
+        this.client = settings.client;
     }
 
-    /**
-     * @name MqttMessagingStubFactory#build
-     * @function
-     */
-    build(address) {
-        Typing.checkProperty(address, "MqttAddress", "address");
-
+    public build(address: MqttAddress): MqttMessagingStub {
         return new MqttMessagingStub({
             address,
-            client: this._settings.client
+            client: this.client
         });
     }
 }
 
-module.exports = MqttMessagingStubFactory;
+export = MqttMessagingStubFactory;

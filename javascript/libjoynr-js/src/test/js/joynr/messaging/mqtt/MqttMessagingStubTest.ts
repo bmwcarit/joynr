@@ -16,15 +16,15 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const MqttAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
-const MqttMessagingStub = require("../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStub");
-const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+
+import MqttAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress";
+import MqttMessagingStub from "../../../../../main/js/joynr/messaging/mqtt/MqttMessagingStub";
+import JoynrMessage from "../../../../../main/js/joynr/messaging/JoynrMessage";
 
 describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", () => {
-    let destinationMqttAddress, topic;
-    let mqttClient, mqttMessagingStub;
-    let joynrMessage, multicastMessage;
+    let destinationMqttAddress: any, topic: any;
+    let mqttClient: any, mqttMessagingStub: MqttMessagingStub;
+    let joynrMessage: JoynrMessage, multicastMessage: any;
 
     beforeEach(done => {
         topic = "testTopic";
@@ -32,21 +32,23 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", () => {
             brokerUri: "testBrokerUri",
             topic
         });
-        mqttClient = jasmine.createSpyObj("mqttClient", ["send"]);
-        mqttClient.send.and.returnValue(Promise.resolve());
+        mqttClient = {
+            send: jest.fn()
+        };
+        mqttClient.send.mockReturnValue(Promise.resolve());
         mqttMessagingStub = new MqttMessagingStub({
             address: destinationMqttAddress,
             client: mqttClient
         });
 
         joynrMessage = new JoynrMessage({
-            key: "joynrMessage",
+            payload: "joynrMessage",
             type: "request"
         });
         joynrMessage.to = "toParticipantId";
 
         multicastMessage = new JoynrMessage({
-            key: "multicastMessage",
+            payload: "multicastMessage",
             type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
         });
         multicastMessage.to = "toParticipantId";
@@ -54,27 +56,23 @@ describe("libjoynr-js.joynr.messaging.mqtt.MqttMessagingStub", () => {
         done();
     });
 
-    it("is instantiable and of correct type", done => {
+    it("is instantiable and of correct type", () => {
         expect(MqttMessagingStub).toBeDefined();
         expect(typeof MqttMessagingStub).toEqual("function");
         expect(mqttMessagingStub).toBeDefined();
-        expect(mqttMessagingStub instanceof MqttMessagingStub).toEqual(true);
         expect(mqttMessagingStub.transmit).toBeDefined();
         expect(typeof mqttMessagingStub.transmit).toEqual("function");
-        done();
     });
 
-    it("transmits a message", done => {
+    it("transmits a message", () => {
         const expectedTopic = `${topic}/low/${joynrMessage.to}`;
         mqttMessagingStub.transmit(joynrMessage);
         expect(mqttClient.send).toHaveBeenCalledWith(expectedTopic, joynrMessage);
-        done();
     });
 
-    it("keeps topic of multicast messages", done => {
+    it("keeps topic of multicast messages", () => {
         const expectedTopic = topic;
         mqttMessagingStub.transmit(multicastMessage);
         expect(mqttClient.send).toHaveBeenCalledWith(expectedTopic, multicastMessage);
-        done();
     });
 });
