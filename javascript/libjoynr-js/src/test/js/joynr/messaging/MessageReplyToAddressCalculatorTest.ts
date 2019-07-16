@@ -16,14 +16,14 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
-const MqttAddress = require("../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress");
-const MessageReplyToAddressCalculator = require("../../../../main/js/joynr/messaging/MessageReplyToAddressCalculator");
+
+import JoynrMessage from "../../../../main/js/joynr/messaging/JoynrMessage";
+import MqttAddress from "../../../../main/js/generated/joynr/system/RoutingTypes/MqttAddress";
+import MessageReplyToAddressCalculator from "../../../../main/js/joynr/messaging/MessageReplyToAddressCalculator";
 
 describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", () => {
-    let messageReplyToAddressCalculator;
-    let globalAddress, serializedGlobalAddress;
+    let messageReplyToAddressCalculator: any;
+    let globalAddress: any, serializedGlobalAddress: any;
 
     beforeEach(() => {
         messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({});
@@ -36,12 +36,13 @@ describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", () => {
 
     it("setReplyTo throws if replyToAddress not specified", function() {
         const request = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: ""
         });
-        expect(messageReplyToAddressCalculator.setReplyTo.bind(this, request)).toThrowError(Error);
+        expect(() => messageReplyToAddressCalculator.setReplyTo(request)).toThrow(Error);
     });
 
-    function testSetsReplyToAddressOfMessage(msg) {
+    function testSetsReplyToAddressOfMessage(msg: any) {
         messageReplyToAddressCalculator.setReplyToAddress(JSON.stringify(globalAddress));
         expect(msg.replyChannelId).toEqual(undefined);
         messageReplyToAddressCalculator.setReplyTo(msg);
@@ -50,22 +51,26 @@ describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", () => {
 
     it("sets replyTo address of request messages", () => {
         const request = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: ""
         });
         testSetsReplyToAddressOfMessage(request);
 
         const subscriptionRequest = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+            payload: ""
         });
         testSetsReplyToAddressOfMessage(subscriptionRequest);
 
         const broadcastSubscriptionRequest = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
+            payload: ""
         });
         testSetsReplyToAddressOfMessage(broadcastSubscriptionRequest);
 
         const multicastSubscriptionRequest = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+            payload: ""
         });
         testSetsReplyToAddressOfMessage(multicastSubscriptionRequest);
     });
@@ -73,7 +78,8 @@ describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", () => {
     it("does not overwrite already set replyTo address", () => {
         messageReplyToAddressCalculator.setReplyToAddress(JSON.stringify(globalAddress));
         const request = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: ""
         });
         const anotherReplyToAddress = "anotherReplyToAddress";
         request.replyChannelId = "anotherReplyToAddress";
@@ -82,7 +88,7 @@ describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", () => {
         expect(request.replyChannelId).toEqual(anotherReplyToAddress);
     });
 
-    function testDoesNotSetReplyToAddressOfMessage(msg) {
+    function testDoesNotSetReplyToAddressOfMessage(msg: any) {
         messageReplyToAddressCalculator.setReplyToAddress(JSON.stringify(globalAddress));
         expect(msg.replyChannelId).toEqual(undefined);
         messageReplyToAddressCalculator.setReplyTo(msg);
@@ -91,7 +97,8 @@ describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", () => {
 
     it("does not set replyTo address of other message types", () => {
         const msg = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY,
+            payload: ""
         });
         testDoesNotSetReplyToAddressOfMessage(msg);
 

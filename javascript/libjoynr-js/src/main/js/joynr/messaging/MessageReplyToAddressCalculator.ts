@@ -16,26 +16,26 @@
  * limitations under the License.
  * #L%
  */
-const JoynrMessage = require("./JoynrMessage");
+import JoynrMessage from "./JoynrMessage";
+
+type Address = any;
 
 class MessageReplyToAddressCalculator {
+    private checkExistingReplyAddress: boolean = true;
+    private replyToAddress: Address;
     /**
-     * @name MessageReplyToAddressCalculator
      * @constructor
-     * @param {Object} settings the settings object for this constructor call
-     * @param {Address} settings.replyToAddress the address the reply should be send to
+     * @param settings the settings object for this constructor call
+     * @param settings.replyToAddress the address the reply should be send to
      */
-    constructor(settings) {
-        this._replyToAddress = undefined;
-        this._checkExistingReplyAddress = true;
-
+    public constructor(settings: { replyToAddress?: Address }) {
         if (settings.replyToAddress !== undefined) {
             this.setReplyToAddress(settings.replyToAddress);
         }
     }
 
-    _checkForExistingReplyToAddress() {
-        if (this._checkExistingReplyAddress && this._replyToAddress === undefined) {
+    private checkForExistingReplyToAddress(): void {
+        if (this.checkExistingReplyAddress && this.replyToAddress === undefined) {
             throw new Error("MessageReplyToAddressCalculator: replyToAddress not specified!");
         }
     }
@@ -43,15 +43,15 @@ class MessageReplyToAddressCalculator {
     /**
      * Helper function allowing to share the serialized reply to address with the calculator after object creation
      */
-    setReplyToAddress(serializedAddress) {
-        this._replyToAddress = serializedAddress;
-        if (this._replyToAddress !== undefined) {
+    public setReplyToAddress(serializedAddress: string): void {
+        this.replyToAddress = serializedAddress;
+        if (this.replyToAddress !== undefined) {
             //disable check implementation
-            this._checkExistingReplyAddress = false;
+            this.checkExistingReplyAddress = false;
         }
     }
 
-    setReplyTo(message) {
+    public setReplyTo(message: JoynrMessage): void {
         const type = message.type;
         if (
             type !== undefined &&
@@ -61,10 +61,10 @@ class MessageReplyToAddressCalculator {
                 type === JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST ||
                 type === JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)
         ) {
-            this._checkForExistingReplyToAddress();
-            message.replyChannelId = this._replyToAddress;
+            this.checkForExistingReplyToAddress();
+            message.replyChannelId = this.replyToAddress;
         }
     }
 }
 
-module.exports = MessageReplyToAddressCalculator;
+export = MessageReplyToAddressCalculator;
