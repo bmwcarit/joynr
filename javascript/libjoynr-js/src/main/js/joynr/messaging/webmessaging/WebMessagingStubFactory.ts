@@ -16,7 +16,8 @@
  * limitations under the License.
  * #L%
  */
-const WebMessagingStub = require("./WebMessagingStub");
+import WebMessagingStub from "./WebMessagingStub";
+import WebMessagingAddress = require("./WebMessagingAddress");
 
 /**
  * @constructor
@@ -24,12 +25,9 @@ const WebMessagingStub = require("./WebMessagingStub");
  */
 class WebMessagingStubFactory {
     /**
-     * @name WebMessagingStubFactory#build
-     * @function
-     *
-     * @param {WebMessagingAddress} address the address to generate a messaging stub for
+     * @param address the address to generate a messaging stub for
      */
-    build(address) {
+    public build(address: WebMessagingAddress): WebMessagingStub {
         return new WebMessagingStub({
             window: address.getWindow(),
             origin: address.getOrigin()
@@ -37,4 +35,4 @@ class WebMessagingStubFactory {
     }
 }
 
-module.exports = WebMessagingStubFactory;
+export = WebMessagingStubFactory;

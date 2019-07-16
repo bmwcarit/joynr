@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const WebMessagingAddress = require("../../../../../main/js/joynr/messaging/webmessaging/WebMessagingAddress");
+
+import WebMessagingAddress from "../../../../../main/js/joynr/messaging/webmessaging/WebMessagingAddress";
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", () => {
-    let window, origin, webMessagingAddress;
+    let window: any, origin: any, webMessagingAddress: WebMessagingAddress;
 
     beforeEach(() => {
         window = {
@@ -42,58 +42,6 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingAddress", () => {
         expect(typeof webMessagingAddress.getWindow === "function").toBeTruthy();
         expect(webMessagingAddress.getOrigin).toBeDefined();
         expect(typeof webMessagingAddress.getOrigin === "function").toBeTruthy();
-    });
-
-    it("throws on missing or wrongly typed arguments in transmit", () => {
-        expect(() => {
-            webMessagingAddress = new WebMessagingAddress({
-                // correct arguments
-                window,
-                origin
-            });
-        }).not.toThrow();
-
-        expect(() => {
-            webMessagingAddress = new WebMessagingAddress({
-                // window is of wrong type
-                window: "",
-                origin
-            });
-        }).toThrow();
-
-        expect(() => {
-            webMessagingAddress = new WebMessagingAddress({
-                // origin is of wrong type
-                window,
-                origin: {}
-            });
-        }).toThrow();
-
-        expect(() => {
-            webMessagingAddress = new WebMessagingAddress({
-                // missing window argument
-                origin
-            });
-        }).toThrow();
-
-        expect(() => {
-            webMessagingAddress = new WebMessagingAddress({
-                // missing origin argument
-                window
-            });
-        }).toThrow();
-
-        expect(() => {
-            webMessagingAddress = new WebMessagingAddress({});
-        }).toThrow(); // all arguments are missing
-
-        expect(() => {
-            webMessagingAddress = new WebMessagingAddress("");
-        }).toThrow(); // settings is of wrong type
-
-        expect(() => {
-            webMessagingAddress = new WebMessagingAddress();
-        }).toThrow(); // settings is undefined
     });
 
     it("retrieves window correctly", () => {

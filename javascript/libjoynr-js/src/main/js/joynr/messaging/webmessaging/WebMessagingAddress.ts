@@ -16,42 +16,37 @@
  * limitations under the License.
  * #L%
  */
-const Typing = require("../../util/Typing");
+import * as Typing from "../../util/Typing";
 
 class WebMessagingAddress {
+    private settings: any;
     /**
      * @constructor WebMessagingAddress
-     * @param {Object} settings the settings object for this constructor call
-     * @param {Object} settings.window the default target window, the messages should be sent to
-     * @param {String} settings.origin the default origin, the messages should be sent to
+     * @param settings the settings object for this constructor call
+     * @param settings.window the default target window, the messages should be sent to
+     * @param settings.origin the default origin, the messages should be sent to
      */
-    constructor(settings) {
+    public constructor(settings: { window: Window; origin: string }) {
         Typing.checkProperty(settings, "Object", "settings");
         Typing.checkProperty(settings.window, "Object", "settings.window");
         Typing.checkProperty(settings.origin, "String", "settings.origin");
-        this._settings = settings;
+        this.settings = settings;
     }
 
     /**
-     * @name WebMessagingAddress#getWindow
-     * @function
-     *
-     * @returns {Window} the windows that should be addressed
+     * @returns the windows that should be addressed
      */
-    getWindow() {
-        return this._settings.window;
+    public getWindow(): Window {
+        return this.settings.window;
     }
 
     /**
-     * @name WebMessagingAddress#getOrigin
-     * @function
-     *
-     * @returns {String} the origin of the window that should be addressed
+     * @returns the origin of the window that should be addressed
      * @see WebMessagingAddress#getWindow
      */
-    getOrigin() {
-        return this._settings.origin;
+    public getOrigin(): string {
+        return this.settings.origin;
     }
 }
 
-module.exports = WebMessagingAddress;
+export = WebMessagingAddress;

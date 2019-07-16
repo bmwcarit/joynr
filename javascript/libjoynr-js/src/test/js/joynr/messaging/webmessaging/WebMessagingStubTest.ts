@@ -16,17 +16,16 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const WebMessagingStub = require("../../../../../main/js/joynr/messaging/webmessaging/WebMessagingStub");
-const JSONSerializer = require("../../../../../main/js/joynr/util/JSONSerializer");
+
+import WebMessagingStub from "../../../../../main/js/joynr/messaging/webmessaging/WebMessagingStub";
+import * as JSONSerializer from "../../../../../main/js/joynr/util/JSONSerializer";
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", () => {
-    let window, origin, webMessagingStub, joynrMessage;
+    let window: any, origin: any, webMessagingStub: WebMessagingStub, joynrMessage: any;
 
     beforeEach(done => {
-        function Window() {}
-        window = new Window();
-        window.postMessage = jasmine.createSpy("postMessage");
+        window = {};
+        window.postMessage = jest.fn();
         origin = "defaultOrigin";
 
         webMessagingStub = new WebMessagingStub({
@@ -34,38 +33,23 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebMessagingStub", () => {
             origin
         });
 
-        function JoynrMessage() {}
-        joynrMessage = new JoynrMessage();
+        joynrMessage = {};
         done();
     });
 
-    it("is of correct type and has all members", done => {
+    it("is of correct type and has all members", () => {
         expect(WebMessagingStub).toBeDefined();
         expect(typeof WebMessagingStub === "function").toBeTruthy();
         expect(webMessagingStub).toBeDefined();
-        expect(webMessagingStub instanceof WebMessagingStub).toBeTruthy();
         expect(webMessagingStub.transmit).toBeDefined();
         expect(typeof webMessagingStub.transmit === "function").toBeTruthy();
-        done();
     });
 
-    it("throws on missing or wrongly typed arguments in transmit", () => {
-        expect(() => {
-            webMessagingStub.transmit(undefined);
-        }).toThrow();
-        expect(() => {
-            webMessagingStub.transmit({
-                message: joynrMessage
-            });
-        }).not.toThrow();
-    });
-
-    it("calls window.postMessage correctly", done => {
+    it("calls window.postMessage correctly", () => {
         const param = {
             message: joynrMessage
         };
         webMessagingStub.transmit(param);
         expect(window.postMessage).toHaveBeenCalledWith(JSON.parse(JSONSerializer.stringify(param)), origin);
-        done();
     });
 });
