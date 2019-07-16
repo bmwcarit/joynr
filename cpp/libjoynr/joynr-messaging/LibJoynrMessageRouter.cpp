@@ -347,8 +347,8 @@ void LibJoynrMessageRouter::addNextHopToParent(
 bool LibJoynrMessageRouter::isValidForRoutingTable(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
-    if (typeid(*address) == typeid(system::RoutingTypes::WebSocketAddress) ||
-        typeid(*address) == typeid(InProcessMessagingAddress)) {
+    if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(address.get()) != nullptr ||
+        dynamic_cast<const InProcessMessagingAddress*>(address.get()) != nullptr) {
         return true;
     }
     JOYNR_LOG_ERROR(logger(),
@@ -366,15 +366,16 @@ bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingE
     if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
         return true;
     }
-    if (typeid(*oldEntry.address) != typeid(InProcessMessagingAddress)) {
+    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) == nullptr) {
         if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
             return true;
-        } else if (typeid(*oldEntry.address) != typeid(system::RoutingTypes::WebSocketAddress)) {
+        } else if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(
+                           oldEntry.address.get()) == nullptr) {
             // old address is WebSocketClientAddress or MqttAddress/ChannelAddress
             if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
                 return true;
-            } else if (typeid(*oldEntry.address) !=
-                       typeid(system::RoutingTypes::WebSocketClientAddress)) {
+            } else if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(
+                               oldEntry.address.get()) == nullptr) {
                 // old address is MqttAddress or ChannelAddress
                 if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
                     typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
