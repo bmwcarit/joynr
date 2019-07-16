@@ -72,7 +72,8 @@ public class ControllerBean implements SitControllerSync {
     public String triggerTests() {
         logger.info("triggerTests called");
         StringBuffer result = new StringBuffer();
-        for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
+        //for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
+        for (String appendValue : new String[]{ ".jee" }) {
             callProducer(SIT_DOMAIN_PREFIX + appendValue, result);
         }
         return Base64.getEncoder().encodeToString(result.toString().getBytes(StandardCharsets.UTF_8));
