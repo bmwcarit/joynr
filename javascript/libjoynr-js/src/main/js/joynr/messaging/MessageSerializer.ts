@@ -17,15 +17,14 @@
  * #L%
  */
 /*eslint global-require: "off"*/
-const JoynrMessage = require("./JoynrMessage");
-const LoggingManager = require("../system/LoggingManager");
+import JoynrMessage from "./JoynrMessage";
+
+import LoggingManager from "../system/LoggingManager";
 const log = LoggingManager.getLogger("joynr.messaging.MessageSerializer");
 
-const MessageSerializer = {};
+import * as smrf from "smrf";
 
-const smrf = require("smrf");
-
-function serializeSmrfMessage(smrfMsg) {
+function serializeSmrfMessage(smrfMsg: JoynrMessage): Buffer {
     try {
         return smrf.serialize(smrfMsg);
     } catch (e) {
@@ -33,7 +32,7 @@ function serializeSmrfMessage(smrfMsg) {
     }
 }
 
-function deserializeSmrfMessage(data) {
+function deserializeSmrfMessage(data: Buffer): JoynrMessage {
     try {
         return smrf.deserialize(data);
     } catch (e) {
@@ -41,18 +40,20 @@ function deserializeSmrfMessage(data) {
     }
 }
 
-MessageSerializer.stringify = function(joynrMessage) {
+export function stringify(joynrMessage: JoynrMessage): Buffer {
+    // @ts-ignore
     joynrMessage.body = joynrMessage.body || new Buffer(joynrMessage.payload);
 
     return serializeSmrfMessage(joynrMessage);
-};
+}
 
-MessageSerializer.parse = function(data) {
+export function parse(data: Buffer): JoynrMessage | undefined {
     if (typeof data !== "object") {
         log.error("MessageSerializer received unsupported message.");
     } else {
         const smrfMsg = deserializeSmrfMessage(data);
-        const expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs + Date.now();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const expiryDate = smrfMsg.isTtlAbsolute === true ? smrfMsg.ttlMs : smrfMsg.ttlMs! + Date.now();
 
         // smrfMsg has two attributes we need to throw away -> create new Object
         const messageWithoutRest = {
@@ -60,10 +61,9 @@ MessageSerializer.parse = function(data) {
             sender: smrfMsg.sender,
             recipient: smrfMsg.recipient,
             ttlMs: expiryDate,
+            // @ts-ignore
             payload: smrfMsg.body.toString()
         };
         return JoynrMessage.parseMessage(messageWithoutRest);
     }
-};
-
-module.exports = MessageSerializer;
+}

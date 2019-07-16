@@ -21,7 +21,7 @@
  * @constructor
  */
 class MulticastWildcardRegexFactory {
-    createIdPattern(multicastId) {
+    public createIdPattern(multicastId: string): string {
         let patternString = multicastId.replace(/^\+\//g, "[^/]+/");
         patternString = patternString.replace(/\/\+\//g, "/[^/]+/");
         patternString = patternString.replace(/([\w\W]*)\/[\\+]$/, "$1/[^/]+$");
@@ -36,4 +36,4 @@ class MulticastWildcardRegexFactory {
     }
 }
 
-module.exports = MulticastWildcardRegexFactory;
+export = MulticastWildcardRegexFactory;

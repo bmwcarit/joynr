@@ -17,28 +17,30 @@
  * #L%
  */
 
-/**
- * The messaging QoS effort can be used to define how much effort should
- * be expended on ensuring delivery of a message. See the individual
- * members for a description of what each one means.
- */
-const MessagingQosEffort = {};
-
+export interface NORMAL {
+    name: "Normal";
+    value: "NORMAL";
+}
 /**
  * Normal effort means that the messaging system will guarantee delivery of the message, including temporarily
  * persisting the message as necessary if the receiver is not currently online. Also known as 'at least once'.
  */
-MessagingQosEffort.NORMAL = {
+export const NORMAL: NORMAL = {
     name: "Normal",
     value: "NORMAL"
 };
 
+// eslint-disable-next-line @typescript-eslint/class-name-casing
+export interface BEST_EFFORT {
+    name: "Best effort";
+    value: "BEST_EFFORT";
+}
 /**
  * Best effort means that the messaging system will ensure the message is sent out, but will not guarantee that
  * it is received, also meaning the message is not persisted awaiting delivery if the receiver is not currently
  * online. Also known as 'at most once' or 'fire and forget'.
  */
-MessagingQosEffort.BEST_EFFORT = {
+export const BEST_EFFORT: BEST_EFFORT = {
     name: "Best effort",
     value: "BEST_EFFORT"
 };
@@ -46,8 +48,8 @@ MessagingQosEffort.BEST_EFFORT = {
 /**
  * Helper method to allow checking a value to see if it is a valid member of this enum.
  */
-MessagingQosEffort.isValid = function(value) {
-    return value === this.NORMAL || value === this.BEST_EFFORT;
-};
+export function isValid(value: any): boolean {
+    return value === NORMAL || value === BEST_EFFORT;
+}
 
-module.exports = MessagingQosEffort;
+export type effort = NORMAL | BEST_EFFORT;

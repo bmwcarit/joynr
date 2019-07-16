@@ -16,38 +16,34 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("../util/UtilInternal");
-const LoggingManager = require("../system/LoggingManager");
+import * as UtilInternal from "../util/UtilInternal";
+import LoggingManager from "../system/LoggingManager";
 
 const log = LoggingManager.getLogger("joynr/messaging/MessagingSkeletonFactory");
+type Address = any;
+type MessagingSkeleton = any;
 
 class MessagingSkeletonFactory {
+    private messagingSkeletons!: Record<string, MessagingSkeleton>;
     /**
-     * @name MessagingSkeletonFactory
      * @constructor
-     *
      */
-    constructor() {
-        this._messagingSkeletons = undefined;
-    }
+    public constructor() {}
 
-    setSkeletons(newMessagingSkeletons) {
-        this._messagingSkeletons = newMessagingSkeletons;
+    public setSkeletons(newMessagingSkeletons: Record<string, MessagingSkeleton>): void {
+        this.messagingSkeletons = newMessagingSkeletons;
     }
 
     /**
-     * @name MessagingSkeletonFactory#getSkeleton
-     * @function
-     *
-     * return {MessagingSkeleton} the skeleton matching the address
+     * @returnr the skeleton matching the address
      */
-    getSkeleton(address) {
+    public getSkeleton(address: Address): MessagingSkeleton {
         const className = address._typeName;
-        const skeleton = this._messagingSkeletons[className];
+        const skeleton = this.messagingSkeletons[className];
 
         if (UtilInternal.checkNullUndefined(skeleton)) {
             const errorMsg = `Could not find a messaging skeleton for "${className}" within messagingSkeletons [${Object.keys(
-                this._messagingSkeletons
+                this.messagingSkeletons
             ).join(",")}]`;
             log.debug(errorMsg);
             throw new Error(errorMsg);
@@ -56,4 +52,4 @@ class MessagingSkeletonFactory {
     }
 }
 
-module.exports = MessagingSkeletonFactory;
+export = MessagingSkeletonFactory;

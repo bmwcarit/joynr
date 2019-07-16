@@ -16,38 +16,42 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("../util/UtilInternal");
-const LoggingManager = require("../system/LoggingManager");
+import * as UtilInternal from "../util/UtilInternal";
+import LoggingManager from "../system/LoggingManager";
 
 const log = LoggingManager.getLogger("joynr/messaging/MessagingStubFactory");
 
+interface InternalMessagingStubFactory {
+    build(address: Address): MessagingStub;
+}
+
+type Address = any;
+type MessagingStub = any;
+
 class MessagingStubFactory {
+    private messagingStubFactories: Record<string, InternalMessagingStubFactory>;
     /**
-     * @name MessagingStubFactory
      * @constructor
      *
-     * @param {Object} settings
-     * @param {Object} settings.messagingStubFactories a hash mapping addresses to the equivalent message sender
-     * @param {MessagingStubFactory} settings.messagingStubFactories.KEY the key of the map is the className of the address provided in createMessagingStub, the value is the concrete MessagingStubFactory
-     * @param {Function} settings.messagingStubFactories.KEY.build the factory method of the
+     * @param settings
+     * @param settings.messagingStubFactories a hash mapping addresses to the equivalent message sender
+     * @param settings.messagingStubFactories.KEY the key of the map is the className of the address provided in createMessagingStub, the value is the concrete MessagingStubFactory
+     * @param settings.messagingStubFactories.KEY.build the factory method of the
      */
-    constructor(settings) {
-        this._messagingStubFactories = settings.messagingStubFactories;
+    public constructor(settings: { messagingStubFactories: Record<string, InternalMessagingStubFactory> }) {
+        this.messagingStubFactories = settings.messagingStubFactories;
     }
 
     /**
-     * @name MessagingStubFactory#createMessagingStub
-     * @function
-     *
-     * @param {MessagingStub} address the address to create a messaging stub for
+     * @param address the address to create a messaging stub for
      */
-    createMessagingStub(address) {
+    public createMessagingStub(address: Address): void {
         const className = address._typeName;
-        const factory = this._messagingStubFactories[className];
+        const factory = this.messagingStubFactories[className];
 
         if (UtilInternal.checkNullUndefined(factory)) {
             const errorMsg = `Could not find a MessagingStubFactory for "${className}" within messagingStubFactories [${Object.keys(
-                this._messagingStubFactories
+                this.messagingStubFactories
             ).join(",")}]`;
             log.debug(errorMsg);
             throw new Error(errorMsg);
@@ -57,4 +61,4 @@ class MessagingStubFactory {
     }
 }
 
-module.exports = MessagingStubFactory;
+export = MessagingStubFactory;
