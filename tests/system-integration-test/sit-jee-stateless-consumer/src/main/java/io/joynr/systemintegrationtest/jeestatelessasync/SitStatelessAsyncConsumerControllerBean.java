@@ -72,7 +72,8 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
     public String triggerTests() {
         logger.info("triggerTests called");
         StringBuffer result = new StringBuffer();
-        callProducer(SIT_DOMAIN_PREFIX + ".node", result);
+        //callProducer(SIT_DOMAIN_PREFIX + ".node", result);
+        callProducer(SIT_DOMAIN_PREFIX + ".jee", result);
         return result.toString();
     }
 
