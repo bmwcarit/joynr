@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+
 declare module "smrf" {
     export function serialize(joynrMessage: any): Buffer;
     export function deserialize(serializedMessage: Buffer): any;
