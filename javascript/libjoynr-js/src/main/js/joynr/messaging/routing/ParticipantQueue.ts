@@ -16,9 +16,12 @@
  * limitations under the License.
  * #L%
  */
-const UtilInternal = require("../../util/UtilInternal");
+import * as UtilInternal from "../../util/UtilInternal";
+import JoynrMessage = require("../JoynrMessage");
 
 class ParticipantQueue {
+    public currentQueueSize: number = 0;
+    private queue: JoynrMessage[];
     /**
      * This is a helper class for MessageQueue. It manages the messages waiting for a single participant.
      * It keeps its queue size which can be used by the messageQueue to calculate the total queue size of all participant
@@ -26,28 +29,23 @@ class ParticipantQueue {
      * It allows queued messages to be filtered by expiry date.
      *
      * @constructor
-     * @name ParticipantQueue
      */
-    constructor() {
-        this._queue = [];
-        this.currentQueueSize = 0;
+    public constructor() {
+        this.queue = [];
     }
 
     /**
      * filters expired messages
      *
-     * @name ParticipantQueue#filterExpiredMessages
-     * @function
-     *
      */
-    filterExpiredMessages() {
+    public filterExpiredMessages(): void {
         const now = Date.now();
         let totalBytesRemoved = 0;
 
         const newQueue = [];
         let i;
-        for (i = 0; i < this._queue.length; i++) {
-            const msg = this._queue[i];
+        for (i = 0; i < this.queue.length; i++) {
+            const msg = this.queue[i];
             if (now > msg.expiryDate) {
                 totalBytesRemoved += UtilInternal.getLengthInBytes(msg.payload);
             } else {
@@ -55,28 +53,25 @@ class ParticipantQueue {
             }
         }
         this.currentQueueSize -= totalBytesRemoved;
-        this._queue = newQueue;
+        this.queue = newQueue;
     }
 
     /**
      * puts messages in queue
      *
-     * @name ParticipantQueue#putMessage
-     * @function
-     *
      */
-    putMessage(message, size) {
+    public putMessage(message: JoynrMessage, size: number): void {
         this.currentQueueSize += size;
-        this._queue.push(message);
+        this.queue.push(message);
     }
 
-    getMessages() {
-        return this._queue;
+    public getMessages(): JoynrMessage[] {
+        return this.queue;
     }
 
-    getSize() {
+    public getSize(): number {
         return this.currentQueueSize;
     }
 }
 
-module.exports = ParticipantQueue;
+export = ParticipantQueue;

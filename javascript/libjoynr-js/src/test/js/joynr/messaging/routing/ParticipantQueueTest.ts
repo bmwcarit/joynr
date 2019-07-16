@@ -16,20 +16,19 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const ParticipantQueue = require("../../../../../main/js/joynr/messaging/routing/ParticipantQueue");
-const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-const Date = require("../../../../../test/js/global/Date");
 
-let fakeTime;
+import ParticipantQueue from "../../../../../main/js/joynr/messaging/routing/ParticipantQueue";
+import JoynrMessage from "../../../../../main/js/joynr/messaging/JoynrMessage";
 
-function increaseFakeTime(time_ms) {
-    fakeTime = fakeTime + time_ms;
-    jasmine.clock().tick(time_ms);
+let fakeTime: number;
+
+function increaseFakeTime(timeMs: number) {
+    fakeTime = fakeTime + timeMs;
+    jest.advanceTimersByTime(timeMs);
 }
 
 describe("libjoynr-js.joynr.messaging.routing.ParticipantQueue", () => {
-    let participantQueue;
+    let participantQueue: ParticipantQueue;
     const receiverParticipantId = `TestparticipantQueue_participantId_${Date.now()}`;
     const joynrMessage = new JoynrMessage({
         type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
@@ -45,17 +44,17 @@ describe("libjoynr-js.joynr.messaging.routing.ParticipantQueue", () => {
     joynrMessage2.from = "senderParticipantId2";
 
     beforeEach(done => {
-        participantQueue = new ParticipantQueue({});
+        participantQueue = new ParticipantQueue();
         fakeTime = Date.now();
-        jasmine.clock().install();
-        spyOn(Date, "now").and.callFake(() => {
+        jest.useFakeTimers();
+        jest.spyOn(Date, "now").mockImplementation(() => {
             return fakeTime;
         });
         done();
     });
 
     afterEach(done => {
-        jasmine.clock().uninstall();
+        jest.useRealTimers();
         done();
     });
 
