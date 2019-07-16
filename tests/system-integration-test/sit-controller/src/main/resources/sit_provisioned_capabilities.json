@@ -1,7 +1,7 @@
 [
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://mqttbroker:1883\",\"topic\":\"replyto/io.joynr.systemintegrationtest.jeestatelessconsumer/stateless-cons-1\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"joynrdefaultgbid\",\"topic\":\"replyto/io.joynr.systemintegrationtest.jeestatelessconsumer/stateless-cons-1\"}",
         "domain": "io.joynr.systemintegrationtest.controller.jee-stateless-consumer",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "test/SitController",
@@ -23,7 +23,7 @@
     },
     {
         "_typeName": "joynr.types.GlobalDiscoveryEntry",
-        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"tcp://mqttbroker:1883\",\"topic\":\"replyto/io.joynr.systemintegrationtest.jeestatelessconsumer/stateless-cons-2\"}",
+        "address": "{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"joynrdefaultgbid\",\"topic\":\"replyto/io.joynr.systemintegrationtest.jeestatelessconsumer/stateless-cons-2\"}",
         "domain": "io.joynr.systemintegrationtest.controller.jee-stateless-consumer",
         "expiryDateMs": 9223372036854775807,
         "interfaceName": "test/SitController",
