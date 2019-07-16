@@ -49,7 +49,7 @@ import joynr.types.ProviderScope;
 import joynr.types.Version;
 
 @Ignore
-public class CapabilitiesDirectoryTest {
+public class CapabilitiesDirectoryIntegrationTest {
 
     private static final CustomParameter[] CUSTOM_PARAMETERS = {};
 
