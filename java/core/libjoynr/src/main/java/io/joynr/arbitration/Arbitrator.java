@@ -203,7 +203,7 @@ public class Arbitrator {
                 if (exception instanceof ApplicationException) {
                     DiscoveryError discoveryError = ((ApplicationException) exception).getError();
                     reason = new DiscoveryException("Unable to find provider due to DiscoveryError: " + discoveryError
-                            + " interface: " + interfaceName + " domains: " + domains + "gbids: "
+                            + " interface: " + interfaceName + " domains: " + domains + " gbids: "
                             + Arrays.toString(gbids));
                 } else {
                     reason = exception;
