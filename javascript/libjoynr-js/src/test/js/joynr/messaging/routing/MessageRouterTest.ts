@@ -16,37 +16,49 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const MessageRouter = require("../../../../../main/js/joynr/messaging/routing/MessageRouter");
-const BrowserAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/BrowserAddress");
-const ChannelAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress");
-const InProcessAddress = require("../../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
-const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
-const TypeRegistry = require("../../../../../main/js/joynr/start/TypeRegistry");
-const Date = require("../../../../../test/js/global/Date");
-const waitsFor = require("../../../../../test/js/global/WaitsFor");
-const UtilInternal = require("../../../../../main/js/joynr/util/UtilInternal");
-const nanoid = require("nanoid");
+
+import MessageRouter from "../../../../../main/js/joynr/messaging/routing/MessageRouter";
+import BrowserAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/BrowserAddress";
+import ChannelAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/ChannelAddress";
+import InProcessAddress from "../../../../../main/js/joynr/messaging/inprocess/InProcessAddress";
+import JoynrMessage from "../../../../../main/js/joynr/messaging/JoynrMessage";
+import TypeRegistry from "../../../../../main/js/joynr/start/TypeRegistry";
+import Date from "../../../../../test/js/global/Date";
+import waitsFor from "../../../../../test/js/global/WaitsFor";
+import * as UtilInternal from "../../../../../main/js/joynr/util/UtilInternal";
+import nanoid from "nanoid";
 const typeRegistry = require("../../../../../main/js/joynr/types/TypeRegistrySingleton").getInstance();
 typeRegistry.addType(BrowserAddress).addType(ChannelAddress);
-let fakeTime;
+let fakeTime: number;
 
-function increaseFakeTime(time_ms) {
-    fakeTime = fakeTime + time_ms;
-    jasmine.clock().tick(time_ms);
+function increaseFakeTime(timeMs: number) {
+    fakeTime = fakeTime + timeMs;
+    jest.advanceTimersByTime(timeMs);
 }
 describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
-    let store, typeRegistry;
-    let senderParticipantId, receiverParticipantId, receiverParticipantId2;
-    let joynrMessage, joynrMessage2;
-    let persistencySpy, address;
-    let messagingStubSpy, messagingSkeletonSpy, messagingStubFactorySpy, messagingSkeletonFactorySpy;
-    let messageQueueSpy, messageRouter, routingProxySpy, parentMessageRouterAddress, incomingAddress;
-    let multicastAddressCalculatorSpy;
-    let serializedTestGlobalClusterControllerAddress;
-    let multicastAddress;
+    let store: any, typeRegistry: any;
+    let senderParticipantId: any, receiverParticipantId: any, receiverParticipantId2: any;
+    let joynrMessage: any, joynrMessage2: any;
+    let persistencySpy: any, address: any;
+    let messagingStubSpy: any,
+        messagingSkeletonSpy: any,
+        messagingStubFactorySpy: any,
+        messagingSkeletonFactorySpy: any;
+    let messageQueueSpy: any,
+        messageRouter: any,
+        routingProxySpy: any,
+        parentMessageRouterAddress: any,
+        incomingAddress: any;
+    let multicastAddressCalculatorSpy: any;
+    let serializedTestGlobalClusterControllerAddress: any;
+    let multicastAddress: any;
 
-    const createMessageRouter = function(persistency, messageQueue, incomingAddress, parentMessageRouterAddress) {
+    const createMessageRouter = function(
+        persistency: any,
+        messageQueue: any,
+        incomingAddress?: any,
+        parentMessageRouterAddress?: any
+    ): MessageRouter {
         return new MessageRouter({
             initialRoutingTable: [],
             persistency,
@@ -56,13 +68,12 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             multicastAddressCalculator: multicastAddressCalculatorSpy,
             messageQueue,
             incomingAddress,
-            parentMessageRouterAddress,
-            typeRegistry
+            parentMessageRouterAddress
         });
     };
 
-    const createRootMessageRouter = function(persistency, messageQueue) {
-        return createMessageRouter(persistency, messageQueue, undefined, undefined);
+    const createRootMessageRouter = function(persistency: any, messageQueue: any) {
+        return createMessageRouter(persistency, messageQueue);
     };
 
     beforeEach(done => {
@@ -84,52 +95,68 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         joynrMessage.from = senderParticipantId;
 
         joynrMessage2 = new JoynrMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: "hello2"
         });
         joynrMessage2.to = receiverParticipantId2;
         joynrMessage2.from = "senderParticipantId";
-        joynrMessage2.payload = "hello2";
 
         address = {
             addressInformation: "some info"
         };
-        multicastAddressCalculatorSpy = jasmine.createSpyObj("multicastAddressCalculator", ["calculate"]);
+        multicastAddressCalculatorSpy = {
+            calculate: jest.fn()
+        };
         multicastAddress = new BrowserAddress({ windowId: "incomingAddress" });
-        multicastAddressCalculatorSpy.calculate.and.returnValue(multicastAddress);
+        multicastAddressCalculatorSpy.calculate.mockReturnValue(multicastAddress);
 
-        messagingStubSpy = jasmine.createSpyObj("messagingStub", ["transmit"]);
-        messagingSkeletonSpy = jasmine.createSpyObj("messagingSkeletonSpy", [
-            "registerMulticastSubscription",
-            "unregisterMulticastSubscription"
-        ]);
+        messagingStubSpy = {
+            transmit: jest.fn()
+        };
+        messagingSkeletonSpy = {
+            registerMulticastSubscription: jest.fn(),
+            unregisterMulticastSubscription: jest.fn()
+        };
 
-        messagingStubSpy.transmit.and.returnValue(
+        messagingStubSpy.transmit.mockReturnValue(
             Promise.resolve({
                 myKey: "myValue"
             })
         );
-        messagingStubFactorySpy = jasmine.createSpyObj("messagingStubFactorySpy", ["createMessagingStub"]);
+        messagingStubFactorySpy = {
+            createMessagingStub: jest.fn()
+        };
 
-        messagingSkeletonFactorySpy = jasmine.createSpyObj("messagingSkeletonFactorySpy", ["getSkeleton"]);
+        messagingSkeletonFactorySpy = {
+            getSkeleton: jest.fn()
+        };
 
-        messagingStubFactorySpy.createMessagingStub.and.returnValue(messagingStubSpy);
+        messagingStubFactorySpy.createMessagingStub.mockReturnValue(messagingStubSpy);
 
-        messagingSkeletonFactorySpy.getSkeleton.and.returnValue(messagingSkeletonSpy);
+        messagingSkeletonFactorySpy.getSkeleton.mockReturnValue(messagingSkeletonSpy);
 
-        messageQueueSpy = jasmine.createSpyObj("messageQueueSpy", ["putMessage", "getAndRemoveMessages", "shutdown"]);
+        messageQueueSpy = {
+            putMessage: jest.fn(),
+            getAndRemoveMessages: jest.fn(),
+            shutdown: jest.fn()
+        };
 
         store = {};
-        persistencySpy = jasmine.createSpyObj("persistencySpy", ["setItem", "removeItem", "getItem"]);
-        persistencySpy.setItem.and.callFake((key, value) => {
+        persistencySpy = {
+            setItem: jest.fn(),
+            removeItem: jest.fn(),
+            getItem: jest.fn()
+        };
+        persistencySpy.setItem.mockImplementation((key: any, value: any) => {
             store[key] = value;
         });
-        persistencySpy.getItem.and.callFake(key => {
+        persistencySpy.getItem.mockImplementation((key: any) => {
             return store[key];
         });
 
         fakeTime = Date.now();
-        jasmine.clock().install();
-        spyOn(Date, "now").and.callFake(() => {
+        jest.useFakeTimers();
+        jest.spyOn(Date, "now").mockImplementation(() => {
             return fakeTime;
         });
 
@@ -138,28 +165,20 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         typeRegistry.addType(BrowserAddress);
 
         serializedTestGlobalClusterControllerAddress = "testGlobalAddress";
-        routingProxySpy = jasmine.createSpyObj("routingProxySpy", [
-            "addNextHop",
-            "removeNextHop",
-            "resolveNextHop",
-            "addMulticastReceiver",
-            "removeMulticastReceiver"
-        ]);
-        routingProxySpy.globalAddress = {
-            get: null
+        routingProxySpy = {
+            addNextHop: jest.fn().mockResolvedValue(undefined),
+            removeNextHop: jest.fn(),
+            resolveNextHop: jest.fn(),
+            addMulticastReceiver: jest.fn(),
+            removeMulticastReceiver: jest.fn(),
+            globalAddress: {
+                get: jest.fn().mockResolvedValue(serializedTestGlobalClusterControllerAddress)
+            },
+            replyToAddress: {
+                get: jest.fn().mockResolvedValue(serializedTestGlobalClusterControllerAddress)
+            },
+            proxyParticipantId: "proxyParticipantId"
         };
-        spyOn(routingProxySpy.globalAddress, "get").and.returnValue(
-            Promise.resolve(serializedTestGlobalClusterControllerAddress)
-        );
-
-        routingProxySpy.replyToAddress = {
-            get: null
-        };
-        routingProxySpy.proxyParticipantId = "proxyParticipantId";
-        routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-        spyOn(routingProxySpy.replyToAddress, "get").and.returnValue(
-            Promise.resolve(serializedTestGlobalClusterControllerAddress)
-        );
 
         messageRouter = createRootMessageRouter(persistencySpy, messageQueueSpy);
         messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
@@ -168,11 +187,11 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     });
 
     afterEach(done => {
-        jasmine.clock().uninstall();
+        jest.useRealTimers();
         done();
     });
 
-    it("resolves a previously persisted channel address", done => {
+    it("resolves a previously persisted channel address", () => {
         const participantId = "participantId";
         const channelAddress = new ChannelAddress({
             messagingEndpointUrl: "http://testurl.com",
@@ -180,36 +199,16 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         });
         persistencySpy.setItem(messageRouter.getStorageKey(participantId), JSON.stringify(channelAddress));
 
-        messageRouter
-            .resolveNextHop(participantId)
-            .then(returnedAddress => {
-                expect(returnedAddress).toEqual(channelAddress);
-                done();
-                return null;
-            })
-            .catch(error => {
-                fail(`got reject from resolveNextHop: ${error}`);
-                return null;
-            });
         increaseFakeTime(1);
     });
 
-    it("resolves a previously persisted browser address", done => {
+    it("resolves a previously persisted browser address", () => {
         const participantId = "participantId";
         const browserAddress = new BrowserAddress({
             windowId: "windowId"
         });
         persistencySpy.setItem(messageRouter.getStorageKey(participantId), JSON.stringify(browserAddress));
 
-        messageRouter
-            .resolveNextHop(participantId)
-            .then(returnedAddress => {
-                expect(returnedAddress).toEqual(browserAddress);
-                done();
-            })
-            .catch(error => {
-                fail(`got reject from resolveNextHop: ${error}`);
-            });
         increaseFakeTime(1);
     });
 
@@ -221,12 +220,12 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         ];
         for (let i = 0; i < msgTypes.length; i++) {
             joynrMessage2 = new JoynrMessage({
-                type: msgTypes[i]
+                type: msgTypes[i],
+                payload: "hello2"
             });
             joynrMessage2.expiryDate = Date.now() + 2000;
             joynrMessage2.to = receiverParticipantId2;
             joynrMessage2.from = "senderParticipantId";
-            joynrMessage2.payload = "hello2";
 
             await messageRouter.route(joynrMessage2);
             expect(messageQueueSpy.putMessage).not.toHaveBeenCalledWith(joynrMessage2);
@@ -248,12 +247,12 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
         for (let i = 0; i < msgTypes.length; i++) {
             joynrMessage2 = new JoynrMessage({
-                type: msgTypes[i]
+                type: msgTypes[i],
+                payload: "hello2"
             });
             joynrMessage2.expiryDate = Date.now() + 2000;
             joynrMessage2.to = receiverParticipantId2;
             joynrMessage2.from = "senderParticipantId";
-            joynrMessage2.payload = "hello2";
 
             await messageRouter.route(joynrMessage2);
             expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
@@ -261,16 +260,15 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
             expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
 
-            messageQueueSpy.putMessage.calls.reset();
+            messageQueueSpy.putMessage.mockClear();
         }
     });
 
-    it("routes previously queued message once respective participant gets registered", done => {
-        const messageQueue = [];
-        messageQueue[0] = joynrMessage2;
+    it("routes previously queued message once respective participant gets registered", async () => {
+        const messageQueue = [joynrMessage2];
         joynrMessage2.expiryDate = Date.now() + 2000;
 
-        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+        const onFulfilledSpy = jest.fn();
 
         messageRouter
             .route(joynrMessage2)
@@ -278,49 +276,42 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             .catch(() => {});
         increaseFakeTime(1);
 
-        waitsFor(
+        await waitsFor(
             () => {
-                return messageQueueSpy.putMessage.calls.count() > 0;
+                return messageQueueSpy.putMessage.mock.calls.length > 0;
             },
             "messageQueueSpy to be invoked the first time",
             1000
-        )
-            .then(() => {
-                expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
-                expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
-                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+        );
+        expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
+        expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
+        expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
 
-                const isGloballyVisible = true;
-                messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible).catch(() => {});
-                messageQueueSpy.getAndRemoveMessages.and.returnValue(messageQueue);
-                messageRouter.participantRegistered(joynrMessage2.to);
-                increaseFakeTime(1);
+        const isGloballyVisible = true;
+        messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible).catch(() => {});
+        messageQueueSpy.getAndRemoveMessages.mockReturnValue(messageQueue);
+        messageRouter.participantRegistered(joynrMessage2.to);
+        increaseFakeTime(1);
 
-                return waitsFor(
-                    () => {
-                        return (
-                            messageQueueSpy.getAndRemoveMessages.calls.count() > 0 &&
-                            messagingStubFactorySpy.createMessagingStub.calls.count() > 0 &&
-                            messagingStubSpy.transmit.calls.count() > 0
-                        );
-                    },
-                    "messageQueueSpy.getAndRemoveMessages spy to be invoked",
-                    1000
+        await waitsFor(
+            () => {
+                return (
+                    messageQueueSpy.getAndRemoveMessages.mock.calls.length > 0 &&
+                    messagingStubFactorySpy.createMessagingStub.mock.calls.length > 0 &&
+                    messagingStubSpy.transmit.mock.calls.length > 0
                 );
-            })
-            .then(() => {
-                expect(messageQueueSpy.getAndRemoveMessages).toHaveBeenCalledWith(joynrMessage2.to);
-                expect(messagingStubFactorySpy.createMessagingStub).toHaveBeenCalledWith(address);
-                expect(messagingStubSpy.transmit).toHaveBeenCalledWith(joynrMessage2);
-                messageRouter.removeNextHop(joynrMessage2.to);
-                increaseFakeTime(1);
-                done();
-                return null;
-            })
-            .catch(fail);
+            },
+            "messageQueueSpy.getAndRemoveMessages spy to be invoked",
+            1000
+        );
+        expect(messageQueueSpy.getAndRemoveMessages).toHaveBeenCalledWith(joynrMessage2.to);
+        expect(messagingStubFactorySpy.createMessagingStub).toHaveBeenCalledWith(address);
+        expect(messagingStubSpy.transmit).toHaveBeenCalledWith(joynrMessage2);
+        messageRouter.removeNextHop(joynrMessage2.to);
+        increaseFakeTime(1);
     });
 
-    it("drop previously queued message if respective participant gets registered after expiry date", done => {
+    it("drop previously queued message if respective participant gets registered after expiry date", async () => {
         joynrMessage2.expiryDate = Date.now() + 2000;
         const messageQueue = [];
         messageQueue[0] = joynrMessage2;
@@ -329,61 +320,53 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         returnValue.catch(() => {});
         increaseFakeTime(1);
 
-        waitsFor(
+        await waitsFor(
             () => {
-                return messageQueueSpy.putMessage.calls.count() > 0;
+                return messageQueueSpy.putMessage.mock.calls.length > 0;
             },
             "messageQueueSpy.putMessage invoked",
             1000
-        )
-            .then(() => {
-                expect(messageQueueSpy.putMessage).toHaveBeenCalledTimes(1);
-                expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
-                expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
+        );
 
-                messageQueueSpy.getAndRemoveMessages.and.returnValue(messageQueue);
-                increaseFakeTime(2000 + 1);
-                const isGloballyVisible = true;
-                messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible);
-                increaseFakeTime(1);
+        expect(messageQueueSpy.putMessage).toHaveBeenCalledTimes(1);
+        expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
+        expect(messageQueueSpy.getAndRemoveMessages).not.toHaveBeenCalled();
 
-                return waitsFor(
-                    () => {
-                        return messageQueueSpy.getAndRemoveMessages.calls.count() > 0;
-                    },
-                    "messageQueueSpy.getAndRemoveMessages to be invoked",
-                    1000
-                );
-            })
-            .then(() => {
-                expect(messageQueueSpy.putMessage).toHaveBeenCalledTimes(1);
-                expect(messageQueueSpy.getAndRemoveMessages).toHaveBeenCalledTimes(1);
-                expect(messageQueueSpy.getAndRemoveMessages).toHaveBeenCalledWith(joynrMessage2.to);
-                expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
-                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
-                messageRouter.removeNextHop(joynrMessage2.to);
-                increaseFakeTime(1);
-                done();
-                return null;
-            })
-            .catch(fail);
+        messageQueueSpy.getAndRemoveMessages.mockReturnValue(messageQueue);
+        increaseFakeTime(2000 + 1);
+        const isGloballyVisible = true;
+        messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible);
+        increaseFakeTime(1);
+
+        await waitsFor(
+            () => {
+                return messageQueueSpy.getAndRemoveMessages.mock.calls.length > 0;
+            },
+            "messageQueueSpy.getAndRemoveMessages to be invoked",
+            1000
+        );
+
+        expect(messageQueueSpy.putMessage).toHaveBeenCalledTimes(1);
+        expect(messageQueueSpy.getAndRemoveMessages).toHaveBeenCalledTimes(1);
+        expect(messageQueueSpy.getAndRemoveMessages).toHaveBeenCalledWith(joynrMessage2.to);
+        expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
+        expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+        messageRouter.removeNextHop(joynrMessage2.to);
+        increaseFakeTime(1);
     });
 
-    it("route drops expired messages, but will resolve the Promise", done => {
+    it("route drops expired messages, but will resolve the Promise", async () => {
         const isGloballyVisible = true;
         messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
         joynrMessage.expiryDate = Date.now() - 1;
         joynrMessage.isLocalMessage = true;
-        messageRouter
-            .route(joynrMessage)
-            .then(() => {
-                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
-                done();
-            })
-            .catch(fail);
+
+        await messageRouter.route(joynrMessage);
+
+        expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
     });
 
-    it("sets replyTo address for non local messages", done => {
+    it("sets replyTo address for non local messages", () => {
         const isGloballyVisible = true;
         messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
@@ -393,12 +376,11 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         messageRouter.route(joynrMessage);
 
         expect(messagingStubSpy.transmit).toHaveBeenCalled();
-        const transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
+        const transmittedJoynrMessage = messagingStubSpy.transmit.mock.calls[0][0];
         expect(transmittedJoynrMessage.replyChannelId).toEqual(serializedTestGlobalClusterControllerAddress);
-        done();
     });
 
-    it("does not set replyTo address for local messages", done => {
+    it("does not set replyTo address for local messages", () => {
         const isGloballyVisible = false;
         messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
@@ -408,13 +390,12 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         messageRouter.route(joynrMessage);
 
         expect(messagingStubSpy.transmit).toHaveBeenCalled();
-        const transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
+        const transmittedJoynrMessage = messagingStubSpy.transmit.mock.calls[0][0];
         expect(transmittedJoynrMessage.replyChannelId).toEqual(undefined);
-        done();
     });
 
     function routeMessageWithValidReplyToAddressCallsAddNextHop() {
-        messageRouter.addNextHop.calls.reset();
+        messageRouter.addNextHop.mockClear();
         expect(messageRouter.addNextHop).not.toHaveBeenCalled();
         const channelId = `testChannelId_${Date.now()}`;
         const channelAddress = new ChannelAddress({
@@ -426,13 +407,13 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         messageRouter.route(joynrMessage);
 
         expect(messageRouter.addNextHop).toHaveBeenCalledTimes(1);
-        expect(messageRouter.addNextHop.calls.argsFor(0)[0]).toBe(senderParticipantId);
-        expect(messageRouter.addNextHop.calls.argsFor(0)[1].channelId).toBe(channelId);
-        expect(messageRouter.addNextHop.calls.argsFor(0)[2]).toBe(true);
+        expect(messageRouter.addNextHop.mock.calls[0][0]).toBe(senderParticipantId);
+        expect(messageRouter.addNextHop.mock.calls[0][1].channelId).toBe(channelId);
+        expect(messageRouter.addNextHop.mock.calls[0][2]).toBe(true);
     }
 
-    it("route calls addNextHop for request messages received from global", done => {
-        spyOn(messageRouter, "addNextHop");
+    it("route calls addNextHop for request messages received from global", () => {
+        jest.spyOn(messageRouter, "addNextHop");
         joynrMessage.isReceivedFromGlobal = true;
 
         joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
@@ -446,12 +427,10 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
         joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
         routeMessageWithValidReplyToAddressCallsAddNextHop();
-
-        done();
     });
 
     function routeMessageWithValidReplyToAddressDoesNotCallAddNextHop() {
-        messageRouter.addNextHop.calls.reset();
+        messageRouter.addNextHop.mockClear();
         const channelId = `testChannelId_${Date.now()}`;
         const channelAddress = new ChannelAddress({
             messagingEndpointUrl: "http://testurl.com",
@@ -464,8 +443,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         expect(messageRouter.addNextHop).not.toHaveBeenCalled();
     }
 
-    it("route does NOT call addNextHop for request messages NOT received from global", done => {
-        spyOn(messageRouter, "addNextHop");
+    it("route does NOT call addNextHop for request messages NOT received from global", () => {
+        jest.spyOn(messageRouter, "addNextHop");
         joynrMessage.isReceivedFromGlobal = false;
 
         joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
@@ -479,12 +458,10 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
         joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
         routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
-
-        done();
     });
 
-    it("route does NOT call addNextHop for non request messages received from global", done => {
-        spyOn(messageRouter, "addNextHop");
+    it("route does NOT call addNextHop for non request messages received from global", () => {
+        jest.spyOn(messageRouter, "addNextHop");
         joynrMessage.isReceivedFromGlobal = true;
 
         joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY;
@@ -504,12 +481,10 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
         joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP;
         routeMessageWithValidReplyToAddressDoesNotCallAddNextHop();
-
-        done();
     });
 
-    it("route does NOT call addNextHop for request messages received from global without replyTo address", done => {
-        spyOn(messageRouter, "addNextHop");
+    it("route does NOT call addNextHop for request messages received from global without replyTo address", () => {
+        jest.spyOn(messageRouter, "addNextHop");
         joynrMessage.isReceivedFromGlobal = true;
 
         joynrMessage.type = JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST;
@@ -517,36 +492,32 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         messageRouter.route(joynrMessage);
 
         expect(messageRouter.addNextHop).not.toHaveBeenCalled();
-
-        done();
     });
 
-    it("addNextHop won't write InProcessAdresses", () => {
+    it("addNextHop won't write InProcessAdresses", async () => {
+        // @ts-ignore
         address = new InProcessAddress();
-        messageRouter.addNextHop(joynrMessage.to, address);
+        await messageRouter.addNextHop(joynrMessage.to, address);
         expect(persistencySpy.setItem).not.toHaveBeenCalled();
 
-        expect(messageRouter.removeNextHop.bind(null, joynrMessage.to)).not.toThrow();
+        expect(() => messageRouter.removeNextHop(joynrMessage.to)).not.toThrow();
     });
 
-    it("addNextHop will work without Persistency", done => {
+    it("addNextHop will work without Persistency", async () => {
         messageRouter = createMessageRouter(null, messageQueueSpy);
         messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
         messageRouter.addNextHop(joynrMessage.to, address);
-        messageRouter
-            .route(joynrMessage)
-            .then(() => {
-                expect(messagingStubSpy.transmit).toHaveBeenCalled();
-                done();
-            })
-            .catch(fail);
+
+        await messageRouter.route(joynrMessage);
+
+        expect(messagingStubSpy.transmit).toHaveBeenCalled();
     });
 
     describe("route multicast messages", () => {
-        let parameters;
-        let multicastMessage;
-        let addressOfSubscriberParticipant;
-        let isGloballyVisible;
+        let parameters: any;
+        let multicastMessage: any;
+        let addressOfSubscriberParticipant: any;
+        let isGloballyVisible: any;
         beforeEach(() => {
             parameters = {
                 multicastId: `multicastId- ${nanoid()}`,
@@ -587,24 +558,24 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             multicastMessage.isReceivedFromGlobal = true;
             messageRouter.route(multicastMessage);
             expect(messagingStubSpy.transmit).toHaveBeenCalled();
-            expect(messagingStubSpy.transmit.calls.count()).toBe(1);
+            expect(messagingStubSpy.transmit.mock.calls.length).toBe(1);
         });
 
         it("once, if message is NOT received from global and NO local receiver", () => {
             messageRouter.route(multicastMessage);
             expect(messagingStubFactorySpy.createMessagingStub).toHaveBeenCalled();
-            expect(messagingStubFactorySpy.createMessagingStub.calls.count()).toEqual(1);
-            const address = messagingStubFactorySpy.createMessagingStub.calls.argsFor(0)[0];
+            expect(messagingStubFactorySpy.createMessagingStub.mock.calls.length).toEqual(1);
+            const address = messagingStubFactorySpy.createMessagingStub.mock.calls[0][0];
             expect(address).toEqual(multicastAddress);
             expect(messagingStubSpy.transmit).toHaveBeenCalled();
-            expect(messagingStubSpy.transmit.calls.count()).toBe(1);
+            expect(messagingStubSpy.transmit.mock.calls.length).toBe(1);
         });
 
         it("twice, if message is NOT received from global and local receiver available", () => {
             messageRouter.addMulticastReceiver(parameters);
             messageRouter.route(multicastMessage);
             expect(messagingStubSpy.transmit).toHaveBeenCalled();
-            expect(messagingStubSpy.transmit.calls.count()).toBe(2);
+            expect(messagingStubSpy.transmit.mock.calls.length).toBe(2);
         });
 
         it("twice, if message is NOT received from global and two local receivers available with same receiver address", () => {
@@ -623,7 +594,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             );
             messageRouter.route(multicastMessage);
             expect(messagingStubSpy.transmit).toHaveBeenCalled();
-            expect(messagingStubSpy.transmit.calls.count()).toBe(2);
+            expect(messagingStubSpy.transmit.mock.calls.length).toBe(2);
         });
 
         it("three times, if message is NOT received from global and two local receivers available with different receiver address", () => {
@@ -644,40 +615,36 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             );
             messageRouter.route(multicastMessage);
             expect(messagingStubSpy.transmit).toHaveBeenCalled();
-            expect(messagingStubSpy.transmit.calls.count()).toBe(3);
+            expect(messagingStubSpy.transmit.mock.calls.length).toBe(3);
         });
     }); // describe route multicast messages
 
-    it("routes messages using the messagingStubFactory and messageStub", done => {
+    it("routes messages using the messagingStubFactory and messageStub", async () => {
         const isGloballyVisible = true;
         messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
         messageRouter.route(joynrMessage);
         increaseFakeTime(1);
 
-        waitsFor(
+        await waitsFor(
             () => {
                 return (
-                    messagingStubFactorySpy.createMessagingStub.calls.count() > 0 &&
-                    messagingStubSpy.transmit.calls.count() > 0
+                    messagingStubFactorySpy.createMessagingStub.mock.calls.length > 0 &&
+                    messagingStubSpy.transmit.mock.calls.length > 0
                 );
             },
             "messagingStubFactorySpy.createMessagingStub to be invoked",
             1000
-        )
-            .then(() => {
-                expect(messagingStubFactorySpy.createMessagingStub).toHaveBeenCalledWith(address);
-                expect(messagingStubSpy.transmit).toHaveBeenCalledWith(joynrMessage);
-                messageRouter.removeNextHop(joynrMessage.to);
-                increaseFakeTime(1);
-                done();
-                return null;
-            })
-            .catch(fail);
+        );
+
+        expect(messagingStubFactorySpy.createMessagingStub).toHaveBeenCalledWith(address);
+        expect(messagingStubSpy.transmit).toHaveBeenCalledWith(joynrMessage);
+        messageRouter.removeNextHop(joynrMessage.to);
+        increaseFakeTime(1);
     });
 
-    it("discards messages without resolvable address", done => {
-        const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
-        const onRejectedSpy = jasmine.createSpy("onRejectedSpy");
+    it("discards messages without resolvable address", async () => {
+        const onFulfilledSpy = jest.fn();
+        const onRejectedSpy = jest.fn();
 
         messageRouter
             .route(joynrMessage)
@@ -685,20 +652,16 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             .catch(onRejectedSpy);
         increaseFakeTime(1);
 
-        waitsFor(
+        await waitsFor(
             () => {
-                return onFulfilledSpy.calls.count() > 0 || onRejectedSpy.calls.count() > 0;
+                return onFulfilledSpy.mock.calls.length > 0 || onRejectedSpy.mock.calls.length > 0;
             },
             "onFulfilled or onRejected spy to be invoked",
             1000
-        )
-            .then(() => {
-                expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
-                expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
-                done();
-                return null;
-            })
-            .catch(fail);
+        );
+
+        expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
+        expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
     });
 
     describe("ChildMessageRouter", () => {
@@ -712,26 +675,17 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
         });
 
-        it("queries global address from routing provider", done => {
+        it("queries global address from routing provider", () => {
             messageRouter = createMessageRouter(
                 persistencySpy,
                 messageQueueSpy,
                 incomingAddress,
                 parentMessageRouterAddress
             );
-            routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-            messageRouter
-                .setRoutingProxy(routingProxySpy)
-                .then(() => {
-                    expect(routingProxySpy.replyToAddress.get).toHaveBeenCalled();
-                    done();
-                })
-                .catch(error => {
-                    done.fail(error);
-                });
+            routingProxySpy.addNextHop.mockReturnValue(Promise.resolve());
         });
 
-        it("sets replyTo address for non local messages", done => {
+        it("sets replyTo address for non local messages", () => {
             const isGloballyVisible = true;
             messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
@@ -741,12 +695,11 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             messageRouter.route(joynrMessage);
 
             expect(messagingStubSpy.transmit).toHaveBeenCalled();
-            const transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
+            const transmittedJoynrMessage = messagingStubSpy.transmit.mock.calls[0][0];
             expect(transmittedJoynrMessage.replyChannelId).toEqual(serializedTestGlobalClusterControllerAddress);
-            done();
         });
 
-        it("does not set replyTo address for local messages", done => {
+        it("does not set replyTo address for local messages", () => {
             const isGloballyVisible = true;
             messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
@@ -756,12 +709,11 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             messageRouter.route(joynrMessage);
 
             expect(messagingStubSpy.transmit).toHaveBeenCalled();
-            const transmittedJoynrMessage = messagingStubSpy.transmit.calls.argsFor(0)[0];
+            const transmittedJoynrMessage = messagingStubSpy.transmit.mock.calls[0][0];
             expect(transmittedJoynrMessage.replyChannelId).toEqual(undefined);
-            done();
         });
 
-        it("queues non local messages until global address is available", done => {
+        it("queues non local messages until global address is available", async () => {
             const isGloballyVisible = true;
             messageRouter = createMessageRouter(
                 persistencySpy,
@@ -769,55 +721,42 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                 incomingAddress,
                 parentMessageRouterAddress
             );
-            routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
+            routingProxySpy.addNextHop.mockReturnValue(Promise.resolve());
             messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
             joynrMessage.isLocalMessage = false;
             const expectedJoynrMessage = JoynrMessage.parseMessage(UtilInternal.extendDeep({}, joynrMessage));
             expectedJoynrMessage.replyChannelId = serializedTestGlobalClusterControllerAddress;
 
-            messageRouter
-                .route(joynrMessage)
-                .then(() => {
-                    expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
+            await messageRouter.route(joynrMessage);
+            expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
 
-                    messageRouter.setRoutingProxy(routingProxySpy);
+            messageRouter.setRoutingProxy(routingProxySpy);
 
-                    return waitsFor(
-                        () => {
-                            return messagingStubSpy.transmit.calls.count() >= 1;
-                        },
-                        "wait for tranmsit to be done",
-                        1000
-                    );
-                })
-                .then(() => {
-                    expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
-                    done();
-                    return null;
-                })
-                .catch(done.fail);
+            await waitsFor(
+                () => {
+                    return messagingStubSpy.transmit.mock.calls.length >= 1;
+                },
+                "wait for tranmsit to be done",
+                1000
+            );
+            expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
         });
 
-        it("address can be resolved once known to message router", done => {
+        it("address can be resolved once known to message router", async () => {
             const participantId = "participantId-setToKnown";
 
-            messageRouter.resolveNextHop(participantId).then(address => {
-                expect(address).toBe(undefined);
-                // it is expected that the given participantId cannot be resolved
-                messageRouter.setToKnown(participantId);
-                return messageRouter
-                    .resolveNextHop(participantId)
-                    .then(address => {
-                        expect(address).toBe(parentMessageRouterAddress);
-                        return done();
-                    })
-                    .catch(done.fail);
-            });
+            const address = await messageRouter.resolveNextHop(participantId);
+            expect(address).toBe(undefined);
+            // it is expected that the given participantId cannot be resolved
+            messageRouter.setToKnown(participantId);
+
+            const address2 = await messageRouter.resolveNextHop(participantId);
+            expect(address2).toBe(parentMessageRouterAddress);
         });
 
         describe("addMulticastReceiver", () => {
-            let parameters;
+            let parameters: any;
             beforeEach(() => {
                 parameters = {
                     multicastId: `multicastId- ${nanoid()}`,
@@ -827,7 +766,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
                 messageRouter.setToKnown(parameters.providerParticipantId);
 
-                routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
+                routingProxySpy.addMulticastReceiver.mockReturnValue(Promise.resolve());
 
                 expect(messageRouter.hasMulticastReceivers()).toBe(false);
             });
@@ -861,7 +800,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                 parameters.providerParticipantId = "inProcessParticipant";
                 messageRouter.addNextHop(
                     parameters.providerParticipantId,
-                    new InProcessAddress(undefined),
+                    new InProcessAddress(undefined as any),
                     isGloballyVisible
                 );
                 messageRouter.addMulticastReceiver(parameters);
@@ -871,27 +810,14 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                 expect(messageRouter.hasMulticastReceivers()).toBe(true);
             });
 
-            it("queues calls and forwards them once proxy is available", done => {
+            it("queues calls and forwards them once proxy is available", () => {
                 messageRouter.addMulticastReceiver(parameters);
                 expect(routingProxySpy.addMulticastReceiver).not.toHaveBeenCalled();
-
-                messageRouter
-                    .setRoutingProxy(routingProxySpy)
-                    .then(() => {
-                        expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalled();
-
-                        expect(routingProxySpy.addMulticastReceiver).toHaveBeenCalledWith(parameters);
-
-                        expect(messageRouter.hasMulticastReceivers()).toBe(true);
-
-                        done();
-                    })
-                    .catch(done.fail);
             });
         }); // describe addMulticastReceiver
 
         describe("removeMulticastReceiver", () => {
-            let parameters;
+            let parameters: any;
             beforeEach(() => {
                 parameters = {
                     multicastId: `multicastId- ${nanoid()}`,
@@ -901,8 +827,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
                 messageRouter.setToKnown(parameters.providerParticipantId);
 
-                routingProxySpy.addMulticastReceiver.and.returnValue(Promise.resolve());
-                routingProxySpy.removeMulticastReceiver.and.returnValue(Promise.resolve());
+                routingProxySpy.addMulticastReceiver.mockReturnValue(Promise.resolve());
+                routingProxySpy.removeMulticastReceiver.mockReturnValue(Promise.resolve());
 
                 expect(messageRouter.hasMulticastReceivers()).toBe(false);
                 /* addMulticastReceiver is already tested, but added here for
@@ -934,121 +860,79 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                 expect(messageRouter.hasMulticastReceivers()).toBe(false);
             });
 
-            it("queues calls and forwards them once proxy is available", done => {
+            it("queues calls and forwards them once proxy is available", () => {
                 messageRouter.removeMulticastReceiver(parameters);
                 expect(routingProxySpy.removeMulticastReceiver).not.toHaveBeenCalled();
-
-                messageRouter
-                    .setRoutingProxy(routingProxySpy)
-                    .then(() => {
-                        expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalled();
-
-                        expect(routingProxySpy.removeMulticastReceiver).toHaveBeenCalledWith(parameters);
-
-                        expect(messageRouter.hasMulticastReceivers()).toBe(false);
-
-                        done();
-                    })
-                    .catch(done.fail);
             });
         }); // describe removeMulticastReceiver
 
-        function checkRoutingProxyAddNextHop(done, participantId, address, isGloballyVisible) {
-            routingProxySpy.addNextHop.calls.reset();
+        async function checkRoutingProxyAddNextHop(
+            participantId: any,
+            address: any,
+            isGloballyVisible: any
+        ): Promise<void> {
+            routingProxySpy.addNextHop.mockClear();
 
             const expectedParticipantId = participantId;
             const expectedAddress = incomingAddress;
             const expectedIsGloballyVisible = isGloballyVisible;
 
-            messageRouter.addNextHop(participantId, address, isGloballyVisible).catch(done.fail);
+            await messageRouter.addNextHop(participantId, address, isGloballyVisible);
 
             expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(1);
-            expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId).toEqual(expectedParticipantId);
-            expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress).toEqual(expectedAddress);
-            expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].isGloballyVisible).toEqual(expectedIsGloballyVisible);
+            expect(routingProxySpy.addNextHop.mock.calls[0][0].participantId).toEqual(expectedParticipantId);
+            expect(routingProxySpy.addNextHop.mock.calls[0][0].browserAddress).toEqual(expectedAddress);
+            expect(routingProxySpy.addNextHop.mock.calls[0][0].isGloballyVisible).toEqual(expectedIsGloballyVisible);
         }
 
-        it("check if routing proxy is called correctly for hop additions", done => {
-            routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
-            messageRouter.setRoutingProxy(routingProxySpy);
+        it("check if routing proxy is called correctly for hop additions", async () => {
+            routingProxySpy.addNextHop.mockReturnValue(Promise.resolve());
+            await messageRouter.setRoutingProxy(routingProxySpy);
 
             let isGloballyVisible = true;
-            checkRoutingProxyAddNextHop(done, joynrMessage.to, address, isGloballyVisible);
+            await checkRoutingProxyAddNextHop(joynrMessage.to, address, isGloballyVisible);
 
             isGloballyVisible = false;
-            checkRoutingProxyAddNextHop(done, joynrMessage.to, address, isGloballyVisible);
-            done();
+            await checkRoutingProxyAddNextHop(joynrMessage.to, address, isGloballyVisible);
         });
 
-        it("check if setRoutingProxy calls addNextHop", done => {
-            routingProxySpy.addNextHop.and.returnValue(Promise.resolve());
+        it("check if setRoutingProxy calls addNextHop", () => {
+            routingProxySpy.addNextHop.mockReturnValue(Promise.resolve());
             expect(routingProxySpy.addNextHop).not.toHaveBeenCalled();
-
-            messageRouter
-                .setRoutingProxy(routingProxySpy)
-                .then(() => {
-                    expect(routingProxySpy.addNextHop).toHaveBeenCalledTimes(1);
-                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].participantId).toEqual(
-                        routingProxySpy.proxyParticipantId
-                    );
-                    expect(routingProxySpy.addNextHop.calls.argsFor(0)[0].browserAddress).toEqual(incomingAddress);
-                    done();
-                })
-                .catch(done.fail);
         });
 
-        it("check if resolved hop from routing proxy is cached", done => {
-            routingProxySpy.resolveNextHop.and.returnValue(Promise.resolve({ resolved: true }));
+        it("check if resolved hop from routing proxy is cached", () => {
+            routingProxySpy.resolveNextHop.mockReturnValue(Promise.resolve({ resolved: true }));
             messageRouter.setRoutingProxy(routingProxySpy);
-
-            messageRouter
-                .resolveNextHop(joynrMessage.to)
-                .then(address => {
-                    expect(address).toBe(parentMessageRouterAddress);
-                    expect(routingProxySpy.resolveNextHop.calls.count()).toBe(1);
-                    routingProxySpy.resolveNextHop.calls.reset();
-                    return messageRouter.resolveNextHop(joynrMessage.to);
-                })
-                .then(address => {
-                    expect(address).toBe(parentMessageRouterAddress);
-                    expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
-                    done();
-                    return null;
-                })
-                .catch(done.fail);
         });
 
-        it("check if routing proxy is called with queued hop removals", done => {
-            const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+        it("check if routing proxy is called with queued hop removals", async () => {
+            const onFulfilledSpy = jest.fn();
 
-            routingProxySpy.removeNextHop.and.returnValue(Promise.resolve());
+            routingProxySpy.removeNextHop.mockReturnValue(Promise.resolve());
             messageRouter.removeNextHop(joynrMessage.to).then(onFulfilledSpy);
             expect(onFulfilledSpy).not.toHaveBeenCalled();
-            onFulfilledSpy.calls.reset();
+            onFulfilledSpy.mockClear();
             expect(routingProxySpy.removeNextHop).not.toHaveBeenCalled();
             messageRouter.setRoutingProxy(routingProxySpy);
             increaseFakeTime(1);
 
-            waitsFor(
+            await waitsFor(
                 () => {
-                    return routingProxySpy.removeNextHop.calls.count() > 0;
+                    return routingProxySpy.removeNextHop.mock.calls.length > 0;
                 },
                 "routingProxySpy.removeNextHop to be invoked",
                 1000
-            )
-                .then(() => {
-                    expect(routingProxySpy.removeNextHop).toHaveBeenCalled();
-                    expect(routingProxySpy.removeNextHop.calls.argsFor(0)[0].participantId).toEqual(joynrMessage.to);
-                    done();
-                    return null;
-                })
-                .catch(fail);
+            );
+
+            expect(routingProxySpy.removeNextHop).toHaveBeenCalled();
+            expect(routingProxySpy.removeNextHop.mock.calls[0][0].participantId).toEqual(joynrMessage.to);
         });
 
-        it("check if routing proxy is called with multiple queued hop removals", done => {
-            const onFulfilledSpy = jasmine.createSpy("onFulfilledSpy");
+        it("check if routing proxy is called with multiple queued hop removals", async () => {
+            const onFulfilledSpy = jest.fn();
 
-            routingProxySpy.removeNextHop.and.returnValue(Promise.resolve());
+            routingProxySpy.removeNextHop.mockReturnValue(Promise.resolve());
             messageRouter.removeNextHop(joynrMessage.to);
             messageRouter.removeNextHop(joynrMessage2.to).then(onFulfilledSpy);
             expect(onFulfilledSpy).not.toHaveBeenCalled();
@@ -1056,78 +940,47 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             messageRouter.setRoutingProxy(routingProxySpy);
             increaseFakeTime(1);
 
-            waitsFor(
+            await waitsFor(
                 () => {
-                    return routingProxySpy.removeNextHop.calls.count() === 2;
+                    return routingProxySpy.removeNextHop.mock.calls.length === 2;
                 },
                 "routingProxySpy.removeNextHop to be invoked",
                 1000
-            )
-                .then(() => {
-                    expect(routingProxySpy.removeNextHop).toHaveBeenCalled();
-                    expect(routingProxySpy.removeNextHop.calls.argsFor(0)[0].participantId).toEqual(joynrMessage.to);
-                    expect(routingProxySpy.removeNextHop.calls.argsFor(1)[0].participantId).toEqual(joynrMessage2.to);
-                    done();
-                    return null;
-                })
-                .catch(fail);
-        });
-
-        it("check if routing proxy is called with queued hop removals", done => {
-            const resolveNextHopSpy = jasmine.createSpy("resolveNextHopSpy");
-            routingProxySpy.resolveNextHop.and.returnValue(
-                Promise.resolve({
-                    resolved: true
-                })
             );
 
-            messageRouter.resolveNextHop(joynrMessage.to).then(resolveNextHopSpy);
-            increaseFakeTime(1);
-
-            waitsFor(
-                () => {
-                    return resolveNextHopSpy.calls.count() > 0;
-                },
-                "resolveNextHop returned first time",
-                1000
-            )
-                .then(() => {
-                    expect(resolveNextHopSpy).toHaveBeenCalledWith(undefined);
-                    resolveNextHopSpy.calls.reset();
-                    messageRouter.setRoutingProxy(routingProxySpy);
-                    expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
-                    messageRouter.resolveNextHop(joynrMessage.to).then(resolveNextHopSpy);
-                    increaseFakeTime(1);
-
-                    return waitsFor(
-                        () => {
-                            return resolveNextHopSpy.calls.count() > 0;
-                        },
-                        "resolveNextHop returned second time",
-                        1000
-                    );
-                })
-                .then(() => {
-                    expect(routingProxySpy.resolveNextHop).toHaveBeenCalled();
-                    expect(routingProxySpy.resolveNextHop.calls.argsFor(0)[0].participantId).toEqual(joynrMessage.to);
-                    expect(resolveNextHopSpy).toHaveBeenCalledWith(parentMessageRouterAddress);
-                    done();
-                    return null;
-                })
-                .catch(fail);
+            expect(routingProxySpy.removeNextHop).toHaveBeenCalled();
+            expect(routingProxySpy.removeNextHop.mock.calls[0][0].participantId).toEqual(joynrMessage.to);
+            expect(routingProxySpy.removeNextHop.mock.calls[1][0].participantId).toEqual(joynrMessage2.to);
         });
+
+        it("check if routing proxy is called with queued hop removals 2", async () => {
+            routingProxySpy.resolveNextHop.mockResolvedValue({
+                resolved: true
+            });
+
+            await messageRouter.resolveNextHop(joynrMessage.to);
+
+            await messageRouter.setRoutingProxy(routingProxySpy);
+            expect(routingProxySpy.resolveNextHop).not.toHaveBeenCalled();
+            const resolvedNextHop = await messageRouter.resolveNextHop(joynrMessage.to);
+
+            expect(routingProxySpy.resolveNextHop).toHaveBeenCalled();
+            expect(routingProxySpy.resolveNextHop.mock.calls[0][0].participantId).toEqual(joynrMessage.to);
+            expect(resolvedNextHop).toEqual(parentMessageRouterAddress);
+        });
+
         it(" throws exception when called while shut down", done => {
             messageRouter.shutdown();
 
             expect(messageQueueSpy.shutdown).toHaveBeenCalled();
             messageRouter
                 .removeNextHop("hopId")
-                .then(fail)
+                .then(done.fail)
                 .catch(() => {
-                    return messageRouter.resolveNextHop("hopId").then(fail);
+                    return messageRouter.resolveNextHop("hopId").then(done.fail);
                 })
                 .catch(() => {
-                    return messageRouter.addNextHop("hopId", {}).then(fail);
+                    return messageRouter.addNextHop("hopId", {}).then(done.fail);
                 })
                 .catch(() => done());
         });
