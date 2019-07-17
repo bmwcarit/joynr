@@ -62,6 +62,8 @@ class JoynrClusterControllerRuntimeTest : public ::testing::Test
 {
 public:
     std::string settingsFilenameMqtt;
+    std::string settingsFilenameMqttMultipleBackends;
+    std::string settingsFilenameMqttMultipleBackendsMisconfigured;
     std::string settingsFilenameHttp;
     std::string settingsFilenameMultipleAclRclFiles;
     std::string settingsFilenameMqttTlsOnNoCertificates;
@@ -77,6 +79,12 @@ public:
 
     JoynrClusterControllerRuntimeTest()
             : settingsFilenameMqtt("test-resources/MqttJoynrClusterControllerRuntimeTest.settings"),
+              settingsFilenameMqttMultipleBackends(
+                      "test-resources/"
+                      "MqttMB_JoynrClusterControllerRuntimeTest.settings"),
+              settingsFilenameMqttMultipleBackendsMisconfigured(
+                      "test-resources/"
+                      "MqttMB_JoynrClusterControllerRuntimeMisconfiguredTest.settings"),
               settingsFilenameHttp("test-resources/HttpJoynrClusterControllerRuntimeTest.settings"),
               settingsFilenameMultipleAclRclFiles(
                       "test-resources/AclRclJoynrClusterControllerRuntimeTest.settings"),
@@ -126,7 +134,8 @@ public:
     {
         // runtime can only be created, after MockMessageReceiver has been told to return
         // a channelId for getReceiveChannelId.
-        EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress()).Times(0);
+        EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
+                .Times(0);
         EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .WillOnce(::testing::Return(serializedMqttAddress));
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
@@ -134,6 +143,26 @@ public:
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsFilenameMqtt),
+                nullptr,
+                nullptr,
+                mockHttpMessageReceiver,
+                mockHttpMessageSender,
+                mockMqttMessageReceiver,
+                mockMqttMessageSender);
+        runtime->init();
+    }
+
+    void createRuntimeMqttWithAdditionalGbids()
+    {
+        EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
+                .Times(0);
+        EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
+                .WillOnce(::testing::Return(serializedMqttAddress));
+        EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
+                .WillOnce(::testing::ReturnRef(mqttGlobalAddress));
+
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(
+                std::make_unique<Settings>(settingsFilenameMqttMultipleBackends),
                 nullptr,
                 nullptr,
                 mockHttpMessageReceiver,
@@ -151,7 +180,8 @@ public:
                 .WillOnce(::testing::Return(serializedChannelAddress));
         EXPECT_CALL(*mockHttpMessageReceiver, getGlobalClusterControllerAddress())
                 .WillOnce(::testing::ReturnRef(httpGlobalAddress));
-        EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress()).Times(0);
+        EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
+                .Times(0);
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsFilenameHttp),
@@ -225,7 +255,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeHttp)
 TEST_F(JoynrClusterControllerRuntimeTest, mqttTlsOnButNoCertificates)
 {
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
-                std::make_unique<Settings>(settingsFilenameMqttTlsOnNoCertificates));
+            std::make_unique<Settings>(settingsFilenameMqttTlsOnNoCertificates));
 
     ASSERT_TRUE(runtime != nullptr);
 
@@ -298,6 +328,30 @@ TEST_F(JoynrClusterControllerRuntimeTest, startExternalCommunicationMqttDoesNotT
 
     createRuntimeMqtt();
     startExternalCommunicationDoesNotThrow();
+}
+
+TEST_F(JoynrClusterControllerRuntimeTest, startExternalCommunicationWithAdditionalBackends)
+{
+    EXPECT_CALL(*mockHttpMessageReceiver, startReceiveQueue()).Times(0);
+    EXPECT_CALL(*mockHttpMessageReceiver, stopReceiveQueue()).Times(0);
+
+    createRuntimeMqttWithAdditionalGbids();
+    startExternalCommunicationDoesNotThrow();
+}
+
+TEST_F(JoynrClusterControllerRuntimeTest,
+       runtimeConstructionThrowsDueToMissconfiguredMultipleBrokersConfig)
+{
+    EXPECT_THROW(
+            JoynrClusterControllerRuntime(
+                    std::make_unique<Settings>(settingsFilenameMqttMultipleBackendsMisconfigured),
+                    nullptr,
+                    nullptr,
+                    mockHttpMessageReceiver,
+                    mockHttpMessageSender,
+                    mockMqttMessageReceiver,
+                    mockMqttMessageSender),
+            exceptions::JoynrRuntimeException);
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)

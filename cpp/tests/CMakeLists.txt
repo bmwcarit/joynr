@@ -59,6 +59,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "MqttOverTLSSystemIntegrationTest2.settings"
         "MqttJoynrClusterControllerRuntimeTest.settings"
         "MqttJoynrClusterControllerRuntimeTlsOnNoCertificatesTest.settings"
+        "MqttMB_JoynrClusterControllerRuntimeTest.settings"
+        "MqttMB_JoynrClusterControllerRuntimeMisconfiguredTest.settings"
         "HttpMessagingSettingsTest.settings"
         "MqttMessagingSettingsTest.settings"
         "MqttMessagingSettingsWithGbidTest.settings"

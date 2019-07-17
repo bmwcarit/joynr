@@ -23,6 +23,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <list>
+#include <map>
 
 #include "joynr/IClusterControllerSignalHandler.h"
 #include "joynr/ClusterControllerSettings.h"
@@ -231,6 +233,12 @@ private:
     std::string accessControlListEditorProviderParticipantId;
     bool isShuttingDown;
     const system::RoutingTypes::Address dummyGlobalAddress;
+
+    std::map<std::string, joynr::BrokerUrl> gbidToBrokerUrlMapping;
+    std::vector<std::string> availableGbids;
+    void fillBackendsStruct(const MessagingSettings& messagingSettings);
+    void fillBackendsStructWithAdditionalBackends(const MessagingSettings& messagingSettings);
+    void fillGbidToUrlMap(const std::string& gbid, const joynr::BrokerUrl& url);
 };
 
 } // namespace joynr

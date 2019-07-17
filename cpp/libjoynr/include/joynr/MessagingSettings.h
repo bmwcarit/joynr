@@ -244,7 +244,6 @@ public:
 private:
     void operator=(const MessagingSettings& other);
     std::uint8_t additionalBackendsCount;
-
     Settings& settings;
     ADD_LOGGER(MessagingSettings)
     void checkSettings();

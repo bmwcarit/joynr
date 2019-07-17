@@ -215,6 +215,8 @@ void JoynrClusterControllerRuntime::init()
     libjoynrSettings.printSettings();
     wsSettings.printSettings();
 
+    fillBackendsStruct(messagingSettings);
+
     const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
     assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
 
@@ -1014,6 +1016,30 @@ std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerA
     // is not correctly configured, a dummy address must be provided since
     // otherwise LibJoynrRuntime cannot be started
     return "global-transport-not-available";
+}
+
+void JoynrClusterControllerRuntime::fillGbidToUrlMap(const std::string& gbid,
+                                                     const joynr::BrokerUrl& url)
+{
+    gbidToBrokerUrlMapping.emplace(gbid, url);
+}
+
+void JoynrClusterControllerRuntime::fillBackendsStruct(const MessagingSettings& messagingSettings)
+{
+    availableGbids.emplace_back(messagingSettings.getGbid());
+    fillGbidToUrlMap(messagingSettings.getGbid(), messagingSettings.getBrokerUrl());
+
+    fillBackendsStructWithAdditionalBackends(messagingSettings);
+}
+void JoynrClusterControllerRuntime::fillBackendsStructWithAdditionalBackends(
+        const MessagingSettings& messagingSettings)
+{
+    std::uint8_t additionalBackends = messagingSettings.getAdditionalBackendsCount();
+    for (std::uint8_t index = 0; index < additionalBackends; index++) {
+        availableGbids.emplace_back(messagingSettings.getAdditionalBackendGbid(index));
+        fillGbidToUrlMap(messagingSettings.getAdditionalBackendGbid(index),
+                         messagingSettings.getAdditionalBackendBrokerUrl(index));
+    }
 }
 
 const system::RoutingTypes::Address& JoynrClusterControllerRuntime::
