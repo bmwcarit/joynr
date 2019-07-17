@@ -57,7 +57,7 @@ public class BounceProxyControllerChannelsHtmlPageTest {
 
     @After
     public void tearDown() {
-        webClient.closeAllWindows();
+        webClient.close();
     }
 
     @Test
