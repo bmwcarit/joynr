@@ -75,8 +75,7 @@ public class MasterRegistrationControlEntryManagerTest {
                                      JoynrConfigurationProvider.class)
                          .addAsLibraries(files)
                          .addAsResource("test-persistence.xml", "META-INF/persistence.xml")
-                         .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"))
-                         .addAsWebInfResource(new File("src/test/resources/glassfish-web.xml"));
+                         .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"));
     }
 
     @Inject

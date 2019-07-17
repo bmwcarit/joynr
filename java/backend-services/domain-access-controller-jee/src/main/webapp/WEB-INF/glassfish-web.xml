@@ -21,5 +21,4 @@
     "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
 <glassfish-web-app>
   <class-loader delegate="false" />
-  <scanning-exclude>hivemq-mqtt-client*</scanning-exclude>
 </glassfish-web-app>
