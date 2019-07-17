@@ -16,25 +16,26 @@
  * limitations under the License.
  * #L%
  */
-class WebSocketMessagingStub {
-    /**
-     * @name WebSocketMessagingStub
-     * @constructor
-     * @param {Object} settings
-     * @param {SharedWebSocket} settings.sharedWebSocket to which messages are sent on the clustercontroller.
-     */
-    constructor(settings) {
-        const sharedWebSocket = settings.sharedWebSocket;
+import SharedWebSocket = require("./SharedWebSocket");
+import JoynrMessage = require("../JoynrMessage");
 
-        /**
-         * @name WebSocketMessagingStub#transmit
-         * @function
-         * @param {JoynrMessage} joynrMessage the joynr message to transmit
-         */
-        this.transmit = function transmit(joynrMessage) {
-            return sharedWebSocket.send(joynrMessage);
-        };
+class WebSocketMessagingStub {
+    private sharedWebSocket: SharedWebSocket;
+    /**
+     * @constructor
+     * @param settings
+     * @param settings.sharedWebSocket to which messages are sent on the clustercontroller.
+     */
+    public constructor(settings: { sharedWebSocket: SharedWebSocket }) {
+        this.sharedWebSocket = settings.sharedWebSocket;
+    }
+
+    /**
+     * @param joynrMessage the joynr message to transmit
+     */
+    public transmit(joynrMessage: JoynrMessage): Promise<void> {
+        return this.sharedWebSocket.send(joynrMessage);
     }
 }
 
-module.exports = WebSocketMessagingStub;
+export = WebSocketMessagingStub;

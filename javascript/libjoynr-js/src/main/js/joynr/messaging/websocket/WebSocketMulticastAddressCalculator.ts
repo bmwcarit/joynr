@@ -16,30 +16,37 @@
  * limitations under the License.
  * #L%
  */
+import * as WebSocketAddress from "../../../generated/joynr/system/RoutingTypes/WebSocketAddress";
 /*eslint no-unused-vars: "off"*/
-const Typing = require("../../util/Typing");
+import * as Typing from "../../util/Typing";
+import JoynrMessage = require("../JoynrMessage");
 
 class WebSocketMulticastAddressCalculator {
+    private settings: {
+        globalAddress: WebSocketAddress;
+    };
+
     /**
      * @constructor WebSocketMulticastAddressCalculator
-     * @param {Object} settings
-     * @param {WebSocketAddress} settings.globalAddress
+     * @param settings
+     * @param settings.globalAddress
      */
-    constructor(settings) {
+    public constructor(settings: { globalAddress: WebSocketAddress }) {
         Typing.checkProperty(settings, "Object", "settings");
         Typing.checkProperty(settings.globalAddress, "WebSocketAddress", "settings.globalAddress");
 
-        /**
-         * Calculates the multicast address for the submitted joynr message
-         * @function WebSocketMulticastAddressCalculator#calculate
-         *
-         * @param {JoynrMessage} message
-         * @return {Address} the multicast address
-         */
-        this.calculate = function calculate(message) {
-            return settings.globalAddress;
-        };
+        this.settings = settings;
+    }
+
+    /**
+     * Calculates the multicast address for the submitted joynr message
+     *
+     * @param _message
+     * @return the multicast address
+     */
+    public calculate(_message: JoynrMessage): WebSocketAddress {
+        return this.settings.globalAddress;
     }
 }
 
-module.exports = WebSocketMulticastAddressCalculator;
+export = WebSocketMulticastAddressCalculator;

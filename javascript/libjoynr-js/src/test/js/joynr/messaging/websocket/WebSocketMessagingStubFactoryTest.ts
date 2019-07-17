@@ -16,47 +16,34 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const WebSocketMessagingStubFactory = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStubFactory");
-const WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
-const WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
-const SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
-const WebSocket = require("../../../../../test/js/global/WebSocketMock");
+
+import WebSocketMessagingStubFactory from "../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingStubFactory";
+import WebSocketAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress";
 
 describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStubFactory", () => {
-    let webSocketMessagingStubFactory = null;
-    let websocket = null;
-    let joynrMessage = null;
-    const localAddress = new WebSocketClientAddress({
-        id: "1234"
-    });
+    let webSocketMessagingStubFactory: WebSocketMessagingStubFactory;
+    let joynrMessage: any;
+    let sharedWebSocket: any;
+
     const ccAddress = new WebSocketAddress({
-        protocol: "ws",
+        protocol: "ws" as any,
         host: "host",
         port: 1234,
         path: "/test"
     });
 
-    const sharedWebSocket = new SharedWebSocket({
-        localAddress,
-        remoteAddress: ccAddress
-    });
-
     beforeEach(() => {
-        websocket = new WebSocket("ws://test");
-        websocket.send = jasmine.createSpy("send");
+        sharedWebSocket = { send: jest.fn(), addEventListener: jest.fn() };
 
         webSocketMessagingStubFactory = new WebSocketMessagingStubFactory({
             address: ccAddress,
             sharedWebSocket
         });
 
-        function JoynrMessage() {}
-        joynrMessage = new JoynrMessage();
+        joynrMessage = {};
     });
 
     it("is instantiable and of correct type", () => {
-        expect(WebSocketMessagingStubFactory).toBeDefined();
         expect(typeof WebSocketMessagingStubFactory === "function").toBeTruthy();
         expect(webSocketMessagingStubFactory).toBeDefined();
         expect(webSocketMessagingStubFactory instanceof WebSocketMessagingStubFactory).toBeTruthy();
@@ -65,10 +52,8 @@ describe("libjoynr-js.joynr.messaging.webmessaging.WebSocketMessagingStubFactory
     });
 
     it("creates a websocket messaging stub and uses it correctly", async () => {
-        websocket.readyState = WebSocket.OPEN;
-
-        sharedWebSocket.send = jasmine.createSpy("sharedWebSocketSend");
-        sharedWebSocket.send.and.returnValue(Promise.resolve());
+        sharedWebSocket.send = jest.fn();
+        sharedWebSocket.send.mockReturnValue(Promise.resolve());
         const webSocketMessagingStub = webSocketMessagingStubFactory.build(ccAddress);
         await webSocketMessagingStub.transmit(joynrMessage);
         expect(sharedWebSocket.send).toHaveBeenCalledWith(joynrMessage);
