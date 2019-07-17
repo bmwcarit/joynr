@@ -48,22 +48,3 @@ the integration:
 * MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC
 * MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC
 * MqttModule.PROPERTY_MQTT_CLEAN_SESSION
-
-## JEE 7
-
-If you're running in a JEE 7 container, such as Payara 5.x or Glassfish 5.x, then you have to
-exclude CDI scanning of the HiveMQ MQTT Client library (a future version of the library will do this
-itself by including a beans.xml de-activating CDI discovery, but as of joynr 1.8.3 this has not been
-released yet).
-
-### Example for Payara 5 / Glassfish 5
-
-In your WAR, include a `glassfish-web.xml` under `WEB-INF` with (at least) the following content:
-
-	<?xml version="1.0" encoding="UTF-8"?>
-	<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN"
-		"http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
-	<glassfish-web-app>
-	  <scanning-exclude>hivemq-mqtt-client*</scanning-exclude>
-	</glassfish-web-app>
-
