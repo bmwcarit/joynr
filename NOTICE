@@ -30,10 +30,12 @@ This project has dependencies to:
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
   Apache Commons CLI under Apache License, Version 2.0
-  Apache Commons Codec under Apache License, Version 2.0
   Apache Commons Collections under Apache License, Version 2.0
+  Apache Commons IO under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
   Apache Commons Logging under The Apache Software License, Version 2.0
+  Apache Commons Net under Apache License, Version 2.0
+  Apache Commons Text under Apache License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
   Apache Groovy under The Apache Software License, Version 2.0
@@ -97,7 +99,6 @@ This project has dependencies to:
   Common Eclipse Runtime under Eclipse Public License
   Common Types Runtime Library under Eclipse Public License, Version 1.0
   Commons Codec under The Apache Software License, Version 2.0
-  Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
@@ -107,7 +108,6 @@ This project has dependencies to:
   Core Hibernate O/RM functionality under GNU Lesser General Public License
   Core Resource Management under Eclipse Public License - v 2.0
   Core Runtime under Eclipse Public License
-  CSS Parser under GNU Lesser General Public License
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   Default Plexus Container under Apache License, Version 2.0
   dom4j under BSD License
@@ -143,7 +143,9 @@ This project has dependencies to:
   HK2 API module under CDDL + GPLv2 with classpath exception
   HK2 Implementation Utilities under CDDL + GPLv2 with classpath exception
   HtmlUnit under Apache License, Version 2.0
-  HtmlUnit Core JS under Mozilla Public License version 2.0
+  HtmlUnit Core JS under Mozilla Public License, Version 2.0
+  HtmlUnit CSS Parser under Apache License, Version 2.0
+  HtmlUnit NekoHtml under Apache License, Version 2.0
   HttpMime under Apache License
   ICU4J under ICU License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
@@ -416,7 +418,6 @@ This project has dependencies to:
   ShrinkWrap Resolver Maven SPI under Apache License, Version 2.0
   ShrinkWrap Resolver SPI under Apache License, Version 2.0
   ShrinkWrap SPI under Apache License, Version 2.0
-  Simple API for CSS under The W3C Software License
   SLF4J API and Google Android Binding under The MIT License
   SLF4J API Module under MIT License
   SLF4J JDK14 Binding under MIT License
