@@ -22,7 +22,7 @@ then
 fi
 
 mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
--q dependency:get -Dartifact=android:android:8.0.0_r2
+-q dependency:get -Dartifact=android:android:9_r6
 
 if [ $? -eq 0 ]
 then
@@ -38,10 +38,10 @@ fi
 	git clone --depth 1 https://github.com/simpligility/maven-android-sdk-deployer
 )
 (
-	log "INSTALL OREO SDK TO MAVEN REPOSITORY"
+	log "INSTALL PIE SDK TO MAVEN REPOSITORY"
 	cd maven-android-sdk-deployer
 	mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
-	install -P 8.0
+	install -P 9.0
 
 )
 (
