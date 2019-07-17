@@ -16,18 +16,23 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const InProcessMessagingStub = require("../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingStub");
+
+import InProcessMessagingStub from "../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingStub";
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", () => {
-    let skeletonCallReturn, inProcessMessagingSkeleton, inProcessMessagingStub, joynrMessage;
+    let skeletonCallReturn: any,
+        inProcessMessagingSkeleton: any,
+        inProcessMessagingStub: InProcessMessagingStub,
+        joynrMessage: any;
 
     beforeEach(done => {
         skeletonCallReturn = {
             key: "skeletonCallReturn"
         };
-        inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["receiveMessage"]);
-        inProcessMessagingSkeleton.receiveMessage.and.returnValue(skeletonCallReturn);
+        inProcessMessagingSkeleton = {
+            receiveMessage: jest.fn()
+        };
+        inProcessMessagingSkeleton.receiveMessage.mockReturnValue(skeletonCallReturn);
         inProcessMessagingStub = new InProcessMessagingStub(inProcessMessagingSkeleton);
         joynrMessage = {
             key: "joynrMessage"
@@ -35,20 +40,18 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStub", () => {
         done();
     });
 
-    it("is instantiable and of correct type", done => {
+    it("is instantiable and of correct type", () => {
         expect(InProcessMessagingStub).toBeDefined();
         expect(typeof InProcessMessagingStub === "function").toBeTruthy();
         expect(inProcessMessagingStub).toBeDefined();
         expect(inProcessMessagingStub instanceof InProcessMessagingStub).toBeTruthy();
         expect(inProcessMessagingStub.transmit).toBeDefined();
         expect(typeof inProcessMessagingStub.transmit === "function").toBeTruthy();
-        done();
     });
 
-    it("transmits a message", done => {
+    it("transmits a message", () => {
         const result = inProcessMessagingStub.transmit(joynrMessage);
         expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(joynrMessage);
         expect(result).toEqual(skeletonCallReturn);
-        done();
     });
 });

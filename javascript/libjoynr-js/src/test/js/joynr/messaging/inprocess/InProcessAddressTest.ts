@@ -16,11 +16,11 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const InProcessAddress = require("../../../../../main/js/joynr/messaging/inprocess/InProcessAddress");
+
+import InProcessAddress from "../../../../../main/js/joynr/messaging/inprocess/InProcessAddress";
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", () => {
-    let skeleton, inProcessAddress;
+    let skeleton: any, inProcessAddress: InProcessAddress;
 
     beforeEach(() => {
         skeleton = {
@@ -43,7 +43,6 @@ describe("libjoynr-js.joynr.messaging.inprocess.InProcessAddress", () => {
     });
 
     it("equals", () => {
-        expect(inProcessAddress.equals(new InProcessAddress(1))).toBeFalsy();
         expect(inProcessAddress.equals(undefined)).toBeFalsy();
         expect(inProcessAddress.equals(null)).toBeFalsy();
         expect(inProcessAddress.equals("")).toBeFalsy();

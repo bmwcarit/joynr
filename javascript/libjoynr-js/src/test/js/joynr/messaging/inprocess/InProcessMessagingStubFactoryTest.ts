@@ -16,45 +16,47 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const InProcessMessagingStubFactory = require("../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingStubFactory");
+
+import InProcessMessagingStubFactory from "../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingStubFactory";
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingStubFactory", () => {
-    let skeletonCallReturn, inProcessMessagingSkeleton, inProcessAddress;
-    let inProcessMessagingStubFactory, joynrMessage;
+    let skeletonCallReturn: any, inProcessMessagingSkeleton: any, inProcessAddress: any;
+    let inProcessMessagingStubFactory: InProcessMessagingStubFactory, joynrMessage: any;
 
     beforeEach(done => {
         skeletonCallReturn = {
             key: "skeletonCallReturn"
         };
-        inProcessMessagingSkeleton = jasmine.createSpyObj("inProcessMessagingSkeleton", ["receiveMessage"]);
-        inProcessMessagingSkeleton.receiveMessage.and.returnValue(skeletonCallReturn);
-        inProcessAddress = jasmine.createSpyObj("inProcessAddress", ["getSkeleton"]);
-        inProcessAddress.getSkeleton.and.returnValue(inProcessMessagingSkeleton);
-        inProcessMessagingStubFactory = new InProcessMessagingStubFactory({});
+        inProcessMessagingSkeleton = {
+            receiveMessage: jest.fn()
+        };
+        inProcessMessagingSkeleton.receiveMessage.mockReturnValue(skeletonCallReturn);
+        inProcessAddress = {
+            getSkeleton: jest.fn()
+        };
+        inProcessAddress.getSkeleton.mockReturnValue(inProcessMessagingSkeleton);
+        inProcessMessagingStubFactory = new InProcessMessagingStubFactory();
         joynrMessage = {
             key: "joynrMessage"
         };
         done();
     });
 
-    it("is instantiable and of correct type", done => {
+    it("is instantiable and of correct type", () => {
         expect(InProcessMessagingStubFactory).toBeDefined();
         expect(typeof InProcessMessagingStubFactory === "function").toBeTruthy();
         expect(inProcessMessagingStubFactory).toBeDefined();
         expect(inProcessMessagingStubFactory instanceof InProcessMessagingStubFactory).toBeTruthy();
         expect(inProcessMessagingStubFactory.build).toBeDefined();
         expect(typeof inProcessMessagingStubFactory.build === "function").toBeTruthy();
-        done();
     });
 
-    it("creates a messaging stub and uses it correctly", done => {
+    it("creates a messaging stub and uses it correctly", () => {
         const inProcessMessagingStub = inProcessMessagingStubFactory.build(inProcessAddress);
         expect(inProcessAddress.getSkeleton).toHaveBeenCalledWith();
 
         const result = inProcessMessagingStub.transmit(joynrMessage);
         expect(inProcessMessagingSkeleton.receiveMessage).toHaveBeenCalledWith(joynrMessage);
         expect(result).toEqual(skeletonCallReturn);
-        done();
     });
 });

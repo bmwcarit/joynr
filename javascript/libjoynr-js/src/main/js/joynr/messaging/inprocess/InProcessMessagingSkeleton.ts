@@ -16,22 +16,30 @@
  * limitations under the License.
  * #L%
  */
-const InProcessMessagingStub = require("./InProcessMessagingStub");
+import JoynrMessage = require("../JoynrMessage");
 
 /**
+ * @name InProcessMessagingSkeleton
  * @constructor
- * @name InProcessMessagingStubFactory
  */
-class InProcessMessagingStubFactory {
+class InProcessMessagingSkeleton {
+    private onReceive: any;
     /**
-     * @name InProcessMessagingStubFactory#build
-     * @function
-     *
-     * @param {InProcessAddress} address the address to generate a messaging stub for
+     * @param joynrMessage
+     * @returns A+ promise object
      */
-    build(address) {
-        return new InProcessMessagingStub(address.getSkeleton());
+    public receiveMessage(joynrMessage: JoynrMessage): Promise<any> {
+        return this.onReceive(joynrMessage);
+    }
+
+    /**
+     * A setter for the callback function that will receive the incoming messages
+     *
+     * @param newOnReceive the function that is called with the incoming JoynrMessage
+     */
+    public registerListener(newOnReceive: Function): void {
+        this.onReceive = newOnReceive;
     }
 }
 
-module.exports = InProcessMessagingStubFactory;
+export = InProcessMessagingSkeleton;

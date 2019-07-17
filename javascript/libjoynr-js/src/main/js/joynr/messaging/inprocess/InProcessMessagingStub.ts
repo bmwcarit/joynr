@@ -16,27 +16,27 @@
  * limitations under the License.
  * #L%
  */
+import JoynrMessage = require("../JoynrMessage");
+import InProcessMessagingSkeleton = require("./InProcessMessagingSkeleton");
+
 class InProcessMessagingStub {
+    private inProcessMessagingSkeleton: InProcessMessagingSkeleton;
     /**
      * @constructor
-     * @name InProcessMessagingStub
      *
-     * @param {InProcessMessagingSkeleton} inProcessMessagingSkeleton the skeleton to send the joynr messages to
+     * @param inProcessMessagingSkeleton the skeleton to send the joynr messages to
      */
-    constructor(inProcessMessagingSkeleton) {
-        this._inProcessMessagingSkeleton = inProcessMessagingSkeleton;
+    public constructor(inProcessMessagingSkeleton: InProcessMessagingSkeleton) {
+        this.inProcessMessagingSkeleton = inProcessMessagingSkeleton;
     }
 
     /**
-     * @name InProcessMessagingStub#transmit
-     * @function
-     *
-     * @param {JoynrMessage} message the message to transmit
-     * @returns {Object} A+ promise object
+     * @param joynrMessage the message to transmit
+     * @returns A+ promise object
      */
-    transmit(joynrMessage) {
-        return this._inProcessMessagingSkeleton.receiveMessage(joynrMessage);
+    public transmit(joynrMessage: JoynrMessage): Promise<any> {
+        return this.inProcessMessagingSkeleton.receiveMessage(joynrMessage);
     }
 }
 
-module.exports = InProcessMessagingStub;
+export = InProcessMessagingStub;

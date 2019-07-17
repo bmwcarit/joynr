@@ -16,14 +16,14 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const InProcessMessagingSkeleton = require("../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingSkeleton");
+
+import InProcessMessagingSkeleton from "../../../../../main/js/joynr/messaging/inprocess/InProcessMessagingSkeleton";
 
 describe("libjoynr-js.joynr.messaging.inprocess.InProcessMessagingSkeleton", () => {
-    let listener, inProcessMessagingSkeleton, joynrMessage;
+    let listener: any, inProcessMessagingSkeleton: InProcessMessagingSkeleton, joynrMessage: any;
 
     beforeEach(() => {
-        listener = jasmine.createSpy("listener");
+        listener = jest.fn();
         inProcessMessagingSkeleton = new InProcessMessagingSkeleton();
         inProcessMessagingSkeleton.registerListener(listener);
         joynrMessage = {
