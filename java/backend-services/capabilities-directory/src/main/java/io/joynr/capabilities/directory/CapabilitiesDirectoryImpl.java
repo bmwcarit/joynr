@@ -104,7 +104,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         } catch (ProviderRuntimeException e) {
             deferred.reject(e);
         } catch (ApplicationException e) {
-            deferred.reject(new ProviderRuntimeException("INTERNAL_ERROR: Unable to add DiscoveryEntry for: "
+            deferred.reject(new ProviderRuntimeException(e.getError().name() + ": Unable to add DiscoveryEntry for: "
                     + globalDiscoveryEntry.getParticipantId()));
         }
         return promise;
@@ -161,17 +161,18 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             deferred.reject(DiscoveryError.UNKNOWN_GBID);
             break;
         case OK:
+            try {
+                addInternal(globalDiscoveryEntry, gbids);
+                deferred.resolve();
+            } catch (ProviderRuntimeException e) {
+                deferred.reject(e);
+            } catch (ApplicationException e) {
+                deferred.reject(e.getError());
+            }
             break;
         default:
+            deferred.reject(DiscoveryError.INTERNAL_ERROR);
             break;
-        }
-        try {
-            addInternal(globalDiscoveryEntry, gbids);
-            deferred.resolve();
-        } catch (ProviderRuntimeException e) {
-            deferred.reject(e);
-        } catch (ApplicationException e) {
-            deferred.reject(e.getError());
         }
         return promise;
     }
@@ -226,33 +227,34 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             deferred.reject(DiscoveryError.UNKNOWN_GBID);
             break;
         case OK:
+            try {
+                int deletedCount = removeInternal(participantId, gbids);
+                switch (deletedCount) {
+                case 0:
+                    logger.warn("Error removing participantId {}. Participant is not registered (NO_ENTRY_FOR_PARTICIPANT).");
+                    deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                    break;
+                case -1:
+                    logger.warn("Error removing participantId {}. Participant is not registered in GBIDs {} (NO_ENTRY_FOR_SELECTED_BACKENDS).",
+                                participantId,
+                                Arrays.toString(gbids));
+                    deferred.reject(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+                    break;
+                default:
+                    logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
+                    deferred.resolve();
+                }
+            } catch (Exception e) {
+                logger.error("Error removing discoveryEntry for {} and gbids {}: {}",
+                             participantId,
+                             Arrays.toString(gbids),
+                             e);
+                deferred.reject(DiscoveryError.INTERNAL_ERROR);
+            }
             break;
         default:
-            break;
-        }
-        try {
-            int deletedCount = removeInternal(participantId, gbids);
-            switch (deletedCount) {
-            case 0:
-                logger.warn("Error removing participantId {}. Participant is not registered (NO_ENTRY_FOR_PARTICIPANT).");
-                deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-                break;
-            case -1:
-                logger.warn("Error removing participantId {}. Participant is not registered in GBIDs {} (NO_ENTRY_FOR_SELECTED_BACKENDS).",
-                            participantId,
-                            Arrays.toString(gbids));
-                deferred.reject(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
-                break;
-            default:
-                logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
-                deferred.resolve();
-            }
-        } catch (Exception e) {
-            logger.error("Error removing discoveryEntry for {} and gbids {}: {}",
-                         participantId,
-                         Arrays.toString(gbids),
-                         e);
             deferred.reject(DiscoveryError.INTERNAL_ERROR);
+            break;
         }
         return promise;
     }
@@ -317,7 +319,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                     return promise;
                 }
 
-                Collection<GlobalDiscoveryEntryPersisted> filteredResult = filterByGbid(lookupResult, gbids);
+                Collection<GlobalDiscoveryEntryPersisted> filteredResult = filterByGbids(lookupResult, gbids);
                 if (filteredResult.isEmpty()) {
                     deferred.reject(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
                     return promise;
@@ -369,8 +371,8 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         return new Promise<Lookup3Deferred>(deferred);
     }
 
-    private Collection<GlobalDiscoveryEntryPersisted> filterByGbid(Collection<GlobalDiscoveryEntryPersisted> queryResult,
-                                                                   String[] gbids) {
+    private Collection<GlobalDiscoveryEntryPersisted> filterByGbids(Collection<GlobalDiscoveryEntryPersisted> queryResult,
+                                                                    String[] gbids) {
         Set<String> gbidSet = new HashSet<>(Arrays.asList(gbids));
         Collection<GlobalDiscoveryEntryPersisted> filteredResult = queryResult.stream()
                                                                               .filter(gdep -> gbidSet.contains(gdep.getGbid()))
@@ -399,7 +401,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                     deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
                     return promise;
                 }
-                Collection<GlobalDiscoveryEntryPersisted> filteredResult = filterByGbid(lookupResult, gbids);
+                Collection<GlobalDiscoveryEntryPersisted> filteredResult = filterByGbids(lookupResult, gbids);
                 if (filteredResult.isEmpty()) {
                     deferred.reject(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
                     return promise;
