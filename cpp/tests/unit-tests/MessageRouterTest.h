@@ -125,7 +125,7 @@ protected:
                 std::move(transportNotAvailableQueue));
         libJoynrMessageRouter->init();
 
-        return std::move(libJoynrMessageRouter);
+        return libJoynrMessageRouter;
     }
 
     template <typename U = T, typename = std::enable_if_t<std::is_same<U, CcMessageRouter>::value>>
@@ -164,7 +164,7 @@ protected:
                 std::move(transportNotAvailableQueue),
                 *ownAddress);
         ccMessageRouter->init();
-        return std::move(ccMessageRouter);
+        return ccMessageRouter;
     }
 
     void setOwnAddress(std::shared_ptr<const system::RoutingTypes::Address> ownAddress)
