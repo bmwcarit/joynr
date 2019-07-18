@@ -66,9 +66,10 @@ RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/GENIVI/dlt-daemon \
     && cd dlt-daemon \
-    && git checkout v2.15.0 \
+    && git checkout v2.18.3 \
     && sed -i 's/libdir=${exec_prefix}\/lib/libdir=@CMAKE_INSTALL_FULL_LIBDIR@/' automotive-dlt.pc.in \
     && sed -i 's/includedir=${exec_prefix}\/include/includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@/' automotive-dlt.pc.in \
+    && sed -i 's/-Werror/-Wno-error/' src/console/logstorage/CMakeLists.txt \
     && mkdir build \
     && cd build \
     && cmake .. -DWITH_DLT_DBUS=OFF -DWITH_DLT_TESTS=OFF -DWITH_DLT_EXAMPLES=OFF \
