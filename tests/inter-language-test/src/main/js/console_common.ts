@@ -19,20 +19,18 @@
  * #L%
  */
 
-const testbase = require("test-base");
+import testbase from "test-base";
+
 const log = testbase.logging.log;
 const prettyLog = testbase.logging.prettyLog;
 
-const showHelp = function(modes) {
-    let optionsText;
-    let modeKey;
-    let optionKey;
+export = (modes: any) => {
     prettyLog("The following options are available: ");
-    for (modeKey in modes) {
+    for (const modeKey in modes) {
         if (modes.hasOwnProperty(modeKey)) {
             const mode = modes[modeKey];
-            optionsText = "";
-            for (optionKey in mode.options) {
+            let optionsText = "";
+            for (const optionKey in mode.options) {
                 if (mode.options.hasOwnProperty(optionKey)) {
                     optionsText += `${mode.options[optionKey]}/`;
                 }
@@ -46,5 +44,3 @@ const showHelp = function(modes) {
     }
     log("");
 };
-
-module.exports = showHelp;

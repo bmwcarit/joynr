@@ -6,9 +6,11 @@
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
+    "@types/lodash": "4.14.123",
     "bluebird": "3.3.5",
     "joynr": "file:../../javascript/libjoynr-js/src/main/js",
     "joynr-bundle": "file:../../javascript/libjoynr-js/src/main/browserify",
+    "lodash": "4.17.11",
     "test-base": "file:../test-base"
   },
   "devDependencies": {

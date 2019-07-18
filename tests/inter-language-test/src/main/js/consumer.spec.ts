@@ -18,35 +18,36 @@
  * #L%
  */
 
-const IltUtil = require("./IltUtil.js");
-
-const testbase = require("test-base");
+import * as IltUtil from "./IltUtil";
+import testbase from "test-base";
 const log = testbase.logging.log;
 
-const ExtendedEnumerationWithPartlyDefinedValues = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues.js");
-const ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
-const Enumeration = require("../generated-javascript/joynr/interlanguagetest/Enumeration.js");
-const MapStringString = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString.js");
-const ArrayTypeDefStruct = require("../generated-javascript/joynr/interlanguagetest/typeDefCollection/ArrayTypeDefStruct.js");
-
-jasmine.getEnv().addReporter(new testbase.TestReporter());
+import ExtendedEnumerationWithPartlyDefinedValues from "../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues";
+import ExtendedTypeCollectionEnumerationInTypeCollection from "../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection";
+import Enumeration from "../generated-javascript/joynr/interlanguagetest/Enumeration";
+import MapStringString from "../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString";
+import ArrayTypeDefStruct from "../generated-javascript/joynr/interlanguagetest/typeDefCollection/ArrayTypeDefStruct";
+import joynr from "joynr";
+import TestInterfaceProxy from "../generated-javascript/joynr/interlanguagetest/TestInterfaceProxy";
 
 if (process.env.domain === undefined) {
     log("please pass a domain as argument");
     process.exit(0);
 }
-const domain = process.env.domain;
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const domain: string = process.env.domain!;
 log(`domain: ${domain}`);
+jest.setTimeout(100000000);
 
 describe("Consumer test", () => {
-    let joynr = require("joynr");
     const provisioning = testbase.provisioning_common;
     provisioning.persistency = {
         clearPersistency: true
     };
-    let testInterfaceProxy;
+    let testInterfaceProxy: TestInterfaceProxy;
+    let onErrorSpy: jest.Mock;
 
-    async function loadJoynr(compressed) {
+    async function loadJoynr(compressed: any) {
         log("Environment not yet setup");
         await joynr.load(provisioning);
         log("joynr started");
@@ -55,8 +56,7 @@ describe("Consumer test", () => {
             compress: compressed
         });
         log(`messagingQos - compressed = ${compressed}`);
-        const TestInterfaceProxy = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProxy.js");
-        testInterfaceProxy = await joynr.proxyBuilder.build(TestInterfaceProxy, {
+        testInterfaceProxy = await joynr.proxyBuilder.build<TestInterfaceProxy>(TestInterfaceProxy, {
             domain,
             messagingQos
         });
@@ -69,24 +69,24 @@ describe("Consumer test", () => {
             return await loadJoynr(true);
         });
 
-        it("callMethodWithoutParametersCompressed", done => {
+        it("callMethodWithoutParametersCompressed", async () => {
             log("callMethodWithoutParametersCompressed");
-            testInterfaceProxy
-                .methodWithoutParameters()
-                .then(done)
-                .catch(fail);
+
+            await testInterfaceProxy.methodWithoutParameters();
         });
 
         afterAll(async () => {
             await joynr.shutdown();
-            delete require.cache;
-            joynr = require("joynr");
         });
     });
 
     describe("without compressed joynr", () => {
         beforeAll(async () => {
             return await loadJoynr(false);
+        });
+
+        beforeEach(() => {
+            onErrorSpy = jest.fn();
         });
 
         it("proxy is defined", () => {
@@ -150,7 +150,7 @@ describe("Consumer test", () => {
 
         it("callMethodWithSingleArrayParameters", async () => {
             log("callMethodWithSingleArrayParameters");
-            const doubleArray = IltUtil.createDoubleArray();
+            const doubleArray = IltUtil.create("DoubleArray");
             const args = {
                 doubleArrayArg: doubleArray
             };
@@ -158,17 +158,17 @@ describe("Consumer test", () => {
 
             expect(retObj).toBeDefined();
             expect(retObj.stringArrayOut).toBeDefined();
-            expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
+            expect(IltUtil.check("StringArray", retObj.stringArrayOut)).toBeTruthy();
             log("callMethodWithSingleArrayParameters - OK");
         });
 
         it("callMethodWithMultipleArrayParameters", async () => {
             log("callMethodWithMultipleArrayParameters");
             const args = {
-                stringArrayArg: IltUtil.createStringArray(),
-                int8ArrayArg: IltUtil.createByteArray(),
-                enumArrayArg: IltUtil.createExtendedInterfaceEnumerationInTypeCollectionArray(),
-                structWithStringArrayArrayArg: IltUtil.createStructWithStringArrayArray()
+                stringArrayArg: IltUtil.create("StringArray"),
+                int8ArrayArg: IltUtil.create("ByteArray"),
+                enumArrayArg: IltUtil.create("ExtendedInterfaceEnumInTypeCollectionArray"),
+                structWithStringArrayArrayArg: IltUtil.create("StructWithStringArrayArray")
             };
             const retObj = await testInterfaceProxy.methodWithMultipleArrayParameters(args);
 
@@ -176,12 +176,12 @@ describe("Consumer test", () => {
             expect(retObj.uInt64ArrayOut).toBeDefined();
             expect(retObj.structWithStringArrayArrayOut).toBeDefined();
             expect(retObj.structWithStringArrayArrayOut).not.toBeNull();
-            expect(IltUtil.checkUInt64Array(retObj.uInt64ArrayOut)).toBeTruthy();
-            expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
+            expect(IltUtil.check("UInt64Array", retObj.uInt64ArrayOut)).toBeTruthy();
+            expect(IltUtil.check("StructWithStringArrayArray", retObj.structWithStringArrayArrayOut)).toBeTruthy();
             log("callMethodWithMultipleArrayParameters - OK");
         });
 
-        async function callProxyMethodWithParameter(testMethod, testValue) {
+        async function callProxyMethodWithParameter(testMethod: any, testValue: any) {
             log(`callProxyMethodWithParameter called with testValue = ${JSON.stringify(testValue)}`);
             const retObj = await testMethod(testValue);
 
@@ -243,7 +243,7 @@ describe("Consumer test", () => {
         it("callMethodWithStructTypeDefParameter", async () => {
             log("callMethodWithStructTypeDefParameter");
             const args = {
-                structTypeDefIn: IltUtil.createBaseStruct()
+                structTypeDefIn: IltUtil.create("BaseStruct")
             };
 
             await callProxyMethodWithParameter(testInterfaceProxy.methodWithStructTypeDefParameter, args);
@@ -277,7 +277,7 @@ describe("Consumer test", () => {
         it("callMethodWithByteBufferTypeDefParameter", async () => {
             log("callMethodWithByteBufferTypeDefParameter");
             const args = {
-                byteBufferTypeDefIn: IltUtil.createByteArray()
+                byteBufferTypeDefIn: IltUtil.create("ByteArray")
             };
 
             await callProxyMethodWithParameter(testInterfaceProxy.methodWithByteBufferTypeDefParameter, args);
@@ -287,7 +287,7 @@ describe("Consumer test", () => {
         it("callMethodWithArrayTypeDefParameter", async () => {
             log("callMethodWithArrayTypeDefParameter");
             const stringArray = {
-                typeDefStringArray: IltUtil.createStringArray()
+                typeDefStringArray: IltUtil.create("StringArray")
             };
             const arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
             const args = {
@@ -335,7 +335,7 @@ describe("Consumer test", () => {
         it("callMethodWithSingleStructParameters", async () => {
             log("callMethodWithSingleStructParameters");
             const args = {
-                extendedBaseStructArg: IltUtil.createExtendedBaseStruct()
+                extendedBaseStructArg: IltUtil.create("ExtendedBaseStruct")
             };
             const retObj = await testInterfaceProxy.methodWithSingleStructParameters(args);
 
@@ -352,15 +352,15 @@ describe("Consumer test", () => {
                 // TODO
                 // currently not supported:
                 // anonymousBaseStructArg:
-                baseStructArg: IltUtil.createBaseStruct()
+                baseStructArg: IltUtil.create("BaseStruct")
             };
             const retObj = await testInterfaceProxy.methodWithMultipleStructParameters(args);
 
             expect(retObj).toBeDefined();
             expect(retObj.baseStructWithoutElementsOut).toBeDefined();
             expect(retObj.extendedExtendedBaseStructOut).toBeDefined();
-            expect(IltUtil.checkBaseStructWithoutElements(retObj.baseStructWithoutElementsOut)).toBeTruthy();
-            expect(IltUtil.checkExtendedExtendedBaseStruct(retObj.extendedExtendedBaseStructOut)).toBeTruthy();
+            expect(IltUtil.check("BaseStructWithoutElements", retObj.baseStructWithoutElementsOut)).toBeTruthy();
+            expect(IltUtil.check("ExtendedExtendedBaseStruct", retObj.extendedExtendedBaseStructOut)).toBeTruthy();
             log("callMethodWithMultipleStructParameters - OK");
         });
 
@@ -376,7 +376,7 @@ describe("Consumer test", () => {
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            let attributeFireAndForgetSubscriptionId;
+            let attributeFireAndForgetSubscriptionId: any;
 
             // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
             log("callMethodFireAndForgetWithoutParameter - setAttributeFireAndForget");
@@ -391,29 +391,27 @@ describe("Consumer test", () => {
                     // subscribe to attributeFireAndForget
                     log("callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget");
 
-                    /*eslint-disable no-use-before-define*/
                     return testInterfaceProxy.attributeFireAndForget.subscribe({
                         subscriptionQos: subscriptionQosOnChange,
                         onReceive,
-                        onError: fail
+                        onError: done.fail
                     });
-                    /*eslint-enable no-use-before-define*/
                 })
-                .then(subscriptionId => {
+                .then((subscriptionId: string) => {
                     attributeFireAndForgetSubscriptionId = subscriptionId;
                     log(
                         `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget subscriptionId = ${attributeFireAndForgetSubscriptionId}`
                     );
                 })
-                .catch(error => {
-                    fail(
+                .catch((error: any) => {
+                    done.fail(
                         `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget - FAILED: ${error}`
                     );
                 });
 
             let firstReceive = true;
 
-            function onReceive(attributeFireAndForgetValue) {
+            function onReceive(attributeFireAndForgetValue: any) {
                 if (firstReceive) {
                     firstReceive = false;
 
@@ -425,8 +423,8 @@ describe("Consumer test", () => {
                     expected = attributeFireAndForgetValue + 1;
 
                     log("callMethodFireAndForgetWithoutParameter CALL");
-                    testInterfaceProxy.methodFireAndForgetWithoutParameter().catch(error => {
-                        fail(`callMethodFireAndForgetWithoutParameter CALL - FAILED: ${error}`);
+                    testInterfaceProxy.methodFireAndForgetWithoutParameter().catch((error: any) => {
+                        done.fail(`callMethodFireAndForgetWithoutParameter CALL - FAILED: ${error}`);
                     });
                 } else {
                     expect(attributeFireAndForgetValue).toBeDefined();
@@ -446,8 +444,8 @@ describe("Consumer test", () => {
                             log("callMethodFireAndForgetWithoutParameter - DONE");
                             done();
                         })
-                        .catch(error => {
-                            fail(
+                        .catch((error: any) => {
+                            done.fail(
                                 `callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: ${error}`
                             );
                         });
@@ -462,7 +460,7 @@ describe("Consumer test", () => {
                 minIntervalMs: 50,
                 validityMs: 60000
             });
-            let attributeFireAndForgetSubscriptionId;
+            let attributeFireAndForgetSubscriptionId: any;
 
             // set attributeFireAndForget to 0 (it might have been set to the expected value by another test)
             log("callMethodFireAndForgetWithInputParameter - setAttributeFireAndForget");
@@ -480,24 +478,24 @@ describe("Consumer test", () => {
                     return testInterfaceProxy.attributeFireAndForget.subscribe({
                         subscriptionQos: subscriptionQosOnChange,
                         onReceive,
-                        onError: fail
+                        onError: done.fail
                     });
                     /*eslint-enable no-use-before-define*/
                 })
-                .then(subscriptionId => {
+                .then((subscriptionId: any) => {
                     attributeFireAndForgetSubscriptionId = subscriptionId;
                     log(
                         `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget subscriptionId = ${attributeFireAndForgetSubscriptionId}`
                     );
                 })
-                .catch(error => {
-                    fail(
+                .catch((error: any) => {
+                    done.fail(
                         `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget - FAILED: ${error}`
                     );
                 });
 
             let firstReceive = true;
-            function onReceive(attributeFireAndForgetValue) {
+            function onReceive(attributeFireAndForgetValue: any) {
                 if (firstReceive) {
                     firstReceive = false;
 
@@ -509,8 +507,8 @@ describe("Consumer test", () => {
                     expected = attributeFireAndForgetValue + 1;
 
                     log("callMethodFireAndForgetWithInputParameter CALL");
-                    testInterfaceProxy.methodFireAndForgetWithoutParameter().catch(error => {
-                        fail(`callMethodFireAndForgetWithInputParameter CALL - FAILED: ${error}`);
+                    testInterfaceProxy.methodFireAndForgetWithoutParameter().catch((error: any) => {
+                        done.fail(`callMethodFireAndForgetWithInputParameter CALL - FAILED: ${error}`);
                     });
                 } else {
                     expect(attributeFireAndForgetValue).toBeDefined();
@@ -530,8 +528,8 @@ describe("Consumer test", () => {
                             log("callMethodFireAndForgetWithInputParameter - DONE");
                             done();
                         })
-                        .catch(error => {
-                            fail(
+                        .catch((error: any) => {
+                            done.fail(
                                 `callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - FAILED: ${error}`
                             );
                         });
@@ -564,21 +562,23 @@ describe("Consumer test", () => {
 
         it("callOverloadedMethod_3", async () => {
             const args = {
-                enumArrayArg: IltUtil.createExtendedExtendedEnumerationArray(),
+                enumArrayArg: IltUtil.create("ExtendedExtendedEnumerationArray"),
                 int64Arg: 1,
-                baseStructArg: IltUtil.createBaseStruct(),
+                baseStructArg: IltUtil.create("BaseStruct"),
                 booleanArg: false
             };
             log("callOverloadedMethod_3");
-            const retObj = await testInterfaceProxy.overloadedMethod(args);
+            const retObj: TestInterfaceProxy.OverloadedMethodReturns3 = (await testInterfaceProxy.overloadedMethod(
+                args
+            )) as any;
 
             expect(retObj).toBeDefined();
             expect(retObj.doubleOut).toBeDefined();
             expect(retObj.stringArrayOut).toBeDefined();
             expect(retObj.extendedBaseStructOut).toBeDefined();
             expect(IltUtil.cmpDouble(retObj.doubleOut, 0.0)).toBeTruthy();
-            expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
-            expect(IltUtil.checkExtendedBaseStruct(retObj.extendedBaseStructOut)).toBeTruthy();
+            expect(IltUtil.check("StringArray", retObj.stringArrayOut)).toBeTruthy();
+            expect(IltUtil.check("ExtendedBaseStruct", retObj.extendedBaseStructOut)).toBeTruthy();
             log("callOverloadedMethod_3 - OK");
         });
 
@@ -607,21 +607,23 @@ describe("Consumer test", () => {
 
         it("callOverloadedMethodWithSelector_3", async () => {
             const args = {
-                enumArrayArg: IltUtil.createExtendedExtendedEnumerationArray(),
+                enumArrayArg: IltUtil.create("ExtendedExtendedEnumerationArray"),
                 int64Arg: 1,
-                baseStructArg: IltUtil.createBaseStruct(),
+                baseStructArg: IltUtil.create("BaseStruct"),
                 booleanArg: false
             };
             log("callOverloadedMethodWithSelector_3");
-            const retObj = await testInterfaceProxy.overloadedMethod(args);
+            const retObj: TestInterfaceProxy.OverloadedMethodReturns3 = (await testInterfaceProxy.overloadedMethod(
+                args
+            )) as any;
 
             expect(retObj).toBeDefined();
             expect(retObj.doubleOut).toBeDefined();
             expect(retObj.stringArrayOut).toBeDefined();
             expect(retObj.extendedBaseStructOut).toBeDefined();
             expect(IltUtil.cmpDouble(retObj.doubleOut, 0.0)).toBeTruthy();
-            expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
-            expect(IltUtil.checkExtendedBaseStruct(retObj.extendedBaseStructOut)).toBeTruthy();
+            expect(IltUtil.check("StringArray", retObj.stringArrayOut)).toBeTruthy();
+            expect(IltUtil.check("ExtendedBaseStruct", retObj.extendedBaseStructOut)).toBeTruthy();
             log("callOverloadedMethodWithSelector_3 - OK");
         });
 
@@ -644,9 +646,9 @@ describe("Consumer test", () => {
             const args = {
                 wantedExceptionArg: "ProviderRuntimeException"
             };
+            expect.assertions(4);
             try {
                 await testInterfaceProxy.methodWithoutErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
@@ -661,10 +663,9 @@ describe("Consumer test", () => {
             let args = {
                 wantedExceptionArg: "ProviderRuntimeException"
             };
-
+            expect.assertions(8);
             try {
                 await testInterfaceProxy.methodWithAnonymousErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
                 expect(retObj.detailMessage).toBeDefined();
@@ -678,7 +679,6 @@ describe("Consumer test", () => {
 
             try {
                 await testInterfaceProxy.methodWithAnonymousErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
@@ -697,10 +697,10 @@ describe("Consumer test", () => {
             let args = {
                 wantedExceptionArg: "ProviderRuntimeException"
             };
+            expect.assertions(14);
 
             try {
                 await testInterfaceProxy.methodWithExistingErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
@@ -715,7 +715,6 @@ describe("Consumer test", () => {
 
             try {
                 await testInterfaceProxy.methodWithExistingErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
@@ -735,7 +734,6 @@ describe("Consumer test", () => {
 
             try {
                 await testInterfaceProxy.methodWithExistingErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
@@ -751,12 +749,12 @@ describe("Consumer test", () => {
 
         it("callMethodWithExtendedErrorEnum", async () => {
             log("callMethodWithExtendedErrorEnum");
+            expect.assertions(14);
             let args = {
                 wantedExceptionArg: "ProviderRuntimeException"
             };
             try {
                 await testInterfaceProxy.methodWithExtendedErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
@@ -771,7 +769,6 @@ describe("Consumer test", () => {
 
             try {
                 await testInterfaceProxy.methodWithExtendedErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
@@ -790,7 +787,6 @@ describe("Consumer test", () => {
 
             try {
                 await testInterfaceProxy.methodWithExtendedErrorEnum(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ApplicationException");
@@ -806,13 +802,9 @@ describe("Consumer test", () => {
 
         it("callGetAttributeWithExceptionFromGetter", async () => {
             log("callGetAttributeWithExceptionFromGetter");
-            const args = {
-                value: false
-            };
-
+            expect.assertions(4);
             try {
-                await testInterfaceProxy.attributeWithExceptionFromGetter.get(args);
-                fail();
+                await testInterfaceProxy.attributeWithExceptionFromGetter.get();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
@@ -827,10 +819,9 @@ describe("Consumer test", () => {
             const args = {
                 value: false
             };
-
+            expect.assertions(4);
             try {
                 await testInterfaceProxy.attributeWithExceptionFromSetter.set(args);
-                fail();
             } catch (retObj) {
                 expect(retObj).toBeDefined();
                 expect(retObj._typeName).toEqual("joynr.exceptions.ProviderRuntimeException");
@@ -858,7 +849,7 @@ describe("Consumer test", () => {
             log("callMethodWithSingleMapParameters - OK");
         });
 
-        async function genericSetGet(testObj, testValue) {
+        async function genericSetGet(testObj: any, testValue: any) {
             log(`genericSetGet called with testValue = ${JSON.stringify(testValue)}`);
             await testObj.set({ value: testValue });
 
@@ -907,12 +898,15 @@ describe("Consumer test", () => {
 
         it("callSetandGetAttributeArrayOfStringImplicit", async () => {
             log("callSetandGetAttributeArrayOfStringImplicit");
-            return await genericSetGet(testInterfaceProxy.attributeArrayOfStringImplicit, IltUtil.createStringArray());
+            return await genericSetGet(
+                testInterfaceProxy.attributeArrayOfStringImplicit,
+                IltUtil.create("StringArray")
+            );
         });
 
         it("callSetandGetAttributeByteBuffer", async () => {
             log("callSetandGetAttributeByteBuffer");
-            return await genericSetGet(testInterfaceProxy.attributeByteBuffer, IltUtil.createByteArray());
+            return await genericSetGet(testInterfaceProxy.attributeByteBuffer, IltUtil.create("ByteArray"));
         });
 
         it("callSetandGetAttributeInt64TypeDef", async () => {
@@ -928,7 +922,7 @@ describe("Consumer test", () => {
 
         it("callSetandGetAttributeStructTypeDef", async () => {
             log("callSetandGetAttributeStructTypeDef");
-            return await genericSetGet(testInterfaceProxy.attributeStructTypeDef, IltUtil.createBaseStruct());
+            return await genericSetGet(testInterfaceProxy.attributeStructTypeDef, IltUtil.create("BaseStruct"));
         });
 
         it("callSetandGetAttributeMapTypeDef", async () => {
@@ -947,13 +941,13 @@ describe("Consumer test", () => {
 
         it("callSetandGetAttributeByteBufferTypeDef", async () => {
             log("callSetandGetAttributeByteBufferTypeDef");
-            return await genericSetGet(testInterfaceProxy.attributeByteBufferTypeDef, IltUtil.createByteArray());
+            return await genericSetGet(testInterfaceProxy.attributeByteBufferTypeDef, IltUtil.create("ByteArray"));
         });
 
         it("callSetandGetAttributeArrayTypeDef", async () => {
             log("callSetandGetAttributeArrayTypeDef");
             const args = {
-                typeDefStringArray: IltUtil.createStringArray()
+                typeDefStringArray: IltUtil.create("StringArray")
             };
             const arrayTypeDefArg = new ArrayTypeDefStruct(args);
 
@@ -977,14 +971,14 @@ describe("Consumer test", () => {
 
         it("callSetandGetAttributeBaseStruct", async () => {
             log("callSetandGetAttributeBaseStruct");
-            return await genericSetGet(testInterfaceProxy.attributeBaseStruct, IltUtil.createBaseStruct());
+            return await genericSetGet(testInterfaceProxy.attributeBaseStruct, IltUtil.create("BaseStruct"));
         });
 
         it("callSetandGetAttributeExtendedExtendedBaseStruct", async () => {
             log("callSetandGetAttributeExtendedExtendedBaseStruct");
             return await genericSetGet(
                 testInterfaceProxy.attributeExtendedExtendedBaseStruct,
-                IltUtil.createExtendedExtendedBaseStruct()
+                IltUtil.create("ExtendedExtendedBaseStruct")
             );
         });
 
@@ -1001,7 +995,7 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.attributeEnumeration.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 onReceive: onReceiveDeferred.resolve,
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
             const id = await onSubscribedDeferred.promise;
@@ -1012,6 +1006,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.attributeEnumeration.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         });
 
         it("callSubscribeAttributeWithExceptionFromGetter", async () => {
@@ -1026,7 +1021,7 @@ describe("Consumer test", () => {
             log("callSubscribeAttributeWithExceptionFromGetter");
             const subscriptionId = await testInterfaceProxy.attributeWithExceptionFromGetter.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
-                onReceive: fail,
+                onReceive: onErrorSpy,
                 onError: onReceiveDeferred.resolve,
                 onSubscribed: onSubscribedDeferred.resolve
             });
@@ -1045,9 +1040,10 @@ describe("Consumer test", () => {
             await testInterfaceProxy.attributeWithExceptionFromGetter.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         });
 
-        async function callSubscribeBroadcastWithSinglePrimitiveParameter(partitionsToUse) {
+        async function callSubscribeBroadcastWithSinglePrimitiveParameter(partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1060,7 +1056,7 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithSinglePrimitiveParameter.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.stringOut).toBeDefined();
                     expect(retObj.stringOut).toEqual("boom");
@@ -1073,7 +1069,7 @@ describe("Consumer test", () => {
                         .then(onReceiveDeferred.resolve)
                         .catch(onReceiveDeferred.reject);
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1086,6 +1082,7 @@ describe("Consumer test", () => {
             // call to fire broadcast went ok
             // now wait for the publication to happen
             await onReceiveDeferred.promise;
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithSinglePrimitiveParameter_NoPartitions", async () => {
@@ -1096,7 +1093,7 @@ describe("Consumer test", () => {
             return await callSubscribeBroadcastWithSinglePrimitiveParameter(["partition0", "partition1"]);
         });
 
-        async function callSubscribeBroadcastWithMultiplePrimitiveParameters(partitionsToUse) {
+        async function callSubscribeBroadcastWithMultiplePrimitiveParameters(partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1109,7 +1106,7 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithMultiplePrimitiveParameters.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.doubleOut).toBeDefined();
                     expect(IltUtil.cmpDouble(retObj.doubleOut, 1.1)).toBeTruthy();
@@ -1118,7 +1115,7 @@ describe("Consumer test", () => {
                     log(`publication retObj: ${JSON.stringify(retObj)}`);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1135,6 +1132,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithMultiplePrimitiveParameters.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithMultiplePrimitiveParameters_NoPartitions", async () => {
@@ -1145,7 +1143,7 @@ describe("Consumer test", () => {
             return await callSubscribeBroadcastWithMultiplePrimitiveParameters(["partition0", "partition1"]);
         });
 
-        async function callSubscribeBroadcastWithSingleArrayParameter(partitionsToUse) {
+        async function callSubscribeBroadcastWithSingleArrayParameter(partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1158,14 +1156,14 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleArrayParameter.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.stringArrayOut).toBeDefined();
-                    expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
+                    expect(IltUtil.check("StringArray", retObj.stringArrayOut)).toBeTruthy();
                     log(`publication retObj: ${JSON.stringify(retObj)}`);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1186,6 +1184,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithSingleArrayParameter.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithSingleArrayParameter_NoPartitions", async () => {
@@ -1196,7 +1195,7 @@ describe("Consumer test", () => {
             return await callSubscribeBroadcastWithSingleArrayParameter(["partition0", "partition1"]);
         });
 
-        async function callSubscribeBroadcastWithMultipleArrayParameters(partitionsToUse) {
+        async function callSubscribeBroadcastWithMultipleArrayParameters(partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1209,16 +1208,18 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithMultipleArrayParameters.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.uInt64ArrayOut).toBeDefined();
-                    expect(IltUtil.checkUInt64Array(retObj.uInt64ArrayOut)).toBeTruthy();
+                    expect(IltUtil.check("UInt64Array", retObj.uInt64ArrayOut)).toBeTruthy();
                     expect(retObj.structWithStringArrayArrayOut).toBeDefined();
-                    expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
+                    expect(
+                        IltUtil.check("StructWithStringArrayArray", retObj.structWithStringArrayArrayOut)
+                    ).toBeTruthy();
                     log(`publication retObj: ${JSON.stringify(retObj)}`);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1238,6 +1239,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithMultipleArrayParameters.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithMultipleArrayParameters_NoPartitions", async () => {
@@ -1250,7 +1252,7 @@ describe("Consumer test", () => {
 
         const byteBufferArg = [-128, 0, 127];
 
-        async function callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg, partitionsToUse) {
+        async function callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg: any, partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1263,14 +1265,14 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleByteBufferParameter.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.byteBufferOut).toBeDefined();
                     expect(IltUtil.cmpByteBuffers(retObj.byteBufferOut, byteBufferArg)).toBeTruthy();
                     log(`Successful publication of retObj: ${JSON.stringify(retObj)}`);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
             const id = await onSubscribedDeferred.promise;
@@ -1290,6 +1292,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithSingleByteBufferParameter.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithSingleByteBufferParameter_NoPartitions", async () => {
@@ -1307,9 +1310,9 @@ describe("Consumer test", () => {
         const byteBufferArg2 = [78, 0];
 
         async function callSubscribeBroadcastWithMultipleByteBufferParameters(
-            byteBufferArg1,
-            byteBufferArg2,
-            partitionsToUse
+            byteBufferArg1: any,
+            byteBufferArg2: any,
+            partitionsToUse: any
         ) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
@@ -1323,7 +1326,7 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithMultipleByteBufferParameters.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.byteBufferOut1).toBeDefined();
                     expect(retObj.byteBufferOut2).toBeDefined();
@@ -1332,7 +1335,7 @@ describe("Consumer test", () => {
                     log(`Successful publication of retObj: ${JSON.stringify(retObj)}`);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1354,6 +1357,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithMultipleByteBufferParameters.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
 
             log("Successfully unsubscribed from broadcast");
         }
@@ -1369,7 +1373,7 @@ describe("Consumer test", () => {
             ]);
         });
 
-        async function callSubscribeBroadcastWithSingleEnumerationParameter(partitionsToUse) {
+        async function callSubscribeBroadcastWithSingleEnumerationParameter(partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1382,7 +1386,7 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.enumerationOut).toBeDefined();
                     expect(retObj.enumerationOut).toEqual(
@@ -1391,7 +1395,7 @@ describe("Consumer test", () => {
                     log(`publication retObj: ${JSON.stringify(retObj)}`);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1411,6 +1415,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithSingleEnumerationParameter.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithSingleEnumerationParameter_NoPartitions", async () => {
@@ -1421,7 +1426,7 @@ describe("Consumer test", () => {
             return await callSubscribeBroadcastWithSingleEnumerationParameter(["partition0", "partition1"]);
         });
 
-        async function callSubscribeBroadcastWithMultipleEnumerationParameter(partitionsToUse) {
+        async function callSubscribeBroadcastWithMultipleEnumerationParameter(partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1434,7 +1439,7 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithMultipleEnumerationParameters.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.extendedEnumerationOut).toBeDefined();
                     expect(retObj.extendedEnumerationOut).toEqual(
@@ -1444,7 +1449,7 @@ describe("Consumer test", () => {
                     expect(retObj.enumerationOut).toEqual(Enumeration.ENUM_0_VALUE_1);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1463,6 +1468,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithMultipleEnumerationParameters.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithMultipleEnumerationParameter_NoPartitions", async () => {
@@ -1473,7 +1479,7 @@ describe("Consumer test", () => {
             return await callSubscribeBroadcastWithMultipleEnumerationParameter(["partition0", "partition1"]);
         });
 
-        async function callSubscribeBroadcastWithSingleStructParameter(partitionsToUse) {
+        async function callSubscribeBroadcastWithSingleStructParameter(partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1486,14 +1492,14 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleStructParameter.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
                     expect(retObj.extendedStructOfPrimitivesOut).toBeDefined();
                     expect(IltUtil.checkExtendedStructOfPrimitives(retObj.extendedStructOfPrimitivesOut)).toBeTruthy();
                     log(`publication retObj: ${JSON.stringify(retObj)}`);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1512,6 +1518,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithSingleStructParameter.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithSingleStructParameter_NoPartitions", async () => {
@@ -1522,7 +1529,7 @@ describe("Consumer test", () => {
             return await callSubscribeBroadcastWithSingleStructParameter(["partition0", "partition1"]);
         });
 
-        async function callSubscribeBroadcastWithMultipleStructParameter(partitionsToUse) {
+        async function callSubscribeBroadcastWithMultipleStructParameter(partitionsToUse: any) {
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
                 minIntervalMs: 50,
                 validityMs: 60000
@@ -1535,16 +1542,20 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithMultipleStructParameters.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: partitionsToUse,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     log(`XXX: publication retObj: ${JSON.stringify(retObj)}`);
                     expect(retObj).toBeDefined();
                     expect(retObj.baseStructWithoutElementsOut).toBeDefined();
-                    expect(IltUtil.checkBaseStructWithoutElements(retObj.baseStructWithoutElementsOut)).toBeTruthy();
+                    expect(
+                        IltUtil.check("BaseStructWithoutElements", retObj.baseStructWithoutElementsOut)
+                    ).toBeTruthy();
                     expect(retObj.extendedExtendedBaseStructOut).toBeDefined();
-                    expect(IltUtil.checkExtendedExtendedBaseStruct(retObj.extendedExtendedBaseStructOut)).toBeTruthy();
+                    expect(
+                        IltUtil.check("ExtendedExtendedBaseStruct", retObj.extendedExtendedBaseStructOut)
+                    ).toBeTruthy();
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1564,6 +1575,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithMultipleStructParameters.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         }
 
         it("callSubscribeBroadcastWithMultipleStructParameter_NoPartitions", async () => {
@@ -1583,7 +1595,7 @@ describe("Consumer test", () => {
 
             const onSubscribedDeferred = IltUtil.createDeferred();
             const onReceiveDeferred = IltUtil.createDeferred();
-            const onReceivedSpy = jasmine.createSpy("onReceived");
+            const onReceivedSpy = jest.fn();
 
             const subscribeToPartitions = ["partition0", "partition1"];
             const broadcastPartition = ["otherPartition"];
@@ -1592,11 +1604,11 @@ describe("Consumer test", () => {
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
                 partitions: subscribeToPartitions,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     onReceivedSpy(retObj);
                     onReceiveDeferred.resolve();
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve
             });
 
@@ -1619,6 +1631,7 @@ describe("Consumer test", () => {
             await testInterfaceProxy.broadcastWithMultipleStructParameters.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         });
 
         it("callSubscribeBroadcastWithFiltering", async () => {
@@ -1649,10 +1662,10 @@ describe("Consumer test", () => {
 
             const subscriptionId = await testInterfaceProxy.broadcastWithFiltering.subscribe({
                 subscriptionQos: subscriptionQosOnChange,
-                onReceive: retObj => {
+                onReceive: (retObj: any) => {
                     onReceiveDeferred.resolve(retObj);
                 },
-                onError: fail,
+                onError: onErrorSpy,
                 onSubscribed: onSubscribedDeferred.resolve,
                 filterParameters
             });
@@ -1681,16 +1694,17 @@ describe("Consumer test", () => {
                 ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION
             );
             expect(retObj.stringArrayOut).toBeDefined();
-            expect(IltUtil.checkStringArray(retObj.stringArrayOut)).toBeTruthy();
+            expect(IltUtil.check("StringArray", retObj.stringArrayOut)).toBeTruthy();
             expect(retObj.structWithStringArrayOut).toBeDefined();
-            expect(IltUtil.checkStructWithStringArray(retObj.structWithStringArrayOut)).toBeTruthy();
+            expect(IltUtil.check("StructWithStringArray", retObj.structWithStringArrayOut)).toBeTruthy();
             expect(retObj.structWithStringArrayArrayOut).toBeDefined();
-            expect(IltUtil.checkStructWithStringArrayArray(retObj.structWithStringArrayArrayOut)).toBeTruthy();
+            expect(IltUtil.check("StructWithStringArrayArray", retObj.structWithStringArrayArrayOut)).toBeTruthy();
 
             // unsubscribe again
             await testInterfaceProxy.broadcastWithFiltering.unsubscribe({
                 subscriptionId
             });
+            expect(onErrorSpy).not.toHaveBeenCalled();
         });
 
         afterAll(async () => {

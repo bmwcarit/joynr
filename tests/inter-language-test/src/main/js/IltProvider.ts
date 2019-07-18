@@ -1,37 +1,36 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * #L%
- */
+*/
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-const Promise = require("bluebird").Promise;
-
-const joynr = require("joynr");
-const testbase = require("test-base");
+import joynr from "joynr";
+import testbase from "test-base";
+import * as TestInterfaceProvider from "../generated-javascript/joynr/interlanguagetest/TestInterfaceProvider";
 const prettyLog = testbase.logging.prettyLog;
 
-const IltUtil = require("./IltUtil.js");
-const ExtendedEnumerationWithPartlyDefinedValues = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues.js");
-const ExtendedTypeCollectionEnumerationInTypeCollection = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.js");
-const Enumeration = require("../generated-javascript/joynr/interlanguagetest/Enumeration.js");
-
-const MethodWithAnonymousErrorEnumErrorEnum = require("../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithAnonymousErrorEnumErrorEnum.js");
-const ExtendedErrorEnumTc = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedErrorEnumTc.js");
-const MethodWithExtendedErrorEnumErrorEnum = require("../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithExtendedErrorEnumErrorEnum.js");
-const MapStringString = require("../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString.js");
+import * as IltUtil from "./IltUtil";
+import ExtendedEnumerationWithPartlyDefinedValues from "../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues";
+import ExtendedTypeCollectionEnumerationInTypeCollection from "../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection";
+import Enumeration from "../generated-javascript/joynr/interlanguagetest/Enumeration";
+import MethodWithAnonymousErrorEnumErrorEnum from "../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithAnonymousErrorEnumErrorEnum";
+import ExtendedErrorEnumTc from "../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/ExtendedErrorEnumTc";
+import MethodWithExtendedErrorEnumErrorEnum from "../generated-javascript/joynr/interlanguagetest/TestInterface/MethodWithExtendedErrorEnumErrorEnum";
+import MapStringString from "../generated-javascript/joynr/interlanguagetest/namedTypeCollection2/MapStringString";
 
 // Attributes
 let attributeUInt8 = 0;
@@ -40,44 +39,47 @@ let attributeBooleanReadonly = false;
 let attributeStringNoSubscriptions = "";
 let attributeInt8readonlyNoSubscriptions = 0;
 let attributeArrayOfStringImplicit = [""];
-let attributeByteBuffer;
-let attributeEnumeration;
-let attributeExtendedEnumerationReadonly;
-let attributeBaseStruct;
-let attributeExtendedExtendedBaseStruct;
-let attributeMapStringString;
+let attributeByteBuffer: any;
+let attributeEnumeration: any;
+let attributeExtendedEnumerationReadonly: any;
+let attributeBaseStruct: any;
+let attributeExtendedExtendedBaseStruct: any;
+let attributeMapStringString: any;
 let attributeFireAndForget = 0;
 const typeDefValues = {
     attributeInt64: 1,
     attributeString: "TypeDefString",
-    attributeStruct: IltUtil.createBaseStruct(),
+    attributeStruct: IltUtil.create("BaseStruct"),
     attributeMap: new MapStringString(),
     attributeEnum: Enumeration.ENUM_0_VALUE_1,
-    attributeByteBufferTypeDef: IltUtil.createByteArray(),
-    attributeArrayTypeDef: IltUtil.createStringArray()
+    attributeByteBufferTypeDef: IltUtil.create("ByteArray"),
+    attributeArrayTypeDef: IltUtil.create("StringArray"),
+    attributeByteBuffer: undefined,
+    attributeArray: undefined
 };
 
-function genericSetterGetter(attributeName) {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function genericSetterGetter(attributeName: keyof typeof typeDefValues) {
     return {
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.set called for attribute ${attributeName}`);
             typeDefValues[attributeName] = value;
         },
-        get: async () => {
+        get: async (): Promise<any> => {
             prettyLog(`IltProvider.get called for attribute ${attributeName}`);
             return typeDefValues[attributeName];
         }
     };
 }
 
-const IltProvider = {
+const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
     // attribute getter and setter
     attributeUInt8: {
-        get: async () => {
+        get: async (): Promise<any> => {
             prettyLog("IltProvider.attributeUInt8.get() called");
             return attributeUInt8;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeUInt8.set(${value}) called`);
             attributeUInt8 = value;
         }
@@ -88,7 +90,7 @@ const IltProvider = {
             prettyLog("IltProvider.attributeDouble.get() called");
             return attributeDouble;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeDouble.set(${value}) called`);
             attributeDouble = value;
         }
@@ -107,7 +109,7 @@ const IltProvider = {
             prettyLog("IltProvider.attributeStringNoSubscriptions.get() called");
             return attributeStringNoSubscriptions;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeStringNoSubscriptions.set(${value}) called`);
             attributeStringNoSubscriptions = value;
         }
@@ -126,7 +128,7 @@ const IltProvider = {
             prettyLog("IltProvider.attributeArrayOfStringImplicit.get() called");
             return attributeArrayOfStringImplicit;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeArrayOfStringImplicit.set(${value}) called`);
             attributeArrayOfStringImplicit = value;
         }
@@ -137,10 +139,9 @@ const IltProvider = {
             prettyLog("IltProvider.attributeByteBuffer.get() called");
             return attributeByteBuffer;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeByteBuffer.set(${value}) called`);
             attributeByteBuffer = value;
-            IltProvider.attributeByteBuffer.valueChanged(attributeByteBuffer);
         }
     },
 
@@ -149,7 +150,7 @@ const IltProvider = {
             prettyLog("IltProvider.attributeEnumeration.get() called");
             return attributeEnumeration;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeEnumeration.set(${value}) called`);
             attributeEnumeration = value;
         }
@@ -169,7 +170,7 @@ const IltProvider = {
             prettyLog("IltProvider.attributeBaseStruct.get() called");
             return attributeBaseStruct;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeBaseStruct.set(${value}) called`);
             attributeBaseStruct = value;
         }
@@ -180,7 +181,7 @@ const IltProvider = {
             prettyLog("IltProvider.attributeExtendedExtendedBaseStruct.get() called");
             return attributeExtendedExtendedBaseStruct;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeExtendedExtendedBaseStruct.set(${value}) called`);
             attributeExtendedExtendedBaseStruct = value;
         }
@@ -191,7 +192,7 @@ const IltProvider = {
             prettyLog("IltProvider.attributeMapStringString.get() called");
             return attributeMapStringString;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeMapStringString.set(${JSON.stringify(value)}) called`);
             attributeMapStringString = value;
         }
@@ -216,7 +217,7 @@ const IltProvider = {
             prettyLog("IltProvider.attributeFireAndForget.get() called");
             return attributeFireAndForget;
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeFireAndForget.set(${value}) called`);
             attributeFireAndForget = value;
         }
@@ -225,10 +226,9 @@ const IltProvider = {
     attributeWithExceptionFromGetter: {
         get: async () => {
             prettyLog("IltProvider.attributeWithExceptionFromGetter.get() called");
-
-            const settings = {};
-            settings.detailMessage = "Exception from getAttributeWithExceptionFromGetter";
-            throw new joynr.exceptions.ProviderRuntimeException(settings);
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "Exception from getAttributeWithExceptionFromGetter"
+            });
         }
     },
 
@@ -237,12 +237,11 @@ const IltProvider = {
             prettyLog("IltProvider.attributeWithExceptionFromSetter.get() called");
             return Promise.resolve(false);
         },
-        set: async value => {
+        set: (value: any) => {
             prettyLog(`IltProvider.attributeWithExceptionFromSetter.set(${value}) called`);
-
-            const settings = {};
-            settings.detailMessage = "Exception from setAttributeWithExceptionFromSetter";
-            throw new joynr.exceptions.ProviderRuntimeException(settings);
+            throw new joynr.exceptions.ProviderRuntimeException({
+                detailMessage: "Exception from setAttributeWithExceptionFromSetter"
+            });
         }
     },
 
@@ -257,7 +256,7 @@ const IltProvider = {
         return Promise.resolve({ booleanOut: true });
     },
 
-    methodWithoutOutputParameter(opArgs) {
+    methodWithoutOutputParameter(opArgs: { booleanArg: boolean }) {
         prettyLog(`IltProvider.methodWithoutOutputParameter(${JSON.stringify(opArgs)}) called`);
 
         if (opArgs.booleanArg === undefined || opArgs.booleanArg === null || opArgs.booleanArg !== false) {
@@ -325,7 +324,7 @@ const IltProvider = {
         if (
             opArgs.doubleArrayArg === undefined ||
             opArgs.doubleArrayArg === null ||
-            !IltUtil.checkDoubleArray(opArgs.doubleArrayArg)
+            !IltUtil.check("DoubleArray", opArgs.doubleArrayArg)
         ) {
             return Promise.reject(
                 new joynr.exceptions.ProviderRuntimeException({
@@ -333,7 +332,7 @@ const IltProvider = {
                 })
             );
         } else {
-            return Promise.resolve({ stringArrayOut: IltUtil.createStringArray() });
+            return Promise.resolve({ stringArrayOut: IltUtil.create("StringArray") });
         }
     },
 
@@ -343,7 +342,7 @@ const IltProvider = {
         if (
             opArgs.stringArrayArg === undefined ||
             opArgs.stringArrayArg === null ||
-            !IltUtil.checkStringArray(opArgs.stringArrayArg)
+            !IltUtil.check("StringArray", opArgs.stringArrayArg)
         ) {
             return Promise.reject(
                 new joynr.exceptions.ProviderRuntimeException({
@@ -353,7 +352,7 @@ const IltProvider = {
         } else if (
             opArgs.int8ArrayArg === undefined ||
             opArgs.int8ArrayArg === null ||
-            !IltUtil.checkByteArray(opArgs.int8ArrayArg)
+            !IltUtil.check("ByteArray", opArgs.int8ArrayArg)
         ) {
             return Promise.reject(
                 new joynr.exceptions.ProviderRuntimeException({
@@ -363,7 +362,7 @@ const IltProvider = {
         } else if (
             opArgs.enumArrayArg === undefined ||
             opArgs.enumArrayArg === null ||
-            !IltUtil.checkExtendedInterfaceEnumerationInTypeCollectionArray(opArgs.enumArrayArg)
+            !IltUtil.check("ExtendedInterfaceEnumInTypeCollectionArray", opArgs.enumArrayArg)
         ) {
             return Promise.reject(
                 new joynr.exceptions.ProviderRuntimeException({
@@ -373,7 +372,7 @@ const IltProvider = {
         } else if (
             opArgs.structWithStringArrayArrayArg === undefined ||
             opArgs.structWithStringArrayArrayArg === null ||
-            !IltUtil.checkStructWithStringArrayArray(opArgs.structWithStringArrayArrayArg)
+            !IltUtil.check("StructWithStringArrayArray", opArgs.structWithStringArrayArrayArg)
         ) {
             return Promise.reject(
                 new joynr.exceptions.ProviderRuntimeException({
@@ -382,10 +381,10 @@ const IltProvider = {
             );
         } else {
             return Promise.resolve({
-                uInt64ArrayOut: IltUtil.createUInt64Array(),
+                uInt64ArrayOut: IltUtil.create("UInt64Array"),
                 structWithStringArrayArrayOut: [
-                    IltUtil.createStructWithStringArray(),
-                    IltUtil.createStructWithStringArray()
+                    IltUtil.create("StructWithStringArray"),
+                    IltUtil.create("StructWithStringArray")
                 ]
             });
         }
@@ -571,7 +570,7 @@ const IltProvider = {
         if (
             opArgs.extendedBaseStructArg === undefined ||
             opArgs.extendedBaseStructArg === null ||
-            !IltUtil.checkExtendedBaseStruct(opArgs.extendedBaseStructArg)
+            !IltUtil.check("ExtendedBaseStruct", opArgs.extendedBaseStructArg)
         ) {
             return Promise.reject(
                 new joynr.exceptions.ProviderRuntimeException({
@@ -599,7 +598,7 @@ const IltProvider = {
         } else if (
             opArgs.baseStructArg === undefined ||
             opArgs.baseStructArg === null ||
-            !IltUtil.checkBaseStruct(opArgs.baseStructArg)
+            !IltUtil.check("BaseStruct", opArgs.baseStructArg)
         ) {
             return Promise.reject(
                 new joynr.exceptions.ProviderRuntimeException({
@@ -608,8 +607,8 @@ const IltProvider = {
             );
         } else {
             return Promise.resolve({
-                baseStructWithoutElementsOut: IltUtil.createBaseStructWithoutElements(),
-                extendedExtendedBaseStructOut: IltUtil.createExtendedExtendedBaseStruct()
+                baseStructWithoutElementsOut: IltUtil.create("BaseStructWithoutElements"),
+                extendedExtendedBaseStructOut: IltUtil.create("ExtendedExtendedBaseStruct")
             });
         }
     },
@@ -640,6 +639,8 @@ const IltProvider = {
     methodFireAndForgetWithoutParameter(opArgs) {
         prettyLog(`IltProvider.methodFireAndForgetWithoutParameter(${JSON.stringify(opArgs)}) called`);
         IltProvider.attributeFireAndForget.set(attributeFireAndForget + 1);
+        // TODO: no idea what the valueChanged does, because set would emit ValueChanged with value +1.
+        // @ts-ignore
         IltProvider.attributeFireAndForget.valueChanged(attributeFireAndForget);
     },
 
@@ -651,11 +652,12 @@ const IltProvider = {
         } else {
             IltProvider.attributeFireAndForget.set(opArgs.int32Arg);
         }
+        // @ts-ignore
         IltProvider.attributeFireAndForget.valueChanged(attributeFireAndForget);
     },
 
     // OVERLOADED METHODS
-    overloadedMethod(opArgs) {
+    overloadedMethod(opArgs: any): any {
         prettyLog(`IltProvider.overloadedMethod(${JSON.stringify(opArgs)}) called`);
         if (
             opArgs.int64Arg !== undefined &&
@@ -681,13 +683,13 @@ const IltProvider = {
                         detailMessage: "overloadedMethod_3: invalid argument booleanArg"
                     })
                 );
-            } else if (!IltUtil.checkExtendedExtendedEnumerationArray(opArgs.enumArrayArg)) {
+            } else if (!IltUtil.check("ExtendedExtendedEnumerationArray", opArgs.enumArrayArg)) {
                 return Promise.reject(
                     new joynr.exceptions.ProviderRuntimeException({
                         detailMessage: "overloadedMethod_3: invalid argument enumArrayArg"
                     })
                 );
-            } else if (!IltUtil.checkBaseStruct(opArgs.baseStructArg)) {
+            } else if (!IltUtil.check("BaseStruct", opArgs.baseStructArg)) {
                 return Promise.reject(
                     new joynr.exceptions.ProviderRuntimeException({
                         detailMessage: "overloadedMethod_3: invalid argument baseStructArg"
@@ -696,8 +698,8 @@ const IltProvider = {
             } else {
                 return Promise.resolve({
                     doubleOut: 0,
-                    stringArrayOut: IltUtil.createStringArray(),
-                    extendedBaseStructOut: IltUtil.createExtendedBaseStruct()
+                    stringArrayOut: IltUtil.create("StringArray"),
+                    extendedBaseStructOut: IltUtil.create("ExtendedBaseStruct")
                 });
             }
         } else if (opArgs.booleanArg !== undefined && opArgs.booleanArg !== null) {
@@ -725,7 +727,7 @@ const IltProvider = {
         }
     },
 
-    overloadedMethodWithSelector(opArgs) {
+    overloadedMethodWithSelector(opArgs: any): any {
         prettyLog(`IltProvider.overloadedMethodWithSelector(${JSON.stringify(opArgs)}) called`);
         if (
             opArgs.int64Arg !== undefined &&
@@ -751,13 +753,13 @@ const IltProvider = {
                         detailMessage: "overloadedMethodWithSelector_3: invalid argument booleanArg"
                     })
                 );
-            } else if (!IltUtil.checkExtendedExtendedEnumerationArray(opArgs.enumArrayArg)) {
+            } else if (!IltUtil.check("ExtendedExtendedEnumerationArray", opArgs.enumArrayArg)) {
                 return Promise.reject(
                     new joynr.exceptions.ProviderRuntimeException({
                         detailMessage: "overloadedMethodWithSelector_3: invalid argument enumArrayArg"
                     })
                 );
-            } else if (!IltUtil.checkBaseStruct(opArgs.baseStructArg)) {
+            } else if (!IltUtil.check("BaseStruct", opArgs.baseStructArg)) {
                 return Promise.reject(
                     new joynr.exceptions.ProviderRuntimeException({
                         detailMessage: "overloadedMethodWithSelector_3: invalid argument baseStructArg"
@@ -766,8 +768,8 @@ const IltProvider = {
             } else {
                 return Promise.resolve({
                     doubleOut: 1.1,
-                    stringArrayOut: IltUtil.createStringArray(),
-                    extendedBaseStructOut: IltUtil.createExtendedBaseStruct()
+                    stringArrayOut: IltUtil.create("StringArray"),
+                    extendedBaseStructOut: IltUtil.create("ExtendedBaseStruct")
                 });
             }
         } else if (opArgs.booleanArg !== undefined && opArgs.booleanArg !== null) {
@@ -899,27 +901,13 @@ const IltProvider = {
         }
     },
 
-    // BROADCASTS aka events
-
-    broadcastWithSinglePrimitiveParameter: {},
-    broadcastWithMultiplePrimitiveParameters: {},
-    broadcastWithSingleArrayParameter: {},
-    broadcastWithMultipleArrayParameters: {},
-    broadcastWithSingleByteBufferParameter: {},
-    broadcastWithMultipleByteBufferParameters: {},
-    broadcastWithSingleEnumerationParameter: {},
-    broadcastWithMultipleEnumerationParameters: {},
-    broadcastWithSingleStructParameter: {},
-    broadcastWithMultipleStructParameters: {},
-    broadcastWithFiltering: {},
-
     methodToFireBroadcastWithSinglePrimitiveParameter(opArgs) {
         prettyLog(`IltProvider.methodToFireBroadcastWithSinglePrimitiveParameter(${JSON.stringify(opArgs)}) called`);
 
         const stringOut = "boom";
-        const outputParameters = IltProvider.broadcastWithSinglePrimitiveParameter.createBroadcastOutputParameters();
+        const outputParameters = IltProvider.broadcastWithSinglePrimitiveParameter!.createBroadcastOutputParameters();
         outputParameters.setStringOut(stringOut);
-        IltProvider.broadcastWithSinglePrimitiveParameter.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithSinglePrimitiveParameter!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
@@ -928,40 +916,41 @@ const IltProvider = {
 
         const stringOut = "boom";
         const doubleOut = 1.1;
-        const outputParameters = IltProvider.broadcastWithMultiplePrimitiveParameters.createBroadcastOutputParameters();
+
+        const outputParameters = IltProvider.broadcastWithMultiplePrimitiveParameters!.createBroadcastOutputParameters();
         outputParameters.setStringOut(stringOut);
         outputParameters.setDoubleOut(doubleOut);
-        IltProvider.broadcastWithMultiplePrimitiveParameters.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithMultiplePrimitiveParameters!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
     methodToFireBroadcastWithSingleArrayParameter(opArgs) {
         prettyLog(`IltProvider.methodToFireBroadcastWithSingleArrayParameter(${JSON.stringify(opArgs)}) called`);
 
-        const stringArrayOut = IltUtil.createStringArray();
-        const outputParameters = IltProvider.broadcastWithSingleArrayParameter.createBroadcastOutputParameters();
+        const stringArrayOut = IltUtil.create("StringArray");
+        const outputParameters = IltProvider.broadcastWithSingleArrayParameter!.createBroadcastOutputParameters();
         outputParameters.setStringArrayOut(stringArrayOut);
-        IltProvider.broadcastWithSingleArrayParameter.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithSingleArrayParameter!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
     methodToFireBroadcastWithMultipleArrayParameters(opArgs) {
         prettyLog(`IltProvider.methodToFireBroadcastWithMultipleArrayParameters(${JSON.stringify(opArgs)}) called`);
 
-        const uInt64ArrayOut = IltUtil.createUInt64Array();
-        const structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
-        const outputParameters = IltProvider.broadcastWithMultipleArrayParameters.createBroadcastOutputParameters();
+        const uInt64ArrayOut = IltUtil.create("UInt64Array");
+        const structWithStringArrayArrayOut = IltUtil.create("StructWithStringArrayArray");
+        const outputParameters = IltProvider.broadcastWithMultipleArrayParameters!.createBroadcastOutputParameters();
         outputParameters.setUInt64ArrayOut(uInt64ArrayOut);
         outputParameters.setStructWithStringArrayArrayOut(structWithStringArrayArrayOut);
-        IltProvider.broadcastWithMultipleArrayParameters.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithMultipleArrayParameters!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
     methodToFireBroadcastWithSingleByteBufferParameter(opArgs) {
         prettyLog(`IltProvider.methodToFireBroadcastWithSingleByteBufferParameter(${JSON.stringify(opArgs)}) called`);
-        const outputParameters = IltProvider.broadcastWithSingleByteBufferParameter.createBroadcastOutputParameters();
+        const outputParameters = IltProvider.broadcastWithSingleByteBufferParameter!.createBroadcastOutputParameters();
         outputParameters.setByteBufferOut(opArgs.byteBufferIn);
-        IltProvider.broadcastWithSingleByteBufferParameter.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithSingleByteBufferParameter!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
@@ -969,10 +958,10 @@ const IltProvider = {
         prettyLog(
             `IltProvider.methodToFireBroadcastWithMultipleByteBufferParameters(${JSON.stringify(opArgs)}) called`
         );
-        const outputParameters = IltProvider.broadcastWithMultipleByteBufferParameters.createBroadcastOutputParameters();
+        const outputParameters = IltProvider.broadcastWithMultipleByteBufferParameters!.createBroadcastOutputParameters();
         outputParameters.setByteBufferOut1(opArgs.byteBufferIn1);
         outputParameters.setByteBufferOut2(opArgs.byteBufferIn2);
-        IltProvider.broadcastWithMultipleByteBufferParameters.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithMultipleByteBufferParameters!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
@@ -981,9 +970,9 @@ const IltProvider = {
 
         const enumerationOut =
             ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
-        const outputParameters = IltProvider.broadcastWithSingleEnumerationParameter.createBroadcastOutputParameters();
+        const outputParameters = IltProvider.broadcastWithSingleEnumerationParameter!.createBroadcastOutputParameters();
         outputParameters.setEnumerationOut(enumerationOut);
-        IltProvider.broadcastWithSingleEnumerationParameter.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithSingleEnumerationParameter!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
@@ -995,10 +984,10 @@ const IltProvider = {
         const extendedEnumerationOut =
             ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
         const enumerationOut = Enumeration.ENUM_0_VALUE_1;
-        const outputParameters = IltProvider.broadcastWithMultipleEnumerationParameters.createBroadcastOutputParameters();
+        const outputParameters = IltProvider.broadcastWithMultipleEnumerationParameters!.createBroadcastOutputParameters();
         outputParameters.setExtendedEnumerationOut(extendedEnumerationOut);
         outputParameters.setEnumerationOut(enumerationOut);
-        IltProvider.broadcastWithMultipleEnumerationParameters.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithMultipleEnumerationParameters!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
@@ -1006,21 +995,21 @@ const IltProvider = {
         prettyLog(`IltProvider.methodToFireBroadcastWithSingleStructParameter(${JSON.stringify(opArgs)}) called`);
 
         const extendedStructOfPrimitivesOut = IltUtil.createExtendedStructOfPrimitives();
-        const outputParameters = IltProvider.broadcastWithSingleStructParameter.createBroadcastOutputParameters();
+        const outputParameters = IltProvider.broadcastWithSingleStructParameter!.createBroadcastOutputParameters();
         outputParameters.setExtendedStructOfPrimitivesOut(extendedStructOfPrimitivesOut);
-        IltProvider.broadcastWithSingleStructParameter.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithSingleStructParameter!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
     methodToFireBroadcastWithMultipleStructParameters(opArgs) {
         prettyLog(`IltProvider.methodToFireBroadcastWithMultipleStructParameters(${JSON.stringify(opArgs)}) called`);
 
-        const baseStructWithoutElementsOut = IltUtil.createBaseStructWithoutElements();
-        const extendedExtendedBaseStructOut = IltUtil.createExtendedExtendedBaseStruct();
-        const outputParameters = IltProvider.broadcastWithMultipleStructParameters.createBroadcastOutputParameters();
+        const baseStructWithoutElementsOut = IltUtil.create("BaseStructWithoutElements");
+        const extendedExtendedBaseStructOut = IltUtil.create("ExtendedExtendedBaseStruct");
+        const outputParameters = IltProvider.broadcastWithMultipleStructParameters!.createBroadcastOutputParameters();
         outputParameters.setBaseStructWithoutElementsOut(baseStructWithoutElementsOut);
         outputParameters.setExtendedExtendedBaseStructOut(extendedExtendedBaseStructOut);
-        IltProvider.broadcastWithMultipleStructParameters.fire(outputParameters, opArgs.partitions);
+        IltProvider.broadcastWithMultipleStructParameters!.fire(outputParameters, opArgs.partitions);
         return Promise.resolve();
     },
 
@@ -1028,12 +1017,13 @@ const IltProvider = {
         prettyLog(`IltProvider.methodToFireBroadcastWithFiltering(${JSON.stringify(opArgs)}) called`);
 
         const stringOut = opArgs.stringArg;
-        const stringArrayOut = IltUtil.createStringArray();
+        const stringArrayOut = IltUtil.create("StringArray");
         const enumerationOut =
             ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
-        const structWithStringArrayOut = IltUtil.createStructWithStringArray();
-        const structWithStringArrayArrayOut = IltUtil.createStructWithStringArrayArray();
-        const outputParameters = IltProvider.broadcastWithFiltering.createBroadcastOutputParameters();
+        const structWithStringArrayOut = IltUtil.create("StructWithStringArray");
+        const structWithStringArrayArrayOut = IltUtil.create("StructWithStringArrayArray");
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const outputParameters = IltProvider.broadcastWithFiltering!.createBroadcastOutputParameters();
         if (stringOut === undefined || stringOut === null || typeof stringOut !== "string") {
             return Promise.reject(
                 new joynr.exceptions.ProviderRuntimeException({
@@ -1046,10 +1036,11 @@ const IltProvider = {
             outputParameters.setEnumerationOut(enumerationOut);
             outputParameters.setStructWithStringArrayOut(structWithStringArrayOut);
             outputParameters.setStructWithStringArrayArrayOut(structWithStringArrayArrayOut);
-            IltProvider.broadcastWithFiltering.fire(outputParameters);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            IltProvider.broadcastWithFiltering!.fire(outputParameters);
             return Promise.resolve();
         }
     }
 };
 
-exports.implementation = IltProvider;
+export = IltProvider;

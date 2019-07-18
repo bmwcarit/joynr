@@ -19,13 +19,14 @@
  * #L%
  */
 
-let joynr = require("joynr");
-const testbase = require("test-base");
+import joynr from "joynr";
+
+import testbase from "test-base";
 const log = testbase.logging.log;
 const provisioning = testbase.provisioning_common;
-const TestInterfaceProvider = require("../generated-javascript/joynr/interlanguagetest/TestInterfaceProvider.js");
-const IltTestInterfaceProvider = require("./IltProvider.js");
-const IltStringBroadcastFilter = require("./IltStringBroadcastFilter.js");
+import TestInterfaceProvider from "../generated-javascript/joynr/interlanguagetest/TestInterfaceProvider";
+import IltTestInterfaceProvider from "./IltProvider";
+import IltStringBroadcastFilter from "./IltStringBroadcastFilter";
 
 provisioning.logging.configuration = {
     appenders: {
@@ -60,9 +61,8 @@ log(`domain: ${domain}`);
 
 joynr
     .load(provisioning)
-    .then(loadedJoynr => {
+    .then(() => {
         log("joynr started");
-        joynr = loadedJoynr;
 
         const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
@@ -71,10 +71,10 @@ joynr
             supportsOnChangeSubscriptions: true
         });
 
-        const testInterfaceProvider = joynr.providerBuilder.build(
-            TestInterfaceProvider,
-            IltTestInterfaceProvider.implementation
-        );
+        const testInterfaceProvider = joynr.providerBuilder.build<
+            typeof TestInterfaceProvider,
+            TestInterfaceProvider.TestInterfaceProviderImplementation
+        >(TestInterfaceProvider, IltTestInterfaceProvider);
 
         testInterfaceProvider.broadcastWithFiltering.addBroadcastFilter(new IltStringBroadcastFilter());
 
@@ -83,6 +83,6 @@ joynr
     .then(() => {
         log("provider registered successfully");
     })
-    .catch(error => {
+    .catch((error: any) => {
         log(`error registering provider: ${error.toString()}`);
     });
