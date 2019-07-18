@@ -1,4 +1,13 @@
 #!/bin/bash
+
+# Workaround for Fedora 30 since 'dnf' commands fail without it.
+# If this gets removed again, please move [main] section header
+# back into next modification of 'dnf.conf' below
+cat > /etc/dnf/dnf.conf <<EOF
+[main]
+zchunk=false
+EOF
+
 if [ -z "$PROXY_HOST" ]
 then
     echo "No proxy configured, using direct internet access."
@@ -11,8 +20,8 @@ then
 fi
 echo "Starting to setup proxy configuration, PROXY_HOST=$PROXY_HOST, PROXY_PORT=$PROXY_PORT."
 echo "Setting up proxy configuration in /etc/dnf/dnf.conf"
-cat > /etc/dnf/dnf.conf <<EOF
-[main]
+# [main] section header already set by workaround above
+cat >> /etc/dnf/dnf.conf <<EOF
 gpgcheck=1
 installonly_limit=3
 clean_requirements_on_remove=false
