@@ -1,7 +1,7 @@
-FROM fedora:27
+FROM fedora:30
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2019-05-23-09-00
+ENV REFRESHED_AT 2019-08-02-07-55
 
 ###################################################
 # create data directories and volumes
@@ -81,6 +81,7 @@ RUN dnf update -y \
     xcb-util-devel \
     xcb-util-*-devel \
     zlib.i686 \
+    zlib-devel \
     java-1.8.0-openjdk \
     xz \
     maven \
