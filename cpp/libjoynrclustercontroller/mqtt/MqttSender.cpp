@@ -79,7 +79,7 @@ void MqttSender::sendMessage(
     const smrf::ByteVector& rawMessage = message->getSerializedMessage();
 
     if (mqttMaxMessageSizeBytes != MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES() &&
-        ((rawMessage.size() > std::numeric_limits<std::int64_t>::max()) ||
+        ((rawMessage.size() > static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max())) ||
          (static_cast<std::int64_t>(rawMessage.size()) > mqttMaxMessageSizeBytes))) {
         std::stringstream errorMsg;
         errorMsg << "Message size MQTT Publish failed: maximum allowed message size of "
