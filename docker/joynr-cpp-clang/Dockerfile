@@ -8,7 +8,7 @@ WORKDIR /opt
 
 # Use the same boost version which is provided by the fedora-24 repository
 RUN . /etc/profile \
-    && curl -L  http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz > boost.tar.gz \
+    && curl -L  http://sourceforge.net/projects/boost/files/boost/1.69.0/boost_1_69_0.tar.gz > boost.tar.gz \
     && mkdir -p /opt/boost \
     && tar -zxf boost.tar.gz -C /opt/boost --strip-components=1 \
     && rm boost.tar.gz \
