@@ -14,7 +14,7 @@
     "heapdump": "^0.3.9",
     "joynr": "file:../../javascript/libjoynr-js/src/main/js",
     "mqtt": "2.15.0",
-    "test-base": "file:../test-base/target/classes"
+    "test-base": "file:../test-base"
   },
   "config": {},
   "scripts": {
