@@ -160,7 +160,7 @@ module.exports = {
             }
         },
         {
-            files: ["*Test.ts"],
+            files: ["*Test.ts", "*.spec.ts"],
             rules: { "@typescript-eslint/explicit-function-return-type": "off" }
         }
     ],
