@@ -29,9 +29,9 @@ CERT_PATH='/data/ssl-data/certs'
 PRIVATE_KEY_PATH='/data/ssl-data/private'
 KEYSTORE_PASSWORD='password'
 
-mkdir -p /data/src/java/messaging/mqtt/joynr-mqtt-client/src/test/resources
+mkdir -p /data/src/java/messaging/mqtt/paho-mqtt-client/src/test/resources
 
-cd /data/src/java/messaging/mqtt/joynr-mqtt-client/src/test/resources/
+cd /data/src/java/messaging/mqtt/paho-mqtt-client/src/test/resources/
 
 # create JKS truststore
 keytool -keystore catruststore.jks -importcert -file $CERT_PATH/ca.cert.pem -storepass $KEYSTORE_PASSWORD -trustcacerts -noprompt
