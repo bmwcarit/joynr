@@ -86,6 +86,7 @@ DOMAIN_ACCESS_CONTROLLER_WAR_FILE=$(find /data/src/java/backend-services/domain-
 
 # 2nd run; now including test execution which requires mosquitto / payara and
 # generate site report
+set +e # stop services even if there are failing tests
 mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests=false \
@@ -95,6 +96,8 @@ mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,andr
 -Dmaven.compile.fork=true \
 -Dmaven.junit.fork=true \
 --fail-at-end
+EXIT_CODE=$?
+set -e
 
 echo '####################################################'
 echo '# stop services'
@@ -105,4 +108,5 @@ echo '####################################################'
 kill -TERM $MOSQUITTO_PID
 wait $MOSQUITTO_PID
 
-exit 0
+exit $EXIT_CODE
+
