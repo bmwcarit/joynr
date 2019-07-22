@@ -117,7 +117,7 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     int actualValue;
     gpsFuture->get(actualValue);
     EXPECT_EQ(expectedValue, actualValue);
-    // This is not yet implemented in CapabilitiesClient
+    // This is not yet implemented in GlobalCapabilitiesDirectoryClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
     runtime->unregisterProvider(participantId);
 }
@@ -147,7 +147,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
                     ->build();
     testProxy->voidOperation();
     //    EXPECT_EQ(expectedValue, gpsFuture->getValue());
-    // This is not yet implemented in CapabilitiesClient
+    // This is not yet implemented in GlobalCapabilitiesDirectoryClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
     runtime->unregisterProvider(participantId);
 }
@@ -194,7 +194,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     std::shared_ptr<Future<std::string>> subscriptionIdFuture =
             testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-    // This is not yet implemented in CapabilitiesClient
+    // This is not yet implemented in GlobalCapabilitiesDirectoryClient
     // runtime->unregisterProvider("Fake_ParticipantId_vehicle/gpsDummyProvider");
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionId));

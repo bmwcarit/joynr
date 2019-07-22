@@ -29,7 +29,7 @@
 #include "joynr/types/Version.h"
 #include "joynr/Settings.h"
 
-#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 
 #include "tests/JoynrTest.h"
@@ -39,7 +39,7 @@ using namespace ::testing;
 using namespace joynr;
 
 static const std::string messagingPropertiesPersistenceFileName(
-        "CapabilitiesClientTest-joynr.settings");
+        "GlobalCapabilitiesDirectoryClientTest-joynr.settings");
 static const std::string libJoynrSettingsFilename(
         "test-resources/libjoynrSystemIntegration1.settings");
 
@@ -50,16 +50,16 @@ public:
                  void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
 };
 
-class CapabilitiesClientTest : public TestWithParam<std::string>
+class GlobalCapabilitiesDirectoryClientTest : public TestWithParam<std::string>
 {
 public:
-    ADD_LOGGER(CapabilitiesClientTest)
+    ADD_LOGGER(GlobalCapabilitiesDirectoryClientTest)
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
     ClusterControllerSettings clusterControllerSettings;
 
-    CapabilitiesClientTest()
+    GlobalCapabilitiesDirectoryClientTest()
             : runtime(),
               settings(std::make_unique<Settings>(GetParam())),
               messagingSettings(*settings),
@@ -81,7 +81,7 @@ public:
         runtime->start();
     }
 
-    ~CapabilitiesClientTest() override
+    ~GlobalCapabilitiesDirectoryClientTest() override
     {
         runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
@@ -91,10 +91,10 @@ public:
     }
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(CapabilitiesClientTest);
+    DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClientTest);
 };
 
-TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability)
+TEST_P(GlobalCapabilitiesDirectoryClientTest, registerAndRetrieveCapability)
 {
     std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder =
@@ -111,9 +111,9 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
-    std::unique_ptr<CapabilitiesClient> capabilitiesClient(
-            std::make_unique<CapabilitiesClient>(clusterControllerSettings));
-    capabilitiesClient->setProxy(cabilitiesProxy, messagingQos);
+    std::unique_ptr<GlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient(
+            std::make_unique<GlobalCapabilitiesDirectoryClient>(clusterControllerSettings));
+    globalCapabilitiesDirectoryClient->setProxy(cabilitiesProxy, messagingQos);
 
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");
@@ -135,7 +135,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability)
                                                      capSerializedChannelAddress);
 
     JOYNR_LOG_DEBUG(logger(), "Registering capabilities");
-    capabilitiesClient->add(globalDiscoveryEntry,
+    globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry,
                             []() {},
                             [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
     JOYNR_LOG_DEBUG(logger(), "Registered capabilities");
@@ -154,7 +154,7 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability)
 
     JOYNR_LOG_DEBUG(logger(), "get capabilities");
     std::int64_t defaultDiscoveryMessageTtl = messagingSettings.getDiscoveryMessagesTtl();
-    capabilitiesClient->lookup({capDomain}, capInterface, defaultDiscoveryMessageTtl, onSuccess);
+    globalCapabilitiesDirectoryClient->lookup({capDomain}, capInterface, defaultDiscoveryMessageTtl, onSuccess);
     semaphore.waitFor(std::chrono::seconds(10));
     JOYNR_LOG_DEBUG(logger(), "finished get capabilities");
 }
@@ -162,9 +162,9 @@ TEST_P(CapabilitiesClientTest, registerAndRetrieveCapability)
 using namespace std::string_literals;
 
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
-                        CapabilitiesClientTest,
+                        GlobalCapabilitiesDirectoryClientTest,
                         testing::Values("test-resources/HttpSystemIntegrationTest1.settings"s));
 
 INSTANTIATE_TEST_CASE_P(Mqtt,
-                        CapabilitiesClientTest,
+                        GlobalCapabilitiesDirectoryClientTest,
                         testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));

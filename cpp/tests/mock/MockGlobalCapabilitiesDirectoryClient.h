@@ -16,14 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TESTS_MOCK_MOCKCAPABILITIESCLIENT_H
-#define TESTS_MOCK_MOCKCAPABILITIESCLIENT_H
+#ifndef TESTS_MOCK_MOCKGLOBALCAPABILITIESDIRECTORYCLIENT_H
+#define TESTS_MOCK_MOCKGLOBALCAPABILITIESDIRECTORYCLIENT_H
 
 #include <gmock/gmock.h>
 
-#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
 
-class MockCapabilitiesClient : public joynr::ICapabilitiesClient {
+class MockGlobalCapabilitiesDirectoryClient : public joynr::IGlobalCapabilitiesDirectoryClient {
 public:
     MOCK_METHOD3(add, void(const joynr::types::GlobalDiscoveryEntry& entry,
                            std::function<void()> onSuccess,
@@ -49,4 +49,4 @@ public:
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 };
 
-#endif // TESTS_MOCK_MOCKCAPABILITIESCLIENT_H
+#endif // TESTS_MOCK_MOCKGLOBALCAPABILITIESDIRECTORYCLIENT_H

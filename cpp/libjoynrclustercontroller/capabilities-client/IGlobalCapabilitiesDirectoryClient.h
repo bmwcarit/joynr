@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef ICAPABILITIESCLIENT_H
-#define ICAPABILITIESCLIENT_H
+#ifndef IGLOBALCAPABILITIESDIRECTORYCLIENT_H
+#define IGLOBALCAPABILITIESDIRECTORYCLIENT_H
 
 #include <functional>
 #include <memory>
@@ -35,10 +35,10 @@ namespace infrastructure
 class GlobalCapabilitiesDirectoryProxy;
 } // namespace infrastructure
 
-class ICapabilitiesClient
+class IGlobalCapabilitiesDirectoryClient
 {
 public:
-    virtual ~ICapabilitiesClient() = default;
+    virtual ~IGlobalCapabilitiesDirectoryClient() = default;
     virtual void add(const types::GlobalDiscoveryEntry& entry,
                      std::function<void()> onSuccess,
                      std::function<void(const exceptions::JoynrRuntimeException& error)>
@@ -71,4 +71,4 @@ public:
 };
 
 } // namespace joynr
-#endif // ICAPABILITIESCLIENT_H
+#endif // IGLOBALCAPABILITIESDIRECTORYCLIENT_H

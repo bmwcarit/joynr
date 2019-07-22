@@ -44,12 +44,11 @@
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
-#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
 
 namespace joynr
 {
 class IAccessController;
-class ICapabilitiesClient;
+class IGlobalCapabilitiesDirectoryClient;
 class ClusterControllerSettings;
 class IMessageRouter;
 
@@ -61,8 +60,8 @@ class IMessageRouter;
   * This class is responsible for looking up its local cache first, and depending
   * on whether the data is compatible with the users QoS (e.g. dataFreshness) the
   * cached value will be returned.  Otherwise, a request will be made via the
-  * Capabilities Client which will make the remote call to the backend to retrieve
-  * the data.
+  * Global Capabilities Directory Client which will make the remote call to the
+  * backend to retrieve the data.
   */
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
         : public joynr::system::DiscoveryAbstractProvider,
@@ -71,12 +70,13 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
-    LocalCapabilitiesDirectory(ClusterControllerSettings& messagingSettings,
-                               std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
-                               const std::string& localAddress,
-                               std::weak_ptr<IMessageRouter> messageRouter,
-                               boost::asio::io_service& ioService,
-                               const std::string clusterControllerId);
+    LocalCapabilitiesDirectory(
+            ClusterControllerSettings& messagingSettings,
+            std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient,
+            const std::string& localAddress,
+            std::weak_ptr<IMessageRouter> messageRouter,
+            boost::asio::io_service& ioService,
+            const std::string clusterControllerId);
 
     ~LocalCapabilitiesDirectory() override;
 
@@ -281,7 +281,7 @@ private:
                                                        std::chrono::milliseconds maxCacheAge);
 
     ADD_LOGGER(LocalCapabilitiesDirectory)
-    std::shared_ptr<ICapabilitiesClient> capabilitiesClient;
+    std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient;
     std::string localAddress;
     mutable std::mutex cacheLock;
     std::mutex pendingLookupsLock;

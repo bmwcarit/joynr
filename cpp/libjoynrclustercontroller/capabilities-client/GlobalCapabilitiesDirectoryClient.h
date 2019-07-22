@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#ifndef CAPABILITIESCLIENT_H
-#define CAPABILITIESCLIENT_H
+#ifndef GLOBALCAPABILITIESDIRECTORYCLIENT_H
+#define GLOBALCAPABILITIESDIRECTORYCLIENT_H
 
 #include <cstdint>
 #include <memory>
@@ -32,7 +32,7 @@
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
-#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
 
 /*
 *   Client for the global capabilities directory. Registration and lookup
@@ -44,23 +44,25 @@ namespace joynr
 {
 class ClusterControllerSettings;
 
-class JOYNRCLUSTERCONTROLLER_EXPORT CapabilitiesClient : public ICapabilitiesClient
+class JOYNRCLUSTERCONTROLLER_EXPORT GlobalCapabilitiesDirectoryClient
+        : public IGlobalCapabilitiesDirectoryClient
 {
 
 public:
     /*
-       Default constructor for the capabilities client.
-       This will create a CapabilitiesClient that is not capable of doing actual lookups.
-       To upgrade to a complete CapabilitiesClient the setProxy method must be called, and a
-       Proxy must be provided.
-    */
-    CapabilitiesClient(const ClusterControllerSettings& clusterControllerSettings);
+       Default constructor for the GlobalCapabilitiesDirectory client.
+       This will create a GlobalCapabilitiesDirectoryClient that is not capable of doing actual
+       lookups.
+       To upgrade to a complete GlobalCapabilitiesDirectoryClient the setProxy method must be
+       called, and a Proxy must be provided.
+     */
+    GlobalCapabilitiesDirectoryClient(const ClusterControllerSettings& clusterControllerSettings);
 
-    ~CapabilitiesClient() override = default;
+    ~GlobalCapabilitiesDirectoryClient() override = default;
 
     /*
        Add a capabilities record to the directory
-      */
+     */
     void add(const types::GlobalDiscoveryEntry& entry,
              std::function<void()> onSuccess,
              std::function<void(const exceptions::JoynrRuntimeException& error)> onError) override;
@@ -72,7 +74,7 @@ public:
 
     /*
       Remove previously created capabilities directory entries.
-      */
+     */
     void remove(std::vector<std::string> participantIds) override;
 
     /*
@@ -82,7 +84,7 @@ public:
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
-      */
+     */
     void lookup(const std::vector<std::string>& domains,
                 const std::string& interfaceName,
                 std::int64_t messagingTtl,
@@ -107,12 +109,12 @@ public:
             MessagingQos messagingQos);
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(CapabilitiesClient);
+    DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClient);
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
     MessagingQos messagingQos;
     const std::uint64_t touchTtl;
-    ADD_LOGGER(CapabilitiesClient)
+    ADD_LOGGER(GlobalCapabilitiesDirectoryClient)
 };
 
 } // namespace joynr
-#endif // CAPABILITIESCLIENT_H
+#endif // GLOBALCAPABILITIESDIRECTORYCLIENT_H

@@ -42,7 +42,7 @@
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 
-#include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
 
 namespace joynr
 {
@@ -68,7 +68,7 @@ struct DiscoveryEntryKeyEq
 
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         ClusterControllerSettings& clusterControllerSettings,
-        std::shared_ptr<ICapabilitiesClient> capabilitiesClientPtr,
+        std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient,
         const std::string& localAddress,
         std::weak_ptr<IMessageRouter> messageRouter,
         boost::asio::io_service& ioService,
@@ -77,7 +77,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           joynr::system::ProviderReregistrationControllerProvider(),
           std::enable_shared_from_this<LocalCapabilitiesDirectory>(),
           clusterControllerSettings(clusterControllerSettings),
-          capabilitiesClient(std::move(capabilitiesClientPtr)),
+          globalCapabilitiesDirectoryClient(std::move(globalCapabilitiesDirectoryClient)),
           localAddress(localAddress),
           cacheLock(),
           pendingLookupsLock(),
@@ -144,7 +144,7 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
     auto onError = [](const joynr::exceptions::JoynrRuntimeException& error) {
         JOYNR_LOG_ERROR(logger(), "error sending freshness update: {}", error.getMessage());
     };
-    capabilitiesClient->touch(clusterControllerId, nullptr, std::move(onError));
+    globalCapabilitiesDirectoryClient->touch(clusterControllerId, nullptr, std::move(onError));
     scheduleFreshnessUpdate();
 }
 
@@ -244,7 +244,7 @@ void LocalCapabilitiesDirectory::addInternal(
             }
         };
 
-        capabilitiesClient->add(
+        globalCapabilitiesDirectoryClient->add(
                 globalDiscoveryEntry, std::move(onSuccessWrapper), std::move(onErrorWrapper));
     }
 
@@ -290,7 +290,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId,
                 globalLookupCache.removeByParticipantId(participantId);
             }
             if (removeGlobally) {
-                capabilitiesClient->remove(participantId);
+                globalCapabilitiesDirectoryClient->remove(participantId);
             }
             JOYNR_LOG_INFO(logger(),
                            "After removal of participantId {}: #registeredGlobalCapabilities: {}",
@@ -326,7 +326,8 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         std::lock_guard<std::mutex> lock(cacheLock);
         for (const auto& capability : locallyRegisteredCapabilities) {
             if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
-                capabilitiesClient->add(toGlobalDiscoveryEntry(capability), nullptr, nullptr);
+                globalCapabilitiesDirectoryClient->add(
+                        toGlobalDiscoveryEntry(capability), nullptr, nullptr);
             }
         }
     }
@@ -543,11 +544,11 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                         joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
             }
         };
-        capabilitiesClient->lookup(participantId,
-                                   std::move(onSuccess),
-                                   std::bind(&ILocalCapabilitiesCallback::onError,
-                                             std::move(callback),
-                                             std::placeholders::_1));
+        globalCapabilitiesDirectoryClient->lookup(participantId,
+                                                  std::move(onSuccess),
+                                                  std::bind(&ILocalCapabilitiesCallback::onError,
+                                                            std::move(callback),
+                                                            std::placeholders::_1));
     }
 }
 
@@ -610,11 +611,11 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             std::lock_guard<std::mutex> lock(pendingLookupsLock);
             registerPendingLookup(interfaceAddresses, callback);
         }
-        capabilitiesClient->lookup(domains,
-                                   interfaceName,
-                                   discoveryQos.getDiscoveryTimeout(),
-                                   std::move(onSuccess),
-                                   std::move(onError));
+        globalCapabilitiesDirectoryClient->lookup(domains,
+                                                  interfaceName,
+                                                  discoveryQos.getDiscoveryTimeout(),
+                                                  std::move(onSuccess),
+                                                  std::move(onError));
     }
 }
 

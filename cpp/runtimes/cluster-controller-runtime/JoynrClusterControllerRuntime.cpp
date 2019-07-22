@@ -82,7 +82,7 @@
 #include "libjoynrclustercontroller/access-control/AccessControlListEditor.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
-#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpMessagingSkeleton.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpSender.h"
@@ -519,10 +519,11 @@ void JoynrClusterControllerRuntime::init()
     auto provisionedDiscoveryEntries = getProvisionedEntries();
     discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);
 
-    auto capabilitiesClient = std::make_shared<CapabilitiesClient>(clusterControllerSettings);
+    auto globalCapabilitiesDirectoryClient =
+            std::make_shared<GlobalCapabilitiesDirectoryClient>(clusterControllerSettings);
     localCapabilitiesDirectory =
             std::make_shared<LocalCapabilitiesDirectory>(clusterControllerSettings,
-                                                         capabilitiesClient,
+                                                         globalCapabilitiesDirectoryClient,
                                                          globalClusterControllerAddress,
                                                          ccMessageRouter,
                                                          singleThreadIOService->getIOService(),
@@ -585,7 +586,7 @@ void JoynrClusterControllerRuntime::init()
 
     capabilitiesProxyBuilder->setMessagingQos(messagingQos);
 
-    capabilitiesClient->setProxy(capabilitiesProxyBuilder->build(), messagingQos);
+    globalCapabilitiesDirectoryClient->setProxy(capabilitiesProxyBuilder->build(), messagingQos);
 
     // Do this after local capabilities directory and message router have been initialized.
     enableAccessController(provisionedDiscoveryEntries);
@@ -606,7 +607,7 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterCont
     std::string defaultPublicKeyId("");
 
     auto provisionedDiscoveryEntries = JoynrRuntimeImpl::getProvisionedEntries();
-    // setting up the provisioned values for GlobalCapabilitiesClient
+    // setting up the provisioned values for GlobalCapabilitiesDirectoryClient
     // The GlobalCapabilitiesServer is also provisioned in MessageRouter
     types::ProviderQos capabilityProviderQos;
     capabilityProviderQos.setPriority(1);

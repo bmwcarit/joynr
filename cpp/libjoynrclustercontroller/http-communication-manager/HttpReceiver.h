@@ -30,8 +30,6 @@
 #include "joynr/Semaphore.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 
-class CapabilitiesClientTest;
-
 namespace joynr
 {
 
@@ -109,8 +107,6 @@ private:
 
     /*! On text message received callback */
     std::function<void(smrf::ByteVector&&)> onMessageReceived;
-
-    friend class ::CapabilitiesClientTest;
 
     ADD_LOGGER(HttpReceiver)
 };

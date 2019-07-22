@@ -22,19 +22,20 @@
  */
 
 #include "joynr/ClusterControllerSettings.h"
-#include "libjoynrclustercontroller/capabilities-client/CapabilitiesClient.h"
+#include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
 
 namespace joynr
 {
 
-CapabilitiesClient::CapabilitiesClient(const ClusterControllerSettings& clusterControllerSettings)
+GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
+        const ClusterControllerSettings& clusterControllerSettings)
         : capabilitiesProxy(nullptr),
           messagingQos(),
           touchTtl(clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())
 {
 }
 
-void CapabilitiesClient::add(
+void GlobalCapabilitiesDirectoryClient::add(
         const types::GlobalDiscoveryEntry& entry,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
@@ -42,7 +43,7 @@ void CapabilitiesClient::add(
     capabilitiesProxy->addAsync(entry, onSuccess, onError);
 }
 
-void CapabilitiesClient::add(
+void GlobalCapabilitiesDirectoryClient::add(
         const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError)
@@ -50,17 +51,17 @@ void CapabilitiesClient::add(
     capabilitiesProxy->addAsync(globalDiscoveryEntries, onSuccess, onRuntimeError);
 }
 
-void CapabilitiesClient::remove(const std::string& participantId)
+void GlobalCapabilitiesDirectoryClient::remove(const std::string& participantId)
 {
     capabilitiesProxy->removeAsync(participantId);
 }
 
-void CapabilitiesClient::remove(std::vector<std::string> participantIdList)
+void GlobalCapabilitiesDirectoryClient::remove(std::vector<std::string> participantIdList)
 {
     capabilitiesProxy->removeAsync(participantIdList);
 }
 
-void CapabilitiesClient::lookup(
+void GlobalCapabilitiesDirectoryClient::lookup(
         const std::vector<std::string>& domains,
         const std::string& interfaceName,
         std::int64_t messagingTtl,
@@ -73,7 +74,7 @@ void CapabilitiesClient::lookup(
             domains, interfaceName, std::move(onSuccess), std::move(onError), lookupMessagingQos);
 }
 
-void CapabilitiesClient::lookup(
+void GlobalCapabilitiesDirectoryClient::lookup(
         const std::string& participantId,
         std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                 onSuccess,
@@ -89,7 +90,7 @@ void CapabilitiesClient::lookup(
                                    std::move(onError));
 }
 
-void CapabilitiesClient::touch(
+void GlobalCapabilitiesDirectoryClient::touch(
         const std::string& clusterControllerId,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
@@ -100,7 +101,7 @@ void CapabilitiesClient::touch(
             clusterControllerId, std::move(onSuccess), std::move(onError), touchMessagingQos);
 }
 
-void CapabilitiesClient::setProxy(
+void GlobalCapabilitiesDirectoryClient::setProxy(
         std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy,
         MessagingQos messagingQos)
 {
