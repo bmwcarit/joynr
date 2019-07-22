@@ -42,6 +42,7 @@
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryError.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
@@ -324,8 +325,9 @@ private:
 
     void addInternal(const joynr::types::DiscoveryEntry& entry,
                      bool awaitGlobalRegistration,
+                     const std::vector<std::string>& gbids,
                      std::function<void()> onSuccess,
-                     std::function<void(const exceptions::ProviderRuntimeException&)> onError);
+                     std::function<void(const joynr::types::DiscoveryError::Enum&)> onError);
     bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
     std::size_t countGlobalCapabilities() const;
 

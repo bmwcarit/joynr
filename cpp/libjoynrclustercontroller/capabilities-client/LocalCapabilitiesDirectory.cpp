@@ -36,6 +36,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -160,8 +161,9 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 void LocalCapabilitiesDirectory::addInternal(
         const types::DiscoveryEntry& discoveryEntry,
         bool awaitGlobalRegistration,
+        const std::vector<std::string>& gbids,
         std::function<void()> onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+        std::function<void(const types::DiscoveryError::Enum&)> onError)
 {
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
@@ -186,21 +188,50 @@ void LocalCapabilitiesDirectory::addInternal(
     if (isGloballyVisible) {
         types::GlobalDiscoveryEntry globalDiscoveryEntry = toGlobalDiscoveryEntry(discoveryEntry);
 
-        std::function<void(const exceptions::JoynrException&)> onErrorWrapper = [
+        auto onRuntimeError = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
             globalDiscoveryEntry,
+            gbids,
             awaitGlobalRegistration,
             onError
-        ](const exceptions::JoynrException& error)
+        ](const exceptions::JoynrRuntimeException& error)
         {
             JOYNR_LOG_ERROR(logger(),
-                            "Error occurred during the execution of capabilitiesProxy->add for "
-                            "'{}'. Error: {}",
+                            "Exception occurred during the execution of capabilitiesProxy->add for "
+                            "'{}' for GBIDs ({}). Error: {} ({})",
                             globalDiscoveryEntry.toString(),
-                            error.getMessage());
+                            util::vectorToString(gbids),
+                            error.getMessage(),
+                            error.getTypeName());
             if (awaitGlobalRegistration && onError) {
                 // no need to remove entry as in this case the entry was not yet added
-                onError(exceptions::ProviderRuntimeException(error.getMessage()));
+                onError(types::DiscoveryError::INTERNAL_ERROR);
+            }
+            // in case awaitGlobalRegistration == false, the provider discovery
+            // entry will not be deleted, so the provider continues to be available
+            // locally, even if this makes little sense except for testing purposes.
+            // It will never be informed about the failure to be registered globally
+            // since it already got a reply after the local registration succeeded.
+        };
+
+        auto onErrorWrapper = [
+            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+            globalDiscoveryEntry,
+            gbids,
+            awaitGlobalRegistration,
+            onError
+        ](const types::DiscoveryError::Enum& error)
+        {
+            JOYNR_LOG_ERROR(
+                    logger(),
+                    "DiscoveryError occurred during the execution of capabilitiesProxy->add for "
+                    "'{}' for GBIDs ({}). Error: {}",
+                    globalDiscoveryEntry.toString(),
+                    util::vectorToString(gbids),
+                    types::DiscoveryError::getLiteral(error));
+            if (awaitGlobalRegistration && onError) {
+                // no need to remove entry as in this case the entry was not yet added
+                onError(error);
             }
             // in case awaitGlobalRegistration == false, the provider discovery
             // entry will not be deleted, so the provider continues to be available
@@ -220,9 +251,10 @@ void LocalCapabilitiesDirectory::addInternal(
                 {
                     std::lock_guard<std::mutex> lock(thisSharedPtr->cacheLock);
                     JOYNR_LOG_INFO(logger(),
-                                   "Global capability '{}' added successfully, "
+                                   "Global capability '{}' added successfully for GBIDs ({})}), "
                                    "#registeredGlobalCapabilities {}",
                                    globalDiscoveryEntry.toString(),
+                                   util::vectorToString(gbids),
                                    thisSharedPtr->countGlobalCapabilities());
                 }
                 if (awaitGlobalRegistration) {
@@ -246,8 +278,11 @@ void LocalCapabilitiesDirectory::addInternal(
             }
         };
 
-        globalCapabilitiesDirectoryClient->add(
-                globalDiscoveryEntry, std::move(onSuccessWrapper), std::move(onErrorWrapper));
+        globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry,
+                                               std::move(gbids),
+                                               std::move(onSuccessWrapper),
+                                               std::move(onErrorWrapper),
+                                               std::move(onRuntimeError));
     }
 
     if (!isGloballyVisible || !awaitGlobalRegistration) {
@@ -769,31 +804,46 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    if (hasProviderPermission(discoveryEntry)) {
-        addInternal(
-                discoveryEntry, awaitGlobalRegistration, std::move(onSuccess), std::move(onError));
-        return;
-    }
-    onError(joynr::exceptions::ProviderRuntimeException(
-            fmt::format("Provider does not have permissions to register interface {} on domain {}.",
-                        discoveryEntry.getInterfaceName(),
-                        discoveryEntry.getDomain())));
+    auto onErrorWrapper = [
+        onError = std::move(onError),
+        discoveryEntry,
+        participantId = discoveryEntry.getParticipantId()
+    ](const types::DiscoveryError::Enum& errorEnum)
+    {
+        onError(joynr::exceptions::ProviderRuntimeException(
+                fmt::format("Error registering provider {} in default backend: {}",
+                            participantId,
+                            types::DiscoveryError::getLiteral(errorEnum))));
+    };
+    add(discoveryEntry,
+        awaitGlobalRegistration,
+        std::vector<std::string>(),
+        std::move(onSuccess),
+        std::move(onErrorWrapper));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
 void LocalCapabilitiesDirectory::add(
-        const joynr::types::DiscoveryEntry& discoveryEntry,
+        const types::DiscoveryEntry& discoveryEntry,
         const bool& awaitGlobalRegistration,
         const std::vector<std::string>& gbids,
         std::function<void()> onSuccess,
-        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
+        std::function<void(const types::DiscoveryError::Enum& errorEnum)> onError)
 {
-    std::ignore = discoveryEntry;
-    std::ignore = awaitGlobalRegistration;
-    std::ignore = gbids;
-    std::ignore = onSuccess;
-    std::ignore = onError;
-    throw exceptions::JoynrRuntimeException("Not implemented...yet!");
+    if (!hasProviderPermission(discoveryEntry)) {
+        throw exceptions::ProviderRuntimeException(fmt::format(
+                "Provider does not have permissions to register interface {} on domain {}.",
+                discoveryEntry.getInterfaceName(),
+                discoveryEntry.getDomain()));
+        return;
+    }
+    const std::vector<std::string> gbidsForAdd =
+            +gbids.size() == 0 ? std::vector<std::string>{knownGbids[0]} : gbids;
+    addInternal(discoveryEntry,
+                awaitGlobalRegistration,
+                std::move(gbidsForAdd),
+                std::move(onSuccess),
+                std::move(onError));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -803,12 +853,11 @@ void LocalCapabilitiesDirectory::addToAll(
         std::function<void()> onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
 {
-
-    std::ignore = discoveryEntry;
-    std::ignore = awaitGlobalRegistration;
-    std::ignore = onSuccess;
-    std::ignore = onError;
-    throw exceptions::JoynrRuntimeException("Not implemented...yet!");
+    add(discoveryEntry,
+        awaitGlobalRegistration,
+        knownGbids,
+        std::move(onSuccess),
+        std::move(onError));
 }
 
 bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEntry& discoveryEntry)
