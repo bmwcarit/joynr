@@ -41,6 +41,12 @@ public:
 
     MOCK_METHOD1(remove, void(std::vector<std::string> participantIdList));
     MOCK_METHOD1(remove, void(const std::string& participantId));
+    MOCK_METHOD5(remove, void(const std::string& participantId,
+                              const std::vector<std::string>& gbids,
+                              std::function<void()> onSuccess,
+                              std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+                              std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
+
     MOCK_METHOD5(lookup, void(
                      const std::vector<std::string>& domain,
                      const std::string& interfaceName,

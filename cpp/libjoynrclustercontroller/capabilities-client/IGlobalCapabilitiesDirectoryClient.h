@@ -58,6 +58,12 @@ public:
 
     virtual void remove(const std::string& participantId) = 0;
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
+    virtual void remove(
+            const std::string& participantId,
+            const std::vector<std::string>& gbids,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+            std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError) = 0;
 
     virtual void lookup(
             const std::vector<std::string>& domains,

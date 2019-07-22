@@ -89,6 +89,13 @@ public:
      */
     void remove(const std::string& participantId) override;
 
+    void remove(const std::string& participantId,
+                const std::vector<std::string>& gbids,
+                std::function<void()> onSuccess,
+                std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+                std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
+            override;
+
     /*
       Asynchronous lookup of capabilities for domain and interface.
      */

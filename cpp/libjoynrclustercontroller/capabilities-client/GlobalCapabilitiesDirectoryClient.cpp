@@ -74,6 +74,23 @@ void GlobalCapabilitiesDirectoryClient::remove(const std::string& participantId)
     capabilitiesProxy->removeAsync(participantId);
 }
 
+void GlobalCapabilitiesDirectoryClient::remove(
+        const std::string& participantId,
+        const std::vector<std::string>& gbids,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
+{
+    MessagingQos removeMessagingQos = messagingQos;
+    removeMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
+    capabilitiesProxy->removeAsync(participantId,
+                                   std::move(gbids),
+                                   std::move(onSuccess),
+                                   std::move(onError),
+                                   std::move(onRuntimeError),
+                                   std::move(removeMessagingQos));
+}
+
 void GlobalCapabilitiesDirectoryClient::remove(std::vector<std::string> participantIdList)
 {
     capabilitiesProxy->removeAsync(participantIdList);
