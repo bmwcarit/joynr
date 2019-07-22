@@ -14,21 +14,22 @@
     "test-base": "file:../test-base"
   },
   "devDependencies": {
+    "@types/jest": "24.0.11",
+    "@types/node": "8.9.4",
+    "@typescript-eslint/eslint-plugin": "1.7.0",
+    "@typescript-eslint/parser": "1.7.0",
     "eslint": "5.16.0",
     "eslint-config-prettier": "4.2.0",
     "eslint-plugin-jest": "22.5.1",
     "eslint-plugin-prettier": "3.0.1",
     "eslint-plugin-promise": "3.8.0",
-    "prettier": "1.13.2",
-    "typescript": "3.4.3",
-    "@typescript-eslint/eslint-plugin": "1.7.0",
-    "@typescript-eslint/parser": "1.7.0",
-    "@types/jest": "24.0.11",
-    "@types/node": "8.9.4",
     "jest": "24.8.0",
     "jest-circus": "24.8.0",
     "jest-junit": "6.3.0",
-    "ts-jest": "24.0.1"
+    "prettier": "1.13.2",
+    "ts-jest": "24.0.1",
+    "ts-node": "8.3.0",
+    "typescript": "3.4.3"
   },
   "config": {
     "domain": "joynr-inter-language-test-domain",
@@ -37,7 +38,7 @@
   "scripts": {
     "clean": "rm -rf node_modules ../../javascript/libjoynr-js/src/main/browserify/node_modules",
     "install:browserify": "(cd ../../javascript/libjoynr-js/src/main/browserify && npm i)",
-    "startprovider": "node src/main/js/provider.js $npm_package_config_domain",
+    "startprovider": "node_modules/.bin/ts-node src/main/js/provider.ts $npm_package_config_domain",
     "startjasmine": "export domain=$npm_package_config_domain && jest",
     "startjasminebundle": "export domain=$npm_package_config_domain && export browserify=true && node src/main/js/runIltConsumerSpec.js",
     "build:fast": "npm run install:browserify && npm i && npm run format && npm run lint",
