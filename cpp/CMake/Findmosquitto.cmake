@@ -1,5 +1,5 @@
-find_path(MOSQUITTO_INCLUDE_DIR mosquittopp.h)
-find_library(MOSQUITTO_LIBRARY "${CMAKE_SHARED_LIBRARY_PREFIX}mosquittopp${CMAKE_SHARED_LIBRARY_SUFFIX}")
+find_path(MOSQUITTO_INCLUDE_DIR mosquitto.h)
+find_library(MOSQUITTO_LIBRARY "${CMAKE_SHARED_LIBRARY_PREFIX}mosquitto${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(mosquitto DEFAULT_MSG MOSQUITTO_LIBRARY MOSQUITTO_INCLUDE_DIR)

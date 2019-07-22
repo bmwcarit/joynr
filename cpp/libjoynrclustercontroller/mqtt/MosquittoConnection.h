@@ -20,12 +20,14 @@
 #define MOSQUITTOCONNECTION_H
 
 #include <cstdint>
+#include <cstdlib>
 #include <functional>
 #include <string>
 #include <unordered_set>
 #include <mutex>
 
-#include <mosquittopp.h>
+#include <mosquitto.h>
+
 #include <smrf/ByteVector.h>
 
 #include "joynr/BrokerUrl.h"
@@ -43,7 +45,7 @@ class JoynrRuntimeException;
 class MessagingSettings;
 class ClusterControllerSettings;
 
-class MosquittoConnection : public mosqpp::mosquittopp
+class MosquittoConnection
 {
 
 public:
@@ -51,7 +53,7 @@ public:
                                  const ClusterControllerSettings& ccSettings,
                                  const std::string& clientId);
 
-    ~MosquittoConnection() override;
+    virtual ~MosquittoConnection();
 
     virtual std::uint16_t getMqttQos() const;
     virtual std::string getMqttPrio() const;
@@ -86,6 +88,19 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);
 
+    static void on_connect(struct mosquitto* mosq, void* userdata, int rc);
+    static void on_disconnect(struct mosquitto* mosq, void* userdata, int rc);
+    static void on_publish(struct mosquitto* mosq, void* userdata, int mid);
+    static void on_message(struct mosquitto* mosq,
+                           void* userdata,
+                           const struct mosquitto_message* message);
+    static void on_subscribe(struct mosquitto* mosq,
+                             void* userdata,
+                             int mid,
+                             int qos_count,
+                             const int* granted_qos);
+    static void on_log(struct mosquitto* mosq, void* userdata, int level, const char* str);
+
     /**
      * Starts mosquitto's internal loop. This function wraps internal mosquitto function loop_start
      */
@@ -98,12 +113,8 @@ private:
      */
     void stopLoop(bool force = false);
 
-    void on_disconnect(int rc) final;
-    void on_log(int level, const char* str) final;
-    void on_connect(int rc) final;
-    void on_message(const mosquitto_message* message) final;
-    void on_publish(int mid) final;
-    void on_subscribe(int mid, int qos_count, const int* granted_qos) final;
+    void cleanupLibrary();
+
     void createSubscriptions();
     void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
     void setReadyToSend(bool readyToSend);
@@ -128,6 +139,8 @@ private:
     std::atomic<bool> isChannelIdRegistered;
     std::atomic<bool> subscribedToChannelTopic;
     std::atomic<bool> readyToSend;
+    static std::mutex libUseCountMutex;
+    static int libUseCount;
 
     std::function<void(smrf::ByteVector&&)> onMessageReceived;
     std::mutex onReadyToSendChangedMutex;
@@ -135,6 +148,7 @@ private:
 
     std::mutex stopMutex;
     bool isStopped;
+    struct mosquitto* mosq;
 
     ADD_LOGGER(MosquittoConnection)
 };

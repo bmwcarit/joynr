@@ -20,6 +20,7 @@
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 #include <openssl/ssl.h>
+#include <openssl/opensslv.h>
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/MessagingSettings.h"
@@ -29,11 +30,13 @@
 namespace joynr
 {
 
+int MosquittoConnection::libUseCount = 0;
+std::mutex MosquittoConnection::libUseCountMutex;
+
 MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSettings,
                                          const ClusterControllerSettings& ccSettings,
                                          const std::string& clientId)
-        : mosquittopp(clientId.c_str(), false),
-          messagingSettings(messagingSettings),
+        : messagingSettings(messagingSettings),
           host(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost()),
           port(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort()),
           channelId(),
@@ -50,23 +53,47 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
           onReadyToSendChangedMutex(),
           onReadyToSendChanged(),
           stopMutex(),
-          isStopped(true)
+          isStopped(true),
+          mosq(nullptr)
 {
     JOYNR_LOG_INFO(logger(), "Init mosquitto connection using MQTT client ID: {}", clientId);
-    mosqpp::lib_init();
+
+    {
+        std::unique_lock<std::mutex> lock(libUseCountMutex);
+        if (libUseCount++ == 0) {
+            mosquitto_lib_init();
+        }
+    }
+
+    mosq = mosquitto_new(clientId.c_str(), false, this);
+    if (!mosq) {
+        const std::string message = "unable to build mosquitto client";
+        JOYNR_LOG_FATAL(logger(), message);
+        cleanupLibrary();
+        throw joynr::exceptions::JoynrRuntimeException(message);
+    }
+    mosquitto_connect_callback_set(mosq, on_connect);
+    mosquitto_disconnect_callback_set(mosq, on_disconnect);
+    mosquitto_publish_callback_set(mosq, on_publish);
+    mosquitto_message_callback_set(mosq, on_message);
+    mosquitto_subscribe_callback_set(mosq, on_subscribe);
+    mosquitto_log_callback_set(mosq, on_log);
 
     if (ccSettings.isMqttUsernameSet()) {
         const std::string mqttUsername = ccSettings.getMqttUsername();
         const char* mqttUsername_cstr = mqttUsername.empty() ? nullptr : mqttUsername.c_str();
         const std::string mqttPassword = ccSettings.getMqttPassword();
         const char* mqttPassword_cstr = mqttPassword.empty() ? nullptr : mqttPassword.c_str();
-        int rc = username_pw_set(mqttUsername_cstr, mqttPassword_cstr);
+        int rc = mosquitto_username_pw_set(mosq, mqttUsername_cstr, mqttPassword_cstr);
         if (rc != MOSQ_ERR_SUCCESS) {
             const std::string errorString(getErrorString(rc));
-            JOYNR_LOG_ERROR(logger(),
-                            "unable to set username/password for MQTT connection - {}",
-                            errorString);
-            return;
+            std::ostringstream messageStringStream;
+            messageStringStream << "unable to set username/password for MQTT connection - "
+                                << errorString;
+            JOYNR_LOG_ERROR(logger(), messageStringStream.str());
+            mosquitto_destroy(mosq);
+            cleanupLibrary();
+            throw joynr::exceptions::JoynrRuntimeException(messageStringStream.str());
         }
     }
 
@@ -96,13 +123,16 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
                                                              ? mqttPrivateKeyPemFilename.c_str()
                                                              : nullptr;
 
-        int rc = tls_set(mqttCertificateAuthorityPemFilename_cstr,
-                         mqttCertificateAuthorityCertificateFolderPath_cstr,
-                         mqttCertificatePemFilename_cstr,
-                         mqttPrivateKeyPemFilename_cstr);
+        int rc = mosquitto_tls_set(mosq,
+                                   mqttCertificateAuthorityPemFilename_cstr,
+                                   mqttCertificateAuthorityCertificateFolderPath_cstr,
+                                   mqttCertificatePemFilename_cstr,
+                                   mqttPrivateKeyPemFilename_cstr,
+                                   nullptr);
 
         if (rc != MOSQ_ERR_SUCCESS) {
-            mosqpp::lib_cleanup();
+            mosquitto_destroy(mosq);
+            cleanupLibrary();
             const std::string message = "Mqtt TLS enabled, but TLS certificates are incorrectly "
                                         "specified or inaccessible: " +
                                         getErrorString(rc);
@@ -111,12 +141,14 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
         }
 
         const std::string tlsCiphers = ccSettings.getMqttTlsCiphers();
-        rc = tls_opts_set(SSL_VERIFY_PEER,
-                          ccSettings.getMqttTlsVersion().c_str(),
-                          tlsCiphers.empty() ? nullptr : tlsCiphers.c_str());
+        rc = mosquitto_tls_opts_set(mosq,
+                                    SSL_VERIFY_PEER,
+                                    ccSettings.getMqttTlsVersion().c_str(),
+                                    tlsCiphers.empty() ? nullptr : tlsCiphers.c_str());
 
         if (rc != MOSQ_ERR_SUCCESS) {
-            mosqpp::lib_cleanup();
+            mosquitto_destroy(mosq);
+            cleanupLibrary();
             const std::string message =
                     "fatal failure to initialize TLS connection, error settings TLS options: " +
                     getErrorString(rc);
@@ -128,54 +160,123 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
     }
 }
 
-MosquittoConnection::~MosquittoConnection()
+// wrappers
+
+void MosquittoConnection::on_connect(struct mosquitto* mosq, void* userdata, int rc)
 {
-    std::lock_guard<std::mutex> stopLocker(stopMutex);
-    assert(isStopped);
+    std::ignore = mosq;
+    class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
+    if (rc == MOSQ_ERR_SUCCESS) {
+        JOYNR_LOG_INFO(logger(), "Mosquitto Connection established");
+        mosquittoConnection->isConnected = true;
 
-    mosqpp::lib_cleanup();
-}
-
-std::string MosquittoConnection::getErrorString(int rc)
-{
-    // Do not use mosq::strerror() in case of MOSQ_ERR_ERRNO
-    // since it calls the MT-unsafe API strerror()
-    if (rc != MOSQ_ERR_ERRNO) {
-        return std::string(mosqpp::strerror(rc));
-    }
-
-    const int storedErrno = errno;
-    return joynr::util::getErrorString(storedErrno);
-}
-
-void MosquittoConnection::on_disconnect(int rc)
-{
-    const std::string errorString(getErrorString(rc));
-    setReadyToSend(false);
-    if (!isConnected) {
-        // In case we didn't connect yet
+        mosquittoConnection->createSubscriptions();
+    } else {
+        const std::string errorString(mosquittoConnection->getErrorString(rc));
         JOYNR_LOG_ERROR(
-                logger(), "Not yet connected to tcp://{}:{}, error: {}", host, port, errorString);
+                logger(), "Mosquitto Connection Error: {} ({})", std::to_string(rc), errorString);
+    }
+}
+
+void MosquittoConnection::on_disconnect(struct mosquitto* mosq, void* userdata, int rc)
+{
+    std::ignore = mosq;
+    class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
+    const std::string errorString(getErrorString(rc));
+    mosquittoConnection->setReadyToSend(false);
+    if (!mosquittoConnection->isConnected) {
+        // In case we didn't connect yet
+        JOYNR_LOG_ERROR(logger(),
+                        "Not yet connected to tcp://{}:{}, error: {}",
+                        mosquittoConnection->host,
+                        mosquittoConnection->port,
+                        errorString);
         return;
     }
 
     // There was indeed a disconnect...set connect to false
-    isConnected = false;
+    mosquittoConnection->isConnected = false;
 
     if (rc == MOSQ_ERR_SUCCESS) {
-        JOYNR_LOG_INFO(logger(), "Disconnected from tcp://{}:{}", host, port);
+        JOYNR_LOG_INFO(logger(),
+                       "Disconnected from tcp://{}:{}",
+                       mosquittoConnection->host,
+                       mosquittoConnection->port);
     } else {
         JOYNR_LOG_ERROR(logger(),
                         "Unexpectedly disconnected from tcp://{}:{}, error: {}",
-                        host,
-                        port,
+                        mosquittoConnection->host,
+                        mosquittoConnection->port,
                         errorString);
-        reconnect();
+        mosquitto_reconnect(mosq);
     }
 }
 
-void MosquittoConnection::on_log(int level, const char* str)
+void MosquittoConnection::on_publish(struct mosquitto* mosq, void* userdata, int mid)
 {
+    std::ignore = mosq;
+    std::ignore = userdata;
+    JOYNR_LOG_TRACE(logger(), "published message with mid {}", std::to_string(mid));
+}
+
+void MosquittoConnection::on_message(struct mosquitto* mosq,
+                                     void* userdata,
+                                     const struct mosquitto_message* message)
+{
+    std::ignore = mosq;
+    class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
+    if (!mosquittoConnection->onMessageReceived) {
+        JOYNR_LOG_ERROR(logger(),
+                        "Discarding received message, since onMessageReceived callback is empty.");
+        return;
+    }
+
+    if (!message || message->payloadlen <= 0) {
+        JOYNR_LOG_ERROR(
+                logger(),
+                "Discarding received message: invalid message or non-positive payload's length.");
+        return;
+    }
+
+    std::uint8_t* data = static_cast<std::uint8_t*>(message->payload);
+
+    // convert address of data into integral type
+    std::uintptr_t integralAddress = reinterpret_cast<std::uintptr_t>(data);
+    const bool overflow =
+            joynr::util::isAdditionOnPointerSafe(integralAddress, message->payloadlen);
+    if (overflow) {
+        JOYNR_LOG_ERROR(logger(), "Discarding received message, since there is an overflow.");
+        return;
+    }
+
+    smrf::ByteVector rawMessage(data, data + message->payloadlen);
+    mosquittoConnection->onMessageReceived(std::move(rawMessage));
+}
+
+void MosquittoConnection::on_subscribe(struct mosquitto* mosq,
+                                       void* userdata,
+                                       int mid,
+                                       int qos_count,
+                                       const int* granted_qos)
+{
+    std::ignore = mosq;
+    class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
+    JOYNR_LOG_DEBUG(logger(), "Subscribed (mid: {} with granted QOS {}", mid, granted_qos[0]);
+
+    for (int i = 1; i < qos_count; i++) {
+        JOYNR_LOG_DEBUG(logger(), "QOS: {} granted {}", i, granted_qos[i]);
+    }
+
+    if (mid == mosquittoConnection->subscribeChannelMid) {
+        mosquittoConnection->subscribedToChannelTopic = true;
+        mosquittoConnection->setReadyToSend(mosquittoConnection->isConnected);
+    }
+}
+
+void MosquittoConnection::on_log(struct mosquitto* mosq, void* userdata, int level, const char* str)
+{
+    std::ignore = mosq;
+    std::ignore = userdata;
     if (level == MOSQ_LOG_ERR) {
         JOYNR_LOG_ERROR(logger(), "Mosquitto Log: {}", str);
     } else if (level == MOSQ_LOG_WARNING) {
@@ -186,6 +287,44 @@ void MosquittoConnection::on_log(int level, const char* str)
         // MOSQ_LOG_NOTICE || MOSQ_LOG_DEBUG || any other log level
         JOYNR_LOG_DEBUG(logger(), "Mosquitto Log: {}", str);
     }
+}
+
+// end of wrappers
+
+void MosquittoConnection::cleanupLibrary()
+{
+// Prior to openssl version 1.1.x we must not call mosquitto_lib_cleanup()
+// at this time since it might cause memory corruption due to duplicated
+// free operations inside older openssl code since openssl is used by
+// multiple components.
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+    {
+        std::unique_lock<std::mutex> lock(libUseCountMutex);
+        if (--libUseCount == 0) {
+            mosquitto_lib_cleanup();
+        }
+    }
+#endif
+}
+
+MosquittoConnection::~MosquittoConnection()
+{
+    std::lock_guard<std::mutex> stopLocker(stopMutex);
+    assert(isStopped);
+
+    cleanupLibrary();
+}
+
+std::string MosquittoConnection::getErrorString(int rc)
+{
+    // Do not use mosquitto_strerror() in case of MOSQ_ERR_ERRNO
+    // since it calls the MT-unsafe API strerror()
+    if (rc != MOSQ_ERR_ERRNO) {
+        return std::string(mosquitto_strerror(rc));
+    }
+
+    const int storedErrno = errno;
+    return joynr::util::getErrorString(storedErrno);
 }
 
 std::uint16_t MosquittoConnection::getMqttQos() const
@@ -218,11 +357,13 @@ void MosquittoConnection::start()
 
     JOYNR_LOG_INFO(logger(), "Try to connect to tcp://{}:{}", host, port);
 
-    connect_async(host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
+    mosquitto_connect_async(
+            mosq, host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
 
-    reconnect_delay_set(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
-                        messagingSettings.getMqttReconnectMaxDelayTimeSeconds().count(),
-                        messagingSettings.getMqttExponentialBackoffEnabled());
+    mosquitto_reconnect_delay_set(mosq,
+                                  messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
+                                  messagingSettings.getMqttReconnectMaxDelayTimeSeconds().count(),
+                                  messagingSettings.getMqttExponentialBackoffEnabled());
 
     startLoop();
 
@@ -233,7 +374,7 @@ void MosquittoConnection::start()
 
 void MosquittoConnection::startLoop()
 {
-    int rc = loop_start();
+    int rc = mosquitto_loop_start(mosq);
     if (rc == MOSQ_ERR_SUCCESS) {
         JOYNR_LOG_INFO(logger(), "Mosquitto loop started");
         isRunning = true;
@@ -262,7 +403,7 @@ void MosquittoConnection::stop()
     // does not exist yet.
 
     if (isConnected) {
-        int rc = disconnect();
+        int rc = mosquitto_disconnect(mosq);
 
         if (rc == MOSQ_ERR_SUCCESS) {
             JOYNR_LOG_INFO(logger(), "Mosquitto Connection disconnected");
@@ -275,7 +416,7 @@ void MosquittoConnection::stop()
         }
         stopLoop();
     } else if (isRunning) {
-        disconnect();
+        mosquitto_disconnect(mosq);
         stopLoop();
     }
     setReadyToSend(false);
@@ -284,7 +425,7 @@ void MosquittoConnection::stop()
 
 void MosquittoConnection::stopLoop(bool force)
 {
-    int rc = loop_stop(force);
+    int rc = mosquitto_loop_stop(mosq, force);
 
     if (rc == MOSQ_ERR_SUCCESS) {
         isRunning = false;
@@ -295,20 +436,6 @@ void MosquittoConnection::stopLoop(bool force)
                         "Mosquitto loop stop failed: error: {} ({})",
                         std::to_string(rc),
                         errorString);
-    }
-}
-
-void MosquittoConnection::on_connect(int rc)
-{
-    if (rc == MOSQ_ERR_SUCCESS) {
-        JOYNR_LOG_INFO(logger(), "Mosquitto Connection established");
-        isConnected = true;
-
-        createSubscriptions();
-    } else {
-        const std::string errorString(getErrorString(rc));
-        JOYNR_LOG_ERROR(
-                logger(), "Mosquitto Connection Error: {} ({})", std::to_string(rc), errorString);
     }
 }
 
@@ -335,7 +462,7 @@ void MosquittoConnection::subscribeToTopicInternal(const std::string& topic,
     if (isChannelTopic) {
         mid = &subscribeChannelMid;
     }
-    int rc = subscribe(mid, topic.c_str(), getMqttQos());
+    int rc = mosquitto_subscribe(mosq, mid, topic.c_str(), getMqttQos());
     switch (rc) {
     case (MOSQ_ERR_SUCCESS):
         JOYNR_LOG_INFO(logger(), "Subscribed to {}", topic);
@@ -390,7 +517,7 @@ void MosquittoConnection::unsubscribeFromTopic(const std::string& topic)
         }
         additionalTopics.erase(topic);
         if (isConnected && isRunning) {
-            int rc = unsubscribe(nullptr, topic.c_str());
+            int rc = mosquitto_unsubscribe(mosq, nullptr, topic.c_str());
             if (rc == MOSQ_ERR_SUCCESS) {
                 JOYNR_LOG_INFO(logger(), "Unsubscribed from {}", topic);
             } else {
@@ -416,7 +543,8 @@ void MosquittoConnection::publishMessage(
     JOYNR_LOG_DEBUG(logger(), "Publish message of length {} to {}", payloadlen, topic);
 
     int mid;
-    int rc = publish(&mid, topic.c_str(), payloadlen, payload, qosLevel, isMqttRetain());
+    int rc = mosquitto_publish(
+            mosq, &mid, topic.c_str(), payloadlen, payload, qosLevel, isMqttRetain());
     if (!(rc == MOSQ_ERR_SUCCESS)) {
         const std::string errorString(getErrorString(rc));
         if (rc == MOSQ_ERR_INVAL || rc == MOSQ_ERR_PAYLOAD_SIZE) {
@@ -462,55 +590,6 @@ bool MosquittoConnection::isSubscribedToChannelTopic() const
 bool MosquittoConnection::isReadyToSend() const
 {
     return readyToSend;
-}
-
-void MosquittoConnection::on_subscribe(int mid, int qos_count, const int* granted_qos)
-{
-    JOYNR_LOG_DEBUG(logger(), "Subscribed (mid: {} with granted QOS {}", mid, granted_qos[0]);
-
-    for (int i = 1; i < qos_count; i++) {
-        JOYNR_LOG_DEBUG(logger(), "QOS: {} granted {}", i, granted_qos[i]);
-    }
-
-    if (mid == subscribeChannelMid) {
-        subscribedToChannelTopic = true;
-        setReadyToSend(isConnected);
-    }
-}
-
-void MosquittoConnection::on_message(const mosquitto_message* message)
-{
-    if (!onMessageReceived) {
-        JOYNR_LOG_ERROR(logger(),
-                        "Discarding received message, since onMessageReceived callback is empty.");
-        return;
-    }
-
-    if (!message || message->payloadlen <= 0) {
-        JOYNR_LOG_ERROR(
-                logger(),
-                "Discarding received message: invalid message or non-positive payload's length.");
-        return;
-    }
-
-    std::uint8_t* data = static_cast<std::uint8_t*>(message->payload);
-
-    // convert address of data into integral type
-    std::uintptr_t integralAddress = reinterpret_cast<std::uintptr_t>(data);
-    const bool overflow =
-            joynr::util::isAdditionOnPointerSafe(integralAddress, message->payloadlen);
-    if (overflow) {
-        JOYNR_LOG_ERROR(logger(), "Discarding received message, since there is an overflow.");
-        return;
-    }
-
-    smrf::ByteVector rawMessage(data, data + message->payloadlen);
-    onMessageReceived(std::move(rawMessage));
-}
-
-void MosquittoConnection::on_publish(int mid)
-{
-    JOYNR_LOG_TRACE(logger(), "published message with mid {}", std::to_string(mid));
 }
 
 void MosquittoConnection::setReadyToSend(bool readyToSend)
