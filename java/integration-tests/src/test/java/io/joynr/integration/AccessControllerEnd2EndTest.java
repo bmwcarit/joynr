@@ -79,8 +79,8 @@ public class AccessControllerEnd2EndTest {
 
     private static final String TEST_DOMAIN = "test";
     private static final String GDAC_DOMAIN = "io.joynr";
-    private static final long DISCOVERY_TIMEOUT = 4000;
-    private static final long MESSAGING_TTL = 5000;
+    private static final long DISCOVERY_TIMEOUT = 14000;
+    private static final long MESSAGING_TTL = 15000;
 
     private JoynrRuntime runtime;
     private TestProviderImpl testProvider;
