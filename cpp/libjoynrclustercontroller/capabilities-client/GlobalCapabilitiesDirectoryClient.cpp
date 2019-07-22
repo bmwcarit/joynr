@@ -22,6 +22,7 @@
  */
 
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/Message.h"
 #include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
 
 namespace joynr
@@ -49,6 +50,23 @@ void GlobalCapabilitiesDirectoryClient::add(
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError)
 {
     capabilitiesProxy->addAsync(globalDiscoveryEntries, onSuccess, onRuntimeError);
+}
+
+void GlobalCapabilitiesDirectoryClient::add(
+        const types::GlobalDiscoveryEntry& entry,
+        const std::vector<std::string>& gbids,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
+{
+    MessagingQos addMessagingQos = messagingQos;
+    addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
+    capabilitiesProxy->addAsync(entry,
+                                std::move(gbids),
+                                std::move(onSuccess),
+                                std::move(onError),
+                                std::move(onRuntimeError),
+                                addMessagingQos);
 }
 
 void GlobalCapabilitiesDirectoryClient::remove(const std::string& participantId)

@@ -30,6 +30,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/types/DiscoveryError.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 #include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
@@ -39,7 +40,6 @@
 *   requests are sent in serialized JsonFunctionCalls. The capabilities directory
 *   executes the function call and responds with a JsonFunctionResponse.
 */
-
 namespace joynr
 {
 class ClusterControllerSettings;
@@ -60,6 +60,11 @@ public:
 
     ~GlobalCapabilitiesDirectoryClient() override = default;
 
+    void add(const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
+             std::function<void()> onSuccess,
+             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                     onRuntimeError) override;
+
     /*
        Add a capabilities record to the directory
      */
@@ -67,10 +72,12 @@ public:
              std::function<void()> onSuccess,
              std::function<void(const exceptions::JoynrRuntimeException& error)> onError) override;
 
-    void add(const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
+    void add(const types::GlobalDiscoveryEntry& entry,
+             const std::vector<std::string>& gbids,
              std::function<void()> onSuccess,
-             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                     onRuntimeError) override;
+             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+             std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
+            override;
 
     /*
       Remove previously created capabilities directory entries.

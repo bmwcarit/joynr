@@ -39,16 +39,26 @@ class IGlobalCapabilitiesDirectoryClient
 {
 public:
     virtual ~IGlobalCapabilitiesDirectoryClient() = default;
+
+    virtual void add(const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
+                     std::function<void()> onSuccess,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                             onRuntimeError = nullptr) = 0;
     virtual void add(const types::GlobalDiscoveryEntry& entry,
                      std::function<void()> onSuccess,
                      std::function<void(const exceptions::JoynrRuntimeException& error)>
                              onError = nullptr) = 0;
-    virtual void add(const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
-                     std::function<void()> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                             onRuntimeError) = 0;
+    virtual void add(
+            const types::GlobalDiscoveryEntry& entry,
+            const std::vector<std::string>& gbids,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+            std::function<void(const exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError = nullptr) = 0;
+
     virtual void remove(const std::string& participantId) = 0;
     virtual void remove(std::vector<std::string> capabilitiesInformationList) = 0;
+
     virtual void lookup(
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
