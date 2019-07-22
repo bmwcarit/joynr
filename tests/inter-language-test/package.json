@@ -39,7 +39,7 @@
     "clean": "rm -rf node_modules ../../javascript/libjoynr-js/src/main/browserify/node_modules",
     "install:browserify": "(cd ../../javascript/libjoynr-js/src/main/browserify && npm i)",
     "startprovider": "node_modules/.bin/ts-node src/main/js/provider.ts $npm_package_config_domain",
-    "startjasmine": "export domain=$npm_package_config_domain && jest",
+    "startjasmine": "export domain=$npm_package_config_domain && jest -i",
     "startjasminebundle": "export domain=$npm_package_config_domain && export browserify=true && node src/main/js/runIltConsumerSpec.js",
     "build:fast": "npm run install:browserify && npm i && npm run format && npm run lint",
     "build": "npm run clean && npm run build:fast",
