@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
-  "main": "joynr.js",
+  "main": "joynr",
   "dependencies": {
     "nanoid": "2.0.1",
     "mqtt": "2.15.0",
