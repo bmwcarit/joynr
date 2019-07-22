@@ -10,21 +10,19 @@ The software listed below included in some products is licensed under the "Apach
 - log4j:log4j:1.2.17
   Notice file: info/log4j-1.2.17-jar/META-INF/NOTICE
   License file: info/log4j-1.2.17-jar/META-INF/LICENSE
-- org.javassist:javassist:3.22.0-GA
+- org.javassist:javassist:3.19.0-GA
 
 The software listed below included in some products is licensed under the "BSD 3-clause". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
 - org.antlr:antlr-runtime:3.2
   License: META-INF/licenses/BSD-3-Clause.antlr3.txt
-- org.ow2.asm:asm-commons:5.0.1
+- org.ow2.asm:asm-analysis:7.0
   License: META-INF/licenses/BSD-3-Clause.asm.txt
-- org.ow2.asm:asm-tree:5.0.1
+- org.ow2.asm:asm-commons:7.0
   License: META-INF/licenses/BSD-3-Clause.asm.txt
-- org.ow2.asm:asm:5.0.1
+- org.ow2.asm:asm-tree:7.0
   License: META-INF/licenses/BSD-3-Clause.asm.txt
-
-The software listed below included in some products is licensed under the "Creative Commons Attribution License 2.5" (http://creativecommons.org/licenses/by/2.5).
-- net.jcip:jcip-annotations:1.0
-  Source: http://www.jcip.net (no changes made). Copyright and license notice: META-INF/licenses/CC-BY.jcip.txt
+- org.ow2.asm:asm:7.0
+  License: META-INF/licenses/BSD-3-Clause.asm.txt
 
 The software listed below included in some products is licensed under the “Eclipse Public License, v.1.0”. A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in this document "META-INF/licenses/EPL-1.txt". To obtain a copy of the source code for these components, visit the URLs listed below.
 - org.eclipse.emf:org.eclipse.emf.common:2.12.0
@@ -53,7 +51,7 @@ The software listed below included in some products is licensed under the “Ecl
   Sources: https://repo1.maven.org/maven2/org/eclipse/platform/org.eclipse.core.contenttype/3.7.200/org.eclipse.core.contenttype-3.7.200-sources.jar
 - org.eclipse.platform:org.eclipse.core.expressions:3.6.200
   About file: info/org.eclipse.core.expressions-3.6.200-jar/about.html
-  Sources: https://repo1.maven.org/maven2/org/eclipse/platform/org.eclipse.core.expressions/3.6.100/org.eclipse.core.expressions-3.6.2s00-sources.jar
+  Sources: https://repo1.maven.org/maven2/org/eclipse/platform/org.eclipse.core.expressions/3.6.200/org.eclipse.core.expressions-3.6.200-sources.jar
 - org.eclipse.platform:org.eclipse.core.filesystem:1.7.200
   About file: info/org.eclipse.core.filesystem-1.7.200-jar/about.html
   Sources: https://repo1.maven.org/maven2/org/eclipse/platform/org.eclipse.core.filesystem/1.7.200/org.eclipse.core.filesystem-1.7.200-sources.jar
@@ -109,8 +107,8 @@ The software listed below included in some products is licensed under the “Ecl
   Sources: https://repo1.maven.org/maven2/org/franca/org.franca.deploymodel.dsl/0.13.1/org.franca.deploymodel.dsl-0.13.1-sources.jar
 
 Software libraries listed below included in some products are free software that is licensed under "GNU Lesser General Public License (LGPL) v3.0". A copy of that license in the English original version with a disclaimer of warranty and an exclusion of liability is included in this document "META-INF/licenses/LGPL-3.txt". This free software has been developed by third parties and is copyrighted. It is provided for free, and you are permitted to use it according to the mentioned license. LGPL v 3.0 supersedes other licenses. The complete corresponding source code is included in the files listed below.
-- com.google.code.findbugs:annotations:3.0.1
-  Sources: info/annotations-3.0.1-jar
+- com.google.code.findbugs:annotations:2.0.1
+  Sources: info/annotations-2.0.1-jar
 
 The software listed below included in some products is licensed under the "MIT/X11 license". A copy of that license in the English original version with a copyright notice, a disclaimer of warranty, and an exclusion of liability is included in the documents listed below.
 - org.slf4j:slf4j-api:1.7.25
