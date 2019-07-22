@@ -74,11 +74,28 @@ public:
             std::function<void(const exceptions::JoynrRuntimeException& error)>
                     onError = nullptr) = 0;
     virtual void lookup(
+            const std::vector<std::string>& domains,
+            const std::string& interfaceName,
+            const std::vector<std::string>& gbids,
+            std::int64_t messagingTtl,
+            std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+            std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError) = 0;
+
+    virtual void lookup(
             const std::string& participantId,
             std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>
                     onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& error)>
                     onError = nullptr) = 0;
+    virtual void lookup(
+            const std::string& participantId,
+            const std::vector<std::string>& gbids,
+            std::int64_t messagingTtl,
+            std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>
+                    onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+            std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError) = 0;
 
     virtual void touch(
             const std::string& clusterControllerId,

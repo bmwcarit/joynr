@@ -53,10 +53,27 @@ public:
                      std::int64_t messagingTtl,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+    MOCK_METHOD7(lookup, void(
+                     const std::vector<std::string>& domain,
+                     const std::string& interfaceName,
+                     const std::vector<std::string>& gbids,
+                     std::int64_t messagingTtl,
+                     std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
+                     std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
+    
     MOCK_METHOD3(lookup, void(
                      const std::string& participantId,
                      std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> callbackFct,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+    MOCK_METHOD6(lookup, void(
+                     const std::string& participantId,
+                     const std::vector<std::string>& gbids,
+                     std::int64_t messagingTtl,
+                     std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)> onSuccess,
+                     std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
+
     MOCK_METHOD3(touch, void(const std::string& clusterControllerId,
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));

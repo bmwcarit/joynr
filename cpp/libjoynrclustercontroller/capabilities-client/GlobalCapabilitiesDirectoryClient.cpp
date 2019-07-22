@@ -110,6 +110,27 @@ void GlobalCapabilitiesDirectoryClient::lookup(
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(
+        const std::vector<std::string>& domains,
+        const std::string& interfaceName,
+        const std::vector<std::string>& gbids,
+        std::int64_t messagingTtl,
+        std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
+{
+    MessagingQos lookupMessagingQos = messagingQos;
+    lookupMessagingQos.setTtl(messagingTtl);
+    lookupMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
+    capabilitiesProxy->lookupAsync(domains,
+                                   interfaceName,
+                                   std::move(gbids),
+                                   std::move(onSuccess),
+                                   std::move(onError),
+                                   std::move(onRuntimeError),
+                                   lookupMessagingQos);
+}
+
+void GlobalCapabilitiesDirectoryClient::lookup(
         const std::string& participantId,
         std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
                 onSuccess,
@@ -123,6 +144,31 @@ void GlobalCapabilitiesDirectoryClient::lookup(
                                        onSuccess(result);
                                    },
                                    std::move(onError));
+}
+
+void GlobalCapabilitiesDirectoryClient::lookup(
+        const std::string& participantId,
+        const std::vector<std::string>& gbids,
+        std::int64_t messagingTtl,
+        std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
+                onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
+        std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
+{
+    MessagingQos lookupMessagingQos = messagingQos;
+    lookupMessagingQos.setTtl(messagingTtl);
+    lookupMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
+    capabilitiesProxy->lookupAsync(participantId,
+                                   std::move(gbids),
+                                   [onSuccess = std::move(onSuccess)](
+                                           const joynr::types::GlobalDiscoveryEntry& capability) {
+                                       std::vector<joynr::types::GlobalDiscoveryEntry> result;
+                                       result.push_back(capability);
+                                       onSuccess(result);
+                                   },
+                                   std::move(onError),
+                                   std::move(onRuntimeError),
+                                   lookupMessagingQos);
 }
 
 void GlobalCapabilitiesDirectoryClient::touch(
