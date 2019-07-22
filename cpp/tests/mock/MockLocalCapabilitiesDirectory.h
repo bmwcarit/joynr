@@ -27,7 +27,7 @@
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
     MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, std::shared_ptr<joynr::IMessageRouter> mockMessageRouter, boost::asio::io_service& ioService):
-        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", mockMessageRouter, ioService, "clusterControllerId")
+        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", mockMessageRouter, ioService, "clusterControllerId", {"testGbid"})
    {}
 
     MOCK_METHOD3(

@@ -22,6 +22,7 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -93,6 +94,7 @@ public:
               mockMessageRouter(
                       std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
               clusterControllerId("clusterControllerId"),
+              knownGbids({"testGbid1", "testGbid2", "testGbid3"}),
               localCapabilitiesDirectory(),
               lastSeenDateMs(std::chrono::duration_cast<std::chrono::milliseconds>(
                                      std::chrono::system_clock::now().time_since_epoch()).count()),
@@ -119,7 +121,8 @@ public:
                 LOCAL_ADDRESS,
                 mockMessageRouter,
                 singleThreadedIOService->getIOService(),
-                clusterControllerId);
+                clusterControllerId,
+                knownGbids);
         localCapabilitiesDirectory->init();
 
         // TODO the participantId should be provided by the provider
@@ -359,6 +362,7 @@ protected:
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::string clusterControllerId;
+    std::vector<std::string> knownGbids;
     std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
     std::int64_t lastSeenDateMs;
     std::int64_t expiryDateMs;
@@ -1743,7 +1747,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                                          LOCAL_ADDRESS,
                                                          mockMessageRouter,
                                                          singleThreadedIOService->getIOService(),
-                                                         "clusterControllerId");
+                                                         "clusterControllerId",
+                                                         knownGbids);
     localCapabilitiesDirectory2->init();
 
     // load persistency

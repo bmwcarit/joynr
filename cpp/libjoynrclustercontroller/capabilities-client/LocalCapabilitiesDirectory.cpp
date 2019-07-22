@@ -72,7 +72,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         const std::string& localAddress,
         std::weak_ptr<IMessageRouter> messageRouter,
         boost::asio::io_service& ioService,
-        const std::string clusterControllerId)
+        const std::string clusterControllerId,
+        std::vector<std::string> knownGbids)
         : joynr::system::DiscoveryAbstractProvider(),
           joynr::system::ProviderReregistrationControllerProvider(),
           std::enable_shared_from_this<LocalCapabilitiesDirectory>(),
@@ -89,7 +90,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           isLocalCapabilitiesDirectoryPersistencyEnabled(
                   clusterControllerSettings.isLocalCapabilitiesDirectoryPersistencyEnabled()),
           freshnessUpdateTimer(ioService),
-          clusterControllerId(clusterControllerId)
+          clusterControllerId(clusterControllerId),
+          knownGbids(knownGbids)
 {
 }
 

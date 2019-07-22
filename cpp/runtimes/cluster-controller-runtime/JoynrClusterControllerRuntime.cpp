@@ -527,7 +527,8 @@ void JoynrClusterControllerRuntime::init()
                                                          globalClusterControllerAddress,
                                                          ccMessageRouter,
                                                          singleThreadIOService->getIOService(),
-                                                         clusterControllerId);
+                                                         clusterControllerId,
+                                                         availableGbids);
     localCapabilitiesDirectory->init();
     localCapabilitiesDirectory->loadPersistedFile();
     // importPersistedLocalCapabilitiesDirectory();

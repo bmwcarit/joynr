@@ -76,7 +76,8 @@ public:
             const std::string& localAddress,
             std::weak_ptr<IMessageRouter> messageRouter,
             boost::asio::io_service& ioService,
-            const std::string clusterControllerId);
+            const std::string clusterControllerId,
+            std::vector<std::string> knownGbids);
 
     ~LocalCapabilitiesDirectory() override;
 
@@ -306,6 +307,7 @@ private:
     void remove(const types::DiscoveryEntry& discoveryEntry);
     boost::asio::steady_timer freshnessUpdateTimer;
     std::string clusterControllerId;
+    std::vector<std::string> knownGbids;
     void scheduleFreshnessUpdate();
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
