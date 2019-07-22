@@ -51,10 +51,12 @@ GlobalCapabilitiesDirectory.fidl:
   *New joynr (cluster controller runtime) always uses the new methods. Thereby, GCD can easily
   distinguish between old and new versions of joynr.*
   * `lookup` methods with list of GBIDs as additional in parameter:
-    * Called by new CC runtime (new joynr) with all GBIDs known to the CC runtime.
+    * Called by new CC runtime (new joynr) with selected GBIDs or all GBIDs known to the CC runtime
+      if no GBIDs were selected.
     * Providers are looked up only in the selected BEs (GBIDs).
   * `add` method for single GDE with list of GBIDs as additional in parameter:
-    * Called by new CC runtime (new joynr).
+    * Called by new CC runtime (new joynr) with selected GBIDs or default GBID if no GBIDs were
+      selected.
     * Provider gets registered for the selected BEs (GBIDs).
   * `remove` method for single participantId with list of GBIDs as additional parameter:
     * Called by new CC runtime (new joynr)
