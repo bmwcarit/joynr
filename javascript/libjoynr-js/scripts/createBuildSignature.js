@@ -19,19 +19,16 @@
  * #L%
  */
 
-let fs = require("fs");
-let fileTemplate = fs.readFileSync(__dirname + "/buildSignatureTemplate.js", "utf8");
-let gitSha = require("child_process")
+const fs = require("fs");
+const child_process = require("child_process");
+const version = require("../src/main/js/package.json").version;
+const fileTemplate = fs.readFileSync(`${__dirname}/buildSignatureTemplate.ts`, "utf8");
+const gitSha = child_process
     .execSync("git rev-parse HEAD")
     .toString()
     .trim();
 
-let signatureString =
-    "io.joynr.javascript.libjoynr-js-" +
-    require("../src/main/js/package.json").version +
-    "-r" +
-    gitSha +
-    new Date().toISOString();
+const signatureString = `io.joynr.javascript.libjoynr-js-${version}-r${gitSha}${new Date().toISOString()}`;
 
-let buildSignature = fileTemplate.replace("buildSignature", signatureString);
-fs.writeFileSync(__dirname + "/../src/main/js/joynr/buildSignature.js", buildSignature);
+const buildSignature = fileTemplate.replace("buildSignature", signatureString);
+fs.writeFileSync(`${__dirname}/../src/main/js/joynr/buildSignature.ts`, buildSignature);
