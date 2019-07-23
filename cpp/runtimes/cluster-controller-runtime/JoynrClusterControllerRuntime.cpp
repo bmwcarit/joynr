@@ -1019,27 +1019,16 @@ std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerA
     return "global-transport-not-available";
 }
 
-void JoynrClusterControllerRuntime::fillGbidToUrlMap(const std::string& gbid,
-                                                     const joynr::BrokerUrl& url)
-{
-    gbidToBrokerUrlMapping.emplace(gbid, url);
-}
-
 void JoynrClusterControllerRuntime::fillBackendsStruct(const MessagingSettings& messagingSettings)
 {
     availableGbids.emplace_back(messagingSettings.getGbid());
-    fillGbidToUrlMap(messagingSettings.getGbid(), messagingSettings.getBrokerUrl());
+    gbidToBrokerUrlMapping.emplace(messagingSettings.getGbid(), messagingSettings.getBrokerUrl());
 
-    fillBackendsStructWithAdditionalBackends(messagingSettings);
-}
-void JoynrClusterControllerRuntime::fillBackendsStructWithAdditionalBackends(
-        const MessagingSettings& messagingSettings)
-{
     std::uint8_t additionalBackends = messagingSettings.getAdditionalBackendsCount();
     for (std::uint8_t index = 0; index < additionalBackends; index++) {
         availableGbids.emplace_back(messagingSettings.getAdditionalBackendGbid(index));
-        fillGbidToUrlMap(messagingSettings.getAdditionalBackendGbid(index),
-                         messagingSettings.getAdditionalBackendBrokerUrl(index));
+        gbidToBrokerUrlMapping.emplace(messagingSettings.getAdditionalBackendGbid(index),
+                                       messagingSettings.getAdditionalBackendBrokerUrl(index));
     }
 }
 

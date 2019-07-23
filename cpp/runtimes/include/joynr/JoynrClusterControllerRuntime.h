@@ -237,8 +237,6 @@ private:
     std::map<std::string, joynr::BrokerUrl> gbidToBrokerUrlMapping;
     std::vector<std::string> availableGbids;
     void fillBackendsStruct(const MessagingSettings& messagingSettings);
-    void fillBackendsStructWithAdditionalBackends(const MessagingSettings& messagingSettings);
-    void fillGbidToUrlMap(const std::string& gbid, const joynr::BrokerUrl& url);
 };
 
 } // namespace joynr
