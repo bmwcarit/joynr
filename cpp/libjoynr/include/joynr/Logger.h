@@ -140,7 +140,8 @@ struct LogLevelInitializer
         const char* logLevelEnv = std::getenv("JOYNR_LOG_LEVEL");
 
         if (logLevelEnv == nullptr) {
-            spdlog::set_level(JOYNR_DEFAULT_RUNTIME_LOG_LEVEL);
+            spdlogLevel = JOYNR_DEFAULT_RUNTIME_LOG_LEVEL;
+            spdlog::set_level(spdlogLevel);
             for (auto i : stringToSpdLogLevelToJoynrLogLevel) {
                 if (std::get<1>(i) == JOYNR_DEFAULT_RUNTIME_LOG_LEVEL) {
                     level = std::get<2>(i);
@@ -153,7 +154,8 @@ struct LogLevelInitializer
 
         for (auto i : stringToSpdLogLevelToJoynrLogLevel) {
             if (std::get<0>(i) == runtimeLogLevelName) {
-                spdlog::set_level(std::get<1>(i));
+                spdlogLevel = std::get<1>(i);
+                spdlog::set_level(spdlogLevel);
                 level = std::get<2>(i);
                 return;
             }
@@ -168,6 +170,7 @@ struct LogLevelInitializer
     }
 
     joynr::LogLevel level;
+    spdlog::level::level_enum spdlogLevel;
 };
 
 struct Logger
@@ -176,19 +179,25 @@ struct Logger
     {
         static LogLevelInitializer logLevelInitializer;
         level = logLevelInitializer.level;
+        spdlogLevel = logLevelInitializer.spdlogLevel;
         std::vector<spdlog::sink_ptr> sinks;
 
 #ifdef JOYNR_ENABLE_STDOUT_LOGGING
-        sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
+        auto sink1 = std::make_shared<spdlog::sinks::stdout_sink_mt>();
+        sink1->set_level(spdlog::level::trace);
+        sinks.push_back(sink1);
 #endif // JOYNR_ENABLE_STDOUT_LOGGING
 
 #ifdef JOYNR_ENABLE_DLT_LOGGING
-        sinks.push_back(std::make_shared<joynr::DltSink>());
+        auto sink2 = std::make_shared<joynr::DltSink>();
+        sink2->set_level(spdlog::level::trace);
+        sinks.push_back(sink2);
 #endif // JOYNR_ENABLE_DLT_LOGGING
 
-        spdlog = spdlog::create(prefix, begin(sinks), end(sinks));
+        spdlog = std::make_shared<spdlog::logger>(prefix, begin(sinks), end(sinks));
         spdlog->set_pattern(
                 "%Y-%m-%d %H:%M:%S.%e [thread ID:%t] [%l] %n %v", spdlog::pattern_time_type::utc);
+        spdlog->set_level(spdlogLevel);
     }
 
     template <typename Parent>
@@ -206,6 +215,7 @@ struct Logger
 
     std::shared_ptr<spdlog::logger> spdlog;
     joynr::LogLevel level;
+    spdlog::level::level_enum spdlogLevel;
 };
 
 } // namespace joynr
