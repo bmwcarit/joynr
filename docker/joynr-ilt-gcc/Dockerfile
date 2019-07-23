@@ -45,10 +45,10 @@ RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/gabime/spdlog.git \
     && cd spdlog \
-    && git checkout 799ba2a57bb16b921099bd9ab64a513e4ebe4217 \
+    && git checkout v1.3.1 \
     && mkdir build \
     && cd build \
-    && cmake .. \
+    && cmake -DSPDLOG_BUILD_BENCH=OFF .. \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf spdlog
