@@ -1127,7 +1127,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
     } catch (const exceptions::JoynrTimeOutException& e) {
     }
 
-    runtime1->unregisterProvider(testProviderParticipantId);
+    EXPECT_THROW(runtime1->unregisterProvider(testProviderParticipantId), exceptions::ProviderRuntimeException);
 }
 
 using namespace std::string_literals;

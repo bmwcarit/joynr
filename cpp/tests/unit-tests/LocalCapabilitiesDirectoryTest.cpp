@@ -934,7 +934,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1)).Times(0);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -969,7 +969,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1)).Times(0);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -1021,7 +1021,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1)).Times(0);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
@@ -1615,7 +1615,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1)).Times(1);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 }
 
@@ -1648,7 +1648,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1)).Times(1);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 
     // get the global entry
@@ -1705,7 +1705,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME}, INTERFACE_1_NAME, callback, discoveryQos);
     EXPECT_EQ(2, callback->getResults(10).size());
 
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1)).Times(1);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 }
 

@@ -180,7 +180,8 @@ public:
         Future<void> future;
         auto onSuccess = [&future]() { future.onSuccess(); };
         auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
-            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+            std::shared_ptr<exceptions::JoynrRuntimeException> exceptionPtr(exception.clone());
+            future.onError(std::move(exceptionPtr));
         };
 
         unregisterProviderAsync(participantId, std::move(onSuccess), std::move(onError));

@@ -94,7 +94,10 @@ public:
      */
     void remove(const std::string& participantId,
                 bool removeGlobally = true,
-                bool removeFromGlobalLookupCache = true);
+                bool removeFromGlobalLookupCache = true,
+                std::function<void()> onSuccess = nullptr,
+                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
+                        nullptr);
 
     /*
      * Returns a list of capabilitiess matching the given domain and interfaceName,
