@@ -158,6 +158,23 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
     clear();
 }
 
+void LocalCapabilitiesDirectory::addGbidMapping(const std::string& participantId,
+                                                const std::vector<std::string>& gbids)
+{
+    std::vector<std::string> newGbids(gbids);
+    std::lock_guard<std::mutex> lock(cacheLock);
+    auto foundMapping = globalParticipantIdsToGbidsMap.find(participantId);
+    if (foundMapping != globalParticipantIdsToGbidsMap.cend()) {
+        const std::vector<std::string> oldGbids = foundMapping->second;
+        for (const auto gbid : oldGbids) {
+            if (std::find(newGbids.cbegin(), newGbids.cend(), gbid) == newGbids.cend()) {
+                newGbids.emplace_back(gbid);
+            }
+        }
+    }
+    globalParticipantIdsToGbidsMap.insert(std::make_pair(participantId, newGbids));
+}
+
 void LocalCapabilitiesDirectory::addInternal(
         const types::DiscoveryEntry& discoveryEntry,
         bool awaitGlobalRegistration,
@@ -171,6 +188,7 @@ void LocalCapabilitiesDirectory::addInternal(
         // register locally
         insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
         if (isGloballyVisible) {
+            addGbidMapping(discoveryEntry.getParticipantId(), gbids);
             insertInGlobalLookupCache(discoveryEntry);
         }
         // Inform observers
@@ -244,6 +262,7 @@ void LocalCapabilitiesDirectory::addInternal(
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
             globalDiscoveryEntry,
             awaitGlobalRegistration,
+            gbids,
             onSuccess
         ]()
         {
@@ -259,6 +278,7 @@ void LocalCapabilitiesDirectory::addInternal(
                 }
                 if (awaitGlobalRegistration) {
                     thisSharedPtr->insertInLocallyRegisteredCapabilitiesCache(globalDiscoveryEntry);
+                    thisSharedPtr->addGbidMapping(globalDiscoveryEntry.getParticipantId(), gbids);
                     thisSharedPtr->insertInGlobalLookupCache(globalDiscoveryEntry);
                     if (onSuccess) {
                         onSuccess();
@@ -324,6 +344,7 @@ void LocalCapabilitiesDirectory::remove(const std::string& participantId,
             JOYNR_LOG_INFO(
                     logger(), "Removing globally registered participantId: {}", participantId);
             if (removeFromGlobalLookupCache) {
+                globalParticipantIdsToGbidsMap.erase(participantId);
                 globalLookupCache.removeByParticipantId(participantId);
             }
             if (removeGlobally) {
@@ -363,8 +384,40 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         std::lock_guard<std::mutex> lock(cacheLock);
         for (const auto& capability : locallyRegisteredCapabilities) {
             if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
-                globalCapabilitiesDirectoryClient->add(
-                        toGlobalDiscoveryEntry(capability), nullptr, nullptr);
+                const std::string& participantId = capability.getParticipantId();
+                auto foundGbids = globalParticipantIdsToGbidsMap.find(participantId);
+                if (foundGbids != globalParticipantIdsToGbidsMap.cend()) {
+                    auto gbids = foundGbids->second;
+                    auto onApplicationError =
+                            [participantId, gbids](const types::DiscoveryError::Enum& error) {
+                        JOYNR_LOG_WARN(logger(),
+                                       "Global provider reregistration for participantId {} and "
+                                       "gbids ({}) failed: {} (DiscoveryError)",
+                                       participantId,
+                                       util::vectorToString(gbids),
+                                       types::DiscoveryError::getLiteral(error));
+                    };
+                    auto onRuntimeError = [participantId, gbids](
+                            const exceptions::JoynrRuntimeException& exception) {
+                        JOYNR_LOG_WARN(logger(),
+                                       "Global provider reregistration for participantId {} and "
+                                       "gbids ({}) failed: {} ({}})",
+                                       participantId,
+                                       util::vectorToString(gbids),
+                                       exception.getMessage(),
+                                       exception.getTypeName());
+                    };
+                    globalCapabilitiesDirectoryClient->add(toGlobalDiscoveryEntry(capability),
+                                                           gbids,
+                                                           nullptr,
+                                                           std::move(onApplicationError),
+                                                           std::move(onRuntimeError));
+                } else {
+                    JOYNR_LOG_FATAL(logger(),
+                                    "Global provider reregistration failed because participantId "
+                                    "to GBIDs mapping is missing for participantId {}",
+                                    participantId);
+                }
             }
         }
     }
@@ -1292,6 +1345,7 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                 for (const auto& capability :
                      boost::join(removedLocalCapabilities, removedGlobalCapabilities)) {
                     messageRouterSharedPtr->removeNextHop(capability.getParticipantId());
+                    globalParticipantIdsToGbidsMap.erase(capability.getParticipantId());
                 }
             } else {
                 JOYNR_LOG_FATAL(logger(),

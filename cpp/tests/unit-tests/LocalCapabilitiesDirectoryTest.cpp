@@ -485,10 +485,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
                 add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(
                             AnConvertedGlobalDiscoveryEntry(entry1)),
                     _,
+                    _,
+                    _,
                     _)).Times(1);
     EXPECT_CALL(*globalCapabilitiesDirectoryClient,
                 add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(
                             AnConvertedGlobalDiscoveryEntry(entry2)),
+                    _,
+                    _,
                     _,
                     _)).Times(1);
 
@@ -540,7 +544,16 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(
                             AnConvertedGlobalDiscoveryEntry(entry1)),
                     _,
+                    _,
+                    _,
                     _)).Times(1);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(
+                            AnConvertedGlobalDiscoveryEntry(entry2)),
+                    _,
+                    _,
+                    _,
+                    _)).Times(0);
 
     bool onSuccessCalled = false;
     localCapabilitiesDirectory->triggerGlobalProviderReregistration(

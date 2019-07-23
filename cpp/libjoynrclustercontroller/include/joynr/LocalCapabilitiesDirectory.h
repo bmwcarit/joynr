@@ -309,6 +309,7 @@ private:
     boost::asio::steady_timer freshnessUpdateTimer;
     std::string clusterControllerId;
     std::vector<std::string> knownGbids;
+    std::unordered_map<std::string, std::vector<std::string>> globalParticipantIdsToGbidsMap;
     void scheduleFreshnessUpdate();
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
@@ -323,6 +324,7 @@ private:
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
     bool isGlobal(const types::DiscoveryEntry& discoveryEntry) const;
 
+    void addGbidMapping(const std::string& participantId, const std::vector<std::string>& gbids);
     void addInternal(const joynr::types::DiscoveryEntry& entry,
                      bool awaitGlobalRegistration,
                      const std::vector<std::string>& gbids,
