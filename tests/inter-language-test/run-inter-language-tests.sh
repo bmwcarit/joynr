@@ -501,7 +501,7 @@ function start_javascript_consumer {
 
 function start_consumers {
 	start_java_consumer_cc $1
-	#start_java_consumer_ws $1
+	start_java_consumer_ws $1
 	start_cpp_consumer $1
 	start_javascript_consumer $1
 }
@@ -551,16 +551,16 @@ stop_cluster_controller
 stop_services
 
 # run checks with Java provider ws
-# clean_up
-# log 'RUN CHECKS WITH JAVA PROVIDER WS (with WS to standalone clustercontroller).'
-# PROVIDER="provider-java-ws"
-# start_services $PROVIDER
-# start_cluster_controller $PROVIDER
-# start_java_provider_ws
-# start_consumers $PROVIDER
-# stop_provider
-# stop_cluster_controller
-# stop_services
+clean_up
+log 'RUN CHECKS WITH JAVA PROVIDER WS (with WS to standalone clustercontroller).'
+PROVIDER="provider-java-ws"
+start_services $PROVIDER
+start_cluster_controller $PROVIDER
+start_java_provider_ws
+start_consumers $PROVIDER
+stop_provider
+stop_cluster_controller
+stop_services
 
 # run checks with C++ provider
 clean_up
