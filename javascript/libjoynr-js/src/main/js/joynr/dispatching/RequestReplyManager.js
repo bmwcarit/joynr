@@ -349,6 +349,7 @@ class RequestReplyManager {
 
             try {
                 if (reply.error) {
+                    log.warn(`RequestReplyManager::handleReply got reply with error ${util.inspect(reply.error)}`);
                     if (reply.error instanceof Error) {
                         replyCaller.callback(reply.error);
                     } else {
