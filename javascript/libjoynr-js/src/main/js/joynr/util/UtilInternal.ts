@@ -239,12 +239,12 @@ function timeoutPromiseHelper(
 
 export const timeoutPromise = util.promisify(timeoutPromiseHelper);
 export interface Deferred {
-    resolve: Function;
-    reject: Function;
+    resolve: (value?: any) => void;
+    reject: (error?: any) => void;
     promise: Promise<any>;
 }
 
-function defer(this: Deferred, resolve: Function, reject: Function): void {
+function defer(this: Deferred, resolve: (value: any) => void, reject: (error: any) => void): void {
     this.resolve = resolve;
     this.reject = reject;
 }
