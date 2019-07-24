@@ -17,40 +17,43 @@
   #L%
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<groupId>io.joynr</groupId>
-	<artifactId>android</artifactId>
+	<groupId>io.joynr.android</groupId>
+	<artifactId>libjoynr-android-integration-tests</artifactId>
 	<modelVersion>4.0.0</modelVersion>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
 		<groupId>io.joynr</groupId>
-		<artifactId>joynr</artifactId>
-		<version>1.11.0-SNAPSHOT</version>
+		<artifactId>android</artifactId>
+		<version>1.10.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<modules>
-		<module>joynr-android</module>
-		<module>joynr-android-runtime</module>
-		<module>libjoynr-android-websocket-runtime</module>
-		<module>robolectric-unittests</module>
-		<module>robolectric-integration-tests</module>
-		<module>libjoynr-android-integration-tests</module>
-	</modules>
-
+	<dependencies>
+	</dependencies>
 	<build>
-		<pluginManagement>
-			<plugins>
-				<!-- Skip deploy -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-deploy-plugin</artifactId>
-					<configuration>
-						<skip>true</skip>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+	<plugins>
+		 <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <executions>
+
+                    <execution>
+                        <id>gradle-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>				
+				<commandlineArgs>${basedir}/test_android_libjoynr.sh</commandlineArgs>
+                        </configuration>
+                    </execution>
+
+                 </executions>
+            </plugin>
+
+	</plugins>
 	</build>
 </project>

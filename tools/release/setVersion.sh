@@ -59,9 +59,17 @@ javascript/libjoynr-js/src/main/js/package.json \
 javascript/libjoynr-js/src/main/browserify/package.json \
 tools/generator/joynr-generator-gradle-plugin/build.gradle \
 android/libjoynr-android-websocket-runtime/build.gradle \
+<<<<<<< HEAD
 examples/android/android-hello-world/android-hello-world-provider/build.gradle \
 examples/android/android-hello-world/android-hello-world-consumer/build.gradle
 
+=======
+android/libjoynr-android-integration-tests/test-radio-provider/build.gradle \
+android/libjoynr-android-integration-tests/test-radio-provider/app/build.gradle \
+android/libjoynr-android-integration-tests/test-radio-consumer/build.gradle \
+android/libjoynr-android-integration-tests/test-radio-consumer/app/build.gradle \
+android/clustercontroller-android-standalone/app/build.gradle
+>>>>>>> 486f04774f... [Android] Add libjoynr integration tests
 
 _sed 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
 java/core/clustercontroller-standalone/README

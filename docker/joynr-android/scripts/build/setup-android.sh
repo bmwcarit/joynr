@@ -27,6 +27,9 @@ cd ${ANDROID_HOME}
 echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS "platforms;${ANDROID_API_LEVEL}"
 echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
 echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS "platform-tools"
+echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS "system-images;${ANDROID_API_LEVEL};default;x86_64"
+echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS emulator
+
 
 echo "Finished setup-android.sh"
 exit 0

@@ -10,6 +10,7 @@ RUN dnf install -y \
     libstdc++.i686 \
     zlib-devel.i686 \
     ncurses-devel.i686 \
+    mesa-libGLU.i686 \
     && dnf clean all
 
 COPY scripts/build/* /data/scripts/build/

@@ -1,0 +1,217 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package vehicle
+
+<**
+	@description: Contains the user-defined datatypes used in the radio
+		interface.
+**>
+typeCollection {
+
+	<** @description: Enumeration specifying the country choices **>
+	enumeration Country {
+		<**
+			@description: Enum value representing the
+			Commonwealth of Australia
+		**>
+		AUSTRALIA
+
+		<**
+			@description: Enum value representing Canada
+		**>
+		CANADA
+
+		<**
+			@description: Enum value representing the
+			Federal Republic of Germany
+		**>
+		GERMANY
+
+		<**
+			@description: Enum value representing the
+			Italian Republic
+		**>
+		ITALY
+	}
+
+	<**
+		@description: Record describing a Radio station
+	**>
+	struct RadioStation {
+		<**
+			@description: The station name
+		**>
+		String name
+
+		<**
+			@description: True, if the radio station provides a traffic
+			service, false otherwise
+		**>
+		Boolean trafficService
+
+		<**
+			@description: The country, where the station is located
+		**>
+		Country country
+	}
+
+	<**
+		@description: Record describing a geographic location by
+		coordinates
+	**>
+	struct GeoPosition {
+		<**
+			@description: The latitude in decimal degrees
+		**>
+		Double latitude
+
+		<**
+			@description: The longitude in decimal degrees
+		**>
+		Double longitude
+	}
+}
+
+<**
+	@description: This is an example interface to demonstrate features
+		and usage of the joynr communication framework.
+**>
+interface Radio {
+	/*
+	 * NOTE: According to the Franca User Guide (Release 0.3.0) chapter 4.3
+	 * Interface definition, definitions of elements are only allowed in the
+	 * following sequence: attributes, methods, broadcasts, contract, type
+	 * definitions. Other sequences or mixed definitions are currently not
+	 * possible.
+	 */
+
+	<**
+		@description: Represents the station that is currently
+			playing in the radio.
+			This attribute is subscribe-able and a getter
+			method is generated.
+	**>
+	attribute RadioStation currentStation readonly
+
+	<**
+		@description: Chooses a new radio station randomly and
+			activates it.
+			This method has no return value or parameter.
+	**>
+	method shuffleStations {}
+
+	<**
+		@description: Adds a radio station to the favorites and
+			returns whether it could be added successfully.
+			This method has a boolean return value and a parameter
+			with user-defined type.
+	**>
+	method addFavoriteStation {
+		in {
+			<**
+				@description: The radio station to be added
+			**>
+			RadioStation newFavoriteStation
+		}
+		out {
+			<**
+				@description: True, if the adding was successful,
+				false otherwise
+			**>
+			Boolean success
+		}
+		error {
+			DUPLICATE_RADIOSTATION
+		}
+	}
+
+	<**
+		@description: This method returns the country
+			and location of the current station.
+			This method has no in parameter and multiple out
+			parameter.
+	**>
+	method getLocationOfCurrentStation {
+		out {
+			<**
+				@description: The country of the current station
+			**>
+			Country country
+
+			<**
+				@description: The coordinates of the current station
+			**>
+			GeoPosition location
+		}
+	}
+
+	<**
+		@description: Event that is fired when radio stations have
+			weak signal strength.
+	**>
+	broadcast weakSignal {
+		out {
+			<**
+				@description: The radio station whose signal has weakened
+			**>
+			RadioStation weakSignalStation
+		}
+	}
+
+	<**
+		@description: Event that is fired when new radio stations
+			are discovered. The event includes information about
+			the discovered station and the geo position where the
+			station was discovered.
+			The interface provider offers a geocast and a traffic
+			service filter for this selective broadcast.
+			The geocast filter filters events based on position of
+			interest and radius of interest area filter parameters
+			or does no filtering if these parameters are not set.
+			The traffic service filter filters events based on the
+			has traffic service filter parameter or does no filtering
+			if this parameter is not set.
+			NOTE: The joynr middleware calls all filters that are
+			registered for the broadcast. Whether a filter actually
+			does any filtering or not must be defined on application
+			layer (e.g. by interpreting the absence of filter
+			parameters as filter deactivation).
+		@param: positionOfInterest (GeoPosition) filter
+			parameter that is used by the geocast filter and defines
+			the position of interest
+		@param: radiusOfInterestArea (Integer) filter parameter that
+			is used by the geocast filter and defines the area of
+			interest around the position of interest
+		@param: hasTrafficService (Boolean) filter parameter that is
+			used by the traffic service filter
+	**>
+	broadcast newStationDiscovered selective {
+		out {
+			<**
+				@description: The radio station just detected
+			**>
+			RadioStation discoveredStation
+
+			<**
+				@description: The coordinates of the just detected station
+			**>
+			GeoPosition geoPosition
+		}
+	}
+}
