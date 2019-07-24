@@ -27,7 +27,7 @@ class TypeRegistrySingleton {
      * forward addType call to the TypeRegistry instance
      * @function TypeRegistrySingleton#addType
      */
-    public static addType = TypeRegistrySingleton.getInstance().addType;
+    public static addType: TypeRegistry["addType"] = TypeRegistrySingleton.getInstance().addType;
 
     /**
      * A singleton Implementation for the Type Registry.

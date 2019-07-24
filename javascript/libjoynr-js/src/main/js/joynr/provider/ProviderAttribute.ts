@@ -16,10 +16,9 @@
  * limitations under the License.
  * #L%
  */
-import * as UtilInternal from "../util/UtilInternal";
-
-import * as Typing from "../util/Typing";
-import ProviderRuntimeException from "../exceptions/ProviderRuntimeException";
+import UtilInternal = require("../util/UtilInternal");
+import Typing = require("../util/Typing");
+import ProviderRuntimeException = require("../exceptions/ProviderRuntimeException");
 
 type ProviderAttributeConstructor<T = ProviderAttribute> = new (...args: any[]) => T;
 
@@ -180,7 +179,8 @@ export class ProviderAttribute<T = any> {
     public hasNotify: boolean = false;
     public attributeType: string;
     public attributeName: string;
-    protected implementation: {
+    /** protected property, needs to be public for tsc -d */
+    public implementation: {
         get?: (key: string) => any | Promise<any>;
         set?: (value: T) => void | Promise<void>;
         valueChanged?: (value: T) => void;
@@ -188,8 +188,10 @@ export class ProviderAttribute<T = any> {
     public parent: JoynrProvider;
     public hasRead: boolean = false;
     public hasWrite: boolean = false;
-    protected privateGetterFunc?: Function;
-    protected privateSetterFunc?: (value: T) => void | Promise<void>;
+    /** protected property, needs to be public for tsc -d */
+    public privateGetterFunc?: Function;
+    /** protected property, needs to be public for tsc -d */
+    public privateSetterFunc?: (value: T) => void | Promise<void>;
 
     /**
      * Constructor of ProviderAttribute object that is used in the generation of provider attributes

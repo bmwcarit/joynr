@@ -151,8 +151,10 @@ function sendRequestOnSuccess<T>(settings: { response: [T]; settings: string }):
 }
 
 class ProxyAttribute {
-    protected attributeType: string;
-    protected attributeName: string;
+    /** protected property, needs to be public for tsc -d */
+    public attributeType: string;
+    /** protected property, needs to be public for tsc -d */
+    public attributeName: string;
     public settings: {
         dependencies: {
             requestReplyManager: RequestReplyManager;
@@ -161,7 +163,8 @@ class ProxyAttribute {
         discoveryQos: DiscoveryQos;
         messagingQos: MessagingQos;
     };
-    protected parent: {
+    /** protected property, needs to be public for tsc -d */
+    public parent: {
         proxyParticipantId: string;
         providerDiscoveryEntry: { participantId: string };
         messagingQos?: MessagingQos;
@@ -204,12 +207,14 @@ class ProxyAttribute {
     }
 
     /**
+     * protected property, but public due to tsc -d
+     *
      * @param request
      * @param requestSettings
      * @param requestSettings.messagingQos
      * @returns an A+ promise
      */
-    protected executeRequest(request: Request.Request, requestSettings: { messagingQos?: MessagingQos }): Promise<any> {
+    public executeRequest(request: Request.Request, requestSettings: { messagingQos?: MessagingQos }): Promise<any> {
         // passed in (right-most) messagingQos have precedence; undefined values are ignored
         const messagingQos = UtilInternal.extend(
             new MessagingQos(),

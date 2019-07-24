@@ -176,5 +176,6 @@ class LongTimer {
         delete this.intervalMap[intervalId];
     }
 }
-
-export = new LongTimer();
+type longTimer = LongTimer;
+const longTimer = new LongTimer();
+export = longTimer;
