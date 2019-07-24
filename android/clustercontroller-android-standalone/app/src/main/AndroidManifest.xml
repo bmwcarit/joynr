@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="io.joynr.android.clustercontrollerstandalone">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <application
+        android:allowBackup="false"
+        android:label="JoynrClusterController"
+        tools:ignore="GoogleAppIndexingWarning,MissingApplicationIcon">
+        <service
+            android:name=".ClusterControllerService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
+        <activity
+            android:name=".MainActivity"
+            android:icon="@drawable/ic_closed_caption_black_24dp"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.AppCompat.Light">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

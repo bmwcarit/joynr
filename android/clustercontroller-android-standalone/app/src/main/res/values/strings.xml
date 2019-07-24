@@ -1,0 +1,8 @@
+<resources>
+    <string name="start">Start Cluster Controller</string>
+    <string name="stop">Stop Cluster Controller</string>
+    <string name="hintbrokeruri">MQTT Broker URI</string>
+    <string name="brokeruriexample">tcp://localhost:1883</string>
+    <string name="clustercontrollerservice">Cluster Controller Service</string>
+    <string name="clustercontrolleruseduri">"Cluster Controller using uri: "</string>
+</resources>
