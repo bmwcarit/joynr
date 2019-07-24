@@ -16,22 +16,23 @@
  * limitations under the License.
  * #L%
  */
-require("../node-unit-test-helper");
-const JoynrPersist = require("../../../main/js/global/JoynrPersist");
-const fs = require("fs");
-const path = require("path");
-const child_process = require("child_process");
+
+import JoynrPersist from "../../../main/js/global/JoynrPersist";
+import fs from "fs";
+import path from "path";
+// eslint-disable-next-line @typescript-eslint/camelcase
+import child_process from "child_process";
 
 describe("global.JoynrPersist", () => {
-    let persist;
+    let persist: any;
     const item = {
         hi: "bla"
     };
     let testNum = 0;
     const testDirectory = "joynrPersistTestResults";
     const basePath = path.join(process.cwd(), testDirectory);
-    let location;
-    let locationPath;
+    let location: any;
+    let locationPath: any;
     const key = "key";
     const corruptData = "corrupted Data";
     const clearResults = true;
@@ -44,6 +45,7 @@ describe("global.JoynrPersist", () => {
 
     afterAll(() => {
         if (clearResults) {
+            // eslint-disable-next-line @typescript-eslint/camelcase
             child_process.execSync(`rm -rf ${basePath}`);
         }
     });

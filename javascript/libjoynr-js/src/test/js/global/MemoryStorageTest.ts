@@ -16,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-const MemoryStorage = require("../../../main/js/global/MemoryStorage");
+import MemoryStorage from "../../../main/js/global/MemoryStorage";
 
 describe("memory storage", () => {
-    let storage;
+    let storage: any;
     const item = {
         hi: "bla"
     };

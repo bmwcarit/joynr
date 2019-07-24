@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,19 @@
  * #L%
  */
 
-/**
- *
- * @returns browser supported XMLHttpRequest.
- */
-module.exports = XMLHttpRequest;
+export interface Storage {
+    setItem(key: string, value: any): void;
+    getItem(key: string): any;
+    removeItem(key: string): void;
+    clear(): void;
+}
+
+export interface Persistency extends Storage {
+    init(): Promise<void>;
+    shutdown(): Promise<void>;
+}
+
+export interface PersistencySettings {
+    clearPersistency: boolean | undefined;
+    location?: string;
+}

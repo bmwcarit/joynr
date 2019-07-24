@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
  * limitations under the License.
  * #L%
  */
+import crypto from "crypto";
 
-const crypto = require("crypto");
-const fs = require("fs");
-const path = require("path");
-const { promisify } = require("util");
+import fs from "fs";
+import path from "path";
+import { promisify } from "util";
 const encoding = "utf8";
-const LoggingManager = require("../joynr/system/LoggingManager");
+import LoggingManager from "../joynr/system/LoggingManager";
 const log = LoggingManager.getLogger("joynr.global.JoynrPersist");
 
 const readFileAsync = promisify(fs.readFile);
@@ -32,14 +32,14 @@ const lstatAsync = promisify(fs.lstat);
 const mkdirAsync = promisify(fs.mkdir);
 const unlinkAsync = promisify(fs.unlink);
 
-function hashFileName(key) {
+function hashFileName(key: string): string {
     return crypto
         .createHash("md5")
         .update(key)
         .digest("hex");
 }
 
-const resolveDir = function(dir) {
+const resolveDir = function(dir: string): string {
     dir = path.normalize(dir);
     if (path.isAbsolute(dir)) {
         return dir;
@@ -47,7 +47,7 @@ const resolveDir = function(dir) {
     return path.join(process.cwd(), dir);
 };
 
-async function mkdirRecursive(directory) {
+async function mkdirRecursive(directory: string): Promise<void> {
     try {
         await mkdirAsync(directory);
     } catch (e) {
@@ -61,18 +61,19 @@ async function mkdirRecursive(directory) {
     }
 }
 
-function JoynrPersist(options) {
-    this._directory = resolveDir(options.dir);
-}
+class JoynrPersist {
+    private directory: string;
+    public constructor(options: { dir: string }) {
+        this.directory = resolveDir(options.dir);
+    }
 
-JoynrPersist.prototype = {
-    async init() {
-        await lstatAsync(this._directory).catch(() => mkdirRecursive(this._directory));
+    public async init(): Promise<{ key: string; value: any }[]> {
+        await lstatAsync(this.directory).catch(() => mkdirRecursive(this.directory));
         return this.getAllData().catch(e => {
             if (e.code === "EISDIR") {
-                const files = fs.readdirSync(this._directory);
+                const files = fs.readdirSync(this.directory);
                 const subDirectories = files.filter(file => {
-                    const filePath = path.join(this._directory, file);
+                    const filePath = path.join(this.directory, file);
                     return fs.lstatSync(filePath).isDirectory();
                 });
                 throw new Error(
@@ -84,19 +85,19 @@ JoynrPersist.prototype = {
                 throw e;
             }
         });
-    },
+    }
 
-    getPath(key) {
-        return path.join(this._directory, hashFileName(key));
-    },
+    private getPath(key: string): string {
+        return path.join(this.directory, hashFileName(key));
+    }
 
-    getAllData() {
-        return readDirAsync(this._directory)
+    public getAllData(): Promise<any> {
+        return readDirAsync(this.directory)
             .then(files => {
                 const promises = [];
                 for (let i = 0, length = files.length; i < length; i++) {
                     const currentFile = files[i];
-                    const filePath = path.join(this._directory, currentFile);
+                    const filePath = path.join(this.directory, currentFile);
                     /*eslint-disable promise/no-nesting*/
                     promises.push(
                         readFileAsync(filePath, encoding)
@@ -118,29 +119,29 @@ JoynrPersist.prototype = {
             .then(arr => {
                 return arr.filter(element => element !== null);
             });
-    },
+    }
 
-    setItem(key, value) {
+    public setItem(key: string, value: any): Promise<void> {
         const datum = { key, value };
         return writeFileAsync(this.getPath(key), JSON.stringify(datum));
-    },
+    }
 
-    removeItem(key) {
+    public removeItem(key: string): Promise<void> {
         return unlinkAsync(this.getPath(key));
-    },
+    }
 
-    async clear() {
+    public async clear(): Promise<any> {
         // unfortunately we can't spawn a child process and call rm -rf
         // TOTO: check if it's bad to delete all files here.
-        return readDirAsync(this._directory).then(files => {
+        return readDirAsync(this.directory).then(files => {
             const promises = [];
             for (let i = 0, length = files.length; i < length; i++) {
                 const currentFile = files[i];
-                promises.push(unlinkAsync(path.join(this._directory, currentFile)));
+                promises.push(unlinkAsync(path.join(this.directory, currentFile)));
             }
             return Promise.all(promises);
         });
     }
-};
+}
 
-module.exports = JoynrPersist;
+export = JoynrPersist;

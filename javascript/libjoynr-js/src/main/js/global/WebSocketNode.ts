@@ -41,7 +41,6 @@ class WebSocketNode extends ws {
 
     public constructor(remoteUrl: string, keychain: KeyChain, useUnencryptedTls: boolean) {
         const clientOptions: ws.ClientOptions = {};
-
         if (keychain) {
             clientOptions.cert = keychain.tlsCert;
             clientOptions.key = keychain.tlsKey;

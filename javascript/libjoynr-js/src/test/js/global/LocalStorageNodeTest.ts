@@ -16,22 +16,24 @@
  * limitations under the License.
  * #L%
  */
-require("../node-unit-test-helper");
-const LocalStorage = require("../../../main/js/global/LocalStorageNode");
-const fs = require("fs");
-const path = require("path");
-const child_process = require("child_process");
+
+import LocalStorage from "../../../main/js/global/LocalStorageNode";
+import fs from "fs";
+import path from "path";
+// eslint-disable-next-line @typescript-eslint/camelcase
+import child_process from "child_process";
+import testUtil = require("../testUtil");
 
 describe("local storage", () => {
-    let storage;
+    let storage: any;
     const item = {
         hi: "bla"
     };
     let testNum = 0;
     const testDirectory = "localStorageTestResults";
     const basePath = path.join(process.cwd(), testDirectory);
-    let location;
-    let locationPath;
+    let location: any;
+    let locationPath: any;
     const key = "key";
     const corruptData = "corrupted Data";
     const clearResults = true;
@@ -44,6 +46,7 @@ describe("local storage", () => {
 
     afterAll(() => {
         if (clearResults) {
+            // eslint-disable-next-line @typescript-eslint/camelcase
             child_process.execSync(`rm -rf ${basePath}`);
         }
     });
@@ -54,7 +57,7 @@ describe("local storage", () => {
         locationPath = path.join(process.cwd(), location);
     });
 
-    it("without clean directory", done => {
+    it("without clean directory", async () => {
         fs.mkdirSync(locationPath);
         const subDirectoryName = "SubdirectoryName";
         const subDirectoryLocation = path.join(locationPath, subDirectoryName);
@@ -63,17 +66,12 @@ describe("local storage", () => {
             clearPersistency: false,
             location
         });
-        storage
-            .init()
-            .then(fail)
-            .catch(e => {
-                expect(e.message).toEqual(
-                    `joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: ${JSON.stringify(
-                        [subDirectoryName]
-                    )}`
-                );
-                done();
-            });
+        const e = await testUtil.reversePromise(storage.init());
+        expect(e.message).toEqual(
+            `joynr configuration error: Persistency subdirectory must not include other subdirectories. Directories found: ${JSON.stringify(
+                [subDirectoryName]
+            )}`
+        );
     });
 
     describe("with clean directory", () => {
