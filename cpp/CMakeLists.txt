@@ -600,7 +600,7 @@ else(USE_PLATFORM_SPDLOG)
     AddExternalProject(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog
-        GIT_TAG 799ba2a57bb16b921099bd9ab64a513e4ebe4217
+        GIT_TAG v1.3.1
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
