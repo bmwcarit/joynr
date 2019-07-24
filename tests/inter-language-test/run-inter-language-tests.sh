@@ -384,6 +384,16 @@ function start_javascript_provider {
 	sleep 10
 }
 
+function start_javascript_provider_bundle {
+	log 'Starting Javascript provider bundle.'
+	cd $ILT_DIR
+	nohup npm run startproviderbundle --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider-javascript.log 2>&1 &
+	PROVIDER_PID=$!
+	echo "Started Javascript provider with PID $PROVIDER_PID"
+	# Allow some time for startup
+	sleep 10
+}
+
 function start_java_consumer_cc {
 	log 'Starting Java consumer CC (with in process clustercontroller).'
 	cd $ILT_DIR
@@ -489,31 +499,11 @@ function start_javascript_consumer {
 	fi
 }
 
-function start_js_bundle_consumer {
-	log 'Starting Javascript bundle consumer.'
-	cd $ILT_DIR
-	rm -fr localStorageStorage
-	npm run-script startjasminebundle --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/consumer-javascript-bundle$1.log 2>&1
-	SUCCESS=$?
-
-	if [ "$SUCCESS" != 0 ]
-	then
-		log 'Javascript bundle consumer FAILED.'
-		echo "STATUS = $SUCCESS"
-		#test_failed
-		let FAILED_TESTS+=1
-		#stopall
-	else
-		log 'Javascript bundle consumer successfully completed.'
-	fi
-}
-
 function start_consumers {
 	start_java_consumer_cc $1
 	#start_java_consumer_ws $1
 	start_cpp_consumer $1
 	start_javascript_consumer $1
-	start_js_bundle_consumer $1
 }
 
 # TESTS
@@ -588,6 +578,18 @@ stop_services
 clean_up
 log 'RUN CHECKS WITH JAVASCRIPT PROVIDER.'
 PROVIDER="provider-javascript"
+start_services $PROVIDER
+start_cluster_controller $PROVIDER
+start_javascript_provider
+start_consumers $PROVIDER
+stop_provider
+stop_cluster_controller
+stop_services
+
+# run checks with Javascript provider
+clean_up
+log 'RUN CHECKS WITH JAVASCRIPT BUNDLE PROVIDER.'
+PROVIDER="provider-javascript-bundle"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
 start_javascript_provider

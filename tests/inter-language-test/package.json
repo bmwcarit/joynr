@@ -8,8 +8,7 @@
   "dependencies": {
     "@types/lodash": "4.14.123",
     "bluebird": "3.3.5",
-    "joynr": "file:../../javascript/libjoynr-js/src/main/js",
-    "joynr-bundle": "file:../../javascript/libjoynr-js/src/main/browserify",
+    "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
     "lodash": "4.17.11",
     "test-base": "file:../test-base"
   },
@@ -18,6 +17,7 @@
     "@types/node": "8.9.4",
     "@typescript-eslint/eslint-plugin": "1.7.0",
     "@typescript-eslint/parser": "1.7.0",
+    "browserify": "16.3.0",
     "eslint": "5.16.0",
     "eslint-config-prettier": "4.2.0",
     "eslint-plugin-jest": "22.5.1",
@@ -29,19 +29,20 @@
     "prettier": "1.13.2",
     "ts-jest": "24.0.1",
     "ts-node": "8.3.0",
+    "tsify": "4.0.1",
     "typescript": "3.4.3"
   },
   "config": {
     "domain": "joynr-inter-language-test-domain",
-    "glob": "src/{{main/js}/**/*.js,main/js/*.js}"
+    "glob": "src/{{main/js}/**/*.ts,main/js/*.ts}"
   },
   "scripts": {
-    "clean": "rm -rf node_modules ../../javascript/libjoynr-js/src/main/browserify/node_modules",
-    "install:browserify": "(cd ../../javascript/libjoynr-js/src/main/browserify && npm i)",
+    "clean": "rm -rf node_modules ../../javascript/libjoynr-js/.output",
+    "install:browserify": "node bundle.js",
     "startprovider": "node_modules/.bin/ts-node src/main/js/provider.ts $npm_package_config_domain",
-    "startjasmine": "export domain=$npm_package_config_domain && jest -i",
-    "startjasminebundle": "export domain=$npm_package_config_domain && export browserify=true && node src/main/js/runIltConsumerSpec.js",
-    "build:fast": "npm run install:browserify && npm i && npm run format && npm run lint",
+    "startproviderbundle": "node src/main/js/provider.bundle.js $npm_package_config_domain",
+    "startjasmine": "export domain=$npm_package_config_domain && node_modules/.bin/jest -i",
+    "build:fast": "cd ../../javascript/libjoynr-js && npm run ts:package && cd - && npm i && npm run install:browserify && npm run lint",
     "build": "npm run clean && npm run build:fast",
     "format": "node_modules/.bin/prettier --write $npm_package_config_glob",
     "lint": "node_modules/.bin/eslint $npm_package_config_glob",

@@ -12,7 +12,6 @@
     "@types/ws": "6.0.1",
     "@typescript-eslint/eslint-plugin": "1.7.0",
     "@typescript-eslint/parser": "1.7.0",
-    "browserify": "16.1.0",
     "eslint": "5.16.0",
     "eslint-config-prettier": "4.2.0",
     "eslint-plugin-jest": "22.5.1",
@@ -82,13 +81,15 @@
     "ts:copy:sit": "find src/test/js/node_integration \\( -name node_modules \\) -prune -o \\( -name '*.ts' \\) -exec bash -c 'cp .output/$(dirname {})/$(basename {} .ts).js $(dirname {})/$(basename {} .ts).js' \\;",
     "ts:copy:test": "cp -r .output/src/test/generated/ src/test",
     "ts:compile": "tsc --noImplicitUseStrict",
+    "ts:compile:dts": "tsc --noImplicitUseStrict -d || true",
     "ts:check": "tsc --noEmit",
     "ts:test": "jest --config jest.config.js --silent",
     "ts:test:ci": "jest --config jest.config.js --coverage --no-cache",
     "ts:test:sit": "jest --config jest.config.integration.js -i --force-exit",
     "ts:clean": "./scripts/ts-clean.js all",
     "ts:clean:test": "./scripts/ts-clean.js test",
-    "ts:clean:main": "./scripts/ts-clean.js main"
+    "ts:clean:main": "./scripts/ts-clean.js main",
+    "ts:package": "npm run ts:compile:dts && cp src/main/js/package.json .output/src/main/js && cd .output/src/main/js && npm i && ln -s .. node_modules/joynr && cd -"
   },
   "repository": {
     "type": "git",

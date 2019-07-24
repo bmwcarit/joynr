@@ -19,16 +19,16 @@
 
 const fs = require("fs");
 const browserify = require("browserify");
+const tsify = require("tsify");
 
-const inputFile = "../js/joynr.js";
-const outputFile = "joynr.bundle.js";
+const inputFile = "./src/main/js/provider.ts";
+const outputFile = "./src/main/js/provider.bundle.js";
 
 const bundler = browserify(inputFile, {
     browserField: false,
     commondir: false,
     bare: true,
-    builtins: false,
-    standalone: "joynr.bundle"
+    builtins: false
 });
 
 return new Promise((resolve, reject) => {
@@ -36,25 +36,19 @@ return new Promise((resolve, reject) => {
     ws.on("finish", resolve);
     ws.on("error", reject);
 
-    ["start/InProcessRuntime"].map(
-        module => {
-            bundler.ignore(`./${module}.js`, { basedir: "../js/joynr" });
-        }
-    );
+    bundler.plugin(tsify, { allowJs: true });
+
+    bundler.ignore("joynr/joynr/start/InProcessRuntime.js");
 
     bundler
         .external("wscpp")
         .external("smrf-native")
         .external("ws")
         .external("bluebird")
-        .transform("uglifyify", {
-            global: true,
-            mangle: false,
-            output: {
-                comments: /@license|@preserve|@author|@copyright|^!/
-            }
-        })
         .bundle()
+        .on("error", function(error) {
+            console.error(error.toString());
+        })
         .pipe(ws);
 }).catch(err => {
     console.error("Bundling failed due to", err);
