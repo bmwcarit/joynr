@@ -26,7 +26,7 @@ transport middleware.
 * For example, using joynr:
 
  * Web Sockets may be used between devices
- * HTTP Long Polling may be used to the backend
+ * MQTT or HTTP Long Polling may be used to the backend
 
 * Since joynr is transport middleware agnostic, operations may swap out middleware implementations and infrastructure without requiring application rewrites. For example, a joynr network could replace HTTP Long Polling with Web Sockets without requiring the applications using joynr to be modified or even recompiled.
 
@@ -37,7 +37,7 @@ transport middleware.
 * joynr defines programming interfaces to existing Public Key Infrastructure, in order to reuse infrastructure
 already in place for other personalisation and security use cases.
 
-### Language Bindings for C++, Java and JavaScript
+### Language Bindings for C++, Java, JavaScript and TypeScript
 
 * joynr supports the C++, Java and JavaScript languages in order to enable
   developers to target a wide range of platforms, all the way from backend
@@ -53,7 +53,7 @@ joynr supports all three of the most common calling paradigms supported by moder
 * Filtered Broadcast or event subscriptions, while similar to pub/sub, allow a richer modelling of events that do not map to a single attribute value
 
 ## Layered architecture
-joynr employs the following layers in its implementations, decreasing in level of abstraction: 
+joynr employs the following layers in its implementations, decreasing in level of abstraction:
 
 **Formally specified interface**
 
@@ -75,11 +75,10 @@ Mapping of middleware-agnostic messaging to a specific transport middleware impl
 
 **Messaging implementation**
 
-
  Open Source industry standard implementations are preferred.
  Currently:
-
  * Atmosphere-based via HTTP
+ * mosquitto/paho/hivemq-mqtt-client for MQTT
  * WebSockets
 
 **OSI Transport Layer**
@@ -90,7 +89,7 @@ TCP, Sockets, etc. depending on the needs of the messaging implementation.
 Per default, joynr ships with a REST-based messaging middleware that addresses requirements such as reliability, stability, performance, memory footprint, CPU usage, and operating system independence required of distributed applications running on embedded devices over unreliable networks.
 
 ## Releases
-See the [release notes](ReleaseNotes.md).
+See the [release notes](ReleaseNotes.md) and our [versioning scheme](JoynrVersioning.md).
 
 ## Further Reading
 
