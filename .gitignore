@@ -6,7 +6,7 @@ build-*/
 !build-resources/
 build/
 !docker/build/
-buildSignature.js
+buildSignature.ts
 CMakeLists.txt.user*
 cpp/docs/
 cpp/libjoynr/communication-model/
@@ -19,7 +19,7 @@ cpp/libjoynrclustercontroller/include/joynr/JoynrClusterControllerExport.h
 cpp/runtimes/include/joynr/JoynrClusterControllerRuntimeExport.h
 cpp/runtimes/include/joynr/JoynrRuntimeExport.h
 dependency-reduced-pom.xml
-joynr.bundle.js
+*.bundle.js
 target/
 
 # Generated files
@@ -67,6 +67,8 @@ examples/radio-js/src/main/resources/lib/
 ilt-results*
 java/common/infrastructure-common/testdb/
 javascript/libjoynr-js/userdirectorydb/
+javascript/libjoynr-js/.build/
+javascript/libjoynr-js/.output/
 joynr_persistedSubscriptionRequests/
 joynrpersistence/
 robustness-results*
