@@ -66,6 +66,7 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
                 val generatorHandler =
                     JoynrGeneratorHandler(project.logger, joynrGeneratorArgumentHandler)
                 generatorHandler.execute()
+                joynrGeneratorArgumentHandler.setClean(false)
             }
         }
 
@@ -87,12 +88,16 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         }
 
         // Register our task with the variant's sources
-        val android : BaseAppModuleExtension? = project.extensions.getByName("android") as? BaseAppModuleExtension
         val outputDir = File("${project.rootDir}/${extension.outputPath.get()}")
         project.logger.info("----> ${outputDir.path}")
-        android?.applicationVariants?.all {variant ->
-            variant.registerJavaGeneratingTask(task, outputDir)
+
+        project.extensions.findByName("android")?.let {
+            val android : BaseAppModuleExtension? = it as? BaseAppModuleExtension
+            android?.applicationVariants?.all {variant ->
+                variant.registerJavaGeneratingTask(task, outputDir)
+            }
         }
+
     }
 
 }

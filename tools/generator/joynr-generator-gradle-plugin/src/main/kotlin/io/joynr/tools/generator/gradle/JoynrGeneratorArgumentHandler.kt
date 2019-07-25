@@ -50,7 +50,7 @@ class JoynrGeneratorArgumentHandler(private val logger: Logger,
     companion object {
         // default values for code generation
         private const val DEFAULT_LANGUAGE = "java"
-        private const val DEFAULT_MODEL_PATH = "app/src/main/model/"
+        private const val DEFAULT_MODEL_PATH = "app/src/main/fidl/"
     }
 
     private var doClean: Boolean = false

@@ -41,7 +41,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "io.joynr.tools.generator:generator-framework:$joynrVersion"
     implementation "io.joynr.tools.generator:java-generator:$joynrVersion"
-    implementation 'com.android.tools.build:gradle:3.5.0-beta04'
+    implementation 'com.android.tools.build:gradle:3.4.2'
     // force same version of antlr as generator in order to avoid conflicts
     implementation "org.antlr:antlr-runtime:3.2"
 }

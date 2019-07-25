@@ -128,7 +128,7 @@ configuration](#maven-configuration) for details):
 * `modelPath`: Defines the path where the `.fidl` files are created and located.
   You must place the models in this location. The path must always be specified
   from the project's root onwards, typically `app/src/...`. If not supplied in
-  the script, default value is `app/src/main/model/`.
+  the script, default value is `app/src/main/fidl/`.
 * `outputPath`: The output path where the generated files are created. the
   default value is `app/build/generated/source/fidl/`.
 * `generationLanguage`: The language to be used for generator tool selection.
