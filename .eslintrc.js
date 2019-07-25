@@ -151,6 +151,7 @@ module.exports = {
             rules: {
                 "no-useless-constructor": "off",
                 "no-redeclare": "off",
+                "no-dupe-class-members": "off",
                 "@typescript-eslint/no-parameter-properties": "off",
                 "@typescript-eslint/no-explicit-any": "off",
                 "@typescript-eslint/no-unused-vars": "off",

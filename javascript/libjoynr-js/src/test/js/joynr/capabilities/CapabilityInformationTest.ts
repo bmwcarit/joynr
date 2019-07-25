@@ -16,13 +16,14 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const GlobalDiscoveryEntry = require("../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry");
-const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
-const Version = require("../../../../main/js/generated/joynr/types/Version");
 
-let capInfo;
+import GlobalDiscoveryEntry from "../../../../main/js/generated/joynr/types/GlobalDiscoveryEntry";
+import ProviderQos from "../../../../main/js/generated/joynr/types/ProviderQos";
+import ProviderScope from "../../../../main/js/generated/joynr/types/ProviderScope";
+import Version from "../../../../main/js/generated/joynr/types/Version";
+
+const expiryDateMs = Date.now() + 1e10;
+let capInfo: GlobalDiscoveryEntry;
 beforeEach(() => {
     capInfo = new GlobalDiscoveryEntry({
         providerVersion: new Version({
@@ -39,7 +40,9 @@ beforeEach(() => {
         }),
         address: "address",
         publicKeyId: "",
-        participantId: "CDSNavigationParticipantId_vehicleA"
+        participantId: "CDSNavigationParticipantId_vehicleA",
+        expiryDateMs,
+        lastSeenDateMs: 0
     });
 });
 

@@ -17,14 +17,14 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const ParticipantIdStorage = require("../../../../main/js/joynr/capabilities/ParticipantIdStorage");
-const MemoryStorage = require("../../../../main/js/global/MemoryStorage");
-const CapabilitiesUtil = require("../../../../main/js/joynr/util/CapabilitiesUtil");
+
+import ParticipantIdStorage from "../../../../main/js/joynr/capabilities/ParticipantIdStorage";
+import MemoryStorage from "../../../../main/js/global/MemoryStorage";
+import * as CapabilitiesUtil from "../../../../main/js/joynr/util/CapabilitiesUtil";
 
 describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", () => {
-    let participantIdStorage, localStorageSpy, nanoidSpy;
-    let generatedParticipantId, localStorage;
+    let participantIdStorage: ParticipantIdStorage, localStorageSpy: any, nanoidSpy: any;
+    let generatedParticipantId: any, localStorage: any;
 
     const nanoid = "nanoid";
     const interfaceName = "interface/Name";
@@ -44,55 +44,53 @@ describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", () => {
     generatedParticipantId = nanoid;
 
     describe("with mocked LocalStorage", () => {
-        const prepareTests = function(done) {
-            let stored = null;
-            const localStorageSpy = jasmine.createSpyObj("localStorageSpy", ["getItem", "setItem"]);
-            localStorageSpy.getItem.and.callFake(() => {
+        const prepareTests = function() {
+            let stored: any = null;
+            const localStorageSpy = {
+                getItem: jest.fn(),
+                setItem: jest.fn()
+            };
+            localStorageSpy.getItem.mockImplementation(() => {
                 return stored;
             });
-            localStorageSpy.setItem.and.callFake((key, value) => {
+            localStorageSpy.setItem.mockImplementation((_key: string, value: any) => {
                 stored = value;
             });
             localStorage = localStorageSpy;
-            nanoidSpy = jasmine.createSpy("nanoid");
-            nanoidSpy.and.returnValue(nanoid);
+            nanoidSpy = jest.fn();
+            nanoidSpy.mockReturnValue(nanoid);
             participantIdStorage = new ParticipantIdStorage(localStorage, nanoidSpy);
-            done();
         };
         sharedTests(prepareTests);
     });
 
     describe("with MemoryStorage", () => {
-        const prepareTests = function(done) {
+        const prepareTests = function() {
             localStorageSpy = null;
-            nanoidSpy = jasmine.createSpy("nanoid");
-            nanoidSpy.and.returnValue(nanoid);
+            nanoidSpy = jest.fn();
+            nanoidSpy.mockReturnValue(nanoid);
             localStorage = new MemoryStorage();
             participantIdStorage = new ParticipantIdStorage(localStorage, nanoidSpy);
             generatedParticipantId = nanoid;
-            done();
         };
         sharedTests(prepareTests);
     });
 
-    function sharedTests(prepareTests) {
-        beforeEach(prepareTests);
+    function sharedTests(prepareTests: Function) {
+        beforeEach(() => prepareTests());
 
-        it("is instantiable", done => {
+        it("is instantiable", () => {
             expect(participantIdStorage).toBeDefined();
-            expect(participantIdStorage instanceof ParticipantIdStorage).toBeTruthy();
-            done();
         });
 
-        it("is has all members", done => {
+        it("is has all members", () => {
             expect(participantIdStorage.getParticipantId).toBeDefined();
             expect(typeof participantIdStorage.getParticipantId === "function").toBeTruthy();
-            done();
         });
 
-        it("uses the stored participantId if available", done => {
+        it("uses the stored participantId if available", () => {
             localStorage.setItem(key, storedParticipantId);
-            const result = participantIdStorage.getParticipantId(domain, provider);
+            const result = participantIdStorage.getParticipantId(domain, provider as any);
             if (localStorageSpy) {
                 expect(localStorageSpy.getItem).toHaveBeenCalled();
                 expect(localStorageSpy.getItem).toHaveBeenCalledWith(key);
@@ -100,27 +98,25 @@ describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", () => {
             }
             expect(nanoidSpy).not.toHaveBeenCalled();
             expect(result).toEqual(storedParticipantId);
-            done();
         });
 
-        it("stores participantId when setParticipantId is called", done => {
-            participantIdStorage.setParticipantId(domain, provider, storedParticipantId);
+        it("stores participantId when setParticipantId is called", () => {
+            participantIdStorage.setParticipantId(domain, provider as any, storedParticipantId);
             if (localStorageSpy) {
                 expect(localStorageSpy.setItem).toHaveBeenCalledWith(key, storedParticipantId);
             }
 
-            const result = participantIdStorage.getParticipantId(domain, provider);
+            const result = participantIdStorage.getParticipantId(domain, provider as any);
             if (localStorageSpy) {
                 expect(localStorageSpy.getItem).toHaveBeenCalled();
                 expect(localStorageSpy.getItem).toHaveBeenCalledWith(key);
             }
             expect(nanoidSpy).not.toHaveBeenCalled();
             expect(result).toEqual(storedParticipantId);
-            done();
         });
 
-        it("generates a new unique identifier if no participantId is stored", done => {
-            const result = participantIdStorage.getParticipantId(domain, provider);
+        it("generates a new unique identifier if no participantId is stored", () => {
+            const result = participantIdStorage.getParticipantId(domain, provider as any);
             if (localStorageSpy) {
                 expect(localStorageSpy.getItem).toHaveBeenCalled();
                 expect(localStorageSpy.getItem).toHaveBeenCalledWith(key);
@@ -130,7 +126,6 @@ describe("libjoynr-js.joynr.capabilities.ParticipantIdStorage", () => {
             expect(nanoidSpy).toHaveBeenCalled();
             expect(nanoidSpy).toHaveBeenCalledWith();
             expect(result).toEqual(generatedParticipantId);
-            done();
         });
     }
 });

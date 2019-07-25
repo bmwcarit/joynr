@@ -16,51 +16,42 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const CapabilitiesRegistrar = require("../../../../main/js/joynr/capabilities/CapabilitiesRegistrar");
-const ProviderQos = require("../../../../main/js/generated/joynr/types/ProviderQos");
-const ProviderAttribute = require("../../../../main/js/joynr/provider/ProviderAttribute");
-const ProviderScope = require("../../../../main/js/generated/joynr/types/ProviderScope");
-const nanoid = require("nanoid");
+
+import CapabilitiesRegistrar from "../../../../main/js/joynr/capabilities/CapabilitiesRegistrar";
+import ProviderQos from "../../../../main/js/generated/joynr/types/ProviderQos";
+import * as ProviderAttribute from "../../../../main/js/joynr/provider/ProviderAttribute";
+import ProviderScope from "../../../../main/js/generated/joynr/types/ProviderScope";
+import nanoid from "nanoid";
+
 describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
-    let capabilitiesRegistrar;
-    let requestReplyManagerSpy;
-    let publicationManagerSpy;
-    let participantId;
-    let domain;
-    let participantIdStorageSpy;
-    let discoveryStubSpy;
-    let messageRouterSpy;
-    let libjoynrMessagingAddress;
-    let provider;
-    let providerQos;
-    let checkImplementation;
-    let TestProvider;
+    let capabilitiesRegistrar: CapabilitiesRegistrar;
+    let requestReplyManagerSpy: any;
+    let publicationManagerSpy: any;
+    let participantId: any;
+    let domain: any;
+    let participantIdStorageSpy: any;
+    let discoveryStubSpy: any;
+    let messageRouterSpy: any;
+    let libjoynrMessagingAddress: any;
+    let provider: any;
+    let providerQos: ProviderQos;
+
+    class TestProvider {
+        public static MAJOR_VERSION = 47;
+        public static MINOR_VERSION = 11;
+        public id = nanoid();
+        public interfaceName = "myInterfaceName";
+        public checkImplementation = jest.fn().mockReturnValue([]);
+    }
 
     beforeEach(done => {
-        // default checkImplemenation, can be overwritten by individual tests as
-        // needed
-        checkImplementation = function checkImplementationDefault() {
-            return [];
+        publicationManagerSpy = {
+            addPublicationProvider: jest.fn(),
+            removePublicationProvider: jest.fn(),
+            registerOnChangedProvider: jest.fn()
         };
 
-        publicationManagerSpy = jasmine.createSpyObj("PublicationManager", [
-            "addPublicationProvider",
-            "removePublicationProvider",
-            "registerOnChangedProvider"
-        ]);
-
-        TestProvider = function() {
-            this.id = nanoid();
-            this.interfaceName = "myInterfaceName";
-            this.checkImplementation = checkImplementation;
-        };
-
-        TestProvider.MAJOR_VERSION = 47;
-        TestProvider.MINOR_VERSION = 11;
         provider = new TestProvider();
-
-        spyOn(provider, "checkImplementation").and.callThrough();
 
         providerQos = new ProviderQos({
             customParameters: [],
@@ -81,27 +72,33 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         );
         domain = "testdomain";
         participantId = "myParticipantId";
-        participantIdStorageSpy = jasmine.createSpyObj("participantIdStorage", [
-            "getParticipantId",
-            "setParticipantId"
-        ]);
-        participantIdStorageSpy.getParticipantId.and.returnValue(participantId);
-        requestReplyManagerSpy = jasmine.createSpyObj("RequestReplyManager", [
-            "addRequestCaller",
-            "removeRequestCaller"
-        ]);
-        discoveryStubSpy = jasmine.createSpyObj("discoveryStub", ["add", "remove"]);
-        discoveryStubSpy.add.and.returnValue(Promise.resolve());
-        discoveryStubSpy.remove.and.returnValue(Promise.resolve());
-        messageRouterSpy = jasmine.createSpyObj("messageRouter", ["addNextHop", "removeNextHop"]);
+        participantIdStorageSpy = {
+            getParticipantId: jest.fn(),
+            setParticipantId: jest.fn()
+        };
+        participantIdStorageSpy.getParticipantId.mockReturnValue(participantId);
+        requestReplyManagerSpy = {
+            addRequestCaller: jest.fn(),
+            removeRequestCaller: jest.fn()
+        };
+        discoveryStubSpy = {
+            add: jest.fn(),
+            remove: jest.fn()
+        };
+        discoveryStubSpy.add.mockReturnValue(Promise.resolve());
+        discoveryStubSpy.remove.mockReturnValue(Promise.resolve());
+        messageRouterSpy = {
+            addNextHop: jest.fn(),
+            removeNextHop: jest.fn()
+        };
 
-        messageRouterSpy.addNextHop.and.returnValue(Promise.resolve());
+        messageRouterSpy.addNextHop.mockReturnValue(Promise.resolve());
         libjoynrMessagingAddress = {
             someKey: "someValue",
             toBe: "a",
             object: {}
         };
-        messageRouterSpy.removeNextHop.and.returnValue(Promise.resolve());
+        messageRouterSpy.removeNextHop.mockReturnValue(Promise.resolve());
 
         capabilitiesRegistrar = new CapabilitiesRegistrar({
             discoveryStub: discoveryStubSpy,
@@ -115,96 +112,67 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         done();
     });
 
-    it("is instantiable", done => {
+    it("is instantiable", () => {
         expect(capabilitiesRegistrar).toBeDefined();
-        expect(capabilitiesRegistrar instanceof CapabilitiesRegistrar).toBeTruthy();
-        done();
     });
 
-    it("has all members", done => {
+    it("has all members", () => {
         expect(capabilitiesRegistrar.registerProvider).toBeDefined();
         expect(typeof capabilitiesRegistrar.registerProvider === "function").toBeTruthy();
         expect(typeof capabilitiesRegistrar.register === "function").toBeTruthy();
-        done();
     });
 
-    it("checks the provider's implementation", done => {
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(() => {
-                return null;
-            })
-            .catch(() => {
-                return null;
-            });
+    it("checks the provider's implementation", async () => {
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         expect(provider.checkImplementation).toHaveBeenCalled();
-        done();
     });
 
     it("supports configuring defaultDelayMs", async () => {
         const overwrittenDelay = 100000;
 
-        jasmine.clock().install();
-        const baseTime = new Date();
-        jasmine.clock().mockDate(baseTime);
+        jest.useFakeTimers();
+        const baseTime = Date.now();
+        jest.spyOn(Date, "now").mockImplementationOnce(() => {
+            return baseTime;
+        });
 
         CapabilitiesRegistrar.setDefaultExpiryIntervalMs(overwrittenDelay);
 
-        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos).catch(error => {
-            jasmine.clock().uninstall();
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos).catch((error: any) => {
+            jest.useRealTimers();
             throw error;
         });
 
         expect(discoveryStubSpy.add).toHaveBeenCalled();
-        const actualDiscoveryEntry = discoveryStubSpy.add.calls.argsFor(0)[0];
-        expect(actualDiscoveryEntry.expiryDateMs).toEqual(baseTime.getTime() + overwrittenDelay);
+        const actualDiscoveryEntry = discoveryStubSpy.add.mock.calls[0][0];
+        expect(actualDiscoveryEntry.expiryDateMs).toEqual(baseTime + overwrittenDelay);
 
-        jasmine.clock().uninstall();
+        jest.useRealTimers();
     });
 
-    it("checks the provider's implementation, and rejects if incomplete", done => {
+    it("checks the provider's implementation, and rejects if incomplete", async () => {
         provider.checkImplementation = function() {
             return ["Operation:addFavoriteStation"];
         };
 
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(fail)
-            .catch(e => {
-                expect(e).toEqual(
-                    new Error(
-                        `provider: ${domain}/${provider.interfaceName}.v${
-                            provider.constructor.MAJOR_VERSION
-                        } is missing: Operation:addFavoriteStation`
-                    )
-                );
-                done();
-            });
+        const e = await reversePromise(capabilitiesRegistrar.registerProvider(domain, provider, providerQos));
+        expect(e).toEqual(
+            new Error(
+                `provider: ${domain}/${provider.interfaceName}.v${
+                    provider.constructor.MAJOR_VERSION
+                } is missing: Operation:addFavoriteStation`
+            )
+        );
     });
 
-    it("fetches participantId from the participantIdStorage", done => {
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(() => {
-                return null;
-            })
-            .catch(() => {
-                return null;
-            });
+    it("fetches participantId from the participantIdStorage", async () => {
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalled();
         expect(participantIdStorageSpy.getParticipantId).toHaveBeenCalledWith(domain, provider);
-        done();
     });
 
-    it("registers next hop with routing table", done => {
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(() => {
-                return null;
-            })
-            .catch(() => {
-                return null;
-            });
+    it("registers next hop with routing table", async () => {
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         const isGloballyVisible = providerQos.scope === ProviderScope.GLOBAL;
         expect(messageRouterSpy.addNextHop).toHaveBeenCalled();
         expect(messageRouterSpy.addNextHop).toHaveBeenCalledWith(
@@ -212,24 +180,15 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             libjoynrMessagingAddress,
             isGloballyVisible
         );
-        done();
     });
 
-    it("registers provider at RequestReplyManager", done => {
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(() => {
-                return null;
-            })
-            .catch(() => {
-                return null;
-            });
+    it("registers provider at RequestReplyManager", async () => {
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(participantId, provider);
-        done();
     });
 
-    it("handles calls to function register", done => {
+    it("handles calls to function register", () => {
         capabilitiesRegistrar
             .register({
                 domain: "domain",
@@ -244,10 +203,9 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             });
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(participantId, provider);
-        done();
     });
 
-    it("uses passed-in participantId", done => {
+    it("uses passed-in participantId", () => {
         const myParticipantId = "myFixedParticipantId";
         const myDomain = "myDomain";
         capabilitiesRegistrar
@@ -266,10 +224,9 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         expect(participantIdStorageSpy.setParticipantId).toHaveBeenCalledWith(myDomain, provider, myParticipantId);
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(myParticipantId, provider);
-        done();
     });
 
-    it("registers a provider with PublicationManager if it has an attribute", done => {
+    it("registers a provider with PublicationManager if it has an attribute", () => {
         capabilitiesRegistrar
             .registerProvider(domain, provider, providerQos)
             .then(() => {
@@ -280,7 +237,6 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
             });
         expect(publicationManagerSpy.addPublicationProvider).toHaveBeenCalled();
         expect(publicationManagerSpy.addPublicationProvider).toHaveBeenCalledWith(participantId, provider);
-        done();
     });
 
     it("registers capability at capabilities stub", async () => {
@@ -288,7 +244,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         const upperBound = Date.now();
         expect(discoveryStubSpy.add).toHaveBeenCalled();
-        const actualDiscoveryEntry = discoveryStubSpy.add.calls.argsFor(0)[0];
+        const actualDiscoveryEntry = discoveryStubSpy.add.mock.calls[0][0];
         expect(actualDiscoveryEntry.domain).toEqual(domain);
         expect(actualDiscoveryEntry.interfaceName).toEqual(provider.interfaceName);
         expect(actualDiscoveryEntry.participantId).toEqual(participantId);
@@ -299,21 +255,17 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         expect(actualDiscoveryEntry.providerVersion.minorVersion).toEqual(provider.constructor.MINOR_VERSION);
     });
 
-    async function testAwaitGlobalRegistrationScenario(awaitGlobalRegistration) {
-        let expiryDateMs; // intentionally left undefined
-        let loggingContext; // intentionally left undefined
-        let participantId; // intentionally left undefined
-
+    async function testAwaitGlobalRegistrationScenario(awaitGlobalRegistration: boolean) {
         await capabilitiesRegistrar.registerProvider(
             domain,
             provider,
             providerQos,
-            expiryDateMs,
-            loggingContext,
-            participantId,
+            undefined,
+            undefined,
+            undefined,
             awaitGlobalRegistration
         );
-        const actualAwaitGlobalRegistration = discoveryStubSpy.add.calls.argsFor(0)[1];
+        const actualAwaitGlobalRegistration = discoveryStubSpy.add.mock.calls[0][1];
         expect(actualAwaitGlobalRegistration).toEqual(awaitGlobalRegistration);
     }
 
@@ -330,42 +282,24 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     it("calls discoveryProxy.add() with awaitGlobalRegistration parameter false on default call of registerProvider", async () => {
         await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         const expectedAwaitGlobalRegistration = false;
-        const actualAwaitGlobalRegistration = discoveryStubSpy.add.calls.argsFor(0)[1];
+        const actualAwaitGlobalRegistration = discoveryStubSpy.add.mock.calls[0][1];
         expect(actualAwaitGlobalRegistration).toEqual(expectedAwaitGlobalRegistration);
     });
 
-    it("returns the provider participant ID", done => {
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(result => {
-                expect(result).toEqual(participantId);
-                done();
-                return null;
-            })
-            .catch(error => {
-                fail(`unexpected error: ${error}`);
-                return null;
-            });
+    it("returns the provider participant ID", async () => {
+        const result = await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
+        expect(result).toEqual(participantId);
     });
 
-    it("returns the promise onRejected from capabilites stub", done => {
-        discoveryStubSpy.add.and.returnValue(Promise.reject(new Error("Some error.")));
+    it("returns the promise onRejected from capabilites stub", async () => {
+        discoveryStubSpy.add.mockReturnValue(Promise.reject(new Error("Some error.")));
 
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(() => {
-                fail("expected an error");
-                return null;
-            })
-            .catch(error => {
-                expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
-                done();
-                return null;
-            });
+        const error = await reversePromise(capabilitiesRegistrar.registerProvider(domain, provider, providerQos));
+        expect(Object.prototype.toString.call(error) === "[object Error]").toBeTruthy();
     });
 
-    function reversePromise(promise) {
-        return promise.then(suc => Promise.reject(suc)).catch(e => e);
+    function reversePromise(promise: Promise<any>) {
+        return promise.then(suc => Promise.reject(suc)).catch((e: any) => e);
     }
 
     it("rejects with an exception when called while shutting down", async () => {
@@ -376,7 +310,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
 
     it("deletes the next hop when discoveryStub.add fails", async () => {
         const error = new Error("some Error");
-        discoveryStubSpy.add.and.returnValue(Promise.reject(error));
+        discoveryStubSpy.add.mockReturnValue(Promise.reject(error));
         const e = await reversePromise(capabilitiesRegistrar.registerProvider(domain, provider, providerQos));
         expect(e).toEqual(error);
         expect(messageRouterSpy.removeNextHop).toHaveBeenCalled();

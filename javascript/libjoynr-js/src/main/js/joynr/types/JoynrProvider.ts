@@ -33,6 +33,7 @@ export interface ProviderWriteAttributeImpl<T> {
 export type ProviderReadWriteAttributeImpl<T> = ProviderReadAttributeImpl<T> & ProviderWriteAttributeImpl<T>;
 
 export abstract class JoynrProvider extends JoynrObject {
+    public abstract interfaceName: string;
     protected constructor() {
         super();
     }
@@ -54,4 +55,10 @@ export abstract class JoynrProvider extends JoynrObject {
 
         return missingInImplementation;
     }
+}
+
+export interface JoynrProviderType {
+    MAJOR_VERSION: number;
+    MINOR_VERSION: number;
+    getUsedJoynrtypes: any[];
 }

@@ -16,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const DiscoveryQos = require("../../../../../main/js/joynr/proxy/DiscoveryQos");
-const ArbitrationStrategyCollection = require("../../../../../main/js/joynr/types/ArbitrationStrategyCollection");
-const DiscoveryScope = require("../../../../../main/js/generated/joynr/types/DiscoveryScope");
+
+import DiscoveryQos from "../../../../../main/js/joynr/proxy/DiscoveryQos";
+import * as ArbitrationStrategyCollection from "../../../../../main/js/joynr/types/ArbitrationStrategyCollection";
+import DiscoveryScope from "../../../../../main/js/generated/joynr/types/DiscoveryScope";
 
 describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", () => {
     it("is instantiable", () => {
@@ -41,7 +41,6 @@ describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", () => {
         expect(emptyDiscoveryQos).toBeDefined();
         expect(emptyDiscoveryQos).not.toBeNull();
         expect(typeof emptyDiscoveryQos === "object").toBeTruthy();
-        expect(emptyDiscoveryQos instanceof DiscoveryQos).toBeTruthy();
 
         const defaultDiscoveryQos = new DiscoveryQos({
             discoveryTimeoutMs: 30000,
@@ -54,7 +53,6 @@ describe("libjoynr-js.joynr.capabilities.arbitration.DiscoveryQos", () => {
         expect(defaultDiscoveryQos).toBeDefined();
         expect(defaultDiscoveryQos).not.toBeNull();
         expect(typeof defaultDiscoveryQos === "object").toBeTruthy();
-        expect(defaultDiscoveryQos instanceof DiscoveryQos).toEqual(true);
     });
 
     it("constructs correct default object", () => {

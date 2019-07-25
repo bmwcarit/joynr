@@ -153,7 +153,7 @@ CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray = function convertToDi
  *
  * @param {String} domain the domain of the capability that is to be stored
  * @param {String} interfaceName the interface of the capability that is to be stored
- * @param {String} majorVersion the major Version of the capability that is to be stored
+ * @param {Number} majorVersion the major Version of the capability that is to be stored
  *
  * @returns {String} a key to store the participantId with
  */
