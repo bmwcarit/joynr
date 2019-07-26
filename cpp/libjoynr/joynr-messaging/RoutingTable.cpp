@@ -24,7 +24,7 @@ namespace joynr
 
 RoutingTable::RoutingTable(std::vector<std::string> gbidVector) : multiIndexContainer()
 {
-    this->gbidVector = std::copy(gbidVector);
+    this->gbidVector = gbidVector;
 }
 
 RoutingTable::~RoutingTable()
@@ -47,29 +47,39 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
         const std::string &participantId, const std::string &gbid) const
 {
     auto found = lookupRoutingEntryByParticipantId(participantId);
-    if(!found)
+    if(found && participantId == this->gcdParticipantId)
     {
-        return found;
-    }
-    if(std::find(gbidVector.begin(), gbidVector.end(), gbid) != gbidVector.end())
-    {
-        auto address = found->address;
-        if(dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> (address.get()) != nullptr)
+        if(std::find(gbidVector.begin(), gbidVector.end(), gbid) != gbidVector.end())
         {
-            auto mqttAddress = dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> (address.get());
-            const auto newMqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
-                        joynr::system::RoutingTypes::MqttAddress(gbid, mqttAddress->getTopic()));
-            const auto newRoutingEntry = routingtable::RoutingEntry(participantId,newMqttAddress,found->isGloballyVisible,
-                                                              found->expiryDateMs,
-                                                              found->isSticky);
-            return newRoutingEntry;
+            auto address = found->address;
+            if(dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> (address.get()) != nullptr)
+            {
+                auto mqttAddress = dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> (address.get());
+                const auto newMqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
+                            joynr::system::RoutingTypes::MqttAddress(gbid, mqttAddress->getTopic()));
+                const auto newRoutingEntry = routingtable::RoutingEntry(participantId,
+                                                                        newMqttAddress,
+                                                                        found->isGloballyVisible,
+                                                                        found->expiryDateMs,
+                                                                        found->isSticky);
+                return newRoutingEntry;
+            }
+        }
+        else
+        {
+            JOYNR_LOG_ERROR(logger(), "The provided gbid {} for the participantId {} is unknown!", gbid, participantId);
+            return boost::none;
         }
     }
     else
     {
-        JOYNR_LOG_ERROR(logger(), "The provided gbid {} for the participantId {} is unknown!", gbid, participantId);
-        return boost::none;
+        return found;
     }
+}
+
+void RoutingTable::setGcdParticipantId(std::string participantId)
+{
+    gcdParticipantId = participantId;
 }
 
 std::unordered_set<std::string> RoutingTable::lookupParticipantIdsByAddress(

@@ -246,6 +246,7 @@ private:
 
 private:
     std::vector<std::string> gbidVector;
+    std::string gcdParticipantId;
     DISALLOW_COPY_AND_ASSIGN(RoutingTable);
     MultiIndexContainer multiIndexContainer;
     ADD_LOGGER(RoutingTable)

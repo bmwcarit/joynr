@@ -89,6 +89,7 @@ AbstractMessageRouter::AbstractMessageRouter(
                   60 * 60 *
                   1000) // Max retry value is empirical and should practically fit many use-case
 {
+    routingTable.setGcdParticipantId(messagingSettings.getCapabilitiesDirectoryParticipantId());
 }
 
 std::vector<std::string> AbstractMessageRouter::createGbidVector(joynr::MessagingSettings messagingSettings)
