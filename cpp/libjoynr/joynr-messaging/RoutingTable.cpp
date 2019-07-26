@@ -22,8 +22,9 @@
 namespace joynr
 {
 
-RoutingTable::RoutingTable() : multiIndexContainer()
+RoutingTable::RoutingTable(std::vector<std::string> gbidVector) : multiIndexContainer()
 {
+    this->gbidVector = std::copy(gbidVector);
 }
 
 RoutingTable::~RoutingTable()

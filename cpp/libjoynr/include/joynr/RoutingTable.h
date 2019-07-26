@@ -134,7 +134,7 @@ class RoutingTable
 {
 
 public:
-    RoutingTable();
+    RoutingTable(std::vector<std::string> gbidVector);
     ~RoutingTable();
 
     /*
@@ -241,6 +241,7 @@ private:
                                                      expiryDateMs)>>>;
 
 private:
+    std::vector<std::string> gbidVector;
     DISALLOW_COPY_AND_ASSIGN(RoutingTable);
     MultiIndexContainer multiIndexContainer;
     ADD_LOGGER(RoutingTable)

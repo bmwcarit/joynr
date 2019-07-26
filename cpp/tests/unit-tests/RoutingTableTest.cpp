@@ -34,13 +34,15 @@ class RoutingTableTest : public ::testing::Test
 {
 public:
     RoutingTableTest()
-            : routingTable(),
-              testValue(nullptr),
+            : testValue(nullptr),
               secondTestValue(nullptr),
               firstKey(""),
               secondKey(""),
               thirdKey("")
     {
+        std::vector<std::string> gbidVector = std::vector<std::string>();
+        gbidVector.push_back("joynrdefaultgbid");
+        routingTable = joynr::RoutingTable::RoutingTable(gbidVector);
     }
 
     void SetUp()
