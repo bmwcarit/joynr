@@ -43,6 +43,35 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
     return *found;
 }
 
+boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByParticipantIdAndGbid(
+        const std::string &participantId, const std::string &gbid) const
+{
+    auto found = lookupRoutingEntryByParticipantId(participantId);
+    if(!found)
+    {
+        return found;
+    }
+    if(std::find(gbidVector.begin(), gbidVector.end(), gbid) != gbidVector.end())
+    {
+        auto address = found->address;
+        if(dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> (address.get()) != nullptr)
+        {
+            auto mqttAddress = dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> (address.get());
+            const auto newMqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
+                        joynr::system::RoutingTypes::MqttAddress(gbid, mqttAddress->getTopic()));
+            const auto newRoutingEntry = routingtable::RoutingEntry(participantId,newMqttAddress,found->isGloballyVisible,
+                                                              found->expiryDateMs,
+                                                              found->isSticky);
+            return newRoutingEntry;
+        }
+    }
+    else
+    {
+        JOYNR_LOG_ERROR(logger(), "The provided gbid {} for the participantId {} is unknown!", gbid, participantId);
+        return boost::none;
+    }
+}
+
 std::unordered_set<std::string> RoutingTable::lookupParticipantIdsByAddress(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> searchValue) const
 {

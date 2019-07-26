@@ -37,6 +37,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
@@ -143,6 +144,9 @@ public:
      */
     boost::optional<routingtable::RoutingEntry> lookupRoutingEntryByParticipantId(
             const std::string& participantId) const;
+
+    boost::optional<routingtable::RoutingEntry> lookupRoutingEntryByParticipantIdAndGbid(
+            const std::string& participantId, const std::string& gbid) const;
 
     /*
      * Returns the elements with the given address.
