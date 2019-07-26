@@ -184,7 +184,17 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
         }
     } else {
         const std::string& destinationPartId = message.getRecipient();
-        const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
+        std::unordered_map<std::string, std::string> customHeaders = message.getCustomHeaders();
+        std::string gbid = customHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY())->second;
+        boost::optional<joynr::routingtable::RoutingEntry> routingEntry;
+        if(!gbid.empty())
+        {
+            routingEntry = routingTable.lookupRoutingEntryByParticipantIdAndGbid(destinationPartId, gbid);
+        }
+        else
+        {
+            routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
+        }
         if (routingEntry) {
             addresses.insert(routingEntry->address);
         }
