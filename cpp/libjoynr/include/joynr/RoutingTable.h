@@ -148,6 +148,8 @@ public:
     boost::optional<routingtable::RoutingEntry> lookupRoutingEntryByParticipantIdAndGbid(
             const std::string& participantId, const std::string& gbid) const;
 
+    void setGcdParticipantId(std::string participantId);
+
     /*
      * Returns the elements with the given address.
      */
