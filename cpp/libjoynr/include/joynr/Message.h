@@ -71,6 +71,13 @@ public:
         static const std::string value("z4");
         return value;
     }
+
+    static const std::string& CUSTOM_HEADER_GBID_KEY()
+    {
+        static const std::string value("gb");
+        return value;
+    }
+
     static const std::string& VALUE_MESSAGE_TYPE_ONE_WAY()
     {
         static const std::string value("o");
