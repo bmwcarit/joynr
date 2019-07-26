@@ -64,6 +64,7 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : IMessageRouter(),
           enable_shared_from_this<AbstractMessageRouter>(),
+          routingTable(createGbidVector(messagingSettings)),
           routingTableLock(),
           multicastReceiverDirectory(),
           messagingSettings(messagingSettings),
@@ -88,12 +89,17 @@ AbstractMessageRouter::AbstractMessageRouter(
                   60 * 60 *
                   1000) // Max retry value is empirical and should practically fit many use-case
 {
-    const std::vector<std::string> gbidVector = std::vector<std::string>();
+}
+
+std::vector<std::string> AbstractMessageRouter::createGbidVector(joynr::MessagingSettings messagingSettings)
+{
+    std::vector<std::string> gbidVector = std::vector<std::string>();
+    gbidVector.push_back(messagingSettings.getGbid());
     for(std::int8_t i = 0; i < messagingSettings.getAdditionalBackendsCount() ;i++)
     {
         gbidVector.push_back(messagingSettings.getAdditionalBackendGbid(i));
     }
-    routingTable = joynr::RoutingTable(gbidVector);
+    return gbidVector;
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()

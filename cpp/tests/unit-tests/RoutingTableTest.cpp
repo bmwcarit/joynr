@@ -34,15 +34,13 @@ class RoutingTableTest : public ::testing::Test
 {
 public:
     RoutingTableTest()
-            : testValue(nullptr),
+            : routingTable(buildGbidVector()),
+              testValue(nullptr),
               secondTestValue(nullptr),
               firstKey(""),
               secondKey(""),
               thirdKey("")
     {
-        std::vector<std::string> gbidVector = std::vector<std::string>();
-        gbidVector.push_back("joynrdefaultgbid");
-        routingTable = joynr::RoutingTable::RoutingTable(gbidVector);
     }
 
     void SetUp()
@@ -68,6 +66,13 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTableTest);
+
+    static std::vector<std::string> buildGbidVector()
+    {
+        std::vector<std::string> gbidVector = std::vector<std::string>();
+        gbidVector.push_back("joynrdefaultgbid");
+        return gbidVector;
+    }
 };
 
 TEST_F(RoutingTableTest, addAndContains)
