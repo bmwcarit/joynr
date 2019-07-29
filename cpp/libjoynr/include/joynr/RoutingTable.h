@@ -146,7 +146,8 @@ public:
             const std::string& participantId) const;
 
     boost::optional<routingtable::RoutingEntry> lookupRoutingEntryByParticipantIdAndGbid(
-            const std::string& participantId, const std::string& gbid) const;
+            const std::string& participantId,
+            const std::string& gbid) const;
 
     void setGcdParticipantId(std::string participantId);
 

@@ -92,12 +92,12 @@ AbstractMessageRouter::AbstractMessageRouter(
     routingTable.setGcdParticipantId(messagingSettings.getCapabilitiesDirectoryParticipantId());
 }
 
-std::vector<std::string> AbstractMessageRouter::createGbidVector(joynr::MessagingSettings messagingSettings)
+std::vector<std::string> AbstractMessageRouter::createGbidVector(
+        joynr::MessagingSettings messagingSettings)
 {
     std::vector<std::string> gbidVector = std::vector<std::string>();
     gbidVector.push_back(messagingSettings.getGbid());
-    for(std::int8_t i = 0; i < messagingSettings.getAdditionalBackendsCount() ;i++)
-    {
+    for (std::int8_t i = 0; i < messagingSettings.getAdditionalBackendsCount(); i++) {
         gbidVector.push_back(messagingSettings.getAdditionalBackendGbid(i));
     }
     return gbidVector;
@@ -194,20 +194,15 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
         boost::optional<joynr::routingtable::RoutingEntry> routingEntry;
         std::unordered_map<std::string, std::string> customHeaders = message.getCustomHeaders();
         auto customHeaderGbidEntry = customHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY());
-        if (customHeaderGbidEntry != customHeaders.end())
-        {
+        if (customHeaderGbidEntry != customHeaders.end()) {
             std::string gbid = customHeaderGbidEntry->second;
-            if(!gbid.empty())
-            {
-                routingEntry = routingTable.lookupRoutingEntryByParticipantIdAndGbid(destinationPartId, gbid);
-            }
-            else
-            {
+            if (!gbid.empty()) {
+                routingEntry = routingTable.lookupRoutingEntryByParticipantIdAndGbid(
+                        destinationPartId, gbid);
+            } else {
                 routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
             }
-        }
-        else
-        {
+        } else {
             routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
         }
         if (routingEntry) {
