@@ -88,7 +88,6 @@ public:
     virtual void registerReadyToSendChangedCallback(std::function<void(bool)> readyToSendCallback);
     virtual bool isSubscribedToChannelTopic() const;
     virtual bool isReadyToSend() const;
-    virtual BrokerUrl getBrokerUrl() const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);

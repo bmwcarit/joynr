@@ -40,6 +40,7 @@ public:
     explicit MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
                           const MessagingSettings& settings,
                           const std::string& channelIdForMqttTopic,
+                          const std::string& gbid,
                           const std::string& unicastTopicPrefix);
 
     ~MqttReceiver() override = default;
@@ -88,6 +89,8 @@ private:
     system::RoutingTypes::MqttAddress globalClusterControllerAddress;
 
     std::shared_ptr<MosquittoConnection> mosquittoConnection;
+
+    const MessagingSettings& settings;
 
     ADD_LOGGER(MqttReceiver)
 };

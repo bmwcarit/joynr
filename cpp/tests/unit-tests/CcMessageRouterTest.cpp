@@ -571,7 +571,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiver_NonChildRouter_succeedsIfSke
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    multicastMessagingSkeletonDirectory->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
+    multicastMessagingSkeletonDirectory->unregisterSkeletons<system::RoutingTypes::MqttAddress>();
 
     Semaphore successCallbackCalled;
     messageRouter->removeMulticastReceiver(

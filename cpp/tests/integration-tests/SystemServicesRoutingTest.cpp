@@ -48,6 +48,7 @@ public:
               mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageSender(std::make_shared<MockTransportMessageSender>()),
+              mqttMultipleConnections(std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>()),
               discoveryQos(),
               routingProxyBuilder(nullptr),
               routingProxy(nullptr),
@@ -95,8 +96,7 @@ public:
                                                                   nullptr,
                                                                   mockMessageReceiverHttp,
                                                                   mockMessageSender,
-                                                                  mockMessageReceiverMqtt,
-                                                                  mockMessageSender);
+                                                                  mqttMultipleConnections);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
     }
@@ -146,6 +146,7 @@ protected:
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<MockTransportMessageSender> mockMessageSender;
+    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>> mqttMultipleConnections;
     DiscoveryQos discoveryQos;
     std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
     std::shared_ptr<joynr::system::RoutingProxy> routingProxy;

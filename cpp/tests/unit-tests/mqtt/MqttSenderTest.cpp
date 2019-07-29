@@ -47,8 +47,9 @@ protected:
         Settings testSettings(testSettingsFileNameMqtt);
         MessagingSettings messagingSettings(testSettings);
         ClusterControllerSettings ccSettings(testSettings);
+        const std::uint8_t brokerIndex = 0;
         mockMosquittoConnection =
-                std::make_shared<MockMosquittoConnection>(messagingSettings, ccSettings, clientId);
+                std::make_shared<MockMosquittoConnection>(messagingSettings, ccSettings, clientId, brokerIndex);
         mqttSender = std::make_shared<MqttSender>(mockMosquittoConnection, messagingSettings);
 
         ON_CALL(*mockMosquittoConnection, isSubscribedToChannelTopic()).WillByDefault(Return(true));

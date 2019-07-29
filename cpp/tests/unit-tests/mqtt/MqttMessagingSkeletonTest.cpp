@@ -60,10 +60,12 @@ class MockMqttReceiver : public joynr::MqttReceiver
 {
 public:
     MockMqttReceiver(const MessagingSettings& messagingSettings,
-                     const ClusterControllerSettings& ccSettings)
+                     const ClusterControllerSettings& ccSettings,
+                     const std::uint8_t brokerIndex = 0)
             : MqttReceiver(std::make_shared<MosquittoConnection>(messagingSettings,
                                                                  ccSettings,
-                                                                 "receiverId"),
+                                                                 "receiverId",
+                                                                 brokerIndex),
                            messagingSettings,
                            "channelId",
                            ccSettings.getMqttMulticastTopicPrefix())
@@ -143,7 +145,7 @@ MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "")
 TEST_F(MqttMessagingSkeletonTest, transmitTest)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), "testGbid");
     std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     EXPECT_CALL(*mockMessageRouter, route(immutableMessage, _)).Times(1);
 
@@ -155,7 +157,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest)
 void MqttMessagingSkeletonTest::transmitSetsIsReceivedFromGlobal()
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), "testGbid");
     std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
     auto onFailure =
@@ -206,7 +208,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitSetsIsReceivedFromGlobalForMulticastSu
 TEST_F(MqttMessagingSkeletonTest, onMessageReceivedTest)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), "testGbid");
     std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
 
     EXPECT_CALL(*mockMessageRouter,
@@ -225,7 +227,7 @@ TEST_F(MqttMessagingSkeletonTest, registerMulticastSubscription_subscribesToMqtt
     ClusterControllerSettings ccSettings(settings);
     MessagingSettings messagingSettings(settings);
     auto mockMqttReceiver = std::make_shared<MockMqttReceiver>(messagingSettings, ccSettings);
-    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, mockMqttReceiver, "");
+    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, mockMqttReceiver, "", "testGbid");
     EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId));
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
 }
@@ -236,7 +238,7 @@ TEST_F(MqttMessagingSkeletonTest, registerMulticastSubscription_subscribesToMqtt
     MessagingSettings messagingSettings(settings);
     auto mockMqttReceiver = std::make_shared<MockMqttReceiver>(messagingSettings, ccSettings);
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix());
+            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix(), "testGbid");
     EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
@@ -248,7 +250,7 @@ TEST_F(MqttMessagingSkeletonTest, unregisterMulticastSubscription_unsubscribesFr
     MessagingSettings messagingSettings(settings);
     auto mockMqttReceiver = std::make_shared<MockMqttReceiver>(messagingSettings, ccSettings);
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix());
+            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix(), "testGbid");
     EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
 
@@ -263,7 +265,7 @@ TEST_F(MqttMessagingSkeletonTest,
     MessagingSettings messagingSettings(settings);
     auto mockMqttReceiver = std::make_shared<MockMqttReceiver>(messagingSettings, ccSettings);
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix());
+            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix(), "testGbid");
     EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);

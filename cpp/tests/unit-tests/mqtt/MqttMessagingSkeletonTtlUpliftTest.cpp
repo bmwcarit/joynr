@@ -100,7 +100,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift)
     EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix());
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), "testGbid");
     std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     mqttMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
@@ -121,7 +121,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift)
     EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), ttlUpliftMs);
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), "testGbid", ttlUpliftMs);
     std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     mqttMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
@@ -144,7 +144,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl)
     EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), ttlUpliftMs);
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), "testGbid", ttlUpliftMs);
     {
         std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
         smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();

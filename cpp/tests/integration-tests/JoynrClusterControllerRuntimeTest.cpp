@@ -73,6 +73,7 @@ public:
     std::shared_ptr<MockTransportMessageSender> mockHttpMessageSender;
     std::shared_ptr<MockTransportMessageReceiver> mockMqttMessageReceiver;
     std::shared_ptr<MockTransportMessageSender> mockMqttMessageSender;
+    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>> mqttMultipleConnections;
     Semaphore semaphore;
     std::string serializedChannelAddress;
     std::string serializedMqttAddress;
@@ -105,6 +106,7 @@ public:
               mockHttpMessageSender(std::make_shared<MockTransportMessageSender>()),
               mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
               mockMqttMessageSender(std::make_shared<MockTransportMessageSender>()),
+              mqttMultipleConnections(std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>()),
               semaphore(0),
               globalMqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic"),
               globalMqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl"),
@@ -147,8 +149,7 @@ public:
                 nullptr,
                 mockHttpMessageReceiver,
                 mockHttpMessageSender,
-                mockMqttMessageReceiver,
-                mockMqttMessageSender);
+                mqttMultipleConnections);
         runtime->init();
     }
 
@@ -167,8 +168,7 @@ public:
                 nullptr,
                 mockHttpMessageReceiver,
                 mockHttpMessageSender,
-                mockMqttMessageReceiver,
-                mockMqttMessageSender);
+                mqttMultipleConnections);
         runtime->init();
     }
 
@@ -189,8 +189,7 @@ public:
                 nullptr,
                 mockHttpMessageReceiver,
                 mockHttpMessageSender,
-                mockMqttMessageReceiver,
-                mockMqttMessageSender);
+                mqttMultipleConnections);
         runtime->init();
     }
 
@@ -232,8 +231,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, loadMultipleAclRclFiles)
             nullptr,
             mockHttpMessageReceiver,
             mockHttpMessageSender,
-            mockMqttMessageReceiver,
-            mockMqttMessageSender);
+            mqttMultipleConnections);
 
     runtime->init();
 
@@ -272,10 +270,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
             [mockMqttMessagingSkeleton](std::weak_ptr<IMessageRouter> messageRouter,
                                         std::shared_ptr<MqttReceiver> mqttReceiver,
                                         const std::string& multicastTopicPrefix,
+                                        const std::string& gbid,
                                         std::uint64_t ttlUplift) {
         std::ignore = messageRouter;
         std::ignore = mqttReceiver;
         std::ignore = multicastTopicPrefix;
+        std::ignore = gbid;
         std::ignore = ttlUplift;
         return mockMqttMessagingSkeleton;
     };
@@ -300,8 +300,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
             mockMqttMessagingSkeletonFactory,
             mockHttpMessageReceiver,
             mockHttpMessageSender,
-            mockMqttMessageReceiver,
-            mockMqttMessageSender);
+            mqttMultipleConnections);
     runtime->init();
 }
 
@@ -349,8 +348,7 @@ TEST_F(JoynrClusterControllerRuntimeTest,
                     nullptr,
                     mockHttpMessageReceiver,
                     mockHttpMessageSender,
-                    mockMqttMessageReceiver,
-                    mockMqttMessageSender),
+                    mqttMultipleConnections),
             exceptions::JoynrRuntimeException);
 }
 

@@ -43,13 +43,15 @@ std::string MqttMessagingSkeleton::translateMulticastWildcard(std::string topic)
 MqttMessagingSkeleton::MqttMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter,
                                              std::shared_ptr<MqttReceiver> mqttReceiver,
                                              const std::string& multicastTopicPrefix,
+                                             const std::string& ownGbid,
                                              uint64_t ttlUplift)
         : messageRouter(std::move(messageRouter)),
           mqttReceiver(std::move(mqttReceiver)),
           ttlUplift(ttlUplift),
           multicastSubscriptionCount(),
           multicastSubscriptionCountMutex(),
-          multicastTopicPrefix(multicastTopicPrefix)
+          multicastTopicPrefix(multicastTopicPrefix),
+          ownGbid(ownGbid)
 {
 }
 
@@ -115,16 +117,21 @@ void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
     }
 
     if (logger().getLogLevel() == LogLevel::Debug) {
-        JOYNR_LOG_DEBUG(logger(), "<<< INCOMING <<< {}", immutableMessage->getTrackingInfo());
+        JOYNR_LOG_DEBUG(logger(),
+                        "<<< INCOMING FROM {} <<< {}",
+                        ownGbid,
+                        immutableMessage->getTrackingInfo());
     } else {
-        JOYNR_LOG_TRACE(logger(), "<<< INCOMING <<< {}", immutableMessage->toLogMessage());
+        JOYNR_LOG_TRACE(
+                logger(), "<<< INCOMING FROM {} <<< {}", ownGbid, immutableMessage->toLogMessage());
     }
 
-    auto onFailure = [messageId = immutableMessage->getId()](
+    auto onFailure = [ messageId = immutableMessage->getId(), ownGbid = ownGbid ](
             const exceptions::JoynrRuntimeException& e)
     {
         JOYNR_LOG_ERROR(logger(),
-                        "Incoming Message with ID {} could not be sent! reason: {}",
+                        "Incoming Message from {} with ID {} could not be sent! reason: {}",
+                        ownGbid,
                         messageId,
                         e.getMessage());
     };

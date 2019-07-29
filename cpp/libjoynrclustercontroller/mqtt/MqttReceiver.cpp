@@ -29,13 +29,14 @@ namespace joynr
 MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
                            const MessagingSettings& settings,
                            const std::string& channelIdForMqttTopic,
+                           const std::string& gbid,
                            const std::string& unicastTopicPrefix)
-        : mosquittoConnection(std::move(mosquittoConnection))
+        : mosquittoConnection(std::move(mosquittoConnection)), settings(settings)
 {
     const std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
-    std::ignore = settings; // TODO configure GBIDs
+
     globalClusterControllerAddress =
-            system::RoutingTypes::MqttAddress("joynrdefaultgbid", unicastChannelIdForMqttTopic);
+            system::RoutingTypes::MqttAddress(gbid, unicastChannelIdForMqttTopic);
     this->mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
 }
 

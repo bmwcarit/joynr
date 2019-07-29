@@ -207,7 +207,6 @@ void MosquittoConnection::on_connect(struct mosquitto* mosq, void* userdata, int
         const std::string errorString(mosquittoConnection->getErrorString(rc));
         JOYNR_LOG_ERROR(
                 logger(), "Mosquitto Connection Error: {} ({})", std::to_string(rc), errorString);
-        ;
     }
 }
 
@@ -646,11 +645,6 @@ bool MosquittoConnection::isSubscribedToChannelTopic() const
 bool MosquittoConnection::isReadyToSend() const
 {
     return readyToSend;
-}
-
-BrokerUrl MosquittoConnection::getBrokerUrl() const
-{
-    return brokerUrl;
 }
 
 void MosquittoConnection::setReadyToSend(bool readyToSend)

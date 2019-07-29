@@ -44,24 +44,45 @@ public:
 
     template <class T,
               typename = std::enable_if_t<std::is_base_of<system::RoutingTypes::Address, T>::value>>
-    void registerSkeleton(std::shared_ptr<IMessagingMulticastSubscriber> skeleton)
+    void registerSkeleton(std::shared_ptr<IMessagingMulticastSubscriber> skeleton,
+                          const std::string& gbid = "")
     {
         std::type_index typeIndex = typeid(T);
-        JOYNR_LOG_DEBUG(
-                logger(), "register messaging skeleton for address type {}", typeIndex.name());
+        JOYNR_LOG_DEBUG(logger(),
+                        "register messaging skeleton for address type {}, gbid: {}",
+                        typeIndex.name(),
+                        gbid);
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        multicastSkeletons[typeIndex] = std::move(skeleton);
+        if (gbid.empty()) {
+            JOYNR_LOG_DEBUG(
+                    logger(), "register messaging skeleton for address type {}", typeIndex.name());
+        } else {
+            JOYNR_LOG_DEBUG(logger(),
+                            "register messaging skeleton for address type {}, gbid: {}",
+                            typeIndex.name(),
+                            gbid);
+        }
+        multicastSkeletons[std::make_pair(typeIndex, gbid)] = std::move(skeleton);
     }
 
     template <class T,
               typename = std::enable_if_t<std::is_base_of<system::RoutingTypes::Address, T>::value>>
-    void unregisterSkeleton()
+    void unregisterSkeletons()
     {
         std::type_index typeIndex = typeid(T);
         JOYNR_LOG_DEBUG(
-                logger(), "unregister messaging skeleton for address type {}", typeIndex.name());
+                logger(), "unregister messaging skeletons for address type {}", typeIndex.name());
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        multicastSkeletons.erase(typeIndex);
+        std::vector<std::pair<std::type_index, std::string>> removalList;
+        for (const auto& entryOfRegisteredSkeleton : multicastSkeletons) {
+            auto pairKey = entryOfRegisteredSkeleton.first;
+            if (pairKey.first == typeIndex) {
+                removalList.push_back(std::make_pair(typeIndex, pairKey.second));
+            }
+        }
+        for (const auto& entry : removalList) {
+            multicastSkeletons.erase(entry);
+        }
     }
 
     std::shared_ptr<IMessagingMulticastSubscriber> getSkeleton(
@@ -72,8 +93,9 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MulticastMessagingSkeletonDirectory);
     ADD_LOGGER(MulticastMessagingSkeletonDirectory)
-    std::unordered_map<std::type_index, std::shared_ptr<IMessagingMulticastSubscriber>>
-            multicastSkeletons;
+    std::map<std::pair<std::type_index, std::string>,
+             std::shared_ptr<IMessagingMulticastSubscriber>> multicastSkeletons;
+
     std::recursive_mutex mutex;
 };
 

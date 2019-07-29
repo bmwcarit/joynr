@@ -54,6 +54,7 @@ public:
     MqttMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter,
                           std::shared_ptr<MqttReceiver> mqttReceiver,
                           const std::string& multicastTopicPrefix,
+                          const std::string& ownGbid,
                           std::uint64_t ttlUplift = 0);
 
     ~MqttMessagingSkeleton() override = default;
@@ -79,6 +80,7 @@ private:
     std::unordered_map<std::string, std::uint64_t> multicastSubscriptionCount;
     std::mutex multicastSubscriptionCountMutex;
     std::string multicastTopicPrefix;
+    std::string ownGbid;
 };
 
 } // namespace joynr

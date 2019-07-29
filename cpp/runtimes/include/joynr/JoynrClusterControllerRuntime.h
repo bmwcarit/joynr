@@ -50,6 +50,7 @@ class ILocalChannelUrlDirectory;
 class ITransportMessageReceiver;
 class ITransportMessageSender;
 class SubscriptionManager;
+class JoynrClusterControllerMqttConnectionData;
 class JoynrMessagingConnectorFactory;
 class IDispatcher;
 class InProcessMessagingSkeleton;
@@ -64,7 +65,6 @@ class IMessageSender;
 class IWebsocketCcMessagingSkeleton;
 class CcMessageRouter;
 class WebSocketMessagingStubFactory;
-class MosquittoConnection;
 class LocalDomainAccessController;
 
 namespace infrastructure
@@ -89,6 +89,7 @@ public:
     using MqttMessagingSkeletonFactory = std::function<
             std::shared_ptr<IMqttMessagingSkeleton>(std::weak_ptr<IMessageRouter> messageRouter,
                                                     std::shared_ptr<MqttReceiver> mqttReceiver,
+                                                    const std::string& gbid,
                                                     const std::string& multicastTopicPrefix,
                                                     std::uint64_t ttlUplift)>;
     JoynrClusterControllerRuntime(
@@ -97,8 +98,9 @@ public:
             MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
             std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
             std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr,
-            std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver = nullptr,
-            std::shared_ptr<ITransportMessageSender> mqttMessageSender = nullptr);
+            std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
+                    mqttConnectionDataVector = std::vector<
+                            std::shared_ptr<JoynrClusterControllerMqttConnectionData>>());
 
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::size_t argc,
@@ -155,12 +157,9 @@ protected:
     std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver;
     std::shared_ptr<ITransportMessageSender> httpMessageSender;
     std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
-
-    std::shared_ptr<MosquittoConnection> mosquittoConnection;
-    std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver;
-    std::shared_ptr<ITransportMessageSender> mqttMessageSender;
     MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory;
-    std::shared_ptr<IMqttMessagingSkeleton> mqttMessagingSkeleton;
+
+    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>> mqttConnectionDataVector;
 
     std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
 

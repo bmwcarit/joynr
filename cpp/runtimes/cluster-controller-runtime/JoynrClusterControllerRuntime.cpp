@@ -40,6 +40,7 @@
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/InProcessMessagingAddress.h"
+#include "joynr/JoynrClusterControllerMqttConnectionData.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/LocalDiscoveryAggregator.h"
@@ -108,8 +109,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory,
         std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver,
         std::shared_ptr<ITransportMessageSender> httpMessageSender,
-        std::shared_ptr<ITransportMessageReceiver> mqttMessageReceiver,
-        std::shared_ptr<ITransportMessageSender> mqttMessageSender)
+        std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
+                mqttConnectionDataVector)
         : JoynrRuntimeImpl(*settings, std::move(keyChain)),
           joynrDispatcher(),
           subscriptionManager(),
@@ -119,11 +120,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           httpMessageReceiver(httpMessageReceiver),
           httpMessageSender(httpMessageSender),
           httpMessagingSkeleton(nullptr),
-          mosquittoConnection(nullptr),
-          mqttMessageReceiver(mqttMessageReceiver),
-          mqttMessageSender(mqttMessageSender),
           mqttMessagingSkeletonFactory(std::move(mqttMessagingSkeletonFactory)),
-          mqttMessagingSkeleton(nullptr),
+          mqttConnectionDataVector(mqttConnectionDataVector),
           dispatcherList(),
           settings(std::move(settings)),
           libjoynrSettings(*(this->settings)),
@@ -217,11 +215,20 @@ void JoynrClusterControllerRuntime::init()
 
     fillBackendsStruct(messagingSettings);
 
-    const BrokerUrl brokerUrl = messagingSettings.getBrokerUrl();
-    assert(brokerUrl.getBrokerChannelsBaseUrl().isValid());
+    if (mqttConnectionDataVector.empty()) {
+        // Create entries for MqttConnection(s)
+        for (std::uint8_t i = 0; i < availableGbids.size(); i++) {
+            mqttConnectionDataVector.push_back(
+                    std::make_shared<JoynrClusterControllerMqttConnectionData>());
+        }
+    } else {
+        assert(availableGbids.size() == mqttConnectionDataVector.size());
+    }
+
+    const BrokerUrl defaultBrokerUrl = messagingSettings.getBrokerUrl();
 
     // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
-    const Url url = brokerUrl.getBrokerChannelsBaseUrl();
+    const Url url = defaultBrokerUrl.getBrokerChannelsBaseUrl();
     std::string brokerProtocol = url.getProtocol();
 
     std::transform(brokerProtocol.begin(), brokerProtocol.end(), brokerProtocol.begin(), ::toupper);
@@ -236,14 +243,14 @@ void JoynrClusterControllerRuntime::init()
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
         JOYNR_LOG_DEBUG(logger(), "MQTT-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
-                brokerUrl.toString(), "");
+                defaultBrokerUrl.toString(), "");
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(
                 globalAddress, clusterControllerSettings.getMqttMulticastTopicPrefix());
         doMqttMessaging = true;
     } else if (brokerProtocol == "HTTP" || brokerProtocol == "HTTPS") {
         JOYNR_LOG_DEBUG(logger(), "HTTP-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                brokerUrl.toString(), "");
+                defaultBrokerUrl.toString(), "");
         addressCalculator = std::make_unique<joynr::HttpMulticastAddressCalculator>(globalAddress);
         doHttpMessaging = true;
     } else {
@@ -288,37 +295,81 @@ void JoynrClusterControllerRuntime::init()
     }
 
     if (doMqttMessaging) {
-        try {
-            if (!mqttMessageReceiver || !mqttMessageSender) {
-                const std::string ccMqttClientIdPrefix =
-                        clusterControllerSettings.getMqttClientIdPrefix();
-                const std::string mqttCliendId = ccMqttClientIdPrefix + clusterControllerId;
+        const std::string ccMqttClientIdPrefix = clusterControllerSettings.getMqttClientIdPrefix();
+        const std::string mqttCliendId = ccMqttClientIdPrefix + clusterControllerId;
 
-                mosquittoConnection = std::make_shared<MosquittoConnection>(
-                        messagingSettings, clusterControllerSettings, mqttCliendId);
+        const std::chrono::seconds mqttReconnectDelayTimeSeconds =
+                messagingSettings.getMqttReconnectDelayTimeSeconds();
 
-                auto mqttTransportStatus =
-                        std::make_unique<MqttTransportStatus>(mosquittoConnection);
-                transportStatuses.emplace_back(std::move(mqttTransportStatus));
+        const std::chrono::seconds mqttReconnectMaxDelayTimeSeconds =
+                messagingSettings.getMqttReconnectMaxDelayTimeSeconds();
+        const bool isMqttExponentialBackoffEnabled =
+                messagingSettings.getMqttExponentialBackoffEnabled();
+        std::chrono::seconds mqttKeepAliveTimeSeconds(0);
+        BrokerUrl brokerUrl("");
+
+        // default brokerIndex = 0
+        for (std::uint8_t brokerIndex = 0; brokerIndex < mqttConnectionDataVector.size();
+             brokerIndex++) {
+            if (mqttConnectionDataVector.size() == 1) {
+                // we have only the default broker
+                mqttKeepAliveTimeSeconds = messagingSettings.getMqttKeepAliveTimeSeconds();
+                brokerUrl = defaultBrokerUrl;
+            } else {
+                mqttKeepAliveTimeSeconds =
+                        messagingSettings.getAdditionalBackendMqttKeepAliveTimeSeconds(brokerIndex);
+                brokerUrl = messagingSettings.getAdditionalBackendBrokerUrl(brokerIndex);
             }
-            if (!mqttMessageReceiver) {
-                JOYNR_LOG_DEBUG(logger(),
-                                "The mqtt message receiver supplied is NULL, creating the default "
-                                "mqtt MessageReceiver");
 
-                mqttMessageReceiver = std::make_shared<MqttReceiver>(
-                        mosquittoConnection,
-                        messagingSettings,
-                        clusterControllerId,
-                        clusterControllerSettings.getMqttUnicastTopicPrefix());
+            try {
+                const auto& mosquittoConnection =
+                        std::make_shared<MosquittoConnection>(clusterControllerSettings,
+                                                              brokerUrl,
+                                                              mqttKeepAliveTimeSeconds,
+                                                              mqttReconnectDelayTimeSeconds,
+                                                              mqttReconnectMaxDelayTimeSeconds,
+                                                              isMqttExponentialBackoffEnabled,
+                                                              mqttCliendId);
 
-                assert(mqttMessageReceiver != nullptr);
+                const auto& connectionData = mqttConnectionDataVector[brokerIndex];
+
+                const auto& mqttMessageReceiver = connectionData->getMqttMessageReceiver();
+
+                if (!mqttMessageReceiver || !connectionData->getMqttMessageSender()) {
+                    JOYNR_LOG_TRACE(logger(),
+                                    "{}: The mqtt message receiver supplied is NULL, creating "
+                                    "MosquittoConnection ",
+                                    brokerIndex);
+                    connectionData->setMosquittoConnection(mosquittoConnection);
+
+                    auto mqttTransportStatus =
+                            std::make_unique<MqttTransportStatus>(mosquittoConnection);
+                    transportStatuses.emplace_back(std::move(mqttTransportStatus));
+                }
+                if (!mqttMessageReceiver) {
+                    JOYNR_LOG_TRACE(
+                            logger(),
+                            "{}: The mqtt message receiver supplied is NULL, creating the default "
+                            "mqtt MessageReceiver",
+                            brokerIndex);
+
+                    connectionData->setMqttMessageReceiver(std::make_shared<MqttReceiver>(
+                            mosquittoConnection,
+                            messagingSettings,
+                            clusterControllerId,
+                            availableGbids[brokerIndex],
+                            clusterControllerSettings.getMqttUnicastTopicPrefix()));
+                    assert(connectionData->getMqttMessageReceiver() != nullptr);
+                }
+            } catch (const exceptions::JoynrRuntimeException& e) {
+                JOYNR_LOG_ERROR(logger(),
+                                "{}: Creating mosquittoConnection failed. Error: {}",
+                                brokerIndex,
+                                e.getMessage());
+
+                doMqttMessaging = false;
+                break;
             }
-        } catch (const exceptions::JoynrRuntimeException& e) {
-            JOYNR_LOG_ERROR(
-                    logger(), "Creating mosquittoConnection failed. Error: {}", e.getMessage());
-
-            doMqttMessaging = false;
         }
     }
 
@@ -445,45 +496,53 @@ void JoynrClusterControllerRuntime::init()
       *
       */
     if (doMqttMessaging) {
-        if (!mqttMessagingIsRunning) {
-            if (!mqttMessagingSkeletonFactory) {
-                mqttMessagingSkeletonFactory = [](std::weak_ptr<IMessageRouter> messageRouter,
-                                                  std::shared_ptr<MqttReceiver> mqttReceiver,
-                                                  const std::string& multicastTopicPrefix,
-                                                  std::uint64_t ttlUplift = 0) {
-                    return std::make_shared<MqttMessagingSkeleton>(
-                            messageRouter, mqttReceiver, multicastTopicPrefix, ttlUplift);
-                };
-            }
+        // create MqttMessagingSkeletonFactory only once and use it to create multiple skeletons
+        if (!mqttMessagingSkeletonFactory) {
+            mqttMessagingSkeletonFactory = [](std::weak_ptr<IMessageRouter> messageRouter,
+                                              std::shared_ptr<MqttReceiver> mqttReceiver,
+                                              const std::string& multicastTopicPrefix,
+                                              const std::string& gbid,
+                                              std::uint64_t ttlUplift = 0) {
+                return std::make_shared<MqttMessagingSkeleton>(
+                        messageRouter, mqttReceiver, multicastTopicPrefix, gbid, ttlUplift);
+            };
+        }
 
-            mqttMessagingSkeleton = mqttMessagingSkeletonFactory(
+        for (std::uint8_t brokerIndex = 0; brokerIndex < mqttConnectionDataVector.size();
+             brokerIndex++) {
+            const auto& connectionData = mqttConnectionDataVector[brokerIndex];
+            const auto& mqttMessagingSkeleton = mqttMessagingSkeletonFactory(
                     ccMessageRouter,
-                    std::static_pointer_cast<MqttReceiver>(mqttMessageReceiver),
+                    std::static_pointer_cast<MqttReceiver>(
+                            connectionData->getMqttMessageReceiver()),
                     clusterControllerSettings.getMqttMulticastTopicPrefix(),
+                    availableGbids[brokerIndex],
                     messagingSettings.getTtlUpliftMs());
 
-            auto mqttMessagingSkeletonCopyForCapturing = mqttMessagingSkeleton;
-            mqttMessageReceiver
-                    ->registerReceiveCallback([mqttMessagingSkeleton =
-                                                       mqttMessagingSkeletonCopyForCapturing](
-                            smrf::ByteVector &&
-                            msg) { mqttMessagingSkeleton->onMessageReceived(std::move(msg)); });
+            connectionData->getMqttMessageReceiver()->registerReceiveCallback(
+                    [mqttMessagingSkeleton](smrf::ByteVector&& msg) {
+                        mqttMessagingSkeleton->onMessageReceived(std::move(msg));
+                    });
             multicastMessagingSkeletonDirectory
-                    ->registerSkeleton<system::RoutingTypes::MqttAddress>(mqttMessagingSkeleton);
+                    ->registerSkeleton<system::RoutingTypes::MqttAddress>(
+                            std::move(mqttMessagingSkeleton), availableGbids[brokerIndex]);
+
+            // create message sender
+            if (!connectionData->getMqttMessageSender()) {
+                JOYNR_LOG_DEBUG(logger(),
+                                "Connection {}. The mqtt message sender supplied is NULL, "
+                                "creating the default "
+                                "mqtt MessageSender",
+                                brokerIndex);
+
+                const auto& mqttMessageSender = std::make_shared<MqttSender>(
+                        connectionData->getMosquittoConnection(), messagingSettings);
+                connectionData->setMqttMessageSender(std::move(mqttMessageSender));
+            }
+
+            messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
+                    connectionData->getMqttMessageSender()));
         }
-
-        // create message sender
-        if (!mqttMessageSender) {
-            JOYNR_LOG_DEBUG(logger(),
-                            "The mqtt message sender supplied is NULL, creating the default "
-                            "mqtt MessageSender");
-
-            mqttMessageSender =
-                    std::make_shared<MqttSender>(mosquittoConnection, messagingSettings);
-        }
-
-        messagingStubFactory->registerStubFactory(
-                std::make_shared<MqttMessagingStubFactory>(mqttMessageSender));
     }
 
     /**
@@ -869,11 +928,11 @@ void JoynrClusterControllerRuntime::startExternalCommunication()
             httpMessagingIsRunning = true;
         }
     }
-    if (doMqttMessaging) {
-        if (mosquittoConnection && !mqttMessagingIsRunning) {
-            mosquittoConnection->start();
-            mqttMessagingIsRunning = true;
+    if (doMqttMessaging && !mqttMessagingIsRunning) {
+        for (const auto& connectionData : mqttConnectionDataVector) {
+            connectionData->getMosquittoConnection()->start();
         }
+        mqttMessagingIsRunning = true;
     }
 }
 
@@ -886,11 +945,11 @@ void JoynrClusterControllerRuntime::stopExternalCommunication()
             httpMessagingIsRunning = false;
         }
     }
-    if (doMqttMessaging) {
-        if (mosquittoConnection && mqttMessagingIsRunning) {
-            mosquittoConnection->stop();
-            mqttMessagingIsRunning = false;
+    if (doMqttMessaging && mqttMessagingIsRunning) {
+        for (const auto& connecton : mqttConnectionDataVector) {
+            connecton->getMosquittoConnection()->stop();
         }
+        mqttMessagingIsRunning = false;
     }
 }
 
@@ -931,7 +990,7 @@ void JoynrClusterControllerRuntime::shutdown()
 
     if (multicastMessagingSkeletonDirectory) {
         multicastMessagingSkeletonDirectory
-                ->unregisterSkeleton<system::RoutingTypes::MqttAddress>();
+                ->unregisterSkeletons<system::RoutingTypes::MqttAddress>();
     }
 
     if (joynrDispatcher != nullptr) {
@@ -1002,8 +1061,10 @@ void JoynrClusterControllerRuntime::deleteChannel()
 
 std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerAddress() const
 {
+    const auto defaultConnectionData = mqttConnectionDataVector[0];
     if (doMqttMessaging) {
-        return mqttMessageReceiver->getSerializedGlobalClusterControllerAddress();
+        return defaultConnectionData->getMqttMessageReceiver()
+                ->getSerializedGlobalClusterControllerAddress();
     }
     if (doHttpMessaging) {
         return httpMessageReceiver->getSerializedGlobalClusterControllerAddress();
@@ -1035,8 +1096,9 @@ void JoynrClusterControllerRuntime::fillBackendsStruct(const MessagingSettings& 
 const system::RoutingTypes::Address& JoynrClusterControllerRuntime::
         getGlobalClusterControllerAddress() const
 {
+    const auto defaultConnectionData = mqttConnectionDataVector[0];
     if (doMqttMessaging) {
-        return mqttMessageReceiver->getGlobalClusterControllerAddress();
+        return defaultConnectionData->getMqttMessageReceiver()->getGlobalClusterControllerAddress();
     }
     if (doHttpMessaging) {
         return httpMessageReceiver->getGlobalClusterControllerAddress();
