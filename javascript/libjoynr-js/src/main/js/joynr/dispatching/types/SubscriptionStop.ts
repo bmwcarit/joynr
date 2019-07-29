@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const Reply = require("../../../../../main/js/joynr/dispatching/types/Reply");
+class SubscriptionStop {
+    public subscriptionId: string;
+    /**
+     * The joynr type name
+     *
+     * @name SubscriptionStop#_typeName
+     * @type String
+     */
+    public _typeName = "joynr.SubscriptionStop";
+    public constructor(settings: { subscriptionId: string }) {
+        this.subscriptionId = settings.subscriptionId;
+    }
+}
 
-describe("libjoynr-js.joynr.dispatching.types.Reply", () => {
-    it("is instantiable", () => {
-        const response = ["response"];
-        const reply = Reply.create({
-            requestReplyId: "id",
-            response
-        });
-        expect(reply).toBeDefined();
-        expect(reply._typeName).toEqual("joynr.Reply");
-        expect(reply.response).toEqual(response);
-    });
-});
+export = SubscriptionStop;

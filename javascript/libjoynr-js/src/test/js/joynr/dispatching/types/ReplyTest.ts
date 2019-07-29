@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,17 @@
  * #L%
  */
 
-/**
- * @name MulticastPublication
- * @constructor
- *
- * @param {String}
- *            settings.multicastId
- * @param {Object}
- *            settings.response
- * @param {Object}
- *            settings.error The exception object in case of publication failure
- */
-function MulticastPublication(settings) {
-    /**
-     * The joynr type name
-     *
-     * @name MulticastPublication#_typeName
-     * @type String
-     */
-    settings._typeName = "joynr.MulticastPublication";
-    return settings;
-}
+import * as Reply from "../../../../../main/js/joynr/dispatching/types/Reply";
 
-exports.create = MulticastPublication;
+describe("libjoynr-js.joynr.dispatching.types.Reply", () => {
+    it("is instantiable", () => {
+        const response = ["response"];
+        const reply = Reply.create({
+            requestReplyId: "id",
+            response
+        });
+        expect(reply).toBeDefined();
+        expect(reply._typeName).toEqual("joynr.Reply");
+        expect(reply.response).toEqual(response);
+    });
+});

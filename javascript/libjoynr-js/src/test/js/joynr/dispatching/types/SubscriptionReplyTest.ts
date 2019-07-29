@@ -17,8 +17,9 @@
  * #L%
  */
 
-const SubscriptionReply = require("joynr/joynr/dispatching/types/SubscriptionReply");
-const SubscriptionException = require("joynr/joynr/exceptions/SubscriptionException");
+import SubscriptionReply from "joynr/joynr/dispatching/types/SubscriptionReply";
+
+import SubscriptionException from "joynr/joynr/exceptions/SubscriptionException";
 
 describe("libjoynr-js.joynr.dispatching.types.SubscriptionReply", () => {
     it("is instantiable", () => {
@@ -26,14 +27,14 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionReply", () => {
             subscriptionId: "id"
         });
         expect(subscriptionReply).toBeDefined();
-        expect(subscriptionReply instanceof SubscriptionReply).toBeTruthy();
         expect(subscriptionReply._typeName).toEqual("joynr.SubscriptionReply");
         expect(subscriptionReply.subscriptionId).toEqual("id");
     });
 
     it("is instantiable with error", () => {
         const subscriptionException = new SubscriptionException({
-            subscriptionId: "id"
+            subscriptionId: "id",
+            detailMessage: "test"
         });
 
         const subscriptionReply = new SubscriptionReply({
@@ -41,7 +42,6 @@ describe("libjoynr-js.joynr.dispatching.types.SubscriptionReply", () => {
             error: subscriptionException
         });
         expect(subscriptionReply).toBeDefined();
-        expect(subscriptionReply instanceof SubscriptionReply).toBeTruthy();
         expect(subscriptionReply._typeName).toEqual("joynr.SubscriptionReply");
         expect(subscriptionReply.subscriptionId).toEqual("id");
         expect(subscriptionReply.error).toEqual(subscriptionException);

@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const Request = require("../../../../../main/js/joynr/dispatching/types/Request");
+
+import * as Request from "../../../../../main/js/joynr/dispatching/types/Request";
 
 describe("libjoynr-js.joynr.dispatching.types.Request", () => {
     it("is instantiable", () => {

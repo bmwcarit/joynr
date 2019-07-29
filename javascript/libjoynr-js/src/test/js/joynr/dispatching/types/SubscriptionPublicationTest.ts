@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const SubscriptionPublication = require("../../../../../main/js/joynr/dispatching/types/SubscriptionPublication");
+
+import * as SubscriptionPublication from "../../../../../main/js/joynr/dispatching/types/SubscriptionPublication";
 
 describe("libjoynr-js.joynr.dispatching.types.SubscriptionPublication", () => {
     it("is defined", () => {

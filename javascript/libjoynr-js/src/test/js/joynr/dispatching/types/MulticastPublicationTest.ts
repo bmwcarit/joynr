@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const MulticastPublication = require("../../../../../main/js/joynr/dispatching/types/MulticastPublication");
+
+import * as MulticastPublication from "../../../../../main/js/joynr/dispatching/types/MulticastPublication";
 
 describe("libjoynr-js.joynr.dispatching.types.MulticastPublication", () => {
     it("is defined", () => {

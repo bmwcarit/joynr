@@ -17,27 +17,31 @@
  * #L%
  */
 
+export interface MulticastPublicationSettings {
+    multicastId: string;
+    response?: any;
+    error?: Record<string, any>;
+}
+
+export interface MulticastPublication extends MulticastPublicationSettings {
+    _typeName: "joynr.MulticastPublication";
+}
+
 /**
- * @name SubscriptionPublication
+ * @name MulticastPublication
  * @constructor
  *
- * @param {String}
- *            settings.subscriptionId
- * @param {Object}
- *            settings.response
- * @param {Object}
- *            settings.error The exception object in case of publication failure
+ * @param settings.multicastId
+ * @param settings.response
+ * @param settings.error The exception object in case of publication failure
  */
-function SubscriptionPublication(settings) {
+export function create(settings: MulticastPublicationSettings): MulticastPublication {
     /**
      * The joynr type name
      *
-     * @name SubscriptionPublication#_typeName
+     * @name MulticastPublication#_typeName
      * @type String
      */
-    settings._typeName = "joynr.SubscriptionPublication";
-
-    return settings;
+    (settings as MulticastPublication)._typeName = "joynr.MulticastPublication";
+    return settings as MulticastPublication;
 }
-
-exports.create = SubscriptionPublication;

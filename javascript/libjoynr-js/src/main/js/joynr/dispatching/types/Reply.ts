@@ -17,20 +17,22 @@
  * #L%
  */
 
+export interface ReplySettings {
+    response?: any[];
+    error?: any;
+    requestReplyId: string;
+}
+
+export interface Reply extends ReplySettings {
+    _typeName: "joynr.Reply";
+}
+
 /**
- * @name Reply
- * @constructor
- *
- * @param {Object}
- *            settings
- * @param {String}
- *            settings.requestReplyId
- * @param {Array}
- *            [settings.response] the response may be undefined
- * @param {Object}
- *            [settings.error] The exception object in case of request failure
+ * @param settings.requestReplyId
+ * @param [settings.response] the response may be undefined
+ * @param [settings.error] The exception object in case of request failure
  */
-function Reply(settings) {
+export function create(settings: ReplySettings): Reply {
     // must contain exactly one of the two alternatives
     if (!settings.response && !settings.error) {
         throw new Error("Reply object does neither contain response nor error");
@@ -38,19 +40,6 @@ function Reply(settings) {
     if (settings.error && Array.isArray(settings.response) && settings.response.length > 0) {
         throw new Error("Reply object contains both response and error");
     }
-
-    /**
-     * The joynr type name
-     *
-     * @name Reply#_typeName
-     * @type String
-     */
-    Object.defineProperty(settings, "_typeName", {
-        value: "joynr.Reply",
-        enumerable: true
-    });
-
-    return settings;
+    (settings as Reply)._typeName = "joynr.Reply";
+    return settings as Reply;
 }
-
-exports.create = Reply;
