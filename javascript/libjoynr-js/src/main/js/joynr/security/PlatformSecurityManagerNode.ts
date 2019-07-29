@@ -16,30 +16,18 @@
  * limitations under the License.
  * #L%
  */
-/**
- * @name PlatformSecurityManager
- * @constructor
- * @variation 2
- *
- * @param {String}
- *            messageType the message type as defined by
- *            [JoynrMessage.JOYNRMESSAGE_TYPE_*]{@link JoynrMessage}
- */
 class PlatformSecurityManager {
     /**
-     * @name PlatformSecurityManager(2)#getCurrentProcessUserId
-     * @function
-     *
-     * @returns {String} the user ID that executes node
+     * @returns the user ID that executes node
      */
-    getCurrentProcessUserId() {
+    public getCurrentProcessUserId(): string {
         // Remark: Faking the user name by setting this environment variable
         // is not a security threat, since the process can only access the
         // private key of the real user. This key is used to sign the message.
         // On the receiving side joynr will try to verify the message signature
         // with the public key of the faked user which will fail.
-        return process.env.USER;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return process.env.USER!;
     }
 }
-
-module.exports = PlatformSecurityManager;
+export = PlatformSecurityManager;
