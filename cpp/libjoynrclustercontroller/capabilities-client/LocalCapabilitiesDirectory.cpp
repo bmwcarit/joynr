@@ -94,7 +94,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
                   clusterControllerSettings.isLocalCapabilitiesDirectoryPersistencyEnabled()),
           freshnessUpdateTimer(ioService),
           clusterControllerId(clusterControllerId),
-          knownGbids(knownGbids)
+          knownGbids(knownGbids),
+          knownGbidsSet(knownGbids.cbegin(), knownGbids.cend())
 {
 }
 
@@ -158,6 +159,27 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
     freshnessUpdateTimer.cancel();
     checkExpiredDiscoveryEntriesTimer.cancel();
     clear();
+}
+
+LocalCapabilitiesDirectory::ValidateGBIDsEnum::Enum LocalCapabilitiesDirectory::validateGbids(
+        std::vector<std::string> gbids,
+        std::unordered_set<std::string> validGbids)
+{
+    std::unordered_set<std::string> gbidSet;
+    for (auto gbid : gbids) {
+        if (gbid.empty() || (gbidSet.find(gbid) != gbidSet.cend())) {
+            JOYNR_LOG_ERROR(logger(),
+                            "INVALID_GBID: provided GBID is null or empty or duplicate: {}.",
+                            gbid);
+            return ValidateGBIDsEnum::INVALID;
+        }
+        gbidSet.insert(gbid);
+        if (validGbids.find(gbid) == validGbids.cend()) {
+            JOYNR_LOG_ERROR(logger(), "UNKNOWN_GBID: provided GBID is unknown: {}.", gbid);
+            return ValidateGBIDsEnum::UNKNOWN;
+        }
+    }
+    return ValidateGBIDsEnum::OK;
 }
 
 void LocalCapabilitiesDirectory::addGbidMapping(const std::string& participantId,
@@ -987,6 +1009,21 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const types::DiscoveryError::Enum& errorEnum)> onError)
 {
+    auto result = validateGbids(gbids, knownGbidsSet);
+    switch (result) {
+    case ValidateGBIDsEnum::OK:
+        break;
+    case ValidateGBIDsEnum::INVALID:
+        onError(types::DiscoveryError::INVALID_GBID);
+        return;
+    case ValidateGBIDsEnum::UNKNOWN:
+        onError(types::DiscoveryError::UNKNOWN_GBID);
+        return;
+    default:
+        onError(types::DiscoveryError::INTERNAL_ERROR);
+        break;
+    }
+
     if (!hasProviderPermission(discoveryEntry)) {
         throw exceptions::ProviderRuntimeException(fmt::format(
                 "Provider does not have permissions to register interface {} on domain {}.",
@@ -1109,6 +1146,20 @@ void LocalCapabilitiesDirectory::lookup(
                 onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
 {
+    auto result = validateGbids(gbids, knownGbidsSet);
+    switch (result) {
+    case ValidateGBIDsEnum::OK:
+        break;
+    case ValidateGBIDsEnum::INVALID:
+        onError(types::DiscoveryError::INVALID_GBID);
+        return;
+    case ValidateGBIDsEnum::UNKNOWN:
+        onError(types::DiscoveryError::UNKNOWN_GBID);
+        return;
+    default:
+        onError(types::DiscoveryError::INTERNAL_ERROR);
+        break;
+    }
     if (domains.size() != 1) {
         throw joynr::exceptions::ProviderRuntimeException(
                 "LocalCapabilitiesDirectory does not yet support lookup on multiple domains.");
@@ -1180,9 +1231,22 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
 {
+    auto result = validateGbids(gbids, knownGbidsSet);
+    switch (result) {
+    case ValidateGBIDsEnum::OK:
+        break;
+    case ValidateGBIDsEnum::INVALID:
+        onError(types::DiscoveryError::INVALID_GBID);
+        return;
+    case ValidateGBIDsEnum::UNKNOWN:
+        onError(types::DiscoveryError::UNKNOWN_GBID);
+        return;
+    default:
+        onError(types::DiscoveryError::INTERNAL_ERROR);
+        break;
+    }
     std::ignore = participantId;
     std::ignore = discoveryQos;
-    std::ignore = gbids;
     std::ignore = onSuccess;
     std::ignore = onError;
     throw exceptions::JoynrRuntimeException("Not implemented...yet!");

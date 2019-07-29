@@ -258,6 +258,13 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
 
+    struct ValidateGBIDsEnum
+    {
+        enum Enum : std::uint32_t { OK = 0, INVALID = 1, UNKNOWN = 2 };
+    };
+    static ValidateGBIDsEnum::Enum validateGbids(std::vector<std::string> gbids,
+                                                 std::unordered_set<std::string> validGbids);
+
     types::GlobalDiscoveryEntry toGlobalDiscoveryEntry(
             const types::DiscoveryEntry& discoveryEntry) const;
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
@@ -313,6 +320,7 @@ private:
     boost::asio::steady_timer freshnessUpdateTimer;
     std::string clusterControllerId;
     std::vector<std::string> knownGbids;
+    std::unordered_set<std::string> knownGbidsSet;
     std::unordered_map<std::string, std::vector<std::string>> globalParticipantIdsToGbidsMap;
     void scheduleFreshnessUpdate();
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
