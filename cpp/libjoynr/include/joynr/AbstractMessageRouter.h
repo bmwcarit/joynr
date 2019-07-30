@@ -226,7 +226,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
     ADD_LOGGER(AbstractMessageRouter)
 
-    static std::vector<std::string> createGbidVector(joynr::MessagingSettings messagingSettings);
     void checkExpiryDate(const ImmutableMessage& message);
     AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
     std::atomic<bool> isShuttingDown;

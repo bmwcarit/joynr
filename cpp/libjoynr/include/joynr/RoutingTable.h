@@ -22,6 +22,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <typeinfo>
 #include <unordered_set>
 
 #include <boost/asio/io_service.hpp>
@@ -135,7 +136,7 @@ class RoutingTable
 {
 
 public:
-    RoutingTable(std::vector<std::string> gbidVector);
+    RoutingTable(std::string participantId, std::vector<std::string> gbidVector);
     ~RoutingTable();
 
     /*
@@ -148,8 +149,6 @@ public:
     boost::optional<routingtable::RoutingEntry> lookupRoutingEntryByParticipantIdAndGbid(
             const std::string& participantId,
             const std::string& gbid) const;
-
-    void setGcdParticipantId(std::string participantId);
 
     /*
      * Returns the elements with the given address.
@@ -248,10 +247,10 @@ private:
                                                      expiryDateMs)>>>;
 
 private:
-    std::vector<std::string> gbidVector;
-    std::string gcdParticipantId;
     DISALLOW_COPY_AND_ASSIGN(RoutingTable);
     MultiIndexContainer multiIndexContainer;
+    std::string gcdParticipantId;
+    std::vector<std::string> gbidVector;
     ADD_LOGGER(RoutingTable)
 };
 

@@ -64,7 +64,8 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : IMessageRouter(),
           enable_shared_from_this<AbstractMessageRouter>(),
-          routingTable(createGbidVector(messagingSettings)),
+          routingTable(messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                       messagingSettings.getGbidVector()),
           routingTableLock(),
           multicastReceiverDirectory(),
           messagingSettings(messagingSettings),
@@ -89,18 +90,6 @@ AbstractMessageRouter::AbstractMessageRouter(
                   60 * 60 *
                   1000) // Max retry value is empirical and should practically fit many use-case
 {
-    routingTable.setGcdParticipantId(messagingSettings.getCapabilitiesDirectoryParticipantId());
-}
-
-std::vector<std::string> AbstractMessageRouter::createGbidVector(
-        joynr::MessagingSettings messagingSettings)
-{
-    std::vector<std::string> gbidVector = std::vector<std::string>();
-    gbidVector.push_back(messagingSettings.getGbid());
-    for (std::int8_t i = 0; i < messagingSettings.getAdditionalBackendsCount(); i++) {
-        gbidVector.push_back(messagingSettings.getAdditionalBackendGbid(i));
-    }
-    return gbidVector;
 }
 
 AbstractMessageRouter::~AbstractMessageRouter()
@@ -192,7 +181,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
     } else {
         const std::string& destinationPartId = message.getRecipient();
         boost::optional<joynr::routingtable::RoutingEntry> routingEntry;
-        std::unordered_map<std::string, std::string> customHeaders = message.getCustomHeaders();
+        auto customHeaders = message.getCustomHeaders();
         auto customHeaderGbidEntry = customHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY());
         if (customHeaderGbidEntry != customHeaders.end()) {
             std::string gbid = customHeaderGbidEntry->second;

@@ -35,7 +35,7 @@ class RoutingTableTest : public ::testing::Test
 {
 public:
     RoutingTableTest()
-            : routingTable(buildGbidVector()),
+            : routingTable("firstKey", buildGbidVector()),
               testValue(nullptr),
               secondTestValue(nullptr),
               firstKey(""),
@@ -48,7 +48,7 @@ public:
     {
         testValue = std::make_shared<WebSocketClientAddress>("testValue");
         secondTestValue = std::make_shared<WebSocketClientAddress>("secondTestValue");
-        mqttTestValue = std::make_shared<joynr::system::RoutingTypes::MqttAddress>("dummygbid", "mqttTestValue");
+        mqttTestValue = std::make_shared<joynr::system::RoutingTypes::MqttAddress>("testgbid2", "mqttTestValue");
         firstKey = std::string("firstKey");
         secondKey = std::string("secondKey");
         thirdKey = std::string("thirdKey");
@@ -70,10 +70,10 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTableTest);
 
-    static std::vector<std::string> buildGbidVector()
+    std::vector<std::string> buildGbidVector()
     {
-        std::vector<std::string> gbidVector = std::vector<std::string>();
-        gbidVector.push_back("joynrtestgbid");
+        std::vector<std::string> gbidVector;
+        gbidVector.push_back("testgbid1");
         return gbidVector;
     }
 };
@@ -96,9 +96,9 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantId)
     const bool firstIsGloballyVisible = true;
     const bool secondIsGloballyVisible = false;
     const bool expectedIsSticky1 = isStickyFalse;
-    const bool expectedExpiryDateMs1 = expiryDateMaxMs;
+    const std::int64_t expectedExpiryDateMs1 = expiryDateMaxMs;
     const bool expectedIsSticky2 = !isStickyFalse;
-    const bool expectedExpiryDateMs2 = expiryDateMaxMs - 1;
+    const std::int64_t expectedExpiryDateMs2 = expiryDateMaxMs - 1;
     routingTable.add(
             firstKey, firstIsGloballyVisible, testValue, expectedExpiryDateMs1, expectedIsSticky1);
     routingTable.add(secondKey,
@@ -126,30 +126,32 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid)
     const bool firstIsGloballyVisible = true;
     const bool secondIsGloballyVisible = false;
     const bool expectedIsSticky1 = isStickyFalse;
-    const bool expectedExpiryDateMs1 = expiryDateMaxMs;
+    const std::int64_t expectedExpiryDateMs1 = expiryDateMaxMs;
     const bool expectedIsSticky2 = !isStickyFalse;
-    const bool expectedExpiryDateMs2 = expiryDateMaxMs - 1;
+    const std::int64_t expectedExpiryDateMs2 = expiryDateMaxMs - 1;
+    //Positive test case: gbid of the existing entry gets replaced with the one from the custom header
     routingTable.add(
             firstKey, firstIsGloballyVisible, mqttTestValue, expectedExpiryDateMs1, expectedIsSticky1);
-    routingTable.add(secondKey,
+    boost::optional<routingtable::RoutingEntry> result1 =
+            routingTable.lookupRoutingEntryByParticipantIdAndGbid(firstKey, "testgbid1");
+    ASSERT_EQ("testgbid1",
+              (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result1->address).get()))->getBrokerUri());
+    routingTable.remove(firstKey);
+    //Negative test case: address Type of the gcdParticipant is not MqttAddress
+    routingTable.add(firstKey,
                      secondIsGloballyVisible,
                      secondTestValue,
                      expectedExpiryDateMs2,
                      expectedIsSticky2);
-    routingTable.add(
-            thirdKey, firstIsGloballyVisible, mqttTestValue, expectedExpiryDateMs1, expectedIsSticky1);
-    routingTable.setGcdParticipantId(firstKey);
-    boost::optional<routingtable::RoutingEntry> result1 =
-            routingTable.lookupRoutingEntryByParticipantIdAndGbid(firstKey, "joynrtestgbid");
     boost::optional<routingtable::RoutingEntry> result2 =
-            routingTable.lookupRoutingEntryByParticipantIdAndGbid(secondKey, "joynrtestgbid");
-    ASSERT_EQ("joynrtestgbid",
-              (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result1->address).get()))->getBrokerUri());
-    routingTable.setGcdParticipantId(secondKey);
+            routingTable.lookupRoutingEntryByParticipantIdAndGbid(firstKey, "testgbid1");
     ASSERT_FALSE(dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result2->address).get()));
+    //Negative test case: requested participantId does not match gcdParticipantId -> no replacement happens
+    routingTable.add(
+            secondKey, firstIsGloballyVisible, mqttTestValue, expectedExpiryDateMs1, expectedIsSticky1);
     boost::optional<routingtable::RoutingEntry> result3 =
-            routingTable.lookupRoutingEntryByParticipantIdAndGbid(thirdKey, "joynrtestgbid");
-    ASSERT_EQ("dummygbid",
+            routingTable.lookupRoutingEntryByParticipantIdAndGbid(secondKey, "testgbid1");
+    ASSERT_EQ("testgbid2",
               (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result3->address).get()))->getBrokerUri());
 }
 
