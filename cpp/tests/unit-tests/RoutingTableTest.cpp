@@ -121,7 +121,7 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantId)
     ASSERT_EQ(result2->isSticky, expectedIsSticky2);
 }
 
-TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid)
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdMultipleBackends)
 {
     const bool firstIsGloballyVisible = true;
     const bool secondIsGloballyVisible = false;

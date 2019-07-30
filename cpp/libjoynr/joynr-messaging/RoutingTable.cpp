@@ -44,12 +44,12 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
     return *found;
 }
 
-boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByParticipantIdAndGbid(
+boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByParticipantIdForMultipleBackends(
         const std::string& participantId,
         const std::string& gbid) const
 {
     auto found = lookupRoutingEntryByParticipantId(participantId);
-    if (found && participantId == this->gcdParticipantId) {
+    if (found && ( participantId == this->gcdParticipantId )) {
         auto address = found->address;
         if (auto mqttAddress =
                     dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get())) {
