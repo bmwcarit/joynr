@@ -155,6 +155,22 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
             JOYNR_LOG_FATAL(logger(), message);
             throw joynr::exceptions::JoynrRuntimeException(message);
         }
+
+#if (defined(MQTT_OCSP_ENABLED) && (LIBMOSQUITTO_VERSION_NUMBER >= 1006000))
+        rc = mosquitto_int_option(mosq, MOSQ_OPT_TLS_OCSP_REQUIRED, true);
+        if (rc != MOSQ_ERR_SUCCESS) {
+            mosquitto_destroy(mosq);
+            cleanupLibrary();
+            const std::string message =
+                    "fatal failure to require OCSP, error settings TLS options: " +
+                    getErrorString(rc);
+            JOYNR_LOG_FATAL(logger(), message);
+            throw joynr::exceptions::JoynrRuntimeException(message);
+        }
+        JOYNR_LOG_DEBUG(logger(), "MQTT OCSP is enabled");
+#else
+        JOYNR_LOG_DEBUG(logger(), "MQTT OCSP is disabled");
+#endif /* MQTT_OCSP_ENABLED */
     } else {
         JOYNR_LOG_DEBUG(logger(), "MQTT connection not encrypted");
     }
