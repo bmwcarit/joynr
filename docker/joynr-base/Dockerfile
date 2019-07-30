@@ -92,6 +92,12 @@ RUN dnf update -y \
     && dnf clean all
 
 ###################################################
+# add git config
+###################################################
+RUN git config --global user.email "dummy@dummy.com" \
+    && git config --global user.name "Dummy"
+
+###################################################
 # Generate certificates
 ###################################################
 COPY openssl.conf /tmp/openssl.cnf
