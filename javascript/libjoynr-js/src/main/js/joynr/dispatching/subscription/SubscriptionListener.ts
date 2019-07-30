@@ -18,32 +18,37 @@
  */
 class SubscriptionListener {
     /**
-     * @name SubscriptionListener
+     * Is called if publication is missed or an error occurs
+     * @name SubscriptionListener#onError
+     */
+    public onError?: Function;
+
+    /**
+     * Is called if publication is received
+     * @name SubscriptionListener#onReceive
+     */
+    public onReceive: Function;
+
+    /**
+     * Is called if subscription request has been successfully delivered to the provider
+     * @name SubscriptionListener#onSubscribed
+     */
+    public onSubscribed?: Function;
+
+    /**
      * @constructor
      *
-     * @param {Function} settings.onReceive The function to call when a publication is received
-     * @param {Function} settings.onError The function to call if no publication is received in the given alert interval
+     * @param settings.onReceive The function to call when a publication is received
+     * @param settings.onError The function to call if no publication is received in the given alert interval
      *            or if some other error occurs. The error is passed as parameter.
      */
-    constructor(settings) {
-        /**
-         * Is called if subscription request has been successfully delivered to the provider
-         * @name SubscriptionListener#onSubscribed
-         */
+    public constructor(settings: { onReceive: Function; onError?: Function; onSubscribed?: Function }) {
         this.onSubscribed = settings.onSubscribed;
 
-        /**
-         * Is called if publication is received
-         * @name SubscriptionListener#onReceive
-         */
         this.onReceive = settings.onReceive;
 
-        /**
-         * Is called if publication is missed or an error occurs
-         * @name SubscriptionListener#onError
-         */
         this.onError = settings.onError;
     }
 }
 
-module.exports = SubscriptionListener;
+export = SubscriptionListener;
