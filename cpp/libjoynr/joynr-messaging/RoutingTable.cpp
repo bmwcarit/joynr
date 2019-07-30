@@ -60,9 +60,8 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
                                               found->expiryDateMs,
                                               found->isSticky);
         }
-    } else {
-        return found;
     }
+    return found;
 }
 
 std::unordered_set<std::string> RoutingTable::lookupParticipantIdsByAddress(
