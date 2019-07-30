@@ -44,7 +44,7 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
     return *found;
 }
 
-boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByParticipantIdForMultipleBackends(
+boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByParticipantIdAndGbid(
         const std::string& participantId,
         const std::string& gbid) const
 {

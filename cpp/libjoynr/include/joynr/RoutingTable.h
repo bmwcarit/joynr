@@ -145,7 +145,7 @@ public:
     boost::optional<routingtable::RoutingEntry> lookupRoutingEntryByParticipantId(
             const std::string& participantId) const;
 
-    boost::optional<routingtable::RoutingEntry> lookupRoutingEntryByParticipantIdForMultipleBackends(
+    boost::optional<routingtable::RoutingEntry> lookupRoutingEntryByParticipantIdAndGbid(
             const std::string& participantId,
             const std::string& gbid) const;
 

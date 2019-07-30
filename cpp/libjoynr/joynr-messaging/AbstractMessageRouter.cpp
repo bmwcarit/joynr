@@ -186,7 +186,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
         if (customHeaderGbidEntry != customHeaders.end()) {
             std::string gbid = customHeaderGbidEntry->second;
             if (!gbid.empty()) {
-                routingEntry = routingTable.lookupRoutingEntryByParticipantIdForMultipleBackends(
+                routingEntry = routingTable.lookupRoutingEntryByParticipantIdAndGbid(
                         destinationPartId, gbid);
             } else {
                 routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
