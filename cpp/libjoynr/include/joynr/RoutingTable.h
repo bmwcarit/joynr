@@ -38,7 +38,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {

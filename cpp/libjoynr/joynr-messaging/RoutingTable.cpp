@@ -18,6 +18,7 @@
  */
 
 #include "joynr/RoutingTable.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
