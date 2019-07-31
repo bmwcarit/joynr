@@ -16,43 +16,30 @@
  * limitations under the License.
  * #L%
  */
-
-/**
- * The ArbitrationStrategyCollection provides three different strategies that can be
- * passed to the Arbitrator to sort the retrieved Capabilities: Nothing, HighestPriority
- * or Keyword
- *
- * @class
- * @name ArbitrationStrategyCollection
- * @see Arbitrator
- * @see DiscoveryQos
- */
-const ArbitrationStrategyCollection = {};
+import * as DiscoveryEntry from "../../generated/joynr/types/DiscoveryEntry";
+import * as DiscoveryEntryWithMetaInfo from "../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
 
 /**
  * The ArbitrationStrategyCollection.Nothing just returns the passed array
- * @function ArbitrationStrategyCollection#Nothing
  *
- * @param {Array} capabilities the array of capability entries
- * @param {DiscoveryEntry} capabilities.array the array of DiscoveryEntries
+ * @param capabilities the array of capability entries
+ * @param capabilities.array the array of DiscoveryEntries
  *
- * @returns {Array} an array of capabilities as it came in through the
+ * @returns an array of capabilities as it came in through the
  *          capabilities parameter
  */
-ArbitrationStrategyCollection.Nothing = function(capabilities) {
+export function Nothing<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(capabilities: T[]): T[] {
     return capabilities;
-};
+}
 
 /**
  * The ArbitrationStrategyCollection.HighestPriority favors higher priorities
- * @function ArbitrationStrategyCollection#HighestPriority
  *
- * @param {Array} capabilities the array of capability entries
- * @param {DiscoveryEntry} capabilities.array the array of capability entries
+ * @param capabilities the array of capability entries
  *
- * @returns {Array} an array of capabilities sorted by the highest priority
+ * @returns an array of capabilities sorted by the highest priority
  */
-ArbitrationStrategyCollection.HighestPriority = function(capabilities) {
+export function HighestPriority<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(capabilities: T[]): T[] {
     if (!Array.isArray(capabilities)) {
         throw new Error("provided argument capabilities is not of type Array");
     }
@@ -61,21 +48,22 @@ ArbitrationStrategyCollection.HighestPriority = function(capabilities) {
     return capabilities.sort((a, b) => {
         return b.qos.priority - a.qos.priority;
     });
-};
+}
 
 /**
  * The ArbitrationStrategyCollection.Keyword searches for the given keyword in the
  * "keyword" qos parameter and returns those.
  * NOTE: to use this function, you must bind your keyword as follows:
  * arbitrationStrategy = Keyword.bind(undefined, "myKeyword")
- * @function ArbitrationStrategyCollection#Keyword
  *
- * @param {Array} capabilities the array of capability entries
- * @param {DiscoveryEntry} capabilities.array the array of capability entries
- * @param {String} keyword the keyword to search for
- * @returns {Array} an array of capabilities sorted by the highest priority
+ * @param capabilities the array of capability entries
+ * @param keyword the keyword to search for
+ * @returns an array of capabilities sorted by the highest priority
  */
-ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
+export function Keyword<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(
+    keyword: string,
+    capabilities: T[]
+): T[] {
     const keywordCaps = [];
 
     if (!Array.isArray(capabilities)) {
@@ -98,18 +86,17 @@ ArbitrationStrategyCollection.Keyword = function(keyword, capabilities) {
         }
     }
     return keywordCaps;
-};
+}
 
 /**
  * The ArbitrationStrategyCollection.LastSeen favors latest lastSeenDateMs
- * @function ArbitrationStrategyCollection#LastSeen
  *
- * @param {Array} capabilities the array of capability entries
- * @param {DiscoveryEntry} capabilities.array the array of capability entries
+ * @param capabilities the array of capability entries
+ * @param capabilities.array the array of capability entries
  *
- * @returns {Array} an array of capabilities sorted by the lastSeenDateMs
+ * @returns an array of capabilities sorted by the lastSeenDateMs
  */
-ArbitrationStrategyCollection.LastSeen = function(capabilities) {
+export function LastSeen<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(capabilities: T[]): T[] {
     if (!Array.isArray(capabilities)) {
         throw new Error("provided argument capabilities is not of type Array");
     }
@@ -118,6 +105,4 @@ ArbitrationStrategyCollection.LastSeen = function(capabilities) {
     return capabilities.sort((a, b) => {
         return b.lastSeenDateMs - a.lastSeenDateMs;
     });
-};
-
-module.exports = ArbitrationStrategyCollection;
+}

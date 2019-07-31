@@ -24,7 +24,7 @@ import OnChangeSubscriptionQos from "./joynr/proxy/OnChangeSubscriptionQos";
 import MulticastSubscriptionQos from "./joynr/proxy/MulticastSubscriptionQos";
 import OnChangeWithKeepAliveSubscriptionQos from "./joynr/proxy/OnChangeWithKeepAliveSubscriptionQos";
 import BroadcastFilterParameters from "./joynr/proxy/BroadcastFilterParameters";
-import ArbitrationStrategyCollection from "./joynr/types/ArbitrationStrategyCollection";
+import * as ArbitrationStrategyCollection from "./joynr/types/ArbitrationStrategyCollection";
 import * as Util from "./joynr/util/Util";
 import JoynrException from "./joynr/exceptions/JoynrException";
 import JoynrRuntimeException from "./joynr/exceptions/JoynrRuntimeException";

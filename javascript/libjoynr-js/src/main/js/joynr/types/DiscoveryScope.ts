@@ -17,4 +17,5 @@
  * #L%
  */
 
-module.exports = require("../../generated/joynr/types/DiscoveryScope");
+import DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
+export = DiscoveryScope;

@@ -18,12 +18,11 @@
  * #L%
  */
 
-require("../../node-unit-test-helper");
+import DiscoveryScope1 from "joynr/joynr/types/DiscoveryScope";
+import DiscoveryScope2 from "joynr/generated/joynr/types/DiscoveryScope";
 
 describe("libjoynr-js.joynr.types.DiscoveryScope", () => {
     it("can require DiscoveryScope from both paths and it's the same", () => {
-        const DiscoveryScope1 = require("joynr/joynr/types/DiscoveryScope");
-        const DiscoveryScope2 = require("joynr/generated/joynr/types/DiscoveryScope");
         expect(DiscoveryScope1).toBeDefined();
         expect(DiscoveryScope1).toBe(DiscoveryScope2);
     });

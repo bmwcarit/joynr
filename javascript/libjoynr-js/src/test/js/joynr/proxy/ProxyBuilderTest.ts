@@ -23,7 +23,7 @@ import MessagingQos from "../../../../main/js/joynr/messaging/MessagingQos";
 import ProviderQos from "../../../../main/js/generated/joynr/types/ProviderQos";
 import ProviderScope from "../../../../main/js/generated/joynr/types/ProviderScope";
 import DiscoveryEntryWithMetaInfo from "../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo";
-import ArbitrationStrategyCollection from "../../../../main/js/joynr/types/ArbitrationStrategyCollection";
+import * as ArbitrationStrategyCollection from "../../../../main/js/joynr/types/ArbitrationStrategyCollection";
 import DiscoveryScope from "../../../../main/js/generated/joynr/types/DiscoveryScope";
 import Version from "../../../../main/js/generated/joynr/types/Version";
 import RadioProxy from "../../../generated/joynr/vehicle/RadioProxy";
