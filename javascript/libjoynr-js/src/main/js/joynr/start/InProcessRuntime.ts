@@ -17,41 +17,46 @@
  * #L%
  */
 /*eslint promise/catch-or-return: "off"*/
-const GlobalDiscoveryEntry = require("../../generated/joynr/types/GlobalDiscoveryEntry");
-const CapabilityDiscovery = require("../capabilities/discovery/CapabilityDiscovery");
-const CapabilitiesStore = require("../capabilities/CapabilitiesStore");
-const ChannelAddress = require("../../generated/joynr/system/RoutingTypes/ChannelAddress");
-const MqttMessagingStubFactory = require("../messaging/mqtt/MqttMessagingStubFactory");
-const MqttMessagingSkeleton = require("../messaging/mqtt/MqttMessagingSkeleton");
-const MqttAddress = require("../../generated/joynr/system/RoutingTypes/MqttAddress");
-const SharedMqttClient = require("../messaging/mqtt/SharedMqttClient");
-const MqttMulticastAddressCalculator = require("../messaging/mqtt/MqttMulticastAddressCalculator");
-const MessagingSkeletonFactory = require("../messaging/MessagingSkeletonFactory");
-const MessagingStubFactory = require("../messaging/MessagingStubFactory");
-const InProcessSkeleton = require("../util/InProcessSkeleton");
-const InProcessMessagingStubFactory = require("../messaging/inprocess/InProcessMessagingStubFactory");
-const InProcessAddress = require("../messaging/inprocess/InProcessAddress");
-const MessagingQos = require("../messaging/MessagingQos");
-const DiscoveryQos = require("../proxy/DiscoveryQos");
-const DiscoveryScope = require("../../generated/joynr/types/DiscoveryScope");
-const UtilInternal = require("../util/UtilInternal");
-const CapabilitiesUtil = require("../util/CapabilitiesUtil");
-const loggingManager = require("../system/LoggingManager");
-const nanoid = require("nanoid");
-const defaultLibjoynrSettings = require("./settings/defaultLibjoynrSettings");
-const defaultClusterControllerSettings = require("./settings/defaultClusterControllerSettings");
-const Typing = require("../util/Typing");
-const LongTimer = require("../util/LongTimer");
-const JoynrStates = {
+import GlobalDiscoveryEntry from "../../generated/joynr/types/GlobalDiscoveryEntry";
+
+import CapabilityDiscovery from "../capabilities/discovery/CapabilityDiscovery";
+import CapabilitiesStore from "../capabilities/CapabilitiesStore";
+import ChannelAddress from "../../generated/joynr/system/RoutingTypes/ChannelAddress";
+import MqttMessagingStubFactory from "../messaging/mqtt/MqttMessagingStubFactory";
+import MqttMessagingSkeleton from "../messaging/mqtt/MqttMessagingSkeleton";
+import MqttAddress from "../../generated/joynr/system/RoutingTypes/MqttAddress";
+import SharedMqttClient from "../messaging/mqtt/SharedMqttClient";
+import MqttMulticastAddressCalculator from "../messaging/mqtt/MqttMulticastAddressCalculator";
+import MessagingSkeletonFactory from "../messaging/MessagingSkeletonFactory";
+import MessagingStubFactory from "../messaging/MessagingStubFactory";
+import InProcessSkeleton from "../util/InProcessSkeleton";
+import InProcessMessagingStubFactory from "../messaging/inprocess/InProcessMessagingStubFactory";
+import InProcessAddress from "../messaging/inprocess/InProcessAddress";
+import MessagingQos from "../messaging/MessagingQos";
+import DiscoveryQos from "../proxy/DiscoveryQos";
+import DiscoveryScope from "../../generated/joynr/types/DiscoveryScope";
+import * as UtilInternal from "../util/UtilInternal";
+import * as CapabilitiesUtil from "../util/CapabilitiesUtil";
+import loggingManager from "../system/LoggingManager";
+import nanoid from "nanoid";
+import { InProcessProvisioning, ShutdownSettings } from "./interface/Provisioning";
+import defaultLibjoynrSettings from "./settings/defaultLibjoynrSettings";
+import defaultClusterControllerSettings from "./settings/defaultClusterControllerSettings";
+import * as Typing from "../util/Typing";
+import LongTimer from "../util/LongTimer";
+const JoynrStates: {
+    SHUTDOWN: "shut down";
+    STARTING: "starting";
+    STARTED: "started";
+    SHUTTINGDOWN: "shutting down";
+} = {
     SHUTDOWN: "shut down",
     STARTING: "starting",
     STARTED: "started",
     SHUTTINGDOWN: "shutting down"
 };
 
-const JoynrRuntime = require("./JoynrRuntime");
-
-let clusterControllerSettings;
+import JoynrRuntime from "./JoynrRuntime";
 
 const log = loggingManager.getLogger("joynr.start.InProcessRuntime");
 
@@ -64,23 +69,20 @@ const log = loggingManager.getLogger("joynr.start.InProcessRuntime");
  *
  * @param provisioning
  */
-class InProcessRuntime extends JoynrRuntime {
-    constructor() {
+class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
+    private freshnessIntervalId: any = null;
+    public constructor() {
         super();
-
-        this._freshnessIntervalId = null;
     }
 
     /**
      * Starts up the libjoynr instance
      *
-     * @name InProcessRuntime#start
-     * @function
-     * @returns {Object} an A+ promise object, reporting when libjoynr startup is
+     * @returns an A+ promise object, reporting when libjoynr startup is
      *          then({InProcessRuntime}, {Error})-ed
      * @throws {Error} if libjoynr is not in SHUTDOWN state
      */
-    async start(provisioning) {
+    public async start(provisioning: InProcessProvisioning): Promise<void> {
         super.start(provisioning);
 
         if (UtilInternal.checkNullUndefined(provisioning.bounceProxyUrl)) {
@@ -93,18 +95,18 @@ class InProcessRuntime extends JoynrRuntime {
             throw new Error("broker URI not set in provisioning.brokerUri");
         }
 
-        const initialRoutingTable = {};
+        const initialRoutingTable: Record<string, any> = {};
 
-        await this._initializePersistency(provisioning);
+        await this.initializePersistency(provisioning);
 
         const channelId =
             provisioning.channelId ||
-            (this._persistency && this._persistency.getItem("joynr.channels.channelId.1")) ||
+            (this.persistency && this.persistency.getItem("joynr.channels.channelId.1")) ||
             `chjs_${nanoid()}`;
-        if (this._persistency) this._persistency.setItem("joynr.channels.channelId.1", channelId);
+        if (this.persistency) this.persistency.setItem("joynr.channels.channelId.1", channelId);
 
         let untypedCapabilities = provisioning.capabilities || [];
-        clusterControllerSettings = defaultClusterControllerSettings({
+        const clusterControllerSettings = defaultClusterControllerSettings({
             bounceProxyBaseUrl: provisioning.bounceProxyBaseUrl,
             brokerUri: provisioning.brokerUri
         });
@@ -143,12 +145,11 @@ class InProcessRuntime extends JoynrRuntime {
 
         const messagingSkeletonFactory = new MessagingSkeletonFactory();
 
-        const messagingStubFactories = {};
+        const messagingStubFactories: Record<string, any> = {};
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         //messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
         messagingStubFactories[MqttAddress._typeName] = new MqttMessagingStubFactory({
-            client: mqttClient,
-            address: globalClusterControllerAddress
+            client: mqttClient
         });
 
         const messagingStubFactory = new MessagingStubFactory({
@@ -165,18 +166,18 @@ class InProcessRuntime extends JoynrRuntime {
             })
         };
 
-        super._initializeComponents(provisioning, messageRouterSettings);
+        super.initializeComponents(provisioning, messageRouterSettings);
 
         const mqttMessagingSkeleton = new MqttMessagingSkeleton({
             address: globalClusterControllerAddress,
             client: mqttClient,
-            messageRouter: this._messageRouter
+            messageRouter: this.messageRouter
         });
 
-        this._messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-        messagingSkeletonFactory.setSkeletons(this._messagingSkeletons);
+        this.messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
+        messagingSkeletonFactory.setSkeletons(this.messagingSkeletons);
 
-        this._messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
+        this.messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
 
         const localCapabilitiesStore = new CapabilitiesStore(
             CapabilitiesUtil.toDiscoveryEntries(defaultLibjoynrSettings.capabilities || [])
@@ -197,8 +198,9 @@ class InProcessRuntime extends JoynrRuntime {
         const capabilityDiscovery = new CapabilityDiscovery(
             localCapabilitiesStore,
             globalCapabilitiesCache,
-            this._messageRouter,
-            this.proxyBuilder,
+            this.messageRouter,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.proxyBuilder!,
             defaultProxyBuildSettings.domain
         );
 
@@ -211,36 +213,33 @@ class InProcessRuntime extends JoynrRuntime {
             capabilityDiscovery.globalAddressReady(globalClusterControllerAddressWithGbid);
         });
 
-        this._discovery.setSkeleton(new InProcessSkeleton(capabilityDiscovery));
+        this.discovery.setSkeleton(new InProcessSkeleton(capabilityDiscovery));
 
         const period = provisioning.capabilitiesFreshnessUpdateIntervalMs || 3600000; // default: 1 hour
-        this._freshnessIntervalId = LongTimer.setInterval(() => {
-            capabilityDiscovery.touch(channelId, period).catch(error => {
+        this.freshnessIntervalId = LongTimer.setInterval(() => {
+            capabilityDiscovery.touch(channelId, period).catch((error: any) => {
                 log.error(`error sending freshness update: ${error}`);
             });
-            return null;
         }, period);
 
         if (provisioning.logging) {
             loggingManager.configure(provisioning.logging);
         }
 
-        this._joynrState = JoynrStates.STARTED;
-        this._publicationManager.restore();
+        this.joynrState = JoynrStates.STARTED;
+        this.publicationManager.restore();
         log.debug("joynr initialized");
     }
 
     /**
      * Shuts down libjoynr
      *
-     * @name InProcessRuntime#shutdown
-     * @function
      * @throws {Error} if libjoynr is not in the STARTED state
      */
-    shutdown(settings) {
-        LongTimer.clearInterval(this._freshnessIntervalId);
+    public shutdown(settings: ShutdownSettings): Promise<void> {
+        LongTimer.clearInterval(this.freshnessIntervalId);
         return super.shutdown(settings);
     }
 }
 
-module.exports = InProcessRuntime;
+export = InProcessRuntime;

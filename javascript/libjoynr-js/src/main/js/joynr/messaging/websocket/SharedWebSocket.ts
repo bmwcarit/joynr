@@ -35,7 +35,7 @@ const log = LoggingManager.getLogger("joynr.messaging.websocket.SharedWebSocket"
  * @returns a url
  */
 function webSocketAddressToUrl(address: WebSocketAddress): string {
-    let url = `${address.protocol}://${address.host}:${address.port}`;
+    let url = `${address.protocol.name.toLowerCase()}://${address.host}:${address.port}`;
     if (address.path) {
         url += address.path;
     }
