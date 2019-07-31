@@ -16,10 +16,8 @@
  * limitations under the License.
  * #L%
  */
-const MessagingQosEffort = require("../../messaging/MessagingQosEffort");
-module.exports = {
-    // 30 days
-    MAX_MESSAGING_TTL_MS: 2592000000,
-    TTL_UPLIFT: 0,
-    effort: MessagingQosEffort.NORMAL
+const defaultWebSocketSettings = {
+    protocol: "ws",
+    path: ""
 };
+export = defaultWebSocketSettings;

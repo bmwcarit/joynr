@@ -16,25 +16,27 @@
  * limitations under the License.
  * #L%
  */
-const ProviderScope = require("../../../generated/joynr/types/ProviderScope");
-const UtilInternal = require("../../util/UtilInternal");
-const RoutingProvider = require("../../../generated/joynr/system/RoutingProvider");
-const DiscoveryProvider = require("../../../generated/joynr/system/DiscoveryProvider");
-const defaultSettings = {};
+import { DiscoveryEntryWithMetaInfoMembers } from "../../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
+import ProviderQos from "../../../generated/joynr/types/ProviderQos";
+import ProviderScope from "../../../generated/joynr/types/ProviderScope";
+import * as UtilInternal from "../../util/UtilInternal";
+import RoutingProvider from "../../../generated/joynr/system/RoutingProvider";
+import DiscoveryProvider from "../../../generated/joynr/system/DiscoveryProvider";
+import Version = require("../../../generated/joynr/types/Version");
 const discoveryCapability = {
-    providerVersion: {
+    providerVersion: new Version({
         majorVersion: DiscoveryProvider.MAJOR_VERSION,
         minorVersion: DiscoveryProvider.MINOR_VERSION
-    },
+    }),
     domain: "io.joynr",
     interfaceName: "system/Discovery",
     participantId: "CC.DiscoveryProvider.ParticipantId",
-    qos: {
+    qos: new ProviderQos({
         customParameters: [],
         priority: 1,
         scope: ProviderScope.LOCAL,
         supportsOnChangeSubscriptions: true
-    },
+    }),
     lastSeenDateMs: Date.now(),
     expiryDateMs: UtilInternal.getMaxLongValue(),
     publicKeyId: "",
@@ -42,35 +44,35 @@ const discoveryCapability = {
 };
 
 const routingCapability = {
-    providerVersion: {
+    providerVersion: new Version({
         majorVersion: RoutingProvider.MAJOR_VERSION,
         minorVersion: RoutingProvider.MINOR_VERSION
-    },
+    }),
     domain: "io.joynr",
     interfaceName: "system/Routing",
     participantId: "CC.RoutingProvider.ParticipantId",
-    qos: {
+    qos: new ProviderQos({
         customParameters: [],
         priority: 1,
         scope: ProviderScope.LOCAL,
         supportsOnChangeSubscriptions: true
-    },
+    }),
     lastSeenDateMs: Date.now(),
     expiryDateMs: UtilInternal.getMaxLongValue(),
     publicKeyId: "",
     isLocal: true
 };
-
-defaultSettings.persistencySettings = {
-    routingTable: false,
-    capabilities: true,
-    publications: true
+const capabilities: DiscoveryEntryWithMetaInfoMembers[] = [discoveryCapability, routingCapability];
+const defaultLibJoynrSettings = {
+    capabilities,
+    shutdownSettings: {
+        clearSubscriptionsEnabled: true,
+        clearSubscriptionsTimeoutMs: 1000
+    },
+    persistencySettings: {
+        routingTable: false,
+        capabilities: true,
+        publications: true
+    }
 };
-
-defaultSettings.shutdownSettings = {
-    clearSubscriptionsEnabled: true,
-    clearSubscriptionsTimeoutMs: 1000
-};
-
-defaultSettings.capabilities = [discoveryCapability, routingCapability];
-module.exports = defaultSettings;
+export = defaultLibJoynrSettings;
