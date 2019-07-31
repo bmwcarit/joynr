@@ -51,7 +51,15 @@ function getNamedParameters(unnamedBroadcastValues: any[], broadcastParameter: a
 
 class ProxyEvent {
     private parent: any;
-    private settings: any;
+    private settings: {
+        discoveryQos: DiscoveryQos;
+        messagingQos: MessagingQos;
+        dependencies: { subscriptionManager: SubscriptionManager };
+        selective?: boolean;
+        broadcastName: string;
+        broadcastParameter: { name: string; type: string }[];
+        filterParameters?: Record<string, any>;
+    };
     /**
      * Constructor of ProxyEvent object that is used in the generation of proxy objects
      *
@@ -113,7 +121,7 @@ class ProxyEvent {
         SubscriptionUtil.validatePartitions(subscribeParameters.partitions);
         if (subscribeParameters.filterParameters !== undefined && subscribeParameters.filterParameters !== null) {
             const checkResult = SubscriptionUtil.checkFilterParameters(
-                this.settings.filterParameters,
+                this.settings.filterParameters as Record<string, any>,
                 subscribeParameters.filterParameters.filterParameters,
                 this.settings.broadcastName
             );

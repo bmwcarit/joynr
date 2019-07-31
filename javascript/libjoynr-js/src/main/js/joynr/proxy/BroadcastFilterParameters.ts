@@ -47,18 +47,15 @@ class BroadcastFilterParameters {
      *
      * @returns {BroadcastFilterParameters} a BroadcastFilterParameters Object for subscriptions on broadcasts
      */
-    public constructor(filterParameterProperties: Record<string, any>) {
+    public constructor(filterParameterProperties?: Record<string, any>) {
         Typing.checkPropertyIfDefined(filterParameterProperties, "Object", "filterParameters");
-
-        let parameterName;
-        let funcName;
 
         if (filterParameterProperties === undefined) {
             this.filterParameters = null;
         } else {
-            for (parameterName in filterParameterProperties) {
+            for (const parameterName in filterParameterProperties) {
                 if (filterParameterProperties.hasOwnProperty(parameterName)) {
-                    funcName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
+                    const funcName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
                     //filter[funcName] = makeSetterFunction(filter, parameterName);
                     Object.defineProperty(this, funcName, {
                         configurable: false,

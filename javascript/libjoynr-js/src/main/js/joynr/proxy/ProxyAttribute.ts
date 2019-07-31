@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+import * as DiscoveryEntryWithMetaInfo from "../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
 import * as UtilInternal from "../util/UtilInternal";
 import * as Request from "../dispatching/types/Request";
 import MessagingQos from "../messaging/MessagingQos";
@@ -82,7 +83,7 @@ export interface SubscribeSettings<T> {
     subscriptionQos: SubscriptionQos;
     onReceive: (value: T) => void;
     onError?: (e: Error) => void;
-    onSubscribed?: Function;
+    onSubscribed?: (participantId: string) => void;
     subscriptionId?: string;
 }
 
@@ -106,7 +107,7 @@ function asNotify<TBase extends ProxyAttributeConstructor, T = unknown>(supercla
          */
         public subscribe(settings: SubscribeSettings<T>): Promise<string> {
             // return promise to caller
-            return (this.settings.dependencies.subscriptionManager.registerSubscription as any)({
+            return this.settings.dependencies.subscriptionManager.registerSubscription({
                 proxyId: this.parent.proxyParticipantId,
                 providerDiscoveryEntry: this.parent.providerDiscoveryEntry,
                 attributeName: this.attributeName,
@@ -166,7 +167,7 @@ class ProxyAttribute {
     /** protected property, needs to be public for tsc -d */
     public parent: {
         proxyParticipantId: string;
-        providerDiscoveryEntry: { participantId: string };
+        providerDiscoveryEntry: DiscoveryEntryWithMetaInfo;
         messagingQos?: MessagingQos;
     };
     /**
@@ -187,7 +188,7 @@ class ProxyAttribute {
     public constructor(
         parent: {
             proxyParticipantId: string;
-            providerDiscoveryEntry: { participantId: string };
+            providerDiscoveryEntry: DiscoveryEntryWithMetaInfo;
             settings: {
                 dependencies: {
                     requestReplyManager: RequestReplyManager;
