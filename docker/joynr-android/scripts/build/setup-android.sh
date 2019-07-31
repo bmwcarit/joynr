@@ -1,5 +1,4 @@
 #!/bin/bash
-
 echo "Starting setup-android.sh"
 . /etc/profile
 if [ -z "${ANDROID_HOME}" ]
@@ -17,6 +16,8 @@ then
 	echo "ANDROID_BUILD_TOOLS_VERSION not set."
 	exit 1
 fi
+
+set -e
 SDK_MANAGER=${ANDROID_HOME}/tools/bin/sdkmanager
 PROXY_ARGS=""
 if [ -n "$PROXY_HOST" ]
@@ -31,4 +32,3 @@ echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS "system-images;${ANDROID
 echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS emulator
 
 echo "Finished setup-android.sh"
-exit 0

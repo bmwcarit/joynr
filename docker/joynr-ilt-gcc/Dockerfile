@@ -5,6 +5,24 @@ ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 ###################################################
 # install clang 3.5 for formatting
 ###################################################
+RUN dnf update -y \
+    && . /etc/profile \
+    && dnf install -y \
+    rpm-build \
+    python-pip \
+    lcov \
+    boost \
+    boost-devel \
+    psmisc \
+    && dnf clean all \
+    && pip install gcovr
+
+RUN chmod -R a+rw /opt \
+    && chown -R 1000 /usr/local
+
+###################################################
+# install clang 3.5 for formatting
+###################################################
 RUN cd /tmp/ \
     && . /etc/profile \
     && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
@@ -13,14 +31,6 @@ RUN cd /tmp/ \
     --strip-components=2 \
     && mv clang-format /usr/local/bin/ \
     && rm -f clang+llvm-3.5.0-x86_64-fedora20.tar.xz
-
-###################################################
-# install rpm-build required by CMake / CPack
-###################################################
-RUN dnf update -y \
-	&& dnf install -y \
-	rpm-build \
-	&& dnf clean all
 
 ###################################################
 # install jsmn
@@ -70,33 +80,6 @@ RUN cd /opt \
     && rm -rf websocketpp
 
 ###################################################
-# install gcovr for code coverage reports
-###################################################
-RUN dnf update -y \
-    && . /etc/profile \
-    && dnf install -y \
-    python-pip \
-    && dnf clean all \
-    && pip install gcovr
-
-###################################################
-# install lcov
-###################################################
-RUN dnf update -y \
-    && dnf install -y \
-    lcov \
-    && dnf clean all
-
-###################################################
-# install boost
-###################################################
-RUN dnf update -y \
-    && dnf install -y \
-    boost \
-    boost-devel \
-    && dnf clean all
-
-###################################################
 # install googletest & googlemock
 ###################################################
 
@@ -111,18 +94,6 @@ RUN cd /opt \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf googletest
-
-###################################################
-# install psmisc tools (includes pstree)
-###################################################
-RUN dnf update -y \
-    && . /etc/profile \
-    && dnf install -y \
-    psmisc \
-    && dnf clean all
-
-RUN chmod -R a+rw /opt \
-    && chown -R 1000 /usr/local
 
 ###################################################
 # install flatbuffers

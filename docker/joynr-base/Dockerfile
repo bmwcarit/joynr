@@ -13,11 +13,10 @@ VOLUME /data/install
 VOLUME /data/src
 VOLUME /data/build
 
-ARG PROXY_HOST_BUILD_ARG=""
-ARG PROXY_PORT_BUILD_ARG=""
-
-ENV PROXY_HOST=$PROXY_HOST_BUILD_ARG
-ENV PROXY_PORT=$PROXY_PORT_BUILD_ARG
+ARG PROXY_HOST_BUILD_ARG
+ARG PROXY_PORT_BUILD_ARG
+ARG PROXY_USER_BUILD_ARG
+ARG PROXY_PASSWORD_BUILD_ARG
 
 ENV BUILD_DIR /data/build
 ENV SRC_DIR /data/src
@@ -66,6 +65,8 @@ RUN dnf update -y \
     libX11-devel \
     libXi-devel \
     libXrender-devel \
+    mosquitto \
+    mosquitto-devel \
     net-tools \
     openssl \
     openssl-devel \
@@ -127,14 +128,9 @@ RUN asadmin start-domain && \
 RUN chmod -R 777 /opt/payara41
 
 ###################################################
-# install mosquitto mqtt broker
+# copy mosquitto.conf
 ###################################################
-RUN dnf update -y \
-    && dnf install -y mosquitto \
-    mosquitto-devel \
-    && dnf clean all
 COPY mosquitto.conf /etc/mosquitto/mosquitto.conf
-
 
 ###################################################
 # add Tini - "A tiny but valid init for containers"

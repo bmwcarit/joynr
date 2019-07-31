@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 function usage
@@ -9,6 +8,7 @@ function usage
     echo "       [--version versionnumber]"
     echo "       [--additionaltags|-a <comma-separated list of tags>]"
     echo "       [--proxy_host <hostname> --proxy_port <portnumber>]"
+    echo "       [--proxy_user <proxy user> --proxy_password <proxy password>]"
 }
 
 repository=
@@ -17,6 +17,8 @@ command=$1
 additionaltags=latest
 proxy_host=
 proxy_port=
+proxy_user=
+proxy_password=
 shift
 echo "after command: $1"
 
@@ -45,13 +47,19 @@ echo "PARAM is: $1"
         -P | --proxy_port )     shift
                                 proxy_port=$1
                                 ;;
+        -U | --proxy_user )     shift
+                                proxy_user=$1
+                                ;;
+        -p | --proxy_password )     shift
+                                proxy_password=$1
+                                ;;
         * )                     usage
                                 exit 1
     esac
     shift
 done
 
-# list of available images
+#list of available images
 declare -a listOfImages=(
     "joynr-base"
     "joynr-java"
@@ -77,18 +85,38 @@ function build
                 usage
                 exit 1
             fi
-            proxy_arg="--build-arg PROXY_HOST_BUILD_ARG=$proxy_host --build-arg PROXY_PORT_BUILD_ARG=$proxy_port"
-        fi
-        docker build $proxy_arg -t ${repository}${image}:${version} ${image}/
-        echo "building image: ${repository}${image}:${version}"
-        IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
 
-        for tag in "${tags[@]}"; do
-            echo "tagging image ${repository}${image}:${version} with tag ${tag}"
-            docker tag ${repository}${image}:${version} ${repository}${image}:${tag}
-            docker tag ${repository}${image}:${version} ${image}:${tag}
-        done
+            proxy_user_pass=""
+            if [ -n "$proxy_user" ]
+            then
+                if [ -z "$proxy_password" ]
+                then
+                    echo "proxy_passsword not defined."
+                    usage
+                    exit 1
+                fi
+                proxy_user_pass="--build-arg PROXY_USER_BUILD_ARG=$proxy_user --build-arg PROXY_PASSWORD_BUILD_ARG=$proxy_password"
+            fi
+
+            proxy_arg="--build-arg PROXY_HOST_BUILD_ARG=$proxy_host --build-arg PROXY_PORT_BUILD_ARG=$proxy_port $proxy_user_pass"
+        fi
+        echo "building image: ${image}:latest"
+        docker build $proxy_arg -t ${image}:latest ${image}/
+
     done
+     
+    if [[ "$additionaltags" != "latest" ]] || [[ "$version" != "latest" ]]; then
+        for image in "${listOfImages[@]}"
+        do
+            IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
+            tags+=("$version")
+            for tag in "${tags[@]}"; do
+                echo "tagging image ${repository}${image}:latest with tag ${tag}"
+                docker tag ${image}:latest ${repository}${image}:${tag}
+                docker tag ${image}:latest ${image}:${tag}
+            done
+        done
+    fi
 }
 
 function pull

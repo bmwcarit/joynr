@@ -24,6 +24,8 @@ RUN cd /tmp/ \
 RUN dnf update -y \
 	&& dnf install -y \
 	rpm-build \
+        boost \
+        boost-devel \
 	&& dnf clean all
 
 ###################################################
@@ -77,15 +79,6 @@ RUN cd /opt \
     && cd /opt/ \
     && rm -rf dlt-daemon \
     && echo '/usr/local/lib64' > /etc/ld.so.conf.d/dlt.conf
-
-###################################################
-# install boost
-###################################################
-RUN dnf update -y \
-    && dnf install -y \
-    boost \
-    boost-devel \
-    && dnf clean all
 
 ###################################################
 # install MoCOCrW

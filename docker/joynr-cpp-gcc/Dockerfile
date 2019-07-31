@@ -6,17 +6,10 @@ FROM joynr-cpp-base:latest
 RUN . /etc/profile \
     && dnf update -y \
     && dnf install -y \
+    lcov \
     python-pip \
     && dnf clean all \
     && pip install gcovr
-
-###################################################
-# install lcov
-###################################################
-RUN dnf update -y \
-    && dnf install -y \
-    lcov \
-    && dnf clean all
 
 ###################################################
 # install rapidjson

@@ -30,10 +30,6 @@ ADD ${SMRF_RPM_NAME} /tmp/smrf.rpm
 ARG MOCOCRW_RPM_NAME
 ADD ${MOCOCRW_RPM_NAME} /tmp/MoCOCrW.rpm
 
-ARG http_proxy=""
-ARG https_proxy=""
-ARG no_proxy=""
-
 # This line is necessary to ensure that the following dnf
 # call can access the internet.
 RUN curl www.google.de > /dev/null
