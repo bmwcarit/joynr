@@ -66,9 +66,9 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
         try {
             if (payload.getError() != null) {
                 logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                             requestReplyId,
                              method.getName(),
-                             payload.getError(),
-                             requestReplyId);
+                             payload.getError());
                 // Callback must be called first before releasing the future
                 errorCallback(payload.getError());
 
