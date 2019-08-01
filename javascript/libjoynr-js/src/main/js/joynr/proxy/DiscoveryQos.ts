@@ -16,7 +16,8 @@
  * limitations under the License.
  * #L%
  */
-import ArbitrationStrategyCollection from "../../joynr/types/ArbitrationStrategyCollection";
+import * as DiscoveryEntryWithMetaInfo from "../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
+import * as ArbitrationStrategyCollection from "../../joynr/types/ArbitrationStrategyCollection";
 
 import DiscoveryScope from "../../generated/joynr/types/DiscoveryScope";
 import * as UtilInternal from "../util/UtilInternal";
@@ -35,7 +36,7 @@ namespace DiscoveryQos {
     export interface Settings {
         discoveryTimeoutMs: number;
         discoveryRetryDelayMs: number;
-        arbitrationStrategy: Function;
+        arbitrationStrategy: (discoveryEntries: DiscoveryEntryWithMetaInfo[]) => DiscoveryEntryWithMetaInfo[];
         cacheMaxAgeMs: number;
         discoveryScope: DiscoveryScope;
         providerMustSupportOnChange: boolean;
@@ -48,7 +49,7 @@ class DiscoveryQos {
     public providerMustSupportOnChange: boolean;
     public discoveryScope: DiscoveryScope;
     public cacheMaxAgeMs: number;
-    public arbitrationStrategy: Function;
+    public arbitrationStrategy: (discoveryEntries: DiscoveryEntryWithMetaInfo[]) => DiscoveryEntryWithMetaInfo[];
     public discoveryRetryDelayMs: number;
     public discoveryTimeoutMs: number;
 

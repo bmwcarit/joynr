@@ -19,7 +19,11 @@
  */
 /* istanbul ignore file */
 
-import { Provisioning } from "./joynr/start/interface/Provisioning";
+import {
+    InProcessProvisioning,
+    Provisioning,
+    WebSocketLibjoynrProvisioning
+} from "./joynr/start/interface/Provisioning";
 import JoynrObject from "./joynr/types/JoynrObject";
 
 import JoynrRuntime = require("./joynr/start/JoynrRuntime");
@@ -37,8 +41,8 @@ import ParticipantIdStorage = require("./joynr/capabilities/ParticipantIdStorage
  * @param joynr
  * @param runtime
  */
-function wrapRuntime(joynr: any, runtime: JoynrRuntime): void {
-    (Object.keys(runtime) as (keyof JoynrRuntime)[]).forEach(
+function wrapRuntime(joynr: any, runtime: JoynrRuntime<Provisioning>): void {
+    (Object.keys(runtime) as (keyof JoynrRuntime<Provisioning>)[]).forEach(
         (key): void => {
             if (!key.startsWith("_")) {
                 joynr[key] = runtime[key];
@@ -57,7 +61,7 @@ type JoynrKeys =
     | "logging"
     | "typeRegistry";
 
-class Joynr extends JoynrApi implements Pick<JoynrRuntime, JoynrKeys> {
+class Joynr extends JoynrApi implements Pick<JoynrRuntime<Provisioning>, JoynrKeys> {
     public logging!: loggingManager;
     public participantIdStorage!: ParticipantIdStorage;
     public providerBuilder!: ProviderBuilder;
@@ -75,7 +79,7 @@ class Joynr extends JoynrApi implements Pick<JoynrRuntime, JoynrKeys> {
      * @param provisioning
      * @return Promise object being resolved in case all libjoynr dependencies are loaded
      */
-    public async load(provisioning: Provisioning): Promise<Joynr> {
+    public async load(provisioning: InProcessProvisioning | WebSocketLibjoynrProvisioning): Promise<Joynr> {
         this.loaded = true;
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const Runtime =

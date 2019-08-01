@@ -46,21 +46,24 @@ type LocalStorage = LocalStorageNode;
 interface MulticastAddressCalculator {
     calculate: (joynrMessage: JoynrMessage) => Address;
 }
-interface MessageRouterSettings {
-    routingTable?: RoutingTable;
-    messagingStubFactory: MessagingStubFactory;
-    incomingAddress: Address;
-    parentMessageRouterAddress: Address;
-    persistency: LocalStorage;
-    messageQueue: MessageQueue;
-    joynrInstanceId: string;
-    initialRoutingTable?: RoutingTable;
-    multicastAddressCalculator: MulticastAddressCalculator;
-    messagingSkeletonFactory: MessagingSkeletonFactory;
+
+namespace MessageRouter {
+    export interface MessageRouterSettings {
+        routingTable?: RoutingTable;
+        messagingStubFactory: MessagingStubFactory;
+        incomingAddress?: Address;
+        parentMessageRouterAddress?: Address;
+        persistency: LocalStorage;
+        messageQueue: MessageQueue;
+        joynrInstanceId: string;
+        initialRoutingTable?: RoutingTable;
+        multicastAddressCalculator: MulticastAddressCalculator;
+        messagingSkeletonFactory: MessagingSkeletonFactory;
+    }
 }
 
 class MessageRouter {
-    private settings: MessageRouterSettings;
+    private settings: MessageRouter.MessageRouterSettings;
 
     private started: boolean = true;
     private messagesWithoutReplyTo: JoynrMessage[];
@@ -72,7 +75,7 @@ class MessageRouter {
     private parentMessageRouterAddress: Address;
     private incomingAddress: Address;
     private persistency: LocalStorage;
-    private id: any;
+    private id: string;
     private routingTable: RoutingTable;
     private queuedRemoveMulticastReceiverCalls: any;
     private queuedAddMulticastReceiverCalls: any;
@@ -80,7 +83,7 @@ class MessageRouter {
     private queuedAddNextHopCalls: any;
     private messagingStub: any;
     private routingProxy!: RoutingProxy;
-    private multicastWildcardRegexFactory: any;
+    private multicastWildcardRegexFactory: MulticastWildcardRegexFactory;
     /**
      * Message Router receives a message and forwards it to the correct endpoint, as looked up in the {@link RoutingTable} @constructor
      *
@@ -107,9 +110,8 @@ class MessageRouter {
      * MessageRouter is part of the cluster controller, and is used for
      * internal messaging only.
      */
-    public constructor(settings: MessageRouterSettings) {
+    public constructor(settings: MessageRouter.MessageRouterSettings) {
         this.multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
-        this.messagingStub = undefined;
         this.queuedAddNextHopCalls = [];
         this.queuedRemoveNextHopCalls = [];
         this.queuedAddMulticastReceiverCalls = [];

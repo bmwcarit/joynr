@@ -17,26 +17,8 @@
  * #L%
  */
 
-import * as ProviderScope from "../../../generated/joynr/types/ProviderScope";
-
-interface Capabilities {
-    domain: string;
-    interfaceName: string;
-    providerQos: {
-        customParameters: {
-            name: string;
-            value: string;
-        }[];
-        scope: ProviderScope;
-        priority: number;
-        supportsOnChangeSubscriptions: boolean;
-    };
-    providerVersion: {
-        majorVersion: number;
-        minorVersion: number;
-    };
-    participantId: string;
-}
+import { DiscoveryEntryWithMetaInfoMembers } from "../../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
+import { GlobalDiscoveryEntryMembers } from "../../../generated/joynr/types/GlobalDiscoveryEntry";
 
 interface DiscoveryQos {
     discoveryTimeoutMs: number;
@@ -93,8 +75,13 @@ export interface Persistency {
     publications?: boolean;
 }
 
+export interface ShutdownSettings {
+    clearSubscriptionsEnabled: boolean;
+    /** @default 1000 ms */
+    clearSubscriptionsTimeoutMs: number;
+}
+
 export interface Provisioning {
-    capabilities?: Capabilities[];
     discoveryQos?: DiscoveryQos;
     logging?: Logging;
     /** messaging qos used for joynr internal communication */
@@ -114,23 +101,41 @@ export interface Provisioning {
         TTL_UPLIFT?: number;
     };
     persistency?: Persistency;
-    shutdownSettings?: {
-        clearSubscriptionsEnabled: boolean;
-        /** @default 1000 ms */
-        clearSubscriptionsTimeoutMs: number;
-    };
-    ccAddress: {
-        protocol: "ws" | "wss";
-        port?: number;
-        host?: string;
-        /** @default "" */
-        path?: string;
-    };
+    shutdownSettings?: ShutdownSettings;
     websocket?: {
         /**
          * time in milliseconds between websocket reconnect attempts
          * @default 1000
          */
         reconnectSleepTimeMs: number;
+    };
+}
+
+export interface InProcessProvisioning extends Provisioning {
+    capabilities?: GlobalDiscoveryEntryMembers[];
+    bounceProxyUrl: string;
+    bounceProxyBaseUrl: string;
+    brokerUri: string;
+    channelId?: string;
+    capabilitiesFreshnessUpdateIntervalMs?: number;
+    mqtt: {
+        qosLevel: 0 | 1 | 2;
+    };
+}
+
+export interface WebSocketLibjoynrProvisioning extends Provisioning {
+    capabilities?: DiscoveryEntryWithMetaInfoMembers[];
+    keychain?: {
+        tlsCert: string;
+        tlsKey: string;
+        tlsCa: string;
+        ownerId: string;
+    };
+    ccAddress: {
+        protocol: "ws" | "wss";
+        port: number;
+        host: string;
+        /** @default "" */
+        path: string;
     };
 }
