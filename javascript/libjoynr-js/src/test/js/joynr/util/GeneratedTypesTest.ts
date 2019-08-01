@@ -17,11 +17,11 @@
  * #L%
  */
 
-const ComplexRadioStation = require("../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
-const ComplexStruct = require("../../../generated/joynr/datatypes/exampleTypes/ComplexStruct");
-const Country = require("../../../generated/joynr/datatypes/exampleTypes/Country");
-const ExtendedComplexStruct = require("../../../generated/joynr/datatypes/exampleTypes/ExtendedComplexStruct");
-const TestEnum = require("../../../generated/joynr/tests/testTypes/TestEnum");
+import ComplexRadioStation from "../../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation";
+import ComplexStruct from "../../../generated/joynr/datatypes/exampleTypes/ComplexStruct";
+import Country from "../../../generated/joynr/datatypes/exampleTypes/Country";
+import ExtendedComplexStruct from "../../../generated/joynr/datatypes/exampleTypes/ExtendedComplexStruct";
+import TestEnum from "../../../generated/joynr/tests/testTypes/TestEnum";
 
 beforeEach(() => {});
 
@@ -35,7 +35,7 @@ describe("Enum type", () => {
 });
 
 describe("Compound type", () => {
-    function testEqualsWithPrimitiveParams(fixture) {
+    function testEqualsWithPrimitiveParams(fixture: any) {
         expect(fixture.equals("")).toBeFalsy();
         expect(fixture.equals(1)).toBeFalsy();
         expect(fixture.equals(true)).toBeFalsy();
@@ -43,7 +43,7 @@ describe("Compound type", () => {
         expect(fixture.equals(null)).toBeFalsy();
     }
 
-    function testEqualsForComplexStruct(settings, Constructor) {
+    function testEqualsForComplexStruct(settings: any, Constructor: any) {
         const fixture = new Constructor(settings);
         testEqualsWithPrimitiveParams(fixture);
         expect(fixture.equals(new Constructor())).toBeFalsy();
@@ -89,7 +89,7 @@ describe("Compound type", () => {
         testEqualsWithPrimitiveParams(fixture);
         expect(fixture.equals(Country.GERMANY)).toBeFalsy();
 
-        expect(fixture.equals(new ComplexRadioStation())).toBeFalsy();
+        expect(fixture.equals(new ComplexRadioStation(undefined as any))).toBeFalsy();
         expect(fixture.equals(fixture)).toBeTruthy();
         expect(fixture.equals(new ComplexRadioStation(settings))).toBeTruthy();
 
@@ -108,17 +108,17 @@ describe("Compound type", () => {
             num64: 64,
             data: [],
             str: "string",
-            structMember: new ExtendedComplexStruct()
+            structMember: new ExtendedComplexStruct(undefined as any)
         };
         const fixture = testEqualsForComplexStruct(settings, ExtendedComplexStruct);
 
         settings.structMember = new ExtendedComplexStruct({
             num32: 0
-        });
+        } as any);
 
         expect(fixture.equals(new ExtendedComplexStruct(settings))).toBeFalsy();
 
-        settings.structMember = new ExtendedComplexStruct();
+        settings.structMember = new ExtendedComplexStruct(undefined as any);
         expect(fixture.equals(new ExtendedComplexStruct(settings))).toBeTruthy();
     });
 });

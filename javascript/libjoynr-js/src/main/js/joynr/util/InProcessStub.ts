@@ -16,17 +16,17 @@
  * limitations under the License.
  * #L%
  */
-const InProcessSkeleton = require("./InProcessSkeleton");
+import InProcessSkeleton from "./InProcessSkeleton";
 
 /**
  * Creates a proxy function that calls the proxyObjectFunction with the original arguments
  * in a this-context of proxyObject
  *
- * @param {Object} proxyObject
- * @param {Function} proxyObjectFunction
- * @returns {Function} the proxy function
+ * @param proxyObject
+ * @param proxyObjectFunction
+ * @returns the proxy function
  */
-function createProxyFunction(proxyObject, proxyObjectFunction) {
+function createProxyFunction(proxyObject: Record<string, any>, proxyObjectFunction: Function): Function {
     return function() {
         // and call corresponding proxy object function in context of the proxyObject with the
         // arguments of this function call
@@ -36,12 +36,11 @@ function createProxyFunction(proxyObject, proxyObjectFunction) {
 
 class InProcessStub {
     /**
-     * @name InProcessStub
      * @constructor
      *
-     * @param {InProcessSkeleton} [inProcessSkeleton] connects the inProcessStub to its skeleton
+     * @param [inProcessSkeleton] connects the inProcessStub to its skeleton
      */
-    constructor(inProcessSkeleton) {
+    public constructor(inProcessSkeleton?: InProcessSkeleton) {
         if (inProcessSkeleton !== undefined) {
             this.setSkeleton(inProcessSkeleton);
         }
@@ -50,19 +49,12 @@ class InProcessStub {
     /**
      * Can set (new) inProcess Skeleton, overwrites members
      *
-     * @name InProcessStub#setSkeleton
-     * @function
-     *
-     * @param {InProcessSkeleton} inProcessSkeleton
+     * @param inProcessSkeleton
      * @throws {Error} if type of inProcessSkeleton is wrong
      */
-    setSkeleton(inProcessSkeleton) {
+    public setSkeleton(inProcessSkeleton: InProcessSkeleton): void {
         if (inProcessSkeleton === undefined || inProcessSkeleton === null) {
             throw new Error("InProcessStub is undefined or null");
-        }
-
-        if (!(inProcessSkeleton instanceof InProcessSkeleton)) {
-            throw new Error("InProcessStub should be of type InProcessSkeleton");
         }
 
         // get proxy object from skeleton
@@ -76,6 +68,7 @@ class InProcessStub {
                 // if it is a function
                 if (typeof proxyObjectMember === "function") {
                     // attach a function to this object
+                    // @ts-ignore TODO: remove typescript incompatible pattern
                     this[key] = createProxyFunction(proxyObject, proxyObjectMember);
                 }
                 // else: not a function, do not proxy member, maybe implement this here using
@@ -85,4 +78,4 @@ class InProcessStub {
     }
 }
 
-module.exports = InProcessStub;
+export = InProcessStub;

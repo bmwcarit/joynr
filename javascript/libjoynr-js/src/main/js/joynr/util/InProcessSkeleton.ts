@@ -17,30 +17,27 @@
  * #L%
  */
 class InProcessSkeleton {
+    private proxyObject: Record<string, any>;
     /**
      * Note: This skeleton is merely the holder of the proxy object and does not get informed about
      * calls from the stub to the proxy object (stub calls methods directly on proxy object).
      *
-     * @name InProcessSkeleton
      * @constructor
      *
-     * @param {Object} proxyObject the proxy object that can be accessed through the Stub
+     * @param proxyObject the proxy object that can be accessed through the Stub
      */
-    constructor(proxyObject) {
-        this._proxyObject = proxyObject;
+    public constructor(proxyObject: Record<string, any>) {
+        this.proxyObject = proxyObject;
     }
 
     /**
      * Getter for the proxy object
      *
-     * @name InProcessSkeleton#getProxyObject
-     * @function
-     *
      * @returns the proxy object this is the skeleton for
      */
-    getProxyObject() {
-        return this._proxyObject;
+    public getProxyObject(): Record<string, any> {
+        return this.proxyObject;
     }
 }
 
-module.exports = InProcessSkeleton;
+export = InProcessSkeleton;
