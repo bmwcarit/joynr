@@ -88,16 +88,24 @@ std::shared_ptr<WebSocketPpClientTLS::SSLContext> WebSocketPpClientTLS::createSS
         return nullptr;
     }
 
-#ifndef JOYNR_WS_TLS_DISABLE_UNENCRYPTED_TRAFFIC
     if (!useEncryptedTls) {
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+        SSL_CTX_set_security_level(sslContext->native_handle(), 0);
+        if (SSL_CTX_get_security_level(sslContext->native_handle()) != 0) {
+            JOYNR_LOG_FATAL(
+                    logger(), "Failed to initialize TLS session: Could not set security level 0");
+            return nullptr;
+        }
+#endif
         int opensslResult = SSL_CTX_set_cipher_list(sslContext->native_handle(), "eNULL");
         if (opensslResult == 0) {
             JOYNR_LOG_FATAL(
-                    logger(), "Failed to initialize TLS session: Could not set NULL cipher");
+                    logger(),
+                    "[DEPRECATED] Failed to initialize TLS session: Could not set eNULL cipher");
             return nullptr;
         }
+        JOYNR_LOG_WARN(logger(), "[DEPRECATED] TLS session: Set cipher list to eNULL");
     }
-#endif
 
     return sslContext;
 }

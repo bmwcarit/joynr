@@ -38,7 +38,7 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
                   std::move(messageRouter),
                   std::move(messagingStubFactory),
                   serverAddress.getPort()),
-          useEncryptedTls{useEncryptedTls},
+          useEncryptedTls(useEncryptedTls),
           caPemFile(caPemFile),
           certPemFile(certPemFile),
           privateKeyPemFile(privateKeyPemFile)
@@ -200,16 +200,25 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         return nullptr;
     }
 
-#ifndef JOYNR_WS_TLS_DISABLE_UNENCRYPTED_TRAFFIC
-    if (!useEncryptedTls) {
-        int opensslResult = SSL_CTX_set_cipher_list(sslContext->native_handle(), "eNULL");
-        if (opensslResult == 0) {
-            JOYNR_LOG_FATAL(
-                    logger(), "Failed to initialize TLS session: Could not set NULL cipher");
-            return nullptr;
-        }
+// for backward compatibility allow both eNULL and normal ciphers
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+    SSL_CTX_set_security_level(sslContext->native_handle(), 0);
+    if (SSL_CTX_get_security_level(sslContext->native_handle()) != 0) {
+        JOYNR_LOG_FATAL(
+                logger(), "Failed to initialize TLS session: Could not set security level 0");
+        return nullptr;
     }
+    const char* cipherList = "ALL:!COMPLEMENTOFDEFAULT:eNULL";
+#else
+    const char* cipherList = "ALL:!EXPORT:!LOW:!aNULL:eNULL:!SSLv2";
 #endif
+    if (SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList) == 0) {
+        JOYNR_LOG_FATAL(logger(),
+                        "Failed to initialize TLS session: Could not set cipher list to {}",
+                        std::string(cipherList));
+        return nullptr;
+    }
+    JOYNR_LOG_DEBUG(logger(), "TLS session: Set cipher list to {}", std::string(cipherList));
 
     return sslContext;
 }
