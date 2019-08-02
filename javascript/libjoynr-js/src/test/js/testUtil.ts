@@ -18,9 +18,18 @@
  */
 
 const testUtil = {
-    reversePromise(promise) {
+    multipleSetImmediate(count = 10) {
+        let res: Function;
+        const promise = new Promise(resolve => (res = resolve));
+
+        const checkCounts = (): void => (count-- > 0 ? setImmediate(checkCounts) : res());
+        checkCounts();
+
+        return promise;
+    },
+    reversePromise(promise: Promise<any>) {
         return promise.then(suc => Promise.reject(suc)).catch(e => e);
     }
 };
 
-module.exports = testUtil;
+export = testUtil;
