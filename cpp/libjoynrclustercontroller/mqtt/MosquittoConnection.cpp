@@ -33,12 +33,20 @@ namespace joynr
 int MosquittoConnection::libUseCount = 0;
 std::mutex MosquittoConnection::libUseCountMutex;
 
-MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSettings,
-                                         const ClusterControllerSettings& ccSettings,
+MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSettings,
+                                         BrokerUrl brokerUrl,
+                                         std::chrono::seconds mqttKeepAliveTimeSeconds,
+                                         std::chrono::seconds mqttReconnectDelayTimeSeconds,
+                                         std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
+                                         bool isMqttExponentialBackoffEnabled,
                                          const std::string& clientId)
-        : messagingSettings(messagingSettings),
-          host(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost()),
-          port(messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort()),
+        : brokerUrl(brokerUrl),
+          mqttKeepAliveTimeSeconds(mqttKeepAliveTimeSeconds),
+          mqttReconnectDelayTimeSeconds(mqttReconnectDelayTimeSeconds),
+          mqttReconnectMaxDelayTimeSeconds(mqttReconnectMaxDelayTimeSeconds),
+          isMqttExponentialBackoffEnabled(isMqttExponentialBackoffEnabled),
+          host(brokerUrl.getBrokerChannelsBaseUrl().getHost()),
+          port(brokerUrl.getBrokerChannelsBaseUrl().getPort()),
           channelId(),
           subscribeChannelMid(),
           topic(),
@@ -133,10 +141,13 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
         if (rc != MOSQ_ERR_SUCCESS) {
             mosquitto_destroy(mosq);
             cleanupLibrary();
-            const std::string message = "Mqtt TLS enabled, but TLS certificates are incorrectly "
+            const std::string message = "Connection to " + brokerUrl.toString() +
+                                        " : Mqtt TLS enabled, but TLS certificates are incorrectly "
                                         "specified or inaccessible: " +
                                         getErrorString(rc);
+
             JOYNR_LOG_FATAL(logger(), message);
+
             throw joynr::exceptions::JoynrRuntimeException(message);
         }
 
@@ -150,8 +161,10 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
             mosquitto_destroy(mosq);
             cleanupLibrary();
             const std::string message =
-                    "fatal failure to initialize TLS connection, error settings TLS options: " +
+                    "Connection to " + brokerUrl.toString() +
+                    " : fatal failure to initialize TLS connection, error settings TLS options:  " +
                     getErrorString(rc);
+
             JOYNR_LOG_FATAL(logger(), message);
             throw joynr::exceptions::JoynrRuntimeException(message);
         }
@@ -162,17 +175,20 @@ MosquittoConnection::MosquittoConnection(const MessagingSettings& messagingSetti
             mosquitto_destroy(mosq);
             cleanupLibrary();
             const std::string message =
-                    "fatal failure to require OCSP, error settings TLS options: " +
+                    "Connection to " + brokerUrl.toString() +
+                    " : fatal failure to require OCSP, error settings TLS options: " +
                     getErrorString(rc);
+
             JOYNR_LOG_FATAL(logger(), message);
             throw joynr::exceptions::JoynrRuntimeException(message);
         }
-        JOYNR_LOG_DEBUG(logger(), "MQTT OCSP is enabled");
+        JOYNR_LOG_DEBUG(logger(), "Connection to {} :MQTT OCSP is enabled", brokerUrl.toString());
 #else
-        JOYNR_LOG_DEBUG(logger(), "MQTT OCSP is disabled");
+        JOYNR_LOG_DEBUG(logger(), "Connection to {} :MQTT OCSP is disabled", brokerUrl.toString());
 #endif /* MQTT_OCSP_ENABLED */
     } else {
-        JOYNR_LOG_DEBUG(logger(), "MQTT connection not encrypted");
+        JOYNR_LOG_DEBUG(
+                logger(), "Connection to {}: MQTT connection not encrypted", brokerUrl.toString());
     }
 }
 
@@ -191,6 +207,7 @@ void MosquittoConnection::on_connect(struct mosquitto* mosq, void* userdata, int
         const std::string errorString(mosquittoConnection->getErrorString(rc));
         JOYNR_LOG_ERROR(
                 logger(), "Mosquitto Connection Error: {} ({})", std::to_string(rc), errorString);
+        ;
     }
 }
 
@@ -248,9 +265,9 @@ void MosquittoConnection::on_message(struct mosquitto* mosq,
     }
 
     if (!message || message->payloadlen <= 0) {
-        JOYNR_LOG_ERROR(
-                logger(),
-                "Discarding received message: invalid message or non-positive payload's length.");
+        JOYNR_LOG_ERROR(logger(),
+                        "Discarding received message: invalid message or non-positive "
+                        "payload's length.");
         return;
     }
 
@@ -364,22 +381,30 @@ void MosquittoConnection::start()
     // do not start/stop in parallel
     std::lock_guard<std::mutex> stopLocker(stopMutex);
     if (!isStopped) {
-        JOYNR_LOG_INFO(logger(), "Mosquitto Connection already started");
+        JOYNR_LOG_INFO(logger(),
+                       "Connection to {}: Mosquitto Connection already started",
+                       brokerUrl.toString());
         return;
     }
 
-    JOYNR_LOG_TRACE(
-            logger(), "Start called with isRunning: {}, isConnected: {}", isRunning, isConnected);
+    JOYNR_LOG_TRACE(logger(),
+                    "Connection to {}: Start called with isRunning: {}, isConnected: {}",
+                    brokerUrl.toString(),
+                    isRunning,
+                    isConnected);
 
-    JOYNR_LOG_INFO(logger(), "Try to connect to tcp://{}:{}", host, port);
+    JOYNR_LOG_INFO(logger(),
+                   "Connection to {}: Try to connect to tcp://{}:{}",
+                   brokerUrl.toString(),
+                   host,
+                   port);
 
-    mosquitto_connect_async(
-            mosq, host.c_str(), port, messagingSettings.getMqttKeepAliveTimeSeconds().count());
+    mosquitto_connect_async(mosq, host.c_str(), port, mqttKeepAliveTimeSeconds.count());
 
     mosquitto_reconnect_delay_set(mosq,
-                                  messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
-                                  messagingSettings.getMqttReconnectMaxDelayTimeSeconds().count(),
-                                  messagingSettings.getMqttExponentialBackoffEnabled());
+                                  mqttReconnectDelayTimeSeconds.count(),
+                                  mqttReconnectMaxDelayTimeSeconds.count(),
+                                  isMqttExponentialBackoffEnabled);
 
     startLoop();
 
@@ -392,12 +417,13 @@ void MosquittoConnection::startLoop()
 {
     int rc = mosquitto_loop_start(mosq);
     if (rc == MOSQ_ERR_SUCCESS) {
-        JOYNR_LOG_INFO(logger(), "Mosquitto loop started");
+        JOYNR_LOG_INFO(logger(), "Connection to {}: Mosquitto loop started", brokerUrl.toString());
         isRunning = true;
     } else {
         const std::string errorString(getErrorString(rc));
         JOYNR_LOG_ERROR(logger(),
-                        "Mosquitto loop start failed: error: {} ({})",
+                        "Connection to {}: Mosquitto loop start failed: error: {} ({})",
+                        brokerUrl.toString(),
                         std::to_string(rc),
                         errorString);
     }
@@ -408,7 +434,9 @@ void MosquittoConnection::stop()
     // do not start/stop in parallel
     std::lock_guard<std::mutex> stopLocker(stopMutex);
     if (isStopped) {
-        JOYNR_LOG_INFO(logger(), "Mosquitto Connection already stopped");
+        JOYNR_LOG_INFO(logger(),
+                       "Connection to {}: Mosquitto Connection already stopped",
+                       brokerUrl.toString());
         return;
     }
 
@@ -449,7 +477,8 @@ void MosquittoConnection::stopLoop(bool force)
     } else {
         const std::string errorString(getErrorString(rc));
         JOYNR_LOG_ERROR(logger(),
-                        "Mosquitto loop stop failed: error: {} ({})",
+                        "Connection to {}: Mosquitto loop stop failed: error: {} ({})",
+                        brokerUrl.toString(),
                         std::to_string(rc),
                         errorString);
     }
@@ -467,7 +496,10 @@ void MosquittoConnection::createSubscriptions()
             subscribeToTopicInternal(additionalTopic);
         }
     } catch (const exceptions::JoynrRuntimeException& error) {
-        JOYNR_LOG_ERROR(logger(), "Error subscribing to Mqtt topic, error: ", error.getMessage());
+        JOYNR_LOG_ERROR(logger(),
+                        "Connection to {}: Error subscribing to Mqtt topic, error: ",
+                        brokerUrl.toString(),
+                        error.getMessage());
     }
 }
 
@@ -481,13 +513,14 @@ void MosquittoConnection::subscribeToTopicInternal(const std::string& topic,
     int rc = mosquitto_subscribe(mosq, mid, topic.c_str(), getMqttQos());
     switch (rc) {
     case (MOSQ_ERR_SUCCESS):
-        JOYNR_LOG_INFO(logger(), "Subscribed to {}", topic);
+        JOYNR_LOG_INFO(logger(), "Connection to {}: Subscribed to {}", brokerUrl.toString(), topic);
         break;
     case (MOSQ_ERR_NO_CONN): {
         const std::string errorString(getErrorString(rc));
         JOYNR_LOG_DEBUG(logger(),
-                        "Subscription to {} failed: error: {} ({}). "
+                        "Connection to {}: Subscription to {} failed: error: {} ({}). "
                         "Subscription will be restored on connect.",
+                        brokerUrl.toString(),
                         topic,
                         std::to_string(rc),
                         errorString);
@@ -556,7 +589,11 @@ void MosquittoConnection::publishMessage(
         uint32_t payloadlen = 0,
         const void* payload = nullptr)
 {
-    JOYNR_LOG_DEBUG(logger(), "Publish message of length {} to {}", payloadlen, topic);
+    JOYNR_LOG_DEBUG(logger(),
+                    "Connection to {}: Publish message of length {} to {}",
+                    brokerUrl.toString(),
+                    payloadlen,
+                    topic);
 
     int mid;
     int rc = mosquitto_publish(
@@ -575,7 +612,10 @@ void MosquittoConnection::publishMessage(
                 ", error: " + std::to_string(rc) + " (" + errorString + ")"));
         return;
     }
-    JOYNR_LOG_TRACE(logger(), "published message with mqtt message id {}", std::to_string(mid));
+    JOYNR_LOG_TRACE(logger(),
+                    "Connection to {}: published message with mqtt message id {}",
+                    brokerUrl.toString(),
+                    std::to_string(mid));
 }
 
 void MosquittoConnection::registerChannelId(const std::string& channelId)
@@ -606,6 +646,11 @@ bool MosquittoConnection::isSubscribedToChannelTopic() const
 bool MosquittoConnection::isReadyToSend() const
 {
     return readyToSend;
+}
+
+BrokerUrl MosquittoConnection::getBrokerUrl() const
+{
+    return brokerUrl;
 }
 
 void MosquittoConnection::setReadyToSend(bool readyToSend)

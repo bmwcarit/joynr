@@ -23,10 +23,26 @@
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
+using namespace joynr;
+
 class MockMosquittoConnection : public joynr::MosquittoConnection
 {
 public:
-    MockMosquittoConnection(const joynr::MessagingSettings& messagingSettings, const joynr::ClusterControllerSettings& ccSettings, const std::string& clientId) : MosquittoConnection(messagingSettings, ccSettings, clientId) {};
+    MockMosquittoConnection(const ClusterControllerSettings& ccSettings,
+                            joynr::BrokerUrl brokerUrl,
+                            std::chrono::seconds mqttKeepAliveTimeSeconds,
+                            std::chrono::seconds mqttReconnectDelayTimeSeconds,
+                            std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
+                            bool isMqttExponentialBackoffEnabled,
+                            const std::string& clientId)
+        : MosquittoConnection(
+              ccSettings,
+              brokerUrl,
+              mqttKeepAliveTimeSeconds,
+              mqttReconnectDelayTimeSeconds,
+              mqttReconnectMaxDelayTimeSeconds,
+              isMqttExponentialBackoffEnabled,
+              clientId) {}
 
     MOCK_CONST_METHOD0(getMqttPrio, std::string());
     MOCK_CONST_METHOD0(getMqttQos, std::uint16_t());

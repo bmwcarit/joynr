@@ -49,8 +49,12 @@ class MosquittoConnection
 {
 
 public:
-    explicit MosquittoConnection(const MessagingSettings& messagingSettings,
-                                 const ClusterControllerSettings& ccSettings,
+    explicit MosquittoConnection(const ClusterControllerSettings& ccSettings,
+                                 BrokerUrl brokerUrl,
+                                 std::chrono::seconds mqttKeepAliveTimeSeconds,
+                                 std::chrono::seconds mqttReconnectDelayTimeSeconds,
+                                 std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
+                                 bool isMqttExponentialBackoffEnabled,
                                  const std::string& clientId);
 
     virtual ~MosquittoConnection();
@@ -84,6 +88,7 @@ public:
     virtual void registerReadyToSendChangedCallback(std::function<void(bool)> readyToSendCallback);
     virtual bool isSubscribedToChannelTopic() const;
     virtual bool isReadyToSend() const;
+    virtual BrokerUrl getBrokerUrl() const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);
@@ -120,7 +125,11 @@ private:
     void setReadyToSend(bool readyToSend);
     static std::string getErrorString(int rc);
 
-    const MessagingSettings& messagingSettings;
+    const BrokerUrl brokerUrl;
+    const std::chrono::seconds mqttKeepAliveTimeSeconds;
+    const std::chrono::seconds mqttReconnectDelayTimeSeconds;
+    const std::chrono::seconds mqttReconnectMaxDelayTimeSeconds;
+    const bool isMqttExponentialBackoffEnabled;
     const std::string host;
     const std::uint16_t port;
 
