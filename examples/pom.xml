@@ -56,6 +56,7 @@
 				<module>location-tester</module>
 				<module>android-location-consumer</module>
 				<module>android-location-provider</module>
+				<module>android</module>
 			</modules>
 		</profile>
 		<profile>
