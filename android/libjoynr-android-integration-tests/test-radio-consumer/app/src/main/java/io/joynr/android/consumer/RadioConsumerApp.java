@@ -44,7 +44,6 @@ public class RadioConsumerApp {
                 .build();
     }
 
-
     String getCurrentStation() {
         return radioProxy.getCurrentStation().getName();
     }
@@ -53,6 +52,5 @@ public class RadioConsumerApp {
         radioProxy.shuffleStations();
         return getCurrentStation();
     }
-
 
 }

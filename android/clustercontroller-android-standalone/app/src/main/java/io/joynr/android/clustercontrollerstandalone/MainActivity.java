@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-
     public void startService() {
 
         String editTextBrokerUri = edittext.getText().toString();

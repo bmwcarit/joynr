@@ -228,6 +228,7 @@ This project has dependencies to:
   inter-language-test-jee-consumer under The Apache Software License, Version 2.0
   inter-language-test-jee-provider under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
+  io.joynr.android:libjoynr-android-integration-tests under The Apache Software License, Version 2.0
   io.joynr.android:libjoynr-android-websocket-runtime under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-integration-tests under The Apache Software License, Version 2.0
   io.joynr.android:robolectric-unittests under The Apache Software License, Version 2.0

@@ -21,7 +21,6 @@ public class RadioProviderApp {
 
     private static final String TAG = RadioProviderApp.class.getSimpleName();
 
-
     public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
     public static final String STATIC_PARTICIPANTS_FILE = "joynr.properties_participants";
     public static final String STATIC_SUBSCRIPTION_REQUESTS_FILE = "joynr.subscriptionrequests";
@@ -29,7 +28,6 @@ public class RadioProviderApp {
     private static final String RADIO_LOCAL_DOMAIN = "radio.local.domain";
     private static final String CC_HOST = "localhost";
     private static final int CC_PORT = 4242;
-
 
     public void init(Context context) {
 
@@ -40,7 +38,6 @@ public class RadioProviderApp {
 
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE,
                 context.getCacheDir() + "/" + STATIC_SUBSCRIPTION_REQUESTS_FILE);
-
 
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, RADIO_LOCAL_DOMAIN);
 

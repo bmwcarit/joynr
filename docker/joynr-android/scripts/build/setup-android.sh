@@ -30,6 +30,5 @@ echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS "platform-tools"
 echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS "system-images;${ANDROID_API_LEVEL};default;x86_64"
 echo y | ${SDK_MANAGER} --install --verbose $PROXY_ARGS emulator
 
-
 echo "Finished setup-android.sh"
 exit 0

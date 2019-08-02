@@ -6,7 +6,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -16,7 +15,6 @@ public class MainActivity extends AppCompatActivity {
 
         RadioConsumerApp radioConsumerApp = new RadioConsumerApp();
         radioConsumerApp.init(getApplication());
-
 
         Button currentStationButton = findViewById(R.id.currentStationButton);
         Button shuffleStationButton = findViewById(R.id.shuffleStationButton);
@@ -31,5 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private void setCurrentStation(String text) {
 
         ((TextView) findViewById(R.id.testText)).setText(text);
+        
     }
 }

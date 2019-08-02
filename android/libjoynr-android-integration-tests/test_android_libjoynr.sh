@@ -1,4 +1,9 @@
 #!/bin/sh
+set -eux
+
+#REMOVE THIS AFTER NESTED VIRTUALZATION IS READY
+echo "Exiting due to no nested virtualization available yet!"
+exit 0
 
 #create android virtual device (avd)
 echo no | /opt/android-sdk-linux/tools/bin/avdmanager create avd -n joynr -k "system-images;android-28;default;x86_64" --force
@@ -7,7 +12,7 @@ echo no | /opt/android-sdk-linux/tools/bin/avdmanager create avd -n joynr -k "sy
 /opt/android-sdk-linux/emulator/emulator-headless -avd joynr -no-window &
 AVD_PID=$!
 
-echo -e "\n\n[INFO] Waitting for android virtual device\n"
+echo -e "\n\n[INFO] Waiting for android virtual device\n"
 adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
 
 echo -e "\n\n[INFO] Compiling, installing and starting android cluster controller...\n"
