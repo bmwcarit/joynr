@@ -100,25 +100,6 @@ public:
                         nullptr);
 
     /*
-     * Returns a list of capabilities matching the given domain and interfaceName and gbids.
-     * This is an asynchronous request, must supply a callback.
-     */
-    void lookup(const std::vector<std::string>& domains,
-                const std::string& interfaceName,
-                const std::vector<std::string>& gbids,
-                std::shared_ptr<ILocalCapabilitiesCallback> callback,
-                const joynr::types::DiscoveryQos& discoveryQos);
-
-    /*
-     * Returns a capability entry for a given participant ID and gbids or
-     * an empty list if it cannot be found.
-     */
-    virtual void lookup(const std::string& participantId,
-                        const types::DiscoveryQos& discoveryQos,
-                        const std::vector<std::string>& gbids,
-                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
-
-    /*
       * Returns a list of locally cached capabilitiy entries. This method is used
       * when capabilities from the global directory are received, to check if a new
       * local provider was registered in the meantime.
@@ -272,6 +253,25 @@ private:
                               std::vector<types::DiscoveryEntry>&& localEntries,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
+
+    /*
+     * Returns a list of capabilities matching the given domain and interfaceName and gbids.
+     * This is an asynchronous request, must supply a callback.
+     */
+    void lookup(const std::vector<std::string>& domains,
+                const std::string& interfaceName,
+                const std::vector<std::string>& gbids,
+                std::shared_ptr<ILocalCapabilitiesCallback> callback,
+                const joynr::types::DiscoveryQos& discoveryQos);
+
+    /*
+     * Returns a capability entry for a given participant ID and gbids or
+     * an empty list if it cannot be found.
+     */
+    virtual void lookup(const std::string& participantId,
+                        const types::DiscoveryQos& discoveryQos,
+                        const std::vector<std::string>& gbids,
+                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     bool getLocalAndCachedCapabilities(const std::vector<InterfaceAddress>& interfaceAddress,
                                        const joynr::types::DiscoveryQos& discoveryQos,
