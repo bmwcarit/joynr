@@ -32,6 +32,7 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryError.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContext.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
 
@@ -315,9 +316,9 @@ void AccessController::hasConsumerPermission(
         }
     };
 
-    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> lookupErrorCallback =
-            [callback](const joynr::exceptions::ProviderRuntimeException& exception) {
-        std::ignore = exception;
+    std::function<void(const types::DiscoveryError::Enum&)> lookupErrorCallback =
+            [callback](const types::DiscoveryError::Enum& error) {
+        std::ignore = error;
         callback->hasConsumerPermission(IAccessController::Enum::RETRY);
     };
 

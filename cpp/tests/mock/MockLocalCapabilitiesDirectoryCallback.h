@@ -23,6 +23,7 @@
 
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/Semaphore.h"
+#include "joynr/types/DiscoveryError.h"
 
 class MockLocalCapabilitiesDirectoryCallback : public joynr::ILocalCapabilitiesCallback
 {
@@ -32,7 +33,7 @@ public:
 
     void capabilitiesReceived(
             const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& capabilities) override;
-    void onError(const joynr::exceptions::JoynrRuntimeException&) override;
+    void onError(const joynr::types::DiscoveryError::Enum&) override;
 
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> getResults(int timeout);
     void clearResults();

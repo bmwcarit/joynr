@@ -34,6 +34,7 @@
 #include "libjoynrclustercontroller/access-control/AccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryError.h"
 #include "joynr/types/Version.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
@@ -156,8 +157,7 @@ public:
             bool useGlobalCapabilitiesDirectory)
     {
         ASSERT_FALSE(useGlobalCapabilitiesDirectory);
-        callback->onError(joynr::exceptions::JoynrRuntimeException(fmt::format(
-                "No local capabilities found for participantId {}", participantId)));
+        callback->onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
     }
 
     std::shared_ptr<ImmutableMessage> getImmutableMessage()

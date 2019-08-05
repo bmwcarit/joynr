@@ -42,6 +42,8 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/DiscoveryScope.h"
 
 #include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
 
@@ -667,8 +669,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     if (!receiverCalled) {
         if (!useGlobalCapabilitiesDirectory) {
             // invoke error on callback as no local capabilities were found
-            callback->onError(joynr::exceptions::JoynrRuntimeException(fmt::format(
-                    "No local capabilities found for participantId {}", participantId)));
+            callback->onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
             return;
         }
 
@@ -687,16 +688,30 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                         joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
             }
         };
+        auto onRuntimeError =
+                [callback, participantId](const exceptions::JoynrRuntimeException& exception) {
+            JOYNR_LOG_DEBUG(logger(),
+                            "Global lookup for participantId {} failed with exception: {} ({})",
+                            participantId,
+                            exception.getMessage(),
+                            exception.TYPE_NAME());
+            callback->onError(types::DiscoveryError::INTERNAL_ERROR);
+        };
+
         globalCapabilitiesDirectoryClient->lookup(participantId,
+                                                  knownGbids,
+                                                  discoveryQos.getDiscoveryTimeout(),
                                                   std::move(onSuccess),
                                                   std::bind(&ILocalCapabilitiesCallback::onError,
                                                             std::move(callback),
-                                                            std::placeholders::_1));
+                                                            std::placeholders::_1),
+                                                  std::move(onRuntimeError));
     }
 }
 
 void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                         const std::string& interfaceName,
+                                        const std::vector<std::string>& gbids,
                                         std::shared_ptr<ILocalCapabilitiesCallback> callback,
                                         const joynr::types::DiscoveryQos& discoveryQos)
 {
@@ -736,15 +751,49 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         auto onError = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
             interfaceAddresses,
+            domain = domains[0],
+            interfaceName,
             callback,
             discoveryQos
-        ](const exceptions::JoynrRuntimeException& error)
+        ](const types::DiscoveryError::Enum& error)
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                JOYNR_LOG_DEBUG(logger(),
+                                "Global lookup for domain {} and interface {} failed with "
+                                "DiscoveryError: {}",
+                                domain,
+                                interfaceName,
+                                types::DiscoveryError::getLiteral(error));
                 std::lock_guard<std::mutex> lock(thisSharedPtr->pendingLookupsLock);
                 if (!(thisSharedPtr->isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(error);
+                }
+                thisSharedPtr->callbackCalled(interfaceAddresses, callback);
+            }
+        };
+
+        auto onRuntimeError = [
+            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+            interfaceAddresses,
+            domain = domains[0],
+            interfaceName,
+            callback,
+            discoveryQos
+        ](const exceptions::JoynrRuntimeException& exception)
+        {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                JOYNR_LOG_DEBUG(logger(),
+                                "Global lookup for domain {} and interface {} failed with "
+                                "exception: {} ({})",
+                                domain,
+                                interfaceName,
+                                exception.getMessage(),
+                                exception.TYPE_NAME());
+                std::lock_guard<std::mutex> lock(thisSharedPtr->pendingLookupsLock);
+                if (!(thisSharedPtr->isCallbackCalled(
+                            interfaceAddresses, callback, discoveryQos))) {
+                    callback->onError(types::DiscoveryError::INTERNAL_ERROR);
                 }
                 thisSharedPtr->callbackCalled(interfaceAddresses, callback);
             }
@@ -756,9 +805,11 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         }
         globalCapabilitiesDirectoryClient->lookup(domains,
                                                   interfaceName,
+                                                  std::move(gbids),
                                                   discoveryQos.getDiscoveryTimeout(),
                                                   std::move(onSuccess),
-                                                  std::move(onError));
+                                                  std::move(onError),
+                                                  std::move(onRuntimeError));
     }
 }
 
@@ -1030,16 +1081,22 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>& result)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    if (domains.size() != 1) {
-        onError(joynr::exceptions::ProviderRuntimeException(
-                "LocalCapabilitiesDirectory does not yet support lookup on multiple domains."));
-        return;
-    }
-
-    auto localCapabilitiesCallback =
-            std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
-
-    lookup(domains, interfaceName, std::move(localCapabilitiesCallback), discoveryQos);
+    auto onErrorWrapper = [ onError = std::move(onError), domains = domains, interfaceName ](
+            const types::DiscoveryError::Enum& error)
+    {
+        onError(exceptions::ProviderRuntimeException(
+                fmt::format("Error looking up provider for domain {} and interface {} in all known "
+                            "backends: {}",
+                            domains.size() != 0 ? domains[0] : "",
+                            interfaceName,
+                            types::DiscoveryError::getLiteral(error))));
+    };
+    lookup(domains,
+           interfaceName,
+           discoveryQos,
+           std::vector<std::string>(),
+           std::move(onSuccess),
+           std::move(onErrorWrapper));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -1052,13 +1109,21 @@ void LocalCapabilitiesDirectory::lookup(
                 onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
 {
-    std::ignore = domains;
-    std::ignore = interfaceName;
-    std::ignore = discoveryQos;
-    std::ignore = gbids;
-    std::ignore = onSuccess;
-    std::ignore = onError;
-    throw exceptions::JoynrRuntimeException("Not implemented...yet!");
+    if (domains.size() != 1) {
+        throw joynr::exceptions::ProviderRuntimeException(
+                "LocalCapabilitiesDirectory does not yet support lookup on multiple domains.");
+        return;
+    }
+
+    auto localCapabilitiesCallback =
+            std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
+
+    const std::vector<std::string> gbidsForLookup = gbids.size() == 0 ? knownGbids : gbids;
+    lookup(domains,
+           interfaceName,
+           std::move(gbidsForLookup),
+           std::move(localCapabilitiesCallback),
+           discoveryQos);
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -1067,7 +1132,16 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto callback = [
+    auto onErrorWrapper = [ onError = std::move(onError), participantId ](
+            const types::DiscoveryError::Enum& error)
+    {
+        onError(exceptions::ProviderRuntimeException(
+                fmt::format("Error looking up provider {} in all known backends: {}",
+                            participantId,
+                            types::DiscoveryError::getLiteral(error))));
+    };
+
+    auto onSuccessWrapper = [
         thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
         onSuccess = std::move(onSuccess),
         onError,
@@ -1093,8 +1167,8 @@ void LocalCapabilitiesDirectory::lookup(
         }
     };
 
-    auto localCapabilitiesCallback =
-            std::make_shared<LocalCapabilitiesCallback>(std::move(callback), std::move(onError));
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
+            std::move(onSuccessWrapper), std::move(onErrorWrapper));
     lookup(participantId, std::move(localCapabilitiesCallback));
 }
 
@@ -1429,16 +1503,16 @@ std::string LocalCapabilitiesDirectory::joinToString(
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(
         std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>&& onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)>&& onError)
+        std::function<void(const types::DiscoveryError::Enum&)>&& onError)
         : onSuccess(std::move(onSuccess)), onErrorCallback(std::move(onError))
 {
 }
 
-void LocalCapabilitiesCallback::onError(const exceptions::JoynrRuntimeException& error)
+void LocalCapabilitiesCallback::onError(const types::DiscoveryError::Enum& error)
 {
-    onErrorCallback(joynr::exceptions::ProviderRuntimeException(
-            "Unable to collect capabilities from global capabilities directory. Error: " +
-            error.getMessage()));
+    onErrorCallback(error);
+    //"Unable to collect capabilities from global capabilities directory. Error: " +
+    // error.getMessage()));
 }
 
 void LocalCapabilitiesCallback::capabilitiesReceived(

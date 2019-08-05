@@ -51,7 +51,7 @@ std::vector<joynr::types::DiscoveryEntryWithMetaInfo> MockLocalCapabilitiesDirec
 }
 
 void MockLocalCapabilitiesDirectoryCallback::onError(
-        const joynr::exceptions::JoynrRuntimeException& error)
+        const joynr::types::DiscoveryError::Enum& error)
 {
     std::ignore = error;
     // ignore onError currently

@@ -23,6 +23,7 @@
 
 #include "joynr/JoynrExport.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/DiscoveryError.h"
 
 namespace joynr
 {
@@ -34,7 +35,7 @@ public:
 
     virtual void capabilitiesReceived(
             const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) = 0;
-    virtual void onError(const joynr::exceptions::JoynrRuntimeException&) = 0;
+    virtual void onError(const types::DiscoveryError::Enum&) = 0;
 };
 
 } // namespace joynr

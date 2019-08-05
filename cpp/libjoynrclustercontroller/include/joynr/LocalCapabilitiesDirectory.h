@@ -100,11 +100,12 @@ public:
                         nullptr);
 
     /*
-     * Returns a list of capabilitiess matching the given domain and interfaceName,
-     * this is an asynchronous request, must supply a callback.
+     * Returns a list of capabilities matching the given domain and interfaceName and gbids.
+     * This is an asynchronous request, must supply a callback.
      */
     void lookup(const std::vector<std::string>& domains,
                 const std::string& interfaceName,
+                const std::vector<std::string>& gbids,
                 std::shared_ptr<ILocalCapabilitiesCallback> callback,
                 const joynr::types::DiscoveryQos& discoveryQos);
 
@@ -348,16 +349,16 @@ class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
 public:
     LocalCapabilitiesCallback(
             std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>&& onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)>&& onError);
+            std::function<void(const types::DiscoveryError::Enum&)>&& onError);
     void capabilitiesReceived(
             const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) override;
-    void onError(const joynr::exceptions::JoynrRuntimeException&) override;
+    void onError(const types::DiscoveryError::Enum&) override;
     ~LocalCapabilitiesCallback() override = default;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallback);
     std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> onSuccess;
-    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onErrorCallback;
+    std::function<void(const types::DiscoveryError::Enum&)> onErrorCallback;
 };
 
 } // namespace joynr
