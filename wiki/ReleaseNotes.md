@@ -1,3 +1,4 @@
+
 # Release Notes
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
@@ -15,6 +16,7 @@ None.
   * org.franca:org.franca.core.dsl updated from version 0.13.0 to 0.13.1
   * org.franca:org.franca.deploymodel.dsl updated from version 0.13.0 to 0.13.1
 * **[Java]** Update jackson to version 2.9.9, jackson.databind to 2.9.9.2
+* **[C++]** Client Websocket TLS connections will be encrypted by default
 
 ## Configuration property changes
 None.
