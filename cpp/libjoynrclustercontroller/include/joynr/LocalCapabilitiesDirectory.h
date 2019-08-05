@@ -25,6 +25,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <boost/asio/io_service.hpp>
@@ -262,9 +263,11 @@ private:
 
     bool getLocalAndCachedCapabilities(const std::vector<InterfaceAddress>& interfaceAddress,
                                        const joynr::types::DiscoveryQos& discoveryQos,
+                                       const std::vector<std::string>& gbids,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool getLocalAndCachedCapabilities(const std::string& participantId,
                                        const joynr::types::DiscoveryQos& discoveryQos,
+                                       const std::vector<std::string>& gbids,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
                                 std::vector<types::DiscoveryEntry>&& localCapabilities,
@@ -272,14 +275,19 @@ private:
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     void insertInLocallyRegisteredCapabilitiesCache(const types::DiscoveryEntry& entry);
-    void insertInGlobalLookupCache(const types::DiscoveryEntry& entry);
+    void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
+                                   const std::vector<std::string>& gbids);
 
-    std::vector<types::DiscoveryEntry> searchCache(
+    std::vector<types::DiscoveryEntry> searchGlobalCache(
             const std::vector<InterfaceAddress>& interfaceAddress,
-            std::chrono::milliseconds maxCacheAge,
-            bool localEntries);
-    boost::optional<types::DiscoveryEntry> searchCache(const std::string& participantId,
-                                                       std::chrono::milliseconds maxCacheAge);
+            const std::vector<std::string>& gbids,
+            std::chrono::milliseconds maxCacheAge);
+    std::vector<types::DiscoveryEntry> searchLocalCache(
+            const std::vector<InterfaceAddress>& interfaceAddress);
+    boost::optional<types::DiscoveryEntry> searchCaches(const std::string& participantId,
+                                                        types::DiscoveryScope::Enum scope,
+                                                        const std::vector<std::string>& gbids,
+                                                        std::chrono::milliseconds maxCacheAge);
 
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient;
@@ -307,7 +315,7 @@ private:
     void remove(const types::DiscoveryEntry& discoveryEntry);
     boost::asio::steady_timer freshnessUpdateTimer;
     std::string clusterControllerId;
-    std::vector<std::string> knownGbids;
+    const std::vector<std::string> knownGbids;
     std::unordered_set<std::string> knownGbidsSet;
     std::unordered_map<std::string, std::vector<std::string>> globalParticipantIdsToGbidsMap;
     void scheduleFreshnessUpdate();
@@ -324,7 +332,6 @@ private:
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
     bool isGlobal(const types::DiscoveryEntry& discoveryEntry) const;
 
-    void addGbidMapping(const std::string& participantId, const std::vector<std::string>& gbids);
     void addInternal(const joynr::types::DiscoveryEntry& entry,
                      bool awaitGlobalRegistration,
                      const std::vector<std::string>& gbids,
@@ -338,6 +345,13 @@ private:
     std::vector<types::DiscoveryEntryWithMetaInfo> filterDuplicates(
             std::vector<types::DiscoveryEntryWithMetaInfo>&& globalCapabilitiesWithMetaInfo,
             std::vector<types::DiscoveryEntryWithMetaInfo>&& localCapabilitiesWithMetaInfo);
+    bool isEntryForGbid(const std::unique_lock<std::mutex>& lock,
+                        const types::DiscoveryEntry& entry,
+                        const std::unordered_set<std::string> gbids);
+    std::vector<types::DiscoveryEntry> filterDiscoveryEntriesByGbids(
+            const std::unique_lock<std::mutex>& lock,
+            const std::vector<types::DiscoveryEntry>& entries,
+            const std::unordered_set<std::string>& gbids);
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback

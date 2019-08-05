@@ -607,8 +607,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             if (gbidSet.stream().anyMatch(gbid -> entryBackends.contains(gbid))) {
                 return true;
             }
+            return false;
         }
-        // globally looked up provider in wrong backend
+
+        // globally looked up provider
         Address entryAddress;
         try {
             entryAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(entry);
@@ -618,6 +620,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
         if (entryAddress instanceof MqttAddress) {
             if (!gbidSet.contains(((MqttAddress) entryAddress).getBrokerUri())) {
+                // globally looked up provider in wrong backend
                 return false;
             }
         }
