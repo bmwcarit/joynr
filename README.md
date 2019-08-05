@@ -31,6 +31,8 @@ Have a peek at our documentation for more information:
 		yourself
 	* [Building joynr C++](wiki/cpp_building_joynr.md) -- Building joynr C++ yourself
 	* [Building joynr JavaScript](wiki/javascript_building_joynr.md) -- Building joynr JavaScript yourself
+* Android
+	* [Android Developer Guide](wiki/Android.md) -- Developing Android application with joynr
 * Java
 	* [Java Developer Guide](wiki/java.md) -- Developing Java applications with joynr
 	* [JEE Developer Guide](wiki/jee.md) -- Developing JEE applications with joynr
