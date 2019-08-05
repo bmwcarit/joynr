@@ -45,6 +45,7 @@ LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> set
           initializationMsg(),
           isShuttingDown(false)
 {
+    wsSettings.printSettings();
     createWebsocketClient();
 }
 

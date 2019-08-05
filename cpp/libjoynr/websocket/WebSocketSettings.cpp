@@ -33,10 +33,14 @@ WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
     checkSettings();
 }
 
-void WebSocketSettings::checkSettings() const
+void WebSocketSettings::checkSettings()
 {
     assert(settings.contains(SETTING_CC_MESSAGING_URL()));
     assert(settings.contains(SETTING_RECONNECT_SLEEP_TIME_MS()));
+
+    if (!settings.contains(SETTING_TLS_ENCRYPTION())) {
+        setEncryptedTlsUsage(DEFAULT_TLS_ENCRYPTION());
+    }
 }
 
 const std::string& WebSocketSettings::SETTING_CC_MESSAGING_URL()
@@ -79,6 +83,11 @@ const std::string& WebSocketSettings::DEFAULT_WEBSOCKET_SETTINGS_FILENAME()
 {
     static const std::string value("default-websocket.settings");
     return value;
+}
+
+bool WebSocketSettings::DEFAULT_TLS_ENCRYPTION()
+{
+    return true;
 }
 
 std::string WebSocketSettings::getClusterControllerMessagingUrl() const

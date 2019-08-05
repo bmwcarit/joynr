@@ -48,6 +48,7 @@ public:
     static const std::string& SETTING_TLS_ENCRYPTION();
 
     static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
+    static bool DEFAULT_TLS_ENCRYPTION();
 
     explicit WebSocketSettings(Settings& settings);
     WebSocketSettings(const WebSocketSettings&) = default;
@@ -87,7 +88,7 @@ private:
 
     Settings& settings;
     ADD_LOGGER(WebSocketSettings)
-    void checkSettings() const;
+    void checkSettings();
 };
 
 } // namespace joynr
