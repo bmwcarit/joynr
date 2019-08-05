@@ -42,7 +42,8 @@ class AccessController : public IAccessController,
 {
 public:
     AccessController(std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
-                     std::shared_ptr<LocalDomainAccessController> localDomainAccessController);
+                     std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
+                     std::vector<std::string> knownGbids);
 
     ~AccessController() override;
 
@@ -70,6 +71,7 @@ private:
     std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
     std::shared_ptr<ProviderRegistrationObserver> providerRegistrationObserver;
     std::vector<std::string> whitelistParticipantIds;
+    std::vector<std::string> knownGbids;
 
     ADD_LOGGER(AccessController)
 };

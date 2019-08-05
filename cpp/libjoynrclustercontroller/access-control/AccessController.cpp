@@ -33,6 +33,8 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryError.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/DiscoveryScope.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContext.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
 
@@ -221,12 +223,14 @@ private:
 
 AccessController::AccessController(
         std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
-        std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
+        std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
+        std::vector<std::string> knownGbids)
         : localCapabilitiesDirectory(localCapabilitiesDirectory),
           localDomainAccessController(localDomainAccessController),
           providerRegistrationObserver(
                   std::make_shared<ProviderRegistrationObserver>(localDomainAccessController)),
-          whitelistParticipantIds()
+          whitelistParticipantIds(),
+          knownGbids(knownGbids)
 {
     localCapabilitiesDirectory->addProviderRegistrationObserver(providerRegistrationObserver);
 }
@@ -284,13 +288,10 @@ void AccessController::hasConsumerPermission(
     // Get the domain and interface of the message destination
     auto lookupSuccessCallback =
             [ message, thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()), callback ](
-                    const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries)
+                    const types::DiscoveryEntryWithMetaInfo& discoveryEntry)
     {
 
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
-            assert(discoveryEntries.size() == 1);
-            auto discoveryEntry = discoveryEntries[0];
-
             const std::string& participantId = message->getRecipient();
             if (discoveryEntry.getParticipantId() != participantId) {
                 JOYNR_LOG_ERROR(thisSharedPtr->logger(),
@@ -323,13 +324,13 @@ void AccessController::hasConsumerPermission(
     };
 
     // Lookup participantId in the local Capabilities Directory
-    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
-            std::move(lookupSuccessCallback), std::move(lookupErrorCallback));
-
-    const bool useGlobalCapabilitiesDirectory = false;
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
     localCapabilitiesDirectory->lookup(message->getRecipient(),
-                                       std::move(localCapabilitiesCallback),
-                                       useGlobalCapabilitiesDirectory);
+                                       discoveryQos,
+                                       knownGbids,
+                                       std::move(lookupSuccessCallback),
+                                       std::move(lookupErrorCallback));
 }
 
 bool AccessController::hasProviderPermission(const std::string& userId,

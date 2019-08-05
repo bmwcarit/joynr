@@ -110,12 +110,13 @@ public:
                 const joynr::types::DiscoveryQos& discoveryQos);
 
     /*
-     * Returns a capability entry for a given participant ID or an empty list
-     * if it cannot be found.
+     * Returns a capability entry for a given participant ID and gbids or
+     * an empty list if it cannot be found.
      */
     virtual void lookup(const std::string& participantId,
-                        std::shared_ptr<ILocalCapabilitiesCallback> callback,
-                        bool useGlobalCapabilitiesDirectory = true);
+                        const types::DiscoveryQos& discoveryQos,
+                        const std::vector<std::string>& gbids,
+                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used

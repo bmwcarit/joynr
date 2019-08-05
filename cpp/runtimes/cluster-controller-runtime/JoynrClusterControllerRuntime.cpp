@@ -688,7 +688,7 @@ void JoynrClusterControllerRuntime::enableAccessController(
     }
 
     accessController = std::make_shared<joynr::AccessController>(
-            localCapabilitiesDirectory, localDomainAccessController);
+            localCapabilitiesDirectory, localDomainAccessController, availableGbids);
 
     // whitelist provisioned entries into access controller
     for (const auto& entry : provisionedEntries) {

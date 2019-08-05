@@ -633,8 +633,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
     EXPECT_CALL(
             *globalCapabilitiesDirectoryClient,
             lookup(dummyParticipantId1,
+                   _,
+                   _,
                    A<std::function<void(
                            const std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)>>(),
+                   _,
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
     EXPECT_CALL(*globalCapabilitiesDirectoryClient,
@@ -650,7 +653,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
                                        PUBLIC_KEY_ID);
     localCapabilitiesDirectory->add(entry, defaultOnSuccess, defaultOnError);
 
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    const types::DiscoveryQos discoveryQos;
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
 }
 
@@ -658,8 +662,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
 {
     EXPECT_CALL(*globalCapabilitiesDirectoryClient,
                 lookup(_,
+                       _,
+                       _,
                        A<std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>&
                                                     discoveryEntries)>>(),
+                       _,
                        A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
     EXPECT_CALL(*globalCapabilitiesDirectoryClient,
@@ -677,7 +684,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
                                        PUBLIC_KEY_ID);
     localCapabilitiesDirectory->add(entry, defaultOnSuccess, defaultOnError);
 
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    const types::DiscoveryQos discoveryQos;
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
 }
 
@@ -753,18 +761,23 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
             .WillOnce(Invoke(
                     this, &LocalCapabilitiesDirectoryTest::fakeLookupByParticipantIdWithResults));
 
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
     std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(1, capabilities.size());
     callback->clearResults();
     EXPECT_CALL(
             *globalCapabilitiesDirectoryClient,
             lookup(_,
+                   _,
+                   _,
                    A<std::function<void(
                            const std::vector<types::GlobalDiscoveryEntry>& discoveryEntries)>>(),
+                   _,
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
     capabilities = callback->getResults(TIMEOUT);
     EXPECT_EQ(1, capabilities.size());
 }
@@ -783,7 +796,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsNoCapability
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupZeroResults));
 
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> capabilities =
             callback->getResults(TIMEOUT);
     EXPECT_EQ(0, capabilities.size());
@@ -804,7 +819,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupWithThreeResults));
 
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
     std::vector<types::DiscoveryEntryWithMetaInfo> capabilities = callback->getResults(TIMEOUT);
 
     EXPECT_EQ(3, capabilities.size());
@@ -846,7 +863,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, clearRemovesEntries)
             .WillOnce(Invoke(
                     this, &LocalCapabilitiesDirectoryTest::fakeLookupByParticipantIdWithResults));
 
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
 
     // remove all entries in the cache
     localCapabilitiesDirectory->clear();
@@ -861,7 +880,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, clearRemovesEntries)
                    _,
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1);
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIfTheyAreMerged)
@@ -938,7 +957,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
                                        expiryDateMs,
                                        PUBLIC_KEY_ID);
     localCapabilitiesDirectory->add(entry, defaultOnSuccess, defaultOnError);
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
     EXPECT_EQ(1, callback->getResults(10).size());
     callback->clearResults();
 
@@ -956,7 +977,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
     // JoynrTimeOutException timeoutException;
-    EXPECT_THROW(localCapabilitiesDirectory->lookup(dummyParticipantId1, callback),
+    EXPECT_THROW(localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback),
                  exceptions::JoynrTimeOutException);
     EXPECT_EQ(0, callback->getResults(10).size());
 }
@@ -1846,8 +1867,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     localCapabilitiesDirectory2->loadPersistedFile();
 
     // check all entries are there
-    for (auto& partecipantID : participantIds) {
-        localCapabilitiesDirectory2->lookup(partecipantID, callback);
+    const types::DiscoveryQos discoveryQos;
+    for (auto& participantID : participantIds) {
+        localCapabilitiesDirectory2->lookup(participantID, discoveryQos, knownGbids, callback);
         EXPECT_EQ(1, callback->getResults(1000).size());
         callback->clearResults();
     }
@@ -1864,11 +1886,13 @@ TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)
     localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(fileName);
 
     // Verify that all entries present in the file have indeed been loaded
-    localCapabilitiesDirectory->lookup("notReachableInterface_Schroedinger", callback);
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    localCapabilitiesDirectory->lookup("notReachableInterface_Schroedinger", discoveryQos, knownGbids, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
     callback->clearResults();
 
-    localCapabilitiesDirectory->lookup("notReachableInterface_Heisenberg", callback);
+    localCapabilitiesDirectory->lookup("notReachableInterface_Heisenberg", discoveryQos, knownGbids, callback);
     EXPECT_EQ(1, callback->getResults(TIMEOUT).size());
     callback->clearResults();
 }
@@ -2078,7 +2102,8 @@ TEST_P(LocalCapabilitiesDirectoryACMockTest, checkPermissionToRegisterWithMock)
     } catch (const exceptions::ProviderRuntimeException&) {
     }
 
-    localCapabilitiesDirectory->lookup(dummyParticipantId1, callback);
+    const types::DiscoveryQos discoveryQos;
+    localCapabilitiesDirectory->lookup(dummyParticipantId1, discoveryQos, knownGbids, callback);
     const int numberOfEntriesInLCD = !this->ENABLE_ACCESS_CONTROL || this->HAS_PERMISSION ? 1 : 0;
     EXPECT_EQ(numberOfEntriesInLCD, callback->getResults(TIMEOUT).size());
 }
@@ -2106,7 +2131,7 @@ public:
         auto localDomainAccessController =
                 std::make_shared<joynr::LocalDomainAccessController>(localDomainAccessStore, true);
         accessController = std::make_shared<joynr::AccessController>(
-                localCapabilitiesDirectory, localDomainAccessController);
+                localCapabilitiesDirectory, localDomainAccessController, knownGbids);
         localCapabilitiesDirectory->setAccessController(util::as_weak_ptr(accessController));
 
         localDomainAccessStore->logContent();

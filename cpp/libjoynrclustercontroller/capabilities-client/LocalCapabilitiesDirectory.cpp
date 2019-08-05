@@ -679,22 +679,15 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
 }
 
 void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
-                                        std::shared_ptr<ILocalCapabilitiesCallback> callback,
-                                        bool useGlobalCapabilitiesDirectory)
+                                        const joynr::types::DiscoveryQos& discoveryQos,
+                                        const std::vector<std::string>& gbids,
+                                        std::shared_ptr<ILocalCapabilitiesCallback> callback)
 {
-    joynr::types::DiscoveryQos discoveryQos;
-    discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
     // get the local and cached entries
     bool receiverCalled = getLocalAndCachedCapabilities(participantId, discoveryQos, callback);
 
     // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
-        if (!useGlobalCapabilitiesDirectory) {
-            // invoke error on callback as no local capabilities were found
-            callback->onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
-            return;
-        }
-
         // search for global entires in the global capabilities directory
         auto onSuccess = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
@@ -721,7 +714,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
         };
 
         globalCapabilitiesDirectoryClient->lookup(participantId,
-                                                  knownGbids,
+                                                  std::move(gbids),
                                                   discoveryQos.getDiscoveryTimeout(),
                                                   std::move(onSuccess),
                                                   std::bind(&ILocalCapabilitiesCallback::onError,
@@ -1202,7 +1195,8 @@ void LocalCapabilitiesDirectory::lookup(
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             if (capabilities.size() == 0) {
                 joynr::exceptions::ProviderRuntimeException exception(
-                        "No capabilities found for participandId \"" + participantId + "\"");
+                        "No capabilities found for participantId \"" + participantId +
+                        "\" and default GBID: " + thisSharedPtr->knownGbids[0]);
                 onError(exception);
                 return;
             }
@@ -1218,9 +1212,14 @@ void LocalCapabilitiesDirectory::lookup(
         }
     };
 
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
     auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
             std::move(onSuccessWrapper), std::move(onErrorWrapper));
-    lookup(participantId, std::move(localCapabilitiesCallback));
+    lookup(participantId,
+           discoveryQos,
+           std::vector<std::string>(),
+           std::move(localCapabilitiesCallback));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -1245,11 +1244,45 @@ void LocalCapabilitiesDirectory::lookup(
         onError(types::DiscoveryError::INTERNAL_ERROR);
         break;
     }
-    std::ignore = participantId;
-    std::ignore = discoveryQos;
-    std::ignore = onSuccess;
-    std::ignore = onError;
-    throw exceptions::JoynrRuntimeException("Not implemented...yet!");
+
+    const std::vector<std::string> gbidsForLookup = gbids.size() == 0 ? knownGbids : gbids;
+    auto onSuccessWrapper = [
+        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+        onSuccess = std::move(onSuccess),
+        onError,
+        participantId,
+        gbidsForLookup
+    ](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
+    {
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            if (capabilities.size() == 0) {
+                const std::string gbidString = util::vectorToString(gbidsForLookup);
+                JOYNR_LOG_DEBUG(logger(),
+                                "participantId {} has no capability entry "
+                                "(DiscoveryError::NO_ENTRY_FOR_PARTICIPANT) for GBIDs: .",
+                                participantId,
+                                gbidString);
+                onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
+                return;
+            }
+            if (capabilities.size() > 1) {
+                JOYNR_LOG_ERROR(thisSharedPtr->logger(),
+                                "participantId {} has more than 1 capability entry:\n {}\n {}",
+                                participantId,
+                                capabilities[0].toString(),
+                                capabilities[1].toString());
+            }
+
+            onSuccess(capabilities[0]);
+        }
+    };
+
+    auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
+            std::move(onSuccessWrapper), std::move(onError));
+    lookup(participantId,
+           discoveryQos,
+           std::move(gbidsForLookup),
+           std::move(localCapabilitiesCallback));
 }
 
 // inherited method from joynr::system::DiscoveryProvider

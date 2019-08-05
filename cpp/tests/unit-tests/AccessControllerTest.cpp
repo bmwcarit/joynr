@@ -17,8 +17,9 @@
  * #L%
  */
 
-#include <tuple>
 #include <string>
+#include <tuple>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -26,7 +27,6 @@
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
-#include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Request.h"
 #include "joynr/Settings.h"
@@ -35,6 +35,7 @@
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryError.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/serializer/Serializer.h"
@@ -115,6 +116,7 @@ public:
     AccessControllerTest()
             : emptySettings(),
               clusterControllerSettings(emptySettings),
+              knownGbids({"testGbid1", "testGbid2", "testGbid3"}),
               singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               localDomainAccessControllerMock(std::make_shared<MockLocalDomainAccessController>(
                       std::make_unique<LocalDomainAccessStore>(),
@@ -126,7 +128,7 @@ public:
                       clusterControllerSettings,
                       messageRouter,
                       singleThreadedIOService->getIOService())),
-              accessController(std::make_shared<AccessController>(localCapabilitiesDirectoryMock, localDomainAccessControllerMock)),
+              accessController(std::make_shared<AccessController>(localCapabilitiesDirectoryMock, localDomainAccessControllerMock, knownGbids)),
               messagingQos(MessagingQos(5000))
     {
         singleThreadedIOService->start();
@@ -141,23 +143,30 @@ public:
 
     void invokeOnSuccessCallbackFct(
             std::string participantId,
-            std::shared_ptr<joynr::ILocalCapabilitiesCallback> callback,
-            bool useGlobalCapabilitiesDirectory)
+            const types::DiscoveryQos& discoveryQos,
+            const std::vector<std::string>& gbids,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
     {
         std::ignore = participantId;
-        ASSERT_FALSE(useGlobalCapabilitiesDirectory);
-        std::vector<types::DiscoveryEntryWithMetaInfo> capabilitiesReceived;
-        capabilitiesReceived.push_back(discoveryEntry);
-        callback->capabilitiesReceived(capabilitiesReceived);
+        std::ignore = gbids;
+        std::ignore = onError;
+        ASSERT_EQ(types::DiscoveryScope::LOCAL_ONLY, discoveryQos.getDiscoveryScope());
+        onSuccess(discoveryEntry);
     }
 
     void invokeOnErrorCallbackFct(
             std::string participantId,
-            std::shared_ptr<joynr::ILocalCapabilitiesCallback> callback,
-            bool useGlobalCapabilitiesDirectory)
+            const types::DiscoveryQos& discoveryQos,
+            const std::vector<std::string>& gbids,
+            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
     {
-        ASSERT_FALSE(useGlobalCapabilitiesDirectory);
-        callback->onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
+        std::ignore = participantId;
+        std::ignore = gbids;
+        std::ignore = onSuccess;
+        ASSERT_EQ(types::DiscoveryScope::LOCAL_ONLY, discoveryQos.getDiscoveryScope());
+        onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
     }
 
     std::shared_ptr<ImmutableMessage> getImmutableMessage()
@@ -194,8 +203,10 @@ public:
         EXPECT_CALL(
                 *localCapabilitiesDirectoryMock,
                 lookup(toParticipantId,
-                       A<std::shared_ptr<joynr::ILocalCapabilitiesCallback>>(),
-                       A<bool>()
+                       A<const types::DiscoveryQos&>(),
+                       knownGbids,
+                       A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
+                       A<std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>>()
                 ))
                 .Times(1)
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeOnSuccessCallbackFct));
@@ -206,8 +217,10 @@ public:
         EXPECT_CALL(
                 *localCapabilitiesDirectoryMock,
                 lookup(toParticipantId,
-                       A<std::shared_ptr<joynr::ILocalCapabilitiesCallback>>(),
-                       A<bool>()
+                       A<const types::DiscoveryQos&>(),
+                       knownGbids,
+                       A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
+                       A<std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>>()
                 ))
                 .Times(1)
                 .WillOnce(Invoke(this, &AccessControllerTest::invokeOnErrorCallbackFct));
@@ -236,6 +249,7 @@ public:
 protected:
     Settings emptySettings;
     ClusterControllerSettings clusterControllerSettings;
+    std::vector<std::string> knownGbids;
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<MockLocalDomainAccessController> localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> accessControllerCallback;

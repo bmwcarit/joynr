@@ -19,10 +19,18 @@
 #ifndef TESTS_MOCK_MOCKLOCALCAPABILITIESDIRECTORY_H
 #define TESTS_MOCK_MOCKLOCALCAPABILITIESDIRECTORY_H
 
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <gmock/gmock.h>
 
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/DiscoveryError.h"
+#include "joynr/types/DiscoveryQos.h"
 
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
@@ -30,19 +38,14 @@ public:
         LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", mockMessageRouter, ioService, "clusterControllerId", {"testGbid"})
    {}
 
-    MOCK_METHOD3(
+    MOCK_METHOD5(
             lookup,
             void(
                 const std::string& participantId,
+                const joynr::types::DiscoveryQos& discoveryQos,
+                const std::vector<std::string>& gbids,
                 std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)> onSuccess,
-                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError
-            ));
-    MOCK_METHOD3(
-            lookup,
-            void(
-                const std::string& participantId,
-                std::shared_ptr<joynr::ILocalCapabilitiesCallback> callback,
-                bool useGlobalCapabilitiesDirectory
+                std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError
             ));
 };
 
