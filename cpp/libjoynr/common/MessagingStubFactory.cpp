@@ -32,13 +32,10 @@ std::shared_ptr<IMessagingStub> MessagingStubFactory::create(
 {
     std::shared_ptr<IMessagingStub> stub = address2MessagingStubMap.value(destinationAddress);
     if (!stub) {
-        for (std::vector<std::shared_ptr<IMiddlewareMessagingStubFactory>>::iterator it =
-                     factoryList.begin();
-             it != factoryList.end();
-             ++it) {
-            if ((*it)->canCreate(*destinationAddress)) {
-                std::shared_ptr<IMessagingStub> stub = (*it)->create(*destinationAddress);
-                if (stub != nullptr) {
+        for (auto const& factory : factoryList) {
+            if (factory->canCreate(*destinationAddress)) {
+                auto stub = factory->create(*destinationAddress);
+                if (stub) {
                     address2MessagingStubMap.insert(destinationAddress, stub);
                 }
                 return stub;
