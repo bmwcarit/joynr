@@ -37,7 +37,6 @@ if (process.env.domain === undefined) {
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const domain: string = process.env.domain!;
 log(`domain: ${domain}`);
-jest.setTimeout(100000000);
 
 describe("Consumer test", () => {
     const provisioning = testbase.provisioning_common;
