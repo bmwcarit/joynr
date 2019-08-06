@@ -123,7 +123,7 @@ export function checkFilterParameters(
  * @param multicastName - the name of the multicasts
  * @param partitions - partitions of this multicast
  */
-export function createMulticastId(providerParticipantId: string, multicastName: string, partitions: any[]): string {
+export function createMulticastId(providerParticipantId: string, multicastName: string, partitions?: any[]): string {
     let multicastId = `${providerParticipantId}/${multicastName}`;
     if (partitions !== undefined) {
         for (let i = 0; i < partitions.length; i++) {

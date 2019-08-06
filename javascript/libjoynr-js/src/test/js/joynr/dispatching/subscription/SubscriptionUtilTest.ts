@@ -16,22 +16,29 @@
  * limitations under the License.
  * #L%
  */
-require("../../../node-unit-test-helper");
-const SubscriptionUtil = require("../../../../../main/js/joynr/dispatching/subscription/util/SubscriptionUtil");
-const SubscriptionInformation = require("../../../../../main/js/joynr/dispatching/types/SubscriptionInformation");
-const SubscriptionRequest = require("../../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
-const PeriodicSubscriptionQos = require("../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos");
-const OnChangeSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos");
-const OnChangeWithKeepAliveSubscriptionQos = require("../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos");
-const nanoid = require("nanoid");
+
+import * as SubscriptionUtil from "../../../../../main/js/joynr/dispatching/subscription/util/SubscriptionUtil";
+import SubscriptionInformation from "../../../../../main/js/joynr/dispatching/types/SubscriptionInformation";
+import SubscriptionRequest from "../../../../../main/js/joynr/dispatching/types/SubscriptionRequest";
+import PeriodicSubscriptionQos from "../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos";
+import OnChangeSubscriptionQos from "../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos";
+import OnChangeWithKeepAliveSubscriptionQos from "../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos";
+import nanoid from "nanoid";
 
 describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", () => {
-    let proxyId;
-    let providerId;
-    let testAttributeName;
+    let proxyId: any;
+    let providerId: any;
+    let testAttributeName: string;
 
-    function createSubscriptionInformation(proxy, provider, periodMs, subscriptionLength, onChange, minIntervalMs) {
-        let qosSettings;
+    function createSubscriptionInformation(
+        proxy: any,
+        provider: any,
+        periodMs: number,
+        subscriptionLength: any,
+        onChange: any,
+        minIntervalMs: number
+    ) {
+        let qosSettings: any;
         if (onChange) {
             if (periodMs !== undefined) {
                 qosSettings = new OnChangeWithKeepAliveSubscriptionQos({
@@ -69,7 +76,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
         );
     }
 
-    function buildString(info) {
+    function buildString(info: any) {
         return `${'{"subscriptionType":"'}${info.subscriptionType}","proxyParticipantId":"${
             info.proxyParticipantId
         }","providerParticipantId":"${info.providerParticipantId}","subscriptionId":"${
@@ -95,8 +102,9 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
     it("serialize single subscription shall work", () => {
         const info = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
 
-        const subscriptions = {};
-        subscriptions[info.subscriptionId] = info;
+        const subscriptions = {
+            [info.subscriptionId]: info
+        };
 
         const serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
         const expectedString = `[${buildString(info)}]`;
@@ -109,10 +117,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
         const info2 = createSubscriptionInformation(proxyId, providerId, 300, 1000, true, 60);
         const info3 = createSubscriptionInformation(proxyId, providerId, 400, 1000, true, 70);
 
-        const subscriptions = {};
-        subscriptions[info1.subscriptionId] = info1;
-        subscriptions[info2.subscriptionId] = info2;
-        subscriptions[info3.subscriptionId] = info3;
+        const subscriptions = {
+            [info1.subscriptionId]: info1,
+            [info2.subscriptionId]: info2,
+            [info3.subscriptionId]: info3
+        };
 
         const serializedSubscriptions = SubscriptionUtil.serializeSubscriptions(subscriptions);
         const expectedString = `[${buildString(info1)},${buildString(info2)},${buildString(info3)}]`;
@@ -164,7 +173,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
         expect(subscriptions[info2.subscriptionId].qos.minIntervalMs).toBe(info2.qos.minIntervalMs);
         expect(subscriptions[info2.subscriptionId].qos.maxIntervalMs).toBe(info2.qos.maxIntervalMs);
 
-        let subscriptionId;
+        let subscriptionId: any;
         for (subscriptionId in subscriptions) {
             if (subscriptions.hasOwnProperty(subscriptionId)) {
                 expect(subscriptionId === info1.subscriptionId || subscriptionId === info2.subscriptionId).toBe(true);
@@ -175,11 +184,11 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
     it("deserialize and deserialize single subscription shall work", () => {
         const origin = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
 
-        const subscriptions = {};
-        subscriptions[origin.subscriptionId] = origin;
+        const subscriptions = {
+            [origin.subscriptionId]: origin
+        };
 
         const serializedSubscription = SubscriptionUtil.serializeSubscriptions(subscriptions);
-
         const newSubscriptions = SubscriptionUtil.deserializeSubscriptions(serializedSubscription);
 
         expect(newSubscriptions[origin.subscriptionId].subscriptionId).toBe(origin.subscriptionId);
@@ -194,9 +203,10 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
         const origin1 = createSubscriptionInformation(proxyId, providerId, 200, 1000, true, 50);
         const origin2 = createSubscriptionInformation(proxyId, providerId, 180, 660, true, 70);
 
-        const subscriptions = {};
-        subscriptions[origin1.subscriptionId] = origin1;
-        subscriptions[origin2.subscriptionId] = origin2;
+        const subscriptions = {
+            [origin1.subscriptionId]: origin1,
+            [origin2.subscriptionId]: origin2
+        };
 
         const serializedSubscription = SubscriptionUtil.serializeSubscriptions(subscriptions);
 
