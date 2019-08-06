@@ -1153,9 +1153,8 @@ void LocalCapabilitiesDirectory::lookup(
         onError(types::DiscoveryError::INTERNAL_ERROR);
         break;
     }
-    if (domains.size() != 1) {
-        throw joynr::exceptions::ProviderRuntimeException(
-                "LocalCapabilitiesDirectory does not yet support lookup on multiple domains.");
+    if (domains.size() == 0) {
+        throw joynr::exceptions::ProviderRuntimeException("Domains must not be empty.");
         return;
     }
 

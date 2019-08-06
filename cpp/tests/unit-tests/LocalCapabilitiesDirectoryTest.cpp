@@ -2089,7 +2089,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnMultiProxy)
+TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnEmptyDomainsVector)
 {
     const std::vector<std::string> zeroDomains = {};
     const std::vector<std::string> twoDomains = {DOMAIN_1_NAME, DOMAIN_2_NAME};
@@ -2115,13 +2115,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnMultiProxy)
 
     EXPECT_CALL(mockCallback, onError(_)).Times(0);
     EXPECT_CALL(mockCallback, onSuccess(_)).Times(0);
-    EXPECT_THROW(localCapabilitiesDirectory->lookup(
+    EXPECT_NO_THROW(localCapabilitiesDirectory->lookup(
                      twoDomains,
                      INTERFACE_1_NAME,
                      discoveryQos,
                      onSuccess,
-                     onError),
-                 exceptions::ProviderRuntimeException);
+                     onError));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntriesCacheEnabled)
