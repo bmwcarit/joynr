@@ -89,7 +89,6 @@ private:
     using Map = std::unordered_map<K, V, AddressPtrHash, AddressPtrCompare>;
     ThreadSafeMap<AddressPtr, std::shared_ptr<IMessagingStub>, Map> address2MessagingStubMap;
     std::vector<std::shared_ptr<IMiddlewareMessagingStubFactory>> factoryList;
-    std::mutex mutex;
 };
 
 } // namespace joynr

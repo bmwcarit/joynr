@@ -23,7 +23,7 @@
 namespace joynr
 {
 
-MessagingStubFactory::MessagingStubFactory() : address2MessagingStubMap(), factoryList(), mutex()
+MessagingStubFactory::MessagingStubFactory() : address2MessagingStubMap(), factoryList()
 {
 }
 
