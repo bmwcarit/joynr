@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const BroadcastOutputParameters = require("../../../../main/js/joynr/provider/BroadcastOutputParameters");
+
+import BroadcastOutputParameters from "../../../../main/js/joynr/provider/BroadcastOutputParameters";
 
 describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", () => {
     it("is instantiable", () => {
@@ -49,7 +49,7 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", () => {
         expect(broadcastOutputParameters).toBeDefined();
         expect(broadcastOutputParameters).not.toBeNull();
         expect(typeof broadcastOutputParameters === "object").toBeTruthy();
-        expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(true);
+        expect(broadcastOutputParameters).toBeInstanceOf(BroadcastOutputParameters);
     });
 
     it("can be empty", () => {
@@ -57,7 +57,7 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", () => {
         expect(broadcastOutputParameters).toBeDefined();
         expect(broadcastOutputParameters).not.toBeNull();
         expect(typeof broadcastOutputParameters === "object").toBeTruthy();
-        expect(broadcastOutputParameters instanceof BroadcastOutputParameters).toEqual(true);
+        expect(broadcastOutputParameters).toBeInstanceOf(BroadcastOutputParameters);
     });
 
     it("has setters and getters for each output parameter", () => {
@@ -94,8 +94,8 @@ describe("libjoynr-js.joynr.provider.BroadcastOutputParameters", () => {
         ]);
         broadcastOutputParameters.setParam1("Hello");
         broadcastOutputParameters.setParam2("world");
-        expect(broadcastOutputParameters.getParam1()).toEqual("Hello");
-        expect(broadcastOutputParameters.getParam2()).toEqual("world");
+        expect((broadcastOutputParameters.getParam1 as (() => any))()).toEqual("Hello");
+        expect((broadcastOutputParameters.getParam2 as (() => any))()).toEqual("world");
     });
 
     it("array outputParameters contains correct values", () => {
