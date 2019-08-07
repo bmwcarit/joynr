@@ -16,20 +16,20 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const UtilInternal = require("../../../../main/js/joynr/util/UtilInternal");
-const Dispatcher = require("../../../../main/js/joynr/dispatching/Dispatcher");
-const JoynrMessage = require("../../../../main/js/joynr/messaging/JoynrMessage");
-const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
-const DiscoveryEntryWithMetaInfo = require("../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo");
-const Reply = require("../../../../main/js/joynr/dispatching/types/Reply");
-const BroadcastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/BroadcastSubscriptionRequest");
-const MulticastSubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest");
-const SubscriptionRequest = require("../../../../main/js/joynr/dispatching/types/SubscriptionRequest");
-const SubscriptionReply = require("../../../../main/js/joynr/dispatching/types/SubscriptionReply");
-const SubscriptionStop = require("../../../../main/js/joynr/dispatching/types/SubscriptionStop");
-const MulticastPublication = require("../../../../main/js/joynr/dispatching/types/MulticastPublication");
-const nanoid = require("nanoid");
+
+import * as UtilInternal from "../../../../main/js/joynr/util/UtilInternal";
+import Dispatcher from "../../../../main/js/joynr/dispatching/Dispatcher";
+import JoynrMessage from "../../../../main/js/joynr/messaging/JoynrMessage";
+import MessagingQos from "../../../../main/js/joynr/messaging/MessagingQos";
+import DiscoveryEntryWithMetaInfo from "../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo";
+import * as Reply from "../../../../main/js/joynr/dispatching/types/Reply";
+import BroadcastSubscriptionRequest from "../../../../main/js/joynr/dispatching/types/BroadcastSubscriptionRequest";
+import MulticastSubscriptionRequest from "../../../../main/js/joynr/dispatching/types/MulticastSubscriptionRequest";
+import SubscriptionRequest from "../../../../main/js/joynr/dispatching/types/SubscriptionRequest";
+import SubscriptionReply from "../../../../main/js/joynr/dispatching/types/SubscriptionReply";
+import SubscriptionStop from "../../../../main/js/joynr/dispatching/types/SubscriptionStop";
+import * as MulticastPublication from "../../../../main/js/joynr/dispatching/types/MulticastPublication";
+import nanoid from "nanoid";
 
 const providerId = "providerId";
 const providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
@@ -39,58 +39,62 @@ const providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({
     lastSeenDateMs: Date.now(),
     expiryDateMs: Date.now() + 60000,
     publicKeyId: "publicKeyId",
-    isLocal: false
+    isLocal: false,
+    qos: undefined as any,
+    providerVersion: undefined as any
 });
 const proxyId = "proxyId";
 const noTtlUplift = 0;
 const ttlUpliftMs = 10000;
 const toleranceMs = 50;
 
-const customMatchers = {
-    toEqualWithPositiveTolerance() {
-        return {
-            compare(actual, expected) {
-                const result = {};
-                if (expected === undefined || expected === null) {
-                    result.pass = false;
-                    result.message = `Expected expectation not to be ${expected}`;
-                    return result;
-                }
-                if (actual === undefined || actual === null) {
-                    result.pass = false;
-                    result.message = `Expected value not to be ${actual}`;
-                    return result;
-                }
-
-                const diff = actual - expected;
-                result.pass = diff >= 0;
-                if (!result.pass) {
-                    result.message = `Expected ${actual} to be greater or equal than ${expected}`;
-                    return result;
-                }
-                result.pass = diff < toleranceMs;
-                if (result.pass) {
-                    result.message = `${actual} differs less than ${toleranceMs} from ${expected}`;
-                } else {
-                    result.message = `Expected ${actual} to differ less than ${toleranceMs} from ${expected}`;
-                }
-                return result;
-            }
-        };
+function toEqualWithPositiveTolerance(actual: any, expected: any): { pass: boolean; message: string } {
+    const result: { pass: boolean; message: string } = {} as any;
+    if (expected === undefined || expected === null) {
+        result.pass = false;
+        result.message = `Expected expectation not to be ${expected}`;
+        return result;
     }
-};
+    if (actual === undefined || actual === null) {
+        result.pass = false;
+        result.message = `Expected value not to be ${actual}`;
+        return result;
+    }
+
+    const diff = actual - expected;
+    result.pass = diff >= 0;
+    if (!result.pass) {
+        result.message = `Expected ${actual} to be greater or equal than ${expected}`;
+        return result;
+    }
+    result.pass = diff < toleranceMs;
+    if (result.pass) {
+        result.message = `${actual} differs less than ${toleranceMs} from ${expected}`;
+    } else {
+        result.message = `Expected ${actual} to differ less than ${toleranceMs} from ${expected}`;
+    }
+    return result;
+}
+
+expect.extend({
+    toEqualWithPositiveTolerance
+});
+
+interface ExtendedMatchers extends jest.Matchers<any> {
+    toEqualWithPositiveTolerance: (expected: any) => any;
+}
 
 describe("libjoynr-js.joynr.ttlUpliftTest", () => {
-    let dispatcher, dispatcherWithTtlUplift;
-    let clusterControllerMessagingStub, securityManager;
-    let requestReplyManager, subscriptionManager, publicationManager, messageRouter;
+    let dispatcher: Dispatcher, dispatcherWithTtlUplift: any;
+    let clusterControllerMessagingStub: any, securityManager: any;
+    let requestReplyManager: any, subscriptionManager: any, publicationManager: any, messageRouter: any;
     const subscriptionId = `mySubscriptionId-${nanoid()}`;
     const multicastId = `multicastId-${nanoid()}`;
 
-    let ttl, messagingQos, expiryDateMs, expiryDateWithTtlUplift;
-    let publicationTtlMs, subscriptionQos;
+    let ttl: number, messagingQos: MessagingQos, expiryDateMs: number, expiryDateWithTtlUplift: any;
+    let publicationTtlMs: number, subscriptionQos: any;
 
-    function receiveJoynrMessage(parameters) {
+    function receiveJoynrMessage(parameters: any) {
         const joynrMessage = new JoynrMessage({
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
@@ -101,7 +105,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
         return dispatcher.receive(joynrMessage);
     }
 
-    function receiveJoynrMessageTtlUplift(parameters) {
+    function receiveJoynrMessageTtlUplift(parameters: any) {
         const joynrMessage = new JoynrMessage({
             type: parameters.type,
             payload: JSON.stringify(parameters.payload)
@@ -112,57 +116,53 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
         return dispatcherWithTtlUplift.receive(joynrMessage);
     }
 
-    function checkMessageFromProxyWithTolerance(messageType, expectedExpiryDate) {
+    function checkMessageFromProxyWithTolerance(messageType: any, expectedExpiryDate: any) {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        const msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        const msg = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
         expect(msg.type).toEqual(messageType);
         expect(msg.from).toEqual(proxyId);
         expect(msg.to).toEqual(providerId);
-        expect(msg.expiryDate).toEqualWithPositiveTolerance(expectedExpiryDate);
+        (expect(msg.expiryDate) as ExtendedMatchers).toEqualWithPositiveTolerance(expectedExpiryDate);
     }
 
-    function checkMessageFromProvider(messageType, expectedExpiryDate) {
+    function checkMessageFromProvider(messageType: any, expectedExpiryDate: any) {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-        const msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+        const msg = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
         expect(msg.type).toEqual(messageType);
         expect(msg.from).toEqual(providerId);
         expect(msg.to).toEqual(proxyId);
         expect(msg.expiryDate).toEqual(expectedExpiryDate);
     }
 
-    function checkRequestReplyMessage(expectedExpiryDate) {
+    function checkRequestReplyMessage(expectedExpiryDate: any) {
         checkMessageFromProvider(JoynrMessage.JOYNRMESSAGE_TYPE_REPLY, expectedExpiryDate);
     }
 
-    function checkSubscriptionReplyMessage(expectedExpiryDate) {
+    function checkSubscriptionReplyMessage(expectedExpiryDate: any) {
         checkMessageFromProvider(JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY, expectedExpiryDate);
     }
 
     beforeEach(() => {
-        jasmine.addMatchers(customMatchers);
-
-        const sendRequestReply = function(providerParticipantId, request, cb, replySettings) {
-            const reply = Reply.create({
-                response: "response",
-                requestReplyId: request.requestReplyId
-            });
-            return Promise.resolve(cb(replySettings, reply));
-        };
         requestReplyManager = {
-            handleRequest: sendRequestReply
+            handleRequest: jest.fn().mockImplementation((_providerParticipantId, request, cb, replySettings) => {
+                const reply = Reply.create({
+                    response: "response" as any,
+                    requestReplyId: request.requestReplyId
+                });
+                return Promise.resolve(cb(replySettings, reply));
+            })
         };
-        spyOn(requestReplyManager, "handleRequest").and.callThrough();
-        subscriptionManager = jasmine.createSpyObj("SubscriptionManager", [
-            "handleSubscriptionReply",
-            "handleMulticastPublication",
-            "handlePublication"
-        ]);
-        const sendSubscriptionReply = function(
-            proxyParticipantId,
-            providerParticipantId,
-            subscriptionRequest,
-            callbackDispatcher,
-            settings
+        subscriptionManager = {
+            handleSubscriptionReply: jest.fn(),
+            handleMulticastPublication: jest.fn(),
+            handlePublication: jest.fn()
+        };
+        function sendSubscriptionReply(
+            _proxyParticipantId: string,
+            _providerParticipantId: string,
+            subscriptionRequest: any,
+            callbackDispatcher: any,
+            settings: any
         ) {
             callbackDispatcher(
                 settings,
@@ -170,25 +170,27 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                     subscriptionId: subscriptionRequest.subscriptionId
                 })
             );
-        };
+        }
 
         publicationManager = {
-            handleSubscriptionRequest: sendSubscriptionReply,
-            handleBroadcastSubscriptionRequest: sendSubscriptionReply,
-            handleMulticastSubscriptionRequest: sendSubscriptionReply,
-            handleSubscriptionStop() {}
+            handleSubscriptionRequest: jest.fn().mockImplementation(sendSubscriptionReply),
+            handleBroadcastSubscriptionRequest: jest.fn().mockImplementation(sendSubscriptionReply),
+            handleMulticastSubscriptionRequest: jest.fn().mockImplementation(sendSubscriptionReply),
+            handleSubscriptionStop: jest.fn()
         };
-        spyOn(publicationManager, "handleSubscriptionRequest").and.callThrough();
-        spyOn(publicationManager, "handleBroadcastSubscriptionRequest").and.callThrough();
-        spyOn(publicationManager, "handleMulticastSubscriptionRequest").and.callThrough();
-        spyOn(publicationManager, "handleSubscriptionStop");
 
-        messageRouter = jasmine.createSpyObj("MessageRouter", ["addMulticastReceiver", "removeMulticastReceiver"]);
-        messageRouter.addMulticastReceiver.and.returnValue(Promise.resolve());
-        clusterControllerMessagingStub = jasmine.createSpyObj("ClusterControllerMessagingStub", ["transmit"]);
-        clusterControllerMessagingStub.transmit.and.returnValue(Promise.resolve());
+        messageRouter = {
+            addMulticastReceiver: jest.fn().mockReturnValue(Promise.resolve()),
+            removeMulticastReceiver: jest.fn()
+        };
 
-        securityManager = jasmine.createSpyObj("SecurityManager", ["getCurrentProcessUserId"]);
+        clusterControllerMessagingStub = {
+            transmit: jest.fn().mockReturnValue(Promise.resolve())
+        };
+
+        securityManager = {
+            getCurrentProcessUserId: jest.fn()
+        };
 
         dispatcher = new Dispatcher(clusterControllerMessagingStub, securityManager, noTtlUplift);
         dispatcher.registerRequestReplyManager(requestReplyManager);
@@ -226,7 +228,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 request: "request"
             };
 
-            dispatcher.sendRequest(settings);
+            dispatcher.sendRequest(settings as any);
 
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST, expiryDateMs);
         });
@@ -239,7 +241,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 request: "oneWayRequest"
             };
 
-            dispatcher.sendOneWayRequest(settings);
+            dispatcher.sendOneWayRequest(settings as any);
 
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_ONE_WAY, expiryDateMs);
         });
@@ -280,7 +282,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             );
         });
 
-        it("send multicast subscription request", done => {
+        it("send multicast subscription request", async () => {
             const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
@@ -293,13 +295,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 })
             };
 
-            dispatcher.sendBroadcastSubscriptionRequest(settings).then(() => {
-                checkMessageFromProxyWithTolerance(
-                    JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                    expiryDateMs
-                );
-                done();
-            });
+            await dispatcher.sendBroadcastSubscriptionRequest(settings);
+            checkMessageFromProxyWithTolerance(
+                JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+                expiryDateMs
+            );
         });
 
         it("send multicast subscription stop", () => {
@@ -340,7 +340,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 expiryDate: expiryDateMs
             };
 
-            dispatcher.sendPublication(settings, "publication");
+            dispatcher.sendPublication(settings, "publication" as any);
 
             checkMessageFromProxyWithTolerance(JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION, expiryDateMs);
         });
@@ -358,36 +358,35 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             dispatcher.sendMulticastPublication(settings, publication);
 
             expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-            const msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+            const msg = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
             expect(msg.from).toEqual(providerId);
             expect(msg.to).toEqual(multicastId);
-            expect(msg.expiryDate).toEqualWithPositiveTolerance(expiryDateMs);
+            (expect(msg.expiryDate) as ExtendedMatchers).toEqualWithPositiveTolerance(expiryDateMs);
         });
 
-        it("request and reply", done => {
+        it("request and reply", async () => {
             const payload = {
                 methodName: "methodName"
             };
 
-            receiveJoynrMessage({
+            await receiveJoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
                 payload,
                 expiryDate: expiryDateMs
-            }).then(() => {
-                expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
-                    providerId,
-                    jasmine.objectContaining({
-                        _typeName: "joynr.Request"
-                    }),
-                    jasmine.any(Function),
-                    jasmine.any(Object)
-                );
-
-                checkRequestReplyMessage(expiryDateMs);
-                done();
             });
+
+            expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+            expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
+                providerId,
+                expect.objectContaining({
+                    _typeName: "joynr.Request"
+                }),
+                expect.any(Function),
+                expect.any(Object)
+            );
+
+            checkRequestReplyMessage(expiryDateMs);
         });
 
         it("subscription expiry date and subscription reply", () => {
@@ -405,7 +404,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             };
 
             const payloadCopy = UtilInternal.extendDeep({}, payload);
-            const expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy);
+            const expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy as any);
 
             receiveJoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REQUEST,
@@ -418,8 +417,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function),
-                jasmine.any(Object)
+                expect.any(Function),
+                expect.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -433,7 +432,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             };
 
             const payloadCopy = UtilInternal.extendDeep({}, payload);
-            const expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy);
+            const expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy as any);
 
             receiveJoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
@@ -446,8 +445,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function),
-                jasmine.any(Object)
+                expect.any(Function),
+                expect.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -462,7 +461,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             };
 
             const payloadCopy = UtilInternal.extendDeep({}, payload);
-            const expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy);
+            const expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy as any);
 
             receiveJoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
@@ -475,8 +474,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function),
-                jasmine.any(Object)
+                expect.any(Function),
+                expect.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateMs);
@@ -550,7 +549,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             );
         });
 
-        it("send multicast subscription request", done => {
+        it("send multicast subscription request", async () => {
             const settings = {
                 from: proxyId,
                 toDiscoveryEntry: providerDiscoveryEntry,
@@ -563,13 +562,11 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 })
             };
 
-            dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings).then(() => {
-                checkMessageFromProxyWithTolerance(
-                    JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                    expiryDateWithTtlUplift
-                );
-                done();
-            });
+            await dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings);
+            checkMessageFromProxyWithTolerance(
+                JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+                expiryDateWithTtlUplift
+            );
         });
 
         it("send multicast subscription stop", () => {
@@ -634,36 +631,35 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             dispatcherWithTtlUplift.sendMulticastPublication(settings, publication);
 
             expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-            const msg = clusterControllerMessagingStub.transmit.calls.mostRecent().args[0];
+            const msg = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
             expect(msg.from).toEqual(providerId);
             expect(msg.to).toEqual(multicastId);
-            expect(msg.expiryDate).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
+            (expect(msg.expiryDate) as ExtendedMatchers).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
         });
 
-        it("request and reply", done => {
+        it("request and reply", async () => {
             const payload = {
                 methodName: "methodName"
             };
 
-            receiveJoynrMessageTtlUplift({
+            await receiveJoynrMessageTtlUplift({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
                 payload,
                 expiryDate: expiryDateMs + ttlUpliftMs
-            }).then(() => {
-                expect(requestReplyManager.handleRequest).toHaveBeenCalled();
-                expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
-                    providerId,
-                    jasmine.objectContaining({
-                        _typeName: "joynr.Request"
-                    }),
-                    jasmine.any(Function),
-                    jasmine.any(Object)
-                );
-
-                checkRequestReplyMessage(expiryDateWithTtlUplift);
-                done();
             });
+
+            expect(requestReplyManager.handleRequest).toHaveBeenCalled();
+            expect(requestReplyManager.handleRequest).toHaveBeenCalledWith(
+                providerId,
+                expect.objectContaining({
+                    _typeName: "joynr.Request"
+                }),
+                expect.any(Function),
+                expect.any(Object)
+            );
+
+            checkRequestReplyMessage(expiryDateWithTtlUplift);
         });
 
         it("subscription expiry date and subscription reply", () => {
@@ -674,7 +670,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             };
 
             const payloadCopy = UtilInternal.extendDeep({}, payload);
-            const expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy);
+            const expectedSubscriptionRequest = new SubscriptionRequest(payloadCopy as any);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 
             receiveJoynrMessageTtlUplift({
@@ -688,8 +684,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function),
-                jasmine.any(Object)
+                expect.any(Function),
+                expect.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
@@ -703,7 +699,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             };
 
             const payloadCopy = UtilInternal.extendDeep({}, payload);
-            const expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy);
+            const expectedSubscriptionRequest = new BroadcastSubscriptionRequest(payloadCopy as any);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 
             receiveJoynrMessageTtlUplift({
@@ -717,8 +713,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function),
-                jasmine.any(Object)
+                expect.any(Function),
+                expect.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
@@ -733,7 +729,7 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             };
 
             const payloadCopy = UtilInternal.extendDeep({}, payload);
-            const expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy);
+            const expectedSubscriptionRequest = new MulticastSubscriptionRequest(payloadCopy as any);
             expectedSubscriptionRequest.qos.expiryDateMs = expiryDateWithTtlUplift;
 
             receiveJoynrMessageTtlUplift({
@@ -747,8 +743,8 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
                 proxyId,
                 providerId,
                 expectedSubscriptionRequest,
-                jasmine.any(Function),
-                jasmine.any(Object)
+                expect.any(Function),
+                expect.any(Object)
             );
 
             checkSubscriptionReplyMessage(expiryDateWithTtlUplift);
