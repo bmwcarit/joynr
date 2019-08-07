@@ -16,10 +16,10 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
-const defaultMessagingSettings = require("../../../../main/js/joynr/start/settings/defaultMessagingSettings");
-const MessagingQos = require("../../../../main/js/joynr/messaging/MessagingQos");
-const MessagingQosEffort = require("../../../../main/js/joynr/messaging/MessagingQosEffort");
+
+import defaultMessagingSettings from "../../../../main/js/joynr/start/settings/defaultMessagingSettings";
+import MessagingQos from "../../../../main/js/joynr/messaging/MessagingQos";
+import * as MessagingQosEffort from "../../../../main/js/joynr/messaging/MessagingQosEffort";
 
 describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
     it("is instantiable", () => {
@@ -118,13 +118,13 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
         expect(emptyMessagingQos).toBeDefined();
         expect(emptyMessagingQos).not.toBeNull();
         expect(typeof emptyMessagingQos === "object").toBeTruthy();
-        expect(emptyMessagingQos instanceof MessagingQos).toBeTruthy();
+        expect(emptyMessagingQos).toBeInstanceOf(MessagingQos);
 
         const defaultMessagingQos = new MessagingQos();
         expect(defaultMessagingQos).toBeDefined();
         expect(defaultMessagingQos).not.toBeNull();
         expect(typeof defaultMessagingQos === "object").toBeTruthy();
-        expect(defaultMessagingQos instanceof MessagingQos).toEqual(true);
+        expect(defaultMessagingQos).toBeInstanceOf(MessagingQos);
     });
 
     it("constructs correct default object", () => {
@@ -137,7 +137,7 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
         expect(new MessagingQos().compress).toEqual(false);
     });
 
-    function testTtlValues(ttl) {
+    function testTtlValues(ttl: number) {
         const messagingQos = new MessagingQos({
             ttl
         });
@@ -145,9 +145,9 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
     }
 
     it("constructs with correct TTL values", () => {
-        testTtlValues(123456, 1234567);
-        testTtlValues(0, 0);
-        testTtlValues(-123456, -1234567);
+        testTtlValues(123456);
+        testTtlValues(0);
+        testTtlValues(-123456);
     });
 
     it("prevents ttl values larger than maxTtl", () => {
@@ -162,7 +162,7 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
         );
     });
 
-    function testEffortValues(effort, expected) {
+    function testEffortValues(effort: any, expected: any) {
         const messagingQos = new MessagingQos({
             effort
         });
@@ -176,7 +176,7 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
         testEffortValues("not an enum value", MessagingQosEffort.NORMAL);
     });
 
-    function testEncryptValues(encrypt) {
+    function testEncryptValues(encrypt: any) {
         const messagingQos = new MessagingQos({
             encrypt
         });
@@ -188,7 +188,7 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
         testEncryptValues(true);
     });
 
-    function testCompressValues(compress) {
+    function testCompressValues(compress: any) {
         const messagingQos = new MessagingQos({
             compress
         });
@@ -412,7 +412,7 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
             ok: false
         }
     ];
-    runsWithCustomHeaders.forEach(run => {
+    runsWithCustomHeaders.forEach((run: any) => {
         const expectedTo = run.ok ? "passes" : "fails";
         const params = run.params;
         it(`setting custom header ${expectedTo} when key: ${params.key} value: ${params.value}`, () => {
@@ -421,7 +421,8 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
             const messagingQos = new MessagingQos();
             if (run.ok) {
                 messagingQos.putCustomMessageHeader(key, value);
-                expect(messagingQos.customHeaders[key]).toEqual(value);
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                expect(messagingQos.customHeaders![key]).toEqual(value);
             } else {
                 expect(() => {
                     messagingQos.putCustomMessageHeader(key, value);

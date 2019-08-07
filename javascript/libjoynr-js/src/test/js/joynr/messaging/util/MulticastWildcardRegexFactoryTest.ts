@@ -17,18 +17,18 @@
  * #L%
  */
 
-const MulticastWildcardRegexFactory = require("joynr/joynr/messaging/util/MulticastWildcardRegexFactory");
+import MulticastWildcardRegexFactory from "joynr/joynr/messaging/util/MulticastWildcardRegexFactory";
 
 describe("libjoynr-js.joynr.messaging.util.MulticastWildcardRegexFactory", () => {
-    let multicastWildcardRegexFactory;
+    let multicastWildcardRegexFactory: MulticastWildcardRegexFactory;
     beforeEach(() => {
         multicastWildcardRegexFactory = new MulticastWildcardRegexFactory();
     });
-    function createPattern(multicastId) {
+    function createPattern(multicastId: any) {
         return new RegExp(multicastWildcardRegexFactory.createIdPattern(multicastId));
     }
     describe("createIdPattern", () => {
-        function match(string, pattern) {
+        function match(string: any, pattern: any) {
             return string !== undefined && string.match(pattern) !== null;
         }
         describe("works correctly for partitions without wildcards", () => {
@@ -117,7 +117,7 @@ describe("libjoynr-js.joynr.messaging.util.MulticastWildcardRegexFactory", () =>
     });
     describe("compare regular expressions", () => {
         describe("with same multicastId as input", () => {
-            let pattern, pattern2;
+            let pattern: any, pattern2: any;
             beforeEach(() => {
                 const multicastId = "a/b/c";
                 pattern = createPattern(multicastId);
@@ -127,8 +127,8 @@ describe("libjoynr-js.joynr.messaging.util.MulticastWildcardRegexFactory", () =>
                 expect(pattern).toEqual(pattern2);
             });
             it("and pattern instance as object key", () => {
-                let testValue;
-                const x = {};
+                let testValue: any;
+                const x: Record<string, any> = {};
                 x[pattern] = testValue;
                 expect(x[pattern2]).toBe(testValue);
             });
