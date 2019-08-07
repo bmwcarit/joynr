@@ -610,12 +610,6 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     localCapabilitiesDirectory->add(entry, defaultOnSuccess, defaultOnError);
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient,
-                add(Matcher<const std::vector<joynr::types::GlobalDiscoveryEntry>&>(_), _, _))
-            .Times(0);
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
-                add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_), _, _))
-            .Times(0);
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
                 add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(_), _, _, _, _))
             .Times(0);
 
@@ -1807,7 +1801,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
                                        createUnexpectedErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1)).Times(0);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
     localCapabilitiesDirectory->remove(dummyParticipantId1);
 
     // disable cache

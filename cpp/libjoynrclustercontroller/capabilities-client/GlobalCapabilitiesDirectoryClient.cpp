@@ -38,22 +38,6 @@ GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
 
 void GlobalCapabilitiesDirectoryClient::add(
         const types::GlobalDiscoveryEntry& entry,
-        std::function<void()> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
-{
-    capabilitiesProxy->addAsync(entry, onSuccess, onError);
-}
-
-void GlobalCapabilitiesDirectoryClient::add(
-        const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
-        std::function<void()> onSuccess,
-        std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError)
-{
-    capabilitiesProxy->addAsync(globalDiscoveryEntries, onSuccess, onRuntimeError);
-}
-
-void GlobalCapabilitiesDirectoryClient::add(
-        const types::GlobalDiscoveryEntry& entry,
         const std::vector<std::string>& gbids,
         std::function<void()> onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
@@ -67,11 +51,6 @@ void GlobalCapabilitiesDirectoryClient::add(
                                 std::move(onError),
                                 std::move(onRuntimeError),
                                 addMessagingQos);
-}
-
-void GlobalCapabilitiesDirectoryClient::remove(const std::string& participantId)
-{
-    capabilitiesProxy->removeAsync(participantId);
 }
 
 void GlobalCapabilitiesDirectoryClient::remove(
@@ -89,24 +68,6 @@ void GlobalCapabilitiesDirectoryClient::remove(
                                    std::move(onError),
                                    std::move(onRuntimeError),
                                    std::move(removeMessagingQos));
-}
-
-void GlobalCapabilitiesDirectoryClient::remove(std::vector<std::string> participantIdList)
-{
-    capabilitiesProxy->removeAsync(participantIdList);
-}
-
-void GlobalCapabilitiesDirectoryClient::lookup(
-        const std::vector<std::string>& domains,
-        const std::string& interfaceName,
-        std::int64_t messagingTtl,
-        std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
-{
-    MessagingQos lookupMessagingQos = messagingQos;
-    lookupMessagingQos.setTtl(messagingTtl);
-    capabilitiesProxy->lookupAsync(
-            domains, interfaceName, std::move(onSuccess), std::move(onError), lookupMessagingQos);
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(
@@ -128,22 +89,6 @@ void GlobalCapabilitiesDirectoryClient::lookup(
                                    std::move(onError),
                                    std::move(onRuntimeError),
                                    lookupMessagingQos);
-}
-
-void GlobalCapabilitiesDirectoryClient::lookup(
-        const std::string& participantId,
-        std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
-                onSuccess,
-        std::function<void(const exceptions::JoynrRuntimeException& error)> onError)
-{
-    capabilitiesProxy->lookupAsync(participantId,
-                                   [onSuccess = std::move(onSuccess)](
-                                           const joynr::types::GlobalDiscoveryEntry& capability) {
-                                       std::vector<joynr::types::GlobalDiscoveryEntry> result;
-                                       result.push_back(capability);
-                                       onSuccess(result);
-                                   },
-                                   std::move(onError));
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(

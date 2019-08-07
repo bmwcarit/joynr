@@ -60,18 +60,9 @@ public:
 
     ~GlobalCapabilitiesDirectoryClient() override = default;
 
-    void add(const std::vector<joynr::types::GlobalDiscoveryEntry>& globalDiscoveryEntries,
-             std::function<void()> onSuccess,
-             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
-                     onRuntimeError) override;
-
     /*
        Add a capabilities record to the directory
      */
-    void add(const types::GlobalDiscoveryEntry& entry,
-             std::function<void()> onSuccess,
-             std::function<void(const exceptions::JoynrRuntimeException& error)> onError) override;
-
     void add(const types::GlobalDiscoveryEntry& entry,
              const std::vector<std::string>& gbids,
              std::function<void()> onSuccess,
@@ -80,15 +71,8 @@ public:
             override;
 
     /*
-      Remove previously created capabilities directory entries.
-     */
-    void remove(std::vector<std::string> participantIds) override;
-
-    /*
       Remove previously created capability directroy entry
      */
-    void remove(const std::string& participantId) override;
-
     void remove(const std::string& participantId,
                 const std::vector<std::string>& gbids,
                 std::function<void()> onSuccess,
@@ -99,13 +83,6 @@ public:
     /*
       Asynchronous lookup of capabilities for domain and interface.
      */
-    void lookup(const std::vector<std::string>& domains,
-                const std::string& interfaceName,
-                std::int64_t messagingTtl,
-                std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
-                        onSuccess,
-                std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
-                        nullptr) override;
     void lookup(
             const std::vector<std::string>& domains,
             const std::string& interfaceName,
@@ -116,11 +93,6 @@ public:
             std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
             override;
 
-    void lookup(const std::string& participantId,
-                std::function<void(const std::vector<joynr::types::GlobalDiscoveryEntry>& result)>
-                        onSuccess,
-                std::function<void(const exceptions::JoynrRuntimeException& error)> onError =
-                        nullptr) override;
     void lookup(const std::string& participantId,
                 const std::vector<std::string>& gbids,
                 std::int64_t messagingTtl,

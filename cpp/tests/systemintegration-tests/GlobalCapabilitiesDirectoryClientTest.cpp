@@ -25,9 +25,10 @@
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
-#include "joynr/types/Version.h"
 #include "joynr/Settings.h"
+#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
+#include "joynr/types/DiscoveryError.h"
+#include "joynr/types/Version.h"
 
 #include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
@@ -96,6 +97,7 @@ private:
 
 TEST_P(GlobalCapabilitiesDirectoryClientTest, registerAndRetrieveCapability)
 {
+    const std::vector<std::string> gbids {"testGbid"};
     std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder =
                     runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
@@ -135,9 +137,12 @@ TEST_P(GlobalCapabilitiesDirectoryClientTest, registerAndRetrieveCapability)
                                                      capSerializedChannelAddress);
 
     JOYNR_LOG_DEBUG(logger(), "Registering capabilities");
-    globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry,
-                            []() {},
-                            [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
+    globalCapabilitiesDirectoryClient->add(
+                globalDiscoveryEntry,
+                gbids,
+                []() {},
+                [](const joynr::types::DiscoveryError::Enum& /*error*/) {},
+                [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
     JOYNR_LOG_DEBUG(logger(), "Registered capabilities");
 
     auto callback = std::make_shared<GlobalCapabilitiesMock>();
@@ -154,7 +159,14 @@ TEST_P(GlobalCapabilitiesDirectoryClientTest, registerAndRetrieveCapability)
 
     JOYNR_LOG_DEBUG(logger(), "get capabilities");
     std::int64_t defaultDiscoveryMessageTtl = messagingSettings.getDiscoveryMessagesTtl();
-    globalCapabilitiesDirectoryClient->lookup({capDomain}, capInterface, defaultDiscoveryMessageTtl, onSuccess);
+    globalCapabilitiesDirectoryClient->lookup(
+                {capDomain},
+                capInterface,
+                gbids,
+                defaultDiscoveryMessageTtl,
+                onSuccess,
+                [](const joynr::types::DiscoveryError::Enum& /*error*/) {},
+                [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
     semaphore.waitFor(std::chrono::seconds(10));
     JOYNR_LOG_DEBUG(logger(), "finished get capabilities");
 }
