@@ -21,6 +21,7 @@
 
 #include <memory>
 
+#include "joynr/Logger.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
 namespace joynr
@@ -42,6 +43,7 @@ public:
 
 private:
     std::shared_ptr<ITransportMessageSender> messageSender;
+    ADD_LOGGER(MqttMessagingStubFactory)
 };
 
 } // namespace joynr
