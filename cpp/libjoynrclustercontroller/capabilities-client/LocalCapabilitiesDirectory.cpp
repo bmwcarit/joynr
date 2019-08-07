@@ -348,109 +348,6 @@ types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
                                        localAddress);
 }
 
-void LocalCapabilitiesDirectory::remove(
-        const std::string& participantId,
-        bool removeGlobally,
-        bool removeFromGlobalLookupCache,
-        std::function<void()> onSuccess,
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
-{
-    {
-        std::lock_guard<std::mutex> lock(cacheLock);
-
-        boost::optional<types::DiscoveryEntry> optionalEntry =
-                locallyRegisteredCapabilities.lookupByParticipantId(participantId);
-        if (!optionalEntry) {
-            JOYNR_LOG_INFO(
-                    logger(), "participantId '{}' not found, cannot be removed", participantId);
-            exceptions::ProviderRuntimeException exception(
-                    fmt::format("Failed to remove participantId: {}. ParticipantId is not "
-                                "registered in cluster controller.",
-                                participantId));
-            onError(exception);
-            return;
-        }
-        const types::DiscoveryEntry& entry = *optionalEntry;
-
-        if (isGlobal(entry)) {
-            auto foundGbids = globalParticipantIdsToGbidsMap.find(participantId);
-            std::vector<std::string> gbids;
-            if (foundGbids == globalParticipantIdsToGbidsMap.cend()) {
-                JOYNR_LOG_INFO(
-                        logger(), "Removing globally registered participantId: {}", participantId);
-                if (removeGlobally) {
-                    JOYNR_LOG_FATAL(
-                            logger(),
-                            "Global remove failed because participantId to GBIDs mapping is "
-                            "missing for participantId {}",
-                            participantId);
-                    removeGlobally = false;
-                }
-            } else {
-                gbids = foundGbids->second;
-                std::string gbidString = util::vectorToString(gbids);
-                JOYNR_LOG_INFO(logger(),
-                               "Removing globally registered participantId: {} from GBIDs: {}",
-                               participantId,
-                               gbidString);
-            }
-            if (removeFromGlobalLookupCache) {
-                globalParticipantIdsToGbidsMap.erase(participantId);
-                globalLookupCache.removeByParticipantId(participantId);
-            }
-            if (removeGlobally) {
-                auto onApplicationError =
-                        [participantId, gbids](const types::DiscoveryError::Enum& error) {
-                    JOYNR_LOG_WARN(logger(),
-                                   "Error removing participantId {} globally for GBIDs ({}): {}",
-                                   participantId,
-                                   util::vectorToString(gbids),
-                                   types::DiscoveryError::getLiteral(error));
-                };
-                auto onRuntimeError =
-                        [participantId, gbids](const exceptions::JoynrRuntimeException& exception) {
-                    JOYNR_LOG_WARN(
-                            logger(),
-                            "Failed to remove participantId {} globally for GBIDs ({}): {} ({}})",
-                            participantId,
-                            util::vectorToString(gbids),
-                            exception.getMessage(),
-                            exception.getTypeName());
-                };
-
-                globalCapabilitiesDirectoryClient->remove(participantId,
-                                                          gbids,
-                                                          nullptr,
-                                                          std::move(onApplicationError),
-                                                          std::move(onRuntimeError));
-            }
-            JOYNR_LOG_INFO(logger(),
-                           "After removal of participantId {}: #registeredGlobalCapabilities: {}",
-                           participantId,
-                           countGlobalCapabilities());
-        }
-        JOYNR_LOG_INFO(logger(),
-                       "Removing locally registered participantId: {}, #localCapabilities before "
-                       "removal: {}",
-                       participantId,
-                       locallyRegisteredCapabilities.size());
-        locallyRegisteredCapabilities.removeByParticipantId(participantId);
-        informObserversOnRemove(entry);
-
-        if (auto messageRouterSharedPtr = messageRouter.lock()) {
-            messageRouterSharedPtr->removeNextHop(participantId);
-        } else {
-            JOYNR_LOG_FATAL(logger(),
-                            "could not removeNextHop for {} because messageRouter is not available",
-                            participantId);
-        }
-    }
-    if (onSuccess) {
-        onSuccess();
-    }
-    updatePersistedFile();
-}
-
 void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
@@ -1290,7 +1187,92 @@ void LocalCapabilitiesDirectory::remove(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    remove(participantId, true, true, std::move(onSuccess), std::move(onError));
+    {
+        std::lock_guard<std::mutex> lock(cacheLock);
+
+        boost::optional<types::DiscoveryEntry> optionalEntry =
+                locallyRegisteredCapabilities.lookupByParticipantId(participantId);
+        if (!optionalEntry) {
+            JOYNR_LOG_INFO(
+                    logger(), "participantId '{}' not found, cannot be removed", participantId);
+            exceptions::ProviderRuntimeException exception(
+                    fmt::format("Failed to remove participantId: {}. ParticipantId is not "
+                                "registered in cluster controller.",
+                                participantId));
+            onError(exception);
+            return;
+        }
+        const types::DiscoveryEntry& entry = *optionalEntry;
+
+        if (isGlobal(entry)) {
+            auto foundGbids = globalParticipantIdsToGbidsMap.find(participantId);
+            std::vector<std::string> gbids;
+            if (foundGbids == globalParticipantIdsToGbidsMap.cend()) {
+                JOYNR_LOG_FATAL(logger(),
+                                "Global remove failed because participantId to GBIDs mapping is "
+                                "missing for participantId {}",
+                                participantId);
+            } else {
+                gbids = foundGbids->second;
+                std::string gbidString = util::vectorToString(gbids);
+                JOYNR_LOG_INFO(logger(),
+                               "Removing globally registered participantId: {} from GBIDs: {}",
+                               participantId,
+                               gbidString);
+
+                globalParticipantIdsToGbidsMap.erase(participantId);
+                globalLookupCache.removeByParticipantId(participantId);
+                auto onApplicationError =
+                        [participantId, gbids](const types::DiscoveryError::Enum& error) {
+                    JOYNR_LOG_WARN(logger(),
+                                   "Error removing participantId {} globally for GBIDs ({}): {}",
+                                   participantId,
+                                   util::vectorToString(gbids),
+                                   types::DiscoveryError::getLiteral(error));
+                };
+                auto onRuntimeError =
+                        [participantId, gbids](const exceptions::JoynrRuntimeException& exception) {
+                    JOYNR_LOG_WARN(
+                            logger(),
+                            "Failed to remove participantId {} globally for GBIDs ({}): {} ({}})",
+                            participantId,
+                            util::vectorToString(gbids),
+                            exception.getMessage(),
+                            exception.getTypeName());
+                };
+
+                globalCapabilitiesDirectoryClient->remove(participantId,
+                                                          gbids,
+                                                          nullptr,
+                                                          std::move(onApplicationError),
+                                                          std::move(onRuntimeError));
+                JOYNR_LOG_INFO(
+                        logger(),
+                        "After removal of participantId {}: #registeredGlobalCapabilities: {}",
+                        participantId,
+                        countGlobalCapabilities());
+            }
+        }
+        JOYNR_LOG_INFO(logger(),
+                       "Removing locally registered participantId: {}, #localCapabilities before "
+                       "removal: {}",
+                       participantId,
+                       locallyRegisteredCapabilities.size());
+        locallyRegisteredCapabilities.removeByParticipantId(participantId);
+        informObserversOnRemove(entry);
+
+        if (auto messageRouterSharedPtr = messageRouter.lock()) {
+            messageRouterSharedPtr->removeNextHop(participantId);
+        } else {
+            JOYNR_LOG_FATAL(logger(),
+                            "could not removeNextHop for {} because messageRouter is not available",
+                            participantId);
+        }
+    }
+    if (onSuccess) {
+        onSuccess();
+    }
+    updatePersistedFile();
 }
 
 void LocalCapabilitiesDirectory::addProviderRegistrationObserver(

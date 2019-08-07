@@ -86,19 +86,6 @@ public:
 
     void shutdown();
 
-    /**
-     * Remove all capabilities associated to participantId.
-     * @param participantId Participant ID of the capability that shall be removed
-     * @param removeGlobally if set to true, capability will be removed from global capabilities
-     * directory; default is false
-     */
-    void remove(const std::string& participantId,
-                bool removeGlobally = true,
-                bool removeFromGlobalLookupCache = true,
-                std::function<void()> onSuccess = nullptr,
-                std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
-                        nullptr);
-
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used
       * when capabilities from the global directory are received, to check if a new

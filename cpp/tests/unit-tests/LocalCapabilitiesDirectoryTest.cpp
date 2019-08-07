@@ -984,7 +984,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
                                        createUnexpectedErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
-    localCapabilitiesDirectory->remove(dummyParticipantId1);
+    localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
 
     EXPECT_CALL(
             *globalCapabilitiesDirectoryClient,
@@ -1039,7 +1039,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
-    localCapabilitiesDirectory->remove(dummyParticipantId1);
+    localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
                                        INTERFACE_1_NAME,
@@ -1082,7 +1082,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
-    localCapabilitiesDirectory->remove(dummyParticipantId1);
+    localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
                                        INTERFACE_1_NAME,
@@ -1147,7 +1147,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
-    localCapabilitiesDirectory->remove(dummyParticipantId1);
+    localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
 
     localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
                                        INTERFACE_1_NAME,
@@ -1802,7 +1802,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
-    localCapabilitiesDirectory->remove(dummyParticipantId1);
+    localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
 
     // disable cache
     discoveryQos.setCacheMaxAge(0);
@@ -1852,7 +1852,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
-    localCapabilitiesDirectory->remove(dummyParticipantId1);
+    localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenGlobal)
@@ -1889,7 +1889,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
-    localCapabilitiesDirectory->remove(dummyParticipantId1);
+    localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
 
     // get the global entry
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
@@ -1962,7 +1962,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
-    localCapabilitiesDirectory->remove(dummyParticipantId1);
+    localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
 }
 
 // TODO test remove global capability

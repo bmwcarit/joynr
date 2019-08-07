@@ -782,8 +782,7 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
 void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProvider(
         const std::string& participantId)
 {
-    const bool isProviderGlobal = false;
-    localCapabilitiesDirectory->remove(participantId, isProviderGlobal);
+    localCapabilitiesDirectory->remove(participantId, nullptr, nullptr);
     for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
