@@ -325,21 +325,6 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
             });
     });
 
-    // TODO: implement mock for publication of the value
-    // it("subscribe publishes a value", function () {
-    // var publishedValue;
-    //
-    // runs(function () {
-    // isOn.subscribe({subscriptionQos: subscriptionQos, publication: function
-    // (value) { publishedValue = value; } });
-    // });
-    //
-    // waitsFor(function () {
-    // return publishedValue !== undefined;
-    // }, "The publication callback is fired and provides a value !==
-    // undefined", asyncTimeout);
-    // });
-
     it("unsubscribe calls through to SubscriptionManager", done => {
         isOn.unsubscribe({
             subscriptionId

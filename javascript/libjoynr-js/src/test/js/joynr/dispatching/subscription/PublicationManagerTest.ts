@@ -37,8 +37,21 @@ import * as SubscriptionUtil from "../../../../../main/js/joynr/dispatching/subs
 import SubscriptionException from "../../../../../main/js/joynr/exceptions/SubscriptionException";
 import LongTimer from "../../../../../main/js/joynr/util/LongTimer";
 import nanoid from "nanoid";
-import LocalStorage from "../../../../../test/js/global/LocalStorageNodeTests";
 import testUtil = require("../../../testUtil");
+
+let localStorageMap: Record<string, any> = {};
+const localStorageMock = {
+    setItem: jest.fn().mockImplementation((key: string, value: any) => {
+        localStorageMap[key] = value;
+    }),
+    getItem: jest.fn().mockImplementation((key: string) => {
+        return localStorageMap[key];
+    }),
+    removeItem: jest.fn().mockImplementation((key: string) => {
+        delete localStorageMap[key];
+    }),
+    clear: jest.fn().mockImplementation(() => (localStorageMap = {}))
+};
 
 describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => {
     let callbackDispatcher: any;
@@ -285,16 +298,16 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
     }
 
     describe("without localStorage", () => {
-        sharedTests(() => {
+        sharedTests(async () => {
             persistency = null;
             return Promise.resolve();
         });
     });
 
     describe("with localStorage", () => {
-        sharedTests(() => {
-            persistency = new LocalStorage(undefined as any);
-            return persistency.init();
+        sharedTests(async () => {
+            persistency = localStorageMock;
+            localStorageMock.clear();
         });
     });
 

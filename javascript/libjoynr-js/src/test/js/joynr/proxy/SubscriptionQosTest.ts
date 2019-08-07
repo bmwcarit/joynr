@@ -22,7 +22,7 @@ import OnChangeSubscriptionQos from "../../../../main/js/joynr/proxy/OnChangeSub
 import OnChangeWithKeepAliveSubscriptionQos from "../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos";
 import MulticastSubscriptionQos from "../../../../main/js/joynr/proxy/MulticastSubscriptionQos";
 import * as UtilInternal from "../../../../main/js/joynr/util/UtilInternal";
-import Date from "../../../../test/js/global/Date";
+
 describe("libjoynr-js.joynr.proxy.SubscriptionQos", () => {
     const qosSettings = {
         minIntervalMs: 50,
