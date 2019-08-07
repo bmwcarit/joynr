@@ -18,6 +18,7 @@
  */
 #include <gtest/gtest.h>
 
+#include <joynr/BrokerUrl.h>
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/MessagingSettings.h"
@@ -43,13 +44,25 @@ public:
 protected:
     void createMqttSender(std::string testSettingsFileNameMqtt)
     {
-        const std::string clientId("testClientId");
         Settings testSettings(testSettingsFileNameMqtt);
         MessagingSettings messagingSettings(testSettings);
-        ClusterControllerSettings ccSettings(testSettings);
-        const std::uint8_t brokerIndex = 0;
+        const ClusterControllerSettings ccSettings(testSettings);
+        BrokerUrl brokerUrl("testBrokerUrl");
+        std::chrono::seconds mqttKeepAliveTimeSeconds(1);
+        std::chrono::seconds mqttReconnectDelayTimeSeconds(1);
+        std::chrono::seconds mqttReconnectMaxDelayTimeSeconds(1);
+        bool isMqttExponentialBackoffEnabled(false);
+        const std::string clientId("testClientId");
+
         mockMosquittoConnection =
-                std::make_shared<MockMosquittoConnection>(messagingSettings, ccSettings, clientId, brokerIndex);
+                std::make_shared<MockMosquittoConnection>(ccSettings,
+                                                          brokerUrl,
+                                                          mqttKeepAliveTimeSeconds,
+                                                          mqttReconnectDelayTimeSeconds,
+                                                          mqttReconnectMaxDelayTimeSeconds,
+                                                          isMqttExponentialBackoffEnabled,
+                                                          clientId);
+
         mqttSender = std::make_shared<MqttSender>(mockMosquittoConnection, messagingSettings);
 
         ON_CALL(*mockMosquittoConnection, isSubscribedToChannelTopic()).WillByDefault(Return(true));
