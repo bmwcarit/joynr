@@ -16,15 +16,12 @@
  * limitations under the License.
  * #L%
  */
-require("../../node-unit-test-helper");
+import * as WebSocketProtocol from "../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketProtocol";
+import ProvisioningRoot from "../../../resources/joynr/provisioning/provisioning_root"; // logger and mqtt
 
-const provisioning_root = require("../../../resources/joynr/provisioning/provisioning_root"); // logger and mqtt
-
-const proxyquire = require("proxyquire").noCallThru();
-
-const mocks = {};
-const constructors = {};
-const spys = {};
+const mocks: Record<string, any> = {};
+const constructors: Record<string, any> = {};
+const spys: Record<string, any> = {};
 [
     ["DiscoveryQos"],
     ["CapabilitiesRegistrar", ["shutdown"]],
@@ -51,28 +48,35 @@ const spys = {};
     ["LoggingManager", ["configure", "getLogger"]],
     ["SubscriptionManager", ["shutdown", "terminateSubscriptions"]],
     ["ProxyBuilder", ["build"]]
-].forEach(([name, keys = []]) => {
-    mocks[name] = keys.length > 0 ? jasmine.createSpyObj(name, keys) : {};
-    spys[name] = jasmine.createSpy();
-    constructors[name] = function(...args) {
+].forEach(([name, keys = []]: any) => {
+    mocks[name] = {};
+    keys.forEach((key: string) => {
+        mocks[name][key] = jest.fn();
+    });
+    spys[name] = jest.fn();
+    constructors[name] = function(...args: any[]) {
         spys[name](...args);
         return mocks[name];
     };
 });
 
-mocks.MessageRouter.setRoutingProxy = jasmine.createSpy().and.returnValue(Promise.resolve());
-mocks.ProxyBuilder.build.and.returnValue(Promise.resolve());
+mocks.MessageRouter.setRoutingProxy = jest.fn().mockReturnValue(Promise.resolve());
+mocks.ProxyBuilder.build.mockReturnValue(Promise.resolve());
 
-mocks.SubscriptionManager.terminateSubscriptions.and.returnValue(Promise.resolve());
+mocks.SubscriptionManager.terminateSubscriptions.mockReturnValue(Promise.resolve());
 
-constructors.CapabilitiesRegistrar.setDefaultExpiryIntervalMs = jasmine.createSpy();
-constructors.DiscoveryQos.setDefaultSettings = jasmine.createSpy();
-constructors.JoynrMessage.setSigningCallback = jasmine.createSpy();
+constructors.CapabilitiesRegistrar.setDefaultExpiryIntervalMs = jest.fn();
+constructors.DiscoveryQos.setDefaultSettings = jest.fn();
+constructors.JoynrMessage.setSigningCallback = jest.fn();
 
-mocks.LocalStorageNode.init = jasmine.createSpy().and.returnValue(Promise.resolve());
-mocks.LoggingManager.getLogger.and.returnValue(
-    jasmine.createSpyObj("logger", ["debug", "info", "error", "warn", "verbose"])
-);
+mocks.LocalStorageNode.init = jest.fn().mockReturnValue(Promise.resolve());
+mocks.LoggingManager.getLogger.mockReturnValue({
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    verbose: jest.fn()
+});
 
 const config = {
     "../../../../main/js/joynr/proxy/DiscoveryQos": constructors.DiscoveryQos,
@@ -94,18 +98,17 @@ const config = {
     "../../../../main/js/joynr/proxy/ProxyBuilder": constructors.ProxyBuilder
 };
 
-const JoynrRuntime = proxyquire("joynr/joynr/start/JoynrRuntime", config);
-const WebSocketLibjoynrRuntime = proxyquire(
-    "joynr/joynr/start/WebSocketLibjoynrRuntime",
-    Object.assign({}, config, { "../../../../main/js/joynr/start/JoynrRuntime": JoynrRuntime })
-);
+for (const [key, value] of Object.entries(config)) {
+    jest.doMock(key, () => value);
+}
+import WebSocketLibjoynrRuntime from "../../../../main/js/joynr/start/WebSocketLibjoynrRuntime";
 
 describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
-    let runtime;
-    let provisioning;
+    let runtime: any;
+    let provisioning: any;
 
     beforeEach(() => {
-        provisioning = Object.assign({}, provisioning_root, {
+        provisioning = Object.assign({}, ProvisioningRoot, {
             ccAddress: {
                 protocol: "ws",
                 host: "localhost",
@@ -115,10 +118,10 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         });
 
         // unfortunately jasmine doesn't reset spies between specs per default ...
-        Object.keys(spys).forEach(spy => {
-            spys[spy].calls.reset();
+        Object.keys(spys).forEach((spy: any) => {
+            spys[spy].mockClear();
         });
-        mocks.SubscriptionManager.terminateSubscriptions.calls.reset();
+        mocks.SubscriptionManager.terminateSubscriptions.mockClear();
     });
 
     it("won't override settings unnecessarily", async () => {
@@ -156,17 +159,17 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         await runtime.start(provisioning);
 
         expect(spys.SharedWebSocket).toHaveBeenCalledWith({
-            remoteAddress: jasmine.objectContaining({
+            remoteAddress: expect.objectContaining({
                 _typeName: "joynr.system.RoutingTypes.WebSocketAddress",
-                protocol: provisioning.ccAddress.protocol,
+                protocol: WebSocketProtocol.WS,
                 host: provisioning.ccAddress.host,
                 port: provisioning.ccAddress.port,
                 path: provisioning.ccAddress.path
             }),
-            localAddress: jasmine.objectContaining({
+            localAddress: expect.objectContaining({
                 _typeName: "joynr.system.RoutingTypes.WebSocketClientAddress"
             }),
-            provisioning: jasmine.any(Object),
+            provisioning: expect.any(Object),
             keychain: undefined
         });
     });
@@ -174,22 +177,22 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     it("will use the default persistency settings", async () => {
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.MessageRouter.calls.count()).toEqual(1);
-        expect(spys.MessageRouter.calls.argsFor(0)[0].persistency).toBeUndefined();
-        expect(spys.ParticipantIdStorage.calls.count()).toEqual(1);
-        expect(spys.ParticipantIdStorage.calls.argsFor(0)[0]).toEqual(mocks.LocalStorageNode);
-        expect(spys.PublicationManager.calls.count()).toEqual(1);
-        expect(spys.PublicationManager.calls.argsFor(0)[1]).toEqual(mocks.LocalStorageNode);
+        expect(spys.MessageRouter.mock.calls.length).toEqual(1);
+        expect(spys.MessageRouter.mock.calls[0][0].persistency).toBeUndefined();
+        expect(spys.ParticipantIdStorage.mock.calls.length).toEqual(1);
+        expect(spys.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
+        expect(spys.PublicationManager.mock.calls.length).toEqual(1);
+        expect(spys.PublicationManager.mock.calls[0][1]).toEqual(mocks.LocalStorageNode);
     });
 
     it("enables MessageRouter Persistency if configured", async () => {
         provisioning.persistency = { routingTable: true };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.MessageRouter.calls.count()).toEqual(1);
-        expect(spys.MessageRouter.calls.argsFor(0)[0].persistency).toEqual(mocks.LocalStorageNode);
+        expect(spys.MessageRouter.mock.calls.length).toEqual(1);
+        expect(spys.MessageRouter.mock.calls[0][0].persistency).toEqual(mocks.LocalStorageNode);
         expect(spys.MessageRouter).toHaveBeenCalledWith(
-            jasmine.objectContaining({ persistency: mocks.LocalStorageNode })
+            expect.objectContaining({ persistency: mocks.LocalStorageNode })
         );
     });
 
@@ -197,16 +200,16 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.persistency = { capabilities: true };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.ParticipantIdStorage.calls.count()).toEqual(1);
-        expect(spys.ParticipantIdStorage.calls.argsFor(0)[0]).toEqual(mocks.LocalStorageNode);
+        expect(spys.ParticipantIdStorage.mock.calls.length).toEqual(1);
+        expect(spys.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
     });
 
     it("disables PublicationManager persistency if configured", async () => {
         provisioning.persistency = { publications: false };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.PublicationManager.calls.count()).toEqual(1);
-        expect(spys.PublicationManager.calls.argsFor(0)[1]).toBeUndefined();
+        expect(spys.PublicationManager.mock.calls.length).toEqual(1);
+        expect(spys.PublicationManager.mock.calls[0][1]).toBeUndefined();
     });
 
     it("will call MessageQueue with the settings from the provisioning", async () => {
@@ -214,7 +217,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.messaging = { maxQueueSizeInKBytes };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.MessageQueue.calls.count()).toEqual(1);
+        expect(spys.MessageQueue.mock.calls.length).toEqual(1);
         expect(spys.MessageQueue).toHaveBeenCalledWith({
             maxQueueSizeInKBytes
         });
@@ -225,8 +228,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.messaging = { TTL_UPLIFT: ttlUpLiftMs };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.Dispatcher.calls.count()).toEqual(1);
-        expect(spys.Dispatcher.calls.argsFor(0)[2]).toEqual(ttlUpLiftMs);
+        expect(spys.Dispatcher.mock.calls.length).toEqual(1);
+        expect(spys.Dispatcher.mock.calls[0][2]).toEqual(ttlUpLiftMs);
     });
 
     it("will call MessagingQos with the settings from the provisioning", async () => {
@@ -266,48 +269,35 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         await runtime.shutdown();
     });
 
-    it("terminates Subscriptions upon shutdown with default timeout", done => {
+    it("terminates Subscriptions upon shutdown with default timeout", async () => {
         runtime = new WebSocketLibjoynrRuntime();
-        runtime
-            .start(provisioning)
-            .then(runtime.shutdown)
-            .then(() => {
-                expect(mocks.SubscriptionManager.terminateSubscriptions).toHaveBeenCalledWith(1000);
-                done();
-            })
-            .catch(fail);
+
+        await runtime.start(provisioning);
+        await runtime.shutdown();
+
+        expect(mocks.SubscriptionManager.terminateSubscriptions).toHaveBeenCalledWith(1000);
     });
 
-    it("won't terminate Subscriptions upon shutdown when specified by provisioning", done => {
+    it("won't terminate Subscriptions upon shutdown when specified by provisioning", async () => {
         runtime = new WebSocketLibjoynrRuntime();
 
         provisioning.shutdownSettings = { clearSubscriptionsEnabled: false };
-        runtime
-            .start(provisioning)
-            .then(() => {
-                return runtime.shutdown();
-            })
-            .then(() => {
-                expect(mocks.SubscriptionManager.terminateSubscriptions).not.toHaveBeenCalled();
-                done();
-            })
-            .catch(fail);
+
+        await runtime.start(provisioning);
+
+        await runtime.shutdown();
+        expect(mocks.SubscriptionManager.terminateSubscriptions).not.toHaveBeenCalled();
     });
 
-    it("won't terminate Subscriptions when explicitly called with shutdown", done => {
+    it("won't terminate Subscriptions when explicitly called with shutdown", async () => {
         runtime = new WebSocketLibjoynrRuntime();
 
         provisioning.shutdownSettings = { clearSubscriptionsEnabled: false };
-        runtime
-            .start(provisioning)
-            .then(() => {
-                runtime.shutdown({ clearSubscriptionsEnabled: false });
-            })
-            .then(() => {
-                expect(mocks.SubscriptionManager.terminateSubscriptions).not.toHaveBeenCalled();
-                done();
-            })
-            .catch(fail);
+
+        await runtime.start(provisioning);
+
+        runtime.shutdown({ clearSubscriptionsEnabled: false });
+        expect(mocks.SubscriptionManager.terminateSubscriptions).not.toHaveBeenCalled();
     });
 
     it("calls enableShutdownMode of SharedWebsocket before when shut down", async () => {
