@@ -19,23 +19,23 @@
  * #L%
  */
 
-const ChildProcessUtils = require("../ChildProcessUtils");
+import * as ChildProcessUtils from "../ChildProcessUtils";
 
-const joynr = require("joynr");
-const provisioning = require("../../../resources/joynr/provisioning/provisioning_cc.js");
-const MultipleVersionsInterfaceProviderNameVersion1 = require("../../../generated/joynr/tests/MultipleVersionsInterface1Provider");
-const MultipleVersionsInterfaceProviderNameVersion2 = require("../../../generated/joynr/tests/MultipleVersionsInterface2Provider");
-const MultipleVersionsInterfaceProviderPackageVersion1 = require("../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider");
-const MultipleVersionsInterfaceProviderPackageVersion2 = require("../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider");
-const ProviderImplementation = require("./MultipleVersionsInterfaceProviderImplementation");
+import joynr from "joynr";
+import provisioning from "../../../resources/joynr/provisioning/provisioning_cc.js";
+import MultipleVersionsInterfaceProviderNameVersion1 from "../../../generated/joynr/tests/MultipleVersionsInterface1Provider";
+import MultipleVersionsInterfaceProviderNameVersion2 from "../../../generated/joynr/tests/MultipleVersionsInterface2Provider";
+import MultipleVersionsInterfaceProviderPackageVersion1 from "../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider";
+import MultipleVersionsInterfaceProviderPackageVersion2 from "../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider";
+import ProviderImplementation from "./MultipleVersionsInterfaceProviderImplementation";
 
-let multipleVersionsInterfaceProvider, MultipleVersionsInterfaceProvider, providerDomain;
+let multipleVersionsInterfaceProvider: any, MultipleVersionsInterfaceProvider, providerDomain: string;
 
-function initializeTest(provisioningSuffix, providedDomain, settings) {
+function initializeTest(_provisioningSuffix: any, providedDomain: string, settings: any): Promise<void> {
     providerDomain = providedDomain;
 
     joynr.selectRuntime("inprocess");
-    return joynr.load(provisioning).then(() => {
+    return joynr.load(provisioning as any).then(() => {
         const providerQos = new joynr.types.ProviderQos({
             customParameters: [],
             priority: 5,
@@ -70,7 +70,7 @@ function initializeTest(provisioningSuffix, providedDomain, settings) {
             .then(() => {
                 return joynr;
             })
-            .catch(e => {
+            .catch((e: any) => {
                 return joynr.shutdown().then(() => {
                     throw e;
                 });
@@ -78,13 +78,8 @@ function initializeTest(provisioningSuffix, providedDomain, settings) {
     });
 }
 
-function startTest() {
-    // nothing to do here, everything is already performed in initialize
-    return Promise.resolve();
-}
-
-function terminateTest() {
+function terminateTest(): Promise<void> {
     return joynr.registration.unregisterProvider(providerDomain, multipleVersionsInterfaceProvider);
 }
 
-ChildProcessUtils.registerHandlers(initializeTest, startTest, terminateTest);
+ChildProcessUtils.registerHandlers(initializeTest, () => Promise.resolve(), terminateTest);

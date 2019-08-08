@@ -20,27 +20,21 @@
  * #L%
  */
 
-const End2EndAbstractTest = require("../End2EndAbstractTest");
-const NoCompatibleProviderFoundException = require("../../../../main/js/joynr/exceptions/NoCompatibleProviderFoundException");
+import End2EndAbstractTest from "../End2EndAbstractTest";
+
+import NoCompatibleProviderFoundException from "../../../../main/js/joynr/exceptions/NoCompatibleProviderFoundException";
+import testUtil = require("../../testUtil");
 
 const abstractTest = new End2EndAbstractTest("GeneratorVersionMismatchTest", "TestMultipleVersionsInterfaceProcess", {
     versioning: "packageVersion1"
 });
 
 describe("Incompatible provider test", () => {
-    it("Proxy version greater than provider version", done => {
-        abstractTest
-            .beforeEach()
-            .then(() => {
-                fail("Expected NoCompatibleProviderFoundException was not thrown");
-            })
-            .catch(error => {
-                expect(error instanceof NoCompatibleProviderFoundException).toBe(true);
-                expect(error.discoveredVersions.length).toEqual(1);
-                expect(error.discoveredVersions[0].majorVersion).toEqual(1);
-            })
-            .then(abstractTest.afterEach)
-            .then(done)
-            .catch(fail);
+    it("Proxy version greater than provider version", async () => {
+        const error = await testUtil.reversePromise(abstractTest.beforeEach());
+        expect(error instanceof NoCompatibleProviderFoundException).toBe(true);
+        expect(error.discoveredVersions.length).toEqual(1);
+        expect(error.discoveredVersions[0].majorVersion).toEqual(1);
+        await abstractTest.afterEach();
     });
 });

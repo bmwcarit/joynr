@@ -89,7 +89,7 @@ export function initializeChildProcess(
     childName: string,
     provisioningSuffix: string,
     domain: string,
-    processSpecialization: string,
+    processSpecialization?: any,
     cc?: any
 ): Promise<any> {
     processId++;

@@ -20,34 +20,26 @@
  * #L%
  */
 
-const End2EndAbstractTest = require("../End2EndAbstractTest");
+import End2EndAbstractTest from "../End2EndAbstractTest";
 
 describe("Compatibility tests for providers created by new generator", () => {
-    it("Provider with version in package name and original proxy", done => {
+    it("Provider with version in package name and original proxy", async () => {
         const abstractTest = new End2EndAbstractTest(
             "ProviderWithVersionedPackageNameTest",
             "TestMultipleVersionsInterfaceProcess",
             { versioning: "packageVersion2" }
         );
 
-        abstractTest
-            .beforeEach()
-            .then(abstractTest.afterEach)
-            .then(done)
-            .catch(fail);
+        return abstractTest.beforeEach().then(abstractTest.afterEach);
     });
 
-    it("Provider with version in name and original proxy", done => {
+    it("Provider with version in name and original proxy", async () => {
         const abstractTest = new End2EndAbstractTest(
             "ProviderWithVersionedNameTest",
             "TestMultipleVersionsInterfaceProcess",
             { versioning: "nameVersion2" }
         );
 
-        abstractTest
-            .beforeEach()
-            .then(abstractTest.afterEach)
-            .then(done)
-            .catch(fail);
+        return abstractTest.beforeEach().then(abstractTest.afterEach);
     });
 });

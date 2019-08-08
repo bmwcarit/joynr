@@ -17,8 +17,8 @@
  * #L%
  */
 
-const ComplexRadioStation = require("../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation");
-const Country = require("../../generated/joynr/datatypes/exampleTypes/Country");
+import ComplexRadioStation from "../../generated/joynr/datatypes/exampleTypes/ComplexRadioStation";
+import Country from "../../generated/joynr/datatypes/exampleTypes/Country";
 
 const TestEnd2EndDatatypesTestData = [
     {
@@ -122,4 +122,4 @@ const TestEnd2EndDatatypesTestData = [
         ]
     }
 ];
-module.exports = TestEnd2EndDatatypesTestData;
+export = TestEnd2EndDatatypesTestData;
