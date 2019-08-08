@@ -1,6 +1,6 @@
 [access-control]
 enable=true
-global-domain-access-controller-address={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"tcp://localhost:1883","topic":"domainaccesscontroller_channelid"}
+global-domain-access-controller-address={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"tcp://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@","topic":"domainaccesscontroller_channelid"}
 global-domain-access-controller-participantid=domainaccesscontroller_participantid
 
 [messaging]

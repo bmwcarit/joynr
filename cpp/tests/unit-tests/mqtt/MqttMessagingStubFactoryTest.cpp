@@ -38,7 +38,8 @@ class MqttMessagingStubFactoryTest : public testing::Test
 {
 public:
     MqttMessagingStubFactoryTest()
-            : mqttAddress("brokerUri", "clientId"),
+            : testGbid("testGbid"),
+              mqttAddress(testGbid, "clientId"),
               webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS,
                                      "localhost",
                                      42,
@@ -51,6 +52,7 @@ public:
 
 protected:
     ADD_LOGGER(MqttMessagingStubFactoryTest)
+    std::string testGbid;
     joynr::system::RoutingTypes::MqttAddress mqttAddress;
     joynr::system::RoutingTypes::WebSocketAddress webSocketServerAddress;
     joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
@@ -61,7 +63,7 @@ protected:
 TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses)
 {
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
-    MqttMessagingStubFactory factory(mockMessageSender);
+    MqttMessagingStubFactory factory(mockMessageSender, testGbid);
 
     EXPECT_TRUE(factory.canCreate(mqttAddress));
 }
@@ -69,7 +71,7 @@ TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses)
 TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses)
 {
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
-    MqttMessagingStubFactory factory(mockMessageSender);
+    MqttMessagingStubFactory factory(mockMessageSender, testGbid);
 
     EXPECT_FALSE(factory.canCreate(channelAddress));
     EXPECT_FALSE(factory.canCreate(browserAddress));
@@ -80,7 +82,7 @@ TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses)
 TEST_F(MqttMessagingStubFactoryTest, createReturnsMessagingStub)
 {
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
-    MqttMessagingStubFactory factory(mockMessageSender);
+    MqttMessagingStubFactory factory(mockMessageSender, testGbid);
 
     EXPECT_TRUE(factory.create(mqttAddress).get() != nullptr);
 }
