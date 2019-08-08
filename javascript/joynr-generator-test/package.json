@@ -1,0 +1,21 @@
+{
+  "name": "joynr-generator-test",
+  "version": "1.11.0-SNAPSHOT",
+  "description": "Code generator for joynr",
+  "license": "Apache-2.0",
+  "homepage": "http://joynr.io",
+  "bugs": "https://github.com/bmwcarit/joynr/issues",
+  "dependencies": {
+    "joynr": "file:../libjoynr-js/.output/src/main/js",
+    "joynr-generator": "file:../joynr-generator"
+  },
+  "scripts": {
+    "clean": "rm -rf node_modules",
+    "build": "cd ../joynr-generator && npm run build && cd - && npm i",
+    "test": "generate-joynr-sources -o generated -m model/hello-world.fidl -m model/joynr-campaign.fidl -m ../../basemodel/src/test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bmwcarit/joynr.git"
+  }
+}

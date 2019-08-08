@@ -70,6 +70,8 @@ declare -a PACKAGE_JSON_DIRECTORIES=(
   "$JOYNR_SOURCE_DIR/tests/system-integration-test/sit-node-app"
   "$JOYNR_SOURCE_DIR/examples/radio-node"
   "$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/main/js"
+  "$JOYNR_SOURCE_DIR/javascript/libjoynr-js/joynr-generator"
+  "$JOYNR_SOURCE_DIR/javascript/libjoynr-js/joynr-generator-test"
   #"$JOYNR_SOURCE_DIR/tests/inter-language-test"
   #"$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/test/resources/node/shutdown"
   #"$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/main/browserify"

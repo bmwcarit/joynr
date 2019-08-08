@@ -22,6 +22,8 @@ dependency-reduced-pom.xml
 local.properties
 *.bundle.js
 target/
+javascript/joynr-generator/jars/
+javascript/joynr-generator/src/*.js
 
 # Generated files
 /**/src/main/generated*/
@@ -29,7 +31,7 @@ target/
 cpp/libjoynr/**/generated/
 cpp/tests/gen-with-version/
 gen/
-javascript/libjoynr-js/src/main/js/generated*
+javascript/**/generated/
 xtend-gen*/
 
 # Logs

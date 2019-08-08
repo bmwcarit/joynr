@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  %%
+  Copyright (C) 2011 - 2017 BMW Car IT GmbH
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>joynr-generator-test</artifactId>
+	<groupId>io.joynr.joynr-generator-test</groupId>
+	<packaging>pom</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>JOYnr JavaScript npm generator test</description>
+
+	<parent>
+		<groupId>io.joynr</groupId>
+		<artifactId>javascript</artifactId>
+		<version>1.11.0-SNAPSHOT</version>
+	</parent>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>npm:clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>npm</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>clean</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>build</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>npm</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>build</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>npm:build</id>
+						<phase>test</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>npm</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>test</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- NOTE the license to be added to the source header files must be
+				specifically (redundantly) defined below -->
+			<!-- This is a shortcoming of the license-maven-plugin -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<verbose>false</verbose>
+					<addSvnKeyWords>true</addSvnKeyWords>
+					<licenseName>apache_v2</licenseName>
+					<roots>
+						<root>.</root>
+					</roots>
+					<excludes>
+						<exclude>package.json</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<id>carit-copyright</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jasig.maven</groupId>
+						<artifactId>maven-notice-plugin</artifactId>
+						<configuration>
+							<outputDir>META-INF</outputDir>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
