@@ -23,7 +23,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>libjoynr-js</artifactId>
 	<groupId>io.joynr.javascript</groupId>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>JOYnr JavaScript libjoynr-js</description>
 
