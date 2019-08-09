@@ -42,9 +42,9 @@ class MapTypeGenerator extends MapTemplate {
 	«val generationDate = (new Date()).toString»
 	«val mapType = type.valueType.tsTypeName»
 	«IF !type.valueType.isPrimitive»
-	import «type.valueType.tsTypeName» from "«type.valueType.getRelativeImportPath(type)»"
+	import «type.valueType.tsTypeName» = require("«type.valueType.getRelativeImportPath(type)»")
 	«ENDIF»
-	import JoynrMap from "joynr/joynr/types/JoynrMap";
+	import JoynrMap = require("joynr/joynr/types/JoynrMap");
 	/**
 	 * This is the generated map type «type.joynrName»: DOCS GENERATED FROM INTERFACE DESCRIPTION
 	 * Generation date: «generationDate»

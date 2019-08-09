@@ -43,7 +43,7 @@ class EnumTypeGenerator extends EnumTemplate {
 	«val enumElements = getEnumElementsAndBaseEnumElements(type)»
 	«val enumNames = type.joynrName + "Names"»
 
-	import JoynrEnum from "joynr/joynr/types/JoynrEnum";
+	import JoynrEnum = require("joynr/joynr/types/JoynrEnum");
 
 	namespace «type.joynrName» {
 		export type «enumNames» =«FOR enumElement : enumElements SEPARATOR '|'» "«enumElement.joynrName»"«ENDFOR»

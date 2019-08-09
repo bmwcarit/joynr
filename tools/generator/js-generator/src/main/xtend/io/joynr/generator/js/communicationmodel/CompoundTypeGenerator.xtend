@@ -62,12 +62,12 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 	def generateStructType(FStructType type) '''
 	«val generationDate = (new Date()).toString»
 	«val members = getMembersRecursive(type)»
-	import JoynrCompound from "joynr/joynr/types/JoynrCompound";
+	import JoynrCompound = require("joynr/joynr/types/JoynrCompound");
 	«val filteredMembers = members.filterDuplicateTypeNames»
 	«FOR member : filteredMembers»
 	«val importPath = member.getRelativeImportPath(type)»
 	«IF importPath !== null»
-	import «member.type.tsTypeName» from "«importPath»";
+	import «member.type.tsTypeName» = require("«importPath»");
 	«ENDIF»
 	«ENDFOR»
 

@@ -74,14 +74,14 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	import {«FOR attributeType: attributes.proxyAttributeNames SEPARATOR ','»«attributeType» «ENDFOR»} from "joynr/joynr/proxy/ProxyAttribute";
 	«ENDIF»
 	«IF methodNames.length > 0»
-	import ProxyOperation from "joynr/joynr/proxy/ProxyOperation";
+	import ProxyOperation = require("joynr/joynr/proxy/ProxyOperation");
 	«ENDIF»
 	«IF events.length > 0»
-	import ProxyEvent from "joynr/joynr/proxy/ProxyEvent";
+	import ProxyEvent = require("joynr/joynr/proxy/ProxyEvent");
 	«ENDIF»
 
-	import MessagingQos from "joynr/joynr/messaging/MessagingQos";
-	import JoynrDiscoveryQos from "joynr/joynr/proxy/DiscoveryQos";
+	import MessagingQos = require("joynr/joynr/messaging/MessagingQos");
+	import JoynrDiscoveryQos = require("joynr/joynr/proxy/DiscoveryQos");
 
 	namespace «proxyName» {
 		export interface ProxySettings {

@@ -70,16 +70,16 @@ class ProviderGenerator extends InterfaceJsTemplate {
 	«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
 	«val events = getEvents(francaIntf)»
 	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-	import «datatype.joynrName» from "«relativePathToBase() + datatype.getDependencyPath()»";
+	import «datatype.joynrName» = require("«relativePathToBase() + datatype.getDependencyPath()»");
 	«ENDFOR»
 	«IF attributes.length > 0»
 	import {«FOR attributeType: attributes.providerAttributeNames SEPARATOR ','»«attributeType» «ENDFOR»} from "joynr/joynr/provider/ProviderAttribute";
 	«ENDIF»
 	«IF methodNames.length > 0»
-	import ProviderOperation from "joynr/joynr/provider/ProviderOperation";
+	import ProviderOperation = require("joynr/joynr/provider/ProviderOperation");
 	«ENDIF»
 	«IF events.length > 0»
-	import ProviderEvent from "joynr/joynr/provider/ProviderEvent";
+	import ProviderEvent = require("joynr/joynr/provider/ProviderEvent");
 	«ENDIF»
 	import {«FOR attributeType: attributes.joynrProviderImports SEPARATOR ','»«attributeType» «ENDFOR»} from "joynr/joynr/types/JoynrProvider";
 
