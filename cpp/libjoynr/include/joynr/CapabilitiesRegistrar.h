@@ -68,8 +68,10 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError,
             bool persist = true,
-            bool awaitGlobalRegistration = false) noexcept
+            bool awaitGlobalRegistration = false,
+            std::vector<std::string> gbids = std::vector<std::string>()) noexcept
     {
+        std::ignore = gbids;
         const std::string interfaceName = T::INTERFACE_NAME();
         const std::string participantId = participantIdStorage->getProviderParticipantId(
                 domain, interfaceName, T::MAJOR_VERSION);

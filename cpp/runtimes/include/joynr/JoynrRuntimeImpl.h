@@ -72,6 +72,9 @@ public:
      * which describes the error, is passed as the parameter.
      * @param persist if set to true, participant ID of the provider will be persisted,
      * otherwise it will not; default is true
+     * @param awaitGlobalRegistration: true if global registration should be waited for
+     * @param gbids: The GBIDs in which the provider shall be registered; default is empty list
+     * in which case the provider is registered in the default backend.
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
@@ -83,7 +86,8 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError,
             bool persist = true,
-            bool awaitGlobalRegistration = false) noexcept
+            bool awaitGlobalRegistration = false,
+            std::vector<std::string> gbids = std::vector<std::string>()) noexcept
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
@@ -93,7 +97,8 @@ public:
                                                std::move(onSuccess),
                                                std::move(onError),
                                                persist,
-                                               awaitGlobalRegistration);
+                                               awaitGlobalRegistration,
+                                               gbids);
     }
 
     /**
@@ -106,6 +111,9 @@ public:
      * @param providerQos The qos associated with the registered provider.
      * @param persist if set to true, participant ID of the provider will be persisted,
      * otherwise it will not; default is true
+     * @param awaitGlobalRegistration: true if global registration should be waited for
+     * @param gbids: The GBIDs in which the provider shall be registered; default is empty list
+     * in which case the provider is registered in the default backend.
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
@@ -114,7 +122,8 @@ public:
                                  std::shared_ptr<TIntfProvider> provider,
                                  const joynr::types::ProviderQos& providerQos,
                                  bool persist = true,
-                                 bool awaitGlobalRegistration = false)
+                                 bool awaitGlobalRegistration = false,
+                                 std::vector<std::string> gbids = std::vector<std::string>())
     {
         Future<void> future;
         auto onSuccess = [&future]() { future.onSuccess(); };
@@ -128,7 +137,8 @@ public:
                                                            std::move(onSuccess),
                                                            std::move(onError),
                                                            persist,
-                                                           awaitGlobalRegistration);
+                                                           awaitGlobalRegistration,
+                                                           gbids);
         future.get();
         return participiantId;
     }

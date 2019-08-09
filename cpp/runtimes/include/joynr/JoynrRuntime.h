@@ -63,6 +63,8 @@ public:
      * @param awaitGlobalRegistration if set to true, onSuccess will be invoked only after global
      * registration succeeded, respectively onError will be invoked only after global registration
      * failed; default is false
+     * @param gbids: The GBIDs in which the provider shall be registered; default is empty list
+     * in which case the provider is registered in the default backend.
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
@@ -74,7 +76,8 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError,
             bool persist = true,
-            bool awaitGlobalRegistration = false) noexcept
+            bool awaitGlobalRegistration = false,
+            std::vector<std::string> gbids = std::vector<std::string>()) noexcept
     {
         return runtimeImpl->registerProviderAsync(domain,
                                                   provider,
@@ -82,7 +85,8 @@ public:
                                                   std::move(onSuccess),
                                                   std::move(onError),
                                                   persist,
-                                                  awaitGlobalRegistration);
+                                                  awaitGlobalRegistration,
+                                                  gbids);
     }
 
     /**
@@ -98,6 +102,8 @@ public:
      * @param awaitGlobalRegistration if set to true, method will block until global registration
      * succeeded, respectively it will throw an exception in case global registration failed;
      * default is false
+     * @param gbids: The GBIDs in which the provider shall be registered; default is empty list
+     * in which case the provider is registered in the default backend.
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
@@ -106,7 +112,8 @@ public:
                                  std::shared_ptr<TIntfProvider> provider,
                                  const joynr::types::ProviderQos& providerQos,
                                  bool persist = true,
-                                 bool awaitGlobalRegistration = false)
+                                 bool awaitGlobalRegistration = false,
+                                 std::vector<std::string> gbids = std::vector<std::string>())
     {
         Future<void> future;
         auto onSuccess = [&future]() { future.onSuccess(); };
@@ -120,7 +127,8 @@ public:
                                                            std::move(onSuccess),
                                                            std::move(onError),
                                                            persist,
-                                                           awaitGlobalRegistration);
+                                                           awaitGlobalRegistration,
+                                                           gbids);
         future.get();
         return participiantId;
     }
