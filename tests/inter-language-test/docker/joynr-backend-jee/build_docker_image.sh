@@ -17,7 +17,7 @@ function copy_war {
 	cp $1 $2
 }
 
-DISCOVERY_WAR_FILE=../../../../java/backend-services/discovery-directory-jee/target/discovery-directory-jee*.war
+DISCOVERY_WAR_FILE=../../../../java/backend-services/discovery-directory-jee/target/discovery-directory-jee-[0-9]*.war
 ACCESS_CTRL_WAR_FILE=../../../../java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee*.war
 
 copy_war $DISCOVERY_WAR_FILE target/discovery-directory-jee.war

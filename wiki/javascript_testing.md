@@ -40,8 +40,8 @@ or the [Radio Tutorial](Tutorial.md)).
 Start joynr mqtt infrastructure:
 
 ```
-asadmin deploy <JOYNR_REPO>/java/backend-services/discovery-directory-jee/target/discovery-directory-jee*.war
-asadmin deploy <JOYNR_REPO>/java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee*.war
+asadmin deploy <JOYNR_REPO>/java/backend-services/discovery-directory-jee/target/discovery-directory-jee-<JOYNR_VERSION>.war
+asadmin deploy <JOYNR_REPO>/java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee-<JOYNR_VERSION>.war
 ```
 
 Then run:
