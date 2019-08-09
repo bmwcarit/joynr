@@ -18,6 +18,7 @@ FIND_PROGRAM( GCOV_PATH gcov )
 FIND_PROGRAM( LCOV_PATH lcov )
 FIND_PROGRAM( GENHTML_PATH genhtml )
 FIND_PROGRAM( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
+FIND_PROGRAM( TAR_PATH tar )
 
 IF(NOT GCOV_PATH)
 	MESSAGE(FATAL_ERROR "gcov not found! Aborting...")
@@ -65,6 +66,7 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname)
 		COMMAND ${LCOV_PATH} --remove ${_outputname}.info 'libs/*' '${CMAKE_SOURCE_DIR}/tests/*' '/usr/*' 'ThirdParty/*' --output-file ${_outputname}.info.cleaned
 		COMMAND ${GENHTML_PATH} -o ${_outputname} ${_outputname}.info.cleaned
 		COMMAND ${CMAKE_COMMAND} -E remove ${_outputname}.info ${_outputname}.info.cleaned
+                COMMAND ${TAR_PATH} -cjf joynr-cpp-coverage.bz2 ${CMAKE_BINARY_DIR}/coverage
 		
 		DEPENDS ${_testrunner}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
