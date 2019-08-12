@@ -31,8 +31,10 @@ function makeGetterFunction(obj: BroadcastOutputParameters, pos: number): () => 
 }
 
 interface BroadcastOutputParameters {
-    /** setter and getter functions **/
-    [key: string]: ((arg: any) => BroadcastOutputParameters) | (() => any);
+    /**
+     * setter and getter functions or public members.
+     **/
+    [key: string]: ((arg: any) => BroadcastOutputParameters) | (() => any) | any;
 }
 
 class BroadcastOutputParameters {
@@ -44,7 +46,7 @@ class BroadcastOutputParameters {
     /**
      * Constructor of BroadcastOutputParameters object used for subscriptions in generated provider objects
      *
-     * @param {Object} [outputParameterProperties] the outputParameters object for the constructor call
+     * @param [outputParameterProperties] the outputParameters object for the constructor call
      */
     public constructor(outputParameterProperties: Record<string, any>) {
         Typing.checkPropertyIfDefined(outputParameterProperties, "Array", "outputParameters");

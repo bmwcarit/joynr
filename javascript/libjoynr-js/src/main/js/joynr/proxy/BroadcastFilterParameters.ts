@@ -31,13 +31,11 @@ function makeSetterFunction(
 
 interface BroadcastFilterParameters {
     /** setter functions **/
-    [key: string]: (arg: any) => BroadcastFilterParameters;
+    [key: string]: ((arg: any) => BroadcastFilterParameters) | any;
 }
 
 class BroadcastFilterParameters {
-    // @ts-ignore
     public _typeName = "joynr.BroadcastFilterParameters";
-    // @ts-ignore
     public filterParameters: Record<string, any> | null = {};
 
     /**
