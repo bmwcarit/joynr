@@ -111,7 +111,11 @@ export function initializeChildProcess(
         })
     };
 
-    const forked = childProcess.fork(path.join(__dirname, "provider", `${childName}.js`), [], processConfig);
+    const forked = childProcess.fork(
+        path.join(__dirname, "../../../../.output/src/test/js/node_integration/provider", `${childName}.js`),
+        [],
+        processConfig
+    );
     forked.on("message", msg => {
         // Handle messages from child process
         console.log(`received message: ${JSON.stringify(msg)}`);
