@@ -71,7 +71,6 @@ public:
             bool awaitGlobalRegistration = false,
             std::vector<std::string> gbids = std::vector<std::string>()) noexcept
     {
-        std::ignore = gbids;
         const std::string interfaceName = T::INTERFACE_NAME();
         const std::string participantId = participantIdStorage->getProviderParticipantId(
                 domain, interfaceName, T::MAJOR_VERSION);
@@ -118,7 +117,8 @@ public:
             onSuccess = std::move(onSuccess),
             onError,
             persist,
-            isInternalProvider
+            isInternalProvider,
+            gbids
         ]()
         {
             if (persist) {
@@ -141,6 +141,20 @@ public:
                 onError(error);
             };
 
+            auto onApplicationErrorWrapper = [
+                participantId,
+                messageRouter = std::move(messageRouter),
+                onError = std::move(onError)
+            ](const joynr::types::DiscoveryError::Enum& errorEnum)
+            {
+                if (auto ptr = messageRouter.lock()) {
+                    ptr->removeNextHop(participantId);
+                }
+                onError(joynr::exceptions::JoynrRuntimeException(
+                        "Registration failed with DiscoveryError " +
+                        joynr::types::DiscoveryError::getLiteral(errorEnum)));
+            };
+
             if (auto discoveryProxyPtr = discoveryProxy.lock()) {
                 if (isInternalProvider) {
                     MessagingQos messagingQos =
@@ -148,6 +162,7 @@ public:
                     discoveryProxyPtr->addAsync(
                             entry,
                             awaitGlobalRegistration,
+                            gbids,
                             [domain, interfaceName, participantId, onSuccess]() {
                                 JOYNR_LOG_INFO(logger(),
                                                "Registered internal Provider: "
@@ -158,12 +173,14 @@ public:
                                                interfaceName);
                                 onSuccess();
                             },
+                            std::move(onApplicationErrorWrapper),
                             std::move(onErrorWrapper),
                             messagingQos);
                 } else {
                     discoveryProxyPtr->addAsync(
                             entry,
                             awaitGlobalRegistration,
+                            gbids,
                             [domain, interfaceName, participantId, onSuccess]() {
                                 JOYNR_LOG_INFO(logger(),
                                                "Registered Provider: "
@@ -174,6 +191,7 @@ public:
                                                interfaceName);
                                 onSuccess();
                             },
+                            std::move(onApplicationErrorWrapper),
                             std::move(onErrorWrapper));
                 }
             } else {

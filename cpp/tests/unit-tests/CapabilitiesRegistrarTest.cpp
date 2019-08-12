@@ -143,7 +143,9 @@ TEST_F(CapabilitiesRegistrarTest, add)
                              _,
                              _,
                              _,
-                             _)).WillOnce(DoAll(InvokeArgument<2>(), Return(mockFuture)));
+                             _,
+                             _,
+                             _)).WillOnce(DoAll(InvokeArgument<3>(), Return(mockFuture)));
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -170,8 +172,8 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
 
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(*mockDiscovery, addAsyncMock(_, _, _, _, _)).Times(2).WillRepeatedly(
-            DoAll(InvokeArgument<2>(), Return(mockFuture)));
+    EXPECT_CALL(*mockDiscovery, addAsyncMock(_, _, _, _, _, _, _)).Times(2).WillRepeatedly(
+            DoAll(InvokeArgument<3>(), Return(mockFuture)));
 
     ON_CALL(*mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
             .WillByDefault(InvokeArgument<5>());
@@ -287,9 +289,11 @@ TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapabili
                              _,
                              _,
                              _,
+                             _,
+                             _,
                              _))
             .Times(1)
-            .WillOnce(DoAll(InvokeArgument<2>(), Return(mockFuture)));
+            .WillOnce(DoAll(InvokeArgument<3>(), Return(mockFuture)));
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
     EXPECT_CALL(*mockDispatcher1, addRequestCaller(expectedParticipantId, _)).Times(1);
@@ -340,9 +344,11 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher)
                              _,
                              _,
                              _,
+                             _,
+                             _,
                              _))
             .Times(1)
-            .WillOnce(DoAll(InvokeArgument<2>(), Return(mockFuture)));
+            .WillOnce(DoAll(InvokeArgument<3>(), Return(mockFuture)));
 
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
     // mockDispatcher1 should not be used as it was removed
