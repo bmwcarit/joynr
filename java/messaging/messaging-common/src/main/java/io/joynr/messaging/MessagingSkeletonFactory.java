@@ -60,10 +60,10 @@ public class MessagingSkeletonFactory implements ShutdownListener {
      * @param scheduler ExecutorService that schedules all messaging communication
      */
     @Inject
-    public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETON_FACTORIES) Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletons,
+    public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETON_FACTORIES) Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactories,
                                     @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                     ShutdownNotifier shutdownNotifier) {
-        this.messagingSkeletonFactories = messagingSkeletons;
+        this.messagingSkeletonFactories = messagingSkeletonFactories;
         this.scheduler = scheduler;
         shutdownNotifier.registerForShutdown(this);
     }
@@ -93,8 +93,8 @@ public class MessagingSkeletonFactory implements ShutdownListener {
 
     @Override
     public void shutdown() {
-        for (IMessagingSkeletonFactory messagingSkeleton : messagingSkeletonFactories.values()) {
-            messagingSkeleton.shutdown();
+        for (IMessagingSkeletonFactory messagingSkeletonFactory : messagingSkeletonFactories.values()) {
+            messagingSkeletonFactory.shutdown();
         }
     }
 
