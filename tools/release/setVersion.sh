@@ -58,7 +58,10 @@ javascript/libjoynr-js/package.json \
 javascript/libjoynr-js/src/main/js/package.json \
 javascript/libjoynr-js/src/main/browserify/package.json \
 tools/generator/joynr-generator-gradle-plugin/build.gradle \
-android/libjoynr-android-websocket-runtime/build.gradle
+android/libjoynr-android-websocket-runtime/build.gradle \
+examples/android/android-hello-world/android-hello-world-provider/build.gradle \
+examples/android/android-hello-world/android-hello-world-consumer/build.gradle
+
 
 _sed 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
 java/core/clustercontroller-standalone/README

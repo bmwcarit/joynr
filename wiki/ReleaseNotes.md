@@ -18,6 +18,9 @@ None.
 * **[Java]** Update jackson to version 2.9.9, jackson.databind to 2.9.9.2
 * **[C++]** Client Websocket TLS connections will be encrypted by default
 * **[JS]** Part of the project was rewritten into TypeScript (TS).
+* **[Android]** Added libjoynr-android-websocket-runtime, updated joynr-generator-gradle-plugin
+  and added Android examples to examples/android/android-hello-world.
+
 
 ## Configuration property changes
 None.
