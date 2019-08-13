@@ -91,6 +91,7 @@ public:
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
+        const bool addToAll = false;
         return capabilitiesRegistrar->addAsync(domain,
                                                provider,
                                                providerQos,
@@ -98,6 +99,7 @@ public:
                                                std::move(onError),
                                                persist,
                                                awaitGlobalRegistration,
+                                               addToAll,
                                                gbids);
     }
 
@@ -174,13 +176,15 @@ public:
     {
         assert(capabilitiesRegistrar);
         assert(!domain.empty());
-        return capabilitiesRegistrar->addToAllAsync(domain,
-                                                    provider,
-                                                    providerQos,
-                                                    std::move(onSuccess),
-                                                    std::move(onError),
-                                                    persist,
-                                                    awaitGlobalRegistration);
+        const bool addToAll = true;
+        return capabilitiesRegistrar->addAsync(domain,
+                                               provider,
+                                               providerQos,
+                                               std::move(onSuccess),
+                                               std::move(onError),
+                                               persist,
+                                               awaitGlobalRegistration,
+                                               addToAll);
     }
 
     /**
