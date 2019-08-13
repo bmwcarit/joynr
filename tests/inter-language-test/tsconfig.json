@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "allowJs": true,
     "moduleResolution": "node",
     "module": "commonjs",
     "target": "es2017",
@@ -18,7 +17,7 @@
       "typings",
       "../../javascript/libjoynr-js/typings"
     ],
-    "rootDir" : "src",
+    "rootDir" : ".",
     "outDir": ".output"
   },
   "include": [

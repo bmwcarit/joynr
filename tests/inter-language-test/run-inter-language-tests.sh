@@ -387,7 +387,7 @@ function start_javascript_provider {
 function start_javascript_provider_bundle {
 	log 'Starting Javascript provider bundle.'
 	cd $ILT_DIR
-	nohup npm run startproviderbundle --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider-javascript.log 2>&1 &
+	nohup npm run startproviderbundle --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider-javascript-bundle.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Javascript provider with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -592,7 +592,7 @@ log 'RUN CHECKS WITH JAVASCRIPT BUNDLE PROVIDER.'
 PROVIDER="provider-javascript-bundle"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
-start_javascript_provider
+start_javascript_provider_bundle
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller

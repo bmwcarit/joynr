@@ -36,21 +36,18 @@ return new Promise((resolve, reject) => {
     ws.on("finish", resolve);
     ws.on("error", reject);
 
-    bundler.plugin(tsify, { allowJs: true });
-
-    bundler.ignore("joynr/joynr/start/InProcessRuntime.js");
+    bundler.plugin(tsify);
 
     bundler
-        .external("wscpp")
-        .external("smrf-native")
-        .external("ws")
-        .external("bluebird")
+        .ignore("joynr/joynr/start/InProcessRuntime.js")
+        .external("utf-8-validate")
+        .external("bufferutil");
+
+    bundler
         .bundle()
-        .on("error", function(error) {
-            console.error(error.toString());
-        })
+        .on("error", reject)
         .pipe(ws);
 }).catch(err => {
-    console.error("Bundling failed due to", err);
+    console.error(`Bundling failed due to ${err}`);
     process.exit(1);
 });
