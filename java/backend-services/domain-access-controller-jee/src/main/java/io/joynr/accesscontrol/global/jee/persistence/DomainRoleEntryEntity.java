@@ -24,10 +24,13 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import joynr.infrastructure.DacTypes.Role;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "userId", "role" }))
 public class DomainRoleEntryEntity {
 
     private long id;
