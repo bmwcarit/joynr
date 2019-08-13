@@ -44,6 +44,7 @@ public class MessagingSkeletonFactory implements ShutdownListener {
     public static final String MIDDLEWARE_MESSAGING_SKELETONS = "MIDDLEWARE_MESSAGING_SKELETONS";
     private Map<Class<? extends Address>, IMessagingSkeleton> messagingSkeletons;
     private ScheduledExecutorService scheduler;
+    private boolean started;
 
     /**
      * Transport Middleware implementation may be registered for use with a given Address type using guice multibinders.
@@ -67,22 +68,27 @@ public class MessagingSkeletonFactory implements ShutdownListener {
         shutdownNotifier.registerForShutdown(this);
     }
 
-    public void start() {
-        for (final IMessagingSkeleton messagingSkeleton : messagingSkeletons.values()) {
-            scheduler.schedule(new Runnable() {
+    public synchronized void start() {
+        if (!started) {
+            for (final IMessagingSkeleton messagingSkeleton : messagingSkeletons.values()) {
+                scheduler.schedule(new Runnable() {
 
-                @Override
-                public void run() {
-                    try {
-                        messagingSkeleton.init();
-                    } catch (Exception e) {
-                        logger.error("unable to start skeleton: {}. Reason: {}",
-                                     messagingSkeleton.getClass().getSimpleName(),
-                                     e.getMessage());
+                    @Override
+                    public void run() {
+                        try {
+                            messagingSkeleton.init();
+                        } catch (Exception e) {
+                            logger.error("unable to start skeleton: {}. Reason: {}",
+                                         messagingSkeleton.getClass().getSimpleName(),
+                                         e.getMessage());
+                        }
                     }
-                }
-            }, 0, TimeUnit.MILLISECONDS);
+                }, 0, TimeUnit.MILLISECONDS);
+            }
+        } else {
+            logger.info("Already started - skipping.");
         }
+        started = true;
     }
 
     @Override
