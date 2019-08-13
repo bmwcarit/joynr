@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "bluebird": "3.3.5",
-    "joynr": "file:../../../javascript/libjoynr-js/src/main/js",
+    "joynr": "file:../../../javascript/libjoynr-js/.output/src/main/js",
     "test-base": "file:../../test-base"
   },
   "config": {

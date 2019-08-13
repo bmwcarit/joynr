@@ -6,7 +6,7 @@
   "main": "src/main/js/radioConsumer.js",
   "private": true,
   "dependencies": {
-    "joynr": "file:../../javascript/libjoynr-js/src/main/js",
+    "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
     "node-localstorage": "1.3.0"
   },
   "config": {
