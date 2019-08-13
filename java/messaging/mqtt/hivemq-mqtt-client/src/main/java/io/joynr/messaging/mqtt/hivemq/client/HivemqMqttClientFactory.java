@@ -318,6 +318,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         @Override
         public void onDisconnected(MqttClientDisconnectedContext context) {
             logger.info("Hive MQTT Client {} disconnected: {}", client, context);
+            client.incrementDisconnectCount();
         }
 
     }

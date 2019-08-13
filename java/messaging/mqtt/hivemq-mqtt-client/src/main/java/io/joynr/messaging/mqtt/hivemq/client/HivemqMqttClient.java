@@ -20,10 +20,13 @@ package io.joynr.messaging.mqtt.hivemq.client;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.joynr.exceptions.JoynrRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +61,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private int keepAliveTimeSeconds;
     private int connectionTimeoutSec;
     private volatile boolean shuttingDown;
+    private AtomicInteger disconnectCount = new AtomicInteger(0);
 
     private Map<String, Mqtt3Subscription> subscriptions = new ConcurrentHashMap<>();
 
@@ -98,17 +102,25 @@ public class HivemqMqttClient implements JoynrMqttClient {
         }
         if (publishConsumer == null) {
             logger.info("Setting up publishConsumer for {}", client);
+            CountDownLatch publisherSetLatch = new CountDownLatch(1);
             Flowable<Mqtt3Publish> publishFlowable = Flowable.create(flowableEmitter -> {
                 setPublishConsumer(flowableEmitter::onNext);
+                publisherSetLatch.countDown();
             }, BackpressureStrategy.BUFFER);
             logger.info("Setting up publishing pipeline using {}", publishFlowable);
-            client.publish(publishFlowable).doOnNext(mqtt3PublishResult -> {
+            client.publish(publishFlowable).subscribe(mqtt3PublishResult -> {
                 logger.debug("Publish result: {}", mqtt3PublishResult);
                 mqtt3PublishResult.getError().ifPresent(e -> {
                     logger.debug("Retrying {}", mqtt3PublishResult.getPublish());
                     publishConsumer.accept(mqtt3PublishResult.getPublish());
                 });
-            }).doOnError(throwable -> logger.error("Publish encountered error.", throwable)).subscribe();
+            }, throwable -> logger.error("Publish encountered error.", throwable));
+            try {
+                publisherSetLatch.await(10L, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                logger.warn("Unable to set publisher in time. Please check logs for possible cause.");
+                throw new JoynrRuntimeException("Unable to set publisher in time.", e);
+            }
         } else {
             logger.info("publishConsumer already set up for {} - skipping.", client);
         }
@@ -165,19 +177,22 @@ public class HivemqMqttClient implements JoynrMqttClient {
         Mqtt3Subscribe subscribe = Mqtt3Subscribe.builder().addSubscription(subscription).build();
         client.subscribeStream(subscribe)
               .doOnSingle(mqtt3SubAck -> logger.debug("Subscribed to {} with result {}", subscription, mqtt3SubAck))
-              .subscribe(mqtt3Publish -> messagingSkeleton.transmit(mqtt3Publish.getPayloadAsBytes(),
-                                                                    throwable -> logger.error("Unable to transmit {}",
-                                                                                              mqtt3Publish,
-                                                                                              throwable)),
+              .subscribe(this::handleIncomingMessage,
                          throwable -> logger.error("Error encountered for subscription {}.", subscription, throwable));
     }
 
     public void resubscribe() {
         logger.debug("Resubscribe triggered.");
-        subscriptions.forEach((topic, subscription) -> {
-            logger.info("Resubscribing to {}", topic);
-            doSubscribe(subscription);
-        });
+        if (disconnectCount.get() > 0) {
+            logger.trace("Disconnect count > 0, performing resubscribe.");
+            disconnectCount.decrementAndGet();
+            subscriptions.forEach((topic, subscription) -> {
+                logger.info("Resubscribing to {}", topic);
+                doSubscribe(subscription);
+            });
+        } else {
+            logger.trace("Disconnect count 0, skipping resubscribe.");
+        }
     }
 
     @Override
@@ -199,5 +214,15 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private void setPublishConsumer(Consumer<Mqtt3Publish> publishConsumer) {
         logger.info("Setting publishConsumer to: {}", publishConsumer);
         this.publishConsumer = publishConsumer;
+    }
+
+    private void handleIncomingMessage(Mqtt3Publish mqtt3Publish) {
+        logger.trace("Incoming message {} received by {}", mqtt3Publish, this);
+        messagingSkeleton.transmit(mqtt3Publish.getPayloadAsBytes(),
+                                   throwable -> logger.error("Unable to transmit {}", mqtt3Publish, throwable));
+    }
+
+    void incrementDisconnectCount() {
+        disconnectCount.incrementAndGet();
     }
 }
