@@ -134,6 +134,86 @@ public:
     }
 
     /**
+     * @brief Registers a provider with the joynr communication framework asynchronously
+     * in all backends known to the cluster controller (in case of global registration).
+     * @tparam TIntfProvider The interface class of the provider to register. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
+     * @param domain The domain to register the provider on. Has to be
+     * identical at the client to be able to find the provider.
+     * @param provider The provider instance to register.
+     * @param providerQos The qos associated with the registered provider.
+     * @param onSucess: Will be invoked when provider registration succeeded.
+     * @param onError: Will be invoked when the provider could not be registered. An exception,
+     * which describes the error, is passed as the parameter.
+     * @param persist if set to true, participant ID of the provider will be persisted,
+     * otherwise it will not; default is true
+     * @param awaitGlobalRegistration if set to true, onSuccess will be invoked only after global
+     * registration succeeded, respectively onError will be invoked only after global registration
+     * failed; default is false
+     * @return The globally unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string registerProviderInAllBackendsAsync(
+            const std::string& domain,
+            std::shared_ptr<TIntfProvider> provider,
+            const joynr::types::ProviderQos& providerQos,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onError,
+            bool persist = true,
+            bool awaitGlobalRegistration = false) noexcept
+    {
+        return runtimeImpl->registerProviderInAllBackendsAsync(domain,
+                                                               provider,
+                                                               providerQos,
+                                                               std::move(onSuccess),
+                                                               std::move(onError),
+                                                               persist,
+                                                               awaitGlobalRegistration);
+    }
+
+    /**
+     * @brief Registers a provider with the joynr communication framework
+     * in all backends known to the cluster controller (in case of global registration).
+     * @tparam TIntfProvider The interface class of the provider to register. The corresponding
+     * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
+     * @param domain The domain to register the provider on. Has to be
+     * identical at the client to be able to find the provider.
+     * @param provider The provider instance to register.
+     * @param providerQos The qos associated with the registered provider.
+     * @param persist if set to true, participant ID of the provider will be persisted,
+     * otherwise it will not; default is true
+     * @param awaitGlobalRegistration if set to true, method will block until global registration
+     * succeeded, respectively it will throw an exception in case global registration failed;
+     * default is false
+     * @return The globally unique participant ID of the provider. It is assigned by the joynr
+     * communication framework.
+     */
+    template <class TIntfProvider>
+    std::string registerProviderInAllBackends(const std::string& domain,
+                                              std::shared_ptr<TIntfProvider> provider,
+                                              const joynr::types::ProviderQos& providerQos,
+                                              bool persist = true,
+                                              bool awaitGlobalRegistration = false)
+    {
+        Future<void> future;
+        auto onSuccess = [&future]() { future.onSuccess(); };
+        auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+            future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+        };
+
+        std::string participiantId = registerProviderInAllBackendsAsync(domain,
+                                                                        provider,
+                                                                        providerQos,
+                                                                        std::move(onSuccess),
+                                                                        std::move(onError),
+                                                                        persist,
+                                                                        awaitGlobalRegistration);
+        future.get();
+        return participiantId;
+    }
+
+    /**
      * @brief Unregisters the provider from the joynr communication framework.
      *
      * Unregister a provider identified by its globally unique participant ID. The participant ID is
