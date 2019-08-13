@@ -221,6 +221,163 @@ public:
         return participantId;
     }
 
+    template <class T>
+    std::string addToAllAsync(
+            const std::string& domain,
+            std::shared_ptr<T> provider,
+            const types::ProviderQos& providerQos,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError,
+            bool persist = true,
+            bool awaitGlobalRegistration = false) noexcept
+    {
+        const std::string interfaceName = T::INTERFACE_NAME();
+        const std::string participantId = participantIdStorage->getProviderParticipantId(
+                domain, interfaceName, T::MAJOR_VERSION);
+        std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
+        provider->registerBroadcastListener(
+                std::make_shared<MulticastBroadcastListener>(participantId, publicationManager));
+
+        const std::int64_t now =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count();
+        const std::int64_t lastSeenDateMs = now;
+        const std::int64_t defaultExpiryDateMs = now + defaultExpiryIntervalMs;
+        const std::string defaultPublicKeyId("");
+        joynr::types::Version providerVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
+        auto customParameters = providerQos.getCustomParameters();
+        bool isInternalProvider =
+                (customParameters.size() == 1 &&
+                 customParameters.front().getName() == "___CC.InternalProvider___");
+        const std::int64_t discoveryEntryExpiryDateMs =
+                (isInternalProvider ? std::numeric_limits<std::int64_t>::max()
+                                    : defaultExpiryDateMs);
+        joynr::types::DiscoveryEntry entry(providerVersion,
+                                           domain,
+                                           interfaceName,
+                                           participantId,
+                                           providerQos,
+                                           lastSeenDateMs,
+                                           discoveryEntryExpiryDateMs,
+                                           defaultPublicKeyId);
+        bool isGloballyVisible = providerQos.getScope() == types::ProviderScope::GLOBAL;
+
+        auto onSuccessWrapper = [
+            domain,
+            interfaceName,
+            majorVersion = T::MAJOR_VERSION,
+            dispatcherList = this->dispatcherList,
+            caller,
+            participantIdStorage = util::as_weak_ptr(participantIdStorage),
+            messageRouter = util::as_weak_ptr(messageRouter),
+            participantId,
+            discoveryProxy = util::as_weak_ptr(discoveryProxy),
+            entry = std::move(entry),
+            awaitGlobalRegistration,
+            onSuccess = std::move(onSuccess),
+            onError,
+            persist,
+            isInternalProvider
+        ]()
+        {
+            if (persist) {
+                // Sync persistency to disk now that registration is done.
+                if (auto participantIdStoragePtr = participantIdStorage.lock()) {
+                    participantIdStoragePtr->setProviderParticipantId(
+                            domain, interfaceName, majorVersion, participantId);
+                }
+            }
+
+            auto onErrorWrapper = [
+                participantId,
+                messageRouter = std::move(messageRouter),
+                onError = std::move(onError)
+            ](const joynr::exceptions::JoynrRuntimeException& error)
+            {
+                if (auto ptr = messageRouter.lock()) {
+                    ptr->removeNextHop(participantId);
+                }
+                onError(error);
+            };
+
+            auto onApplicationErrorWrapper = [
+                participantId,
+                messageRouter = std::move(messageRouter),
+                onError = std::move(onError)
+            ](const joynr::types::DiscoveryError::Enum& errorEnum)
+            {
+                if (auto ptr = messageRouter.lock()) {
+                    ptr->removeNextHop(participantId);
+                }
+                onError(joynr::exceptions::JoynrRuntimeException(
+                        "Registration failed with DiscoveryError " +
+                        joynr::types::DiscoveryError::getLiteral(errorEnum)));
+            };
+
+            if (auto discoveryProxyPtr = discoveryProxy.lock()) {
+                if (isInternalProvider) {
+                    MessagingQos messagingQos =
+                            MessagingQos(std::numeric_limits<std::int64_t>::max());
+                    discoveryProxyPtr->addToAllAsync(
+                            entry,
+                            awaitGlobalRegistration,
+                            [domain, interfaceName, participantId, onSuccess]() {
+                                JOYNR_LOG_INFO(logger(),
+                                               "Registered internal Provider: "
+                                               "participantId: {}, domain: {}, "
+                                               "interfaceName: {}",
+                                               participantId,
+                                               domain,
+                                               interfaceName);
+                                onSuccess();
+                            },
+                            std::move(onApplicationErrorWrapper),
+                            std::move(onErrorWrapper),
+                            messagingQos);
+                } else {
+                    discoveryProxyPtr->addToAllAsync(
+                            entry,
+                            awaitGlobalRegistration,
+                            [domain, interfaceName, participantId, onSuccess]() {
+                                JOYNR_LOG_INFO(logger(),
+                                               "Registered Provider: "
+                                               "participantId: {}, domain: {}, "
+                                               "interfaceName: {}",
+                                               participantId,
+                                               domain,
+                                               interfaceName);
+                                onSuccess();
+                            },
+                            std::move(onApplicationErrorWrapper),
+                            std::move(onErrorWrapper));
+                }
+            } else {
+                const joynr::exceptions::JoynrRuntimeException error(
+                        "runtime and required discovery proxy have been already destroyed");
+                onErrorWrapper(error);
+            }
+        };
+
+        for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
+            // TODO will the provider be registered at all dispatchers or
+            //     should it be configurable which ones are used to contact it.
+            assert(currentDispatcher != nullptr);
+            currentDispatcher->addRequestCaller(participantId, caller);
+        }
+
+        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+        const bool isSticky = false;
+        messageRouter->addNextHop(participantId,
+                                  dispatcherAddress,
+                                  isGloballyVisible,
+                                  expiryDateMs,
+                                  isSticky,
+                                  std::move(onSuccessWrapper),
+                                  std::move(onError));
+
+        return participantId;
+    }
+
     void removeAsync(const std::string& participantId,
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
