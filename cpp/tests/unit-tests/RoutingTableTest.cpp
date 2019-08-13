@@ -35,7 +35,7 @@ class RoutingTableTest : public ::testing::Test
 {
 public:
     RoutingTableTest()
-            : routingTable("firstKey", buildGbidVector()),
+            : routingTable("firstKey"),
               testValue(nullptr),
               secondTestValue(nullptr),
               firstKey(""),
@@ -69,13 +69,6 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTableTest);
-
-    std::vector<std::string> buildGbidVector()
-    {
-        std::vector<std::string> gbidVector;
-        gbidVector.push_back("testgbid1");
-        return gbidVector;
-    }
 };
 
 TEST_F(RoutingTableTest, addAndContains)

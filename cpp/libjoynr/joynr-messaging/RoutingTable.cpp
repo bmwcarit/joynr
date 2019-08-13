@@ -23,8 +23,8 @@
 namespace joynr
 {
 
-RoutingTable::RoutingTable(std::string participantId, std::vector<std::string> gbidVector)
-        : multiIndexContainer(), gcdParticipantId(participantId), gbidVector(gbidVector)
+RoutingTable::RoutingTable(const std::string& gcdParticipantId)
+        : multiIndexContainer(), gcdParticipantId(gcdParticipantId)
 {
 }
 

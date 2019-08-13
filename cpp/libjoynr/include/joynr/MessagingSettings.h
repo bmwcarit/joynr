@@ -240,7 +240,6 @@ public:
     void printSettings() const;
     void printAdditionalBackendsSettings() const;
     std::uint8_t getAdditionalBackendsCount() const;
-    std::vector<std::string> getGbidVector() const;
 
 private:
     void operator=(const MessagingSettings& other);

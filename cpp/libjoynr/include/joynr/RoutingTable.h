@@ -135,7 +135,7 @@ class RoutingTable
 {
 
 public:
-    RoutingTable(std::string participantId, std::vector<std::string> gbidVector);
+    RoutingTable(const std::string& gcdParticipantId);
     ~RoutingTable();
 
     /*
@@ -249,7 +249,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTable);
     MultiIndexContainer multiIndexContainer;
     std::string gcdParticipantId;
-    std::vector<std::string> gbidVector;
     ADD_LOGGER(RoutingTable)
 };
 

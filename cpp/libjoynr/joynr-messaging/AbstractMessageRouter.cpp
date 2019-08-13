@@ -64,8 +64,7 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
         : IMessageRouter(),
           enable_shared_from_this<AbstractMessageRouter>(),
-          routingTable(messagingSettings.getCapabilitiesDirectoryParticipantId(),
-                       messagingSettings.getGbidVector()),
+          routingTable(messagingSettings.getCapabilitiesDirectoryParticipantId()),
           routingTableLock(),
           multicastReceiverDirectory(),
           messagingSettings(messagingSettings),

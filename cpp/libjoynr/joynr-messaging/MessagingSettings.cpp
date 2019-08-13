@@ -1049,17 +1049,6 @@ std::uint8_t MessagingSettings::getAdditionalBackendsCount() const
     return additionalBackendsCount;
 }
 
-std::vector<std::string> MessagingSettings::getGbidVector() const
-{
-    const auto length = additionalBackendsCount + 1;
-    std::vector<std::string> gbidVector(length);
-    gbidVector[0] = getGbid();
-    for (auto i = 1; i < length; i++) {
-        gbidVector[i] = getAdditionalBackendGbid(i - 1);
-    }
-    return gbidVector;
-}
-
 void MessagingSettings::printAdditionalBackendsSettings() const
 {
     for (std::uint8_t index = 0; index < additionalBackendsCount; index++) {
