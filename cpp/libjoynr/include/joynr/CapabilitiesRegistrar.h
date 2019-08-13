@@ -102,6 +102,13 @@ public:
                                            defaultPublicKeyId);
         bool isGloballyVisible = providerQos.getScope() == types::ProviderScope::GLOBAL;
 
+        for (auto&& gbid : gbids) {
+            if (gbid.empty()) {
+                onError(joynr::exceptions::JoynrRuntimeException("gbid(s) must not be empty"));
+                return participantId;
+            }
+        }
+
         auto onSuccessWrapper = [
             domain,
             interfaceName,
