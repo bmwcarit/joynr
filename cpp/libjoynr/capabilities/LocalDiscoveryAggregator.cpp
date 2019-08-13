@@ -93,14 +93,15 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    std::ignore = discoveryEntry;
-    std::ignore = awaitGlobalRegistration;
-    std::ignore = gbids;
-    std::ignore = onSuccess;
-    std::ignore = onApplicationError;
-    std::ignore = onRuntimeError;
-    std::ignore = messagingQos;
-    assert(false && "Not implemented yet");
+    assert(discoveryProxy);
+    REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(void)
+    return discoveryProxy->addAsync(discoveryEntry,
+                                    awaitGlobalRegistration,
+                                    gbids,
+                                    std::move(onSuccess),
+                                    std::move(onApplicationError),
+                                    std::move(onRuntimeError),
+                                    std::move(messagingQos));
 }
 
 std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addToAllAsync(
@@ -111,13 +112,14 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addToAllAsync(
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    std::ignore = discoveryEntry;
-    std::ignore = awaitGlobalRegistration;
-    std::ignore = onSuccess;
-    std::ignore = onRuntimeError;
-    std::ignore = onApplicationError;
-    std::ignore = messagingQos;
-    assert(false && "Not implemented yet");
+    assert(discoveryProxy);
+    REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(void)
+    return discoveryProxy->addToAllAsync(discoveryEntry,
+                                         awaitGlobalRegistration,
+                                         std::move(onSuccess),
+                                         std::move(onApplicationError),
+                                         std::move(onRuntimeError),
+                                         std::move(messagingQos));
 }
 
 std::shared_ptr<joynr::Future<std::vector<types::DiscoveryEntryWithMetaInfo>>>
