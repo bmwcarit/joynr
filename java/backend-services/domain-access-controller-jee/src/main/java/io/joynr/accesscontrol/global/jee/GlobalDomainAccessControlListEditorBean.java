@@ -26,6 +26,8 @@ import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.GlobalDomainAccessControlListEditorSync;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -38,6 +40,8 @@ import static io.joynr.accesscontrol.global.jee.persistence.ControlEntryType.MED
 @ServiceProvider(serviceInterface = GlobalDomainAccessControlListEditorSync.class)
 @Transactional
 public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAccessControlListEditorSync {
+
+    private final static Logger logger = LoggerFactory.getLogger(GlobalDomainAccessControlListEditorBean.class);
 
     private MasterAccessControlEntryManager masterAccessControlEntryManager;
 
@@ -73,13 +77,18 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
 
     @Override
     public Boolean updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAce) {
-        CreateOrUpdateResult<MasterAccessControlEntry> result = masterAccessControlEntryManager.createOrUpdate(updatedMasterAce,
-                                                                                                               MASTER);
-        if (result != null) {
-            MasterAccessControlEntry persistedAce = result.getEntry();
-            globalDomainAccessControllerBean.doFireMasterAccessControlEntryChanged(result.getChangeType(),
-                                                                                   persistedAce);
-            return true;
+        logger.info("Update master control entry {}", updatedMasterAce);
+        try {
+            CreateOrUpdateResult<MasterAccessControlEntry> result = masterAccessControlEntryManager.createOrUpdate(updatedMasterAce,
+                                                                                                                   MASTER);
+            if (result != null) {
+                MasterAccessControlEntry persistedAce = result.getEntry();
+                globalDomainAccessControllerBean.doFireMasterAccessControlEntryChanged(result.getChangeType(),
+                                                                                       persistedAce);
+                return true;
+            }
+        } catch (Exception e) {
+            logger.error("Unable to update master control entry.", e);
         }
         return false;
     }
@@ -105,13 +114,18 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
 
     @Override
     public Boolean updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAce) {
-        CreateOrUpdateResult<MasterAccessControlEntry> result = masterAccessControlEntryManager.createOrUpdate(updatedMediatorAce,
-                                                                                                               MEDIATOR);
-        if (result != null) {
-            MasterAccessControlEntry persistedEntry = result.getEntry();
-            globalDomainAccessControllerBean.doFireMediatorAccessControlEntryChanged(result.getChangeType(),
-                                                                                     persistedEntry);
-            return true;
+        logger.info("Update mediator access control entry {}", updatedMediatorAce);
+        try {
+            CreateOrUpdateResult<MasterAccessControlEntry> result = masterAccessControlEntryManager.createOrUpdate(updatedMediatorAce,
+                                                                                                                   MEDIATOR);
+            if (result != null) {
+                MasterAccessControlEntry persistedEntry = result.getEntry();
+                globalDomainAccessControllerBean.doFireMediatorAccessControlEntryChanged(result.getChangeType(),
+                                                                                         persistedEntry);
+                return true;
+            }
+        } catch (Exception e) {
+            logger.error("Unable to update mediator access control entry.", e);
         }
         return false;
     }
@@ -137,11 +151,16 @@ public class GlobalDomainAccessControlListEditorBean implements GlobalDomainAcce
 
     @Override
     public Boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAce) {
-        CreateOrUpdateResult<OwnerAccessControlEntry> result = ownerAccessControlEntryManager.createOrUpdate(updatedOwnerAce);
-        if (result != null) {
-            OwnerAccessControlEntry entry = result.getEntry();
-            globalDomainAccessControllerBean.doFireOwnerAccessControlEntryChanged(result.getChangeType(), entry);
-            return true;
+        logger.info("Updating owner access control entry {}", updatedOwnerAce);
+        try {
+            CreateOrUpdateResult<OwnerAccessControlEntry> result = ownerAccessControlEntryManager.createOrUpdate(updatedOwnerAce);
+            if (result != null) {
+                OwnerAccessControlEntry entry = result.getEntry();
+                globalDomainAccessControllerBean.doFireOwnerAccessControlEntryChanged(result.getChangeType(), entry);
+                return true;
+            }
+        } catch (Exception e) {
+            logger.error("Unable to update owner access control entry.", e);
         }
         return false;
     }
