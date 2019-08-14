@@ -9,7 +9,7 @@
     "@types/lodash": "4.14.123",
     "bluebird": "3.3.5",
     "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
-    "lodash": "4.17.11",
+    "lodash": "4.17.12",
     "test-base": "file:../test-base"
   },
   "devDependencies": {
