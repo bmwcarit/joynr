@@ -2000,34 +2000,38 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     types::ProviderQos globalProviderQos;
     globalProviderQos.setScope(types::ProviderScope::GLOBAL);
 
-    joynr::types::DiscoveryEntry entry1(defaultProviderVersion,
-                                        DOMAIN_NAME,
-                                        INTERFACE_NAME,
-                                        participantIds[0],
-                                        localProviderQos,
-                                        lastSeenDateMs,
-                                        expiryDateMs,
-                                        PUBLIC_KEY_ID);
-    joynr::types::DiscoveryEntry entry2(defaultProviderVersion,
-                                        DOMAIN_NAME,
-                                        INTERFACE_NAME,
-                                        participantIds[1],
-                                        globalProviderQos,
-                                        lastSeenDateMs,
-                                        expiryDateMs,
-                                        PUBLIC_KEY_ID);
-    joynr::types::DiscoveryEntry entry3(defaultProviderVersion,
-                                        DOMAIN_NAME,
-                                        INTERFACE_NAME,
-                                        participantIds[2],
-                                        globalProviderQos,
-                                        lastSeenDateMs,
-                                        expiryDateMs,
-                                        PUBLIC_KEY_ID);
+    const joynr::types::DiscoveryEntry entry1(defaultProviderVersion,
+                                              DOMAIN_NAME,
+                                              INTERFACE_NAME,
+                                              participantIds[0],
+                                              localProviderQos,
+                                              lastSeenDateMs,
+                                              expiryDateMs,
+                                              PUBLIC_KEY_ID);
+    const joynr::types::DiscoveryEntry entry2(defaultProviderVersion,
+                                              DOMAIN_NAME,
+                                              INTERFACE_NAME,
+                                              participantIds[1],
+                                              globalProviderQos,
+                                              lastSeenDateMs,
+                                              expiryDateMs,
+                                              PUBLIC_KEY_ID);
+    const joynr::types::DiscoveryEntry entry3(defaultProviderVersion,
+                                              DOMAIN_NAME,
+                                              INTERFACE_NAME,
+                                              participantIds[2],
+                                              globalProviderQos,
+                                              lastSeenDateMs,
+                                              expiryDateMs,
+                                              PUBLIC_KEY_ID);
 
     localCapabilitiesDirectory->add(entry1, defaultOnSuccess, defaultOnError);
     localCapabilitiesDirectory->add(entry2, defaultOnSuccess, defaultOnError);
-    localCapabilitiesDirectory->add(entry3, defaultOnSuccess, defaultOnError);
+    localCapabilitiesDirectory->add(entry3,
+                                    false,
+                                    {KNOWN_GBIDS[1], KNOWN_GBIDS[2]},
+                                    defaultOnSuccess,
+                                    createUnexpectedErrorFunction());
 
     // create a new object
     auto localCapabilitiesDirectory2 =
@@ -2044,7 +2048,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     localCapabilitiesDirectory2->loadPersistedFile();
 
     // check all entries are there
-    const types::DiscoveryQos discoveryQos;
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
     for (auto& participantID : participantIds) {
         localCapabilitiesDirectory2->lookup(participantID,
                                             discoveryQos,
@@ -2054,10 +2059,51 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
         EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     }
 
-    auto globalDiscoveryEntries = localCapabilitiesDirectory2->getCachedGlobalDiscoveryEntries();
-    EXPECT_EQ(2, globalDiscoveryEntries.size());
-    EXPECT_EQ(entry2, globalDiscoveryEntries[0]);
-    EXPECT_EQ(entry3, globalDiscoveryEntries[1]);
+    auto cachedGlobalDiscoveryEntries = localCapabilitiesDirectory2->getCachedGlobalDiscoveryEntries();
+    EXPECT_EQ(2, cachedGlobalDiscoveryEntries.size());
+    EXPECT_EQ(entry2, cachedGlobalDiscoveryEntries[0]);
+    EXPECT_EQ(entry3, cachedGlobalDiscoveryEntries[1]);
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _))
+            .WillRepeatedly(InvokeArgument<4>(types::DiscoveryError::INTERNAL_ERROR));
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
+
+    // check entry2 is registered only in first backend
+    localCapabilitiesDirectory2->lookup(participantIds[1],
+                                        discoveryQos,
+                                        {KNOWN_GBIDS[0]},
+                                        createLookupParticipantIdSuccessFunction(),
+                                        createUnexpectedErrorFunction());
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    localCapabilitiesDirectory2->lookup(participantIds[1],
+                                        discoveryQos,
+                                        {KNOWN_GBIDS[1], KNOWN_GBIDS[2]},
+                                        createUnexpectedLookupParticipantIdSuccessFunction(),
+                                        createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    // check entry3 is registered only in backend 2 and backend 3
+    localCapabilitiesDirectory2->lookup(participantIds[2],
+                                        discoveryQos,
+                                        {KNOWN_GBIDS[0]},
+                                        createUnexpectedLookupParticipantIdSuccessFunction(),
+                                        createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    localCapabilitiesDirectory2->lookup(participantIds[2],
+                                        discoveryQos,
+                                        {KNOWN_GBIDS[1]},
+                                        createLookupParticipantIdSuccessFunction(),
+                                        createUnexpectedErrorFunction());
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    localCapabilitiesDirectory2->lookup(participantIds[2],
+                                        discoveryQos,
+                                        {KNOWN_GBIDS[2]},
+                                        createLookupParticipantIdSuccessFunction(),
+                                        createUnexpectedErrorFunction());
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)

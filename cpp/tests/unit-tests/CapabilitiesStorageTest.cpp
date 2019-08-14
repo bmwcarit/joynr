@@ -33,11 +33,10 @@
 using namespace ::testing;
 using namespace joynr;
 
-template <typename Storage>
-class CapabilitiesStorageTest : public ::testing::Test
+class CapabilitiesStorageTestBase : public ::testing::Test
 {
 public:
-    CapabilitiesStorageTest()
+    CapabilitiesStorageTestBase()
             : domain("domain"),
               interface("interface"),
               participantId("participantId"),
@@ -54,11 +53,38 @@ public:
     }
 
 protected:
-    std::string domain;
-    std::string interface;
-    std::string participantId;
-    joynr::types::Version version;
-    joynr::types::DiscoveryEntry entry;
+    const std::string domain;
+    const std::string interface;
+    const std::string participantId;
+    const joynr::types::Version version;
+    const joynr::types::DiscoveryEntry entry;
+};
+
+class LocalCapabilitiesStorageTest : public CapabilitiesStorageTestBase
+{
+};
+
+TEST_F(LocalCapabilitiesStorageTest, insertWithGbids)
+{
+    const std::vector<std::string> gbids = {"testGbid1", "testGbid2"};
+    capabilities::Storage storage;
+    storage.insert(this->entry, gbids);
+    ASSERT_EQ(1, storage.size());
+
+    auto optionalEntry = storage.lookupByParticipantId(this->participantId);
+    ASSERT_TRUE(optionalEntry.is_initialized());
+    EXPECT_EQ(this->entry, *optionalEntry);
+
+    auto it = storage.cbegin();
+    ASSERT_TRUE(it != storage.cend());
+    EXPECT_EQ(joynr::capabilities::LocalDiscoveryEntry(entry, gbids), *it);
+    EXPECT_EQ(gbids, (*it).gbids);
+    EXPECT_TRUE(++it == storage.cend());
+}
+
+template <typename Storage>
+class CapabilitiesStorageTest : public CapabilitiesStorageTestBase
+{
 };
 
 using StorageTypes = ::testing::Types<capabilities::Storage, capabilities::CachingStorage>;
@@ -102,13 +128,22 @@ TYPED_TEST(CapabilitiesStorageTest, lookupNonExistingParticipantId)
 TYPED_TEST(CapabilitiesStorageTest, insertWithSameParticipantIdOverwritesExistingEntry)
 {
     TypeParam storage;
-    storage.insert(this->entry);
-    this->entry.setDomain("new-domain");
+    types::DiscoveryEntry entry2(this->entry);
+    entry2.setDomain("new-domain");
+
     storage.insert(this->entry);
     ASSERT_EQ(1, storage.size());
-    auto optionalEntry = storage.lookupByParticipantId(this->participantId);
-    ASSERT_TRUE(optionalEntry.is_initialized());
-    EXPECT_EQ(this->entry, *optionalEntry);
+    auto optionalEntry1 = storage.lookupByParticipantId(this->participantId);
+    ASSERT_TRUE(optionalEntry1.is_initialized());
+    EXPECT_EQ(this->entry, *optionalEntry1);
+
+    storage.insert(entry2);
+    ASSERT_EQ(1, storage.size());
+    auto optionalEntry2 = storage.lookupByParticipantId(this->participantId);
+    ASSERT_TRUE(optionalEntry2.is_initialized());
+    EXPECT_EQ(entry2, *optionalEntry2);
+
+    ASSERT_NE(this->entry, entry2);
 }
 
 TYPED_TEST(CapabilitiesStorageTest, removeExpiredEntries)

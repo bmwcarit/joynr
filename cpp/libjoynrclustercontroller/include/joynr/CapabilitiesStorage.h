@@ -20,6 +20,7 @@
 #define CAPABILITIESSTORAGE_H
 
 #include <string>
+#include <vector>
 
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/composite_key.hpp>
@@ -33,6 +34,7 @@
 
 #include <muesli/Traits.h>
 
+#include "joynr/serializer/Serializer.h"
 #include "joynr/types/DiscoveryEntry.h"
 
 namespace joynr
@@ -65,13 +67,32 @@ using ExpiryDateKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(DiscoveryEntry,
 
 namespace bmi = boost::multi_index;
 
+struct LocalDiscoveryEntry : public DiscoveryEntry
+{
+    LocalDiscoveryEntry() : DiscoveryEntry(), gbids()
+    {
+    }
+    LocalDiscoveryEntry(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {})
+            : DiscoveryEntry(entry), gbids(gbids)
+    {
+    }
+    std::vector<std::string> gbids;
+
+    template <typename Archive>
+    void serialize(Archive& archive)
+    {
+        archive(muesli::BaseClass<joynr::types::DiscoveryEntry>(this), MUESLI_NVP(gbids));
+    }
+};
+
 using Container = bmi::multi_index_container<
-        DiscoveryEntry,
-        bmi::indexed_by<bmi::hashed_non_unique<
-                                bmi::tag<tags::DomainAndInterface>,
-                                bmi::composite_key<DiscoveryEntry, DomainKey, InterfaceNameKey>>,
-                        bmi::hashed_unique<bmi::tag<tags::ParticipantId>, ParticipantIdKey>,
-                        bmi::ordered_non_unique<bmi::tag<tags::ExpiryDate>, ExpiryDateKey>>>;
+        LocalDiscoveryEntry,
+        bmi::indexed_by<
+                bmi::hashed_non_unique<
+                        bmi::tag<tags::DomainAndInterface>,
+                        bmi::composite_key<LocalDiscoveryEntry, DomainKey, InterfaceNameKey>>,
+                bmi::hashed_unique<bmi::tag<tags::ParticipantId>, ParticipantIdKey>,
+                bmi::ordered_non_unique<bmi::tag<tags::ExpiryDate>, ExpiryDateKey>>>;
 
 using Timestamp = std::chrono::time_point<std::chrono::system_clock>;
 
@@ -224,10 +245,11 @@ protected:
 class Storage : public BaseStorage<Container>
 {
 public:
-    void insert(const DiscoveryEntry& entry)
+    void insert(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {})
     {
         auto& index = container.get<tags::ParticipantId>();
-        auto insertResult = index.insert(entry);
+        LocalDiscoveryEntry entryWithGbids(entry, gbids);
+        auto insertResult = index.insert(entryWithGbids);
 
         // entry already existed
         if (!insertResult.second) {
@@ -235,7 +257,7 @@ public:
             auto existingIt = insertResult.first;
 
             // replace
-            bool replaceResult = index.replace(existingIt, entry);
+            bool replaceResult = index.replace(existingIt, entryWithGbids);
             assert(replaceResult);
         }
     }
@@ -314,4 +336,5 @@ struct SkipIntroOutroTraits<joynr::capabilities::Storage> : std::true_type
 {
 };
 } // namespace muesli
+
 #endif // CAPABILITIESSTORAGE_H

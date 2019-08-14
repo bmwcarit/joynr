@@ -292,7 +292,7 @@ private:
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient;
     std::string localAddress;
-    mutable std::mutex cacheLock;
+    mutable std::recursive_mutex cacheLock;
     std::mutex pendingLookupsLock;
 
     capabilities::Storage locallyRegisteredCapabilities;
@@ -345,11 +345,11 @@ private:
     std::vector<types::DiscoveryEntryWithMetaInfo> filterDuplicates(
             std::vector<types::DiscoveryEntryWithMetaInfo>&& globalCapabilitiesWithMetaInfo,
             std::vector<types::DiscoveryEntryWithMetaInfo>&& localCapabilitiesWithMetaInfo);
-    bool isEntryForGbid(const std::unique_lock<std::mutex>& lock,
+    bool isEntryForGbid(const std::unique_lock<std::recursive_mutex>& lock,
                         const types::DiscoveryEntry& entry,
                         const std::unordered_set<std::string> gbids);
     std::vector<types::DiscoveryEntry> filterDiscoveryEntriesByGbids(
-            const std::unique_lock<std::mutex>& lock,
+            const std::unique_lock<std::recursive_mutex>& lock,
             const std::vector<types::DiscoveryEntry>& entries,
             const std::unordered_set<std::string>& gbids);
 };

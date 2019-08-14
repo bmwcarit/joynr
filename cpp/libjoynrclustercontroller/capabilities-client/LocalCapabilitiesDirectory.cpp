@@ -192,11 +192,12 @@ void LocalCapabilitiesDirectory::addInternal(
     const bool isGloballyVisible = isGlobal(discoveryEntry);
 
     if (!isGloballyVisible || !awaitGlobalRegistration) {
-        // register locally
-        insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
+        std::lock_guard<std::recursive_mutex> lock(cacheLock);
         if (isGloballyVisible) {
             insertInGlobalLookupCache(discoveryEntry, gbids);
         }
+        // register locally
+        insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
         // Inform observers
         informObserversOnAdd(discoveryEntry);
 
@@ -273,18 +274,16 @@ void LocalCapabilitiesDirectory::addInternal(
         ]()
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                {
-                    std::lock_guard<std::mutex> lock(thisSharedPtr->cacheLock);
-                    JOYNR_LOG_INFO(logger(),
-                                   "Global capability '{}' added successfully for GBIDs ({})}), "
-                                   "#registeredGlobalCapabilities {}",
-                                   globalDiscoveryEntry.toString(),
-                                   util::vectorToString(gbids),
-                                   thisSharedPtr->countGlobalCapabilities());
-                }
+                std::lock_guard<std::recursive_mutex> lock(thisSharedPtr->cacheLock);
+                JOYNR_LOG_INFO(logger(),
+                               "Global capability '{}' added successfully for GBIDs ({})}), "
+                               "#registeredGlobalCapabilities {}",
+                               globalDiscoveryEntry.toString(),
+                               util::vectorToString(gbids),
+                               thisSharedPtr->countGlobalCapabilities());
                 if (awaitGlobalRegistration) {
-                    thisSharedPtr->insertInLocallyRegisteredCapabilitiesCache(globalDiscoveryEntry);
                     thisSharedPtr->insertInGlobalLookupCache(globalDiscoveryEntry, gbids);
+                    thisSharedPtr->insertInLocallyRegisteredCapabilitiesCache(globalDiscoveryEntry);
                     if (onSuccess) {
                         onSuccess();
                     }
@@ -336,7 +335,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
     std::ignore = onError;
 
     {
-        std::lock_guard<std::mutex> lock(cacheLock);
+        std::lock_guard<std::recursive_mutex> lock(cacheLock);
         for (const auto& capability : locallyRegisteredCapabilities) {
             if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
                 const std::string& participantId = capability.getParticipantId();
@@ -383,7 +382,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDiscoveryEntries()
         const
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
+    std::lock_guard<std::recursive_mutex> lock(cacheLock);
 
     return std::vector<types::DiscoveryEntry>(globalLookupCache.cbegin(), globalLookupCache.cend());
 }
@@ -440,7 +439,7 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
                                   std::move(callback));
 }
 
-bool LocalCapabilitiesDirectory::isEntryForGbid(const std::unique_lock<std::mutex>& lock,
+bool LocalCapabilitiesDirectory::isEntryForGbid(const std::unique_lock<std::recursive_mutex>& lock,
                                                 const types::DiscoveryEntry& entry,
                                                 const std::unordered_set<std::string> gbids)
 {
@@ -460,7 +459,7 @@ bool LocalCapabilitiesDirectory::isEntryForGbid(const std::unique_lock<std::mute
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::filterDiscoveryEntriesByGbids(
-        const std::unique_lock<std::mutex>& lock,
+        const std::unique_lock<std::recursive_mutex>& lock,
         const std::vector<types::DiscoveryEntry>& entries,
         const std::unordered_set<std::string>& gbids)
 {
@@ -816,7 +815,7 @@ void LocalCapabilitiesDirectory::callbackCalled(
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
         const std::string& participantId)
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
+    std::lock_guard<std::recursive_mutex> lock(cacheLock);
     return optionalToVector(locallyRegisteredCapabilities.lookupByParticipantId(participantId));
 }
 
@@ -828,7 +827,7 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCap
 
 void LocalCapabilitiesDirectory::clear()
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
+    std::lock_guard<std::recursive_mutex> lock(cacheLock);
     locallyRegisteredCapabilities.clear();
     globalLookupCache.clear();
     globalParticipantIdsToGbidsMap.clear();
@@ -1211,7 +1210,7 @@ void LocalCapabilitiesDirectory::remove(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     {
-        std::lock_guard<std::mutex> lock(cacheLock);
+        std::lock_guard<std::recursive_mutex> lock(cacheLock);
 
         boost::optional<types::DiscoveryEntry> optionalEntry =
                 locallyRegisteredCapabilities.lookupByParticipantId(participantId);
@@ -1327,7 +1326,7 @@ void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& 
     }
 
     try {
-        std::lock_guard<std::mutex> lock(cacheLock);
+        std::lock_guard<std::recursive_mutex> lock(cacheLock);
         joynr::util::saveStringToFile(
                 fileName, joynr::serializer::serializeToJson(locallyRegisteredCapabilities));
     } catch (const std::runtime_error& ex) {
@@ -1359,7 +1358,7 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
         return;
     }
 
-    std::lock_guard<std::mutex> lock(cacheLock);
+    std::lock_guard<std::recursive_mutex> lock(cacheLock);
 
     try {
         joynr::serializer::deserializeFromJson(locallyRegisteredCapabilities, jsonString);
@@ -1370,7 +1369,7 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
     // insert all global capability entries into global cache
     for (const auto& entry : locallyRegisteredCapabilities) {
         if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
-            globalLookupCache.insert(entry);
+            insertInGlobalLookupCache(entry, entry.gbids);
         }
     }
 }
@@ -1425,9 +1424,13 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
 void LocalCapabilitiesDirectory::insertInLocallyRegisteredCapabilitiesCache(
         const types::DiscoveryEntry& entry)
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
+    std::lock_guard<std::recursive_mutex> lock(cacheLock);
 
-    locallyRegisteredCapabilities.insert(entry);
+    auto found = globalParticipantIdsToGbidsMap.find(entry.getParticipantId());
+    locallyRegisteredCapabilities.insert(entry,
+                                         found != globalParticipantIdsToGbidsMap.cend()
+                                                 ? found->second
+                                                 : std::vector<std::string>{});
     JOYNR_LOG_INFO(logger(),
                    "Added local capability to cache {}, #localCapabilities: {}",
                    entry.toString(),
@@ -1440,7 +1443,7 @@ void LocalCapabilitiesDirectory::insertInLocallyRegisteredCapabilitiesCache(
 void LocalCapabilitiesDirectory::insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
                                                            const std::vector<std::string>& gbids)
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
+    std::lock_guard<std::recursive_mutex> lock(cacheLock);
 
     globalLookupCache.insert(entry);
 
@@ -1470,7 +1473,7 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchGlobalCache
         const std::vector<std::string>& gbids,
         std::chrono::milliseconds maxCacheAge)
 {
-    std::unique_lock<std::mutex> lock(cacheLock);
+    std::unique_lock<std::recursive_mutex> lock(cacheLock);
 
     const std::unordered_set<std::string> gbidsSet(gbids.cbegin(), gbids.cend());
     std::vector<types::DiscoveryEntry> result;
@@ -1491,7 +1494,7 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchGlobalCache
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchLocalCache(
         const std::vector<InterfaceAddress>& interfaceAddresses)
 {
-    std::lock_guard<std::mutex> lock(cacheLock);
+    std::lock_guard<std::recursive_mutex> lock(cacheLock);
 
     std::vector<types::DiscoveryEntry> result;
     for (const auto& interfaceAddress : interfaceAddresses) {
@@ -1512,11 +1515,12 @@ boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCaches(
         const std::vector<std::string>& gbids,
         std::chrono::milliseconds maxCacheAge)
 {
-    std::unique_lock<std::mutex> lock(cacheLock);
+    std::unique_lock<std::recursive_mutex> lock(cacheLock);
 
     // first search locally
     auto entry = locallyRegisteredCapabilities.lookupByParticipantId(participantId);
-    if (entry || scope == types::DiscoveryScope::LOCAL_ONLY) {
+    if (scope == types::DiscoveryScope::LOCAL_ONLY ||
+        (entry && scope != types::DiscoveryScope::GLOBAL_ONLY)) {
         return entry;
     }
 
@@ -1594,7 +1598,7 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 
     bool fileUpdateRequired = false;
     {
-        std::lock_guard<std::mutex> lock(cacheLock);
+        std::lock_guard<std::recursive_mutex> lock(cacheLock);
 
         auto removedLocalCapabilities = locallyRegisteredCapabilities.removeExpired();
         auto removedGlobalCapabilities = globalLookupCache.removeExpired();
