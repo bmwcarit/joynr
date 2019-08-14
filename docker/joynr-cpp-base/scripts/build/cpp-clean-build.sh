@@ -84,6 +84,7 @@ cmake -DENABLE_GCOV=$GCOV \
 if [ "$GCOV" == "ON" ] ; then
     echo "run coverage build"
     make -j $JOBS UnitCoverageTarget
+    make -j $JOBS UnitCoverageHtml
 fi
 
 log "BUILD C++ JOYNR"
