@@ -82,7 +82,7 @@ public class RoutingTableImpl implements RoutingTable {
         Address address = getInternal(participantId);
         if (address != null && gcdParticipantId.equals(participantId)) {
             if (!(Arrays.asList(gbidsArray).contains(gbid))) {
-                logger.error("The provided gbid {} for the participatId {} is unknown", gbid, participantId);
+                logger.error("The provided gbid {} for the participantId {} is unknown", gbid, participantId);
                 address = null;
             } else if (address instanceof MqttAddress) {
                 MqttAddress mqttAddress = new MqttAddress((MqttAddress) address);
