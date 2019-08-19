@@ -14,7 +14,9 @@
   limitations under the License.
   #L%
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr.android</groupId>
 	<artifactId>libjoynr-android-websocket-runtime</artifactId>
@@ -48,7 +50,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- At the moment, deployment is skipped for the android projects, but as we actually want to make this library 
+			<!-- At the moment, deployment is skipped for the android projects, but as we actually want to make this library
 				available to the developers, we don't want to skip the deploy phase -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -56,7 +58,7 @@
 				<configuration>
 					<skip>false</skip>
 				</configuration>
-			</plugin>              
+			</plugin>
 
 			<!-- Tie the maven phases with the gradle equivalent tasks -->
 			<plugin>
@@ -127,7 +129,9 @@
 						</goals>
 						<configuration>
 							<target>
-								<copy file="${project.basedir}/build/libs/${project.artifactId}-${project.version}.jar" todir="${project.build.directory}" overwrite="true" />
+								<copy
+									file="${project.basedir}/build/libs/${project.artifactId}-${project.version}.jar"
+									overwrite="true" todir="${project.build.directory}" />
 							</target>
 						</configuration>
 					</execution>
@@ -152,11 +156,21 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 			<exclusions>
-			<exclusion>
-				<artifactId>guice</artifactId>
-				<groupId>*</groupId>
-			</exclusion>
+				<exclusion>
+					<artifactId>guice</artifactId>
+					<groupId>*</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.tools.android</groupId>
+			<artifactId>slf4j-android-bindings</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

@@ -31,7 +31,7 @@ public class HelloWorldConsumerApplication extends Application {
         super.onCreate();
 
         final String host = "localhost";
-        final int port = 4243;
+        final int port = 4242;
 
         final String STATIC_PERSISTENCE_FILE = "consumer-joynr.properties";
 

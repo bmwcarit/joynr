@@ -6,9 +6,9 @@
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-
+  
        http://www.apache.org/licenses/LICENSE-2.0
-
+  
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,26 +16,18 @@
   limitations under the License.
   #L%
   -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="io.joynr.androidhelloworldprovider">
+	package="io.joynr.android.libjoynrandroidwebsocketruntime">
 
-	<uses-permission android:name="android.permission.INTERNET" />
-
-	<application
-		android:name=".HelloWorldProviderApplication"
-		android:allowBackup="true"
-		android:icon="@mipmap/ic_launcher"
-		android:label="@string/app_name"
-		android:roundIcon="@mipmap/ic_launcher_round"
-		android:supportsRtl="true"
-		android:theme="@style/AppTheme">
-		<activity android:name=".MainActivity">
+	<application>
+		<receiver
+			android:name=".receivers.PropertyChangeReceiver"
+			android:enabled="true"
+			android:exported="true">
 			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-
-				<category android:name="android.intent.category.LAUNCHER" />
+				<action android:name="io.joynr.android.LOG_LEVEL_CHANGE" />
 			</intent-filter>
-		</activity>
+		</receiver>
 	</application>
-
 </manifest>

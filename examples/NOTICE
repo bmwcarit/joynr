@@ -121,6 +121,7 @@ This project has dependencies to:
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  io.joynr.tools.android:slf4j-android-bindings under The Apache Software License, Version 2.0
   io.joynr:examples under The Apache Software License, Version 2.0
   Jackson module: JAXB Annotations under The Apache Software License, Version 2.0
   Jackson-annotations under The Apache Software License, Version 2.0

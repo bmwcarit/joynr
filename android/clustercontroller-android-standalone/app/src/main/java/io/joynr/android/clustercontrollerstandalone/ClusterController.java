@@ -18,13 +18,16 @@
  */
 package io.joynr.android.clustercontrollerstandalone;
 
-import android.content.Context;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import java.util.Properties;
+import android.content.Context;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -38,31 +41,32 @@ public class ClusterController {
 
     public static final String STATIC_PERSISTENCE_FILE = "clustercontroller-joynr.properties";
     public static final String STATIC_PARTICIPANTS_FILE = "joynr.properties_participants";
-
     public static final int PORT = 4242;
     public static final String HOST = "localhost";
+    private static final Logger LOG = LoggerFactory.getLogger(ClusterController.class);
 
-    public static JoynrRuntime run(Context context, String brokerUri) {
-
-        Properties ccConfig = new Properties();
+    public static JoynrRuntime run(final Context context, final String brokerUri) {
+        final Properties ccConfig = new Properties();
         ccConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, HOST);
         ccConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + PORT);
         ccConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
         ccConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
 
-        ccConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, context.getCacheDir() + "/" + STATIC_PERSISTENCE_FILE);
+        ccConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
+                             context.getCacheDir() + "/" + STATIC_PERSISTENCE_FILE);
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,
-                context.getCacheDir() + "/" + STATIC_PARTICIPANTS_FILE);
-
+                             context.getCacheDir() + "/" + STATIC_PARTICIPANTS_FILE);
 
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         ccConfig.put("joynr.messaging.mqtt.brokerUris", brokerUri);
 
         Module runtimeModule = new CCWebSocketRuntimeModule();
-        Module backendTransportModules = new MqttPahoModule();
+        final Module backendTransportModules = new MqttPahoModule();
         runtimeModule = Modules.override(runtimeModule).with(backendTransportModules);
 
-        Injector injectorCC = new JoynrInjectorFactory(ccConfig, runtimeModule).getInjector();
+        final Injector injectorCC = new JoynrInjectorFactory(ccConfig, runtimeModule).getInjector();
+
+        LOG.debug("Configured Android CC");
 
         return injectorCC.getInstance(JoynrRuntime.class);
     }

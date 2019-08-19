@@ -2,6 +2,9 @@ package io.joynr.android.consumer;
 
 import android.content.Context;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Properties;
 
 import io.joynr.arbitration.DiscoveryQos;
@@ -22,8 +25,9 @@ public class RadioConsumerApp {
 
     private RadioProxy radioProxy;
 
-    public void init(Context context) {
+    private static final Logger LOG = LoggerFactory.getLogger(RadioConsumerApp.class);
 
+    public void init(Context context) {
         Properties joynrConfig = new Properties();
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, CC_HOST);
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + CC_PORT);

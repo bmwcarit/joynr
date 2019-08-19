@@ -342,6 +342,7 @@ This project has dependencies to:
   io.joynr.tests:robustness-test-env under The Apache Software License, Version 2.0
   io.joynr.tests:system-integration-test under The Apache Software License, Version 2.0
   io.joynr.tests:test-base under The Apache Software License, Version 2.0
+  io.joynr.tools.android:slf4j-android-bindings under The Apache Software License, Version 2.0
   io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
   io.joynr.tools.generator:java-generator under The Apache Software License, Version 2.0
@@ -349,6 +350,7 @@ This project has dependencies to:
   io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-standalone under The Apache Software License, Version 2.0
   io.joynr.tools.generator:js-generator under The Apache Software License, Version 2.0
+  io.joynr.tools:android under The Apache Software License, Version 2.0
   io.joynr.tools:build-resources under The Apache Software License, Version 2.0
   io.joynr.tools:generator under The Apache Software License, Version 2.0
   io.joynr.tools:license-check under The Apache Software License, Version 2.0
