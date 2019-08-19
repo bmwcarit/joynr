@@ -27,6 +27,7 @@ export interface DiscoveryStub {
         interfaceName: string,
         discoveryQos: DiscoveryQosGen
     ): Promise<DiscoveryEntryWithMetaInfo[]>;
-    add(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean): Promise<void>;
+    add(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean, gbIds: string[]): Promise<void>;
+    addToAll(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean): Promise<void>;
     remove(participantId: string): Promise<void>;
 }

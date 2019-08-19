@@ -33,6 +33,25 @@ import { DiscoveryStub } from "./interface/DiscoveryStub";
 const log = loggingManager.getLogger("joynr.capabilities.CapabilitiesRegistrar");
 let defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
 
+interface RegistrationSettings {
+    domain: string;
+    provider: JoynrProvider & { constructor: JoynrProviderType };
+    providerQos: ProviderQos;
+    expiryDateMs?: number;
+    loggingContext?: Record<string, any>;
+    participantId?: string;
+    awaitGlobalRegistration?: boolean;
+}
+
+interface RegistrationSettingsWithGbids extends RegistrationSettings {
+    gbids?: string[];
+}
+
+interface MultipleBackendSettings {
+    registerToAllBackends: boolean;
+    gbids?: string[];
+}
+
 class CapabilitiesRegistrar {
     private started: boolean = true;
     private publicationManager: PublicationManager;
@@ -87,7 +106,29 @@ class CapabilitiesRegistrar {
      * @param settings the arguments object for this function call
      * @param settings.domain
      * @param settings.provider
-     * @param settings.provider.interfaceName
+     * @param settings.providerQos the Quality of Service parameters for provider registration
+     * @param [settings.expiryDateMs] date in millis since epoch after which the discovery entry can be purged from all directories.
+     *            Default value is one day.
+     * @param [settings.loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
+     * @param [settings.participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to
+     *            localStorage. If set, the participantId must be unique in the context of the provider's scope, as set in the ProviderQos;
+     *            The application setting the participantId is responsible for guaranteeing uniqueness.
+     * @param [settings.awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
+     *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
+     * @param settings.gbids optional array of gbids to register provider to. If undefined or empty cc will use default gbid.
+     *
+     * @returns an A+ promise
+     */
+    public register(settings: RegistrationSettingsWithGbids): Promise<string> {
+        return this.registerInternal(settings, { registerToAllBackends: false, gbids: settings.gbids });
+    }
+
+    /**
+     * Registers a provider so that it is publicly available in all backends known to the cluster controller
+     *
+     * @param settings the arguments object for this function call
+     * @param settings.domain
+     * @param settings.provider
      * @param settings.providerQos the Quality of Service parameters for provider registration
      * @param [settings.expiryDateMs] date in millis since epoch after which the discovery entry can be purged from all directories.
      *            Default value is one day.
@@ -100,52 +141,21 @@ class CapabilitiesRegistrar {
      *
      * @returns an A+ promise
      */
-    public register(settings: {
-        domain: string;
-        provider: JoynrProvider & { constructor: JoynrProviderType };
-        providerQos: ProviderQos;
-        expiryDateMs?: number;
-        loggingContext?: Record<string, any>;
-        participantId?: string;
-        awaitGlobalRegistration?: boolean;
-    }): Promise<string> {
-        return this.registerProvider(
-            settings.domain,
-            settings.provider,
-            settings.providerQos,
-            settings.expiryDateMs,
-            settings.loggingContext,
-            settings.participantId,
-            settings.awaitGlobalRegistration
-        );
+    public async registerInAllKnownBackends(settings: RegistrationSettings): Promise<string> {
+        return this.registerInternal(settings, { registerToAllBackends: true });
     }
 
-    /**
-     * Registers a provider so that it is publicly available
-     *
-     * @deprecated Use register instead
-     *
-     * @param domain
-     * @param provider
-     * @param provider.interfaceName
-     * @param providerQos the Quality of Service parameters for provider registration
-     * @param [expiryDateMs] date in millis since epoch after which the discovery entry can be purged from all directories.
-     *            Default value is one day.
-     * @param [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
-     * @param [participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to localStorage.
-     * @param [awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
-     *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
-     *
-     * @returns an A+ promise
-     */
-    public async registerProvider(
-        domain: string,
-        provider: JoynrProvider & { constructor: JoynrProviderType },
-        providerQos: ProviderQos,
-        expiryDateMs?: number,
-        loggingContext?: Record<string, any>,
-        participantId?: string,
-        awaitGlobalRegistration?: boolean
+    private async registerInternal(
+        {
+            domain,
+            provider,
+            providerQos,
+            expiryDateMs,
+            loggingContext,
+            participantId,
+            awaitGlobalRegistration
+        }: RegistrationSettings,
+        gbIdSettings: MultipleBackendSettings
     ): Promise<string> {
         this.checkIfReady();
 
@@ -195,22 +205,25 @@ class CapabilitiesRegistrar {
         const defaultPublicKeyId = "";
 
         try {
-            await this.discoveryStub.add(
-                new DiscoveryEntry({
-                    providerVersion: new Version({
-                        majorVersion: provider.constructor.MAJOR_VERSION,
-                        minorVersion: provider.constructor.MINOR_VERSION
-                    }),
-                    domain,
-                    interfaceName: provider.interfaceName,
-                    participantId,
-                    qos: providerQos,
-                    publicKeyId: defaultPublicKeyId,
-                    expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
-                    lastSeenDateMs: Date.now()
+            const discoveryEntry = new DiscoveryEntry({
+                providerVersion: new Version({
+                    majorVersion: provider.constructor.MAJOR_VERSION,
+                    minorVersion: provider.constructor.MINOR_VERSION
                 }),
-                awaitGlobalRegistration
-            );
+                domain,
+                interfaceName: provider.interfaceName,
+                participantId,
+                qos: providerQos,
+                publicKeyId: defaultPublicKeyId,
+                expiryDateMs: expiryDateMs || Date.now() + defaultExpiryIntervalMs,
+                lastSeenDateMs: Date.now()
+            });
+
+            if (gbIdSettings.registerToAllBackends) {
+                await this.discoveryStub.addToAll(discoveryEntry, awaitGlobalRegistration);
+            } else {
+                await this.discoveryStub.add(discoveryEntry, awaitGlobalRegistration, gbIdSettings.gbids || []);
+            }
         } catch (e) {
             this.messageRouter.removeNextHop(participantId).catch(UtilInternal.emptyFunction);
             throw e;
@@ -222,6 +235,47 @@ class CapabilitiesRegistrar {
             }, majorVersion: ${provider.constructor.MAJOR_VERSION}`
         );
         return participantId;
+    }
+
+    /**
+     * Registers a provider so that it is publicly available
+     *
+     * @param domain
+     * @param provider
+     * @param provider.interfaceName
+     * @param providerQos the Quality of Service parameters for provider registration
+     * @param [expiryDateMs] date in millis since epoch after which the discovery entry can be purged from all directories.
+     *            Default value is one day.
+     * @param [loggingContext] optional logging context will be appended to logging messages created in the name of this proxy
+     * @param [participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to localStorage.
+     * @param [awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
+     *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
+     * @param gbids optional. Array of global backend identifiers to configure the backends to register to.
+     *
+     * @returns an A+ promise
+     */
+    public async registerProvider(
+        domain: string,
+        provider: JoynrProvider & { constructor: JoynrProviderType },
+        providerQos: ProviderQos,
+        expiryDateMs?: number,
+        loggingContext?: Record<string, any>,
+        participantId?: string,
+        awaitGlobalRegistration?: boolean,
+        gbids?: string[]
+    ): Promise<string> {
+        return this.registerInternal(
+            {
+                domain,
+                provider,
+                providerQos,
+                expiryDateMs,
+                loggingContext,
+                participantId,
+                awaitGlobalRegistration
+            },
+            { registerToAllBackends: false, gbids }
+        );
     }
 
     /**

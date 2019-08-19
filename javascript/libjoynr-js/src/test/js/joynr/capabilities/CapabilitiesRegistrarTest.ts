@@ -17,6 +17,7 @@
  * #L%
  */
 
+import DiscoveryEntry from "../../../../main/js/generated/joynr/types/DiscoveryEntry";
 import CapabilitiesRegistrar from "../../../../main/js/joynr/capabilities/CapabilitiesRegistrar";
 import ProviderQos from "../../../../main/js/generated/joynr/types/ProviderQos";
 import * as ProviderAttribute from "../../../../main/js/joynr/provider/ProviderAttribute";
@@ -27,14 +28,15 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     let capabilitiesRegistrar: CapabilitiesRegistrar;
     let requestReplyManagerSpy: any;
     let publicationManagerSpy: any;
-    let participantId: any;
-    let domain: any;
+    let participantId: string;
+    let domain: string;
     let participantIdStorageSpy: any;
     let discoveryStubSpy: any;
     let messageRouterSpy: any;
     let libjoynrMessagingAddress: any;
     let provider: any;
     let providerQos: ProviderQos;
+    const gbids = ["joynrdefaultgbid"];
 
     class TestProvider {
         public static MAJOR_VERSION = 47;
@@ -83,10 +85,12 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         };
         discoveryStubSpy = {
             add: jest.fn(),
+            addToAll: jest.fn(),
             remove: jest.fn()
         };
         discoveryStubSpy.add.mockReturnValue(Promise.resolve());
         discoveryStubSpy.remove.mockReturnValue(Promise.resolve());
+        discoveryStubSpy.addToAll.mockReturnValue(Promise.resolve());
         messageRouterSpy = {
             addNextHop: jest.fn(),
             removeNextHop: jest.fn()
@@ -191,7 +195,7 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     it("handles calls to function register", () => {
         capabilitiesRegistrar
             .register({
-                domain: "domain",
+                domain,
                 provider,
                 providerQos
             })
@@ -205,38 +209,45 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(participantId, provider);
     });
 
-    it("uses passed-in participantId", () => {
+    it("uses passed-in participantId", async () => {
         const myParticipantId = "myFixedParticipantId";
-        const myDomain = "myDomain";
-        capabilitiesRegistrar
-            .register({
-                domain: myDomain,
-                provider,
-                providerQos,
-                participantId: myParticipantId
-            })
-            .then(() => {
-                return null;
-            })
-            .catch(() => {
-                return null;
-            });
-        expect(participantIdStorageSpy.setParticipantId).toHaveBeenCalledWith(myDomain, provider, myParticipantId);
+        await capabilitiesRegistrar.register({
+            domain,
+            provider,
+            providerQos,
+            participantId: myParticipantId
+        });
+        expect(participantIdStorageSpy.setParticipantId).toHaveBeenCalledWith(domain, provider, myParticipantId);
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalled();
         expect(requestReplyManagerSpy.addRequestCaller).toHaveBeenCalledWith(myParticipantId, provider);
     });
 
-    it("registers a provider with PublicationManager if it has an attribute", () => {
-        capabilitiesRegistrar
-            .registerProvider(domain, provider, providerQos)
-            .then(() => {
-                return null;
-            })
-            .catch(() => {
-                return null;
-            });
+    it("registers a provider with PublicationManager if it has an attribute", async () => {
+        await capabilitiesRegistrar.registerProvider(domain, provider, providerQos);
         expect(publicationManagerSpy.addPublicationProvider).toHaveBeenCalled();
         expect(publicationManagerSpy.addPublicationProvider).toHaveBeenCalledWith(participantId, provider);
+    });
+
+    it("register calls discoveryStub with gbids", async () => {
+        await capabilitiesRegistrar.register({
+            domain,
+            provider,
+            providerQos,
+            gbids
+        });
+        expect(discoveryStubSpy.add).toHaveBeenCalledWith(expect.any(Object), expect.any(Boolean), gbids);
+    });
+
+    it("register calls discoveryStub with empty array if gbids aren't provided", async () => {
+        const myParticipantId = "myFixedParticipantId";
+        const myDomain = "myDomain";
+        await capabilitiesRegistrar.register({
+            domain: myDomain,
+            provider,
+            providerQos,
+            participantId: myParticipantId
+        });
+        expect(discoveryStubSpy.add).toHaveBeenCalledWith(expect.any(Object), expect.any(Boolean), []);
     });
 
     it("registers capability at capabilities stub", async () => {
@@ -256,15 +267,12 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     });
 
     async function testAwaitGlobalRegistrationScenario(awaitGlobalRegistration: boolean) {
-        await capabilitiesRegistrar.registerProvider(
+        await capabilitiesRegistrar.register({
             domain,
             provider,
             providerQos,
-            undefined,
-            undefined,
-            undefined,
             awaitGlobalRegistration
-        );
+        });
         const actualAwaitGlobalRegistration = discoveryStubSpy.add.mock.calls[0][1];
         expect(actualAwaitGlobalRegistration).toEqual(awaitGlobalRegistration);
     }
@@ -323,5 +331,22 @@ describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
 
         expect(messageRouterSpy.removeNextHop).toHaveBeenCalled();
         expect(discoveryStubSpy.remove).toHaveBeenCalled();
+    });
+
+    describe(`registerInAllKnownBackends`, () => {
+        it(`calls discoveryStub.addToAll`, async () => {
+            await capabilitiesRegistrar.registerInAllKnownBackends({
+                domain,
+                provider,
+                providerQos
+            });
+            expect(discoveryStubSpy.addToAll).toHaveBeenCalled();
+            const discoveryEntry = discoveryStubSpy.addToAll.mock.calls.slice(-1)[0][0];
+            expect(discoveryEntry).toBeInstanceOf(DiscoveryEntry);
+            expect(discoveryEntry.domain).toEqual(domain);
+            expect(discoveryEntry.interface).toEqual(provider.interfacename);
+            expect(discoveryEntry.participandId).toEqual(provider.participantId);
+            expect(discoveryEntry.qos).toEqual(providerQos);
+        });
     });
 });

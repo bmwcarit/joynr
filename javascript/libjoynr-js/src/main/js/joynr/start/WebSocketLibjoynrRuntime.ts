@@ -229,8 +229,15 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
                                     return opArgs.result;
                                 });
                         },
-                        add: function add(discoveryEntry, awaitGlobalRegistration) {
+                        add: function add(discoveryEntry, awaitGlobalRegistration, gbids) {
                             return newDiscoveryProxy.add({
+                                discoveryEntry,
+                                awaitGlobalRegistration,
+                                gbids
+                            });
+                        },
+                        addToAll: (discoveryEntry, awaitGlobalRegistration) => {
+                            return newDiscoveryProxy.addToAll({
                                 discoveryEntry,
                                 awaitGlobalRegistration
                             });
