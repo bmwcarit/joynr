@@ -18,16 +18,20 @@
  */
 import * as DiscoveryEntry from "../../../generated/joynr/types/DiscoveryEntry";
 import * as DiscoveryEntryWithMetaInfo from "../../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
+import DiscoveryError from "../../../generated/joynr/types/DiscoveryError";
 import * as Version from "../../../generated/joynr/types/Version";
+import LoggingManager from "../../system/LoggingManager";
 
 import * as UtilInternal from "../../util/UtilInternal";
 import DiscoveryException from "../../exceptions/DiscoveryException";
 import NoCompatibleProviderFoundException from "../../exceptions/NoCompatibleProviderFoundException";
 import LongTimer from "../../util/LongTimer";
-import CapabilityDiscovery = require("../discovery/CapabilityDiscovery");
+import { DiscoveryStub } from "../interface/DiscoveryStub";
 import DiscoveryQosGen = require("../../../generated/joynr/types/DiscoveryQos");
 import DiscoveryQos = require("../../proxy/DiscoveryQos");
+import ApplicationException = require("../../exceptions/ApplicationException");
 
+const log = LoggingManager.getLogger("joynr.capabilities.arbitration.Arbitrator");
 /**
  * checks if the provided discoveryEntry supports onChange subscriptions if required
  *
@@ -78,15 +82,17 @@ interface DiscoverCapabilitiesDeferred {
  * @param interfaceName - the interfaceName
  * @param applicationDiscoveryQos
  * @param proxyVersion
+ * @param gbids global backend identifiers of backends to look for capabilities
  * @param deferred
  * @returns a Promise/A+ object, that will provide an array of discovered capabilities
  */
 function discoverCapabilities(
-    capabilityDiscoveryStub: CapabilityDiscovery,
+    capabilityDiscoveryStub: DiscoveryStub,
     domains: string[],
     interfaceName: string,
     applicationDiscoveryQos: DiscoveryQos,
     proxyVersion: Version,
+    gbids: string[],
     deferred: DiscoverCapabilitiesDeferred
 ): void {
     function discoveryCapabilitiesRetry(): void {
@@ -97,6 +103,7 @@ function discoverCapabilities(
             interfaceName,
             applicationDiscoveryQos,
             proxyVersion,
+            gbids,
             deferred
         );
     }
@@ -111,7 +118,8 @@ function discoverCapabilities(
                 cacheMaxAge: applicationDiscoveryQos.cacheMaxAgeMs,
                 discoveryTimeout: applicationDiscoveryQos.discoveryTimeoutMs,
                 providerMustSupportOnChange: applicationDiscoveryQos.providerMustSupportOnChange
-            })
+            }),
+            gbids
         )
         .then(discoveredCaps => {
             // filter caps according to chosen arbitration strategy
@@ -153,7 +161,26 @@ function discoverCapabilities(
         })
         .catch((error: any) => {
             if (deferred.pending) {
-                if (error.message) {
+                if (error instanceof ApplicationException) {
+                    deferred.errorMsg = `Discovery failed due to ${error.error.name}`;
+                    if (
+                        error.error !== DiscoveryError.NO_ENTRY_FOR_PARTICIPANT &&
+                        error.error !== DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
+                    ) {
+                        log.error(
+                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to ${
+                                error.error.name
+                            }. Attempting no retry`
+                        );
+                        return;
+                    } else {
+                        log.info(
+                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to ${
+                                error.error.name
+                            }. Attempting retry in ${applicationDiscoveryQos.discoveryRetryDelayMs} ms`
+                        );
+                    }
+                } else if (error.message) {
                     deferred.errorMsg = error.message;
                 }
                 deferred.discoveryRetryTimer = LongTimer.setTimeout(
@@ -168,7 +195,7 @@ class Arbitrator {
     private started: boolean = true;
     private arbitrationId: number = 0;
     private pendingArbitrations: any = {};
-    private capabilityDiscoveryStub: CapabilityDiscovery;
+    private capabilityDiscoveryStub: DiscoveryStub;
     private staticCapabilities?: DiscoveryEntryWithMetaInfo[];
     /**
      * An arbitrator looks up all capabilities for given domains and an interface and uses the provides arbitraionStrategy passed in the
@@ -179,10 +206,7 @@ class Arbitrator {
      * @param capabilityDiscoveryStub the capability discovery
      * @param staticCapabilities the capabilities the arbitrator will use to resolve capabilities in case of static arbitration
      */
-    public constructor(
-        capabilityDiscoveryStub: CapabilityDiscovery,
-        staticCapabilities?: DiscoveryEntryWithMetaInfo[]
-    ) {
+    public constructor(capabilityDiscoveryStub: DiscoveryStub, staticCapabilities?: DiscoveryEntryWithMetaInfo[]) {
         this.staticCapabilities = staticCapabilities;
         this.capabilityDiscoveryStub = capabilityDiscoveryStub;
     }
@@ -196,7 +220,10 @@ class Arbitrator {
      * @param settings.discoveryQos
      * @param [settings.staticArbitration] shall the arbitrator use staticCapabilities or contact the discovery provider
      * @param [settings.proxyVersion] the version of the proxy object
-     * @returns a A+ Promise object, that will provide asynchronously an array of arbitrated capabilities
+     *
+     * @returns Promise
+     *  - resolved with an array of arbitrated capabilities
+     *  - rejected with either DiscoveryException or NoCompatibleProviderFoundException
      */
     public async startArbitration(settings: {
         domains: string[];
@@ -204,6 +231,7 @@ class Arbitrator {
         discoveryQos: DiscoveryQos;
         staticArbitration?: boolean;
         proxyVersion: Version;
+        gbids?: string[];
     }): Promise<any[]> {
         if (!this.started) {
             return Promise.reject(new Error("Arbitrator is already shut down"));
@@ -229,6 +257,7 @@ class Arbitrator {
         discoveryQos: DiscoveryQos;
         staticArbitration?: boolean;
         proxyVersion: Version;
+        gbids?: string[];
     }): Promise<any[]> {
         const startArbitrationDeferred = UtilInternal.createDeferred();
 
@@ -284,6 +313,7 @@ class Arbitrator {
             settings.interfaceName,
             settings.discoveryQos,
             settings.proxyVersion,
+            settings.gbids || [],
             deferred
         );
 

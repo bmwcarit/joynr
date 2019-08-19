@@ -17,6 +17,7 @@
  * #L%
  */
 
+import * as DiscoveryError from "../../../../../main/js/generated/joynr/types/DiscoveryError";
 import * as ProviderScope from "../../../../../main/js/generated/joynr/types/ProviderScope";
 import Arbitrator from "../../../../../main/js/joynr/capabilities/arbitration/Arbitrator";
 import DiscoveryEntryWithMetaInfo from "../../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo";
@@ -30,6 +31,7 @@ import NoCompatibleProviderFoundException from "../../../../../main/js/joynr/exc
 import Version from "../../../../../main/js/generated/joynr/types/Version";
 import * as UtilInternal from "../../../../../main/js/joynr/util/UtilInternal";
 import * as testUtil from "../../../testUtil";
+import ApplicationException = require("../../../../../main/js/joynr/exceptions/ApplicationException");
 
 let capabilities: any, fakeTime: number, staticArbitrationSettings: any, domain: any;
 let interfaceName: string,
@@ -283,6 +285,36 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         );
     });
 
+    it("calls capabilityDiscovery with provided gbid array", async () => {
+        capDiscoverySpy.lookup.mockReturnValue(Promise.resolve(discoveryEntries));
+        jest.spyOn(discoveryQos, "arbitrationStrategy").mockReturnValue(discoveryEntries);
+        const gbids = ["joynrdefaultgbid"];
+
+        // start arbitration
+        await arbitrator.startArbitration({
+            domains: [domain],
+            interfaceName,
+            discoveryQos,
+            proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
+            gbids
+        });
+        expect(capDiscoverySpy.lookup).toHaveBeenCalledWith([domain], interfaceName, expect.any(Object), gbids);
+    });
+
+    it("calls capabilityDiscovery with empty gbid array when unspecified", async () => {
+        capDiscoverySpy.lookup.mockReturnValue(Promise.resolve(discoveryEntries));
+        jest.spyOn(discoveryQos, "arbitrationStrategy").mockReturnValue(discoveryEntries);
+
+        // start arbitration
+        await arbitrator.startArbitration({
+            domains: [domain],
+            interfaceName,
+            discoveryQos,
+            proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
+        });
+        expect(capDiscoverySpy.lookup).toHaveBeenCalledWith([domain], interfaceName, expect.any(Object), []);
+    });
+
     async function returnCapabilitiesFromDiscovery(
         providerMustSupportOnChange: boolean,
         discoveryEntries: any,
@@ -474,6 +506,43 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         expect(onRejectedSpy).toHaveBeenCalled();
         expect(onRejectedSpy.mock.calls.slice(-1)[0][0] instanceof DiscoveryException).toBeTruthy();
         expect(onRejectedSpy.mock.calls.slice(-1)[0][0].detailMessage).toMatch(fakeError.message);
+    });
+
+    async function testDiscoveryRetryByDiscoveryError(discoveryError: DiscoveryError, expectedRetry: boolean) {
+        const expectedCalls = expectedRetry ? 2 : 1;
+        const onRejectedSpy = jest.fn();
+        const fakeError = new ApplicationException({ detailMessage: "test", error: discoveryError });
+        capDiscoverySpy.lookup.mockRejectedValue(fakeError);
+
+        arbitrator
+            .startArbitration({
+                domains: [domain],
+                interfaceName,
+                discoveryQos,
+                proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
+            })
+            .catch(onRejectedSpy);
+
+        await testUtil.multipleSetImmediate();
+        await increaseFakeTime(discoveryQos.discoveryTimeoutMs);
+
+        expect(capDiscoverySpy.lookup).toHaveBeenCalledTimes(expectedCalls);
+        expect(onRejectedSpy).toHaveBeenCalled();
+        expect(onRejectedSpy.mock.calls.slice(-1)[0][0] instanceof DiscoveryException).toBeTruthy();
+        expect(onRejectedSpy.mock.calls.slice(-1)[0][0].detailMessage).toMatch(discoveryError.name);
+    }
+    [DiscoveryError.INTERNAL_ERROR, DiscoveryError.INVALID_GBID, DiscoveryError.UNKNOWN_GBID].forEach(
+        discoveryError => {
+            it(`won't retry lookup for DiscoveryError ${discoveryError.name}`, () => {
+                return testDiscoveryRetryByDiscoveryError(discoveryError, false);
+            });
+        }
+    );
+
+    [DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS, DiscoveryError.NO_ENTRY_FOR_PARTICIPANT].forEach(discoveryError => {
+        it(`retries lookup for DiscoveryError ${discoveryError.name}`, () => {
+            return testDiscoveryRetryByDiscoveryError(discoveryError, true);
+        });
     });
 
     it("reruns discovery for empty discovery results according to discoveryTimeoutMs and discoveryRetryDelayMs", async () => {

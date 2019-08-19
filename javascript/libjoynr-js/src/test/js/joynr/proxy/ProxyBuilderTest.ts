@@ -202,6 +202,21 @@ describe("libjoynr-js.joynr.proxy.ProxyBuilder", () => {
         });
     });
 
+    it("calls arbitrator with optional gbids", async () => {
+        const gbids = ["joynrdefaultgbids"];
+        settings.gbids = gbids;
+        await proxyBuilder.build(RadioProxy, settings);
+
+        expect(arbitratorSpy.startArbitration).toHaveBeenCalledWith({
+            domains: [settings.domain],
+            interfaceName,
+            discoveryQos: settings.discoveryQos,
+            staticArbitration: settings.staticArbitration,
+            proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
+            gbids
+        });
+    });
+
     it("returned promise is rejected with error", async () => {
         const error = new Error("MyError");
 

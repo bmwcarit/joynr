@@ -25,7 +25,8 @@ export interface DiscoveryStub {
     lookup(
         domains: string[],
         interfaceName: string,
-        discoveryQos: DiscoveryQosGen
+        discoveryQos: DiscoveryQosGen,
+        gbids: string[]
     ): Promise<DiscoveryEntryWithMetaInfo[]>;
     add(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean, gbIds: string[]): Promise<void>;
     addToAll(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean): Promise<void>;

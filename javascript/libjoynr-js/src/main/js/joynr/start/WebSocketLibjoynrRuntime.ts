@@ -217,13 +217,14 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
                 this.discovery.setSkeleton(
                     // eslint-disable-next-line @typescript-eslint/no-object-literal-type-assertion
                     new InProcessSkeleton({
-                        lookup: function lookup(domains, interfaceName, discoveryQos) {
+                        lookup: function lookup(domains, interfaceName, discoveryQos, gbids) {
                             // eslint-disable-next-line promise/no-nesting
                             return newDiscoveryProxy
                                 .lookup({
                                     domains,
                                     interfaceName,
-                                    discoveryQos
+                                    discoveryQos,
+                                    gbids
                                 })
                                 .then(opArgs => {
                                     return opArgs.result;

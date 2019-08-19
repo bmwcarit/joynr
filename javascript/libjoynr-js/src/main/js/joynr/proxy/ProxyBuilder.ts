@@ -108,7 +108,11 @@ class ProxyBuilder {
      * @param settings.loggingContext - optional logging context will be appended to logging
      *            messages created in the name of this proxy
      * @param settings.staticArbitration - true if staticArbitration shall be used
-     * @returns Promise resolved on success
+     * @param settings.gbids - optional global backend identifiers of backends to lookup capabilities
+     *
+     * @returns Promise
+     *  - resolved with the created proxy
+     *  - rejected with either DiscoveryException or NoCompatibleProviderFoundException
      */
     public async build<T extends JoynrProxy>(
         ProxyConstructor: JoynrProxyConstructor<T>,
@@ -118,10 +122,11 @@ class ProxyBuilder {
             messagingQos?: MessagingQos | Partial<MessagingQos.Settings>;
             loggingContext?: Record<string, any>;
             staticArbitration?: boolean;
+            gbids?: string[];
         }
     ): Promise<T> {
         // eslint-disable-next-line prefer-const
-        let { domain, discoveryQos, messagingQos, loggingContext, staticArbitration } = settings;
+        let { domain, discoveryQos, messagingQos, loggingContext, staticArbitration, gbids } = settings;
 
         // augment Qos objects if they're missing
         discoveryQos = new DiscoveryQos(discoveryQos);
@@ -157,7 +162,8 @@ class ProxyBuilder {
             // typecast may be removed after Arbitrator typings are done
             discoveryQos: discoveryQos as any,
             staticArbitration: staticArbitration as boolean,
-            proxyVersion
+            proxyVersion,
+            gbids
         });
 
         if (settings.loggingContext !== undefined) {
