@@ -243,7 +243,7 @@ void JoynrClusterControllerRuntime::init()
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
         JOYNR_LOG_DEBUG(logger(), "MQTT-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
-                defaultBrokerUrl.toString(), "");
+                "joynrdefaultgbid", "");
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(
                 globalAddress, clusterControllerSettings.getMqttMulticastTopicPrefix());
         doMqttMessaging = true;
@@ -541,7 +541,7 @@ void JoynrClusterControllerRuntime::init()
             }
 
             messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
-                    connectionData->getMqttMessageSender()));
+                    connectionData->getMqttMessageSender(), availableGbids[brokerIndex]));
         }
     }
 

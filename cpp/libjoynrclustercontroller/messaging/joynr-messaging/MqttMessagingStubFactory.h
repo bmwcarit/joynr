@@ -21,8 +21,8 @@
 
 #include <memory>
 
-#include "joynr/Logger.h"
 #include "joynr/IMiddlewareMessagingStubFactory.h"
+#include "joynr/Logger.h"
 
 namespace joynr
 {
@@ -33,7 +33,8 @@ class MqttMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {
 
 public:
-    MqttMessagingStubFactory(std::shared_ptr<ITransportMessageSender> messageSender);
+    MqttMessagingStubFactory(std::shared_ptr<ITransportMessageSender> messageSender,
+                             const std::string& gbid);
     std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
@@ -43,6 +44,7 @@ public:
 
 private:
     std::shared_ptr<ITransportMessageSender> messageSender;
+    const std::string gbid;
     ADD_LOGGER(MqttMessagingStubFactory)
 };
 

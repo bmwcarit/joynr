@@ -36,9 +36,15 @@ void MqttMessagingStub::transmit(
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     if (logger().getLogLevel() == LogLevel::Debug) {
-        JOYNR_LOG_DEBUG(logger(), ">>> OUTGOING >>> {}", message->getTrackingInfo());
+        JOYNR_LOG_DEBUG(logger(),
+                        ">>> OUTGOING TO {} >>> {}",
+                        destinationAddress.getBrokerUri(),
+                        message->getTrackingInfo());
     } else {
-        JOYNR_LOG_TRACE(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());
+        JOYNR_LOG_TRACE(logger(),
+                        ">>> OUTGOING TO {} >>> {}",
+                        destinationAddress.getBrokerUri(),
+                        message->toLogMessage());
     }
     messageSender->sendMessage(destinationAddress, std::move(message), onFailure);
 }

@@ -28,21 +28,49 @@ namespace joynr
 {
 
 MqttMessagingStubFactory::MqttMessagingStubFactory(
-        std::shared_ptr<ITransportMessageSender> messageSender)
-        : messageSender(messageSender)
+        std::shared_ptr<ITransportMessageSender> messageSender,
+        const std::string& gbid)
+        : messageSender(messageSender), gbid(gbid)
 {
 }
 
 bool MqttMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Address& destAddress)
 {
-    return dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destAddress);
+    const auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destAddress);
+
+    if (!mqttAddress) {
+        JOYNR_LOG_TRACE(logger(), "The provided address is not of type MqttAddress.");
+        return false;
+    }
+
+    if (gbid != (mqttAddress->getBrokerUri())) {
+        JOYNR_LOG_TRACE(logger(),
+                        "GBID {} is unknown in MqttMessagingStubFactory for GBID {}",
+                        mqttAddress->getBrokerUri(),
+                        gbid);
+        return false;
+    }
+
+    return true;
 }
 
 std::shared_ptr<IMessagingStub> MqttMessagingStubFactory::create(
         const joynr::system::RoutingTypes::Address& destAddress)
 {
-    const system::RoutingTypes::MqttAddress* mqttAddress =
-            dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destAddress);
+    const auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(&destAddress);
+
+    if (!mqttAddress) {
+        JOYNR_LOG_FATAL(logger(), "The provided address is not of type MqttAddress.");
+        return nullptr;
+    }
+
+    if (gbid != (mqttAddress->getBrokerUri())) {
+        JOYNR_LOG_FATAL(logger(),
+                        "GBID {} is unknown in MqttMessagingStubFactory for GBID {}",
+                        mqttAddress->getBrokerUri(),
+                        gbid);
+        return nullptr;
+    }
     return std::make_shared<MqttMessagingStub>(messageSender, *mqttAddress);
 }
 
