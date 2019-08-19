@@ -51,6 +51,8 @@ let capabilityDiscovery: CapabilityDiscovery, proxyBuilderSpy: any, address: any
 let globalCapCacheSpy: any, globalCapDirSpy: any;
 let startDateMs: number;
 const expiryDateMs = Date.now() + 1e10;
+const knownGbids = ["joynrdefaultgbid", "someOtherGbid"];
+const gbids = ["joynrdefaultgbid"];
 
 const messageRouterSpy: any = {
     addNextHop: jest.fn(),
@@ -137,7 +139,7 @@ function getDiscoveryEntry(domain: any, interfaceName: string) {
 
 describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
     beforeEach(done => {
-        let i: any, discoveryEntry: DiscoveryEntry;
+        let i: number, discoveryEntry: DiscoveryEntry;
         startDateMs = Date.now();
         domain = "myDomain";
         interfaceName = "myInterfaceName";
@@ -188,10 +190,24 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
             globalCapCacheSpy,
             messageRouterSpy,
             proxyBuilderSpy,
-            "io.joynr"
+            "io.joynr",
+            knownGbids
         );
         capabilityDiscovery.globalAddressReady(address);
         done();
+    });
+
+    it(`throws if instantiated without knownGbids`, () => {
+        expect(() => {
+            new CapabilityDiscovery(
+                localCapStoreSpy,
+                globalCapCacheSpy,
+                messageRouterSpy,
+                proxyBuilderSpy,
+                "io.joynr",
+                []
+            );
+        }).toThrow();
     });
 
     it("is instantiable, of correct type and has all members", () => {
@@ -209,11 +225,12 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
             globalCapCacheSpy,
             messageRouterSpy,
             proxyBuilderSpy,
-            "io.joynr"
+            "io.joynr",
+            knownGbids
         );
         capabilityDiscovery.globalAddressReady(address);
 
-        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
+        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
             interfaceName
@@ -224,7 +241,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
 
     it("calls local and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides empty result", async () => {
         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
-        await capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
+        await capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
         await multipleSetImmediate();
         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
@@ -237,13 +254,14 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         });
         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
-            interfaceName
+            interfaceName,
+            gbids
         });
     });
 
     it("calls local and not global cache and not global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store provides non-empty result", () => {
         localCapStoreSpy.lookup.mockReturnValue([getDiscoveryEntry(domain, interfaceName)]);
-        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
+        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
             interfaceName
@@ -254,7 +272,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
 
     it("calls local and global cache and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store and global cache provides non-empty result", async () => {
         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
-        await capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
+        await capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
         await multipleSetImmediate();
 
         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
@@ -268,13 +286,14 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         });
         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
-            interfaceName
+            interfaceName,
+            gbids
         });
     });
 
     it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_ONLY", () => {
         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_ONLY;
-        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
+        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
         expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
             interfaceName
@@ -285,7 +304,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
 
     it("calls global capabilities directory according to discoveryQos.discoveryScope GLOBAL_ONLY", async () => {
         discoveryQos.discoveryScope = DiscoveryScope.GLOBAL_ONLY;
-        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
+        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
         await testUtil.multipleSetImmediate();
 
         expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
@@ -296,14 +315,15 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         });
         expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
-            interfaceName
+            interfaceName,
+            gbids
         });
     });
 
     it("does not call global capabilities directory according to discoveryQos.discoveryScope GLOBAL_ONLY, if global cache is non-empty", () => {
         globalCapCacheSpy.lookup.mockReturnValue([getDiscoveryEntry(domain, interfaceName)]);
         discoveryQos.discoveryScope = DiscoveryScope.GLOBAL_ONLY;
-        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos);
+        capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
         expect(localCapStoreSpy.lookup).not.toHaveBeenCalled();
         expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
             domains: [domain],
@@ -338,7 +358,8 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
             globalCapCacheSpy as any,
             messageRouterSpy,
             proxyBuilderSpy as any,
-            "io.joynr"
+            "io.joynr",
+            knownGbids
         );
         capabilityDiscovery.globalAddressReady(address);
         const discoveryQos = new DiscoveryQos({
@@ -347,7 +368,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         } as any);
 
         return capabilityDiscovery
-            .lookup([domain], interfaceName, discoveryQos)
+            .lookup([domain], interfaceName, discoveryQos, gbids)
             .then(fulfilledWith => {
                 const endDateMs = Date.now();
                 if (expectedReturnValue === undefined) {
@@ -636,11 +657,12 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
             globalCapCacheSpy,
             messageRouterSpy,
             proxyBuilderSpy,
-            "io.joynr"
+            "io.joynr",
+            knownGbids
         );
         capabilityDiscovery.globalAddressReady(address);
-        await expect(capabilityDiscovery.lookup([domain, domain], interfaceName, discoveryQos)).rejects.toBeInstanceOf(
-            Error
-        );
+        await expect(
+            capabilityDiscovery.lookup([domain, domain], interfaceName, discoveryQos, gbids)
+        ).rejects.toBeInstanceOf(Error);
     });
 });

@@ -121,6 +121,11 @@ export interface InProcessProvisioning extends Provisioning {
     mqtt: {
         qosLevel: 0 | 1 | 2;
     };
+    /**
+     * gbids known to the InProcess clustercontroller. Must have a length of at least one.
+     * the first element is the default gbid
+     **/
+    gbids: string[];
 }
 
 export interface WebSocketLibjoynrProvisioning extends Provisioning {

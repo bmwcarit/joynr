@@ -201,7 +201,8 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
             this.messageRouter,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.proxyBuilder!,
-            defaultProxyBuildSettings.domain
+            defaultProxyBuildSettings.domain,
+            provisioning.gbids || clusterControllerSettings.gbids
         );
 
         mqttClient.onConnected().then(() => {

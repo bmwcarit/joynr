@@ -54,7 +54,8 @@ export = function(settings: { bounceProxyBaseUrl: string; brokerUri: string }) {
                     brokerUri: settings.brokerUri
                 })
             })
-        ]
+        ],
+        gbids: ["joynrdefaultgbid"]
     };
     return defaultSettings;
 };

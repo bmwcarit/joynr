@@ -35,23 +35,43 @@ import LoggingManager from "../../system/LoggingManager";
 import * as UtilInternal from "../../util/UtilInternal";
 import ProviderRuntimeException from "../../exceptions/ProviderRuntimeException";
 import * as CapabilitiesUtil from "../../util/CapabilitiesUtil";
+import { DiscoveryStub } from "../interface/DiscoveryStub";
 import ProxyBuilder = require("../../proxy/ProxyBuilder");
 import MessageRouter = require("../../messaging/routing/MessageRouter");
 import CapabilitiesStore = require("../CapabilitiesStore");
+import JoynrRuntimeException = require("../../exceptions/JoynrRuntimeException");
 
 const TTL_30DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
 const log = LoggingManager.getLogger("joynr/capabilities/discovery/CapabilityDiscovery");
 
-class CapabilityDiscovery {
+interface QueuedGlobalDiscoveryEntires {
+    discoveryEntry: DiscoveryEntry;
+    gbids: string[];
+    resolve: (value: any) => void;
+    reject: (error: any) => void;
+}
+
+interface QueuedGlobalLookups {
+    domains: string[];
+    interfaceName: string;
+    ttl: number;
+    capabilities: any[];
+    gbids: string[];
+    resolve: (value: any) => void;
+    reject: (error: any) => void;
+}
+
+class CapabilityDiscovery implements DiscoveryStub {
     private globalCapabilitiesDomain: string;
     private proxyBuilder: ProxyBuilder;
     private messageRouter: MessageRouter;
     private globalCapabilitiesCache: CapabilitiesStore;
     private localCapabilitiesStore: CapabilitiesStore;
-    private queuedGlobalLookups: any[];
+    private queuedGlobalLookups: QueuedGlobalLookups[];
 
-    private queuedGlobalDiscoveryEntries: any[];
+    private queuedGlobalDiscoveryEntries: QueuedGlobalDiscoveryEntires[];
     private globalAddressSerialized?: string;
+    private knownGbids: string[];
 
     /**
      * The CapabilitiesDiscovery looks up the local and global capabilities directory
@@ -64,14 +84,22 @@ class CapabilityDiscovery {
      * @param proxyBuilder the proxy builder used to create the GlobalCapabilitiesDirectoryProxy
      * @param globalCapabilitiesDomain the domain to communicate with the GlobalCapablitiesDirectory
      *                                     GlobalCapab
+     * @param knownGbids known global backend identifiers provided by provisioning
      */
     public constructor(
         localCapabilitiesStore: CapabilitiesStore,
         globalCapabilitiesCache: CapabilitiesStore,
         messageRouter: MessageRouter,
         proxyBuilder: ProxyBuilder,
-        globalCapabilitiesDomain: string
+        globalCapabilitiesDomain: string,
+        knownGbids: string[]
     ) {
+        if (!knownGbids || knownGbids.length === 0) {
+            throw new JoynrRuntimeException({
+                detailMessage: `knownGbids needs the have a length of at least one ${knownGbids}`
+            });
+        }
+
         this.queuedGlobalDiscoveryEntries = [];
         this.queuedGlobalLookups = [];
 
@@ -80,6 +108,7 @@ class CapabilityDiscovery {
         this.messageRouter = messageRouter;
         this.proxyBuilder = proxyBuilder;
         this.globalCapabilitiesDomain = globalCapabilitiesDomain;
+        this.knownGbids = knownGbids;
 
         // bind all public methods to this because they need to be copied to inProcessStub.
         this.add = this.add.bind(this);
@@ -87,6 +116,7 @@ class CapabilityDiscovery {
         this.touch = this.touch.bind(this);
         this.remove = this.remove.bind(this);
         this.globalAddressReady = this.globalAddressReady.bind(this);
+        this.addToAll = this.addToAll.bind(this);
     }
 
     /**
@@ -117,13 +147,15 @@ class CapabilityDiscovery {
         domains: string[],
         interfaceName: string,
         ttl: number,
-        capabilities: DiscoveryEntryWithMetaInfo[]
+        capabilities: DiscoveryEntryWithMetaInfo[],
+        gbids: string[]
     ): Promise<DiscoveryEntryWithMetaInfo[]> {
         return this.getGlobalCapabilitiesDirectoryProxy(ttl)
             .then(globalCapabilitiesDirectoryProxy =>
                 globalCapabilitiesDirectoryProxy.lookup({
                     domains,
-                    interfaceName
+                    interfaceName,
+                    gbids
                 })
             )
             .then(opArgs => {
@@ -175,6 +207,7 @@ class CapabilityDiscovery {
      * @param interfaceName - the interface name
      * @param ttl - time to live of joynr messages triggered by the returning proxy
      * @param capabilities - the capabilities array to be filled
+     * @param gbids - array of knownGbids in which to look for providers
      *
      * @returns - the capabilities array filled with the capabilities found in the global capabilities directory
      */
@@ -182,7 +215,8 @@ class CapabilityDiscovery {
         domains: string[],
         interfaceName: string,
         ttl: number,
-        capabilities: any[]
+        capabilities: any[],
+        gbids: string[]
     ): Promise<any[]> {
         if (!this.globalAddressSerialized) {
             const deferred = UtilInternal.createDeferred();
@@ -191,31 +225,35 @@ class CapabilityDiscovery {
                 interfaceName,
                 ttl,
                 capabilities,
+                gbids,
                 resolve: deferred.resolve,
                 reject: deferred.reject
             });
             return deferred.promise;
         } else {
-            return this.lookupGlobal(domains, interfaceName, ttl, capabilities);
+            return this.lookupGlobal(domains, interfaceName, ttl, capabilities, gbids);
         }
     }
 
     /**
      * @param discoveryEntry to be added to the global discovery directory
+     * @param gbids global backend identifiers of backends to add discoveryEntries into
      * @returns an A+ promise
      */
-    private addGlobal(discoveryEntry: DiscoveryEntry): Promise<void> {
+    private addGlobal(discoveryEntry: DiscoveryEntry, gbids: string[]): Promise<void> {
         return this.getGlobalCapabilitiesDirectoryProxy(TTL_30DAYS_IN_MS)
             .then(globalCapabilitiesDirectoryProxy => {
                 const discoveryEntryWithAddress = discoveryEntry as DiscoveryEntry & { address: string };
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 discoveryEntryWithAddress.address = this.globalAddressSerialized!;
                 return globalCapabilitiesDirectoryProxy.add({
-                    globalDiscoveryEntry: new GlobalDiscoveryEntry(discoveryEntryWithAddress)
+                    globalDiscoveryEntry: new GlobalDiscoveryEntry(discoveryEntryWithAddress),
+                    gbids
                 });
             })
             .catch(error => {
-                throw new Error(`Error calling operation "add" of GlobalCapabilitiesDirectory because: ${error}`);
+                log.error(`Error calling operation "add" of GlobalCapabilitiesDirectory because: ${error}`);
+                throw error;
             });
     }
 
@@ -223,8 +261,8 @@ class CapabilityDiscovery {
      * @param queuedDiscoveryEntry contains a discoveryEntry and the resolve
      * and reject functions from the original Promise created on add().
      */
-    private addGlobalQueued(queuedDiscoveryEntry: Record<string, any>): void {
-        this.addGlobal(queuedDiscoveryEntry.discoveryEntry)
+    private addGlobalQueued(queuedDiscoveryEntry: QueuedGlobalDiscoveryEntires): void {
+        this.addGlobal(queuedDiscoveryEntry.discoveryEntry, queuedDiscoveryEntry.gbids)
             .then(queuedDiscoveryEntry.resolve)
             .catch(queuedDiscoveryEntry.reject);
     }
@@ -262,7 +300,13 @@ class CapabilityDiscovery {
         this.queuedGlobalDiscoveryEntries = [];
         for (let i = 0; i < this.queuedGlobalLookups.length; i++) {
             parameters = this.queuedGlobalLookups[i];
-            this.lookupGlobal(parameters.domains, parameters.interfaceName, parameters.ttl, parameters.capabilities)
+            this.lookupGlobal(
+                parameters.domains,
+                parameters.interfaceName,
+                parameters.ttl,
+                parameters.capabilities,
+                parameters.gbids
+            )
                 .then(parameters.resolve)
                 .catch(parameters.reject);
         }
@@ -276,16 +320,18 @@ class CapabilityDiscovery {
      * @param domains the domains
      * @param interfaceName the interface name
      * @param discoveryQos the DiscoveryQos giving the strategy for discovering a capability
-     * @param {DiscoveryScope} dDiscoveryQos.discoveryScope the strategy to discover capabilities
+     * @param gbids the backends in which the lookup shall be performed
      * @returns an A+ Promise object, that will provide an array of discovered capabilities, callback signatures:
      *          then({Array[GlobalDiscoveryEntry]} discoveredCaps).catch({Error} error)
      */
     public lookup(
         domains: string[],
         interfaceName: string,
-        discoveryQos: DiscoveryQosGen
+        discoveryQos: DiscoveryQosGen,
+        gbids: string[]
     ): Promise<DiscoveryEntryWithMetaInfo[]> {
         let localCapabilities, globalCapabilities;
+        gbids = gbids.length > 0 ? gbids : this.knownGbids;
 
         if (domains.length !== 1) {
             return Promise.reject(
@@ -327,7 +373,13 @@ class CapabilityDiscovery {
                         CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(false, globalCapabilities)
                     );
                 }
-                return this.lookupGlobalCapabilities(domains, interfaceName, TTL_30DAYS_IN_MS, localCapabilities);
+                return this.lookupGlobalCapabilities(
+                    domains,
+                    interfaceName,
+                    TTL_30DAYS_IN_MS,
+                    localCapabilities,
+                    gbids
+                );
 
             // Use local results, but then lookup global
             case DiscoveryScope.LOCAL_AND_GLOBAL.value:
@@ -345,7 +397,8 @@ class CapabilityDiscovery {
                         domains,
                         interfaceName,
                         TTL_30DAYS_IN_MS,
-                        CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(true, localCapabilities)
+                        CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(true, localCapabilities),
+                        gbids
                     );
                 }
                 return Promise.resolve(
@@ -365,7 +418,13 @@ class CapabilityDiscovery {
                         CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfoArray(false, globalCapabilities)
                     );
                 }
-                return this.lookupGlobalCapabilities(domains, interfaceName, TTL_30DAYS_IN_MS, globalCapabilities);
+                return this.lookupGlobalCapabilities(
+                    domains,
+                    interfaceName,
+                    TTL_30DAYS_IN_MS,
+                    globalCapabilities,
+                    gbids
+                );
             default:
                 return Promise.reject(
                     new ProviderRuntimeException({
@@ -376,42 +435,57 @@ class CapabilityDiscovery {
     }
 
     /**
-     * This method adds a capability in the local and/or global capabilities directory according to the given registration
-     * strategy.
+     * This method adds a capability in the local and/or global capabilities directory according to
+     * the given registration strategy. Global capabilities will be added to all known gbids.
      *
-     * @param discoveryEntry.domain of the capability
-     * @param discoveryEntry.interfaceName of the capability
-     * @param discoveryEntry.participantId of the capability
-     * @param discoveryEntry.providerQos of the capability
-     * @param discoveryEntry.array of communication middlewares
-     *
-     * @returns an A+ promise
+     * @param discoveryEntry DiscoveryEntry to add to all known backends
+     * @returns Promise resolved on success.
      */
-    public add(discoveryEntry: DiscoveryEntry): Promise<void> {
+    public addToAll(discoveryEntry: DiscoveryEntry): Promise<void> {
+        return this.addInternal(discoveryEntry, this.knownGbids);
+    }
+
+    private addInternal(discoveryEntry: DiscoveryEntry, gbids: string[]): Promise<void> {
         this.localCapabilitiesStore.add({
             discoveryEntry,
             remote: false
         });
-        let promise;
         discoveryEntry.lastSeenDateMs = Date.now();
         if (discoveryEntry.qos.scope === ProviderScope.LOCAL) {
-            promise = Promise.resolve();
+            return Promise.resolve();
         } else if (discoveryEntry.qos.scope === ProviderScope.GLOBAL) {
             if (!this.globalAddressSerialized) {
                 const deferred = UtilInternal.createDeferred();
                 this.queuedGlobalDiscoveryEntries.push({
                     discoveryEntry,
+                    gbids,
                     resolve: deferred.resolve,
                     reject: deferred.reject
                 });
-                promise = deferred.promise;
+                return deferred.promise;
             } else {
-                promise = this.addGlobal(discoveryEntry);
+                return this.addGlobal(discoveryEntry, gbids);
             }
-        } else {
-            promise = Promise.reject(new Error(`Encountered unknown ProviderQos scope "${discoveryEntry.qos.scope}"`));
         }
-        return promise;
+        return Promise.reject(new Error(`Encountered unknown ProviderQos scope "${discoveryEntry.qos.scope}"`));
+    }
+
+    /**
+     * This method adds a capability in the local and/or global capabilities directory according to the given registration
+     * strategy.
+     *
+     * @param discoveryEntry DiscoveryEntry of the capability
+     * @param _awaitGlobalRegistration webSocket-libjoynr specific property part of the DiscoveryStub interface
+     * @param gbids identifiers of global backends to add capability into
+     *
+     * @returns an A+ promise
+     */
+    public add(
+        discoveryEntry: DiscoveryEntry,
+        _awaitGlobalRegistration?: boolean,
+        gbids: string[] = []
+    ): Promise<void> {
+        return this.addInternal(discoveryEntry, gbids.length > 0 ? gbids : [this.knownGbids[0]]);
     }
 
     /**
