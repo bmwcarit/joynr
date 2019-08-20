@@ -302,6 +302,12 @@ include(AddClangTidy)
 
 #### END clang-tidy ####
 
+if(NOT DEFINED JOYNR_DEFAULT_GBID)
+    set(JOYNR_DEFAULT_GBID "joynrdefaultgbid")
+    add_definitions(-DJOYNR_DEFAULT_GBID="joynrdefaultgbid")
+endif(NOT DEFINED JOYNR_DEFAULT_GBID)
+message(STATUS "variable JOYNR_DEFAULT_GBID=" ${JOYNR_DEFAULT_GBID})
+
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
 endif(NOT DEFINED JOYNR_SERVER_HOST)

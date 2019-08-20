@@ -24,7 +24,7 @@ discovery-directories-domain=io.joynr
 discovery-messages-ttl=1814400000
 
 capabilities-directory-url=" "
-capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"tcp://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
+capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"@JOYNR_DEFAULT_GBID@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
 # Time span in seconds after which the mqtt broker will send a PING message to the client

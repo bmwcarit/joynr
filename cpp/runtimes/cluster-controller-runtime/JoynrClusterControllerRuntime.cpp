@@ -243,7 +243,7 @@ void JoynrClusterControllerRuntime::init()
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
         JOYNR_LOG_DEBUG(logger(), "MQTT-Messaging");
         auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
-                "joynrdefaultgbid", "");
+                JOYNR_DEFAULT_GBID, "");
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(
                 globalAddress, clusterControllerSettings.getMqttMulticastTopicPrefix());
         doMqttMessaging = true;
