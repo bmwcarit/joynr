@@ -68,6 +68,15 @@ TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses)
     EXPECT_TRUE(factory.canCreate(mqttAddress));
 }
 
+TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddresssesWrongGbid)
+{
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
+    MqttMessagingStubFactory factory(mockMessageSender, testGbid);
+
+    joynr::system::RoutingTypes::MqttAddress mqttAddressWithWrongGbid("wrongGbid", "clientId");
+    EXPECT_FALSE(factory.canCreate(mqttAddressWithWrongGbid));
+}
+
 TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses)
 {
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
@@ -85,6 +94,27 @@ TEST_F(MqttMessagingStubFactoryTest, createReturnsMessagingStub)
     MqttMessagingStubFactory factory(mockMessageSender, testGbid);
 
     EXPECT_TRUE(factory.create(mqttAddress).get() != nullptr);
+}
+
+TEST_F(MqttMessagingStubFactoryTest, createReturnsNullStubForWrongGbid)
+{
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
+    MqttMessagingStubFactory factory(mockMessageSender, testGbid);
+
+    joynr::system::RoutingTypes::MqttAddress mqttAddressWithWrongGbid("wrongGbid", "clientId");
+
+    EXPECT_TRUE(factory.create(mqttAddressWithWrongGbid).get() == nullptr);
+}
+
+TEST_F(MqttMessagingStubFactoryTest, createReturnsNullStubForWrongAddressType)
+{
+    auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
+    MqttMessagingStubFactory factory(mockMessageSender, testGbid);
+
+    EXPECT_TRUE(factory.create(webSocketClientAddress).get() == nullptr);
+    EXPECT_TRUE(factory.create(webSocketServerAddress).get() == nullptr);
+    EXPECT_TRUE(factory.create(channelAddress).get() == nullptr);
+    EXPECT_TRUE(factory.create(browserAddress).get() == nullptr);
 }
 
 } // namespace joynr
