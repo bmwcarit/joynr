@@ -21,7 +21,6 @@ module.exports = {
         es6: true,
         node: true,
         commonjs: true,
-        jasmine: true,
         jest: true,
         browser: true
     },
@@ -68,7 +67,7 @@ module.exports = {
         "no-useless-call": "error",
         "no-useless-concat": "error",
         "prefer-promise-reject-errors": "error",
-        "vars-on-top": "error",
+        "vars-on-top": "off",
         "no-catch-shadow": "error",
         "no-shadow": "off",
         "no-undefined": "off",
@@ -77,8 +76,10 @@ module.exports = {
         "no-path-concat": "error",
         "no-sync": "off",
         "no-useless-computed-key": "error",
-        "no-useless-constructor": "error",
+        "no-useless-constructor": "off",
         "no-var": "error",
+        "no-redeclare": "off",
+        "no-dupe-class-members": "off",
         "object-shorthand": "error",
         "prefer-const": "error",
         "prefer-destructuring": "off",
@@ -98,71 +99,18 @@ module.exports = {
         "promise/valid-params": "off",
         "@typescript-eslint/no-use-before-define": ["error", { "functions": false }],
         "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/no-parameter-properties": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/explicit-function-return-type": ["error", {
+            allowExpressions: true
+        }]
     },
     overrides: [
         {
-            files: ["*.js"],
-            rules: {
-                "@typescript-eslint/adjacent-overload-signatures": "off",
-                "@typescript-eslint/array-type": "off",
-                "@typescript-eslint/ban-types": "off",
-                camelcase: "off",
-                "@typescript-eslint/camelcase": "off",
-                "@typescript-eslint/class-name-casing": "off",
-                "@typescript-eslint/explicit-function-return-type": "off",
-                "@typescript-eslint/explicit-member-accessibility": "off",
-                indent: "off",
-                "@typescript-eslint/indent": "off",
-                "@typescript-eslint/interface-name-prefix": "off",
-                "@typescript-eslint/member-delimiter-style": "off",
-                "@typescript-eslint/no-angle-bracket-type-assertion": "off",
-                "no-array-constructor": "off",
-                "@typescript-eslint/no-array-constructor": "off",
-                "@typescript-eslint/no-empty-interface": "off",
-                "@typescript-eslint/no-explicit-any": "off",
-                "@typescript-eslint/no-inferrable-types": "off",
-                "@typescript-eslint/no-misused-new": "off",
-                "@typescript-eslint/no-non-null-assertion": "off",
-                "@typescript-eslint/no-object-literal-type-assertion": "off",
-                "@typescript-eslint/no-parameter-properties": "off",
-                "@typescript-eslint/no-triple-slash-reference": "off",
-                "no-unused-vars": "off",
-                "@typescript-eslint/no-unused-vars": "off",
-                "@typescript-eslint/no-use-before-define": "off",
-                "@typescript-eslint/no-var-requires": "off",
-                "@typescript-eslint/prefer-interface": "off",
-                "@typescript-eslint/prefer-namespace-keyword": "off",
-                "@typescript-eslint/type-annotation-spacing": "off",
-                // jest rules
-                "jest/no-alias-methods": "off",
-                "jest/no-disabled-tests": "off",
-                "jest/no-focused-tests": "off",
-                "jest/no-identical-title": "off",
-                "jest/no-jest-import": "off",
-                "jest/no-jasmine-globals": "off",
-                "jest/no-test-prefixes": "off",
-                "jest/valid-describe": "off",
-                "jest/valid-expect": "off",
-                "jest/valid-expect-in-promise": "off"
-            }
-        },
-        {
-            files: ["*.ts"],
-            rules: {
-                "no-useless-constructor": "off",
-                "no-redeclare": "off",
-                "no-dupe-class-members": "off",
-                "@typescript-eslint/no-parameter-properties": "off",
-                "@typescript-eslint/no-explicit-any": "off",
-                "@typescript-eslint/no-unused-vars": "off",
-                "@typescript-eslint/explicit-function-return-type": ["error", {
-                    allowExpressions: true
-                }]
-            }
-        },
-        {
             files: ["*Test.ts", "*.spec.ts"],
-            rules: { "@typescript-eslint/explicit-function-return-type": "off" }
+            rules: { "@typescript-eslint/explicit-function-return-type": "off",
+                "no-new": "off" }
         }
     ],
     globals: { define: false },
