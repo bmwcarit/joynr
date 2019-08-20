@@ -193,8 +193,7 @@ class ProxyOperation {
                 params: foundValidOperationSignature.inputParameter.params
             });
 
-            // TODO: remove cast when RequestReplyManager rewrite is finished
-            return (this.requestReplyManager as any)
+            return this.requestReplyManager
                 .sendRequest(
                     {
                         toDiscoveryEntry: this.parent.providerDiscoveryEntry,

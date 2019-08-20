@@ -67,7 +67,10 @@ class RequestReplyManager {
             request: Request.Request;
         },
         callbackSettings: Record<string, any>
-    ) => Promise<void>;
+    ) => Promise<{
+        response: any[];
+        settings: { outputParameter: { name: string; type: string }[] };
+    }>;
 
     private cleanupInterval: NodeJS.Timer;
     private started: boolean = true;
