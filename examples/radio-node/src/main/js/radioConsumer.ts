@@ -16,28 +16,35 @@
  * limitations under the License.
  * #L%
  */
+import {
+    InProcessProvisioning,
+    WebSocketLibjoynrProvisioning
+} from "../../../../../javascript/libjoynr-js/src/main/js/joynr/start/interface/Provisioning";
+import { log, prettyLog } from "./logging";
+import joynr from "joynr";
+import LocalStorage from "joynr/global/LocalStorageNode";
+import RadioProxy from "../generated/js/joynr/vehicle/RadioProxy";
+const provisioning: InProcessProvisioning & WebSocketLibjoynrProvisioning = require("./provisioning_common");
+import OnChangeSubscriptionQos = require("joynr/joynr/proxy/OnChangeSubscriptionQos");
+import RadioStation from "../generated/js/joynr/vehicle/RadioStation";
+import Country from "../generated/js/joynr/vehicle/Country";
+import showHelp from "./console_common";
+import readline from "readline";
 
-const log = require("./logging.js").log;
-const prettyLog = require("./logging.js").prettyLog;
-let joynr = require("joynr");
-const LocalStorage = require("node-localstorage").LocalStorage;
 const persistencyLocation = "./radioLocalStorageConsumer";
-const localStorage = new LocalStorage(persistencyLocation);
-let RadioStation;
-let Country;
-let currentStationSubscriptionId = localStorage.getItem("currentStationSubscriptionId");
-let multicastSubscriptionId = localStorage.getItem("multicastSubscriptionId");
-let multicastPSubscriptionId = localStorage.getItem("multicastPSubscriptionId");
-let subscriptionQosOnChange;
+const localStorage = new LocalStorage({ location: persistencyLocation, clearPersistency: false });
+let subscriptionQosOnChange: OnChangeSubscriptionQos;
 
-const runDemo = function(radioProxy) {
+type Subscribable<T> = { [K in keyof T]: T[K] extends { subscribe: Function } ? K : never }[keyof T];
+
+function runDemo(radioProxy: RadioProxy): Promise<void> {
     prettyLog("ATTRIBUTE GET: currentStation...");
-    radioProxy.currentStation
+    return radioProxy.currentStation
         .get()
-        .catch(function(error) {
+        .catch(function(error: any) {
             prettyLog(`ATTRIBUTE GET: currentStation failed: ${error}`);
         })
-        .then(function(value) {
+        .then(function(value: any) {
             prettyLog(`ATTRIBUTE GET: currentStation returned: ${JSON.stringify(value)}`);
             prettyLog("RPC: radioProxy.addFavoriteStation(radioStation)...");
             return radioProxy.addFavoriteStation({
@@ -48,7 +55,7 @@ const runDemo = function(radioProxy) {
                 })
             });
         })
-        .catch(function(error) {
+        .catch(function(error: any) {
             prettyLog(`RPC: radioProxy.addFavoriteStation(radioStation) failed: ${JSON.stringify(error)}`);
         })
         .then(function() {
@@ -56,10 +63,10 @@ const runDemo = function(radioProxy) {
             prettyLog("radioProxy.shuffleStations()...");
             return radioProxy.shuffleStations();
         })
-        .catch(function(error) {
+        .catch(function(error: any) {
             prettyLog(`RPC: radioProxy.shuffleStations() failed: ${JSON.stringify(error)}`);
         })
-        .then(function(value) {
+        .then(function() {
             prettyLog("RPC: radioProxy.shuffleStations() returned");
             prettyLog("ATTRIBUTE GET: currentStation after shuffle...");
             return radioProxy.currentStation.get();
@@ -70,10 +77,17 @@ const runDemo = function(radioProxy) {
         .then(function(value) {
             prettyLog(`ATTRIBUTE GET: currentStation returned: ${JSON.stringify(value)}`);
         });
-};
+}
 
-const runInteractiveConsole = function(radioProxy, onDone) {
-    const readline = require("readline");
+function runInteractiveConsole(radioProxy: RadioProxy) {
+    let currentStationSubscriptionId = localStorage.getItem("currentStationSubscriptionId");
+    let multicastSubscriptionId = localStorage.getItem("multicastSubscriptionId");
+    let multicastPSubscriptionId = localStorage.getItem("multicastPSubscriptionId");
+
+    let res: Function;
+    const promise = new Promise(resolve => {
+        res = resolve;
+    });
     const rl = readline.createInterface(process.stdin, process.stdout);
     rl.setPrompt(">> ");
     const MODES = {
@@ -126,71 +140,74 @@ const runInteractiveConsole = function(radioProxy, onDone) {
         }
     };
 
-    const showHelp = require("./console_common.js");
     rl.on("line", function(line) {
         const input = line.trim().split(" ");
 
-        function subscribeHelper(settings) {
+        function subscribeHelper(settings: {
+            subscribeToName: Subscribable<RadioProxy>;
+            partitions?: string[];
+            subscriptionId: string;
+        }): Promise<string> {
             const partitionsString = settings.partitions ? JSON.stringify(settings.partitions) : "";
-            const onReceiveCallback = function onReceiveCallback(value) {
+            function onReceiveCallback(value: any) {
                 prettyLog(
                     `radioProxy.${settings.subscribeToName}${partitionsString}.subscribe.onReceive: ${JSON.stringify(
                         value
                     )}`
                 );
-            };
+            }
 
-            const onErrorCallback = function onErrorCallback(error) {
+            function onErrorCallback(error: any) {
                 prettyLog(`radioProxy.${settings.subscribeToName}${partitionsString}.subscribe.onError: ${error}`);
-            };
+            }
 
             const parameters = {
                 subscriptionQos: subscriptionQosOnChange,
                 onReceive: onReceiveCallback,
                 onError: onErrorCallback,
-                partitions: settings.partitions
+                partitions: settings.partitions,
+                subscriptionId: settings.subscriptionId
             };
 
-            if (settings.subscriptionId !== undefined) {
-                parameters.subscriptionId = settings.subscriptionId;
-            }
             return radioProxy[settings.subscribeToName]
                 .subscribe(parameters)
-                .then(function(subscriptionId) {
+                .then((subscriptionId: string) => {
                     prettyLog(
                         `radioProxy.${settings.subscribeToName}${partitionsString}.subscribe.done. ` +
                             `Subscription ID: ${subscriptionId}`
                     );
                     return subscriptionId;
                 })
-                .catch(function(error) {
+                .catch((error: any) => {
                     prettyLog(
                         `radioProxy.${settings.subscribeToName}${partitionsString}.subscribe.failed: ${JSON.stringify(
                             error
                         )}`
                     );
-                    return error;
+                    throw error;
                 });
         }
-        function unsubscribeHelper(settings) {
+        function unsubscribeHelper(settings: {
+            subscribeToName: Subscribable<RadioProxy>;
+            partitions?: string[];
+            subscriptionId: string;
+        }): Promise<void> {
             const partitionsString = settings.partitions ? JSON.stringify(settings.partitions) : "";
             return radioProxy[settings.subscribeToName]
                 .unsubscribe({
                     subscriptionId: settings.subscriptionId
                 })
-                .then(function() {
+                .then(() => {
                     prettyLog(
                         `radioProxy.${settings.subscribeToName}${partitionsString}.unsubscribe.done. ` +
                             `Subscription ID: ${settings.subscriptionId}`
                     );
-                    return null;
                 })
-                .catch(function(error) {
+                .catch(function(error: any) {
                     prettyLog(
                         `radioProxy.${settings.subscribeToName}${partitionsString}.unsubscribe.fail. ` +
                             `Subscription ID: ${settings.subscriptionId} ERROR: ${error}`
                     );
-                    return null;
                 });
         }
         switch (input[0]) {
@@ -209,19 +226,17 @@ const runInteractiveConsole = function(radioProxy, onDone) {
 
                 radioProxy
                     .addFavoriteStation({ newFavoriteStation })
-                    .then(function(returnValue) {
+                    .then(function(returnValue: any) {
                         prettyLog(
                             `RPC: radioProxy.addFavoriteStation(${JSON.stringify(
                                 newFavoriteStation
                             )}) returned: ${JSON.stringify(returnValue)}`
                         );
-                        return returnValue;
                     })
-                    .catch(function(error) {
+                    .catch(function(error: any) {
                         prettyLog(
                             `RPC: radioProxy.addFavoriteStation(${JSON.stringify(newFavoriteStation)}) failed: ${error}`
                         );
-                        return error;
                     });
                 break;
             case MODES.SHUFFLE_STATIONS.value:
@@ -229,18 +244,16 @@ const runInteractiveConsole = function(radioProxy, onDone) {
                     .shuffleStations()
                     .then(function() {
                         prettyLog("RPC: radioProxy.shuffleStations returned. ");
-                        return null;
                     })
-                    .catch(function(error) {
+                    .catch(function(error: any) {
                         prettyLog(`RPC: radioProxy.shuffleStations failed: ${JSON.stringify(error)}`);
-                        return error;
                     });
                 break;
             case MODES.SUBSCRIBE.value:
                 subscribeHelper({
                     subscribeToName: "currentStation",
                     subscriptionId: currentStationSubscriptionId
-                }).then(function(suscriptionId) {
+                }).then(function(suscriptionId: string) {
                     currentStationSubscriptionId = suscriptionId;
                     localStorage.setItem("currentStationSubscriptionId", suscriptionId);
                 });
@@ -249,7 +262,7 @@ const runInteractiveConsole = function(radioProxy, onDone) {
                 subscribeHelper({
                     subscribeToName: "weakSignal",
                     subscriptionId: multicastSubscriptionId
-                }).then(function(suscriptionId) {
+                }).then(function(suscriptionId: string) {
                     multicastSubscriptionId = suscriptionId;
                     localStorage.setItem("multicastSubscriptionId", suscriptionId);
                 });
@@ -259,7 +272,7 @@ const runInteractiveConsole = function(radioProxy, onDone) {
                     subscribeToName: "weakSignal",
                     partitions: ["GERMANY"],
                     subscriptionId: multicastPSubscriptionId
-                }).then(function(suscriptionId) {
+                }).then(function(suscriptionId: string) {
                     multicastPSubscriptionId = suscriptionId;
                     localStorage.setItem("multicastPSubscriptionId", suscriptionId);
                 });
@@ -314,79 +327,60 @@ const runInteractiveConsole = function(radioProxy, onDone) {
     });
 
     rl.on("close", function() {
-        if (onDone) {
-            onDone();
-        }
+        res();
     });
 
     showHelp(MODES);
     rl.prompt();
-};
-
-if (process.env.domain === undefined) {
-    log("please pass a domain as argument");
-    process.exit(0);
+    return promise;
 }
-const domain = process.env.domain;
-log(`domain: ${domain}`);
 
-const provisioning = require("./provisioning_common.js");
-
-provisioning.persistency = {
-    //clearPersistency : true,
-    location: persistencyLocation
-};
-
-if (process.env.runtime !== undefined) {
-    if (process.env.runtime === "inprocess") {
-        provisioning.brokerUri = process.env.brokerUri;
-        provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl;
-        provisioning.bounceProxyUrl = `${provisioning.bounceProxyBaseUrl}/bounceproxy/`;
-        joynr.selectRuntime("inprocess");
-    } else if (process.env.runtime === "websocket") {
-        provisioning.ccAddress.host = process.env.cchost;
-        provisioning.ccAddress.port = process.env.ccport;
-        joynr.selectRuntime("websocket.libjoynr");
+(async () => {
+    if (process.env.domain === undefined) {
+        log("please pass a domain as argument");
+        process.exit(0);
     }
-}
+    const domain = process.env.domain!;
+    log(`domain: ${domain}`);
 
-RadioStation = require("../generated/js/joynr/vehicle/RadioStation");
-Country = require("../generated/js/joynr/vehicle/Country");
-require("../generated/js/joynr/vehicle/GeoPosition");
-const AddFavoriteStationErrorEnum = require("../generated/js/joynr/vehicle/Radio/AddFavoriteStationErrorEnum");
-const RadioProxy = require("../generated/js/joynr/vehicle/RadioProxy.js");
-joynr
-    .load(provisioning)
-    .then(function(loadedJoynr) {
-        log("joynr started");
-        joynr = loadedJoynr;
-        const messagingQos = new joynr.messaging.MessagingQos({
-            ttl: 60000
-        });
+    provisioning.persistency = {
+        location: persistencyLocation
+    };
 
-        subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-            minIntervalMs: 50
-        });
-
-        joynr.proxyBuilder
-            .build(RadioProxy, {
-                domain,
-                messagingQos
-            })
-            .then(function(radioProxy) {
-                log("radio proxy build");
-                runDemo(radioProxy);
-                runInteractiveConsole(radioProxy, function() {
-                    log("exiting...");
-                    joynr.shutdown().then(function() {
-                        log("shutdown completed...");
-                        process.exit(0);
-                    });
-                });
-                return radioProxy;
-            })
-            .catch(function(error) {
-                log(`error running radioProxy: ${error}`);
-            });
-        return loadedJoynr;
+    if (process.env.runtime !== undefined) {
+        if (process.env.runtime === "inprocess") {
+            provisioning.brokerUri = process.env.brokerUri!;
+            provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl!;
+            provisioning.bounceProxyUrl = `${provisioning.bounceProxyBaseUrl!}/bounceproxy/`;
+            joynr.selectRuntime("inprocess");
+        } else if (process.env.runtime === "websocket") {
+            provisioning.ccAddress.host = process.env.cchost!;
+            provisioning.ccAddress.port = (process.env.ccport as unknown) as number;
+            joynr.selectRuntime("websocket.libjoynr");
+        }
+    }
+    await localStorage.init();
+    await joynr.load(provisioning);
+    log("joynr started");
+    const messagingQos = new joynr.messaging.MessagingQos({
+        ttl: 60000
     });
+
+    subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
+        minIntervalMs: 50
+    });
+    const radioProxy = await joynr.proxyBuilder.build(RadioProxy, {
+        domain,
+        messagingQos
+    });
+    log("radio proxy build");
+    await runDemo(radioProxy);
+    await runInteractiveConsole(radioProxy);
+    log("exiting...");
+    await joynr.shutdown();
+    log("shutdown completed...");
+    process.exit(0);
+})().catch(e => {
+    log(`error running radioProxy: ${e}`);
+    joynr.shutdown();
+});

@@ -17,11 +17,25 @@
  * #L%
  */
 
-const log = require("./logging.js").log;
-let joynr = require("joynr");
-const readline = require("readline");
+import {
+    InProcessProvisioning,
+    WebSocketLibjoynrProvisioning
+} from "../../../../../javascript/libjoynr-js/src/main/js/joynr/start/interface/Provisioning";
+import { log } from "./logging";
 
-const runInteractiveConsole = function(radioProvider, onDone) {
+import joynr from "joynr";
+import readline from "readline";
+import showHelp from "./console_common";
+import RadioProvider from "../generated/js/joynr/vehicle/RadioProvider";
+import MyRadioProvider from "./MyRadioProvider";
+const provisioning: InProcessProvisioning & WebSocketLibjoynrProvisioning = require("./provisioning_common");
+
+const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
+    let res: Function;
+    const promise = new Promise(resolve => {
+        res = resolve;
+    });
+
     const rl = readline.createInterface(process.stdin, process.stdout);
     rl.setPrompt(">> ");
     const MODES = {
@@ -52,7 +66,6 @@ const runInteractiveConsole = function(radioProvider, onDone) {
         }
     };
 
-    const showHelp = require("./console_common.js");
     rl.on("line", function(line) {
         const input = line.trim().split(" ");
         switch (input[0]) {
@@ -69,7 +82,7 @@ const runInteractiveConsole = function(radioProvider, onDone) {
                 radioProvider.fireWeakSignalWithPartition();
                 break;
             case MODES.SHUFFLE.value:
-                radioProvider.shuffleStations({});
+                radioProvider.shuffleStations();
                 break;
             case "":
                 break;
@@ -81,56 +94,42 @@ const runInteractiveConsole = function(radioProvider, onDone) {
     });
 
     rl.on("close", function() {
-        if (onDone) {
-            onDone()
-                .then(function() {
-                    process.exit(0);
-                })
-                .catch(function(error) {
-                    console.log(`error while shutting down: ${error}`);
-                    process.exit(1);
-                });
-        } else {
-            process.exit(0);
-        }
+        res();
     });
 
     showHelp(MODES);
     rl.prompt();
+    return promise;
 };
 
-if (process.env.domain === undefined) {
-    log("please pass a domain as argument");
-    process.exit(0);
-}
-const domain = process.env.domain;
-log(`domain: ${domain}`);
-
-const provisioning = require("./provisioning_common.js");
-
-provisioning.persistency = {
-    //clearPersistency : true,
-    location: "./radioLocalStorageProvider"
-};
-
-if (process.env.runtime !== undefined) {
-    if (process.env.runtime === "inprocess") {
-        provisioning.brokerUri = process.env.brokerUri;
-        provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl;
-        provisioning.bounceProxyUrl = `${provisioning.bounceProxyBaseUrl}/bounceproxy/`;
-        joynr.selectRuntime("inprocess");
-    } else if (process.env.runtime === "websocket") {
-        provisioning.ccAddress.host = process.env.cchost;
-        provisioning.ccAddress.port = process.env.ccport;
-        joynr.selectRuntime("websocket.libjoynr");
+(async () => {
+    if (process.env.domain === undefined) {
+        log("please pass a domain as argument");
+        process.exit(0);
     }
-}
+    const domain = process.env.domain;
+    log(`domain: ${domain}`);
 
-const RadioProvider = require("../generated/js/joynr/vehicle/RadioProvider.js");
-const MyRadioProvider = require("./MyRadioProvider.js");
-joynr.load(provisioning).then(function(loadedJoynr) {
+    provisioning.persistency = {
+        //clearPersistency : true,
+        location: "./radioLocalStorageProvider"
+    };
+
+    if (process.env.runtime !== undefined) {
+        if (process.env.runtime === "inprocess") {
+            provisioning.brokerUri = process.env.brokerUri!;
+            provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl!;
+            provisioning.bounceProxyUrl = `${provisioning.bounceProxyBaseUrl}/bounceproxy/`;
+            joynr.selectRuntime("inprocess");
+        } else if (process.env.runtime === "websocket") {
+            provisioning.ccAddress.host = process.env.cchost!;
+            provisioning.ccAddress.port = (process.env.ccport as unknown) as number;
+            joynr.selectRuntime("websocket.libjoynr");
+        }
+    }
+
+    await joynr.load(provisioning);
     log("joynr started");
-    joynr = loadedJoynr;
 
     const providerQos = new joynr.types.ProviderQos({
         customParameters: [],
@@ -148,33 +147,22 @@ joynr.load(provisioning).then(function(loadedJoynr) {
     let participantId; // intentionally left undefined by default
     const awaitGlobalRegistration = true;
 
-    joynr.registration
-        .registerProvider(
-            domain,
-            radioProvider,
-            providerQos,
-            expiryDateMs,
-            loggingContext,
-            participantId,
-            awaitGlobalRegistration
-        )
-        .then(function() {
-            log("provider registered successfully");
-            runInteractiveConsole(radioProviderImpl, function() {
-                return joynr.registration
-                    .unregisterProvider(domain, radioProvider)
-                    .then(function() {
-                        joynr.shutdown();
-                    })
-                    .catch(function() {
-                        joynr.shutdown();
-                    });
-            });
-            return null;
-        })
-        .catch(function(error) {
-            log(`error registering provider: ${error.toString()}`);
-            joynr.shutdown();
-        });
-    return loadedJoynr;
+    await joynr.registration.registerProvider(
+        domain,
+        radioProvider,
+        providerQos,
+        expiryDateMs,
+        loggingContext,
+        participantId,
+        awaitGlobalRegistration
+    );
+    log("provider registered successfully");
+    await runInteractiveConsole(radioProviderImpl);
+    await joynr.registration.unregisterProvider(domain, radioProvider);
+    await joynr.shutdown();
+    process.exit(0);
+})().catch(async e => {
+    log(`error running radioProvider: ${e}`);
+    await joynr.shutdown();
+    process.exit(1);
 });

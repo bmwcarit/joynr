@@ -17,6 +17,10 @@
  * #L%
  */
 
+import { LoggingEvent } from "joynr/joynr/system/JoynrLogger";
+
+type LogLevel = "debug" | "info" | "log" | "error";
+
 /**
  * An exemplary log4javascript Appender type that can be used via the joynr config. It simply logs
  * the incoming log events to the console.
@@ -27,19 +31,16 @@
 class CustomerLoggingAppender {
     /**
      * Implementing the appender function of log4javascript appenders
-     *
-     * @name CustomerLoggingAppender#append
-     * @function
      */
-    append(loggingEvent) {
+    public append(loggingEvent: LoggingEvent): void {
         //console.debug does not exist in nodejs
 
         const formattedMessage = loggingEvent.messages.join(",");
-        const logLevel = loggingEvent.level.name.toLowerCase();
+        const logLevel: LogLevel = loggingEvent.level.name.toLowerCase() as any;
         console[logLevel](formattedMessage);
     }
 }
 
 console.debug = console.log;
 
-module.exports = CustomerLoggingAppender;
+export = CustomerLoggingAppender;

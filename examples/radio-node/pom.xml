@@ -14,14 +14,6 @@
 		<version>1.11.0-SNAPSHOT</version>
 	</parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>io.joynr.javascript</groupId>
-			<artifactId>libjoynr-js</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<sourceDirectory>src/main/js</sourceDirectory>
 		<plugins>

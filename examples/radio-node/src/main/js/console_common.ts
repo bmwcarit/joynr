@@ -17,10 +17,12 @@
  * #L%
  */
 
-const log = require("./logging.js").log;
-const prettyLog = require("./logging.js").prettyLog;
+import { log } from "./logging";
+import { prettyLog } from "./logging";
 
-const showHelp = function(modes) {
+const showHelp = function(
+    modes: Record<string, { value: string; description: string; options: Record<string, string> }>
+) {
     let optionsText;
     let modeKey;
     let optionKey;
@@ -44,4 +46,4 @@ const showHelp = function(modes) {
     log("");
 };
 
-module.exports = showHelp;
+export = showHelp;

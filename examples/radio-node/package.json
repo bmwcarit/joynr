@@ -6,8 +6,7 @@
   "main": "src/main/js/radioConsumer.js",
   "private": true,
   "dependencies": {
-    "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
-    "node-localstorage": "1.3.0"
+    "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js"
   },
   "config": {
     "runtime": "websocket",
@@ -20,7 +19,12 @@
     "brokerUri": "tcp://localhost:1883"
   },
   "scripts": {
-    "startconsumer": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri node src/main/js/radioConsumer.js",
-    "startprovider": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri node src/main/js/radioProvider.js"
+    "startconsumer": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri ts-node src/main/js/radioConsumer",
+    "startprovider": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri ts-node src/main/js/radioProvider"
+  },
+  "devDependencies": {
+    "@types/node": "8.9.4",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.2"
   }
 }

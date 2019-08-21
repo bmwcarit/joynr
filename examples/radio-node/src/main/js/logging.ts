@@ -17,14 +17,14 @@
  * #L%
  */
 
-exports.log = function(msg) {
+export function log(msg: any) {
     console.log(`   ${msg}`);
-};
+}
 
-exports.error = function(msg) {
+export function error(msg: any) {
     console.error(msg);
-};
+}
 
-exports.prettyLog = function(msg) {
+export function prettyLog(msg: any) {
     console.log(`>>>>>>>>> ${msg}`);
-};
+}
