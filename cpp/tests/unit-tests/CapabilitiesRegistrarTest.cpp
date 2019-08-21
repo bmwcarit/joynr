@@ -131,6 +131,7 @@ TEST_F(CapabilitiesRegistrarTest, add)
     EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
+    std::vector<std::string> capturedGbids;
     EXPECT_CALL(*mockDiscovery,
                 addAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
                                    Property(&joynr::types::DiscoveryEntry::getInterfaceName,
@@ -145,7 +146,7 @@ TEST_F(CapabilitiesRegistrarTest, add)
                              _,
                              _,
                              _,
-                             _)).WillOnce(DoAll(InvokeArgument<3>(), Return(mockFuture)));
+                             _)).WillOnce(DoAll(::testing::SaveArg<2>(&capturedGbids), InvokeArgument<3>(), Return(mockFuture)));
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -158,6 +159,7 @@ TEST_F(CapabilitiesRegistrarTest, add)
     future.get();
 
     EXPECT_EQ(expectedParticipantId, participantId);
+    EXPECT_EQ(capturedGbids.size(), 0);
 }
 
 TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
@@ -367,3 +369,100 @@ TEST_F(CapabilitiesRegistrarTest, removeDispatcher)
 
     EXPECT_EQ(expectedParticipantId, participantId);
 }
+
+TEST_F(CapabilitiesRegistrarTest, addWithGbids)
+{
+
+    types::ProviderQos testQos;
+    testQos.setPriority(100);
+    EXPECT_CALL(*mockParticipantIdStorage,
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
+            .Times(1)
+            .WillOnce(Return(expectedParticipantId));
+    EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+
+    std::vector<std::string> capturedGbids;
+    EXPECT_CALL(*mockDiscovery,
+                addAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
+                                   Property(&joynr::types::DiscoveryEntry::getInterfaceName,
+                                            Eq(MockProvider::INTERFACE_NAME())),
+                                   Property(&joynr::types::DiscoveryEntry::getParticipantId,
+                                            Eq(expectedParticipantId)),
+                                   Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos)),
+                                   Property(&joynr::types::DiscoveryEntry::getProviderVersion,
+                                            Eq(expectedProviderVersion))), // discoveryEntry
+                             _, // awaitGlobalRegistration
+                             _, // gbids
+                             _, // onSuccess callback
+                             _, // onApplicationError callback
+                             _, // onError callback
+                             _ // messagingQos
+                             )).WillOnce(DoAll(::testing::SaveArg<2>(&capturedGbids), InvokeArgument<3>(), Return(mockFuture)));
+
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    bool persist = false;
+    bool awaitGlobalRegistration = false;
+    bool addToAll = false;
+    std::vector<std::string> gbids = { "joynrdefaultgbid", "othergbid" };
+
+    std::string participantId =
+            capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError, persist, awaitGlobalRegistration, addToAll, gbids);
+    future.get();
+
+    EXPECT_EQ(expectedParticipantId, participantId);
+    EXPECT_EQ(gbids, capturedGbids);
+}
+
+TEST_F(CapabilitiesRegistrarTest, addToAll)
+{
+
+    types::ProviderQos testQos;
+    testQos.setPriority(100);
+    EXPECT_CALL(*mockParticipantIdStorage,
+                getProviderParticipantId(domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
+            .Times(1)
+            .WillOnce(Return(expectedParticipantId));
+    EXPECT_CALL(*mockDispatcher, addRequestCaller(expectedParticipantId, _)).Times(1);
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+
+    EXPECT_CALL(*mockDiscovery,
+                addToAllAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(domain)),
+                                   Property(&joynr::types::DiscoveryEntry::getInterfaceName,
+                                            Eq(MockProvider::INTERFACE_NAME())),
+                                   Property(&joynr::types::DiscoveryEntry::getParticipantId,
+                                            Eq(expectedParticipantId)),
+                                   Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos)),
+                                   Property(&joynr::types::DiscoveryEntry::getProviderVersion,
+                                            Eq(expectedProviderVersion))), // discoveryEntry
+                             _, // awaitGlobalRegistration
+                             _, // onSuccess callback
+                             _, // onApplicationError callback
+                             _, // onError callback
+                             _ // messagingQos
+                             )).WillOnce(DoAll(InvokeArgument<2>(), Return(mockFuture)));
+
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    bool persist = false;
+    bool awaitGlobalRegistration = false;
+    bool addToAll = true;
+
+    std::string participantId =
+            capabilitiesRegistrar->addAsync(domain, mockProvider, testQos, onSuccess, onError, persist, awaitGlobalRegistration, addToAll);
+    future.get();
+
+    EXPECT_EQ(expectedParticipantId, participantId);
+}
+
