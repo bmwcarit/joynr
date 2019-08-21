@@ -31,8 +31,11 @@ namespace joynr
 {
 MqttMulticastAddressCalculator::MqttMulticastAddressCalculator(
         std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress,
-        const std::string& mqttMulticastTopicPrefix)
-        : globalAddress(globalAddress), mqttMulticastTopicPrefix(mqttMulticastTopicPrefix)
+        const std::string& mqttMulticastTopicPrefix,
+        std::vector<std::string> availableGbids)
+        : globalAddress(globalAddress),
+          mqttMulticastTopicPrefix(mqttMulticastTopicPrefix),
+          availableGbids(availableGbids)
 {
 }
 

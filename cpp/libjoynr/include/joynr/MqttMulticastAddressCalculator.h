@@ -43,7 +43,8 @@ class MqttMulticastAddressCalculator : public IMulticastAddressCalculator
 public:
     explicit MqttMulticastAddressCalculator(
             std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress,
-            const std::string& mqttMulticastTopicPrefix);
+            const std::string& mqttMulticastTopicPrefix,
+            std::vector<std::string> availableGbids);
 
     std::shared_ptr<const system::RoutingTypes::Address> compute(
             const ImmutableMessage& message) override;
@@ -51,6 +52,7 @@ public:
 private:
     std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress;
     std::string mqttMulticastTopicPrefix;
+    std::vector<std::string> availableGbids;
 };
 
 } // namespace joynr
