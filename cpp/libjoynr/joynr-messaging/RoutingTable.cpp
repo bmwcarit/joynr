@@ -54,7 +54,7 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
         if (auto mqttAddress =
                     dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get())) {
             const auto newMqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
-                    joynr::system::RoutingTypes::MqttAddress(gbid, mqttAddress->getTopic()));
+                    gbid, mqttAddress->getTopic());
             return routingtable::RoutingEntry(participantId,
                                               newMqttAddress,
                                               found->isGloballyVisible,
