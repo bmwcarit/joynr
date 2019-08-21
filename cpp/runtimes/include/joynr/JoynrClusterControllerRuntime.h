@@ -233,9 +233,8 @@ private:
     bool isShuttingDown;
     const system::RoutingTypes::Address dummyGlobalAddress;
 
-    std::map<std::string, joynr::BrokerUrl> gbidToBrokerUrlMapping;
     std::vector<std::string> availableGbids;
-    void fillBackendsStruct(const MessagingSettings& messagingSettings);
+    void fillAvailableGbidsVector(const MessagingSettings& messagingSettings);
 };
 
 } // namespace joynr
