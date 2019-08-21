@@ -242,10 +242,8 @@ void JoynrClusterControllerRuntime::init()
         brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
         JOYNR_LOG_DEBUG(logger(), "MQTT-Messaging");
-        auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
-                JOYNR_DEFAULT_GBID, "");
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(
-                globalAddress, clusterControllerSettings.getMqttMulticastTopicPrefix());
+                clusterControllerSettings.getMqttMulticastTopicPrefix(), availableGbids);
         doMqttMessaging = true;
     } else if (brokerProtocol == "HTTP" || brokerProtocol == "HTTPS") {
         JOYNR_LOG_DEBUG(logger(), "HTTP-Messaging");

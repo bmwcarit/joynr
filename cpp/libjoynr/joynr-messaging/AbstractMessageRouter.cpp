@@ -171,11 +171,9 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
         // add global transport address if message is NOT received from global
         // AND provider is globally visible
         if (!message.isReceivedFromGlobal() && addressCalculator && publishToGlobal(message)) {
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> globalTransport =
-                    addressCalculator->compute(message);
-            if (globalTransport) {
-                addresses.insert(std::move(globalTransport));
-            }
+            std::vector<std::shared_ptr<const joynr::system::RoutingTypes::Address>>
+                    globalTransportVector = addressCalculator->compute(message);
+            addresses.insert(globalTransportVector.begin(), globalTransportVector.end());
         }
     } else {
         const std::string& destinationPartId = message.getRecipient();

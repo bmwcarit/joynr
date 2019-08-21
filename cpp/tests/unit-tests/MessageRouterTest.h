@@ -66,8 +66,6 @@ public:
               mutableMessage(),
               multicastMessagingSkeletonDirectory(
                       std::make_shared<MulticastMessagingSkeletonDirectory>()),
-              brokerURL("mqtt://globalTransport.example.com"),
-              mqttTopic(""),
               localTransport(std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(
                       joynr::system::RoutingTypes::WebSocketProtocol::Enum::WS,
                       "host",
@@ -76,11 +74,9 @@ public:
               webSocketClientAddress(
                       std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
                               "testWebSocketClientAddress")),
-              globalTransport(
-                      std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(brokerURL,
-                                                                                       mqttTopic)),
               enablePersistency(true),
               sendMsgRetryInterval(1000),
+              availableGbids{"testGbid1", "testGbid2", "testGbid3"},
               ownAddress(std::make_shared<const system::RoutingTypes::Address>())
     {
         singleThreadedIOService->start();
@@ -155,7 +151,7 @@ protected:
                 std::unique_ptr<IPlatformSecurityManager>(),
                 singleThreadedIOService->getIOService(),
                 std::make_unique<MqttMulticastAddressCalculator>(
-                        globalTransport, ccSettings.getMqttMulticastTopicPrefix()),
+                        ccSettings.getMqttMulticastTopicPrefix(), availableGbids),
                 globalCcAddress,
                 messageNotificationProviderParticipantId,
                 enablePersistency,
@@ -185,16 +181,14 @@ protected:
 
     MutableMessage mutableMessage;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
-    std::string brokerURL;
-    std::string mqttTopic;
 
     std::shared_ptr<const joynr::system::RoutingTypes::WebSocketAddress> localTransport;
     const std::shared_ptr<const joynr::system::RoutingTypes::WebSocketClientAddress>
             webSocketClientAddress;
-    std::shared_ptr<const joynr::system::RoutingTypes::MqttAddress> globalTransport;
 
     const bool enablePersistency;
     const std::uint32_t sendMsgRetryInterval;
+    std::vector<std::string> availableGbids;
 
     void routeMessageToAddress()
     {

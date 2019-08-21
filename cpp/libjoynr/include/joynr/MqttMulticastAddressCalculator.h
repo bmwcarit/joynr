@@ -21,6 +21,7 @@
 #define MQTTMULTICASTADDRESSCALCULATOR_H
 
 #include <memory>
+#include <vector>
 
 #include "joynr/IMulticastAddressCalculator.h"
 
@@ -41,16 +42,13 @@ class Address;
 class MqttMulticastAddressCalculator : public IMulticastAddressCalculator
 {
 public:
-    explicit MqttMulticastAddressCalculator(
-            std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress,
-            const std::string& mqttMulticastTopicPrefix,
-            std::vector<std::string> availableGbids);
+    explicit MqttMulticastAddressCalculator(const std::string& mqttMulticastTopicPrefix,
+                                            std::vector<std::string> availableGbids);
 
-    std::shared_ptr<const system::RoutingTypes::Address> compute(
+    std::vector<std::shared_ptr<const system::RoutingTypes::Address>> compute(
             const ImmutableMessage& message) override;
 
 private:
-    std::shared_ptr<const system::RoutingTypes::MqttAddress> globalAddress;
     std::string mqttMulticastTopicPrefix;
     std::vector<std::string> availableGbids;
 };

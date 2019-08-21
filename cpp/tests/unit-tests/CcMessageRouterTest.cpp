@@ -213,9 +213,8 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
             "ConsumerRuntimeWebSocketAddress");
 
     // create a new pointer representing the multicast address
-    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> multicastAddress(
-            new joynr::system::RoutingTypes::MqttAddress(*globalTransport));
-    multicastAddress->setTopic(multicastId);
+    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress>
+            multicastAddress(std::make_shared<joynr::system::RoutingTypes::MqttAddress>("testGbid1", multicastId));
 
     auto expectedAddress1 =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
@@ -338,9 +337,8 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
             "ConsumerRuntimeWebSocketAddress2");
 
     // create a new pointer representing the multicast address
-    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> multicastAddress(
-            new joynr::system::RoutingTypes::MqttAddress(*globalTransport));
-    multicastAddress->setTopic(multicastId);
+    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress>
+            multicastAddress(std::make_shared<joynr::system::RoutingTypes::MqttAddress>("testGbid1", multicastId));
 
     auto expectedAddress1 =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(

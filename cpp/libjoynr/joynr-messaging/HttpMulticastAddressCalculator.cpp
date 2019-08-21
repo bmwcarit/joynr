@@ -34,8 +34,8 @@ HttpMulticastAddressCalculator::HttpMulticastAddressCalculator(
 {
 }
 
-std::shared_ptr<const system::RoutingTypes::Address> HttpMulticastAddressCalculator::compute(
-        const ImmutableMessage& message)
+std::vector<std::shared_ptr<const system::RoutingTypes::Address>> HttpMulticastAddressCalculator::
+        compute(const ImmutableMessage& message)
 {
     std::ignore = message;
     throw exceptions::JoynrRuntimeException("Not implemented...yet!");

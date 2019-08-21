@@ -21,6 +21,7 @@
 #define IMULTICASTADDRESSCALCULATOR_H
 
 #include <memory>
+#include <vector>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -36,7 +37,7 @@ public:
     /*
      * Compute a multicast routing address for the given message.
      */
-    virtual std::shared_ptr<const joynr::system::RoutingTypes::Address> compute(
+    virtual std::vector<std::shared_ptr<const joynr::system::RoutingTypes::Address>> compute(
             const ImmutableMessage& message) = 0;
     virtual ~IMulticastAddressCalculator() = default;
 };

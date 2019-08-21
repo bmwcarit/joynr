@@ -304,7 +304,6 @@ include(AddClangTidy)
 
 if(NOT DEFINED JOYNR_DEFAULT_GBID)
     set(JOYNR_DEFAULT_GBID "joynrdefaultgbid")
-    add_definitions(-DJOYNR_DEFAULT_GBID="joynrdefaultgbid")
 endif(NOT DEFINED JOYNR_DEFAULT_GBID)
 message(STATUS "variable JOYNR_DEFAULT_GBID=" ${JOYNR_DEFAULT_GBID})
 

@@ -21,6 +21,7 @@
 #define HTTPMULTICASTADDRESSCALCULATOR_H
 
 #include <memory>
+#include <vector>
 
 #include "joynr/IMulticastAddressCalculator.h"
 
@@ -42,7 +43,7 @@ public:
     explicit HttpMulticastAddressCalculator(
             std::shared_ptr<const system::RoutingTypes::ChannelAddress> globalAddress);
 
-    std::shared_ptr<const system::RoutingTypes::Address> compute(
+    std::vector<std::shared_ptr<const system::RoutingTypes::Address>> compute(
             const ImmutableMessage& message) override;
 
 private:

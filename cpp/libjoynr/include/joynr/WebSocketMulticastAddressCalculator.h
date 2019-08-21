@@ -21,6 +21,7 @@
 #define WEBSOCKETMULTICASTADDRESSCALCULATOR_H
 
 #include <memory>
+#include <vector>
 
 #include "joynr/IMulticastAddressCalculator.h"
 
@@ -42,7 +43,7 @@ public:
     explicit WebSocketMulticastAddressCalculator(
             std::shared_ptr<const system::RoutingTypes::WebSocketAddress> clusterControllerAddress);
 
-    std::shared_ptr<const system::RoutingTypes::Address> compute(
+    std::vector<std::shared_ptr<const system::RoutingTypes::Address>> compute(
             const ImmutableMessage& message) override;
 
 private:
