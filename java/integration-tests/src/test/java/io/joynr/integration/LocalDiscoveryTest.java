@@ -202,8 +202,6 @@ public class LocalDiscoveryTest {
     @Captor
     private ArgumentCaptor<Set<DiscoveryEntryWithMetaInfo>> discoveryEntryWithMetaInfoArgumentCaptorForCachedEntry;
 
-    private final long defaultDiscoveryRetryIntervalMs = 2000L;
-
     private final String[] defaultGbids = { "testgbid1", "testgbid2" };
     private MqttAddress globalAddress;
 
@@ -221,7 +219,6 @@ public class LocalDiscoveryTest {
                                                                                                              expiredDiscoveryEntryCacheCleanerMock,
                                                                                                              3600000,
                                                                                                              capabilitiesFreshnessUpdateExecutorMock,
-                                                                                                             defaultDiscoveryRetryIntervalMs,
                                                                                                              shutdownNotifier,
                                                                                                              defaultGbids);
 

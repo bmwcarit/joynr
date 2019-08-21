@@ -112,7 +112,6 @@ public class LocalCapabilitiesDirectoryTest {
     private static final String INTERFACE_NAME = "interfaceName";
     private static final String TEST_URL = "http://testUrl";
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
-    private static final long defaultDiscoveryRetryIntervalMs = 2000L;
     private static final long freshnessUpdateIntervalMs = 3600000; // 1h
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
@@ -237,7 +236,6 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         expiredDiscoveryEntryCacheCleaner,
                                                                         freshnessUpdateIntervalMs,
                                                                         capabilitiesFreshnessUpdateExecutor,
-                                                                        defaultDiscoveryRetryIntervalMs,
                                                                         shutdownNotifier,
                                                                         knownGbids);
 

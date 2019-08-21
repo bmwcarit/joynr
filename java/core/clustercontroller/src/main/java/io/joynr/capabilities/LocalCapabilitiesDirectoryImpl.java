@@ -44,13 +44,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
@@ -68,6 +64,8 @@ import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.DiscoveryError;
+import joynr.types.DiscoveryQos;
+import joynr.types.DiscoveryScope;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
@@ -97,7 +95,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache;
     private final Map<String, List<String>> globalProviderParticipantIdToGbidListMap;
-    private final long defaultDiscoveryRetryInterval;
 
     private MessageRouter messageRouter;
 
@@ -154,13 +151,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner,
                                           @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS) long freshnessUpdateIntervalMs,
                                           @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS) long defaultDiscoveryRetryInterval,
                                           ShutdownNotifier shutdownNotifier,
                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] knownGbids) {
         globalProviderParticipantIdToGbidListMap = new HashMap<>();
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
-        this.defaultDiscoveryRetryInterval = defaultDiscoveryRetryInterval;
         this.messageRouter = messageRouter;
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
@@ -516,9 +511,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup1Deferred> lookup(String[] domains,
-                                           String interfaceName,
-                                           joynr.types.DiscoveryQos discoveryQos) {
+    public Promise<Lookup1Deferred> lookup(String[] domains, String interfaceName, DiscoveryQos discoveryQos) {
         Promise<Lookup2Deferred> lookupPromise = lookup(domains, interfaceName, discoveryQos, new String[]{});
         Lookup1Deferred lookup1Deferred = new Lookup1Deferred();
         lookupPromise.then(new PromiseListener() {
@@ -549,7 +542,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     @Override
     public Promise<Lookup2Deferred> lookup(String[] domains,
                                            String interfaceName,
-                                           joynr.types.DiscoveryQos discoveryQos,
+                                           DiscoveryQos discoveryQos,
                                            String[] gbids) {
         final Lookup2Deferred deferred = new Lookup2Deferred();
 
@@ -583,16 +576,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 deferred.reject(error);
             }
         };
-        DiscoveryScope discoveryScope = DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope().name());
-        lookup(domains,
-               interfaceName,
-               new DiscoveryQos(discoveryQos.getDiscoveryTimeout(),
-                                defaultDiscoveryRetryInterval,
-                                ArbitrationStrategy.NotSet,
-                                discoveryQos.getCacheMaxAge(),
-                                discoveryScope),
-               gbids,
-               callback);
+        lookup(domains, interfaceName, discoveryQos, gbids, callback);
 
         return new Promise<>(deferred);
     }
@@ -661,7 +645,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                     gbids,
                                                                                                     domains,
                                                                                                     interfaceName,
-                                                                                                    discoveryQos.getCacheMaxAgeMs());
+                                                                                                    discoveryQos.getCacheMaxAge());
         switch (discoveryScope) {
         case LOCAL_ONLY:
             capabilitiesCallback.processCapabilitiesReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
@@ -778,7 +762,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                          domainsForGlobalLookup.toArray(new String[domainsForGlobalLookup.size()]),
                                          interfaceName,
                                          matchedDiscoveryEntries,
-                                         discoveryQos.getDiscoveryTimeoutMs(),
+                                         discoveryQos.getDiscoveryTimeout(),
                                          capabilitiesCallback);
         }
     }
@@ -839,7 +823,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public Promise<Lookup3Deferred> lookup(String participantId) {
-        joynr.types.DiscoveryQos discoveryQos = new joynr.types.DiscoveryQos();
+        DiscoveryQos discoveryQos = new DiscoveryQos();
         Promise<Lookup4Deferred> lookupPromise = lookup(participantId, discoveryQos, new String[]{});
         Lookup3Deferred lookup3Deferred = new Lookup3Deferred();
         lookupPromise.then(new PromiseListener() {
@@ -866,9 +850,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public Promise<Lookup4Deferred> lookup(String participantId,
-                                           joynr.types.DiscoveryQos discoveryQos,
-                                           String[] gbids) {
+    public Promise<Lookup4Deferred> lookup(String participantId, DiscoveryQos discoveryQos, String[] gbids) {
         Lookup4Deferred deferred = new Lookup4Deferred();
         DiscoveryError validationResult = validateGbids(gbids);
         if (validationResult != null) {
@@ -880,7 +862,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             gbids = knownGbids;
         }
 
-        lookup(participantId, DiscoveryQos.NO_FILTER, gbids, new CapabilityCallback() {
+        discoveryQos = new DiscoveryQos(Long.MAX_VALUE, Long.MAX_VALUE, DiscoveryScope.LOCAL_AND_GLOBAL, false);
+        lookup(participantId, discoveryQos, gbids, new CapabilityCallback() {
 
             @Override
             public void processCapabilityReceived(DiscoveryEntryWithMetaInfo capability) {
@@ -965,7 +948,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                             DiscoveryQos discoveryQos,
                                             final CapabilityCallback capabilitiesCallback) {
         GlobalDiscoveryEntry cachedGlobalCapability = globalDiscoveryEntryCache.lookup(participantId,
-                                                                                       discoveryQos.getCacheMaxAgeMs());
+                                                                                       discoveryQos.getCacheMaxAge());
 
         if (cachedGlobalCapability != null
                 && isEntryForGbids(cachedGlobalCapability, new HashSet<>(Arrays.asList(gbids)))) {
@@ -1002,7 +985,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                  exception);
                     capabilitiesCallback.onError(exception);
                 }
-            }, participantId, discoveryQos.getDiscoveryTimeoutMs(), gbids);
+            }, participantId, discoveryQos.getDiscoveryTimeout(), gbids);
         }
 
     }
