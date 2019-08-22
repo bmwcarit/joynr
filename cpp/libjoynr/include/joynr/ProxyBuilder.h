@@ -24,6 +24,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "joynr/Arbitrator.h"
 #include "joynr/ArbitratorFactory.h"
@@ -130,25 +131,40 @@ public:
      */
     ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept override;
 
+    /**
+     * @brief Sets the GBIDs (Global Backend Identifiers) to select the backends in which the
+     * provider will be discovered.<br>
+     * Global discovery (if enabled in DiscoveryQos) will be done via the
+     * GlobalCapabilitiesDirectory in the backend of the first provided GBID.<br>
+     * By default, providers will be discovered in all backends known to the cluster controller via
+     * the GlobalCapabilitiesDirectory in the default backend.
+     * @param gbids A vector of GBIDs
+     * @return The ProxyBuilder object
+     * @throw std::invalid_argument if provided gbids vector is empty
+     */
+    ProxyBuilder* setGbids(const std::vector<std::string>& gbids) override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
     std::weak_ptr<JoynrRuntimeImpl> runtime;
-    std::string domain;
-    MessagingQos messagingQos;
     ProxyFactory& proxyFactory;
     std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     std::vector<std::shared_ptr<Arbitrator>> arbitrators;
     std::mutex arbitratorsMutex;
     bool shuttingDown;
-
     std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
     std::shared_ptr<IMessageRouter> messageRouter;
+
+    std::string domain;
     std::uint64_t messagingMaximumTtlMs;
+    MessagingQos messagingQos;
     std::int64_t discoveryDefaultTimeoutMs;
     std::int64_t discoveryDefaultRetryIntervalMs;
     DiscoveryQos discoveryQos;
+    std::vector<std::string> gbids;
+
     static const std::string runtimeAlreadyDestroyed;
 
     ADD_LOGGER(ProxyBuilder)
@@ -165,8 +181,6 @@ ProxyBuilder<T>::ProxyBuilder(
         std::shared_ptr<IMessageRouter> messageRouter,
         MessagingSettings& messagingSettings)
         : runtime(std::move(runtime)),
-          domain(domain),
-          messagingQos(),
           proxyFactory(proxyFactory),
           requestCallerDirectory(requestCallerDirectory),
           discoveryProxy(discoveryProxy),
@@ -175,10 +189,13 @@ ProxyBuilder<T>::ProxyBuilder(
           shuttingDown(false),
           dispatcherAddress(dispatcherAddress),
           messageRouter(messageRouter),
+          domain(domain),
           messagingMaximumTtlMs(messagingSettings.getMaximumTtlMs()),
+          messagingQos(),
           discoveryDefaultTimeoutMs(messagingSettings.getDiscoveryDefaultTimeoutMs()),
           discoveryDefaultRetryIntervalMs(messagingSettings.getDiscoveryDefaultRetryIntervalMs()),
-          discoveryQos()
+          discoveryQos(),
+          gbids()
 {
     discoveryQos.setDiscoveryTimeoutMs(discoveryDefaultTimeoutMs);
     discoveryQos.setRetryIntervalMs(discoveryDefaultRetryIntervalMs);
@@ -321,6 +338,16 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     if (this->discoveryQos.getRetryIntervalMs() == DiscoveryQos::NO_VALUE()) {
         this->discoveryQos.setRetryIntervalMs(discoveryDefaultRetryIntervalMs);
     }
+    return this;
+}
+
+template <class T>
+ProxyBuilder<T>* ProxyBuilder<T>::setGbids(const std::vector<std::string>& gbids)
+{
+    if (gbids.size() == 0) {
+        throw std::invalid_argument("GBIDs vector must not be empty.");
+    }
+    this->gbids = gbids;
     return this;
 }
 

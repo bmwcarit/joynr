@@ -22,6 +22,8 @@
 
 #include <functional>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "joynr/IProxyBuilderBase.h"
 
@@ -78,6 +80,19 @@ public:
      * @return The ProxyBuilder object
      */
     virtual IProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept = 0;
+
+    /**
+     * @brief Sets the GBIDs (Global Backend Identifiers) to select the backends in which the
+     * provider will be discovered.<br>
+     * Global discovery (if enabled in DiscoveryQos) will be done via the
+     * GlobalCapabilitiesDirectory in the backend of the first provided GBID.<br>
+     * By default, providers will be discovered in all backends known to the cluster controller via
+     * the GlobalCapabilitiesDirectory in the default backend.
+     * @param gbids A vector of GBIDs
+     * @return The ProxyBuilder object
+     * @throw std::invalid_argument if provided gbids vector is empty
+     */
+    virtual IProxyBuilder* setGbids(const std::vector<std::string>& gbids) = 0;
 };
 
 } // namespace joynr
