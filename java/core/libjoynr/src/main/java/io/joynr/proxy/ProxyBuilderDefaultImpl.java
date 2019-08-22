@@ -182,7 +182,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     @Override
     public ProxyBuilder<T> setGbids(final String[] gbids) {
         if (gbids == null || gbids.length == 0) {
-            throw new IllegalArgumentException("gbids array must not be null or empty");
+            throw new IllegalArgumentException("GBIDs array must not be null or empty.");
         }
         this.gbids = gbids.clone();
         return this;

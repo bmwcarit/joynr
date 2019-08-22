@@ -24,10 +24,10 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 
 /**
- * Builds a proxy instance for the given interface {@literal <T>}. Default proxy properties can be overwritten by the set...Qos
- * methods. After calling build the proxy can be used like a local instance of the provider. All invocations will be
- * queued until either the message TTL expires or the arbitration finishes successfully. Synchronous calls will block
- * until the arbitration is done.
+ * Builds a proxy instance for the given interface {@literal <T>}. Default proxy properties can be overwritten by the
+ * set...Qos methods. After calling build the proxy can be used like a local instance of the provider. All invocations
+ * will be queued until either the message TTL expires or the arbitration finishes successfully. Synchronous calls will
+ * block until the arbitration is done.
  *
  * @param <T>
  *            Provided interface
@@ -87,16 +87,22 @@ public interface ProxyBuilder<T> {
      * be used in constructing the relevant stateless async callback IDs, so that when Reply payloads arrive at a
      * runtime the latter is able to discern which callback handler instance to route the data to.
      *
-     * @param useCase the use case for which the proxy is being used, in order to construct stateless async callback IDs mapping to the correct callback handler.
+     * @param useCase the use case for which the proxy is being used, in order to construct stateless async callback IDs
+     *        mapping to the correct callback handler.
      * @return the proxy builder instance.
      */
     ProxyBuilder<T> setStatelessAsyncCallbackUseCase(String useCase);
 
     /**
-     * Sets the Gbids which will be used to discover the provider
+     * Sets the GBIDs (Global Backend Identifiers) to select the backends in which the provider will be discovered.<br>
+     * Global discovery (if enabled in DiscoveryQos) will be done via the GlobalCapabilitiesDirectory in the backend of
+     * the first provided GBID.<br>
+     * By default, providers will be discovered in all backends known to the cluster controller via the
+     * GlobalCapabilitiesDirectory in the default backend.
      *
-     * @param gbids an array of gbids
+     * @param gbids an array of GBIDs
      * @return Returns the ProxyBuilder
+     * @throws IllegalArgumentException if provided gbids array is null or empty
      */
     ProxyBuilder<T> setGbids(String[] gbids);
 
