@@ -32,12 +32,13 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.HashMap;
 
-import com.hivemq.client.mqtt.MqttClientSslConfigBuilder;
-import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext;
-import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedListener;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +47,11 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.hivemq.client.mqtt.MqttClient;
 import com.hivemq.client.mqtt.MqttClientExecutorConfig;
+import com.hivemq.client.mqtt.MqttClientSslConfigBuilder;
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext;
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedListener;
+import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext;
+import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedListener;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3ClientBuilder;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3RxClient;
 
@@ -59,9 +63,6 @@ import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.reactivex.schedulers.Schedulers;
 import joynr.system.RoutingTypes.MqttAddress;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManagerFactory;
 
 /**
  * This factory class is responsible for producing joynr MQTT clients using the HiveMQ MQTT Client library.
@@ -118,6 +119,10 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_PASSWORD)
     private String password = "";
+
+    @Inject
+    @Named(MqttModule.MQTT_CIPHERSUITE_LIST)
+    private List<String> cipherSuiteList;
 
     @Inject
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
@@ -218,6 +223,14 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
     private void setupSslConfig(Mqtt3ClientBuilder clientBuilder) {
         MqttClientSslConfigBuilder.Nested<? extends Mqtt3ClientBuilder> sslConfig = clientBuilder.sslConfig();
+
+        if (cipherSuiteList != null && cipherSuiteList.size() > 0) {
+            for (String cipherSuite : cipherSuiteList) {
+                logger.debug("Using cipher suite {}.", cipherSuite);
+            }
+            sslConfig.cipherSuites(cipherSuiteList);
+        }
+
         if (trustStorePath != null && trustStorePWD != null) {
             KeyStore trustStore = getKeystore(trustStorePath, trustStorePWD, trustStoreType);
             logger.info("Setting up trust manager with {} / {} (password omitted)", trustStorePath, trustStoreType);
