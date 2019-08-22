@@ -8,46 +8,46 @@ Note that the following notations in the code examples below must be replaced by
 Franca:
 
 ```
-// "<Attribute>" the Franca name of the attribute
-// "<AttributeType>" the Franca name of the attribute type
-// "<broadcast>" the Franca name of the broadcast, starting with a lowercase letter
-// "<Broadcast>" the Franca name of the broadcast, starting with capital letter
-// "BroadcastFilter<Attribute>" Attribute is the Franca attributes name
-// "<Filter>" the Franca name of the broadcast filter
-// "<interface>" the Franca interface name, starting with a lowercase letter
-// "<Interface>" the Franca interface name, starting with capital letter
-// "<method>" the Franca method name, starting with a lowercase letter
-// "<Method>" the Franca method name, starting with capital letter
-// "<OutputType>" the Franca broadcast output type name
-// "<Package>" the Franca package name
-// "<ProviderDomain>" the provider domain name used by provider and client
-// "<ReturnType>" the Franca return type name
+// "«Attribute»" the Franca name of the attribute
+// "«AttributeType»" the Franca name of the attribute type
+// "«broadcast»" the Franca name of the broadcast, starting with a lowercase letter
+// "«Broadcast»" the Franca name of the broadcast, starting with capital letter
+// "BroadcastFilter«Attribute»" Attribute is the Franca attributes name
+// "«Filter»" the Franca name of the broadcast filter
+// "«interface»" the Franca interface name, starting with a lowercase letter
+// "«Interface»" the Franca interface name, starting with capital letter
+// "«method»" the Franca method name, starting with a lowercase letter
+// "«Method»" the Franca method name, starting with capital letter
+// "«OutputType»" the Franca broadcast output type name
+// "«Package»" the Franca package name
+// "«ProviderDomain»" the provider domain name used by provider and client
+// "«ReturnType»" the Franca return type name
 ```
 
 ### Package name
-The Franca ```<Package>``` will be transformed to the Javascript module ```joynr.<Package>```.
+The Franca ```«Package»``` will be transformed to the Javascript module ```joynr.«Package»```.
 
 ### Type collection name
 
-The Franca ```<TypeCollection>``` will be transformed to the Javascript
-module ```joynr.<Package>.<TypeCollection>```.
+The Franca ```«TypeCollection»``` will be transformed to the Javascript
+module ```joynr.«Package».«TypeCollection»```.
 
 ### Complex type name
 
-Any Franca complex type ```<TypeCollection>.<Type>``` will result in the creation of an object
-```joynr.<Package>.<TypeCollection>.<Type>``` (see above).
+Any Franca complex type ```«TypeCollection».«Type»``` will result in the creation of an object
+```joynr.«Package».«TypeCollection».«Type»``` (see above).
 
-The same ```<Type>``` will be used for all elements in the event that this type is used as an
+The same ```«Type»``` will be used for all elements in the event that this type is used as an
 element of other complex types, as a method input or output argument, or as a broadcast output
 argument.
 
 ### Interface name
 
-The Franca ```<Interface>``` will be used as a prefix to create the following JavaScript objects:
+The Franca ```«Interface»``` will be used as a prefix to create the following JavaScript objects:
 
 ```
-<Interface>Provider
-<Interface>Proxy
+«Interface»Provider
+«Interface»Proxy
 ```
 
 ### Attribute, Method and Broadcast names
@@ -55,31 +55,56 @@ The Franca ```<Interface>``` will be used as a prefix to create the following Ja
 In Javascript the names of attributes, methods and broadcasts within the same interface must be
 unique, as each name will become a property of the Proxy object.
 
-# Building a Javascript consumer application
+# Building a Javascript application
 
-A Javascript joynr consumer application must "require" or otherwise load the ```joynr.js``` module
-and call its ```joynr.load()``` method with provisioning arguments in order to create a **joynr
-object**.
-
-Next, for all Franca interfaces that are to be used, a **proxy** must be created using the
-```build()``` method of the ```joynr.proxyBuilder``` object, with the provider's domain passed as
-an argument.
-
-Once the proxy has been successfully created, the application can add any attribute or broadcast
-subscriptions it needs, and then enter its event loop where it can call the interface methods.
+A Javascript joynr application must import `joynr` and call `joynr.load(provisioning)`
+in order to load the joynr API. After the promise resolves joynr can be used to build either a
+[consumer application](#Building a Javascript consumer application),
+a [provider application](#Building a Javascript Provider application) or a combination of both.
 
 ## Required imports
 
-The following Javascript modules must be made available using require or some other loading
-mechanism:
+The joynr API uses common-js based exports. Files should be imported using require.
+Joynr types may be added on top of the exported namespaces or in separate es-module based files.
+
+```typescript
+// common-js based import of joynr
+import joynr = require("joynr");
+// es-module based import of joynr Provisioning
+import {WebSocketLibjoynrProvisioning} from "joynr/joynr/start/interface/Provisioning";
+// common-js based import of Enum DiscoveryScope and DiscoveryScopeMembers;
+import DiscoveryScope = require("joynr/generated/joynr/types/DiscoveryScope");
+import { DiscoveryScopeMembers } from "joynr/generated/joynr/types/DiscoveryScope";
+// or es-module based with "esModuleInterop": true flag
+import DiscoveryScope, {
+    DiscoveryScopeMembers
+} from "joynr/generated/joynr/types/DiscoveryScope";
 ```
-// for each type <Type>
-"import" js/joynr/<Package>/<Type>.js
-// for each interface <Interface>
-"import" js/joynr/<Package>/<Interface>Proxy.js
-"import" js/joynr.js
-"import" js/joynrprovisioning.common.js
-"import" js/joynrprovisioning.consumer.js
+
+Joynr exports all depending objects on top of the main file.  
+An overview can be found by looking at libjoynr-deps.ts or looking at the typescript signatures.
+Either importing the files directly or using them from on top of joynr gives the same reference,
+such that both ways of using them are possible.  
+Generally, joynr used to advocate the usage from on top of joynr, but there are several arguments
+against it and it's now recommended to use the types directly.
+* Auto import features of IDEs facilitate direct imports
+* Typescript types need to be imported by file and aren't available on top of joynr.ts
+* Importing from on top of joynr makes mocking more difficult.
+* Importing from on top of joynr creates unnecessary dependencies to the rest of the joynr code.
+
+Any other objects created by the runtime should be taken from the runtime and not imported directly. 
+
+```typescript
+import joynr = require("joynr");
+import DiscoveryScope = require("joynr/generated/joynr/types/DiscoveryScope");
+let isEqual = DiscoveryScope === joynr.types.DiscoveryScope; // true
+
+import MessagingQos = require("joynr/messaging/MessagingQos");
+isEqual = MessagingQos === joynr.messaging.MessagingQos; // true
+
+import {Settings} from "joynr/messaging/MessagingQos";
+// type Settings = joynr["messaging"]["MessagingQos"]["Settings"];
+// Does not work as tsc -d swallows the types from the overloaded namespaces.
 ```
 
 ## Base implementation
@@ -88,25 +113,42 @@ The Javascript application must load and initialize the joynr runtime environmen
 any other Joynr API.
 
 At the end of the application lifetime, the joynr runtime must be shutdown in order to properly
-deallocate resources and end any background activity.
+deallocate resources and end any background activity. Providers can be automatically unregistered,
+by setting `provisioning.shutdownSettings.clearSubscriptionsEnabled` to true.
 
-```javascript
-joynr.load(provisioning).then(function(loadedJoynr) {
-    joynr = loadedJoynr;
+```typescript
+import joynr = require("joynr");
+import {WebSocketLibjoynrProvisioning} from "joynr/joynr/start/interface/Provisioning"
+const provisioning: WebSocketLibjoynrProvisioning = {
+  shutdownSettings: {
+    clearSubscriptionsEnabled: true
+  }
+}; // ignore other settings for this example.
 
-    // build one or more proxies and optionally set up event handlers
-    ...
-    // main application code
-    ...
-    // shutdown the runtime at the end of the application's lifetime
-    joynr.shutdown().then(function() {
-        ...
-    });
-}).catch(function(error) {
-    // error handling
-});
+await joynr.load(provisioning);
+
+// build proxies/provider here as described later.
+
+// main application code
+
+// shutdown the runtime at the end of the application's lifetime
+await joynr.shutdown();
 
 ```
+
+## Provisioning
+
+The Typescript interface can be found in `"joynr/joynr/start/interface/Provisioning"`
+Textual explanation of most settings can be found in the [javascript tutorial](JavaScriptTutorial.md)
+
+# Building a Javascript consumer application
+
+For all Franca interfaces that are to be used, a **proxy** must be created using the
+```build()``` method of the ```joynr.proxyBuilder``` object, with the provider's domain passed as
+an argument.
+
+Once the proxy has been successfully created, the application can add any attribute or broadcast
+subscriptions it needs, and then enter its event loop where it can call the interface methods.
 
 ## The discovery quality of service
 
@@ -166,25 +208,28 @@ The priority used by the arbitration strategy *HighestPriority* is set by the pr
 providerQos settings.
 
 Example for setting up a ```DiscoveryQos``` object:
-```javascript
+```typescript
 // additionalParameters unclear
 // there is currently no ArbitrationConstants in Javascript like in Java
 // { "keyword" : "someKeyword" }
 // { "fixedParticipantId" : "someParticipantId" }
 // { }
+import DiscoveryQos from 'joynr/joynr/proxy/DiscoveryQos';
+import {LastSeen} from 'joynr/joynr/types/ArbitrationStrategyCollection';
+import {LOCAL_THEN_GLOBAL} from 'joynr/joynr/types/DiscoveryScope';
 
-var discoveryQos = new joynr.proxy.DiscoveryQos({
+const discoveryQos = new DiscoveryQos({
     discoveryTimeoutMs : 30000,
     discoveryRetryDelayMs : 1000,
-    arbitrationStrategy : joynr.types.ArbitrationStrategyCollection.LastSeen,
+    arbitrationStrategy : LastSeen,
     cacheMaxAgeMs : 0,
-    discoveryScope : joynr.types.DiscoveryScope.LOCAL_THEN_GLOBAL,
+    discoveryScope : LOCAL_THEN_GLOBAL,
     providerMustSupportOnChange : false,
     // additional parameters are used for arbitration strategy Keyword (key: "keyword")
     // or can be used for custom arbitration strategies
     additionalParameters : {
         "key1": "value1",
-        ...
+    //    ...
         "keyN": "valueN"
     }
 });
@@ -211,19 +256,20 @@ header throws an Error.
 
 Example:
 
-```javascript
-var messagingQos = new joynr.messaging.MessagingQos({
+```typescript
+import MessagingQos from "joynr/joynr/messaging/MessagingQos";
+const messagingQos = new MessagingQos({
     ttl: 60000,
     // optional custom headers
     customHeaders: {
         "key1": "value1",
-        ...
+    //    ...
         "keyN": "valueN"
     }
 });
 
 // optional
-messagingQos.putCustomHeader("anotherKey", "anotherValue");
+messagingQos.putCustomMessageHeader("anotherKey", "anotherValue");
 ```
 
 ## Building a proxy
@@ -236,26 +282,36 @@ Proxy creation is necessary before services from a provider can be called:
 The ProxyBuilder.build call requires the provider's domain. Optionally, **messagingQos** and
 **discoveryQos** settings can be specified if the default settings are not suitable.
 
+When looking up capabilities of a provider in the GlobalCapabilitiesDirectory, all backends will be
+considered by default. This can be constrained by specifying the optional **GBIDs** setting,
+narrowing the search to the specified **GBIDs**. These **GBIDs** must be valid and preconfigured at
+the local cluster-controller.
+
 In case no suitable provider can be found during discovery, a `DiscoveryException` or
 `NoCompatibleProviderFoundException` is thrown.
 
-```javascript
-var domain = "<ProviderDomain>";
+```typescript
+import joynr from "joynr";
+import Proxy from "joynr/«path/to/Proxy»";
+const domain = "«ProviderDomain»";
 
-var messagingQos, discoveryQos;
+let messagingQos, discoveryQos;
+let gbids = ['joynrdefaultgbid'];
 // setup messagingQos, discoveryQos
 
-joynr.proxyBuilder.build(<Interface>Proxy, {
+// the signature is available at joynr/joynr/proxy/ProxyBuilder
+joynr.proxyBuilder.build<Proxy>(Proxy, {
     domain: domain,
-    discoveryQos: discoveryQos, // optional
-    messagingQos: messagingQos  // optional
-}).then(function(<interface>Proxy) {
+    discoveryQos, // optional
+    messagingQos,  // optional
+    gbids // optional
+}).then((buildProxy: Proxy) => {
     // subscribe to attributes (optional)
 
     // subscribe to broadcasts (optional)
 
     // call methods or setup event handlers which call methods
-}).catch(function(error) {
+}).catch((error) => {
     // handle error
 });
 ```
@@ -266,8 +322,13 @@ In Javascript all method calls are asynchronous. Since the local proxy method re
 the reaction to the resolving or rejecting of the Promise can be immediately defined.
 Note that the message order on Joynr RPCs will not be preserved; if calling order is required,
 then the subsequent dependent call should be made in the following then() call.
-```javascript
-<interface>Proxy.<method>(... optional arguments ...).then(function(response) {
+
+The typescript methods signatures are fully typed. On the top level multiple arguments are
+transformed into a settings object, merging overloaded franca methods into a single method.
+All method signatures, args and return values are typed by the generator.
+
+```typescript
+«interface»Proxy.«method»(... optional arguments ...).then(function(response) {
 	// call successful, handle response value
 }).catch(function(error) {
     // call failed, execute error handling
@@ -289,8 +350,9 @@ changes. The following sections cover the 4 quality of service objects available
 
 * **expiryDateMs** Absolute Time until notifications will be send (in milliseconds)
 
-```javascript
-var subscriptionQos = new joynr.proxy.SubscriptionQos({
+```typescript
+import SubscriptionQos from "joynr/joynr/proxy/SubscriptionQos"
+const subscriptionQos = new SubscriptionQos({
     expiryDateMs : 0,
 });
 ```
@@ -311,16 +373,18 @@ The object ```MulticastSubscriptionQos``` inherits from ```SubscriptionQos```.
 This object should be used for subscriptions to non-selective broadcasts.
 
 Example:
-```javascript
-var multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
+```typescript
+import MulticastSubscriptionQos from "joynr/joynr/proxy/MulticastSubscriptionQos"
+const multicastSubscriptionQos = new MulticastSubscriptionQos({
     validityMs : 3000000
 });
 ```
 
 or alternatively
 
-```javascript
-var multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
+```typescript
+import MulticastSubscriptionQos from "joynr/joynr/proxy/MulticastSubscriptionQos"
+const multicastSubscriptionQos = new MulticastSubscriptionQos({
     expiryDateMs : Date.now() + 3000000
 });
 ```
@@ -349,8 +413,9 @@ This object can be used for subscriptions to attributes.
 Note that updates will be sent only based on the specified interval, and not as a result of an
 attribute change.
 
-```javascript
-var subscriptionQosPeriodic = new joynr.proxy.PeriodicSubscriptionQos({
+```typescript
+import PeriodicSubscriptionQos from "joynr/joynr/proxy/PeriodicSubscriptionQos"
+const subscriptionQosPeriodic = new PeriodicSubscriptionQos({
     periodMs : 60000,
     alertAfterIntervalMs : 0,
     publicationTtlMs : 10000
@@ -380,8 +445,9 @@ This object should be used for subscriptions to selective broadcasts. It can als
 subscriptions to attributes if no periodic update is required.
 
 Example:
-```javascript
-var subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
+```typescript
+import OnChangeSubscriptionQos from "joynr/joynr/proxy/OnChangeSubscriptionQos"
+const subscriptionQosOnChange = new OnChangeSubscriptionQos({
     minIntervalMs : 1000,
     publicationTtlMs : 10000
 });
@@ -411,8 +477,9 @@ Using it for subscriptions to broadcasts is theoretically possible because of in
 makes no sense (in this case the additional members will be ignored).
 
 Example:
-```javascript
-var subscriptionQosOnChangeWithKeepAlive = new joynr.proxy.OnChangeWithKeepAliveSubscriptionQos({
+```typescript
+import OnChangeWithKeepAliveSubscriptionQos from "joynr/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos"
+const subscriptionQosOnChangeWithKeepAlive = new OnChangeWithKeepAliveSubscriptionQos({
     maxIntervalMs : 60000,
     alertAfterIntervalMs: 0
 });
@@ -438,8 +505,8 @@ via the Promise.
 To receive the subscription, **callback functions** (onReceive, onSubscribed, onError) have to be
 provided as outlined below.
 
-```javascript
-<interface>Proxy.<Attribute>.subscribe({
+```typescript
+«interface»Proxy.«Attribute».subscribe({
     subscriptionQos : subscriptionQosOnChange,
     // Gets called on every received publication
     onReceive : function(value) {
@@ -468,29 +535,29 @@ provided as outlined below.
 The ```subscribe()``` method can also be used to update an existing subscription, by passing the
 **subscriptionId** as an additional parameter as follows:
 
-```javascript
+```typescript
 // subscriptionId from earlier subscribe call
-<interface>Proxy.<Attribute>.subscribe({
+«interface»Proxy.«Attribute».subscribe({
     subscriptionQos : subscriptionQosOnChange,
-    subscriptionId: subscriptionId,
+    subscriptionId,
     // Gets called on every received publication
-    onReceive : function(value) {
+    onReceive : (value) => {
         // handle subscription publication
     },
     // Gets called when the subscription is successfully updated at the provider
-    onSubscribed : function(subscriptionId) { // optional
+    onSubscribed : (subscriptionId) => { // optional
         // save the subscriptionId for updating the subscription or unsubscribing from it
         // the subscriptionId can also be taken from the Promise returned by the subscribe call
     },
     // Gets called on every error that is detected on the subscription
-    onError: function(error) {
+    onError: (error) => {
         // handle subscription error, e.g.:
         // - SubscriptionException if the subscription registration failed at the provider
         // - PublicationMissedException if a periodic subscription publication does not arrive in time
     }
-}).then(function(subscriptionId) {
+}).then((subscriptionId) => {
     // subscription update successful, the subscriptionId should be the same as before
-}).catch(function(error) {
+}).catch((error) => {
     // handle error case
 });
 ```
@@ -500,9 +567,9 @@ The ```subscribe()``` method can also be used to update an existing subscription
 Unsubscribing from an attribute subscription requires the **subscriptionId** returned by the
 earlier subscribe call.
 
-```javascript
-<interface>Proxy.<Attribute>.unsubscribe({
-    subscriptionId: subscriptionId
+```typescript
+«interface»Proxy.«Attribute».unsubscribe({
+    subscriptionId
 }).then(function() {
     // handle success case
 }).catch(function(error) {
@@ -535,8 +602,8 @@ via the Promise.
 To receive the subscription, **callback functions** (onReceive, onSubscribed, onError) have to be
 provided as outlined below.
 
-```javascript
-<interface>Proxy.<Broadcast>.subscribe({
+```typescript
+«Interface»Proxy.«Broadcast».subscribe({
     subscriptionQos : multicastSubscriptionQos,
     // Gets called on every received publication
     onReceive : function(value) {
@@ -570,8 +637,8 @@ The [partition syntax is explained in the multicast concept](../docs/multicast.m
 
 The ```subscribe()``` method can also be used to update an existing subscription, when the
 **subscriptionId** is passed as an additional parameter as follows:
-```javascript
-<interface>Proxy.<Broadcast>.subscribe({
+```typescript
+«Interface»Proxy.«Broadcast».subscribe({
     subscriptionQos : multicastSubscriptionQos,
     subscriptionId: subscriptionId,
     // Gets called on every received publication
@@ -588,7 +655,7 @@ The ```subscribe()``` method can also be used to update an existing subscription
         // handle subscription error, e.g.:
         // - SubscriptionException if the subscription registration failed at the provider
         // - PublicationMissedException if a periodic subscription publication does not arrive in time
-    }
+    },
 
     // optional parameter for multicast subscriptions (subscriptions to non-selective broadcasts)
     partitions: [partitionLevel1,
@@ -620,11 +687,11 @@ In addition to the normal broadcast subscription, the filter parameters for this
 created and initialized as additional parameters to the ```subscribe``` method. These filter
 parameters are used to receive only those broadcasts matching the provided filter criteria.
 
-```javascript
-var fParam = <interface>Proxy.<broadcast>.createFilterParameters();
+```typescript
+const fParam = «interface»Proxy.«broadcast».createFilterParameters();
 // for each parameter
-fParam.set<Parameter>(parameterValue);
-<interface>Proxy.<Broadcast>.subscribe({
+fParam.set«Parameter»(parameterValue);
+«interface»Proxy.«Broadcast».subscribe({
     subscriptionQos : subscriptionQosOnChange,
     filterParameters : fParam,
     // Gets called on every received publication
@@ -655,11 +722,11 @@ The **subscribeTo** method can also be used to update an existing subscription, 
 **subscriptionId** as an additional parameter as follows:
 
 
-```javascript
-var fParam = <interface>Proxy.<broadcast>.createFilterParameters();
+```typescript
+const fParam = «interface»Proxy.«broadcast».createFilterParameters();
 // for each parameter
-fParam.set<Parameter>(parameterValue);
-<interface>Proxy.<Broadcast>.subscribe({
+fParam.set«Parameter»(parameterValue);
+«interface»Proxy.«Broadcast».subscribe({
     subscriptionQos : subscriptionQosOnChange,
     subscriptionId: subscriptionId,
     filterParameters : fParam,
@@ -690,8 +757,8 @@ fParam.set<Parameter>(parameterValue);
 Unsubscribing from a broadcast subscription requires the **subscriptionId** returned asynchronously
 by the earlier subscribe call.
 
-```javascript
-<interface>Proxy.<Broadcast>.unsubscribe({
+```typescript
+«interface»Proxy.«Broadcast».unsubscribe({
     subscriptionId : subscriptionId,
 }).then(function() {
     // call successful
@@ -703,29 +770,15 @@ by the earlier subscribe call.
 
 # Building a Javascript Provider application
 
-A Javascript joynr **provider** application must "require" or otherwise load the ```joynr.js```
-module and call its ```joynr.load()``` method with provisioning arguments in order to create a
-joynr object.
+For all Franca interfaces that are being implemented, a **provider** object must be created
+using the ```build()``` method of ```joynr.providerBuilder``` supplying the ProviderConstructor and
+ProviderImplementation as argument.
 
-Next, for all Franca interfaces that are being implemented, a **providerBuilder** must be created
-using the ```build()``` method of the ```joynr.providerBuilder``` object supplying the providers
-domain as argument.
+The signature of the ProviderImplementation is included in the generated code.
 
-Upon successful creation, the application can register all **Capabilities** it provides, and enter
-its event loop where it can handle calls from the proxy side.
-
-## Required imports
-
-The following Javascript modules must be made "required" or otherwise loaded:
-```
-// for each type <Type>
-"import" js/joynr/<Package>/<Type>.js
-// for each interface <Interface>
-"import" js/joynr/<Package>/<Interface>Proxy.js
-"import" js/joynr.js
-"import" js/joynrprovisioning.common.js
-"import" js/joynrprovisioning.provider.js
-```
+Upon successful creation, the application can register all **Capabilities** it provides by calling
+`joynr.registration.register(settings)`, or
+`joynr.registration.registerInAllKnownBackends(settings)`.
 
 ## The Provider quality of service
 
@@ -741,79 +794,64 @@ The **scope** can be
 * **GLOBAL** The provider will be registered in the local and global capability directory
 
 Example:
-```javascript
-var providerQos = new joynr.types.ProviderQos({
+```typescript
+import ProviderQos from "joynr/generated/joynr/types/ProviderQos";
+import ProviderScope from "joynr/generated/joynr/types/ProviderScope";
+const providerQos = new ProviderQos({
     customParameters: [],
     priority : 100,
-    scope: joynr.types.ProviderScope.GLOBAL,
+    scope: ProviderScope.GLOBAL,
     supportsOnChangeSubscriptions : true
 });
 ```
 
-## Provider
-A provider application must load joynr and when this has been successfully finished, it can
-register a Provider implementation for each Franca interface it implements.
-It is also possible to unregister that implementation again, e.g. on shutdown.
+## Register a Provider implementation
+After an application is successfully loaded, it can register provider implementations for
+Franca interfaces it implements.
 
 While the implementation is registered, the provider will respond to any method calls from outside,
 can report any value changes via publications to subscribed consumers, and may fire broadcasts, as
 defined in the Franca interface.
 
-At the end of the application lifetime, the joynr runtime must be shutdown in order to properly
-deallocate resources and end any background activity.
-```javascript
-$(function() {
-    // for each <Interface> where a Provider should be registered for later
-    var <interface>provider = null;
-    var <interface>ProviderImpl = new <Interface>ProviderImpl();
-
-    var provisioning = {};
-    provisioning.channelId = "someChannel";
-
-    joynr.load(provisioning).then(function(loadedJoynr) {
-        joynr = loadedJoynr;
-
-        // when applications starts up:
-        // register <Interface>provider
-        ...
-        // main loop here
-        ...
-        // when application ends:
-        // unregister <Interface>provider
-        ...
-        // shutdown the joynr runtime
-        joynr.shutdown().then(function() {
-            ...
-        });
-    }).catch(function(error){
-        if (error) {
-            throw error;
-        }
-    });
-})();
-```
-
-## Register a Provider implementation
 When registering a provider implementation for a specific Franca interface, the object implementing
 the interface, the provider's domain and the provider's quality of service settings are passed as
 parameters.
 
-```javascript
-var <interface>ProviderQos;
-<interface>Provider = joynr.providerBuilder.build(<Interface>Provider, <interface>ProviderImpl);
+* awaitGlobalRegistration: optional - set to true in case the registration promise should wait till
+global registration is also completed in the GlobalCapabilitiesDirectory instead of only the
+LocalCapabilitiesDirectory in the cluster-controller.
+* gbids: optional - By default, global providers are only registered in the default backend. The
+default backend is the first **GBID** configured at the cluster-controller. Configuring gbids allows
+the registration of the capabilities at the other backends. These backends need to be preconfigured
+at the clustercontroller and valid backends. The global registration itself will be performed by the
+GlobalCapabilitiesDirectory instance in the backend of the first provided **GBID**.
+
+```typescript
+import joynr from "joynr";
+import ProviderQos from "joynr/generated/joynr/types/ProviderQos";
+import ProviderScope from "joynr/generated/joynr/types/ProviderScope";
+const providerQos = new ProviderQos({
+  customParameters: [],
+  priority: Date.now(),
+  scope: ProviderScope.GLOBAL,
+  supportsOnChangeSubscriptions: true
+});
+const domain = "test";
+const gbids = ['joynrdefaultgbid', 'otherbackend'];
+const provider = joynr.providerBuilder.build<«Interface»Provider>(«Interface»Provider, providerImpl);
+const awaitGlobalRegistration = true;
 
 // for any filter of a broadcast with filter
-<interface>Provider.<broadcast>.addBroadcastFilter(new <Filter>BroadcastFilter());
+provider.«broadcast».addBroadcastFilter(new «Filter»BroadcastFilter());
 
-// setup <interface>ProviderQos
-joynr.registration.registerProvider(
+// setup «interface»ProviderQos
+await joynr.registration.register(
+{
     domain,
-    <interface>Provider,
-    <interface>ProviderQos
-).then(function() {
-    // registration successful
-}).catch(function() {
-    // registration failed
+    provider,
+    providerQos,
+    awaitGlobalRegistration,
+    gbids
 });
 ```
 
@@ -821,43 +859,36 @@ joynr.registration.registerProvider(
 Unregistering a previously registered provider requires the provider's domain and the object that
 represents the provider implementation.
 
-```javascript
+```typescript
 // provider should have been set and registered previously
-joynr.registration.unregisterProvider(
+await joynr.registration.unregisterProvider(
     domain,
-    <Interface>provider
-).then(function() {
-    // unregistration successful
-}).catch(function() {
-    // unregistration failed
-});
+    «Interface»provider
+);
 ```
 
 ## The Provider implementation for an interface
 The function implementing the interface must provide code for all its methods and a getter function
 for every attribute.
-```javascript
-var <Interface>ProviderImpl =
-    function <Interface>ProviderImpl() {
-        var self = this;
+Type signatures of ProviderImplementations are available in the respective generated code.
+```typescript
+const «Interface»ProviderImpl = {
+    // define «method» handler
 
-        // define <method> handler
-
-        // define internal representation of <attribute> and
-        // getter handlers per <attribute>
-        // wrappers to fire broadcasts
-    };
+    // define internal representation of «attribute» and
+    // getter handlers per «attribute»
+    // wrappers to fire broadcasts
+}
 ```
 
 ## Method handler
 Each handler for a Franca method for a specific interface is implemented as a function object
 member of **this**. The parameters are provided as objects. The implementation can be done
-either asynchronously or synchronously.
+either asynchronously or synchronously. The methods will be wrapped into a Promise in any case.
 
-### Synchronous implementation
-```javascript
-this.<method> = function(parameters) {
-    // handle method, return returnValue of type <returnType> with
+```typescript
+this.«method» = async (parameters) => {
+    // handle method, return returnValue of type «returnType» with
     // return returnValue;
     // - or -
     // throw errorEnumerationValue;
@@ -867,36 +898,17 @@ this.<method> = function(parameters) {
 };
 ```
 
-### Asynchronous implementation
-```javascript
-this.<method> = function(parameters) {
-    var result = new Promise(function(resolve, reject) {
-        // handle method, then either return the value
-        // of type <returnType> with
-        // resolve(returnValue);
-        // - or -
-        // reject(errorEnumerationValue);
-        // (wrt. error enumeration value range please refer to the Franca specification of the method)
-        // - or -
-        // reject(new ProviderRuntimeException({ detailMessage: "reason" }));
-    });
-
-    // handle method, return returnValue of type <returnType>
-    return result;
-};
-```
-
 ## Attribute handler
 For each Franca attribute of an interface, a member of **this** named after the
-```<attribute>``` has to be created which consists of an object which includes a getter function
-as attribute that returns the current value of the ```<attribute>```. Also an internal
+```«attribute»``` has to be created which consists of an object which includes a getter function
+as attribute that returns the current value of the ```«attribute»```. Also an internal
 representation of the Franca attribute value has to be created and properly intialized.
-```javascript
-// for each <attribute> of the <interface> provide an internal representation
+```typescript
+// for each «attribute» of the «interface» provide an internal representation
 // and a getter
-var internal<Attribute> = <initialValue>;
+const attributeValue = «initialValue»;
 
-this.<attribute> = {
+this.«attribute» = {
     get: function() {
         return attributeValue;
     }
@@ -907,24 +919,24 @@ this.<attribute> = {
 The provider implementation must inform about any change of an attribute which is not done via a
 remote setter call by calling valueChanged on the given attribute. If an attribute setter is called
 remotely, an attribute change publication will be triggered automatically.
-```javascript
-self.<attribute>.valueChanged(newValue);
+```typescript
+this.«attribute».valueChanged(newValue);
 ```
 ## Sending a broadcast
-For each Franca broadcast, a member of **this** named after the ```<broadcast>```
+For each Franca broadcast, a member of **this** named after the ```«broadcast»```
 has to be created which consists of an empty object.
 
-```javascript
-this.<broadcast> = {};
+```typescript
+this.«broadcast» = {};
 ```
 
 The broadcast can then later be fired using
-```javascript
-this.fire<Broadcast> = function() {
+```typescript
+this.fire«Broadcast» = function() {
     var outputParameters;
-    outputParameters = self.<broadcast>.createBroadcastOutputParameters();
+    outputParameters = self.«broadcast».createBroadcastOutputParameters();
     // foreach output parameter of the broadcast
-    outputParameters.set<Parameter>(value);
+    outputParameters.set«Parameter»(value);
 
     // optional: the partitions to be used for the broadcast
     // Note: wildcards are only allowed on consumer side
@@ -932,7 +944,7 @@ this.fire<Broadcast> = function() {
                       ...
                       partitionLevelN];
 
-    self.<broadcast>.fire(outputParameters[, partitions]);
+    self.«broadcast».fire(outputParameters[, partitions]);
 }
 ```
 The [partition syntax is explained in the multicast concept](../docs/multicast.md#partitions)
@@ -950,31 +962,31 @@ boolean value indicating whether the broadcast should be delivered. The input pa
 ```filter()``` method consist of the output parameters of the broadcast and the filter parameters
 used by the consumer on subscription.
 
-```javascript
+```typescript
 (function(undefined) {
-    var <Filter>BroadcastFilter = function <Filter>BroadcastFilter() {
-        if (!(this instanceof <Filter>BroadcastFilter)) {
-            return new <Filter>BroadcastFilter();
+    var «Filter»BroadcastFilter = function «Filter»BroadcastFilter() {
+        if (!(this instanceof «Filter»BroadcastFilter)) {
+            return new «Filter»BroadcastFilter();
         }
 
         Object.defineProperty(this, 'filter', {
             enumerable: false,
             value: function(broadcastOutputParameters, filterParameters) {
                 // Parameter value can be evaluated by calling getter functions, e.g.
-                // broadcastOutputParameters.get<OutputParameter>()
+                // broadcastOutputParameters.get«OutputParameter»()
                 // filterParameters can be evaluated by using properties, e.g.
-                // filterParameters.<property>
+                // filterParameters.«property»
                 //
                 // Evaluate whether the broadcastOutputParameters fulfill
                 // the filterParameter here, then return true, if this is
                 // the case and the publication should be done, false
                 // otherwise.
 
-                return <booleanValue>;
+                return «booleanValue»;
             };
         });
     };
 
-    return <Filter>BroadcastFilter;
+    return «Filter»BroadcastFilter;
 }());
 ```
