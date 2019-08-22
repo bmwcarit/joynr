@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 package io.joynr.messaging.mqtt;
 
 import java.util.HashMap;
+import java.util.List;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -72,6 +73,8 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_TYPE = "joynr.messaging.mqtt.ssl.truststoretype";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_PWD = "joynr.messaging.mqtt.ssl.keystorepassword";
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_PWD = "joynr.messaging.mqtt.ssl.truststorepassword";
+    public static final String PROPERTY_KEY_MQTT_CIPHERSUITES = "joynr.messaging.mqtt.ssl.ciphersuites";
+    public static final String MQTT_CIPHERSUITE_LIST = "joynr.internal.messaging.mqtt.ssl.ciphersuiteList";
     public static final String PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS = "joynr.messaging.mqtt.separateconnections";
     public static final String PROPERTY_KEY_MQTT_USERNAME = "joynr.messaging.mqtt.username";
     public static final String PROPERTY_KEY_MQTT_PASSWORD = "joynr.messaging.mqtt.password";
@@ -122,6 +125,12 @@ public class MqttModule extends AbstractModule {
     @Named(MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP)
     public HashMap<String, Integer> provideGbidToConnectionTimeoutSecMap(MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider) {
         return mqttMultipleBackendPropertyProvider.provideGbidToConnectionTimeoutSecMap();
+    }
+
+    @Provides
+    @Named(MQTT_CIPHERSUITE_LIST)
+    public List<String> provideMqttInternalCipherList(MqttCiphersuiteListFactory internalCipherListFactory) {
+        return internalCipherListFactory.create();
     }
 
     @Override
