@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "joynr/Arbitrator.h"
 #include "joynr/JoynrExport.h"
@@ -45,7 +46,8 @@ public:
             const std::string& interfaceName,
             const types::Version& interfaceVersion,
             std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
-            const DiscoveryQos& discoveryQos);
+            const DiscoveryQos& discoveryQos,
+            const std::vector<std::string>& gbids);
 };
 
 } // namespace joynr

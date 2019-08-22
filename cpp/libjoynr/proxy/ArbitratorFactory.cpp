@@ -34,7 +34,8 @@ std::shared_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
         const std::string& interfaceName,
         const joynr::types::Version& interfaceVersion,
         std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
-        const DiscoveryQos& discoveryQos)
+        const DiscoveryQos& discoveryQos,
+        const std::vector<std::string>& gbids)
 {
     std::unique_ptr<ArbitrationStrategyFunction> arbitrationStrategyFunction;
     DiscoveryQos::ArbitrationStrategy strategy = discoveryQos.getArbitrationStrategy();
@@ -65,6 +66,7 @@ std::shared_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
                                         interfaceVersion,
                                         discoveryProxy,
                                         discoveryQos,
+                                        gbids,
                                         std::move(arbitrationStrategyFunction));
 }
 

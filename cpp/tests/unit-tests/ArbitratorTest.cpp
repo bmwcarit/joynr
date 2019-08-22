@@ -16,9 +16,10 @@
  * limitations under the License.
  * #L%
  */
+#include <memory>
 #include <string>
 #include <unordered_set>
-#include <memory>
+#include <vector>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -67,12 +68,14 @@ public:
                    const joynr::types::Version& interfaceVersion,
                    std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
                    const DiscoveryQos& discoveryQos,
+                   const std::vector<std::string>& gbids,
                    std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
             : Arbitrator(domain,
                          interfaceName,
                          interfaceVersion,
                          discoveryProxy,
                          discoveryQos,
+                         gbids,
                          std::move(arbitrationStrategyFunction)){};
 
     MOCK_METHOD0(attemptArbitration, void(void));
@@ -109,13 +112,14 @@ public:
     std::unique_ptr<const ArbitrationStrategyFunction> fixedParticipantArbitrationStrategyFunction;
 
 protected:
-    std::int64_t lastSeenDateMs;
-    std::int64_t expiryDateMs;
-    std::int64_t defaultDiscoveryTimeoutMs;
-    std::int64_t defaultRetryIntervalMs;
-    std::string publicKeyId;
     ADD_LOGGER(ArbitratorTest)
-    std::shared_ptr<MockDiscovery> mockDiscovery;
+    const std::int64_t lastSeenDateMs;
+    const std::int64_t expiryDateMs;
+    const std::int64_t defaultDiscoveryTimeoutMs;
+    const std::int64_t defaultRetryIntervalMs;
+    const std::string publicKeyId;
+    const std::shared_ptr<MockDiscovery> mockDiscovery;
+    const std::vector<std::string> emptyGbidsVector;
     Semaphore semaphore;
 };
 
@@ -133,6 +137,7 @@ TEST_F(ArbitratorTest, arbitrationTimeout)
                                              providerVersion,
                                              mockDiscovery,
                                              discoveryQos,
+                                             emptyGbidsVector,
                                              move(lastSeenArbitrationStrategyFunction));
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) { FAIL(); };
@@ -177,6 +182,7 @@ TEST_F(ArbitratorTest, getLastSeen)
                                          providerVersion,
                                          mockDiscovery,
                                          discoveryQos,
+                                         emptyGbidsVector,
                                          move(lastSeenArbitrationStrategyFunction));
 
     std::int64_t latestLastSeenDateMs = 7;
@@ -207,7 +213,9 @@ TEST_F(ArbitratorTest, getLastSeen)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery,
+            lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
+        .WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &lastSeenParticipantId](
@@ -236,6 +244,7 @@ TEST_F(ArbitratorTest, getHighestPriority)
                                                       providerVersion,
                                                       mockDiscovery,
                                                       discoveryQos,
+                                                      emptyGbidsVector,
                                                       move(qosArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
@@ -268,7 +277,9 @@ TEST_F(ArbitratorTest, getHighestPriority)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery,
+            lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
+        .WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess =
@@ -298,6 +309,7 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion)
                                                       expectedVersion,
                                                       mockDiscovery,
                                                       discoveryQos,
+                                                      emptyGbidsVector,
                                                       move(qosArbitrationStrategyFunction));
 
     // Create a list of discovery entries
@@ -336,7 +348,9 @@ TEST_F(ArbitratorTest, getHighestPriorityChecksVersion)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery,
+            lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
+        .WillByDefault(Return(mockFuture));
 
     // Check that one of the expected participant was selected
     auto onSuccess = [this, &expectedParticipantIds](
@@ -369,6 +383,7 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange)
                                                       providerVersion,
                                                       mockDiscovery,
                                                       discoveryQos,
+                                                      emptyGbidsVector,
                                                       move(qosArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
@@ -406,7 +421,9 @@ TEST_F(ArbitratorTest, getHighestPriorityOnChange)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery,
+            lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
+        .WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess =
@@ -440,6 +457,7 @@ TEST_F(ArbitratorTest, getKeywordProvider)
                                                       providerVersion,
                                                       mockDiscovery,
                                                       discoveryQos,
+                                                      emptyGbidsVector,
                                                       move(keywordArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
@@ -487,7 +505,9 @@ TEST_F(ArbitratorTest, getKeywordProvider)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery,
+            lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
+        .WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess =
@@ -520,6 +540,7 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion)
                                                       expectedVersion,
                                                       mockDiscovery,
                                                       discoveryQos,
+                                                      emptyGbidsVector,
                                                       move(keywordArbitrationStrategyFunction));
 
     // Create a list of discovery entries with the correct keyword
@@ -558,7 +579,9 @@ TEST_F(ArbitratorTest, getKeywordProviderChecksVersion)
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture->onSuccess(discoveryEntries);
-    ON_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _)).WillByDefault(Return(mockFuture));
+    ON_CALL(*mockDiscovery,
+            lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
+        .WillByDefault(Return(mockFuture));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantId](
@@ -588,6 +611,8 @@ TEST_F(ArbitratorTest, retryFiveTimes)
                                 A<const joynr::types::DiscoveryQos&>(),
                                 _,
                                 _,
+                                _,
+                                _,
                                 _))
             .Times(5)
             .WillRepeatedly(Return(mockFuture));
@@ -602,6 +627,7 @@ TEST_F(ArbitratorTest, retryFiveTimes)
                                          providerVersion,
                                          mockDiscovery,
                                          discoveryQos,
+                                         emptyGbidsVector,
                                          move(lastSeenArbitrationStrategyFunction));
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) { FAIL(); };
@@ -662,6 +688,7 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
                                                       expectedVersion,
                                                       mockDiscovery,
                                                       discoveryQos,
+                                                      emptyGbidsVector,
                                                       move(qosArbitrationStrategyFunction));
 
     // Create a list of discovery entries
@@ -715,7 +742,7 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
     auto mockFuture2 = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -753,6 +780,7 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
                                                           expectedVersion,
                                                           mockDiscovery,
                                                           discoveryQos,
+                                                          emptyGbidsVector,
                                                           move(keywordArbitrationStrategyFunction));
 
     // Create a list of discovery entries with the correct keyword
@@ -807,7 +835,7 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
     auto mockFuture2 = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -846,6 +874,7 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
                                          expectedVersion,
                                          mockDiscovery,
                                          discoveryQos,
+                                         emptyGbidsVector,
                                          move(fixedParticipantArbitrationStrategyFunction));
 
     // Create a discovery entries with the correct participantId
@@ -883,7 +912,7 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
     mockFuture1->onSuccess(discoveryEntry1);
     auto mockFuture2 = std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
     mockFuture2->onSuccess(discoveryEntry2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -918,6 +947,7 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
                                          expectedVersion,
                                          mockDiscovery,
                                          discoveryQos,
+                                         emptyGbidsVector,
                                          move(lastSeenArbitrationStrategyFunction));
 
     // Create a list of discovery entries
@@ -971,7 +1001,7 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
     auto mockFuture2 = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -1032,7 +1062,7 @@ TEST_P(ArbitratorTestWithParams, exceptionFromDiscoveryProxy)
         mockFutureFixedPartId2->onError(
                 std::make_shared<exceptions::JoynrRuntimeException>(expectedException));
 
-        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _))
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(_, _, _, _, _, _, _))
                 .WillOnce(Return(mockFutureFixedPartId1))
                 .WillRepeatedly(Return(mockFutureFixedPartId2));
     } else {
@@ -1048,13 +1078,13 @@ TEST_P(ArbitratorTestWithParams, exceptionFromDiscoveryProxy)
         mockFuture2->onError(
                 std::make_shared<exceptions::JoynrRuntimeException>(expectedException));
 
-        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
                 .WillOnce(Return(mockFuture1))
                 .WillRepeatedly(Return(mockFuture2));
     }
 
     auto arbitrator = ArbitratorFactory::createArbitrator(
-            domain, interfaceName, version, mockDiscovery, discoveryQos);
+            domain, interfaceName, version, mockDiscovery, discoveryQos, emptyGbidsVector);
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) { FAIL(); };
 
@@ -1112,7 +1142,7 @@ void ArbitratorTest::testExceptionEmptyResult(std::shared_ptr<Arbitrator> arbitr
     auto mockFuture2 = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
     mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
 
@@ -1143,6 +1173,7 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionEmptyResult)
                                                       expectedVersion,
                                                       mockDiscovery,
                                                       discoveryQos,
+                                                      emptyGbidsVector,
                                                       move(qosArbitrationStrategyFunction));
 
     testExceptionEmptyResult(qosArbitrator, discoveryQos);
@@ -1164,6 +1195,7 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsExceptionEmptyResult)
                                                           expectedVersion,
                                                           mockDiscovery,
                                                           discoveryQos,
+                                                          emptyGbidsVector,
                                                           move(keywordArbitrationStrategyFunction));
 
     testExceptionEmptyResult(keywordArbitrator, discoveryQos);
@@ -1184,6 +1216,7 @@ TEST_F(ArbitratorTest, getLastSeenReturnsExceptionEmptyResult)
                                          expectedVersion,
                                          mockDiscovery,
                                          discoveryQos,
+                                         emptyGbidsVector,
                                          move(lastSeenArbitrationStrategyFunction));
 
     testExceptionEmptyResult(lastSeenArbitrator, discoveryQos);
@@ -1210,10 +1243,10 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
     mockFuture->onSuccess({});
 
     if (testRetry) {
-        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
                 .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Return(mockFuture)));
     } else {
-        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _))
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
                 .WillOnce(DoAll(ReleaseSemaphore(&semaphore),
                                 InvokeWithoutArgs(letThreadSleep<500>),
                                 Return(mockFuture)));
@@ -1225,6 +1258,7 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
                                                 providerVersion,
                                                 mockDiscovery,
                                                 discoveryQos,
+                                                emptyGbidsVector,
                                                 move(lastSeenArbitrationStrategyFunction));
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) { FAIL(); };

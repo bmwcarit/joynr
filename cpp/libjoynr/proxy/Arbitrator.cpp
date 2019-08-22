@@ -39,11 +39,13 @@ Arbitrator::Arbitrator(
         const joynr::types::Version& interfaceVersion,
         std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
         const DiscoveryQos& discoveryQos,
+        const std::vector<std::string>& gbids,
         std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
         : std::enable_shared_from_this<Arbitrator>(),
           pendingFutureMutex(),
           pendingFuture(),
           discoveryProxy(discoveryProxy),
+          gbids(gbids),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                              discoveryQos.getDiscoveryTimeoutMs(),
@@ -243,7 +245,8 @@ void Arbitrator::attemptArbitration()
             std::string fixedParticipantId =
                     discoveryQos.getCustomParameter("fixedParticipantId").getValue();
 
-            auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId);
+            auto future = discoveryProxySharedPtr->lookupAsync(
+                    fixedParticipantId, systemDiscoveryQos, gbids);
             {
                 std::unique_lock<std::mutex> lock(pendingFutureMutex);
                 if (!keepArbitrationRunning) {
@@ -258,7 +261,7 @@ void Arbitrator::attemptArbitration()
             result.push_back(fixedParticipantResult);
         } else {
             auto future = discoveryProxySharedPtr->lookupAsync(
-                    domains, interfaceName, systemDiscoveryQos);
+                    domains, interfaceName, systemDiscoveryQos, gbids);
             {
                 std::unique_lock<std::mutex> lock(pendingFutureMutex);
                 if (!keepArbitrationRunning) {

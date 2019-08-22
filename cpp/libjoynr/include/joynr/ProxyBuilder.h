@@ -308,7 +308,7 @@ void ProxyBuilder<T>::buildAsync(
     };
 
     auto arbitrator = ArbitratorFactory::createArbitrator(
-            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos);
+            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos, gbids);
     arbitrator->startArbitration(std::move(arbitrationSucceeds), std::move(onError));
     arbitrators.push_back(std::move(arbitrator));
 }

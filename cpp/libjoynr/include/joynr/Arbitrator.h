@@ -70,6 +70,7 @@ public:
                const joynr::types::Version& interfaceVersion,
                std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
                const DiscoveryQos& discoveryQos,
+               const std::vector<std::string>& gbids,
                std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction);
 
     /*
@@ -109,6 +110,7 @@ private:
             pendingFuture;
 
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
+    const std::vector<std::string> gbids;
     DiscoveryQos discoveryQos;
     joynr::types::DiscoveryQos systemDiscoveryQos;
     std::vector<std::string> domains;
