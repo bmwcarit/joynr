@@ -213,8 +213,12 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
             "ConsumerRuntimeWebSocketAddress");
 
     // create a new pointer representing the multicast address
-    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress>
-            multicastAddress(std::make_shared<joynr::system::RoutingTypes::MqttAddress>("testGbid1", multicastId));
+    std::vector<std::shared_ptr<joynr::system::RoutingTypes::MqttAddress>> multicastAddressesVector;
+    for(std::uint8_t i = 0; i < availableGbids.size(); i++) {
+        multicastAddressesVector.push_back(
+                std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
+                        availableGbids[i], multicastId));
+    }
 
     auto expectedAddress1 =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
@@ -299,9 +303,12 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
     EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2))))
             .WillOnce(Return(mockMessagingStub));
     size_t count = isProviderGloballyVisible ? 1 : 0;
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddress))))
-            .Times(count)
-            .WillRepeatedly(Return(mockMessagingStub));
+
+    for(std::uint8_t i = 0; i < availableGbids.size(); i++) {
+        EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddressesVector[i]))))
+                .Times(count)
+                .WillRepeatedly(Return(mockMessagingStub));
+    }
 
     messageRouter->route(mutableMessage.getImmutableMessage());
 
