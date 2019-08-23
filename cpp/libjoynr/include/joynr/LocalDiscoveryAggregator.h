@@ -19,6 +19,8 @@
 #ifndef LOCALDISCOVERYAGGREGATOR_H
 #define LOCALDISCOVERYAGGREGATOR_H
 
+#include <functional>
+#include <memory>
 #include <map>
 #include <string>
 #include <vector>
@@ -70,7 +72,7 @@ public:
                     onApplicationError = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                     onRuntimeError = nullptr,
-            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override;
+            boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<void>> addAsync(
@@ -90,7 +92,7 @@ public:
                     onApplicationError = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                     onRuntimeError = nullptr,
-            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override;
+            boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>
@@ -117,7 +119,7 @@ public:
                     onApplicationError = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                     onRuntimeError = nullptr,
-            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override;
+            boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
@@ -139,7 +141,7 @@ public:
                     onApplicationError = nullptr,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                     onRuntimeError = nullptr,
-            boost::optional<joynr::MessagingQos> qos = boost::none) noexcept override;
+            boost::optional<joynr::MessagingQos> messagingQos = boost::none) noexcept override;
 
     // inherited from joynr::system::IDiscoveryAsync
     std::shared_ptr<joynr::Future<void>> removeAsync(
@@ -151,6 +153,10 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryAggregator);
+
+    std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> findProvisionedEntry(
+            const std::string& participantId,
+            std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess) noexcept;
 
     std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>
