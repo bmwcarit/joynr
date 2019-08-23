@@ -57,8 +57,10 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
 
     const std::string multicastTopicPrefix = "";
 
+    fillAvailableGbidsVector(messagingSettings);
+
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
-            std::make_unique<MqttMulticastAddressCalculator>(nullptr, multicastTopicPrefix);
+            std::make_unique<MqttMulticastAddressCalculator>(multicastTopicPrefix, availableGbids);
 
     const std::string& globalClusterControllerAddress("globalAddress");
     const std::string messageNotificationProviderParticipantId(
@@ -118,6 +120,16 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                                     globalClusterControllerAddress);
 
     maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
+}
+
+void ShortCircuitRuntime::fillAvailableGbidsVector(const MessagingSettings& messagingSettings)
+{
+    availableGbids.emplace_back(messagingSettings.getGbid());
+
+    std::uint8_t additionalBackends = messagingSettings.getAdditionalBackendsCount();
+    for (std::uint8_t index = 0; index < additionalBackends; index++) {
+        availableGbids.emplace_back(messagingSettings.getAdditionalBackendGbid(index));
+    }
 }
 
 } // namespace joynr

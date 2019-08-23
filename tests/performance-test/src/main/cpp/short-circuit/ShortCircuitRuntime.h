@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <tuple> // for std::ignore
+#include <vector>
 
 #include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerSettings.h"
@@ -316,6 +317,8 @@ private:
     std::shared_ptr<DummyRequestCallerDirectory> requestCallerDirectory;
     ClusterControllerSettings clusterControllerSettings;
     const system::RoutingTypes::Address ownAddress;
+    std::vector<std::string> availableGbids;
+    void fillAvailableGbidsVector(const MessagingSettings& messagingSettings);
 
     const bool enablePersistency;
 };
