@@ -39,10 +39,12 @@ MqttMulticastAddressCalculator::MqttMulticastAddressCalculator(
 std::vector<std::shared_ptr<const system::RoutingTypes::Address>> MqttMulticastAddressCalculator::
         compute(const ImmutableMessage& message)
 {
-    std::vector<std::shared_ptr<const system::RoutingTypes::Address>> globalAddressesVector{
-            std::make_shared<const system::RoutingTypes::MqttAddress>(
-                    availableGbids[0], mqttMulticastTopicPrefix + message.getRecipient())};
+    std::vector<std::shared_ptr<const system::RoutingTypes::Address>> globalAddressesVector;
 
+    for (const auto& gbid : availableGbids) {
+        globalAddressesVector.push_back(std::make_shared<const system::RoutingTypes::MqttAddress>(
+                gbid, mqttMulticastTopicPrefix + message.getRecipient()));
+    }
     return globalAddressesVector;
 }
 }
