@@ -19,11 +19,12 @@
  * #L%
  */
 
-let joynr = require("joynr");
-const testbase = require("test-base");
-const SystemIntegrationTestProvider = require("../generated-sources/joynr/test/SystemIntegrationTestProvider.js");
-const SystemIntegrationTestProviderImpl = require("./SystemIntegrationTestProviderImpl.js");
-const fs = require("fs");
+import joynr from "joynr";
+
+import testbase from "test-base";
+import SystemIntegrationTestProvider from "../generated-sources/joynr/test/SystemIntegrationTestProvider";
+import { implementation } from "./SystemIntegrationTestProviderImpl";
+import fs from "fs";
 const log = testbase.logging.log;
 const provisioning = testbase.provisioning_common;
 
@@ -42,14 +43,14 @@ if (process.env.ccport === undefined) {
     process.exit(0);
 }
 
-log("domain: " + process.env.domain);
-log("cchost: " + process.env.cchost);
-log("ccport: " + process.env.ccport);
-log("ccprotocol: " + process.env.ccprotocol);
-log("tlsCertPath: " + process.env.tlsCertPath);
-log("tlsKeyPath: " + process.env.tlsKeyPath);
-log("tlsCaPath: " + process.env.tlsCaPath);
-log("ownerId: " + process.env.ownerId);
+log(`domain: ${process.env.domain}`);
+log(`cchost: ${process.env.cchost}`);
+log(`ccport: ${process.env.ccport}`);
+log(`ccprotocol: ${process.env.ccprotocol}`);
+log(`tlsCertPath: ${process.env.tlsCertPath}`);
+log(`tlsKeyPath: ${process.env.tlsKeyPath}`);
+log(`tlsCaPath: ${process.env.tlsCaPath}`);
+log(`ownerId: ${process.env.ownerId}`);
 
 const domain = process.env.domain;
 provisioning.ccAddress.host = process.env.cchost;
@@ -64,13 +65,13 @@ if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath
     provisioning.keychain = {};
 
     if (process.env.tlsCertPath) {
-        provisioning.keychain.tlsCert = fs.readFileSync(process.env.tlsCertPath, 'utf8');
+        provisioning.keychain.tlsCert = fs.readFileSync(process.env.tlsCertPath, "utf8");
     }
     if (process.env.tlsKeyPath) {
-        provisioning.keychain.tlsKey = fs.readFileSync(process.env.tlsKeyPath, 'utf8');
+        provisioning.keychain.tlsKey = fs.readFileSync(process.env.tlsKeyPath, "utf8");
     }
     if (process.env.tlsCaPath) {
-        provisioning.keychain.tlsCa = fs.readFileSync(process.env.tlsCaPath, 'utf8');
+        provisioning.keychain.tlsCa = fs.readFileSync(process.env.tlsCaPath, "utf8");
     }
     provisioning.keychain.ownerId = process.env.ownerId;
     provisioning.persistency.location = "./localStorageProviderTls";
@@ -78,25 +79,28 @@ if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath
     provisioning.persistency.location = "./localStorageProvider";
 }
 
-joynr.load(testbase.provisioning_common).then((loadedJoynr) => {
-    log("joynr started");
-    joynr = loadedJoynr;
+joynr
+    .load(testbase.provisioning_common)
+    .then(() => {
+        log("joynr started");
 
-    const providerQos = new joynr.types.ProviderQos({
-        customParameters : [],
-        priority : Date.now(),
-        scope : joynr.types.ProviderScope.GLOBAL,
-        supportsOnChangeSubscriptions : true
-    });
+        const providerQos = new joynr.types.ProviderQos({
+            customParameters: [],
+            priority: Date.now(),
+            scope: joynr.types.ProviderScope.GLOBAL,
+            supportsOnChangeSubscriptions: true
+        });
 
-
-    const systemIntegrationTestProvider = joynr.providerBuilder.build(
+        const systemIntegrationTestProvider = joynr.providerBuilder.build(
             SystemIntegrationTestProvider,
-            SystemIntegrationTestProviderImpl.implementation);
+            implementation
+        );
 
-    return joynr.registration.registerProvider(domain, systemIntegrationTestProvider, providerQos);
-}).then(() => {
-  log("provider registered successfully");
-}).catch((error) => {
-  log("error registering provider: " + error.toString());
-});
+        return joynr.registration.registerProvider(domain, systemIntegrationTestProvider, providerQos);
+    })
+    .then(() => {
+        log("provider registered successfully");
+    })
+    .catch(error => {
+        log(`error registering provider: ${error.toString()}`);
+    });

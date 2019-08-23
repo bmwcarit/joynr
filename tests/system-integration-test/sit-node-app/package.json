@@ -8,7 +8,10 @@
   "dependencies": {
     "bluebird": "3.3.5",
     "joynr": "file:../../../javascript/libjoynr-js/.output/src/main/js",
-    "test-base": "file:../../test-base"
+    "test-base": "file:../../test-base",
+    "@types/node": "8.9.4",
+    "ts-node": "8.3.0",
+    "typescript": "3.5.2"
   },
   "config": {
     "domain": "io.joynr.systemintegrationtest.node",
@@ -30,9 +33,9 @@
     }
   },
   "scripts": {
-    "startconsumer": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port node src/main/js/consumer.js",
-    "startprovider": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port node src/main/js/provider.js",
-    "startconsumertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId node src/main/js/consumer.js",
-    "startprovidertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId node src/main/js/provider.js"
+    "startconsumer": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port ts-node src/main/js/consumer.ts",
+    "startprovider": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port ts-node src/main/js/provider.ts",
+    "startconsumertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId ts-node src/main/js/consumer.ts",
+    "startprovidertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId ts-node src/main/js/provider.ts"
   }
 }

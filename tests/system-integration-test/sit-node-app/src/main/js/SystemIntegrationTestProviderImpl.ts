@@ -19,20 +19,16 @@
  * #L%
  */
 
-const Promise = require("bluebird").Promise;
-const joynr = require("joynr");
+import joynr from "joynr";
 const prettyLog = require("test-base").logging.prettyLog;
 
-exports.implementation = {
-    add(opArgs) {
-        prettyLog("SystemIntegrationTestProvider.add(" + JSON.stringify(opArgs) + ") called");
-        return Promise.resolve().then(() => {
-            if (opArgs.addendA === undefined || opArgs.addendB === undefined) {
-                throw new joynr.exceptions.ProviderRuntimeException(
-                        {detailMessage: "add: invalid argument data"});
-            } else {
-                return {result: opArgs.addendA + opArgs.addendB};
-            }
-        });
+export const implementation = {
+    async add(opArgs: any) {
+        prettyLog(`SystemIntegrationTestProvider.add(${JSON.stringify(opArgs)}) called`);
+        if (opArgs.addendA === undefined || opArgs.addendB === undefined) {
+            throw new joynr.exceptions.ProviderRuntimeException({ detailMessage: "add: invalid argument data" });
+        } else {
+            return { result: opArgs.addendA + opArgs.addendB };
+        }
     }
 };
