@@ -6,11 +6,6 @@ FROM fedora:27
 WORKDIR /
 RUN mkdir /data
 
-ARG PROXY_HOST_BUILD_ARG
-ARG PROXY_PORT_BUILD_ARG
-ARG PROXY_USER_BUILD_ARG
-ARG PROXY_PASSWORD_BUILD_ARG
-
 ENV CURL_HOME /etc
 
 ###################################################
