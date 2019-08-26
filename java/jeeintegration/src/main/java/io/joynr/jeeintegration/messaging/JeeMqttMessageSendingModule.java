@@ -20,6 +20,9 @@ package io.joynr.jeeintegration.messaging;
 
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.MQTT_CIPHERSUITE_LIST;
+
+import java.util.List;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -34,6 +37,7 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.DefaultMqttTopicPrefixProvider;
+import io.joynr.messaging.mqtt.MqttCiphersuiteListFactory;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
@@ -82,6 +86,12 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS)
     public MqttAddress provideMqttOwnAddress(MqttReplyToAddressFactory replyToAddressFactory) {
         return replyToAddressFactory.create();
+    }
+
+    @Provides
+    @Named(MQTT_CIPHERSUITE_LIST)
+    public List<String> provideMqttInternalCipherList(MqttCiphersuiteListFactory internalCipherListFactory) {
+        return internalCipherListFactory.create();
     }
 
     @Override
