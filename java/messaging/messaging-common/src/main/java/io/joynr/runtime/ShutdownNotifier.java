@@ -57,6 +57,7 @@ public class ShutdownNotifier {
      */
     public void registerForShutdown(ShutdownListener shutdownListener) {
         shutdownListeners.add(0, shutdownListener);
+        logger.trace("#ShutdownListeners: {}", shutdownListeners.size());
     }
 
     /**
@@ -100,5 +101,10 @@ public class ShutdownNotifier {
                 logger.error("error shutting down {}: {}", shutdownListener, e.getMessage());
             }
         });
+    }
+
+    public void unregister(ShutdownListener shutdownListener) {
+        shutdownListeners.remove(shutdownListener);
+        logger.trace("Removed ShutdownListener, #ShutdownListeners: {}", shutdownListeners.size());
     }
 }

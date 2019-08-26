@@ -85,9 +85,21 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
 
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
-    // Map weak reference to proxy object -> proxyParticipantId
-    private final ConcurrentHashMap<WeakReference<Object>, String> proxyMap;
+
+    private static class ProxyInformation {
+        public String participantId;
+        public ShutdownListener shutdownListener;
+
+        public ProxyInformation(String participantId, ShutdownListener shutdownListener) {
+            this.participantId = participantId;
+            this.shutdownListener = shutdownListener;
+        }
+    }
+
+    // Map weak reference to proxy object -> {proxyParticipantId, shutdownListener}
+    private final ConcurrentHashMap<WeakReference<Object>, ProxyInformation> proxyMap;
     private final ReferenceQueue<Object> garbageCollectedProxiesQueue;
+    private final ShutdownNotifier shutdownNotifier;
 
     @Inject
     @Singleton
@@ -115,8 +127,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         this.statusReceiver = statusReceiver;
-        this.proxyMap = new ConcurrentHashMap<WeakReference<Object>, String>();
+        this.proxyMap = new ConcurrentHashMap<WeakReference<Object>, ProxyInformation>();
         this.garbageCollectedProxiesQueue = new ReferenceQueue<Object>();
+        this.shutdownNotifier = shutdownNotifier;
         shutdownNotifier.registerForShutdown(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
@@ -144,9 +157,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     r = garbageCollectedProxiesQueue.poll();
                 }
                 while (r != null) {
-                    String proxyParticipantId = proxyMap.get(r);
-                    logger.debug("removing garbage collected proxy participantId {}", proxyParticipantId);
-                    removeNextHop(proxyParticipantId);
+                    ProxyInformation proxyInformation = proxyMap.get(r);
+                    logger.debug("removing garbage collected proxy participantId {}", proxyInformation.participantId);
+                    removeNextHop(proxyInformation.participantId);
+                    shutdownNotifier.unregister(proxyInformation.shutdownListener);
                     proxyMap.remove(r);
                     synchronized (garbageCollectedProxiesQueue) {
                         r = garbageCollectedProxiesQueue.poll();
@@ -442,9 +456,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
     }
 
     @Override
-    public void registerProxy(Object proxy, String proxyParticipantId) {
+    public void registerProxy(Object proxy, String proxyParticipantId, ShutdownListener shutdownListener) {
         synchronized (garbageCollectedProxiesQueue) {
-            proxyMap.putIfAbsent(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue), proxyParticipantId);
+            proxyMap.putIfAbsent(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue),
+                                 new ProxyInformation(proxyParticipantId, shutdownListener));
         }
     }
 

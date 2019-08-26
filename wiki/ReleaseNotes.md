@@ -12,6 +12,9 @@ None.
   uses the empty GBID could not be answered.
 * **[Java]** Updated jackson to version 2.9.10
 * **[Java]** Updated net.sourceforge.htmlunit:htmlunit to 2.36.0
+* **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
+  are now removed by the Routing Table cleanup background job, provided the related proxy instances
+  have already been collected by the Java garbage collector.
 
 ## Configuration property changes
 None.

@@ -19,6 +19,7 @@
  */
 package io.joynr.messaging.routing;
 
+import io.joynr.runtime.ShutdownListener;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
@@ -47,5 +48,5 @@ public interface MessageRouter {
 
     void unregisterMessageProcessedListener(MessageProcessedListener messageProcessedListener);
 
-    void registerProxy(Object proxy, String proxyParticipantId);
+    void registerProxy(Object proxy, String proxyParticipantId, ShutdownListener shutdownListener);
 }

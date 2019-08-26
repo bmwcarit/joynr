@@ -85,6 +85,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private Set<String> domains;
     private final AtomicBoolean preparingForShutdown = new AtomicBoolean();
     private String statelessAsyncParticipantId;
+    protected ShutdownListener shutdownListener;
 
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandlerImpl.class);
 
@@ -109,7 +110,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         this.connectorFactory = connectorFactory;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
         this.messageRouter = messageRouter;
-        shutdownNotifier.registerForShutdown(new ShutdownListener() {
+        shutdownListener = new ShutdownListener() {
             @Override
             public void prepareForShutdown() {
                 preparingForShutdown.set(true);
@@ -119,7 +120,8 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
             public void shutdown() {
                 // No-op
             }
-        });
+        };
+        shutdownNotifier.registerForShutdown(shutdownListener);
         if (statelessAsyncCallback != null) {
             statelessAsyncParticipantId = statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
                                                                                             statelessAsyncCallback);
@@ -588,6 +590,6 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     @Override
     public void registerProxy(Object proxy) {
-        messageRouter.registerProxy(proxy, proxyParticipantId);
+        messageRouter.registerProxy(proxy, proxyParticipantId, shutdownListener);
     }
 }
