@@ -801,6 +801,17 @@ Subscriptions will be reestablished by joynr in any case.
 * **User property**: `messaging/joynr.messaging.mqtt.cleansession`
 * **Default value**: `false`
 
+### `PROPERTY_KEY_MQTT_CIPHERSUITES`
+Allows the configuration of ciphersuites to be used by the HiveMQ MQTT client.
+Ciphersuites have to be listed separated by commas eg. CIPHERSUITE1,CIPHERSUITE2,... .
+Defined ciphersuites must not be empty.
+By default (if the property is not set), the default ciphersuites are used.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.messaging.mqtt.ssl.ciphersuites`
+* **Default value**: ""
+
 ## SystemServicesSettings
 
 ### `PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID`
