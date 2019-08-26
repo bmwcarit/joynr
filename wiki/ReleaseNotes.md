@@ -2,6 +2,16 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.4
+
+## API relevant changes
+None.
+
+## Configuration property changes
+* **[Java, JEE]** Introduced the `PROPERTY_KEY_MQTT_CIPHERSUITES` property, which can be set via
+  `joynr.messaging.mqtt.ssl.ciphersuites`. This property allows to define the ciphers that are
+  used by the HiveMQ MQTT Client. See [Java Configuration Reference](JavaSettings.md) for more details.
+
 # joynr 1.8.3
 
 ## API relevant changes
