@@ -71,6 +71,6 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     @Override
     public void registerProxy(Object proxy) {
-        messageRouter.registerProxy(proxy, proxyParticipantId);
+        messageRouter.registerProxy(proxy, proxyParticipantId, shutdownListener);
     }
 }

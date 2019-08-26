@@ -81,6 +81,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     private Set<String> domains;
     private final AtomicBoolean preparingForShutdown = new AtomicBoolean();
     protected String statelessAsyncParticipantId;
+    protected ShutdownListener shutdownListener;
 
     // CHECKSTYLE:OFF
     public ProxyInvocationHandler(@Assisted("domains") Set<String> domains,
@@ -98,7 +99,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         this.discoveryQos = discoveryQos;
         this.qosSettings = messagingQos;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
-        shutdownNotifier.registerForShutdown(new ShutdownListener() {
+        shutdownListener = new ShutdownListener() {
             @Override
             public void prepareForShutdown() {
                 preparingForShutdown.set(true);
@@ -108,7 +109,8 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             public void shutdown() {
                 // No-op
             }
-        });
+        };
+        shutdownNotifier.registerForShutdown(shutdownListener);
         if (statelessAsyncCallback != null) {
             statelessAsyncParticipantId = statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
                                                                                             statelessAsyncCallback);

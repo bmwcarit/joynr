@@ -12,7 +12,9 @@ the versioning scheme [here](JoynrVersioning.md).
   introduced.
 
 ## Other changes
-None.
+* **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
+  are now removed by the Routing Table cleanup background job, provided the related proxy instances
+  have already been collected by the Java garbage collector.
 
 ## Configuration property changes
 None.
