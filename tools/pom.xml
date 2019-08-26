@@ -33,8 +33,16 @@
 		<module>build-resources</module>
 		<module>generator</module>
 		<module>license-check</module>
-		<module>android</module>
 	</modules>
+
+	<profiles>
+		<profile>
+			<id>android</id>
+			<modules>
+				<module>android</module>
+			</modules>
+		</profile>
+	</profiles>
 
 	<build>
 		<plugins>
