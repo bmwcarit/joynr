@@ -27,8 +27,10 @@ const testUtil = {
 
         return promise;
     },
-    reversePromise(promise: Promise<any>) {
-        return promise.then(suc => Promise.reject(suc)).catch(e => e);
+    reversePromise(promise: Promise<any>): Promise<any> {
+        return new Promise((resolve, reject) => {
+            promise.then(reject).catch(resolve);
+        });
     }
 };
 

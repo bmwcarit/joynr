@@ -248,13 +248,13 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
 
         dispatcherSpy.sendSubscriptionRequest.mockClear();
 
-        await testUtil.reversePromise(subscriptionManager.registerSubscription(subscriptionSettings));
+        await subscriptionManager.registerSubscription(subscriptionSettings);
 
         await increaseFakeTime(1);
 
         expect(dispatcherSpy.sendSubscriptionRequest.mock.calls[0][0].messagingQos.ttl).toEqual(ttl);
         subscriptionSettings.qos.expiryDateMs = SubscriptionQos.NO_EXPIRY_DATE;
-        await testUtil.reversePromise(subscriptionManager.registerSubscription(subscriptionSettings));
+        await subscriptionManager.registerSubscription(subscriptionSettings);
         await increaseFakeTime(1);
 
         expect(dispatcherSpy.sendSubscriptionRequest.mock.calls.length).toEqual(2);
