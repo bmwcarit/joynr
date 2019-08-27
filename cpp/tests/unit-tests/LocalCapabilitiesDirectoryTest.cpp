@@ -105,6 +105,7 @@ public:
               dummyParticipantId3(),
               defaultOnSuccess([]() {}),
               defaultOnError([](const joynr::exceptions::ProviderRuntimeException&) {}),
+              discoveryOnError([](const joynr::types::DiscoveryError::Enum&) {}),
               defaultProviderVersion(26, 05),
               semaphore(0)
     {
@@ -145,6 +146,14 @@ public:
                                              10000,
                                              PUBLIC_KEY_ID);
         globalCapEntryMap.insert({EXTERNAL_ADDRESS, globalCapEntry});
+        entry = joynr::types::DiscoveryEntry(defaultProviderVersion,
+                                           DOMAIN_1_NAME,
+                                           INTERFACE_1_NAME,
+                                           dummyParticipantId1,
+                                           types::ProviderQos(),
+                                           lastSeenDateMs,
+                                           expiryDateMs,
+                                           PUBLIC_KEY_ID);
     }
 
     ~LocalCapabilitiesDirectoryTest() override
@@ -321,6 +330,13 @@ public:
         };
     }
 
+    std::function<void()> createAddOnSuccessFunction()
+    {
+        return [this] () {
+            semaphore.notify();
+        };
+    }
+
     std::function<void(const types::DiscoveryEntryWithMetaInfo&)> createLookupParticipantIdSuccessFunction()
     {
         return [this] (const types::DiscoveryEntryWithMetaInfo& result) {
@@ -329,21 +345,23 @@ public:
         };
     }
 
-    std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> createUnexpectedLookupSuccessFunction()
+    std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>
+    createUnexpectedLookupSuccessFunction()
     {
         return [this] (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
             FAIL() << "Got result: " + (result.empty() ? "EMPTY" : result.at(0).toString());
         };
     }
 
-    std::function<void(const types::DiscoveryEntryWithMetaInfo&)> createUnexpectedLookupParticipantIdSuccessFunction()
+    std::function<void(const types::DiscoveryEntryWithMetaInfo&)>
+    createUnexpectedLookupParticipantIdSuccessFunction()
     {
         return [] (const types::DiscoveryEntryWithMetaInfo& result) {
             FAIL() << "Got result: " + result.toString();
         };
     }
 
-    std::function<void(const types::DiscoveryError::Enum&)> createExpectedErrorFunction(
+    std::function<void(const types::DiscoveryError::Enum&)> createExpectedDiscoveryErrorFunction(
             const types::DiscoveryError::Enum& expectedError)
     {
         return [this, expectedError] (const types::DiscoveryError::Enum& error) {
@@ -352,11 +370,67 @@ public:
         };
     }
 
-    std::function<void(const types::DiscoveryError::Enum&)> createUnexpectedErrorFunction()
-    {
-        return [] (const types::DiscoveryError::Enum& error) {
-            FAIL() << "Got DiscoveryError: " + types::DiscoveryError::getLiteral(error);
+    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> createExpectedProviderRuntimeExceptionFunction(
+            const joynr::exceptions::ProviderRuntimeException& expectedRuntimeException) {
+        return [this, expectedRuntimeException] (const joynr::exceptions::ProviderRuntimeException& exception) {
+            semaphore.notify();
         };
+    }
+
+    std::function<void(const types::DiscoveryError::Enum&)> createUnexpectedDiscoveryErrorFunction()
+    {
+        return [] (const types::DiscoveryError::Enum& discoveryError) {
+            FAIL() << "Got DiscoveryError: " + types::DiscoveryError::getLiteral(discoveryError);
+        };
+    }
+
+    void testAddWithGbidsIsProperlyRejected(const types::DiscoveryError::Enum& expectedDiscoveryError) {
+        const bool& awaitGlobalRegistration = true;
+        const std::vector<std::string> gbids = {KNOWN_GBIDS[0]};
+        EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(1)
+                .WillOnce(InvokeArgument<3>(expectedDiscoveryError));
+
+        localCapabilitiesDirectory->add(
+                entry,
+                awaitGlobalRegistration,
+                gbids,
+                defaultOnSuccess,
+                createExpectedDiscoveryErrorFunction(expectedDiscoveryError));
+
+        EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+    }
+
+    void testAddIsProperlyRejected(const types::DiscoveryError::Enum& expectedDiscoveryError) {
+        const bool& awaitGlobalRegistration = true;
+        EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(1)
+                .WillOnce(InvokeArgument<3>(expectedDiscoveryError));
+
+        localCapabilitiesDirectory->add(
+                entry,
+                awaitGlobalRegistration,
+                defaultOnSuccess,
+                createExpectedProviderRuntimeExceptionFunction(joynr::exceptions::ProviderRuntimeException()));
+
+        EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+    }
+
+    void testAddWithDiscoveryError(
+            const std::vector<std::string>& gbids, const types::DiscoveryError::Enum& expectedDiscoveryError)
+    {
+        const bool& awaitGlobalRegistration = true;
+        EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(1)
+                .WillOnce(InvokeArgument<3>(expectedDiscoveryError));
+
+        localCapabilitiesDirectory->add(
+                entry,
+                awaitGlobalRegistration,
+                defaultOnSuccess,
+                createExpectedProviderRuntimeExceptionFunction(joynr::exceptions::ProviderRuntimeException()));
+
+        EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     }
 
 protected:
@@ -408,8 +482,11 @@ protected:
     std::string dummyParticipantId3;
     joynr::types::DiscoveryQos discoveryQos;
     std::unordered_multimap<std::string, types::DiscoveryEntry> globalCapEntryMap;
+    joynr::types::DiscoveryEntry entry;
+
     std::function<void()> defaultOnSuccess;
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> defaultOnError;
+    std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> discoveryOnError;
     joynr::types::Version defaultProviderVersion;
     joynr::Semaphore semaphore;
 
@@ -457,18 +534,464 @@ MATCHER_P(AnConvertedGlobalDiscoveryEntry, other, "")
            other.getPublicKeyId() == arg.getPublicKeyId();
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, addGloballyDelegatesToCapabilitiesClient)
+TEST_F(LocalCapabilitiesDirectoryTest, addCapability)
 {
-    EXPECT_CALL(*globalCapabilitiesDirectoryClient, add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(1);
-    joynr::types::DiscoveryEntry entry(defaultProviderVersion,
-                                       DOMAIN_1_NAME,
-                                       INTERFACE_1_NAME,
-                                       dummyParticipantId1,
-                                       types::ProviderQos(),
-                                       lastSeenDateMs,
-                                       expiryDateMs,
-                                       PUBLIC_KEY_ID);
-    localCapabilitiesDirectory->add(entry, defaultOnSuccess, defaultOnError);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            _, _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->add(entry, createAddOnSuccessFunction(), defaultOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithSingleNonDefaultGbid) {
+    const std::vector<std::string> gbids{KNOWN_GBIDS[1]};
+    const std::vector<std::string> expectedGbids = gbids;
+    const bool& awaitGlobalRegistration = true;
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            Eq(expectedGbids), _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->add(
+            entry, awaitGlobalRegistration, gbids, createAddOnSuccessFunction(), discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithMultipleGbids) {
+    const std::vector<std::string> gbids{KNOWN_GBIDS[1], KNOWN_GBIDS[0]};
+    const std::vector<std::string> expectedGbids = gbids;
+    const bool& awaitGlobalRegistration = true;
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            Eq(expectedGbids), _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->add(
+                entry, awaitGlobalRegistration, gbids, createAddOnSuccessFunction(), discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithEmptyGbidArray_addToDefaultBackend) {
+    const std::vector<std::string> gbids{};
+    const std::vector<std::string> expectedGbids {KNOWN_GBIDS[0]};
+    const bool& awaitGlobalRegistration = true;
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            Eq(expectedGbids), _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->add(entry,
+                                    awaitGlobalRegistration,
+                                    gbids,
+                                    createAddOnSuccessFunction(),
+                                    discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithAddToAll) {
+    const std::vector<std::string> expectedGbids = KNOWN_GBIDS;
+    const bool& awaitGlobalRegistration = true;
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            Eq(expectedGbids), _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->addToAll(
+            entry, awaitGlobalRegistration, createAddOnSuccessFunction(), discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithGbidsWithEmptyStringEntry) {
+    const std::vector<std::string> gbids{KNOWN_GBIDS[0], ""};
+    const bool& awaitGlobalRegistration = true;
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(An<const joynr::types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->add(
+            entry,
+            awaitGlobalRegistration,
+            gbids,
+            defaultOnSuccess,
+            createExpectedDiscoveryErrorFunction(types::DiscoveryError::INVALID_GBID));
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithGbidsWithDuplicateStringEntries) {
+    const std::vector<std::string> gbids{KNOWN_GBIDS[0], KNOWN_GBIDS[0]};
+    const bool& awaitGlobalRegistration = true;
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(An<const joynr::types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->add(
+            entry,
+            awaitGlobalRegistration,
+            gbids,
+            defaultOnSuccess,
+            createExpectedDiscoveryErrorFunction(types::DiscoveryError::INVALID_GBID));
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithUnknownGbidEntry) {
+    const std::vector<std::string> gbids{KNOWN_GBIDS[0], "unknownGbid"};
+    const bool& awaitGlobalRegistration = true;
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(An<const joynr::types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->add(
+            entry,
+            awaitGlobalRegistration,
+            gbids,
+            defaultOnSuccess,
+            createExpectedDiscoveryErrorFunction(types::DiscoveryError::UNKNOWN_GBID));
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addLocalOnlyCapability) {
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    joynr::types::DiscoveryEntry localEntry(defaultProviderVersion,
+                                        DOMAIN_1_NAME,
+                                        INTERFACE_1_NAME,
+                                        dummyParticipantId1,
+                                        providerQos,
+                                        lastSeenDateMs,
+                                        expiryDateMs,
+                                        PUBLIC_KEY_ID);
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->add(
+            localEntry,
+            createAddOnSuccessFunction(),
+            defaultOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGlobalAgain) {
+   const bool& awaitGlobalRegistration = true;
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(
+                     AnConvertedGlobalDiscoveryEntry(entry)), _, _, _, _)).Times(2)
+            .WillRepeatedly(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->add(
+            entry,
+            awaitGlobalRegistration,
+            createAddOnSuccessFunction(),
+            defaultOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    joynr::types::DiscoveryEntry entry2(defaultProviderVersion,
+                                        DOMAIN_1_NAME,
+                                        INTERFACE_1_NAME,
+                                        dummyParticipantId1,
+                                        types::ProviderQos(),
+                                        lastSeenDateMs,
+                                        expiryDateMs,
+                                        PUBLIC_KEY_ID);
+
+    localCapabilitiesDirectory->add(
+            entry2,
+            awaitGlobalRegistration,
+            createAddOnSuccessFunction(),
+            defaultOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddWithGbidsIsProperlyRejected_invalidGbid) {
+    testAddWithGbidsIsProperlyRejected(joynr::types::DiscoveryError::INVALID_GBID);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddWithGbidsIsProperlyRejected_unknownGbid) {
+    testAddWithGbidsIsProperlyRejected(joynr::types::DiscoveryError::UNKNOWN_GBID);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddWithGbidsIsProperlyRejected_internalError) {
+    testAddWithGbidsIsProperlyRejected(joynr::types::DiscoveryError::INTERNAL_ERROR);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddIsProperlyRejected_invalidGbid) {
+    testAddIsProperlyRejected(joynr::types::DiscoveryError::INVALID_GBID);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddIsProperlyRejected_unknownGbid) {
+    testAddIsProperlyRejected(joynr::types::DiscoveryError::UNKNOWN_GBID);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddIsProperlyRejected_internalError) {
+    testAddIsProperlyRejected(joynr::types::DiscoveryError::INTERNAL_ERROR);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddWithGbids_unknownGbid) {
+    const std::vector<std::string> gbids{KNOWN_GBIDS[0], "unknownGbid"};
+    testAddWithDiscoveryError(gbids, joynr::types::DiscoveryError::UNKNOWN_GBID);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddWithGbids_invalidGbid_emptyGbid) {
+    const std::vector<std::string> gbids{};
+    testAddWithDiscoveryError(gbids, joynr::types::DiscoveryError::INVALID_GBID);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddWithGbids_invalidGbid_duplicateGbid) {
+    const std::vector<std::string> gbids{KNOWN_GBIDS[1], KNOWN_GBIDS[1]};
+    testAddWithDiscoveryError(gbids, joynr::types::DiscoveryError::INVALID_GBID);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addSameGbidTwiceInARow) {
+    const bool& awaitGlobalRegistration = true;
+    const std::vector<std::string> gbids{KNOWN_GBIDS[0]};
+
+     EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+              add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(
+                      AnConvertedGlobalDiscoveryEntry(entry)), _, _, _, _)).Times(2)
+             .WillRepeatedly(InvokeArgument<2>());
+
+     localCapabilitiesDirectory->add(
+             entry,
+             awaitGlobalRegistration,
+             gbids,
+             createAddOnSuccessFunction(),
+             discoveryOnError);
+
+     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+     localCapabilitiesDirectory->add(
+             entry,
+             awaitGlobalRegistration,
+             gbids,
+             createAddOnSuccessFunction(),
+             discoveryOnError);
+
+     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, addDifferentGbidsAfterEachOther) {
+    const bool& awaitGlobalRegistration = true;
+    const std::vector<std::string> gbids1{KNOWN_GBIDS[0]};
+    const std::vector<std::string> expectedGbids1 = gbids1;
+    const std::vector<std::string> gbids2{KNOWN_GBIDS[0]};
+    const std::vector<std::string> expectedGbids2 = gbids2;
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            Eq(expectedGbids1), _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->add(
+            entry,
+            awaitGlobalRegistration,
+            gbids1,
+            createAddOnSuccessFunction(),
+            discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    joynr::types::DiscoveryEntry entry2(defaultProviderVersion,
+                                        DOMAIN_2_NAME,
+                                        INTERFACE_2_NAME,
+                                        dummyParticipantId2,
+                                        types::ProviderQos(),
+                                        lastSeenDateMs,
+                                        expiryDateMs,
+                                        PUBLIC_KEY_ID);
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+             add(Matcher<const joynr::types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry2)),
+             Eq(expectedGbids2), _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->add(
+            entry2,
+            awaitGlobalRegistration,
+            gbids2,
+            createAddOnSuccessFunction(),
+            discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddKnownLocalEntryDoesNothing) {
+    const bool& awaitGlobalRegistration = false;
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    joynr::types::DiscoveryEntry localEntry(defaultProviderVersion,
+                                        DOMAIN_1_NAME,
+                                        INTERFACE_1_NAME,
+                                        dummyParticipantId1,
+                                        providerQos,
+                                        lastSeenDateMs,
+                                        expiryDateMs,
+                                        PUBLIC_KEY_ID);
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                add(An<const joynr::types::GlobalDiscoveryEntry&>(),
+                _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->add(
+            localEntry,
+            awaitGlobalRegistration,
+            defaultOnSuccess,
+            defaultOnError);
+
+    joynr::types::DiscoveryEntry newDiscoveryEntry(localEntry);
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                add(An<const joynr::types::GlobalDiscoveryEntry&>(),
+                _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->add(
+            newDiscoveryEntry,
+            awaitGlobalRegistration,
+            defaultOnSuccess,
+            defaultOnError);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddKnownLocalEntryWithDifferentExpiryDateAddsAgain) {
+    const bool& awaitGlobalRegistration = false;
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    joynr::types::DiscoveryEntry localEntry(defaultProviderVersion,
+                                        DOMAIN_1_NAME,
+                                        INTERFACE_1_NAME,
+                                        dummyParticipantId1,
+                                        providerQos,
+                                        lastSeenDateMs,
+                                        expiryDateMs,
+                                        PUBLIC_KEY_ID);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                add(An<const joynr::types::GlobalDiscoveryEntry&>(),
+                _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->add(
+            localEntry,
+            awaitGlobalRegistration,
+            KNOWN_GBIDS,
+            createAddOnSuccessFunction(),
+            discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2)));
+
+    joynr::types::DiscoveryEntry newDiscoveryEntry(localEntry);
+    newDiscoveryEntry.setExpiryDateMs(localEntry.getExpiryDateMs()+1);
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                add(An<const joynr::types::GlobalDiscoveryEntry&>(),
+                _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->add(
+            newDiscoveryEntry,
+            awaitGlobalRegistration,
+            KNOWN_GBIDS,
+            createAddOnSuccessFunction(),
+            discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddToAll) {
+    const std::vector<std::string> expectedGbids = KNOWN_GBIDS;
+    const bool& awaitGlobalRegistration = true;
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            Eq(expectedGbids), _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<2>());
+
+    localCapabilitiesDirectory->addToAll(
+            entry, awaitGlobalRegistration, createAddOnSuccessFunction(), discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllLocal) {
+    const bool& awaitGlobalRegistration = true;
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    joynr::types::DiscoveryEntry localEntry(defaultProviderVersion,
+                                        DOMAIN_1_NAME,
+                                        INTERFACE_1_NAME,
+                                        dummyParticipantId1,
+                                        providerQos,
+                                        lastSeenDateMs,
+                                        expiryDateMs,
+                                        PUBLIC_KEY_ID);
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(An<const types::GlobalDiscoveryEntry&>(),
+            _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->addToAll(
+            localEntry,
+            awaitGlobalRegistration,
+            createAddOnSuccessFunction(),
+            discoveryOnError);
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllIsProperlyRejected_internalError) {
+    const bool& awaitGlobalRegistration = true;
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            _, _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<3>(types::DiscoveryError::INTERNAL_ERROR));
+
+    localCapabilitiesDirectory->addToAll(
+            entry,
+            awaitGlobalRegistration,
+            defaultOnSuccess,
+            createExpectedDiscoveryErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllIsProperlyRejected_invalidGbid) {
+    const bool& awaitGlobalRegistration = true;
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            _, _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<3>(types::DiscoveryError::INVALID_GBID));
+
+    localCapabilitiesDirectory->addToAll(
+            entry,
+            awaitGlobalRegistration,
+            defaultOnSuccess,
+            createExpectedDiscoveryErrorFunction(types::DiscoveryError::INVALID_GBID));
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllIsProperlyRejected_unknownGbid) {
+    const bool& awaitGlobalRegistration = true;
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(entry)),
+            _, _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<3>(types::DiscoveryError::UNKNOWN_GBID));
+
+    localCapabilitiesDirectory->addToAll(
+            entry,
+            awaitGlobalRegistration,
+            defaultOnSuccess,
+            createExpectedDiscoveryErrorFunction(types::DiscoveryError::UNKNOWN_GBID));
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
@@ -651,7 +1174,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -686,7 +1209,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -703,7 +1226,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressReturnsCachedVal
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(2),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     // enries are now in cache, globalCapabilitiesDirectoryClient should not be called.
     EXPECT_CALL(*globalCapabilitiesDirectoryClient,
@@ -721,7 +1244,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressReturnsCachedVal
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(2),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -760,7 +1283,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        onSuccess,
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
@@ -786,7 +1309,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(
@@ -803,7 +1326,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -827,7 +1350,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsNoCapability
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createUnexpectedLookupParticipantIdSuccessFunction(),
-                                       createExpectedErrorFunction(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT));
+                                       createExpectedDiscoveryErrorFunction(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -852,7 +1375,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -877,7 +1400,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, clearRemovesEntries)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     // remove all entries in the cache
@@ -897,7 +1420,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, clearRemovesEntries)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createUnexpectedLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIfTheyAreMerged)
@@ -981,7 +1504,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     localCapabilitiesDirectory->remove(dummyParticipantId1, nullptr, nullptr);
@@ -1002,7 +1525,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
                                                     discoveryQos,
                                                     KNOWN_GBIDS,
                                                     createLookupParticipantIdSuccessFunction(),
-                                                    createUnexpectedErrorFunction()),
+                                                    createUnexpectedDiscoveryErrorFunction()),
                  exceptions::JoynrTimeOutException);
 }
 
@@ -1035,7 +1558,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
@@ -1046,7 +1569,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(0),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -1078,7 +1601,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
@@ -1089,7 +1612,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     // disable cache
@@ -1104,7 +1627,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                      discoveryQos,
                      KNOWN_GBIDS,
                      createLookupSuccessFunction(1),
-                     createUnexpectedErrorFunction()),
+                     createUnexpectedDiscoveryErrorFunction()),
                  exceptions::JoynrTimeOutException);
 }
 
@@ -1143,7 +1666,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
@@ -1154,7 +1677,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(0),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     // disable cache
@@ -1168,7 +1691,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(2),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
@@ -1181,7 +1704,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -1219,7 +1742,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                     discoveryQos,
                     KNOWN_GBIDS,
                     createLookupSuccessFunction(1),
-                    createUnexpectedErrorFunction());
+                    createUnexpectedDiscoveryErrorFunction());
     });
 
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(100)));
@@ -1257,7 +1780,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                     discoveryQos,
                     KNOWN_GBIDS,
                     createLookupSuccessFunction(2),
-                    createUnexpectedErrorFunction());
+                    createUnexpectedDiscoveryErrorFunction());
     });
 
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(100)));
@@ -1291,7 +1814,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                     discoveryQos,
                     KNOWN_GBIDS,
                     createUnexpectedLookupSuccessFunction(),
-                    createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+                    createExpectedDiscoveryErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
     });
 
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(100)));
@@ -1336,7 +1859,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 discoveryQos,
                 KNOWN_GBIDS,
                 createLookupSuccessFunction(1),
-                createUnexpectedErrorFunction());
+                createUnexpectedDiscoveryErrorFunction());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
@@ -1359,7 +1882,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 discoveryQos,
                 KNOWN_GBIDS,
                 createLookupSuccessFunction(2),
-                createUnexpectedErrorFunction());
+                createUnexpectedDiscoveryErrorFunction());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
@@ -1382,7 +1905,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 discoveryQos,
                 KNOWN_GBIDS,
                 createUnexpectedLookupSuccessFunction(),
-                createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+                createExpectedDiscoveryErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
@@ -1420,7 +1943,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 discoveryQos,
                 KNOWN_GBIDS,
                 createLookupSuccessFunction(3),
-                createUnexpectedErrorFunction());
+                createUnexpectedDiscoveryErrorFunction());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
@@ -1458,7 +1981,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 discoveryQos,
                 KNOWN_GBIDS,
                 createUnexpectedLookupSuccessFunction(),
-                createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+                createExpectedDiscoveryErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
@@ -1481,7 +2004,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 discoveryQos,
                 KNOWN_GBIDS,
                 createLookupSuccessFunction(2),
-                createUnexpectedErrorFunction());
+                createUnexpectedDiscoveryErrorFunction());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
@@ -1551,7 +2074,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntires_ReturnNonExpir
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(2),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
@@ -1560,7 +2083,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntires_ReturnNonExpir
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     // wait for cleanup timer to run
@@ -1572,7 +2095,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntires_ReturnNonExpir
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
@@ -1585,7 +2108,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntires_ReturnNonExpir
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(0),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -1604,7 +2127,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsNoLocalEntrie
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createUnexpectedLookupSuccessFunction(),
-                                       createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+                                       createExpectedDiscoveryErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
 }
@@ -1640,7 +2163,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(2),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
@@ -1676,7 +2199,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createUnexpectedLookupSuccessFunction(),
-                                       createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+                                       createExpectedDiscoveryErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     EXPECT_FALSE(localCapabilitiesDirectory->hasPendingLookups());
@@ -1752,7 +2275,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupMultipeDomainsReturnsResultForMulti
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(4),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -1786,7 +2309,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
                                                     discoveryQos,
                                                     KNOWN_GBIDS,
                                                     createUnexpectedLookupSuccessFunction(),
-                                                    createUnexpectedErrorFunction()),
+                                                    createUnexpectedDiscoveryErrorFunction()),
                  exceptions::JoynrTimeOutException);
 
     // register the external capability
@@ -1798,7 +2321,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(0);
@@ -1815,7 +2338,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
                                                     discoveryQos,
                                                     KNOWN_GBIDS,
                                                     createUnexpectedLookupSuccessFunction(),
-                                                    createUnexpectedErrorFunction()),
+                                                    createUnexpectedDiscoveryErrorFunction()),
                  exceptions::JoynrTimeOutException);
 }
 
@@ -1848,7 +2371,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
@@ -1885,7 +2408,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
@@ -1898,7 +2421,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     // wait for cleanup timer to run
@@ -1914,7 +2437,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
                      discoveryQos,
                      KNOWN_GBIDS,
                      createUnexpectedLookupSuccessFunction(),
-                     createUnexpectedErrorFunction()),
+                     createUnexpectedDiscoveryErrorFunction()),
                  exceptions::JoynrTimeOutException);
 }
 
@@ -1947,7 +2470,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     // recieve a global entry
@@ -1958,7 +2481,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(2),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     EXPECT_CALL(*globalCapabilitiesDirectoryClient, remove(dummyParticipantId1, _, _, _, _)).Times(1);
@@ -2031,7 +2554,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                     false,
                                     {KNOWN_GBIDS[1], KNOWN_GBIDS[2]},
                                     defaultOnSuccess,
-                                    createUnexpectedErrorFunction());
+                                    createUnexpectedDiscoveryErrorFunction());
 
     // create a new object
     auto localCapabilitiesDirectory2 =
@@ -2055,7 +2578,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                             discoveryQos,
                                             KNOWN_GBIDS,
                                             createLookupParticipantIdSuccessFunction(),
-                                            createUnexpectedErrorFunction());
+                                            createUnexpectedDiscoveryErrorFunction());
         EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
     }
 
@@ -2073,14 +2596,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                         discoveryQos,
                                         {KNOWN_GBIDS[0]},
                                         createLookupParticipantIdSuccessFunction(),
-                                        createUnexpectedErrorFunction());
+                                        createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     localCapabilitiesDirectory2->lookup(participantIds[1],
                                         discoveryQos,
                                         {KNOWN_GBIDS[1], KNOWN_GBIDS[2]},
                                         createUnexpectedLookupParticipantIdSuccessFunction(),
-                                        createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+                                        createExpectedDiscoveryErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     // check entry3 is registered only in backend 2 and backend 3
@@ -2088,21 +2611,21 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                         discoveryQos,
                                         {KNOWN_GBIDS[0]},
                                         createUnexpectedLookupParticipantIdSuccessFunction(),
-                                        createExpectedErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
+                                        createExpectedDiscoveryErrorFunction(types::DiscoveryError::INTERNAL_ERROR));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     localCapabilitiesDirectory2->lookup(participantIds[2],
                                         discoveryQos,
                                         {KNOWN_GBIDS[1]},
                                         createLookupParticipantIdSuccessFunction(),
-                                        createUnexpectedErrorFunction());
+                                        createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     localCapabilitiesDirectory2->lookup(participantIds[2],
                                         discoveryQos,
                                         {KNOWN_GBIDS[2]},
                                         createLookupParticipantIdSuccessFunction(),
-                                        createUnexpectedErrorFunction());
+                                        createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -2118,14 +2641,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     localCapabilitiesDirectory->lookup("notReachableInterface_Heisenberg",
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupParticipantIdSuccessFunction(),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -2201,7 +2724,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        onSuccess,
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -2257,7 +2780,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        onSuccess,
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -2317,7 +2840,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGloba
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
 }
 
 class LocalCapabilitiesDirectoryACMockTest
@@ -2365,13 +2888,13 @@ TEST_P(LocalCapabilitiesDirectoryACMockTest, checkPermissionToRegisterWithMock)
                                            discoveryQos,
                                            KNOWN_GBIDS,
                                            createLookupParticipantIdSuccessFunction(),
-                                           createUnexpectedErrorFunction());
+                                           createUnexpectedDiscoveryErrorFunction());
     } else {
         localCapabilitiesDirectory->lookup(dummyParticipantId1,
                                            discoveryQos,
                                            KNOWN_GBIDS,
                                            createUnexpectedLookupParticipantIdSuccessFunction(),
-                                           createExpectedErrorFunction(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT));
+                                           createExpectedDiscoveryErrorFunction(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT));
     }
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
@@ -2507,7 +3030,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope, purgeTimedOutEntries)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 
     // wait for cleanup timer to run
@@ -2519,7 +3042,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope, purgeTimedOutEntries)
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(0),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
@@ -2560,7 +3083,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
                                        discoveryQos,
                                        KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
-                                       createUnexpectedErrorFunction());
+                                       createUnexpectedDiscoveryErrorFunction());
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
