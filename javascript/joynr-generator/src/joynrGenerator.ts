@@ -29,6 +29,10 @@ import * as fs from "fs";
 import mkdirp = require("mkdirp");
 import _ = require("lodash");
 
+interface FidlFilesJson {
+    interfaces: Record<string, string[]>;
+}
+
 const globAsync = util.promisify(glob);
 
 const version = require("../package.json").version;
@@ -39,11 +43,24 @@ async function main() {
     const argv = yargs
         .usage("Usage: $0 [options]")
         .example(`$0 -m Radio.fidl -m Test.fidl -o src-gen`, "compile 2 different .fidl files")
+        .example(`$0 -m model -js`, "use all fidl files inside the ’model’ directory. Compile to js")
+        .example(
+            `$0 -f model fidl-files.json`,
+            `compile all .fidl files listed in fidl-files.json and generate includes`
+        )
         .option("modelPath", {
             alias: "m",
             desc: "path to a directory with fidl files, or a single fidl file (can be supplied multiple times)"
         })
-        .option("outputPath", { alias: "o", demandOption: true, desc: "output path will be created if not exist" })
+        .option("fidlFile", {
+            alias: "f",
+            desc: `Json file containing .fidl files grouped by fidlFileGroups used to create joynr-includes.
+Automatically sets -i option.
+interface FidlFilesJson {
+    interfaces: Record<string (fidlFileGroup), string[] (relative Paths to fidl files)>;
+}`
+        })
+        .option("outputPath", { alias: "o", demandOption: true, desc: "output path will be created if not existing" })
         .option("js", {
             boolean: true,
             desc: "compile to js with d.ts instead of ts"
@@ -56,12 +73,37 @@ async function main() {
         .help()
         .wrap(yargs.terminalWidth()).argv;
 
-    const modelPathArray: string[] = Array.isArray(argv.modelPath) ? argv.modelPath : [argv.modelPath];
+    const outputPath = argv.outputPath as string;
+    const modelPath = argv.modelPath as string | undefined;
+    const fidlFile = argv.fidlFile as string | undefined;
 
-    await generateTSSources(modelPathArray, argv.outputPath as string);
-    if (argv.includes) {
+    if (!modelPath && !fidlFile) {
+        console.error("Please provide either modelPath or fidlFile option");
+        process.exit(1);
+    }
+
+    let parsedJson: FidlFilesJson;
+
+    let modelPathArray: string[] = Array.isArray(modelPath) ? modelPath : modelPath ? [modelPath] : [];
+    const baseArray = modelPathArray;
+
+    if (fidlFile) {
+        parsedJson = JSON.parse(fs.readFileSync(fidlFile, "utf8"));
+        Object.values(parsedJson.interfaces).forEach(paths => {
+            const mappedPaths = paths.map(fidlPath => path.join(path.dirname(fidlFile), fidlPath));
+            modelPathArray = modelPathArray.concat(mappedPaths);
+        });
+    }
+
+    await generateTSSources(modelPathArray, outputPath);
+    if (fidlFile) {
+        Object.entries(parsedJson!.interfaces).forEach(([fidlFileGroup, fidlFiles]) => {
+            const mappedPaths = fidlFiles.map(fidlPath => path.join(path.dirname(fidlFile), fidlPath));
+            createJoynrIncludes(mappedPaths, outputPath, fidlFileGroup);
+        });
+    } else if (argv.includes) {
         let files: string[] = [];
-        modelPathArray.forEach(modelPath => {
+        baseArray.forEach(modelPath => {
             if (modelPath.endsWith(".fidl")) {
                 files.push(modelPath);
             } else {
@@ -69,12 +111,14 @@ async function main() {
                 files = files.concat(glob.sync(`${modelPath}/**/*.fidl`));
             }
         });
-        createJoynrIncludes(files, argv.outputPath as string);
+        createJoynrIncludes(files, outputPath);
     }
-    const files = await globAsync(`${argv.outputPath}/**/*.ts`);
+    const files = await globAsync(`${outputPath}/**/*.ts`);
     if (argv.js) {
         compileToJS(files);
     }
+    console.log("All done!");
+    process.exit(0);
 }
 
 async function generateTSSources(modelPaths: string | string[], outputPath: string) {
@@ -95,6 +139,7 @@ async function generateTSSources(modelPaths: string | string[], outputPath: stri
  * @param fileNames list of files to be compiled
  */
 function compileToJS(fileNames: string[]) {
+    console.log("compiling to JS");
     const compileOptions = {
         noEmitOnError: true,
         noImplicitAny: true,
@@ -179,6 +224,9 @@ function createRequiresFromDir(dir: string, relativeFromDir: string): Record<str
 }
 
 function createJoynrIncludes(fidlFiles: string[], outputFolder: string, fidlFileGroup: string = "joynr-includes") {
+    console.log(
+        `creating joynr includes for fidlFiles ${JSON.stringify(fidlFiles)} and fidlFileGroup ${fidlFileGroup}`
+    );
     const templateFilePath = path.join(__dirname, "joynr-require-interface.hbs");
     const templateFile = fs.readFileSync(templateFilePath, "utf8");
     const requiresTemplate = handlebars.compile(templateFile, { noEscape: true });

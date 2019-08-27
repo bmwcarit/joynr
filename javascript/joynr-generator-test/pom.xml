@@ -99,6 +99,7 @@
 					</roots>
 					<excludes>
 						<exclude>package.json</exclude>
+						<exclude>fidlfiles.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
