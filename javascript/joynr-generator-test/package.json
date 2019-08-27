@@ -12,7 +12,7 @@
   "scripts": {
     "clean": "rm -rf node_modules",
     "build": "cd ../joynr-generator && npm run build && cd - && npm i",
-    "test": "generate-joynr-sources -o generated -m model/hello-world.fidl -m model/joynr-campaign.fidl -m ../../basemodel/src/test/"
+    "test": "generate-joynr-sources -o generated -m model/hello-world.fidl -m model/joynr-campaign.fidl -m ../../basemodel/src/test/ -i"
   },
   "repository": {
     "type": "git",
