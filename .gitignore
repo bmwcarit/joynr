@@ -33,6 +33,7 @@ cpp/tests/gen-with-version/
 gen/
 javascript/**/generated/
 xtend-gen*/
+javascript/libjoynr-js/wiki/typedoc/
 
 # Logs
 derby.log
