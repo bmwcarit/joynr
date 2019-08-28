@@ -839,7 +839,7 @@ Any specific broadcast filters must be added prior to registry.
     provider->addBroadcastFilter(<broadcast>BroadcastFilter);
 
     runtime->registerProvider<<Package>::<Interface>Provider>(
-        providerDomain, provider, providerQos);
+        providerDomain, provider, providerQos [, persist [, awaitGlobalRegistration [, gbids]]]);
 ```
 
 Alternatively, use the ```registerProviderAsync``` method of ```JoynrRuntime``` to register the provider
@@ -859,8 +859,28 @@ asynchronously:
         provider,
         providerQos,
         onSuccess,
-        onError);
+        onError,
+        [, persist
+        [, awaitGlobalRegistration
+        [, gbids ]]]);
 ```
+
+The following optional parameters are supported:
+
+1. ```persist``` - specify whether the provider participantId shall be persisted (default true)
+2. ```awaitGlobalRegistration``` - registration only succeeds if global registration succeeds (default false)
+3. ```gbids``` - specify in which GBIDs (global backend IDs) the provider is to be registered (default empty array).
+   In case GBIDs are specified, the order matters since the first specified GBID determines the GBID over which
+   the cluster controller will carry out the registration process for all specified GBIDs.
+   If the parameter is omitted, the cluster controller uses the first GBID of its configured list of available GBIDs
+   for the registation process and registers the provider just for the default backend.
+
+Note that the optional parameters are ordered, e.g. if providing 3. then 1. and 2. have to be provided as well.
+
+The APIs ```registerProviderInAllBackends``` and ```registerProviderInAllBackendsAsync``` allow to register
+a provider in all backends known to the cluster controller without explictly specifying the GBIDs via API.
+The cluster controller uses the first GBID of its configured list of available GBIDs for the registration
+process. The signature of those APIs is similar to their counterparts above without the GBIDs parameter.
 
 ### Shutting down
 On exit of the application it should cleanly unregister any providers the application had registered earlier and free resources.
