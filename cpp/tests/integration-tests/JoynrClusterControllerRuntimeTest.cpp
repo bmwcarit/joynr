@@ -326,8 +326,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
     auto mockMqttMessagingSkeletonFactory =
             [mockMqttMessagingSkeleton](std::weak_ptr<IMessageRouter> messageRouter,
                                         std::shared_ptr<MqttReceiver> mqttReceiver,
-                                        const std::string& multicastTopicPrefix,
                                         const std::string& gbid,
+                                        const std::string& multicastTopicPrefix,
                                         std::uint64_t ttlUplift) {
         std::ignore = messageRouter;
         std::ignore = mqttReceiver;

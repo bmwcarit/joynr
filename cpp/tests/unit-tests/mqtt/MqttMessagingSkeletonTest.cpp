@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MutableMessage.h"
@@ -102,7 +103,9 @@ public:
               mqttReconnectMaxDelayTimeSeconds(1),
               isMqttExponentialBackoffEnabled(false),
               receiverId("receiverId"),
-              testGbid("testGbid")
+              testGbid("testGbid"),
+              mqttAddress(std::make_shared<joynr::system::RoutingTypes::MqttAddress>("fakegbid","testtopic"))
+
     {
         singleThreadedIOService->start();
     }
@@ -131,6 +134,8 @@ public:
 
         mutableMessage = messageFactory.createRequest(
                 senderID, receiverID, qosSettings, request, isLocalMessage);
+        serializedMqttAddress = joynr::serializer::serializeToJson(*mqttAddress);
+        mutableMessage.setReplyTo(serializedMqttAddress);
     }
 
 protected:
@@ -154,6 +159,9 @@ protected:
     std::string receiverId;
     std::string testGbid;
 
+    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> mqttAddress;
+    std::string serializedMqttAddress;
+
 };
 
 MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "")
@@ -169,6 +177,32 @@ MATCHER_P(pointerToMqttAddressWithChannelId, channelId, "")
     return mqttAddress->getTopic() == channelId;
 }
 
+MATCHER(isPointerToMqttAddress, "")
+{
+    if (arg == nullptr) {
+        return false;
+    }
+    std::shared_ptr<const joynr::system::RoutingTypes::MqttAddress> mqttAddress =
+            std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(arg);
+    if (mqttAddress == nullptr) {
+        return false;
+    }
+    return true;
+}
+
+MATCHER(isPointerToChannelAddress, "")
+{
+    if (arg == nullptr) {
+        return false;
+    }
+    std::shared_ptr<const joynr::system::RoutingTypes::ChannelAddress> channelAddress =
+            std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(arg);
+    if (channelAddress == nullptr) {
+        return false;
+    }
+    return true;
+}
+
 TEST_F(MqttMessagingSkeletonTest, transmitTest)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
@@ -179,6 +213,60 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest)
     auto onFailure =
             [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
+}
+
+TEST_F(MqttMessagingSkeletonTest, transmitTestWithMqttReplyToAddress)
+{
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    EXPECT_CALL(*mockMessageRouter, route(immutableMessage, _)).Times(1);
+    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(immutableMessage->getSender()),
+                                               AllOf(Property(
+                                                   &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                                                   WhenDynamicCastTo<const joynr::system::RoutingTypes::MqttAddress*>(
+                                                       Pointee(AllOf(Property(&joynr::system::RoutingTypes::MqttAddress::getBrokerUri, Eq(testGbid)),
+                                                                     Property(&joynr::system::RoutingTypes::MqttAddress::getTopic, Eq(mqttAddress->getTopic())))))),
+                                                         isPointerToMqttAddress()),
+                                               Eq(true),
+                                               Eq(TimePoint::max().toMilliseconds()),
+                                               Eq(false),
+                                               _,_)).Times(1);
+    auto onFailure =
+            [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
+    mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
+}
+
+TEST_F(MqttMessagingSkeletonTest, transmitTestWithNonMqttReplyToAddress)
+{
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
+    mutableMessage.setReplyTo(joynr::serializer::serializeToJson(
+                                  joynr::system::RoutingTypes::ChannelAddress("dummyuri.com", "testchannel")));
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    EXPECT_CALL(*mockMessageRouter, route(immutableMessage, _)).Times(1);
+    EXPECT_CALL(*mockMessageRouter, addNextHop(_,isPointerToChannelAddress(),
+                                               _,_,_,_,_)).Times(1);
+    EXPECT_CALL(*mockMessageRouter, addNextHop(_,isPointerToMqttAddress(),
+                                               _,_,_,_,_)).Times(0);
+    auto onFailure =
+            [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
+    mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
+}
+
+TEST_F(MqttMessagingSkeletonTest, transmitTestWithBrokenReplyToAddress)
+{
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
+    mutableMessage.setReplyTo("thisisinvalid::==");
+    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    auto semaphore = std::make_shared<joynr::Semaphore>(0);
+    auto onFailure =
+            [semaphore](const exceptions::JoynrRuntimeException& e) { SUCCEED() << "onFailure called"; semaphore->notify(); };
+    EXPECT_CALL(*mockMessageRouter, route(_, _)).Times(0);
+    EXPECT_CALL(*mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
+    mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
 }
 
 void MqttMessagingSkeletonTest::transmitSetsIsReceivedFromGlobal()
@@ -205,6 +293,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobalForRequests)
     Request request;
     mutableMessage = messageFactory.createRequest(
             senderID, receiverID, qosSettings, request, isLocalMessage);
+    mutableMessage.setReplyTo(serializedMqttAddress);
     transmitSetsIsReceivedFromGlobal();
 }
 
@@ -213,6 +302,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobalForSubscriptionR
     SubscriptionRequest request;
     mutableMessage = messageFactory.createSubscriptionRequest(
             senderID, receiverID, qosSettings, request, isLocalMessage);
+    mutableMessage.setReplyTo(serializedMqttAddress);
     transmitSetsIsReceivedFromGlobal();
 }
 
@@ -221,6 +311,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitSetsIsReceivedFromGlobalForBroadcastSu
     BroadcastSubscriptionRequest request;
     mutableMessage = messageFactory.createBroadcastSubscriptionRequest(
             senderID, receiverID, qosSettings, request, isLocalMessage);
+    mutableMessage.setReplyTo(serializedMqttAddress);
     transmitSetsIsReceivedFromGlobal();
 }
 
@@ -229,6 +320,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitSetsIsReceivedFromGlobalForMulticastSu
     MulticastSubscriptionRequest request;
     mutableMessage = messageFactory.createMulticastSubscriptionRequest(
             senderID, receiverID, qosSettings, request, isLocalMessage);
+    mutableMessage.setReplyTo(serializedMqttAddress);
     transmitSetsIsReceivedFromGlobal();
 }
 
