@@ -282,10 +282,12 @@ Proxy creation is necessary before services from a provider can be called:
 The ProxyBuilder.build call requires the provider's domain. Optionally, **messagingQos** and
 **discoveryQos** settings can be specified if the default settings are not suitable.
 
-When looking up capabilities of a provider in the GlobalCapabilitiesDirectory, all backends will be
+When looking up a globally registered provider, all backends known to the clustercontroller will be
 considered by default. This can be constrained by specifying the optional **GBIDs** setting,
 narrowing the search to the specified **GBIDs**. These **GBIDs** must be valid and preconfigured at
-the local cluster-controller.
+the local cluster-controller.  
+The global discovery will be performed via the GblobalCapabilitiesDirectory instance in the backend
+identified by the first GBID in the list of provided GBIDs.
 
 In case no suitable provider can be found during discovery, a `DiscoveryException` or
 `NoCompatibleProviderFoundException` is thrown.

@@ -382,7 +382,7 @@ first GBID configured at the cluster controller).
 The discovery of providers can be restricted to certain backends by specifying one or more
 global backend ids (GBIDs) using the setGbids(gbids) API.  
 If setGbids(gbids) API is used, then the global discovery will take place over the
-connection to the backend identified by the first gbid in the list of provided GBIDs.
+connection to the backend identified by the first GBID in the list of provided GBIDs.
 
 ## Synchronous Remote procedure calls
 While the provider executes the call asynchronously in any case, the consumer will wait until the call is finished, i.e. the thread will be blocked.
@@ -1302,7 +1302,9 @@ public void run() {
 
     Future<Void> future = runtime.getProviderRegistrar(localDomain, <interface>Provider)
                                  // if no providerQos is set, a default providerQos will be used
-                                 .withProviderQos(providerQos)
+                                 .withProviderQos(providerQos) // optional, see above
+                                 .withGbids(gbids) // optional, see below
+                                 .awaitGlobalRegistration() // optional
                                  .register();
     try {
         future.get();
@@ -1357,10 +1359,12 @@ change again in the future.
 
 ### Register provider in non-default backends
 
-If not specified otherwise, a new provider is registered in the default backend (The first one defined
-in `PROPERTY_GBIDS` [Joynr Java Settings](JavaSettings.md). If this property is not set by the user,
-then a default value is used for it.).
-To register a provider in different backends, the respective GBIDs have to be included.
+If not specified otherwise, a new provider is registered only in the default backend (The first one
+defined in `PROPERTY_GBIDS` [Joynr Java Settings](JavaSettings.md) at the clustercontroller).  
+To register a provider in different backends, the respective GBIDs have to be included by calling
+`withGbids(selectedGbids)` in the `ProviderRegistrar`. The global registration itself will be
+performed by the clustercontroller via the GlobalCapabilitiesDirectory instance in the backend of
+the first provided **GBID**.
 
 ```java
 ...
@@ -1368,9 +1372,9 @@ To register a provider in different backends, the respective GBIDs have to be in
 public void run() {
 ...
     Future<Void> future = runtime.getProviderRegistrar(localDomain, <interface>Provider)
-                                 .withProviderQos(someProviderQos)
+                                 .withProviderQos(someProviderQos) // optional
                                  .withGbids(new String[] { "gbid1","gbid2" })
-                                 .awaitGlobalRegistration()
+                                 .awaitGlobalRegistration() // optional
                                  .register();
     try {
         future.get();
@@ -1397,8 +1401,8 @@ public void run() {
 The passed GBIDs have to be known to the cluster-controller, which means that they also have to be
 defined in `PROPERTY_GBIDS`[Joynr Java Settings](JavaSettings.md).
 
-To register a provider in all backends known to the cluster-controller,
-the registerInAllBackends() method can be used.
+To register a provider in all backends known to the cluster-controller, the
+`registerInAllBackends()` method can be used.
 
 ```java
 ...
