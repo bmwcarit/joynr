@@ -3,6 +3,20 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.11.0
+
+## API relevant changes
+* **[C++]** The `registerProviderXXX` APIs in `JoynrRuntime` now support an optional
+  parameter `gbids` for multiple backend support. Additionally the new APIs
+  `registerProviderInAllBackends` and `registerProviderInAllBackendsAsync` have been
+  introduced.
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
 # joynr 1.10.0
 
 ## API relevant changes
