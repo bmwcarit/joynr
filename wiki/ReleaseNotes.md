@@ -2,6 +2,19 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.7.2
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
+  are now removed by the Routing Table cleanup background job, provided the related proxy instances
+  have already been collected by the Java garbage collector.
+
+## Configuration property changes
+None.
+
 # joynr 1.7.1
 
 ## API relevant changes
