@@ -98,11 +98,13 @@ void HttpMessagingSkeleton::onMessageReceived(smrf::ByteVector&& message)
 
 void HttpMessagingSkeleton::registerMulticastSubscription(const std::string& multicastId)
 {
+    std::ignore = multicastId;
     assert(false && "Not implemented yet");
 }
 
 void HttpMessagingSkeleton::unregisterMulticastSubscription(const std::string& multicastId)
 {
+    std::ignore = multicastId;
     assert(false && "Not implemented yet");
 }
 
