@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ void HttpMessagingSkeleton::transmit(
 
     try {
         if (auto messageRouterSharedPtr = messageRouter.lock()) {
+            registerGlobalRoutingEntryIfRequired(*message, messageRouterSharedPtr);
             messageRouterSharedPtr->route(std::move(message));
         } else {
             std::string errorMessage(
@@ -93,6 +94,16 @@ void HttpMessagingSkeleton::onMessageReceived(smrf::ByteVector&& message)
             return;
         }
     }
+}
+
+void HttpMessagingSkeleton::registerMulticastSubscription(const std::string& multicastId)
+{
+    assert(false && "Not implemented yet");
+}
+
+void HttpMessagingSkeleton::unregisterMulticastSubscription(const std::string& multicastId)
+{
+    assert(false && "Not implemented yet");
 }
 
 } // namespace joynr

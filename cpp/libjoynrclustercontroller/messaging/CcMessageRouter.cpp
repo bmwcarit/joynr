@@ -348,8 +348,6 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
         throw exceptions::JoynrMessageNotSentException(errorMessage);
     }
 
-    registerGlobalRoutingEntryIfRequired(*message);
-
     JOYNR_LOG_TRACE(logger(), "Route message with Id {}", message->getId());
     AbstractMessageRouter::AddressUnorderedSet destAddresses;
     {

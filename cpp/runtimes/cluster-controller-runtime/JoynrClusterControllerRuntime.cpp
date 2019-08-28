@@ -35,7 +35,6 @@
 #include "joynr/HttpMulticastAddressCalculator.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IKeychain.h"
-#include "joynr/IMqttMessagingSkeleton.h"
 #include "joynr/ITransportMessageReceiver.h"
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/IMulticastAddressCalculator.h"

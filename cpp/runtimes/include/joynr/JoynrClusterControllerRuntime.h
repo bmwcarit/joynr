@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,7 +55,7 @@ class JoynrMessagingConnectorFactory;
 class IDispatcher;
 class InProcessMessagingSkeleton;
 class HttpMessagingSkeleton;
-class IMqttMessagingSkeleton;
+class AbstractGlobalMessagingSkeleton;
 class MqttReceiver;
 class MulticastMessagingSkeletonDirectory;
 class IPlatformSecurityManager;
@@ -86,12 +86,13 @@ class JOYNRCLUSTERCONTROLLERRUNTIME_EXPORT JoynrClusterControllerRuntime
           public IClusterControllerSignalHandler
 {
 public:
-    using MqttMessagingSkeletonFactory = std::function<
-            std::shared_ptr<IMqttMessagingSkeleton>(std::weak_ptr<IMessageRouter> messageRouter,
-                                                    std::shared_ptr<MqttReceiver> mqttReceiver,
-                                                    const std::string& gbid,
-                                                    const std::string& multicastTopicPrefix,
-                                                    std::uint64_t ttlUplift)>;
+    using MqttMessagingSkeletonFactory =
+            std::function<std::shared_ptr<AbstractGlobalMessagingSkeleton>(
+                    std::weak_ptr<IMessageRouter> messageRouter,
+                    std::shared_ptr<MqttReceiver> mqttReceiver,
+                    const std::string& gbid,
+                    const std::string& multicastTopicPrefix,
+                    std::uint64_t ttlUplift)>;
     JoynrClusterControllerRuntime(
             std::unique_ptr<Settings> settings,
             std::shared_ptr<IKeychain> keyChain = nullptr,

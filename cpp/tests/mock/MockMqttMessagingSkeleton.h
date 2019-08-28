@@ -21,9 +21,9 @@
 
 #include <gmock/gmock.h>
 
-#include "joynr/IMqttMessagingSkeleton.h"
+#include "joynr/AbstractGlobalMessagingSkeleton.h"
 
-class MockMqttMessagingSkeleton : public joynr::IMqttMessagingSkeleton
+class MockMqttMessagingSkeleton : public joynr::AbstractGlobalMessagingSkeleton
 {
 public:
     MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message,

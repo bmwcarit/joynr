@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 
 #include <smrf/ByteVector.h>
 
+#include "joynr/AbstractGlobalMessagingSkeleton.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -37,7 +38,7 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
-class HttpMessagingSkeleton
+class HttpMessagingSkeleton : AbstractGlobalMessagingSkeleton
 {
 public:
     explicit HttpMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter);
@@ -45,9 +46,13 @@ public:
     ~HttpMessagingSkeleton() = default;
 
     void transmit(std::shared_ptr<joynr::ImmutableMessage> message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
+            override;
 
-    void onMessageReceived(smrf::ByteVector&& message);
+    void onMessageReceived(smrf::ByteVector&& message) override;
+
+    void registerMulticastSubscription(const std::string& multicastId) override;
+    void unregisterMulticastSubscription(const std::string& multicastId) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingSkeleton);

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@
 
 #include <smrf/ByteVector.h>
 
-#include "joynr/IMqttMessagingSkeleton.h"
 #include "JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/AbstractGlobalMessagingSkeleton.h"
 
 namespace joynr
 {
@@ -42,7 +42,7 @@ class ImmutableMessage;
 class IMessageRouter;
 class MqttReceiver;
 
-class JOYNRCLUSTERCONTROLLER_EXPORT MqttMessagingSkeleton : public IMqttMessagingSkeleton
+class JOYNRCLUSTERCONTROLLER_EXPORT MqttMessagingSkeleton : public AbstractGlobalMessagingSkeleton
 {
 public:
     /*
@@ -80,7 +80,7 @@ private:
     std::unordered_map<std::string, std::uint64_t> multicastSubscriptionCount;
     std::mutex multicastSubscriptionCountMutex;
     std::string multicastTopicPrefix;
-    std::string ownGbid;
+    const std::string ownGbid;
 };
 
 } // namespace joynr
