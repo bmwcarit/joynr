@@ -30,9 +30,12 @@
 #include "joynr/Future.h"
 #include "joynr/Semaphore.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/DiscoveryError.h"
 #include "joynr/types/DiscoveryQos.h"
 
 #include "tests/mock/MockDiscovery.h"
+
+using ::testing::DoAll;
 
 using namespace ::testing;
 using namespace joynr;
@@ -161,4 +164,30 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_d
     EXPECT_EQ(result, provisionedDiscoveryEntry);
 
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(100)));
+}
+
+TEST_F(LocalDiscoveryAggregatorTest, addAsync_callsProxyWithGbids)
+{
+    localDiscoveryAggregator.setDiscoveryProxy(discoveryMock);
+
+    types::DiscoveryEntryWithMetaInfo discoveryEntry;
+    discoveryEntry.setParticipantId("testParticipantId");
+    std::vector<std::string> gbids = { "joynrdefaultgbid", "othergbid" };
+    std::vector<std::string> capturedGbids;
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+    auto onApplicationError = [&future](const joynr::types::DiscoveryError::Enum& errorEnum) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(joynr::types::DiscoveryError::getLiteral(errorEnum)));
+    };
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+
+    EXPECT_CALL(*discoveryMock, addAsyncMock(Eq(discoveryEntry), Eq(false), _, _, _, _, _)).WillOnce(
+            DoAll(::testing::SaveArg<2>(&capturedGbids), InvokeArgument<3>(), Return(mockFuture)));
+    localDiscoveryAggregator.addAsync(discoveryEntry, false, gbids, onSuccess, onApplicationError, onError);
+    future.get();
+    EXPECT_EQ(gbids, capturedGbids);
 }
