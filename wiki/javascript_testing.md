@@ -3,14 +3,10 @@
 
 ## Testing environment
 
-The libjoynr Javascript tests use the
-[Jasmine 2.4](http://jasmine.github.io/2.4/introduction.html) test
-framework.
-
-Unit tests are run as nodejs tests. (See section [Nodejs tests](#nodejs_tests) for details.)<br />
-For browser tests (e.g. InProcessRuntimeTest.js in <JOYNR_REPO>/javascript/libjoynr-js/src/test/js/joynr/start)
-we use [Karma](https://karma-runner.github.io) as test runner.
-(See section [Karma test configuration](#karma_test_configuration) for details)
+All tests are run through the [jest](https://jestjs.io/) testing framework. The test runner is configured to be
+``jest-circus``, which is also developed by the ``jest`` team.  
+Tests are run directly against the typescript files without triggering a manual compilation to js.
+The compilation is embedded into the process by the ``ts-jest`` addon.
 
 ### Prerequisites
 
@@ -52,163 +48,50 @@ cd javascript/libjoynr-js
 mvn clean install -DskipTests=false
 ```
 
-(This will also run all tests in src/tests/resources/node-run-unit-tests.js and src/tests/resources/node-run-system-integration-tests.js with node
-and src/test/js/joynr/start/InProcessRuntimeTest.js with karma.)
-
 **Note:** Running the maven commands does a lot more than running the tests (e.g. generating files from fidls, run the formatter), which makes it slow.
 Thus it should only be done once to prepare the environment.
 The preferred way to run tests is through npm. The commands are explained in the following sections.
 
 ### Running tests
-**Note:** Here and in all following sections all paths (also in commands) are relative to < JOYNR_REPO >javascript/libjoynr-js.
+**Note:** Here and in all following sections all paths (also in commands) are relative to <JOYNR_REPO>javascript/libjoynr-js.
 
-For running all tests (all tests in src/tests/resources/node-run-unit-tests.js and src/tests/resources/node-run-system-integration-tests.js with node
-and src/test/js/joynr/start/InProcessRuntimeTest.js with karma) simply
+For running all tests
 
 ```
-npm run test
+npm test
 ```
 
 has to be run.
 
-How to execute single tests with node or karma can be read the following sections.
+#### Testing framework configuration
 
-#### <a id="karma_test_configuration"></a>Karma test configuration
+The unit tests are configured via ``jest.config.js`` and the integration test are configured via
+``jest.config.integration.js``.
 
-The karma test environment is configured using the following file:
-
-```
-## Integration test configuration
-src/test/karma/karma.integration.conf.js
-```
-
-It specifies
-* which files are made available (files to be tested, environment, test cases)
-* which port is used for debugging
-* which reporters are used (e.g. junit to create XML output)
-* the output location of the test reports
-* that the tests are run with the help of browserify
-
-The last point means: A browserify build is started (requires all modules in the browser) and then tested.
-
-##### Selection of test cases
-
-The test cases can be expanded or shrinked by
-
-* reducing the number of files provided for loading in the browser through configuration change in
-  the ```karma.integration.conf.js```
+#### Selection of test cases
 
 If only a single-test should be run, the easiest way is to use the ```fit()``` (to enable just a
 single test-case) or ```fdescribe()``` API (to enable all tests for that section) instead
 of the regular ```it()``` or ```describe()``` ones. All other tests will be automatically
 disabled. <br />
-But for a single-test it might actually be easier to run it as a node test. For node the execution of one test at a time is
-simplified by the node-unit-test-helper. (See section [Nodejs tests](#nodejs_tests) for details.)
 
-If multiple tests should be run, then either the pattern (```TEST_REGEXP```) needs to be
-modified or the list of loaded files must be explictly specified (instead of using wildcard
-syntax), so that tests that should not be run are not loaded and consequently cannot be found
-by the pattern match.
-
-##### Debugging
-
-Karma tests can be debugged as follows:
-
-In the required ```karma.<config>.js``` temporarily change the following entry:
-
-* change ```browsers``` to the favored browser (e.g. ```Chrome```)
-
-Example:
+#### Test execution
 
 ```
-    ...
-    browsers: ['Chrome'],
-    ...
+npm run ts:test
 ```
-
-Running the tests will then open the specified browser if the option
---single-run was set to false in the invocation.
-
-The command should look like this:
+will run the unit tests without coverage
 
 ```
-node_modules/.bin/karma start src/test/karma/karma.integration.conf.js --single-run=false
+npm run ts:test:ci
 ```
-
-If running a browser with visible UI just hit the debug button once the test has run once.
-If using a headless browser (e.g. ```ChromeCustom```) please run a browser (e.g. ```Google-Chrome```)
-and load the following URI:
+will run the unit tests with coverage
 
 ```
-http://localhost:9876/debug.html
-```
-
-Activate the Browser console / debug window. (In Chrome for example the developer tools have to be opened in the browser.)
-
-Browse the ```Files``` section or alike in order to locate the test-case in ```test-classes``` hierarchy
-or the test source (e.g. in ```classes```). Set breakpoints as needed.
-Reload the page (e.g. using ```Ctrl-R```). The tests should be executed again.
-
-##### Starting karma from the command line
-
-Command line for karma test execution:
-
-```
-npm run karma
-```
-
-#### <a id="nodejs_tests"></a>Nodejs tests
-
-##### Selection of test cases
-
-The configuration of the nodejs tests is part of the files
-
- ```
- /src/test/resources/node-run-unit-tests.js
- /src/test/resources/node-run-integration-tests.js and
- /src/test/resources/node-run-system-integration-tests.js.
- ```
-
-All modules that are required here will be tested.
-In order to run a different selection of tests this list can be adapted accordingly.
-
-##### Test execution
-
-```
-npm run test:unit
-```
-
-will run the unit tests listed in node-run-unit-tests.js.
-
-```
-npm test:sit
+npm ts:test:sit
 ```
 
 will run the sytem integration tests.
-
-##### Manual execution
-
-The node tests can also be run using
-
-```
-cd <TESTDIR>
-node <TESTCASENAME>
-```
-
-< TESTCASENAME > can for example be node-run-unit-tests.js in src/tests/resources and the command will execute all tests (also the required ones) in the file.
-
-(use --inspect for debugging with chrome dev tools for node - Note: Debugging doesn't work with forked processes in nodejs because then the debug port is already in use!)
-
-Note that each test that should be run in automatic mode with node has to be embedded in a jasmine
-environment and be followed by jasmine.execute() (cp. node-run-unit-tests.js). <br \>
-Or src/test/js/joynr/node-unit-test-helper can be required at the beginning of the file, which makes it easy to run single tests.
-
-This is exactly what the command npm run test:unit/test:sit does.
-
-### Limitations
-
-Joynr supported browser and node as environments and thus there are tests for both.
-But since the introduction of smrf the browser support is broken and therefore browser tests are limited.
 
 ### More helpful tools for test writing
 
@@ -239,21 +122,38 @@ npm run lint:fix
 
 instead, eslint will automatically fix as many issues as possible
 
-### Speed up mvn build for manual test execution
+### Multi language tests
 
-As already mentioned the mvn build is only needed once in the beginning (unless fidl files have changed or the general structure of the project...)
-for running tests. <br \>
-If a rerun is still wished for some reason, it can be sped up.
+JS is tested in combination with CPP, Java and JEE.
+These tests are available:  
+* Inter Language Test (ILT)
+* Performance Test
+* System Integration Test
+* Robustness Test
 
-#### Skip automatic test execution during build with tests enabled
-Automatic test execution during the maven build can be skipped while still preparing the tests for later execution.
-This allows to run only the required tests or run them manually later (npm run test) without having to run the
-whole maven build.
+The tests and their respective documentation can be found in ``<JOYNR_REPO>/tests/``.
 
-In order to build the tests without executing them automatically, run:
+#### Test/release package
 
-```
-cd <JOYNR_REPO>
-cd javascript/libjoynr-js
-mvn clean install
-```
+The test/release package can be build using
+``npm run ts:package``
+
+This package is file referenced by the test package.json files of the multi language tests.
+
+#### Special case ILT:
+
+The ILT is further tested using [browserify](http://browserify.org/)
+which bundles a javascript application into a single file.
+``browserify`` compatibility is a requirement for joynr which imposes additional
+constraints on the codebase like non dynamic imports. Including ``browserify`` into the ILT test
+ensures that apps using joynr won't face any difficulties including ``browserify`` into their build
+chains.
+
+### (JS) joynr-generator npm module
+
+The joynr-generator npm module is a javascript wrapper script around
+``joynr-generator-standalone.jar``.  
+It builds into the npm eco system and provides compilation of the generated ``.ts`` files to ``.js``.
+
+The joynr-generator is tested in joynr-generator-test.
+Use ``npm test`` to run all related tests.
