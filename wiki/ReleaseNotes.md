@@ -11,6 +11,9 @@ None.
 * **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
   are now removed by the Routing Table cleanup background job, provided the related proxy instances
   have already been collected by the Java garbage collector.
+* **[Java]** Updated jackson to version 2.9.9, jackson.databind to 2.9.9.2
+* **[Java]** Updated net.sourceforge.htmlunit.htmlunit to 2.35.0
+* **[Java]** Updated smrf to 0.3.3
 
 ## Configuration property changes
 None.
