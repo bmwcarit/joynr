@@ -1059,6 +1059,10 @@ void LocalCapabilitiesDirectory::lookup(
                 onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
 {
+    if (domains.empty()) {
+        throw joynr::exceptions::ProviderRuntimeException("Domains must not be empty.");
+    }
+
     auto result = validateGbids(gbids, knownGbidsSet);
     switch (result) {
     case ValidateGBIDsEnum::OK:
@@ -1073,15 +1077,11 @@ void LocalCapabilitiesDirectory::lookup(
         onError(types::DiscoveryError::INTERNAL_ERROR);
         break;
     }
-    if (domains.size() == 0) {
-        throw joynr::exceptions::ProviderRuntimeException("Domains must not be empty.");
-        return;
-    }
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
 
-    const auto gbidsForLookup = gbids.size() == 0 ? knownGbids : gbids;
+    const auto& gbidsForLookup = gbids.size() == 0 ? knownGbids : gbids;
     lookup(domains,
            interfaceName,
            std::move(gbidsForLookup),
