@@ -995,25 +995,6 @@
 										<ignore></ignore>
 									</action>
 								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.googlecode.jslint4java
-										</groupId>
-										<artifactId>
-											jslint4java-maven-plugin
-										</artifactId>
-										<versionRange>
-											[2.0.3,)
-										</versionRange>
-										<goals>
-											<goal>lint</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -1370,63 +1351,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
 					<version>1.3.1</version>
-				</plugin>
-				<!-- preconfigure jslint for javascript projects -->
-				<plugin>
-					<groupId>com.googlecode.jslint4java</groupId>
-					<artifactId>jslint4java-maven-plugin</artifactId>
-					<version>2.0.3</version>
-					<executions>
-						<execution>
-							<id>lint-project</id>
-							<phase>process-sources</phase>
-							<goals>
-								<goal>lint</goal>
-							</goals>
-							<configuration>
-								<sourceFolders>
-									<sourceFolder>${project.build.sourceDirectory}</sourceFolder>
-								</sourceFolders>
-							</configuration>
-						</execution>
-						<execution>
-							<id>lint-testsrc</id>
-							<phase>process-sources</phase>
-							<goals>
-								<goal>lint</goal>
-							</goals>
-							<configuration>
-								<options>
-									<predef>define, require, allOf, anything, assertThat,
-										beforeEach, describe, equalTo, expect, hasMember, it, require,
-										runs, waitsFor, when, jasmine, spyOn, TestCase, assertEquals,
-										mock, verify, verifyNoMoreInteractions, times, mockFunction,
-										afterEach, assertNull, alert</predef>
-								</options>
-								<sourceFolders>
-									<sourceFolder>${project.build.testSourceDirectory}</sourceFolder>
-								</sourceFolders>
-							</configuration>
-						</execution>
-					</executions>
-					<configuration>
-						<options>
-							<!-- If multiple var statements per function should be allowed -->
-							<vars>true</vars>
-							<!-- If sloppy whitespace is tolerated -->
-							<white>true</white>
-							<!-- predefine define and require functions used with AMD module loading -->
-							<predef>define,require</predef>
-							<!-- allow not using "pragma strict" -->
-							<sloppy>true</sloppy>
-							<!-- Allow accessing browser globals like Window, setTimeout, etc. without defining them ecplicitely -->
-							<browser>true</browser>
-							<!-- Allow using ++ and -->
-							<plusplus>true</plusplus>
-							<!-- Allow TODO comments -->
-							<todo>true</todo>
-						</options>
-					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>

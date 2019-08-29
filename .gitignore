@@ -67,7 +67,6 @@ capabilitiesdump/
 catruststore.*
 clientkeystore.*
 controlled-bounceproxy/
-examples/radio-js/src/main/resources/lib/
 ilt-results*
 java/common/infrastructure-common/testdb/
 javascript/libjoynr-js/userdirectorydb/

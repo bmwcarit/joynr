@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
 */
-/*jslint node: true */
 
 import testbase from "test-base";
 

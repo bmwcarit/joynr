@@ -869,11 +869,9 @@ class Dispatcher {
 
             default:
                 log.error(
-                    `unknown JoynrMessage type : ${joynrMessage.type}. Discarding message: ${
-                        // TODO the js formatter is breaking this way, and jslint is
-                        // complaining.....
-                        JSONSerializer.stringify(joynrMessage)
-                    }`
+                    `unknown JoynrMessage type : ${joynrMessage.type}. Discarding message: ${JSONSerializer.stringify(
+                        joynrMessage
+                    )}`
                 );
                 break;
         }

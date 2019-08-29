@@ -60,8 +60,6 @@
 						<root>.</root>
 					</roots>
 					<excludes>
-						<exclude>src/main/resources/almond/almond-0.2.5.js</exclude>
-						<exclude>src/main/resources/js-formatter/prettier.config.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

@@ -58,27 +58,6 @@
 			</resource>
 		</resources>
 
-		<testSourceDirectory>src/test/js</testSourceDirectory>
-		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-				<filtering>true</filtering>
-			</testResource>
-			<testResource>
-				<directory>src/test/karma</directory>
-				<filtering>true</filtering>
-			</testResource>
-			<!-- the source folder must be copied as resource since otherwise only
-				java files would be copied -->
-			<testResource>
-				<directory>src/test/js</directory>
-				<filtering>true</filtering>
-			</testResource>
-			<testResource>
-				<directory>src/test/generated</directory>
-			</testResource>
-		</testResources>
-
 		<plugins>
 
 			<plugin>

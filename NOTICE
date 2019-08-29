@@ -255,7 +255,6 @@ This project has dependencies to:
   io.joynr.examples:message-persistence-jee under The Apache Software License, Version 2.0
   io.joynr.examples:radio-app under The Apache Software License, Version 2.0
   io.joynr.examples:radio-jee under The Apache Software License, Version 2.0
-  io.joynr.examples:radio-js under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-api under The Apache Software License, Version 2.0
   io.joynr.examples:stateless-async-car-sim under The Apache Software License, Version 2.0

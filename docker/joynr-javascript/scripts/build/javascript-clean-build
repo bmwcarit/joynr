@@ -52,7 +52,6 @@ fi
   echo "building joynr JavaScript API"
   cd javascript
   mvn clean install \
-  -Djslint.failOnError=true \
   -Dskip.copy-notice-file=true \
   -Dskip.unpack-license-info=true \
   -DskipTests=$SKIPTESTS

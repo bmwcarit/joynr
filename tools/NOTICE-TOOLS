@@ -14,13 +14,3 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 KIND, either express or implied. See the License for the
 specific language governing permissions and limitations
 under the License.
-
-* almond (https://github.com/jrburke/almond), Version 0.2.5
-  License: MIT License (https://github.com/jrburke/almond/blob/master/LICENSE)
-  Location: build-resources/src/main/resources/almond/almond-0.2.5.js
-  Modifications: none
-
-* js-test-driver-phantomjs (https://github.com/larrymyers/js-test-driver-phantomjs)
-  License: MIT License (https://github.com/larrymyers/js-test-driver-phantomjs/blob/master/LICENSE)
-  Location: build-resources/src/main/resources/js-test-driver/
-  Modifications: Modified script to accept url as command line argument.

@@ -1,7 +1,7 @@
 # Joynr
 ## What is joynr?
 
-joynr is a fault-tolerant, typed communications-middleware abstraction framework for applications and services deployed to vehicles, consumer devices, web browsers and backend servers that need to interact with each other.
+joynr is a fault-tolerant, typed communications-middleware abstraction framework for applications and services deployed to vehicles, consumer devices and backend servers that need to interact with each other.
 
 joynr simplifies data access and data exchange by abstracting the pub/sub, RPC and broadcast/event paradigms found in many modern middleware solutions. This abstraction allows the use of a range of technical middleware solutions, depending on the needs of the deployment.
 

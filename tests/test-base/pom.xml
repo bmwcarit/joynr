@@ -20,6 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>test-base</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
+	<packaging>pom</packaging>
 	<groupId>io.joynr.tests</groupId>
 
 	<parent>
@@ -29,18 +30,6 @@
 	</parent>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/js</directory>
-			</resource>
-			<resource>
-				<directory>${basedir}</directory>
-				<includes>
-					<include>package.json</include>
-				</includes>
-			</resource>
-		</resources>
-
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
