@@ -32,6 +32,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             )
     );
+
     MOCK_METHOD3(
             add,
             void(
@@ -59,6 +60,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             )
     );
+
     MOCK_METHOD3(
             lookup,
             void(
@@ -78,6 +80,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             )
     );
+
     MOCK_METHOD5(
             lookup,
             void(
@@ -108,6 +111,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             )
     );
+
     std::shared_ptr<joynr::Future<void>> addAsync (
                 const joynr::types::DiscoveryEntry& discoveryEntry,
                 std::function<void(void)> onSuccess,
@@ -115,13 +119,21 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             ) noexcept override
     {
-        const bool awaitGlobalRegistration = false;
         return addAsyncMock(discoveryEntry,
-                            awaitGlobalRegistration,
                             std::move(onSuccess),
                             std::move(onRuntimeError),
                             std::move(qos));
     }
+    MOCK_METHOD4(
+            addAsyncMock,
+            std::shared_ptr<joynr::Future<void>>(
+                const joynr::types::DiscoveryEntry& discoveryEntry,
+                std::function<void(void)> onSuccess,
+                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+                boost::optional<joynr::MessagingQos> qos
+            )
+    );
+
     std::shared_ptr<joynr::Future<void>> addAsync (
                 const joynr::types::DiscoveryEntry& discoveryEntry,
                 const bool& awaitGlobalRegistration,
@@ -225,6 +237,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             )
     );
+
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
                 const std::string& participantId,
                 const joynr::types::DiscoveryQos& discoveryQos,
@@ -255,6 +268,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             )
     );
+
     std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>> lookupAsync(
                 const std::vector<std::string>& domain,
                 const std::string& interfaceName,
@@ -279,6 +293,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             )
     );
+
     std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>> lookupAsync(
                 const std::vector<std::string>& domains,
                 const std::string& interfaceName,
@@ -311,6 +326,7 @@ public:
                 boost::optional<joynr::MessagingQos> qos
             )
     );
+
     std::shared_ptr<joynr::Future<void>> removeAsync(
                 const std::string& participantId,
                 std::function<void(void)> onSuccess,
