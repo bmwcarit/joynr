@@ -87,7 +87,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
 
-    private class ProxyInformation {
+    private static class ProxyInformation {
         public String participantId;
         public ShutdownListener shutdownListener;
 
