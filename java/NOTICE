@@ -26,10 +26,12 @@ This project has dependencies to:
   AOP alliance under Public Domain
   aopalliance version 1.0 repackaged as a module under CDDL + GPLv2 with classpath exception
   Apache Commons CLI under Apache License, Version 2.0
-  Apache Commons Codec under Apache License, Version 2.0
   Apache Commons Collections under Apache License, Version 2.0
+  Apache Commons IO under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
   Apache Commons Logging under The Apache Software License, Version 2.0
+  Apache Commons Net under Apache License, Version 2.0
+  Apache Commons Text under Apache License, Version 2.0
   Apache Derby Database Engine and Embedded JDBC Driver under Apache 2
   Apache Geronimo JSR-317 JPA 2.0 Spec API under The Apache Software License, Version 2.0
   Apache Groovy under The Apache Software License, Version 2.0
@@ -77,14 +79,12 @@ This project has dependencies to:
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Common Annotations 1.1 API under lgpl
   Commons Codec under The Apache Software License, Version 2.0
-  Commons Collections under The Apache Software License, Version 2.0
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
   Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
   Core Hibernate O/RM functionality under GNU Lesser General Public License
-  CSS Parser under GNU Lesser General Public License
   Dagger under Apache 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   dom4j under BSD License
@@ -110,7 +110,9 @@ This project has dependencies to:
   HK2 API module under CDDL + GPLv2 with classpath exception
   HK2 Implementation Utilities under CDDL + GPLv2 with classpath exception
   HtmlUnit under Apache License, Version 2.0
-  HtmlUnit Core JS under Mozilla Public License version 2.0
+  HtmlUnit Core JS under Mozilla Public License, Version 2.0
+  HtmlUnit CSS Parser under Apache License, Version 2.0
+  HtmlUnit NekoHtml under Apache License, Version 2.0
   HttpMime under Apache License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
@@ -241,7 +243,6 @@ This project has dependencies to:
   Maven Settings Builder under Apache License, Version 2.0
   MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   Mockito under The MIT License
-  Neko HTML under The Apache Software License, Version 2.0
   Netty/Buffer under Apache License, Version 2.0
   Netty/Codec under Apache License, Version 2.0
   Netty/Codec/HTTP under Apache License, Version 2.0
@@ -280,7 +281,6 @@ This project has dependencies to:
   ShrinkWrap Resolver Maven SPI under Apache License, Version 2.0
   ShrinkWrap Resolver SPI under Apache License, Version 2.0
   ShrinkWrap SPI under Apache License, Version 2.0
-  Simple API for CSS under The W3C Software License
   SLF4J API Module under MIT License
   SLF4J JDK14 Binding under MIT License
   SLF4J LOG4J-12 Binding under MIT License
