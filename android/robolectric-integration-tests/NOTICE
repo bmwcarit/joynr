@@ -20,9 +20,11 @@ This project has dependencies to:
   android under Apache License, Version 2.0
   ant-launcher under Apache License, Version 2.0
   AOP alliance under Public Domain
-  Apache Commons Codec under Apache License, Version 2.0
+  Apache Commons IO under Apache License, Version 2.0
   Apache Commons Lang under Apache License, Version 2.0
   Apache Commons Logging under The Apache Software License, Version 2.0
+  Apache Commons Net under Apache License, Version 2.0
+  Apache Commons Text under Apache License, Version 2.0
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpClient Mime under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
@@ -36,10 +38,8 @@ This project has dependencies to:
   Bouncy Castle Provider under Bouncy Castle Licence
   classworlds under BSD Style License
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
-  Commons Collections under The Apache Software License, Version 2.0
-  Commons IO under The Apache Software License, Version 2.0
+  Commons Codec under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
-  CSS Parser under GNU Lesser General Public License
   Default Plexus Container under Apache License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -50,7 +50,9 @@ This project has dependencies to:
   Google Guice - Extensions - Servlet under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   HtmlUnit under Apache License, Version 2.0
-  HtmlUnit Core JS under Mozilla Public License version 2.0
+  HtmlUnit Core JS under Mozilla Public License, Version 2.0
+  HtmlUnit CSS Parser under Apache License, Version 2.0
+  HtmlUnit NekoHtml under Apache License, Version 2.0
   ICU4J under ICU License
   io.joynr.android:robolectric-integration-tests under The Apache Software License, Version 2.0
   io.joynr.java.android:joynr-android under The Apache Software License, Version 2.0
@@ -126,7 +128,6 @@ This project has dependencies to:
   robolectric-resources under MIT license
   robolectric-utils under MIT license
   shadows-core under MIT license
-  Simple API for CSS under The W3C Software License
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
