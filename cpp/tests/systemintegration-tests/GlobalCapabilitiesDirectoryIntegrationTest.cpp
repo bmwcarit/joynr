@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,16 +51,16 @@ public:
                  void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
 };
 
-class GlobalCapabilitiesDirectoryClientTest : public TestWithParam<std::string>
+class GlobalCapabilitiesDirectoryIntegrationTest : public TestWithParam<std::string>
 {
 public:
-    ADD_LOGGER(GlobalCapabilitiesDirectoryClientTest)
+    ADD_LOGGER(GlobalCapabilitiesDirectoryIntegrationTest)
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
     ClusterControllerSettings clusterControllerSettings;
 
-    GlobalCapabilitiesDirectoryClientTest()
+    GlobalCapabilitiesDirectoryIntegrationTest()
             : runtime(),
               settings(std::make_unique<Settings>(GetParam())),
               messagingSettings(*settings),
@@ -82,7 +82,7 @@ public:
         runtime->start();
     }
 
-    ~GlobalCapabilitiesDirectoryClientTest() override
+    ~GlobalCapabilitiesDirectoryIntegrationTest() override
     {
         runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
@@ -92,10 +92,10 @@ public:
     }
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClientTest);
+    DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryIntegrationTest);
 };
 
-TEST_P(GlobalCapabilitiesDirectoryClientTest, registerAndRetrieveCapability)
+TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability)
 {
     const std::vector<std::string> gbids {"testGbid"};
     std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
@@ -174,9 +174,9 @@ TEST_P(GlobalCapabilitiesDirectoryClientTest, registerAndRetrieveCapability)
 using namespace std::string_literals;
 
 INSTANTIATE_TEST_CASE_P(DISABLED_Http,
-                        GlobalCapabilitiesDirectoryClientTest,
+                        GlobalCapabilitiesDirectoryIntegrationTest,
                         testing::Values("test-resources/HttpSystemIntegrationTest1.settings"s));
 
 INSTANTIATE_TEST_CASE_P(Mqtt,
-                        GlobalCapabilitiesDirectoryClientTest,
+                        GlobalCapabilitiesDirectoryIntegrationTest,
                         testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));
