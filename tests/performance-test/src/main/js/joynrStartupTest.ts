@@ -1,16 +1,14 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,18 +17,17 @@
  * #L%
  */
 
-const PerformanceUtilities = require("./performanceutilities");
+import * as PerformanceUtilities from "./performanceutilities";
 
 const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
-PerformanceUtilities.overrideRequire();
 
 const domain = options.domain;
-const testbase = require("test-base");
+import testbase from "test-base";
 const provisioning = testbase.provisioning_common;
 
 function logMemory() {
     const memory = process.memoryUsage();
-    const format = str => {
+    const format = (str: { len: number }) => {
         if (str.len < 6) {
             return str;
         }
@@ -49,44 +46,45 @@ function logMemory() {
 console.log("memory consumption before requiring jonyr");
 logMemory();
 
-const EchoProvider = require("../generated-javascript/joynr/tests/performance/EchoProvider.js");
-const EchoProviderImpl = require("./EchoProviderImpl.js");
-
-let joynr = require("joynr");
+import EchoProvider from "../generated-javascript/joynr/tests/performance/EchoProvider";
+import { implementation } from "./EchoProviderImpl";
+import joynr from "joynr";
 joynr.selectRuntime("websocket.libjoynr");
 
 console.log("memory consumption after requiring jonyr and selecting runtime");
 logMemory();
 
 provisioning.logging.configuration.loggers.root.level = "error";
-joynr
-    .load(provisioning)
-    .then(loadedJoynr => {
-        console.log("memory consumption after loaded joynr and selecting runtime");
-        logMemory();
-        joynr = loadedJoynr;
+joynr.load(provisioning).then(() => {
+    console.log("memory consumption after loaded joynr and selecting runtime");
+    logMemory();
 
-        const providerQos = new joynr.types.ProviderQos({
-            customParameters: [],
-            priority: Date.now(),
-            scope: joynr.types.ProviderScope.GLOBAL,
-            supportsOnChangeSubscriptions: true
-        });
-
-        const echoProvider = joynr.providerBuilder.build(EchoProvider, EchoProviderImpl.implementation);
-
-        joynr.registration
-            .registerProvider(domain, echoProvider, providerQos)
-            .then(() => {
-                console.log("memory consumption after registering provider");
-                logMemory();
-            })
-            .catch(error => {
-                console.log("error registering provider: " + error.toString());
-            });
-
-        return loadedJoynr;
-    })
-    .catch(error => {
-        throw error;
+    const providerQos = new joynr.types.ProviderQos({
+        customParameters: [],
+        priority: Date.now(),
+        scope: joynr.types.ProviderScope.GLOBAL,
+        supportsOnChangeSubscriptions: true
     });
+
+    const echoProvider = joynr.providerBuilder.build(EchoProvider, implementation);
+
+    joynr.registration
+        .registerProvider(domain, echoProvider, providerQos)
+        .then(() => {
+            console.log("memory consumption after registering provider");
+            logMemory();
+        })
+        .catch((error: any) => {
+            console.log(`error registering provider: ${error.toString()}`);
+        });
+});
+
+async function gracefulShutdown(signal: NodeJS.Signals) {
+    console.log(`confirmed shutdown signal ${signal}`);
+    logMemory();
+    await joynr.shutdown();
+    process.exit()
+}
+
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);

@@ -17,7 +17,7 @@
  * #L%
  */
 
-module.exports = {
+export = {
     benchmarks: [
         {
             name: "attributeString",

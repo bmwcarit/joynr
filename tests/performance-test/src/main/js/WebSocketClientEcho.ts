@@ -1,16 +1,14 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,18 +19,17 @@
 
 const args = process.argv.slice(2);
 const port = args[0];
-const times = args[1];
+const times = Number(args[1]);
 let receivedMessages = 0;
 let remainingMessagesToSend = times;
-let startTimestamp;
+let startTimestamp: number;
 
 if (!port || !times) {
-    console.log("usage: node WebSocketClientEcho.js port times");
-    return;
+    throw new Error("usage: node WebSocketClientEcho.js port times");
 }
 
-const WebSocket = require("ws");
-const ws = new WebSocket("ws://localhost:" + port);
+import WebSocket from "ws";
+const ws = new WebSocket(`ws://localhost:${port}`);
 
 // sample request message
 const toSend = {
@@ -50,9 +47,8 @@ const toSend = {
 };
 
 const killServerMessage = "killServer";
-let totalTime;
 
-var send = function(data) {
+function send(data: any) {
     remainingMessagesToSend--;
 
     if (remainingMessagesToSend >= 0) {
@@ -62,16 +58,16 @@ var send = function(data) {
             }
         });
     }
-};
+}
 
-ws.on("message", (data, flags) => {
+ws.on("message", () => {
     receivedMessages++;
 
     if (receivedMessages >= times) {
         const elapsedTimeMs = Date.now() - startTimestamp;
 
-        console.log("Elapsed time : " + elapsedTimeMs + " ms");
-        console.log("Throughput   : " + times / (elapsedTimeMs / 1000.0) + " Msgs/s");
+        console.log(`Elapsed time : ${elapsedTimeMs} ms`);
+        console.log(`Throughput   : ${times / (elapsedTimeMs / 1000.0)} Msgs/s`);
 
         ws.send(killServerMessage, () => {
             ws.terminate();
@@ -81,7 +77,7 @@ ws.on("message", (data, flags) => {
 });
 
 ws.on("open", () => {
-    console.log("sending times:" + times);
+    console.log(`sending times:${times}`);
     startTimestamp = Date.now();
     send(JSON.stringify(toSend));
 });

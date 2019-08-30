@@ -1,5 +1,3 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
@@ -19,19 +17,22 @@
  * #L%
  */
 
-const PerformanceUtilities = require("./performanceutilities");
-PerformanceUtilities.overrideRequire();
-const ProcessManager = require("./ProcessManager");
+import baseConfig from "./config";
 
-const testRunner = require("./testRunner.js");
+baseConfig.global.cc.port = "4243";
+const tls = {
+    certPath: "/data/ssl-data/certs/client.cert.pem",
+    keyPath: "/data/ssl-data/private/client.key.pem",
+    caPath: "/data/ssl-data/certs/ca.cert.pem",
+    ownerId: "client"
+};
+baseConfig.global.testType = "immediate";
 
-ProcessManager.initializeChildProcesses()
-    .then(() => testRunner.executeBenchmarks())
-    .then(() => {
-        console.log("SUCCEEDED");
-        process.exit(0);
-    })
-    .catch(error => {
-        console.log("Error while performing test: " + error);
-        throw error;
-    });
+for (let i = 0; i < baseConfig.benchmarks.length; i++) {
+    baseConfig.benchmarks[i].numRuns /= 12;
+}
+
+const tlsConfig: typeof baseConfig & { tls: typeof tls } = baseConfig as any;
+tlsConfig.tls = tls;
+
+export = tlsConfig;

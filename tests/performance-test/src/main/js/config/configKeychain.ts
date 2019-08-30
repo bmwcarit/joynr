@@ -1,9 +1,7 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2018 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +17,21 @@
  * #L%
  */
 
-const serverPort = process.argv[2];
+import fs from "fs";
 
-if (!serverPort) {
-    console.log("usage: node WebSocketServerEcho.js port");
-    return;
+import baseConfig from "./config";
+baseConfig.global.cc.port = "4243";
+baseConfig.global.testType = "immediate";
+
+if (!process.env.keychainName) {
+    throw new Error("environment variable keychainName is not set");
 }
 
-console.log("Server port is " + serverPort);
+const configKeyChain: typeof baseConfig & { keychain: any } = baseConfig as any;
+configKeyChain.keychain = JSON.parse(fs.readFileSync(process.env.keychainName, "utf8"));
 
-const WebSocketServer = require("ws").Server;
-const server = new WebSocketServer({ port: serverPort });
+for (let i = 0; i < baseConfig.benchmarks.length; i++) {
+    baseConfig.benchmarks[i].numRuns /= 10;
+}
 
-server.on("connection", webSocket => {
-    webSocket.on("message", message => {
-        webSocket.send(message);
-    });
-});
+export = configKeyChain;

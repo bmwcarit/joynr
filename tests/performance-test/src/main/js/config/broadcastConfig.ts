@@ -17,9 +17,16 @@
  * #L%
  */
 
-const baseConfig = require("./config");
-baseConfig.logging = {
-    level: "info",
-    output: "fs"
-};
-module.exports = baseConfig;
+import baseConfig from "./config";
+
+baseConfig.benchmarks = [
+    {
+        name: "simpleBroadcast",
+        enabled: "true",
+        numRuns: 8000,
+        type: "broadcast",
+        numProxies: 4
+    }
+];
+
+export = baseConfig

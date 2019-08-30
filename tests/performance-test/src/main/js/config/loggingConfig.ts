@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2017 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,14 @@
  * #L%
  */
 
-const fs = require("fs");
-const baseConfig = require("./config");
-baseConfig.global.cc.port = "4243";
-baseConfig.global.testType = "immediate";
-
-if (!process.env.keychainName) {
-    throw new Error("environment variable keychainName is not set");
-}
-
-baseConfig.keychain = JSON.parse(fs.readFileSync(process.env.keychainName, "utf8"));
-
-for (let i = 0; i < baseConfig.benchmarks.length; i++) {
-    baseConfig.benchmarks[i].numRuns /= 10;
-}
-
-module.exports = baseConfig;
+import baseConfig from "./config";
+const logging = {
+    level: "info",
+    output: "fs"
+};
+const loggingConfig: typeof baseConfig & { logging: typeof logging } = baseConfig as any;
+loggingConfig.logging = {
+    level: "info",
+    output: "fs"
+};
+export = loggingConfig;

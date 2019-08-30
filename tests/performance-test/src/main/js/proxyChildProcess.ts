@@ -1,16 +1,14 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,17 +17,17 @@
  * #L%
  */
 
-let joynr = require("joynr");
-const testbase = require("test-base");
-const PerformanceUtilities = require("./performanceutilities.js");
-PerformanceUtilities.overrideRequire();
+import joynr from "joynr";
+import EchoProxy from "../generated-javascript/joynr/tests/performance/EchoProxy";
+import * as heapdump from "heapdump";
+import testbase from "test-base";
+import * as PerformanceUtilities from "./performanceutilities";
+import { setup, benchmarks } from "./Benchmarks";
 
 const error = testbase.logging.error;
 const log = testbase.logging.log;
 const options = PerformanceUtilities.getCommandLineOptionsOrDefaults();
 const timeout = 600000;
-const Benchmarks = require("./Benchmarks");
-let benchmarks;
 
 const testType = options.testType;
 
@@ -41,23 +39,18 @@ provisioning.ccAddress.host = options.cchost;
 provisioning.ccAddress.port = options.ccport;
 joynr.selectRuntime("websocket.libjoynr");
 
-const heapdump = require("heapdump");
-
-let echoProxy;
+let echoProxy: EchoProxy;
 
 joynr
     .load(provisioning)
-    .then(loadedJoynr => {
-        joynr = loadedJoynr;
+    .then(() => {
         log("joynr started");
-        return loadedJoynr;
     })
-    .then(loadedJoynr => {
-        const messagingQos = new loadedJoynr.messaging.MessagingQos({
+    .then(() => {
+        const messagingQos = new joynr.messaging.MessagingQos({
             ttl: timeout
         });
-        const EchoProxy = require("../generated-javascript/joynr/tests/performance/EchoProxy.js");
-        return loadedJoynr.proxyBuilder.build(EchoProxy, {
+        return joynr.proxyBuilder.build(EchoProxy, {
             domain: options.domain,
             messagingQos
         });
@@ -65,8 +58,9 @@ joynr
     .then(echoProxy1 => {
         log("build proxy");
         echoProxy = echoProxy1;
-        benchmarks = new Benchmarks(echoProxy, joynr);
-        process.send({ msg: "initialized" });
+
+        setup(echoProxy1);
+        process.send!({ msg: "initialized" });
     })
     .catch(e => {
         throw e;
@@ -77,13 +71,13 @@ let totalBroadcastToReceive = 0;
 function countReceivedBroadCasts() {
     count++;
     if (count === totalBroadcastToReceive) {
-        process.send({ msg: "receivedBroadcasts" });
+        process.send!({ msg: "receivedBroadcasts" });
     }
 }
 
 let broadCastsPreparedOnce = false;
 
-function prepareBroadcast(amount) {
+function prepareBroadcast(amount: number) {
     if (broadCastsPreparedOnce) {
         count = 0;
         return Promise.resolve();
@@ -103,29 +97,29 @@ function prepareBroadcast(amount) {
     return promise.promise;
 }
 
-let cpuUsage;
-let memoryIntervalId;
+let cpuUsage: NodeJS.CpuUsage;
+let memoryIntervalId: NodeJS.Timer;
 const measureMemory = options.measureMemory == "true";
 let totalMemory = 0;
 let totalMemoryMeasurements = 0;
-let testData;
+let testData: Record<string, any>;
 
-let executeBenchmark;
+let executeBenchmark: (name: string) => void;
 
 switch (testType) {
     case "burst":
         executeBenchmark = function(name) {
-            const promiseArray = testData.map(item => benchmarks[name].testProcedure(item));
-            Promise.all(promiseArray).then(() => process.send({ msg: "executeBenchmarkFinished" }));
+            const promiseArray = testData.map((item: any) => benchmarks[name].testProcedure(item));
+            Promise.all(promiseArray).then(() => process.send!({ msg: "executeBenchmarkFinished" }));
         };
         break;
     case "single":
         executeBenchmark = function(name) {
             testData
-                .reduce((accumulator, item) => {
+                .reduce((accumulator: Promise<any>, item: any) => {
                     return accumulator.then(() => benchmarks[name].testProcedure(item));
                 }, Promise.resolve())
-                .then(() => process.send({ msg: "executeBenchmarkFinished" }));
+                .then(() => process.send!({ msg: "executeBenchmarkFinished" }));
         };
         break;
     case "immediate": {
@@ -136,7 +130,7 @@ switch (testType) {
             const testFinished = function() {
                 finishedTests++;
                 if (finishedTests === dataLength) {
-                    process.send({ msg: "executeBenchmarkFinished" });
+                    process.send!({ msg: "executeBenchmarkFinished" });
                 }
             };
 
@@ -155,7 +149,7 @@ switch (testType) {
         throw new Error("unknown testType");
 }
 
-const handler = function(msg) {
+const handler = function(msg: { msg: string; config: { numRuns: any; name: string }; name: any; amount: number }) {
     switch (msg.msg) {
         case "terminate":
             joynr.shutdown();
@@ -171,12 +165,12 @@ const handler = function(msg) {
             cpuUsage = process.cpuUsage();
             break;
         case "stopMeasurement":
-            var diff = process.cpuUsage(cpuUsage);
+            var diff: any = process.cpuUsage(cpuUsage);
             if (measureMemory) {
                 diff.averageMemory = totalMemory / totalMemoryMeasurements;
                 clearInterval(memoryIntervalId);
             }
-            process.send({ msg: "gotMeasurement", data: diff });
+            process.send!({ msg: "gotMeasurement", data: diff });
             break;
         case "prepareBenchmark":
             testData = [];
@@ -184,19 +178,19 @@ const handler = function(msg) {
             for (let i = 0; i < numRuns; i++) {
                 testData.push(benchmarks[msg.config.name].generateData(i));
             }
-            process.send({ msg: "prepareBenchmarkFinished" });
+            process.send!({ msg: "prepareBenchmarkFinished" });
             break;
         case "executeBenchmark":
             executeBenchmark(msg.config.name);
             break;
         case "takeHeapSnapShot":
             var fileName = msg.name;
-            heapdump.writeSnapshot(fileName, (err, filename) => {
+            heapdump.writeSnapshot(fileName, (_err: any, filename?: string) => {
                 error(`dump written to: ${filename}`);
             });
             break;
         case "subscribeBroadcast":
-            prepareBroadcast(msg.amount).then(() => process.send({ msg: "subscriptionFinished" }));
+            prepareBroadcast(msg.amount).then(() => process.send!({ msg: "subscriptionFinished" }));
             break;
         default:
             throw new Error("unknown messageType");

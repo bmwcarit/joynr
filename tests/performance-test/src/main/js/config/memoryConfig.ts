@@ -17,15 +17,7 @@
  * #L%
  */
 
-const baseConfig = require("./config");
-baseConfig.benchmarks = [
-    {
-        name: "simpleBroadcast",
-        enabled: "true",
-        numRuns: 8000,
-        type: "broadcast",
-        numProxies: 4
-    }
-];
+import baseConfig from "./config";
 
-module.exports = baseConfig;
+baseConfig.global.measureMemory = "true";
+export = baseConfig

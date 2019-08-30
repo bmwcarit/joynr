@@ -1,16 +1,14 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,14 +17,12 @@
  * #L%
  */
 
-const PerformanceUtilities = {};
-
 const configName = process.env.configName || "config";
 const config = require(`./config/${configName}`);
-const fs = require("fs");
-const child_process = require("child_process");
+import fs from "fs";
+import child_process from "child_process";
 
-PerformanceUtilities.createByteArray = function(size, defaultValue) {
+export function createByteArray(size: number, defaultValue: any): any[] {
     const result = [];
 
     for (let i = 0; i < size; i++) {
@@ -34,30 +30,30 @@ PerformanceUtilities.createByteArray = function(size, defaultValue) {
     }
 
     return result;
-};
+}
 
-PerformanceUtilities.createString = function(length, defaultChar) {
+export function createString(length: number, defaultChar: string): string {
     // Add one because the character is inserted between the array elements.
     return String(new Array(length + 1).join(defaultChar));
-};
+}
 
-PerformanceUtilities.createRandomNumber = function createRandomNumber(max) {
+export function createRandomNumber(max: number): number {
     return Math.floor(Math.random() * (max + 1));
-};
+}
 
-PerformanceUtilities.forceGC = function() {
+export function forceGC(): void {
     if (global.gc) {
         global.gc();
     } else {
         console.error("no gc hook! (Start node with --expose-gc  -> use npm run startconsumer)");
     }
-};
+}
 
 /**
  * Reads command line arguments from environment. If an argument is not
  * available, a default value will be used.
  */
-PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
+export function getCommandLineOptionsOrDefaults() {
     let domain,
         stringLength,
         byteArrayLength,
@@ -103,10 +99,10 @@ PerformanceUtilities.getCommandLineOptionsOrDefaults = function() {
         heapSnapShot,
         testType
     };
-};
+}
 
-PerformanceUtilities.getCcPiD = function() {
-    let pid;
+export function getCcPiD(): string {
+    let pid: string;
     try {
         const execResult = child_process.execSync("ps -ef | grep cluster-controller | grep -v grep").toString();
 
@@ -125,75 +121,39 @@ PerformanceUtilities.getCcPiD = function() {
     }
 
     console.log(`cluster-controller pid is: ${pid}`);
-
-    if (isNaN(pid)) {
+    const pidNr = Number(pid);
+    if (isNaN(pidNr)) {
         throw new Error(`cluster-controller pid is not a number: ${pid}`);
     }
 
     return pid;
-};
+}
 
-PerformanceUtilities.getRandomInt = function getRandomInt(min, max) {
+export function getRandomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+}
 
-PerformanceUtilities.overrideRequire = function() {
-    const LocalStorageMock = function() {
-        this.map = {};
-    };
+export interface Deferred {
+    promise: Promise<any>;
+    resolve: (...args: any[]) => void;
+    reject: (...args: any[]) => void;
+}
 
-    LocalStorageMock.prototype.setItem = function(key, value) {
-        this.map[key] = value;
-    };
-
-    LocalStorageMock.prototype.getItem = function(key) {
-        return this.map[key];
-    };
-
-    LocalStorageMock.prototype.removeItem = function(key) {
-        delete this.map[key];
-    };
-
-    LocalStorageMock.prototype.clear = function() {
-        this.map = {};
-    };
-
-    LocalStorageMock.prototype.init = function() {
-        return Promise.resolve();
-    };
-
-    LocalStorageMock.prototype.shutdown = function() {
-        return Promise.resolve();
-    };
-
-    const mod = require("module");
-    const req = mod.prototype.require;
-    mod.prototype.require = function(md) {
-        // mock localStorage
-        if (md.endsWith("LocalStorageNode")) {
-            return LocalStorageMock;
-        }
-
-        return req.apply(this, arguments);
-    };
-};
-
-PerformanceUtilities.createPromise = function createPromise() {
-    const map = {};
+export function createPromise(): Deferred {
+    const map: Deferred = {} as any;
     map.promise = new Promise((resolve, reject) => {
         map.resolve = resolve;
         map.reject = reject;
     });
+
     return map;
-};
+}
 
-PerformanceUtilities.findBenchmarks = function() {
-    const benchmarks = config.benchmarks.filter(item => item.enabled === "true");
+export function findBenchmarks() {
+    return config.benchmarks.filter((item: { enabled: string }) => item.enabled === "true");
+}
 
-    return benchmarks;
-};
-
-PerformanceUtilities.getProvisioning = function(isProvider) {
+export function getProvisioning(isProvider: boolean) {
     const useFSLogger = config.logging && config.logging.output === "fs";
     let provisioning;
 
@@ -230,14 +190,15 @@ PerformanceUtilities.getProvisioning = function(isProvider) {
     }
 
     return provisioning;
-};
+}
 
 let portOffset = 0;
+
 /**
  * creates execArgv for child processes the same as parent but with incremented debug port
  * @returns {{execArgv: Array}}
  */
-PerformanceUtilities.createChildProcessConfig = function() {
+export function createChildProcessConfig(): { execArgv: any[] } {
     const childArgs = [];
 
     for (const argument of process.execArgv) {
@@ -252,8 +213,9 @@ PerformanceUtilities.createChildProcessConfig = function() {
             childArgs.push(argument);
         }
     }
+    // compilation for child_process
+    childArgs.push("-r");
+    childArgs.push("ts-node/register");
 
     return { execArgv: childArgs };
-};
-
-module.exports = PerformanceUtilities;
+}
