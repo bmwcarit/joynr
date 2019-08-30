@@ -60,8 +60,8 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
         std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    assert(discoveryProxy);
     REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(void)
+    assert(discoveryProxy);
     return discoveryProxy->addAsync(discoveryEntry,
                                     std::move(onSuccess),
                                     std::move(onRuntimeError),
@@ -75,8 +75,8 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
         std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    assert(discoveryProxy);
     REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(void)
+    assert(discoveryProxy);
     return discoveryProxy->addAsync(discoveryEntry,
                                     awaitGlobalRegistration,
                                     std::move(onSuccess),
@@ -93,8 +93,8 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addAsync(
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    assert(discoveryProxy);
     REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(void)
+    assert(discoveryProxy);
     return discoveryProxy->addAsync(discoveryEntry,
                                     awaitGlobalRegistration,
                                     gbids,
@@ -112,8 +112,8 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::addToAllAsync(
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    assert(discoveryProxy);
     REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(void)
+    assert(discoveryProxy);
     return discoveryProxy->addToAllAsync(discoveryEntry,
                                          awaitGlobalRegistration,
                                          std::move(onSuccess),
@@ -131,9 +131,9 @@ LocalDiscoveryAggregator::lookupAsync(
         std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    assert(discoveryProxy);
     REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(
             std::vector<types::DiscoveryEntryWithMetaInfo>)
+    assert(discoveryProxy);
     return discoveryProxy->lookupAsync(domains,
                                        interfaceName,
                                        discoveryQos,
@@ -154,9 +154,9 @@ LocalDiscoveryAggregator::lookupAsync(
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    assert(discoveryProxy);
     REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(
             std::vector<types::DiscoveryEntryWithMetaInfo>)
+    assert(discoveryProxy);
     return discoveryProxy->lookupAsync(domains,
                                        interfaceName,
                                        discoveryQos,
@@ -193,8 +193,8 @@ std::shared_ptr<joynr::Future<types::DiscoveryEntryWithMetaInfo>> LocalDiscovery
     if (auto future = findProvisionedEntry(participantId, onSuccess)) {
         return future;
     } else {
-        assert(discoveryProxy);
         REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(types::DiscoveryEntryWithMetaInfo)
+        assert(discoveryProxy);
         return discoveryProxy->lookupAsync(participantId,
                                            std::move(onSuccess),
                                            std::move(onRuntimeError),
@@ -215,8 +215,8 @@ LocalDiscoveryAggregator::lookupAsync(
     if (auto future = findProvisionedEntry(participantId, onSuccess)) {
         return future;
     } else {
-        assert(discoveryProxy);
         REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(types::DiscoveryEntryWithMetaInfo)
+        assert(discoveryProxy);
         return discoveryProxy->lookupAsync(participantId,
                                            discoveryQos,
                                            gbids,
@@ -233,8 +233,8 @@ std::shared_ptr<joynr::Future<void>> LocalDiscoveryAggregator::removeAsync(
         std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError,
         boost::optional<joynr::MessagingQos> messagingQos) noexcept
 {
-    assert(discoveryProxy);
     REPORT_ERROR_AND_RETURN_IF_DISCOVERY_PROXY_NOT_SET(void)
+    assert(discoveryProxy);
     return discoveryProxy->removeAsync(participantId,
                                        std::move(onSuccess),
                                        std::move(onRuntimeError),
