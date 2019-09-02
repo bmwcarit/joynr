@@ -20,7 +20,7 @@
 import * as ChildProcessUtils from "../ChildProcessUtils";
 
 import joynr from "joynr";
-import provisioning from "../../../resources/joynr/provisioning/provisioning_cc.js";
+import provisioning from "../../../resources/joynr/provisioning/provisioning_cc";
 import MultipleVersionsInterfaceProviderNameVersion1 from "../../../generated/joynr/tests/MultipleVersionsInterface1Provider";
 import MultipleVersionsInterfaceProviderNameVersion2 from "../../../generated/joynr/tests/MultipleVersionsInterface2Provider";
 import MultipleVersionsInterfaceProviderPackageVersion1 from "../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider";

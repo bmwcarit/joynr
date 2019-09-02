@@ -22,8 +22,8 @@
 import * as ChildProcessUtils from "../ChildProcessUtils";
 
 import joynr from "../../../../main/js/joynr";
-import provisioning from "../../../resources/joynr/provisioning/provisioning_cc.js";
-import DatatypesProvider from "../../../generated/joynr/datatypes/DatatypesProvider.js";
+import provisioning from "../../../resources/joynr/provisioning/provisioning_cc";
+import DatatypesProvider from "../../../generated/joynr/datatypes/DatatypesProvider";
 import TestEnd2EndDatatypesTestData from "../TestEnd2EndDatatypesTestData";
 
 let providerDomain: string;

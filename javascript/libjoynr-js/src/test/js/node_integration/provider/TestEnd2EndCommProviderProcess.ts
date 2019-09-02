@@ -21,11 +21,11 @@ import * as DatatypeForTestLibjoynr from "../../../generated/joynr/vehicle/radio
 import * as ChildProcessUtils from "../ChildProcessUtils";
 
 import joynr from "joynr";
-import provisioning from "../../../resources/joynr/provisioning/provisioning_cc.js";
-import RadioProvider from "../../../generated/joynr/vehicle/RadioProvider.js";
-import RadioStation from "../../../generated/joynr/vehicle/radiotypes/RadioStation.js";
-import Country from "../../../generated/joynr/datatypes/exampleTypes/Country.js";
-import ErrorList from "../../../generated/joynr/vehicle/radiotypes/ErrorList.js";
+import provisioning from "../../../resources/joynr/provisioning/provisioning_cc";
+import RadioProvider from "../../../generated/joynr/vehicle/RadioProvider";
+import RadioStation from "../../../generated/joynr/vehicle/radiotypes/RadioStation";
+import Country from "../../../generated/joynr/datatypes/exampleTypes/Country";
+import ErrorList from "../../../generated/joynr/vehicle/radiotypes/ErrorList";
 import StringMap = require("../../../generated/joynr/datatypes/exampleTypes/StringMap");
 import ComplexStructMap = require("../../../generated/joynr/datatypes/exampleTypes/ComplexStructMap");
 
