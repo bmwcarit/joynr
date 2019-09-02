@@ -24,7 +24,7 @@ import util from "util";
 function extendInternal<T, U>(to: any, from: U, deep: boolean): T & U {
     if (from) {
         for (const key in from) {
-            if (from.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(from, key)) {
                 if (deep && typeof from[key] === "object") {
                     if (Array.isArray(from[key]) && !Array.isArray((to as any)[key])) {
                         (to as any)[key] = [];
