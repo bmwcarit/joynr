@@ -21,6 +21,7 @@ cpp/runtimes/include/joynr/JoynrRuntimeExport.h
 dependency-reduced-pom.xml
 local.properties
 *.bundle.js
+.tsbuildinfo
 target/
 javascript/joynr-generator/jars/
 javascript/joynr-generator/src/*.js
@@ -71,7 +72,7 @@ ilt-results*
 java/common/infrastructure-common/testdb/
 javascript/libjoynr-js/userdirectorydb/
 javascript/libjoynr-js/.build/
-javascript/libjoynr-js/.output/
+.output/
 joynr_persistedSubscriptionRequests/
 joynrpersistence/
 robustness-results*

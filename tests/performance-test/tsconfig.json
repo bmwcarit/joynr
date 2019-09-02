@@ -17,7 +17,8 @@
       "typings"
     ],
     "rootDir" : ".",
-    "outDir": ".output"
+    "outDir": ".output",
+    "incremental": true
   },
   "include": [
     "src/main/**/*",

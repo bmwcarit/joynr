@@ -15,7 +15,8 @@
       "node_modules/@types",
       "typings"
     ],
-    "rootDir" : "."
+    "rootDir" : ".",
+    "incremental": true
   },
   "include": [
     "src/**/*"
