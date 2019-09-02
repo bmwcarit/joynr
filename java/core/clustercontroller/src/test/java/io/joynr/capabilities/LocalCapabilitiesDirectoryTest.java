@@ -1416,7 +1416,6 @@ public class LocalCapabilitiesDirectoryTest {
                                                                            DiscoveryEntry entryForGbid2And3,
                                                                            Set<String> expectedParticipantIds,
                                                                            int expectedResultSize) throws InterruptedException {
-        String[] expectedGbids = gbidsForLookup.clone();
         String[] domainsForLookup = new String[]{ discoveryEntry.getDomain() };
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
         final boolean awaitGlobalRegistration = true;
@@ -1465,7 +1464,7 @@ public class LocalCapabilitiesDirectoryTest {
                                 any(String[].class),
                                 anyString(),
                                 anyLong(),
-                                eq(expectedGbids));
+                                any(String[].class));
     }
 
     private void testLookupByDomainInterfaceWithGbids_globalOnly_noneCached(String[] gbidsForLookup,
@@ -2219,7 +2218,7 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void testLookupByDomainInterface_DiscoveryEntriesWithMetaInfoContainExpectedIsLocalValue() throws InterruptedException {
+    public void testLookupByDomainInterface_DiscoveryEntriesWithMetaInfoContainExpectedIsLocalValue_localCachedAndGlobalEntries() throws InterruptedException {
         String globalDomain = "globaldomain";
         String remoteGlobalDomain = "remoteglobaldomain";
         String[] domains = new String[]{ "localdomain", globalDomain, remoteGlobalDomain };
@@ -2506,13 +2505,13 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void testLookupByDomainInterfaceWithGbids_invalidGbid__duplicateGbid() throws InterruptedException {
+    public void testLookupByDomainInterfaceWithGbids_invalidGbid_duplicateGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1], knownGbids[0], knownGbids[1] };
         testLookupByDomainInterfaceWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void testLookupByParticipantIdWithGbids_invalidGbid__duplicateGbid() throws InterruptedException {
+    public void testLookupByParticipantIdWithGbids_invalidGbid_duplicateGbid() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1], knownGbids[0], knownGbids[1] };
         testLookupByParticipantIdWithDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
@@ -2676,7 +2675,7 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void removeCapabilities() throws InterruptedException {
+    public void removeCapabilities_invokesGcdClient() throws InterruptedException {
         when(globalAddressProvider.get()).thenReturn(new MqttAddress("testgbid", "testtopic"));
         Promise<DeferredVoid> addPromise = localCapabilitiesDirectory.add(discoveryEntry);
         checkPromiseSuccess(addPromise, "add failed");
