@@ -41,7 +41,7 @@ zchunk=false
 gpgcheck=1
 installonly_limit=3
 clean_requirements_on_remove=false
-proxy=$proxy
+proxy=$http_proxy
 sslverify=false
 EOF
 echo "Final Configuration /etc/dnf/dnf.conf:"
