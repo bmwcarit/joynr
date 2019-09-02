@@ -38,6 +38,11 @@ const globAsync = util.promisify(glob);
 const version = require("../package.json").version;
 const generatorName = `joynr-generator-standalone-${version}.jar`;
 const generatorPath = path.join(__dirname, "../jars", generatorName);
+const fidlFileDesc = `Json file containing .fidl files grouped by fidlFileGroups used to create joynr-includes.
+Automatically sets -i option.
+interface FidlFilesJson {
+    interfaces: Record<string (fidlFileGroup), string[] (relative Paths to fidl files)>;
+}`;
 
 async function main() {
     const argv = yargs
@@ -54,14 +59,11 @@ async function main() {
         })
         .option("fidlFile", {
             alias: "f",
-            desc: `Json file containing .fidl files grouped by fidlFileGroups used to create joynr-includes.
-Automatically sets -i option.
-interface FidlFilesJson {
-    interfaces: Record<string (fidlFileGroup), string[] (relative Paths to fidl files)>;
-}`
+            desc: fidlFileDesc
         })
         .option("outputPath", { alias: "o", demandOption: true, desc: "output path will be created if not existing" })
         .option("js", {
+            alias: "j",
             boolean: true,
             desc: "compile to js with d.ts instead of ts"
         })
@@ -113,7 +115,7 @@ interface FidlFilesJson {
         });
         createJoynrIncludes(files, outputPath);
     }
-    const files = await globAsync(`${outputPath}/**/*.ts`);
+    const files = (await globAsync(`${outputPath}/**/*(!.d).ts`)).filter(file => !file.includes(".d.ts"));
     if (argv.js) {
         compileToJS(files);
     }
@@ -148,7 +150,8 @@ function compileToJS(fileNames: string[]) {
         noImplicitThis: true,
         target: ts.ScriptTarget.ES2017,
         module: ts.ModuleKind.CommonJS,
-        esModuleInterop: true
+        esModuleInterop: true,
+        declaration: true
     };
 
     const program = ts.createProgram(fileNames, compileOptions);
@@ -214,9 +217,12 @@ function createRequiresFromDir(dir: string, relativeFromDir: string): Record<str
             });
             modulePaths[file] = transformedSubDirModules;
         } else if (currentFileStat.isFile()) {
-            const moduleName = path.basename(file, ".ts");
-            const modulePath = path.relative(relativeFromDir, path.join(dir, moduleName));
-            modulePaths[moduleName] = modulePath;
+            // potential issue if basename equals other directory name.
+            const moduleName = path.basename(file);
+            // remove Suffix to get only one entry for .js .ts and .d.ts in case old compiled code is still there
+            const moduleNameWithoutSuffix = moduleName.split(".")[0];
+            const modulePath = path.relative(relativeFromDir, path.join(dir, moduleNameWithoutSuffix));
+            modulePaths[moduleNameWithoutSuffix] = modulePath;
         }
     });
 
