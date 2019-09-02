@@ -93,12 +93,17 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings)
               MessagingSettings::DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS());
     EXPECT_EQ(messagingSettings.getDiscardUnroutableRepliesAndPublications(),
               MessagingSettings::DEFAULT_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS());
+    EXPECT_TRUE(messagingSettings.contains(
+            MessagingSettings::SETTING_MQTT_VERSION()));
+    EXPECT_EQ(messagingSettings.getMqttVersion(),
+              MessagingSettings::DEFAULT_MQTT_VERSION());
 }
 
 TEST_F(MessagingSettingsTest, overrideDefaultSettings)
 {
     std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/"
                                   "MessagingSettingsTest-overrideDefaultSettings/");
+    std::string expectedMqttVersion("5.0.0");
     std::int64_t expectedRoutingTableGracePeriodMs = 5000;
     std::int64_t expectedRoutingTableCleanupIntervalMs = 6000;
     Settings testSettings(testSettingsFileNameNonExistent);
@@ -108,6 +113,8 @@ TEST_F(MessagingSettingsTest, overrideDefaultSettings)
                      expectedRoutingTableGracePeriodMs);
     testSettings.set(MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(),
                      expectedRoutingTableCleanupIntervalMs);
+    testSettings.set(MessagingSettings::SETTING_MQTT_VERSION(),
+                     expectedMqttVersion);
     MessagingSettings messagingSettings(testSettings);
 
     std::string brokerUrl = messagingSettings.getBrokerUrlString();
@@ -117,6 +124,8 @@ TEST_F(MessagingSettingsTest, overrideDefaultSettings)
     std::int64_t routingTableCleanupIntervalMs =
             messagingSettings.getRoutingTableCleanupIntervalMs();
     EXPECT_EQ(expectedRoutingTableCleanupIntervalMs, routingTableCleanupIntervalMs);
+    std::string mqttVersion = messagingSettings.getMqttVersion();
+    EXPECT_EQ(expectedMqttVersion, mqttVersion);
 }
 
 void checkBrokerSettings(MessagingSettings messagingSettings, std::string expectedBrokerUrl)

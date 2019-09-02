@@ -150,6 +150,12 @@ const std::string& MessagingSettings::SETTING_MQTT_RECONNECT_MAX_DELAY()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_MQTT_VERSION()
+{
+    static const std::string value("messaging/mqtt-version");
+    return value;
+}
+
 const std::string& MessagingSettings::SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED()
 {
     static const std::string value("messaging/mqtt-exponential-backoff-enabled");
@@ -295,6 +301,12 @@ void MessagingSettings::setClientCertificatePassword(const std::string& clientCe
 const std::string& MessagingSettings::DEFAULT_GBID()
 {
     static const std::string value("joynrdefaultgbid");
+    return value;
+}
+
+const std::string& MessagingSettings::DEFAULT_MQTT_VERSION()
+{
+    static const std::string value("3.1.1");
     return value;
 }
 
@@ -580,6 +592,16 @@ void MessagingSettings::setMqttReconnectMaxDelayTimeSeconds(
         std::chrono::seconds mqttReconnectMaxDelayTimeSeconds)
 {
     settings.set(SETTING_MQTT_RECONNECT_MAX_DELAY(), mqttReconnectMaxDelayTimeSeconds.count());
+}
+
+std::string MessagingSettings::getMqttVersion() const
+{
+    return settings.get<std::string>(SETTING_MQTT_VERSION());
+}
+
+void MessagingSettings::setMqttVersion(const std::string& version)
+{
+    settings.set(SETTING_MQTT_VERSION(), version);
 }
 
 std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeoutMs() const
@@ -942,6 +964,9 @@ void MessagingSettings::checkSettings()
     if (!settings.contains(SETTING_GBID()) && !settingsContainMultipleBackendsConfiguration()) {
         settings.set(SETTING_GBID(), DEFAULT_GBID());
     };
+    if (!settings.contains(SETTING_MQTT_VERSION())) {
+        settings.set(SETTING_MQTT_VERSION(), DEFAULT_MQTT_VERSION());
+    }
 }
 
 void MessagingSettings::checkAndSetDefaultMqttSettings(std::uint8_t index)
@@ -1102,6 +1127,10 @@ void MessagingSettings::printSettings() const
                    "SETTING: {} = {})",
                    SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID(),
                    settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
+    JOYNR_LOG_INFO(logger(),
+                   "SETTING: {} = {})",
+                   SETTING_MQTT_VERSION(),
+                   settings.get<std::string>(SETTING_MQTT_VERSION()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {})",
                    SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS(),
