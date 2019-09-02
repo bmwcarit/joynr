@@ -234,6 +234,12 @@ class JSTypeUtil extends AbstractTypeUtil {
 		return null;
 	}
 
+	def String getRelativeImportPath (FType type, FType parentElement) {
+		var parentPath = Paths.get(parentElement.dependencyPath);
+		var childPath = Paths.get(type.dependencyPath);
+		return "." + File::separator + parentPath.getParent().relativize(childPath).toString();
+	}
+
 	def getJsdocTypeName(FType datatype) {
 		if (datatype.isEnum){
 			return  datatype.name

@@ -59,12 +59,25 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		fields.filter[set.add(it.type.tsTypeName)]
 	}
 
+	def boolean hasImport(Iterable<FField> field, FStructType struct){
+		val structTypeName = struct.tsTypeName;
+		val tsTypeNames = field.map[it.type.tsTypeName];
+		tsTypeNames.filter[it.equals(structTypeName)].length > 0;
+	}
+
 	def generateStructType(FStructType type) '''
 	«val generationDate = (new Date()).toString»
-	«val members = getMembersRecursive(type)»
-	import JoynrCompound = require("joynr/joynr/types/JoynrCompound");
-	«val filteredMembers = members.filterDuplicateTypeNames»
-	«FOR member : filteredMembers»
+	«val members = type.members»
+	«val membersRecursive = type.membersRecursive»
+	«IF type.base === null»
+		import JoynrCompound = require("joynr/joynr/types/JoynrCompound");
+	«ELSE»
+		«IF !membersRecursive.hasImport(type.base)»
+		import «type.base.tsTypeName» = require("«type.base.getRelativeImportPath(type)»");
+		«ENDIF»
+	«ENDIF»
+	«val filteredImports = membersRecursive.filterDuplicateTypeNames»
+	«FOR member : filteredImports»
 	«val importPath = member.getRelativeImportPath(type)»
 	«IF importPath !== null»
 	import «member.type.tsTypeName» = require("«importPath»");
@@ -72,9 +85,9 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 	«ENDFOR»
 
 	namespace «type.joynrName» {
-		«IF members.length > 0»
+		«IF membersRecursive.length > 0»
 			export interface «type.joynrName»Members {
-				«FOR member : members»
+				«FOR member : membersRecursive»
 					«member.joynrName»: «member.tsTypeName»;
 				«ENDFOR»
 			}
@@ -87,7 +100,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 	 * <br/>Generation date: «generationDate»
 	 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
 	 */
-	class «type.joynrName» extends JoynrCompound {
+	class «type.joynrName» extends «IF type.base === null»JoynrCompound«ELSE»«type.base.joynrName»«ENDIF» {
 		public static _typeName: string = "«type.joynrTypeName»";
 		public _typeName: string = "«type.joynrTypeName»";
 
@@ -109,18 +122,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		 «ENDFOR»
 		 */
 		public constructor(members: «type.joynrName».«type.joynrName»Members) {
-			super();
-			«IF type.base !== null»
-			/**
-			 * Parent class.
-			 * @name «type.joynrName»#_extends
-			 * @type String
-			 * @readonly
-			 */
-			Object.defineProperty(this, "_extends", {
-				value : "«type.base.joynrTypeName»"
-			});
-			«ENDIF»
+			super(«IF type.base !== null»members«ENDIF»);
 			if (members) {
 			«FOR member : members»
 				this.«member.joynrName» = members.«member.joynrName»;
