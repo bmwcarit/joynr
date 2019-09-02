@@ -169,9 +169,8 @@ LocalCapabilitiesDirectory::ValidateGBIDsEnum::Enum LocalCapabilitiesDirectory::
     std::unordered_set<std::string> gbidSet;
     for (auto gbid : gbids) {
         if (gbid.empty() || (gbidSet.find(gbid) != gbidSet.cend())) {
-            JOYNR_LOG_ERROR(logger(),
-                            "INVALID_GBID: provided GBID is null or empty or duplicate: {}.",
-                            gbid);
+            JOYNR_LOG_ERROR(
+                    logger(), "INVALID_GBID: provided GBID is empty or duplicate: {}.", gbid);
             return ValidateGBIDsEnum::INVALID;
         }
         gbidSet.insert(gbid);
@@ -1121,7 +1120,7 @@ void LocalCapabilitiesDirectory::lookup(
                 return;
             }
             if (capabilities.size() > 1) {
-                JOYNR_LOG_ERROR(thisSharedPtr->logger(),
+                JOYNR_LOG_FATAL(thisSharedPtr->logger(),
                                 "participantId {} has more than 1 capability entry:\n {}\n {}",
                                 participantId,
                                 capabilities[0].toString(),
@@ -1186,7 +1185,7 @@ void LocalCapabilitiesDirectory::lookup(
                 return;
             }
             if (capabilities.size() > 1) {
-                JOYNR_LOG_ERROR(thisSharedPtr->logger(),
+                JOYNR_LOG_FATAL(thisSharedPtr->logger(),
                                 "participantId {} has more than 1 capability entry:\n {}\n {}",
                                 participantId,
                                 capabilities[0].toString(),
