@@ -454,7 +454,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         expect(discoveredVersions).toContain(discoveryEntryWithMajor48AndMinor2.providerVersion);
     });
 
-    it("timeouts after the given discoveryTimeoutMs on empty results", async () => {
+    it("timeouts when no retry is possible any more", async () => {
         const onRejectedSpy = jest.fn();
         arbitrator
             .startArbitration({
@@ -463,16 +463,15 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
                 discoveryQos,
                 proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
             })
-            .catch((error: any) => {
-                onRejectedSpy(error);
-            });
+            .catch(onRejectedSpy);
 
-        // let discoveryTimeout - 1 pass
-        await increaseFakeTime(discoveryQos.discoveryTimeoutMs - 1);
+        // stop 1ms before last possible retry
+        const delay = discoveryQos.discoveryTimeoutMs - discoveryQos.discoveryRetryDelayMs - 1;
+        await increaseFakeTime(delay);
         expect(onRejectedSpy).not.toHaveBeenCalled();
 
-        // let discoveryTimeoutMs pass
-        await increaseFakeTime(1);
+        // largest amount of possible retries has passed
+        await increaseFakeTime(discoveryQos.discoveryRetryDelayMs);
 
         expect(onRejectedSpy).toHaveBeenCalled();
         expect(onRejectedSpy.mock.calls.slice(-1)[0][0] instanceof DiscoveryException).toBeTruthy();
@@ -743,16 +742,19 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         capDiscoverySpy.lookup.mockReturnValue(Promise.resolve([]));
         jest.spyOn(discoveryQos, "arbitrationStrategy").mockReturnValue([]);
         arbitrator = new Arbitrator(capDiscoverySpy);
+        const onRejectedSpy = jest.fn();
 
         // start arbitration
-        const arbitrationPromise = arbitrator.startArbitration({
-            domains: [domain],
-            interfaceName,
-            discoveryQos,
-            proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
-        });
-        await increaseFakeTime(100);
+        arbitrator
+            .startArbitration({
+                domains: [domain],
+                interfaceName,
+                discoveryQos,
+                proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
+            })
+            .catch(onRejectedSpy);
         arbitrator.shutdown();
-        await expect(arbitrationPromise).rejects.toBeInstanceOf(Error);
+        await testUtil.multipleSetImmediate();
+        expect(onRejectedSpy).toHaveBeenCalled();
     });
 });

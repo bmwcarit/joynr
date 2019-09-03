@@ -21,6 +21,7 @@ import * as DiscoveryEntryWithMetaInfo from "../../../generated/joynr/types/Disc
 import DiscoveryError from "../../../generated/joynr/types/DiscoveryError";
 import * as Version from "../../../generated/joynr/types/Version";
 import LoggingManager from "../../system/LoggingManager";
+import { Deferred } from "../../util/UtilInternal";
 
 import * as UtilInternal from "../../util/UtilInternal";
 import DiscoveryException from "../../exceptions/DiscoveryException";
@@ -32,24 +33,6 @@ import DiscoveryQos = require("../../proxy/DiscoveryQos");
 import ApplicationException = require("../../exceptions/ApplicationException");
 
 const log = LoggingManager.getLogger("joynr.capabilities.arbitration.Arbitrator");
-/**
- * checks if the provided discoveryEntry supports onChange subscriptions if required
- *
- * @param discoveryEntry - the discovery entry to check
- * @param providerMustSupportOnChange - filter only entries supporting onChange subscriptions
- */
-function checkSupportsOnChangeSubscriptions(
-    discoveryEntry: DiscoveryEntry,
-    providerMustSupportOnChange: boolean
-): boolean {
-    if (providerMustSupportOnChange === undefined || !providerMustSupportOnChange) {
-        return true;
-    }
-    if (discoveryEntry.qos === undefined) {
-        return false;
-    }
-    return discoveryEntry.qos.supportsOnChangeSubscriptions;
-}
 
 function addToListIfNotExisting(list: Version[], providerVersion: Version): void {
     for (let j = 0; j < list.length; ++j) {
@@ -63,138 +46,10 @@ function addToListIfNotExisting(list: Version[], providerVersion: Version): void
     list.push(providerVersion);
 }
 
-interface DiscoverCapabilitiesDeferred {
-    pending: boolean;
-    reject: Function;
-    resolve: Function;
-    id: number;
-    incompatibleVersionsFound: Version[];
-    discoveryTimeoutMsId: number | string;
-    discoveryRetryTimer?: number | string;
-    errorMsg?: string;
-}
-
-/**
- * Tries to discover capabilities with given domains, interfaceName and discoveryQos within the localCapDir as long as the deferred's state is pending
- *
- * @param capabilityDiscoveryStub - the capabilites discovery module
- * @param domains - the domains
- * @param interfaceName - the interfaceName
- * @param applicationDiscoveryQos
- * @param proxyVersion
- * @param gbids global backend identifiers of backends to look for capabilities
- * @param deferred
- * @returns a Promise/A+ object, that will provide an array of discovered capabilities
- */
-function discoverCapabilities(
-    capabilityDiscoveryStub: DiscoveryStub,
-    domains: string[],
-    interfaceName: string,
-    applicationDiscoveryQos: DiscoveryQos,
-    proxyVersion: Version,
-    gbids: string[],
-    deferred: DiscoverCapabilitiesDeferred
-): void {
-    function discoveryCapabilitiesRetry(): void {
-        delete deferred.discoveryRetryTimer;
-        discoverCapabilities(
-            capabilityDiscoveryStub,
-            domains,
-            interfaceName,
-            applicationDiscoveryQos,
-            proxyVersion,
-            gbids,
-            deferred
-        );
-    }
-
-    // discover caps from local capabilities directory
-    capabilityDiscoveryStub
-        .lookup(
-            domains,
-            interfaceName,
-            new DiscoveryQosGen({
-                discoveryScope: applicationDiscoveryQos.discoveryScope,
-                cacheMaxAge: applicationDiscoveryQos.cacheMaxAgeMs,
-                discoveryTimeout: applicationDiscoveryQos.discoveryTimeoutMs,
-                providerMustSupportOnChange: applicationDiscoveryQos.providerMustSupportOnChange
-            }),
-            gbids
-        )
-        .then(discoveredCaps => {
-            // filter caps according to chosen arbitration strategy
-            const arbitratedCaps = applicationDiscoveryQos.arbitrationStrategy(discoveredCaps);
-            const versionCompatibleArbitratedCaps = [];
-
-            // if deferred is still pending => discoveryTimeoutMs is not expired yet
-            if (deferred.pending) {
-                // if there are caps found
-                deferred.incompatibleVersionsFound = [];
-                let providerVersion;
-
-                for (let i = 0; i < arbitratedCaps.length; i++) {
-                    providerVersion = arbitratedCaps[i].providerVersion;
-                    if (
-                        providerVersion.majorVersion === proxyVersion.majorVersion &&
-                        providerVersion.minorVersion >= proxyVersion.minorVersion &&
-                        checkSupportsOnChangeSubscriptions(
-                            arbitratedCaps[i],
-                            applicationDiscoveryQos.providerMustSupportOnChange
-                        )
-                    ) {
-                        versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
-                    } else {
-                        addToListIfNotExisting(deferred.incompatibleVersionsFound, providerVersion);
-                    }
-                }
-                if (versionCompatibleArbitratedCaps.length > 0) {
-                    // report the discovered & arbitrated caps
-                    deferred.pending = false;
-                    deferred.resolve(versionCompatibleArbitratedCaps);
-                } else {
-                    deferred.discoveryRetryTimer = LongTimer.setTimeout(
-                        discoveryCapabilitiesRetry,
-                        applicationDiscoveryQos.discoveryRetryDelayMs
-                    );
-                }
-            }
-        })
-        .catch((error: any) => {
-            if (deferred.pending) {
-                if (error instanceof ApplicationException) {
-                    deferred.errorMsg = `Discovery failed due to ${error.error.name}`;
-                    if (
-                        error.error !== DiscoveryError.NO_ENTRY_FOR_PARTICIPANT &&
-                        error.error !== DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
-                    ) {
-                        log.error(
-                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to ${
-                                error.error.name
-                            }. Attempting no retry`
-                        );
-                        return;
-                    } else {
-                        log.info(
-                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to ${
-                                error.error.name
-                            }. Attempting retry in ${applicationDiscoveryQos.discoveryRetryDelayMs} ms`
-                        );
-                    }
-                } else if (error.message) {
-                    deferred.errorMsg = error.message;
-                }
-                deferred.discoveryRetryTimer = LongTimer.setTimeout(
-                    discoveryCapabilitiesRetry,
-                    applicationDiscoveryQos.discoveryRetryDelayMs
-                );
-            }
-        });
-}
-
 class Arbitrator {
     private started: boolean = true;
     private arbitrationId: number = 0;
-    private pendingArbitrations: any = {};
+    private pendingArbitrations: Record<string, Deferred> = {};
     private capabilityDiscoveryStub: DiscoveryStub;
     private staticCapabilities?: DiscoveryEntryWithMetaInfo[];
     /**
@@ -251,6 +106,25 @@ class Arbitrator {
         }
     }
 
+    /**
+     * checks if the provided discoveryEntry supports onChange subscriptions if required
+     *
+     * @param discoveryEntry - the discovery entry to check
+     * @param providerMustSupportOnChange - filter only entries supporting onChange subscriptions
+     */
+    private static checkSupportsOnChangeSubscriptions(
+        discoveryEntry: DiscoveryEntry,
+        providerMustSupportOnChange: boolean
+    ): boolean {
+        if (providerMustSupportOnChange === undefined || !providerMustSupportOnChange) {
+            return true;
+        }
+        if (discoveryEntry.qos === undefined) {
+            return false;
+        }
+        return discoveryEntry.qos.supportsOnChangeSubscriptions;
+    }
+
     private discoverCapabilitiesWrapper(settings: {
         domains: string[];
         interfaceName: string;
@@ -258,66 +132,158 @@ class Arbitrator {
         staticArbitration?: boolean;
         proxyVersion: Version;
         gbids?: string[];
-    }): Promise<any[]> {
-        const startArbitrationDeferred = UtilInternal.createDeferred();
+    }): Promise<DiscoveryEntryWithMetaInfo[]> {
+        const id = this.arbitrationId;
+        const deferred = UtilInternal.createDeferred();
 
-        const deferred: DiscoverCapabilitiesDeferred = {
-            id: this.arbitrationId,
-            incompatibleVersionsFound: [],
-            pending: true,
-            resolve: (args: any) => {
-                LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
-                delete this.pendingArbitrations[deferred.id];
-                startArbitrationDeferred.resolve(args);
-            },
-            reject: (args: any) => {
-                LongTimer.clearTimeout(deferred.discoveryTimeoutMsId);
-                delete this.pendingArbitrations[deferred.id];
-                startArbitrationDeferred.reject(args);
-            },
-            discoveryTimeoutMsId: LongTimer.setTimeout(() => {
-                deferred.pending = false;
-                delete this.pendingArbitrations[deferred.id];
+        this.pendingArbitrations[id] = deferred;
 
-                if (deferred.incompatibleVersionsFound.length > 0) {
-                    const message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
-                        settings.domains
-                    )}", interface "${settings.interfaceName}" with discoveryQos "${JSON.stringify(
-                        settings.discoveryQos
-                    )}"`;
-                    startArbitrationDeferred.reject(
-                        new NoCompatibleProviderFoundException({
-                            detailMessage: message,
-                            discoveredVersions: deferred.incompatibleVersionsFound,
-                            interfaceName: settings.interfaceName
-                        })
-                    );
-                } else {
-                    startArbitrationDeferred.reject(
-                        new DiscoveryException({
-                            detailMessage: `no provider found within discovery timeout for domains "${JSON.stringify(
-                                settings.domains
-                            )}", interface "${settings.interfaceName}" with discoveryQos "${JSON.stringify(
-                                settings.discoveryQos
-                            )}"${deferred.errorMsg !== undefined ? `. Error: ${deferred.errorMsg}` : ""}`
-                        })
-                    );
+        this.discoverCapabilities({
+            capabilityDiscoveryStub: this.capabilityDiscoveryStub,
+            domains: settings.domains,
+            interfaceName: settings.interfaceName,
+            discoveryQos: settings.discoveryQos,
+            proxyVersion: settings.proxyVersion,
+            gbids: settings.gbids || []
+        })
+            .then(args => {
+                delete this.pendingArbitrations[id];
+                deferred.resolve(args);
+            })
+            .catch(error => {
+                delete this.pendingArbitrations[id];
+                deferred.reject(error);
+            });
+
+        return deferred.promise;
+    }
+
+    /**
+     * Tries to discover capabilities with given domains, interfaceName and discoveryQos within the localCapDir as long as the deferred's state is pending
+     *
+     * @param capabilityDiscoveryStub - the capabilites discovery module
+     * @param domains - the domains
+     * @param interfaceName - the interfaceName
+     * @param applicationDiscoveryQos
+     * @param proxyVersion
+     * @param gbids global backend identifiers of backends to look for capabilities
+     * @returns a Promise/A+ object, that will provide an array of discovered capabilities
+     */
+    private async discoverCapabilities({
+        capabilityDiscoveryStub,
+        domains,
+        interfaceName,
+        discoveryQos,
+        proxyVersion,
+        gbids
+    }: {
+        capabilityDiscoveryStub: DiscoveryStub;
+        domains: string[];
+        interfaceName: string;
+        discoveryQos: DiscoveryQos;
+        proxyVersion: Version;
+        gbids: string[];
+    }): Promise<DiscoveryEntryWithMetaInfo[]> {
+        // discover caps from local capabilities directory
+        let incompatibleVersionsFound: Version[] = [];
+        const remainingTime = Date.now() + discoveryQos.discoveryTimeoutMs;
+        const discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
+        let errorMsg: string | null = null;
+        let firstLoop = true;
+
+        do {
+            if (!firstLoop) {
+                // eslint-disable-next-line promise/avoid-new
+                await new Promise(resolve => {
+                    LongTimer.setTimeout(resolve, discoveryRetryDelayMs);
+                });
+            }
+            firstLoop = false;
+            incompatibleVersionsFound = [];
+
+            try {
+                const discoveredCaps = await capabilityDiscoveryStub.lookup(
+                    domains,
+                    interfaceName,
+                    new DiscoveryQosGen({
+                        discoveryScope: discoveryQos.discoveryScope,
+                        cacheMaxAge: discoveryQos.cacheMaxAgeMs,
+                        discoveryTimeout: discoveryQos.discoveryTimeoutMs,
+                        providerMustSupportOnChange: discoveryQos.providerMustSupportOnChange
+                    }),
+                    gbids
+                );
+                // filter caps according to chosen arbitration strategy
+                const arbitratedCaps = discoveryQos.arbitrationStrategy(discoveredCaps);
+                const versionCompatibleArbitratedCaps: DiscoveryEntryWithMetaInfo[] = [];
+
+                for (let i = 0; i < arbitratedCaps.length; i++) {
+                    const providerVersion = arbitratedCaps[i].providerVersion;
+                    if (
+                        providerVersion.majorVersion === proxyVersion.majorVersion &&
+                        providerVersion.minorVersion >= proxyVersion.minorVersion &&
+                        Arbitrator.checkSupportsOnChangeSubscriptions(
+                            arbitratedCaps[i],
+                            discoveryQos.providerMustSupportOnChange
+                        )
+                    ) {
+                        versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
+                    } else {
+                        addToListIfNotExisting(incompatibleVersionsFound, providerVersion);
+                    }
                 }
-            }, settings.discoveryQos.discoveryTimeoutMs)
-        };
+                if (versionCompatibleArbitratedCaps.length > 0) {
+                    // report the discovered & arbitrated caps
+                    return versionCompatibleArbitratedCaps;
+                }
+            } catch (error) {
+                if (error instanceof ApplicationException) {
+                    errorMsg = `Discovery failed due to ${error.error.name}`;
+                    if (
+                        error.error !== DiscoveryError.NO_ENTRY_FOR_PARTICIPANT &&
+                        error.error !== DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
+                    ) {
+                        log.error(
+                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to ${
+                                error.error.name
+                            }. Attempting no retry`
+                        );
+                        break;
+                    } else {
+                        log.info(
+                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to ${
+                                error.error.name
+                            }. Attempting retry in ${discoveryQos.discoveryRetryDelayMs} ms`
+                        );
+                    }
+                } else if (error.message) {
+                    errorMsg = error.message;
+                }
+            }
+        } while (remainingTime - (Date.now() + discoveryRetryDelayMs) > 0);
 
-        this.pendingArbitrations[deferred.id] = deferred;
-        discoverCapabilities(
-            this.capabilityDiscoveryStub,
-            settings.domains,
-            settings.interfaceName,
-            settings.discoveryQos,
-            settings.proxyVersion,
-            settings.gbids || [],
-            deferred
-        );
-
-        return startArbitrationDeferred.promise;
+        if (incompatibleVersionsFound.length > 0) {
+            const message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
+                domains
+            )}", interface "${interfaceName}" with discoveryQos "${JSON.stringify(discoveryQos)}"`;
+            return Promise.reject(
+                new NoCompatibleProviderFoundException({
+                    detailMessage: message,
+                    discoveredVersions: incompatibleVersionsFound,
+                    interfaceName
+                })
+            );
+        } else {
+            return Promise.reject(
+                new DiscoveryException({
+                    detailMessage: `no provider found within discovery timeout for domains "${JSON.stringify(
+                        domains
+                    )}", interface "${interfaceName}" with discoveryQos "${JSON.stringify(discoveryQos)}"${
+                        errorMsg !== undefined ? `. Error: ${errorMsg}` : ""
+                    }`
+                })
+            );
+        }
     }
 
     private async discoverStaticCapabilities(
@@ -339,7 +305,10 @@ class Arbitrator {
                         interfaceName === capability.interfaceName &&
                         capability.providerVersion.majorVersion === proxyVersion.majorVersion &&
                         capability.providerVersion.minorVersion >= proxyVersion.minorVersion &&
-                        checkSupportsOnChangeSubscriptions(capability, discoveryQos.providerMustSupportOnChange)
+                        Arbitrator.checkSupportsOnChangeSubscriptions(
+                            capability,
+                            discoveryQos.providerMustSupportOnChange
+                        )
                     ) {
                         arbitratedCaps.push(capability);
                     }
@@ -358,12 +327,6 @@ class Arbitrator {
         for (const id in this.pendingArbitrations) {
             if (this.pendingArbitrations.hasOwnProperty(id)) {
                 const pendingArbitration = this.pendingArbitrations[id];
-                if (pendingArbitration.discoveryTimeoutMsId !== undefined) {
-                    LongTimer.clearTimeout(pendingArbitration.discoveryTimeoutMsId);
-                }
-                if (pendingArbitration.discoveryRetryTimer !== undefined) {
-                    LongTimer.clearTimeout(pendingArbitration.discoveryRetryTimer);
-                }
                 pendingArbitration.reject(new Error("Arbitration is already shut down"));
             }
         }
