@@ -26,6 +26,7 @@
 #include "joynr/Future.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
+#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
 #include "joynr/system/IDiscovery.h"
@@ -46,6 +47,7 @@ Arbitrator::Arbitrator(
           pendingFuture(),
           discoveryProxy(discoveryProxy),
           gbids(gbids),
+          gbidString(util::vectorToString(gbids)),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                              discoveryQos.getDiscoveryTimeoutMs(),
@@ -75,21 +77,25 @@ void Arbitrator::startArbitration(
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
     if (arbitrationRunning) {
-        JOYNR_LOG_ERROR(logger(),
-                        "Arbitration already running for domain = {} and interface = {}. A second "
-                        "arbitration will not be started.",
-                        domains.at(0),
-                        interfaceName);
+        JOYNR_LOG_ERROR(
+                logger(),
+                "Arbitration already running for domain = {}, interface = {}, GBIDs = {}. A second "
+                "arbitration will not be started.",
+                domains.at(0),
+                interfaceName,
+                gbidString);
         return;
     }
 
     startTimePoint = std::chrono::steady_clock::now();
-    JOYNR_LOG_INFO(logger(),
-                   "Arbitration started for domain = {}, interface = {}, version = {}.{}.",
-                   domains.at(0),
-                   interfaceName,
-                   std::to_string(interfaceVersion.getMajorVersion()),
-                   std::to_string(interfaceVersion.getMinorVersion()));
+    JOYNR_LOG_INFO(
+            logger(),
+            "Arbitration started for domain = {}, interface = {}, GBIDs = {}, version = {}.{}.",
+            domains.at(0),
+            interfaceName,
+            gbidString,
+            std::to_string(interfaceVersion.getMajorVersion()),
+            std::to_string(interfaceVersion.getMinorVersion()));
 
     arbitrationRunning = true;
     arbitrationStopped = false;
@@ -108,9 +114,10 @@ void Arbitrator::startArbitration(
 
         std::string serializedDomainsList = boost::algorithm::join(thisSharedPtr->domains, ", ");
         JOYNR_LOG_DEBUG(logger(),
-                        "DISCOVERY lookup for domain: [{}], interface: {}",
+                        "DISCOVERY lookup for domain: [{}], interface: {}, GBIDs = {}",
                         serializedDomainsList,
-                        thisSharedPtr->interfaceName);
+                        thisSharedPtr->interfaceName,
+                        thisSharedPtr->gbidString);
 
         while (!thisSharedPtr->arbitrationStopped) {
             thisSharedPtr->attemptArbitration();
@@ -168,15 +175,21 @@ void Arbitrator::startArbitration(
 
         thisSharedPtr->arbitrationRunning = false;
         JOYNR_LOG_DEBUG(logger(),
-                        "Exiting arbitration thread for interface={}",
-                        thisSharedPtr->interfaceName);
+                        "Exiting arbitration thread for domain: [{}], interface: {}, GBIDs = {}",
+                        serializedDomainsList,
+                        thisSharedPtr->interfaceName,
+                        thisSharedPtr->gbidString);
         thisSharedPtr->assertNoPendingFuture();
     });
 }
 
 void Arbitrator::stopArbitration()
 {
-    JOYNR_LOG_DEBUG(logger(), "StopArbitrator for interface={}", interfaceName);
+    JOYNR_LOG_DEBUG(logger(),
+                    "StopArbitrator for domain: [{}], interface: {}, GBIDs = {}",
+                    domains.at(0),
+                    interfaceName,
+                    gbidString);
     {
         std::unique_lock<std::mutex> lock(pendingFutureMutex);
         arbitrationStopped = true;
@@ -296,7 +309,8 @@ void Arbitrator::receiveCapabilitiesLookupResults(
     if (discoveryEntries.empty()) {
         arbitrationError.setMessage("No entries found for domain: " +
                                     (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
-                                    ", interface: " + interfaceName);
+                                    ", interface: " + interfaceName +
+                                    (gbids.empty() ? "" : ", GBIDs: " + gbidString));
         return;
     }
 

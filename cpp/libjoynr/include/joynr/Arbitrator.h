@@ -111,6 +111,7 @@ private:
 
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     const std::vector<std::string> gbids;
+    const std::string gbidString;
     const DiscoveryQos discoveryQos;
     const joynr::types::DiscoveryQos systemDiscoveryQos;
     const std::vector<std::string> domains;
