@@ -60,7 +60,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         parentMessageRouterAddress?: any
     ): MessageRouter {
         return new MessageRouter({
-            initialRoutingTable: [],
+            initialRoutingTable: {},
             persistency,
             joynrInstanceId: "joynrInstanceID",
             messagingStubFactory: messagingStubFactorySpy,

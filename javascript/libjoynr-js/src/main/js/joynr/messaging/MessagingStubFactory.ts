@@ -16,6 +16,7 @@
  * limitations under the License.
  * #L%
  */
+import Address = require("../../generated/joynr/system/RoutingTypes/Address");
 import * as UtilInternal from "../util/UtilInternal";
 import LoggingManager from "../system/LoggingManager";
 
@@ -25,7 +26,6 @@ interface InternalMessagingStubFactory {
     build(address: Address): MessagingStub;
 }
 
-type Address = any;
 type MessagingStub = any;
 
 class MessagingStubFactory {

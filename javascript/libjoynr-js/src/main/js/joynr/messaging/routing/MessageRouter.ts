@@ -17,6 +17,10 @@
  * #L%
  */
 import * as RoutingProxy from "../../../generated/joynr/system/RoutingProxy";
+import BrowserAddress = require("../../../generated/joynr/system/RoutingTypes/BrowserAddress");
+import ChannelAddress = require("../../../generated/joynr/system/RoutingTypes/ChannelAddress");
+import WebSocketAddress = require("../../../generated/joynr/system/RoutingTypes/WebSocketAddress");
+import WebSocketClientAddress = require("../../../generated/joynr/system/RoutingTypes/WebSocketClientAddress");
 import MulticastWildcardRegexFactory from "../util/MulticastWildcardRegexFactory";
 
 import * as DiagnosticTags from "../../system/DiagnosticTags";
@@ -33,10 +37,11 @@ import MessagingStubFactory = require("../MessagingStubFactory");
 import LocalStorageNode = require("../../../global/LocalStorageNode");
 import MessageQueue = require("./MessageQueue");
 import MessagingSkeletonFactory = require("../MessagingSkeletonFactory");
+import Address = require("../../../generated/joynr/system/RoutingTypes/Address");
+import JoynrCompound = require("../../types/JoynrCompound");
 
 const log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
 
-type Address = any;
 type RoutingTable = Record<string, Address>;
 type LocalStorage = LocalStorageNode;
 /*
@@ -72,8 +77,8 @@ class MessageRouter {
     private multicastReceiversRegistry: any = {};
     private messagingSkeletonFactory: MessagingSkeletonFactory;
     private multicastAddressCalculator: MulticastAddressCalculator;
-    private parentMessageRouterAddress: Address;
-    private incomingAddress: Address;
+    private parentMessageRouterAddress?: Address;
+    private incomingAddress?: Address;
     private persistency: LocalStorage;
     private id: string;
     private routingTable: RoutingTable;
@@ -227,15 +232,17 @@ class MessageRouter {
                 })
                 .then(opArgs => {
                     if (opArgs.resolved) {
-                        this.routingTable[participantId] = this.parentMessageRouterAddress;
-                        return this.parentMessageRouterAddress;
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        this.routingTable[participantId] = this.parentMessageRouterAddress!;
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        return this.parentMessageRouterAddress!;
                     }
                     throw new Error(
                         `nextHop cannot be resolved, as participant with id ${participantId} is not reachable by parent routing table`
                     );
                 });
         }
-        return Promise.resolve(address);
+        return Promise.resolve(address as Address);
     }
 
     private containsAddress(array: Address[], address: Address): boolean {
@@ -244,7 +251,7 @@ class MessageRouter {
             return false;
         }
         for (let j = 0; j < array.length; j++) {
-            if (array[j].equals(address)) {
+            if ((array[j] as JoynrCompound).equals(address)) {
                 return true;
             }
         }
@@ -403,7 +410,7 @@ class MessageRouter {
         return this.routeInternal(address, joynrMessage);
     }
 
-    public getAddressFromPersistency(participantId: string): string | undefined {
+    public getAddressFromPersistency(participantId: string): Address | undefined {
         try {
             const addressString = this.persistency.getItem(this.getStorageKey(participantId));
             if (addressString === undefined || addressString === null || addressString === "{}") {
@@ -449,7 +456,7 @@ class MessageRouter {
             return Promise.reject(new Error("message router is already shut down"));
         }
 
-        this.routingTable[participantId] = undefined;
+        delete this.routingTable[participantId];
         if (this.persistency) {
             this.persistency.removeItem(this.getStorageKey(participantId));
         }
@@ -478,28 +485,28 @@ class MessageRouter {
      * @returns promise
      */
     public addNextHopToParentRoutingTable(participantId: string, isGloballyVisible: boolean): Promise<any> {
-        if (Typing.getObjectType(this.incomingAddress) === "WebSocketClientAddress") {
+        if (this.incomingAddress instanceof WebSocketClientAddress) {
             return this.routingProxy.addNextHop({
                 participantId,
                 webSocketClientAddress: this.incomingAddress,
                 isGloballyVisible
             });
         }
-        if (Typing.getObjectType(this.incomingAddress) === "BrowserAddress") {
+        if (this.incomingAddress instanceof BrowserAddress) {
             return this.routingProxy.addNextHop({
                 participantId,
                 browserAddress: this.incomingAddress,
                 isGloballyVisible
             });
         }
-        if (Typing.getObjectType(this.incomingAddress) === "WebSocketAddress") {
+        if (this.incomingAddress instanceof WebSocketAddress) {
             return this.routingProxy.addNextHop({
                 participantId,
                 webSocketAddress: this.incomingAddress,
                 isGloballyVisible
             });
         }
-        if (Typing.getObjectType(this.incomingAddress) === "ChannelAddress") {
+        if (this.incomingAddress instanceof ChannelAddress) {
             return this.routingProxy.addNextHop({
                 participantId,
                 channelAddress: this.incomingAddress,
@@ -539,7 +546,7 @@ class MessageRouter {
      * @returns the address of the next hop in the direction of the given
      *          participantId, or undefined if not found
      */
-    public resolveNextHop(participantId: string): Address {
+    public resolveNextHop(participantId: string): Promise<Address> {
         if (!this.isReady()) {
             log.debug("resolveNextHop: ignore call as message router is already shut down");
             return Promise.reject(new Error("message router is already shut down"));
