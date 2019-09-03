@@ -2298,6 +2298,12 @@ public class LocalCapabilitiesDirectoryTest {
                                                                              discoveryQos,
                                                                              knownGbids);
 
+        verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                         eq(domains),
+                                                         eq(interfaceName),
+                                                         anyLong(),
+                                                         Matchers.<String[]> any());
+
         checkPromiseException(promise, expectedException);
     }
 
@@ -2320,6 +2326,12 @@ public class LocalCapabilitiesDirectoryTest {
                                                                              discoveryQos,
                                                                              knownGbids);
 
+        verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                         eq(domains),
+                                                         eq(interfaceName),
+                                                         anyLong(),
+                                                         Matchers.<String[]> any());
+
         checkPromiseError(promise, expectedError);
     }
 
@@ -2338,6 +2350,12 @@ public class LocalCapabilitiesDirectoryTest {
                                                                           Matchers.<String[]> any());
 
         Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
+
+        verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                         eq(domains),
+                                                         eq(interfaceName),
+                                                         anyLong(),
+                                                         Matchers.<String[]> any());
 
         checkPromiseErrorInProviderRuntimeException(promise, expectedError);
     }
@@ -2551,6 +2569,13 @@ public class LocalCapabilitiesDirectoryTest {
                                                                              discoveryQos,
                                                                              gbids);
 
+        verify(globalCapabilitiesDirectoryClient,
+               never()).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                               any(String[].class),
+                               anyString(),
+                               anyLong(),
+                               any(String[].class));
+
         checkPromiseError(promise, expectedError);
     }
 
@@ -2559,6 +2584,11 @@ public class LocalCapabilitiesDirectoryTest {
         String participantId = "participantId";
         Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId, new DiscoveryQos(), gbids);
 
+        verify(globalCapabilitiesDirectoryClient,
+               never()).lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                               anyString(),
+                               anyLong(),
+                               any(String[].class));
         checkPromiseError(promise, expectedError);
     }
 
