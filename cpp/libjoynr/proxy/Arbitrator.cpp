@@ -60,7 +60,7 @@ Arbitrator::Arbitrator(
           semaphore(0),
           arbitrationFinished(false),
           arbitrationRunning(false),
-          keepArbitrationRunning(false),
+          arbitrationStopped(false),
           arbitrationThread()
 {
 }
@@ -92,7 +92,7 @@ void Arbitrator::startArbitration(
                    std::to_string(interfaceVersion.getMinorVersion()));
 
     arbitrationRunning = true;
-    keepArbitrationRunning = true;
+    arbitrationStopped = false;
 
     onSuccessCallback = onSuccess;
     onErrorCallback = onError;
@@ -112,7 +112,7 @@ void Arbitrator::startArbitration(
                         serializedDomainsList,
                         thisSharedPtr->interfaceName);
 
-        while (thisSharedPtr->keepArbitrationRunning) {
+        while (!thisSharedPtr->arbitrationStopped) {
             thisSharedPtr->attemptArbitration();
 
             // exit if arbitration has finished successfully
@@ -121,9 +121,8 @@ void Arbitrator::startArbitration(
                 return;
             }
 
-            // check if we should break the keepArbitrationRunning loop and report errors to the
-            // user
-            if (!thisSharedPtr->keepArbitrationRunning) {
+            // check if we should break the loop and report errors to the user
+            if (thisSharedPtr->arbitrationStopped) {
                 // stopArbitration has been invoked
                 break;
             }
@@ -139,8 +138,7 @@ void Arbitrator::startArbitration(
                        thisSharedPtr->discoveryQos.getRetryIntervalMs()) {
                 /*
                  * no retry possible -> wait until discoveryTimeout is reached and inform caller
-                 * about
-                 * cancelled arbitration
+                 * about cancelled arbitration
                  */
                 auto waitIntervalMs = std::chrono::milliseconds(
                         thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs);
@@ -155,7 +153,7 @@ void Arbitrator::startArbitration(
         }
 
         if (thisSharedPtr->onErrorCallback) {
-            if (!thisSharedPtr->keepArbitrationRunning) {
+            if (thisSharedPtr->arbitrationStopped) {
                 thisSharedPtr->arbitrationError.setMessage(
                         "Shutting Down Arbitration for interface " + thisSharedPtr->interfaceName);
                 thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
@@ -181,7 +179,7 @@ void Arbitrator::stopArbitration()
     JOYNR_LOG_DEBUG(logger(), "StopArbitrator for interface={}", interfaceName);
     {
         std::unique_lock<std::mutex> lock(pendingFutureMutex);
-        keepArbitrationRunning = false;
+        arbitrationStopped = true;
 
         // check if there is a pending future and stop it if still in progress
         auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
@@ -249,7 +247,7 @@ void Arbitrator::attemptArbitration()
                     fixedParticipantId, systemDiscoveryQos, gbids);
             {
                 std::unique_lock<std::mutex> lock(pendingFutureMutex);
-                if (!keepArbitrationRunning) {
+                if (arbitrationStopped) {
                     return;
                 } else {
                     pendingFuture = future;
@@ -264,7 +262,7 @@ void Arbitrator::attemptArbitration()
                     domains, interfaceName, systemDiscoveryQos, gbids);
             {
                 std::unique_lock<std::mutex> lock(pendingFutureMutex);
-                if (!keepArbitrationRunning) {
+                if (arbitrationStopped) {
                     return;
                 } else {
                     pendingFuture = future;

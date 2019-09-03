@@ -111,11 +111,11 @@ private:
 
     std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
     const std::vector<std::string> gbids;
-    DiscoveryQos discoveryQos;
-    joynr::types::DiscoveryQos systemDiscoveryQos;
-    std::vector<std::string> domains;
-    std::string interfaceName;
-    joynr::types::Version interfaceVersion;
+    const DiscoveryQos discoveryQos;
+    const joynr::types::DiscoveryQos systemDiscoveryQos;
+    const std::vector<std::string> domains;
+    const std::string interfaceName;
+    const joynr::types::Version interfaceVersion;
     std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
     exceptions::DiscoveryException arbitrationError;
     std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction;
@@ -127,7 +127,7 @@ private:
     Semaphore semaphore;
     bool arbitrationFinished;
     std::atomic<bool> arbitrationRunning;
-    std::atomic<bool> keepArbitrationRunning;
+    std::atomic<bool> arbitrationStopped;
     std::thread arbitrationThread;
     std::chrono::steady_clock::time_point startTimePoint;
     ADD_LOGGER(Arbitrator)
