@@ -40,6 +40,11 @@ services:
     depends_on:
       - "joynrbackend-1"
       - "joynrbackend-2"
+    environment:
+      - SIT_GBIDS=joynrdefaultgbid
+      - SIT_BROKERURIS=tcp://mqttbroker-1:1883
+      - SIT_CONNECTION_TIMEOUTS=60
+      - SIT_KEEP_ALIVE_TIMERS=30
 
 #  sit-onboard-apps:
 #    image: "sit-onboard-apps:latest"

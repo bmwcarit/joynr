@@ -46,7 +46,6 @@ import joynr.test.SystemIntegrationTestSync;
 public class ControllerBean implements SitControllerSync {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerBean.class);
-    private static String[] gbids = new String[]{ "joynrdefaultgbid", "othergbid" };
 
     private ServiceLocator serviceLocator;
 
@@ -81,11 +80,12 @@ public class ControllerBean implements SitControllerSync {
 
     private void callProducer(String domain, StringBuffer result) {
         try {
+            String[] configuredGbids = System.getenv("SIT_GBIDS").trim().split(",");
             DiscoveryQos discoveryQos = new DiscoveryQos();
             discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
             SystemIntegrationTestSync proxy = serviceLocator.builder(SystemIntegrationTestSync.class, domain)
                                                             .withDiscoveryQos(discoveryQos)
-                                                            .withGbids(gbids)
+                                                            .withGbids(configuredGbids)
                                                             .build();
             Integer additionResult = proxy.add(1, 1);
             if (additionResult != 2) {

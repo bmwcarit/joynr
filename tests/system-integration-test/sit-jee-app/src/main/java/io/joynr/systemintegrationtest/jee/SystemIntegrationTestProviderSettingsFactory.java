@@ -36,7 +36,7 @@ public class SystemIntegrationTestProviderSettingsFactory implements ProviderReg
     @Override
     public String[] createGbids() {
         // Make sure these GBIDs are valid and are part of ConfigurableMessagingSettings.PROPERTY_GBIDS
-        String[] gbidsForRegistration = { "joynrdefaultgbid", "othergbid" };
+        String[] gbidsForRegistration = System.getenv("SIT_GBIDS").trim().split(",");
         return gbidsForRegistration;
     }
 
