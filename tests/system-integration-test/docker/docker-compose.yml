@@ -34,9 +34,9 @@ services:
     image: "joynr-backend-jee-db:latest"
     container_name: joynrbackend-db
 
-  jeeapp:
+  jeeapp-1:
     image: "sit-jee-app:latest"
-    container_name: sit-jee-app
+    container_name: sit-jee-app-1
     depends_on:
       - "joynrbackend-1"
       - "joynrbackend-2"
@@ -46,6 +46,32 @@ services:
       - SIT_BROKERURIS=tcp://mqttbroker-1:1883
       - SIT_CONNECTION_TIMEOUTS=60
       - SIT_KEEP_ALIVE_TIMERS=30
+
+  jeeapp-2:
+    image: "sit-jee-app:latest"
+    container_name: sit-jee-app-2
+    depends_on:
+      - "joynrbackend-1"
+      - "joynrbackend-2"
+    environment:
+      - SIT_DOMAIN=onlyBackend2
+      - SIT_GBIDS=othergbid
+      - SIT_BROKERURIS=tcp://mqttbroker-2:1883
+      - SIT_CONNECTION_TIMEOUTS=60
+      - SIT_KEEP_ALIVE_TIMERS=30
+
+  jeeapp-3:
+    image: "sit-jee-app:latest"
+    container_name: sit-jee-app-3
+    depends_on:
+      - "joynrbackend-1"
+      - "joynrbackend-2"
+    environment:
+      - SIT_DOMAIN=bothBackends
+      - SIT_GBIDS=joynrdefaultgbid,othergbid
+      - SIT_BROKERURIS=tcp://mqttbroker-1:1883,tcp://mqttbroker-2:1883
+      - SIT_CONNECTION_TIMEOUTS=60,60
+      - SIT_KEEP_ALIVE_TIMERS=30,30
 
 #  sit-onboard-apps:
 #    image: "sit-onboard-apps:latest"
