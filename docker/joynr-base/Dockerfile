@@ -1,7 +1,7 @@
 FROM fedora:30
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2019-09-02-15-00
+ENV REFRESHED_AT 2019-09-04-09-20
 
 ###################################################
 # create data directories and volumes
@@ -17,6 +17,12 @@ ENV BUILD_DIR /data/build
 ENV SRC_DIR /data/src
 ENV INSTALL_DIR /data/install
 ENV CURL_HOME /etc
+
+###################################################
+# setup build environment
+###################################################
+RUN mkdir -p /home/joynr/
+RUN mkdir /home/joynr/build
 
 ###################################################
 # copy scripts and set start command
@@ -86,6 +92,11 @@ RUN dnf update -y \
     libcxx-devel \
     && dnf groupinstall -y 'Development Tools' \
     && dnf clean all
+
+###################################################
+# setup extra certs
+###################################################
+RUN /data/scripts/setup-extra-certs.sh
 
 ###################################################
 # add git config

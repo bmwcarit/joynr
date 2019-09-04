@@ -167,8 +167,6 @@ COPY scripts /data/scripts
 ###################################################
 # setup build environment
 ###################################################
-RUN mkdir -p /home/joynr/
-RUN mkdir /home/joynr/build
 RUN date -R > /data/timestamp
 RUN chmod -R a+rwx /usr/local
 RUN echo "/usr/local/lib64" > /etc/ld.so.conf.d/usr-local-lib64.conf && ldconfig

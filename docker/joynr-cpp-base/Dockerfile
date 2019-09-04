@@ -134,9 +134,4 @@ ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
 ###################################################
 COPY scripts /data/scripts
 
-###################################################
-# setup build environment
-###################################################
-RUN mkdir -p /home/joynr/
-RUN mkdir /home/joynr/build
 RUN date -R > /data/timestamp
