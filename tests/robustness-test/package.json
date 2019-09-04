@@ -6,16 +6,15 @@
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
-    "bluebird": "3.3.5",
-    "joynr": "file:../../javascript/libjoynr-js/src/main/js"
+    "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js"
   },
   "config": {
     "domain": "joynr-robustness-test-domain",
-    "testcase": "js_tests",
-    "cmdPath": "placeholder"
+    "testcase": "js_tests"
   },
   "scripts": {
-    "startprovider": "node src/main/js/provider.js $npm_package_config_domain",
-    "startjasmine": "jasmine-node --verbose --junitreport --config domain $npm_package_config_domain --config testcase $npm_package_config_testcase --config cmdPath $npm_package_config_cmdPath src/main/js/consumer.spec.js"
+    "build": "tsc",
+    "startprovider": "node .output/src/main/js/provider.js $npm_package_config_domain",
+    "startjest": "export domain=$npm_package_config_domain && export testcase=$npm_package_config_testcase && jest -i"
   }
 }

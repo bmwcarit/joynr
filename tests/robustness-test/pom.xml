@@ -63,7 +63,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/src/main/model</model>
+							<model>${basedir}/../robustness-test-base/src/main/model</model>
 							<generationLanguage>javascript</generationLanguage>
 							<outputPath>${basedir}/src/main/generated-javascript</outputPath>
 						</configuration>

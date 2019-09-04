@@ -1,16 +1,14 @@
-/*jslint node: true */
-
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,14 +17,24 @@
  * #L%
  */
 
-exports.log = function(msg) {
-    console.log("   " + msg);
+import { WebSocketLibjoynrProvisioning } from "joynr/joynr/start/interface/Provisioning";
+const provisioning: WebSocketLibjoynrProvisioning = {
+    ccAddress: {
+        protocol: "ws",
+        host: "localhost",
+        port: 4242,
+        path: ""
+    },
+
+    logging: {
+        configuration: {
+            loggers: {
+                root: {
+                    level: "debug"
+                }
+            }
+        }
+    }
 };
 
-exports.error = function(msg) {
-    console.error(msg);
-};
-
-exports.prettyLog = function(msg) {
-    console.log(">>>>>>>>> " + msg);
-};
+export = provisioning;

@@ -156,7 +156,7 @@ function start_javascript_consumer {
 	echo '####################################################'
 	cd $JOYNR_SOURCE_DIR/tests/robustness-test
 	rm -fr localStorageStorage
-	npm run-script startjasmine --robustness-test:domain=$DOMAIN --robustness-test:testcase=$TESTCASE --robustness-test:cmdPath=$JOYNR_SOURCE_DIR/tests/robustness-test > $TEST_RESULTS_DIR/consumer_javascript_$1_$(date "+%Y-%m-%d-%H:%M:%S").log 2>&1
+	npm run-script startjest --robustness-test:domain=$DOMAIN --robustness-test:testcase=$TESTCASE > $TEST_RESULTS_DIR/consumer_javascript_$1_$(date "+%Y-%m-%d-%H:%M:%S").log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]

@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig",
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "target"
+  ],
+  "compilerOptions": {
+    "outDir": ".output",
+    "rootDir" : "."
+  }
+}
