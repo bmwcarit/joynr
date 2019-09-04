@@ -61,6 +61,7 @@ Arbitrator::Arbitrator(
           arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
           semaphore(0),
           arbitrationFinished(false),
+          arbitrationFailedForever(false),
           arbitrationRunning(false),
           arbitrationStopped(false),
           arbitrationThread()
@@ -111,6 +112,7 @@ void Arbitrator::startArbitration(
         }
 
         thisSharedPtr->arbitrationFinished = false;
+        thisSharedPtr->arbitrationFailedForever = false;
 
         std::string serializedDomainsList = boost::algorithm::join(thisSharedPtr->domains, ", ");
         JOYNR_LOG_DEBUG(logger(),
@@ -140,6 +142,9 @@ void Arbitrator::startArbitration(
 
             if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() <= durationMs) {
                 // discovery timeout reached
+                break;
+            } else if (thisSharedPtr->arbitrationFailedForever) {
+                // arbitration failed -> inform caller immediately
                 break;
             } else if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs <=
                        thisSharedPtr->discoveryQos.getRetryIntervalMs()) {
@@ -238,6 +243,13 @@ void Arbitrator::attemptArbitration()
 {
     assertNoPendingFuture();
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
+    const bool isArbitrationStrateggyFixedParticipant =
+            discoveryQos.getArbitrationStrategy() ==
+            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT;
+    const std::string fixedParticipantId =
+            isArbitrationStrateggyFixedParticipant
+                    ? discoveryQos.getCustomParameter("fixedParticipantId").getValue()
+                    : "";
     try {
         auto discoveryProxySharedPtr = discoveryProxy.lock();
         if (!discoveryProxySharedPtr) {
@@ -250,11 +262,8 @@ void Arbitrator::attemptArbitration()
             throw exceptions::JoynrTimeOutException("arbitration timed out");
         }
 
-        if (discoveryQos.getArbitrationStrategy() ==
-            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+        if (isArbitrationStrateggyFixedParticipant) {
             types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
-            std::string fixedParticipantId =
-                    discoveryQos.getCustomParameter("fixedParticipantId").getValue();
 
             auto future = discoveryProxySharedPtr->lookupAsync(
                     fixedParticipantId, systemDiscoveryQos, gbids);
@@ -289,11 +298,45 @@ void Arbitrator::attemptArbitration()
         receiveCapabilitiesLookupResults(result);
 
     } catch (const exceptions::JoynrException& e) {
-        std::string errorMsg = "Unable to lookup provider (domain: " +
-                               (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
-                               ", interface: " + interfaceName + ") from discovery. Error: " +
-                               e.getMessage();
-        JOYNR_LOG_ERROR(logger(), errorMsg);
+        std::string errorMsg =
+                "Unable to lookup provider (" +
+                (isArbitrationStrateggyFixedParticipant
+                         ? ("participantId: " + fixedParticipantId)
+                         : ("domain: " + (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
+                            ", interface: " + interfaceName)) +
+                (gbids.empty() ? "" : ", GBIDs: " + gbidString) + ") from discovery. ";
+        if (exceptions::ApplicationException::TYPE_NAME() == e.getTypeName()) {
+            const exceptions::ApplicationException& applicationException =
+                    static_cast<const exceptions::ApplicationException&>(e);
+            auto error = applicationException.getError<types::DiscoveryError::Enum>();
+            switch (error) {
+            case types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT:
+            // fall through
+            case types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS: {
+                discoveredIncompatibleVersions.clear();
+                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error) +
+                            ", continuing.";
+                JOYNR_LOG_INFO(logger(), errorMsg);
+                break;
+            }
+            case types::DiscoveryError::UNKNOWN_GBID:
+            // fall through to default
+            case types::DiscoveryError::INVALID_GBID:
+            // fall through to default
+            case types::DiscoveryError::INTERNAL_ERROR:
+            // fall through to default
+            default:
+                discoveredIncompatibleVersions.clear();
+                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error) +
+                            ", giving up.";
+                JOYNR_LOG_ERROR(logger(), errorMsg);
+                arbitrationFailedForever = true;
+                break;
+            }
+        } else {
+            errorMsg += "JoynrException: " + e.getMessage() + ", continuing.";
+            JOYNR_LOG_ERROR(logger(), errorMsg);
+        }
         arbitrationError.setMessage(errorMsg);
         validatePendingFuture();
     }

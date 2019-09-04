@@ -338,6 +338,7 @@ public class Arbitrator {
                 break;
             case UNKNOWN_GBID:
             case INVALID_GBID:
+            case INTERNAL_ERROR:
             default:
                 logger.trace("DISCOVERY lookup for domains: {}, interface: {}, gbids: {} returned DiscoveryError {}, giving up",
                              domains,

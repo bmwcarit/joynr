@@ -24,20 +24,22 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/DiscoveryQos.h"
-#include "joynr/ArbitratorFactory.h"
-#include "joynr/Arbitrator.h"
-#include "joynr/exceptions/NoCompatibleProviderFoundException.h"
-#include "joynr/types/Version.h"
 #include "joynr/ArbitrationStrategyFunction.h"
+#include "joynr/Arbitrator.h"
+#include "joynr/ArbitratorFactory.h"
+#include "joynr/DiscoveryQos.h"
+#include "joynr/FixedParticipantArbitrationStrategyFunction.h"
+#include "joynr/Future.h"
+#include "joynr/KeywordArbitrationStrategyFunction.h"
 #include "joynr/LastSeenArbitrationStrategyFunction.h"
 #include "joynr/QosArbitrationStrategyFunction.h"
-#include "joynr/FixedParticipantArbitrationStrategyFunction.h"
-#include "joynr/KeywordArbitrationStrategyFunction.h"
 #include "joynr/Semaphore.h"
+#include "joynr/exceptions/NoCompatibleProviderFoundException.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-#include "joynr/Future.h"
+#include "joynr/types/DiscoveryError.h"
+#include "joynr/types/Version.h"
 
+#include "tests/PrettyPrint.h"
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockDiscovery.h"
 
@@ -56,9 +58,15 @@ static const std::string domain("unittest-domain");
 static const std::string interfaceName("unittest-interface");
 static const std::string exceptionMsgNoEntriesFound =
         "No entries found for domain: " + domain + ", interface: " + interfaceName;
-static const std::string exceptionMsgUnableToLookup = "Unable to lookup provider (domain: " +
-                                                      domain + ", interface: " + interfaceName +
-                                                      ") from discovery. Error: ";
+static std::string getExcpetionMsgUnableToLookup(
+        const exceptions::JoynrException& exception,
+        const std::string& participantId = "") {
+    static const std::string exceptionMsgPart1 = "Unable to lookup provider (";
+    static const std::string exceptionMsgPart2 = ") from discovery. JoynrException: ";
+    const std::string params = participantId.empty() ? "domain: " + domain + ", interface: " + interfaceName
+                                                     : "participantId: " + participantId;
+    return exceptionMsgPart1 + params + exceptionMsgPart2 + exception.getMessage() + ", continuing.";
+}
 
 class MockArbitrator : public Arbitrator
 {
@@ -1049,9 +1057,12 @@ TEST_P(ArbitratorTestWithParams, exceptionFromDiscoveryProxy)
 
     const exceptions::JoynrRuntimeException exception("first exception");
     const exceptions::JoynrRuntimeException expectedException("expected exception");
+    std::string expectedExceptionMsg;
 
     if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
-        discoveryQos.addCustomParameter("fixedParticipantId", "unittests-participantId");
+        const std::string participantId = "unittests-participantId";
+        expectedExceptionMsg = getExcpetionMsgUnableToLookup(expectedException, participantId);
+        discoveryQos.addCustomParameter("fixedParticipantId", participantId);
 
         auto mockFutureFixedPartId1 =
                 std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
@@ -1066,6 +1077,7 @@ TEST_P(ArbitratorTestWithParams, exceptionFromDiscoveryProxy)
                 .WillOnce(Return(mockFutureFixedPartId1))
                 .WillRepeatedly(Return(mockFutureFixedPartId2));
     } else {
+        expectedExceptionMsg = getExcpetionMsgUnableToLookup(expectedException);
         if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::KEYWORD) {
             discoveryQos.addCustomParameter("keyword", "keywordValue");
         }
@@ -1088,10 +1100,9 @@ TEST_P(ArbitratorTestWithParams, exceptionFromDiscoveryProxy)
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) { FAIL(); };
 
-    auto onError = [this, &expectedException](const exceptions::DiscoveryException& exception) {
+    auto onError = [this, &expectedExceptionMsg](const exceptions::DiscoveryException& exception) {
         EXPECT_THAT(exception,
-                    joynrException(exceptions::DiscoveryException::TYPE_NAME(),
-                                   exceptionMsgUnableToLookup + expectedException.getMessage()));
+                    joynrException(exceptions::DiscoveryException::TYPE_NAME(), expectedExceptionMsg));
         semaphore.notify();
     };
 

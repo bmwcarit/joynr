@@ -126,7 +126,8 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
     Semaphore semaphore;
-    bool arbitrationFinished;
+    std::atomic<bool> arbitrationFinished;
+    std::atomic<bool> arbitrationFailedForever;
     std::atomic<bool> arbitrationRunning;
     std::atomic<bool> arbitrationStopped;
     std::thread arbitrationThread;
