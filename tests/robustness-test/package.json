@@ -15,6 +15,6 @@
   "scripts": {
     "build": "tsc",
     "startprovider": "node .output/src/main/js/provider.js $npm_package_config_domain",
-    "startjest": "export domain=$npm_package_config_domain && export testcase=$npm_package_config_testcase && jest -i"
+    "startjest": "export domain=$npm_package_config_domain && export testcase=$npm_package_config_testcase && ../../node_modules/.bin/jest -i"
   }
 }

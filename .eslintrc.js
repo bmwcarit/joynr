@@ -81,6 +81,7 @@ module.exports = {
         "no-redeclare": "off",
         "no-dupe-class-members": "off",
         "object-shorthand": "error",
+        "prefer-arrow-callback": "error",
         "prefer-const": "error",
         "prefer-destructuring": "off",
         "prefer-template": "error",

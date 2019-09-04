@@ -12,24 +12,8 @@
   },
   "devDependencies": {
     "@types/lodash": "4.14.123",
-    "@types/jest": "24.0.11",
-    "@types/node": "8.9.4",
-    "@typescript-eslint/eslint-plugin": "1.7.0",
-    "@typescript-eslint/parser": "1.7.0",
     "browserify": "16.3.0",
-    "eslint": "5.16.0",
-    "eslint-config-prettier": "4.2.0",
-    "eslint-plugin-jest": "22.5.1",
-    "eslint-plugin-prettier": "3.0.1",
-    "eslint-plugin-promise": "3.8.0",
-    "jest": "24.8.0",
-    "jest-circus": "24.8.0",
-    "jest-junit": "6.3.0",
-    "prettier": "1.13.2",
-    "ts-jest": "24.0.1",
-    "ts-node": "8.3.0",
-    "tsify": "4.0.1",
-    "typescript": "3.4.3"
+    "tsify": "4.0.1"
   },
   "config": {
     "domain": "joynr-inter-language-test-domain",
@@ -38,13 +22,13 @@
   "scripts": {
     "clean": "rm -rf node_modules ../../javascript/libjoynr-js/.output",
     "install:browserify": "node bundle.js",
-    "startprovider": "node_modules/.bin/ts-node src/main/js/provider.ts $npm_package_config_domain",
+    "startprovider": "ts-node src/main/js/provider.ts $npm_package_config_domain",
     "startproviderbundle": "node src/main/js/provider.bundle.js $npm_package_config_domain",
-    "startjasmine": "export domain=$npm_package_config_domain && node_modules/.bin/jest -i",
+    "startjasmine": "export domain=$npm_package_config_domain && ../../node_modules/.bin/jest -i",
     "build:fast": "cd ../../javascript/libjoynr-js && npm run ts:package && cd - && npm i && npm run install:browserify && npm run lint",
     "build": "npm run clean && npm run build:fast",
-    "format": "node_modules/.bin/prettier --write $npm_package_config_glob",
-    "lint": "node_modules/.bin/eslint $npm_package_config_glob",
-    "lint:fix": "node_modules/.bin/eslint $npm_package_config_glob --fix"
+    "format": "prettier --write $npm_package_config_glob",
+    "lint": "../../node_modules/.bin/eslint $npm_package_config_glob",
+    "lint:fix": "../../node_modules/.bin/eslint $npm_package_config_glob --fix"
   }
 }

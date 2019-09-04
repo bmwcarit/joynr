@@ -21,10 +21,5 @@
   "scripts": {
     "startconsumer": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri ts-node src/main/js/radioConsumer",
     "startprovider": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri ts-node src/main/js/radioProvider"
-  },
-  "devDependencies": {
-    "@types/node": "8.9.4",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.5.2"
   }
 }
