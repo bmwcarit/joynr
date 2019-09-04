@@ -41,6 +41,7 @@ services:
       - "joynrbackend-1"
       - "joynrbackend-2"
     environment:
+      - SIT_DOMAIN=onlyBackend1
       - SIT_GBIDS=joynrdefaultgbid
       - SIT_BROKERURIS=tcp://mqttbroker-1:1883
       - SIT_CONNECTION_TIMEOUTS=60
@@ -59,6 +60,7 @@ services:
     container_name: sit-jee-stateless-consumer-node-1
     environment:
       - RECEIVER_ID=stateless-cons-1
+      - SIT_DOMAIN=bothBackends
     depends_on:
       - "joynrbackend-1"
       - "joynrbackend-2"
@@ -68,6 +70,7 @@ services:
     container_name: sit-jee-stateless-consumer-node-2
     environment:
       - RECEIVER_ID=stateless-cons-2
+      - SIT_DOMAIN=bothBackends
     depends_on:
       - "joynrbackend-1"
       - "joynrbackend-2"
@@ -78,3 +81,5 @@ services:
     depends_on:
       - "joynrbackend-1"
       - "joynrbackend-2"
+    environment:
+      - SIT_DOMAINS=onlyBackend1,onlyBackend2,bothBackends

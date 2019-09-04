@@ -18,7 +18,6 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
-import static io.joynr.systemintegrationtest.jee.JoynrConfigurationProvider.CONTROLLER_DOMAIN;
 import static io.joynr.systemintegrationtest.jee.JoynrConfigurationProvider.SIT_DOMAIN_PREFIX;
 
 import java.nio.charset.StandardCharsets;
@@ -33,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.arbitration.DiscoveryQos;
-import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import joynr.test.SitControllerSync;
@@ -41,7 +39,6 @@ import joynr.test.SystemIntegrationTestSync;
 
 @Stateless
 @ServiceProvider(serviceInterface = SitControllerSync.class)
-@ProviderDomain(value = CONTROLLER_DOMAIN)
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class ControllerBean implements SitControllerSync {
 
@@ -72,8 +69,9 @@ public class ControllerBean implements SitControllerSync {
         logger.info("triggerTests called");
         StringBuffer result = new StringBuffer();
         //for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
+        String configuredDomain = System.getenv("SIT_DOMAIN");
         for (String appendValue : new String[]{ ".jee" }) {
-            callProducer(SIT_DOMAIN_PREFIX + appendValue, result);
+            callProducer(configuredDomain + "_" + SIT_DOMAIN_PREFIX + appendValue, result);
         }
         return Base64.getEncoder().encodeToString(result.toString().getBytes(StandardCharsets.UTF_8));
     }

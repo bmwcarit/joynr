@@ -38,8 +38,6 @@ public class JoynrConfigurationProvider {
 
     static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
     private static final String CHANNEL_ID = SIT_DOMAIN_PREFIX + ".jee";
-    private static final String CONTROLLER_DOMAIN_PREFIX = SIT_DOMAIN_PREFIX + ".controller";
-    static final String CONTROLLER_DOMAIN = CONTROLLER_DOMAIN_PREFIX + ".jee-app";
 
     private static final Logger LOG = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
 
@@ -61,9 +59,10 @@ public class JoynrConfigurationProvider {
     @Produces
     @JoynrLocalDomain
     public String joynrLocalDomain() {
+        String domainNumber = System.getenv("SIT_DOMAIN");
         String domainPrefix = SIT_DOMAIN_PREFIX;
         LOG.debug("Using domain prefix: " + domainPrefix);
-        return domainPrefix + ".jee";
+        return domainNumber + "_" + domainPrefix + ".jee";
     }
 
 }
