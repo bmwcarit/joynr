@@ -19,12 +19,14 @@
 package io.joynr.runtime;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.NoBackendGlobalAddressFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.TransportReadyListener;
 import joynr.system.RoutingTypes.Address;
@@ -93,9 +95,16 @@ public class ReplyToAddressProvider implements Provider<Address> {
                 addressFactory = replyToAddressFactories.iterator().next();
             } else if (replyToAddressFactories.size() == 0) {
                 throw new IllegalStateException("no global transport was registered");
-            } else if (replyToAddressFactories.size() > 1) {
+            } else {
+                replyToAddressFactories = replyToAddressFactories.stream()
+                                                                 .filter(factory -> !NoBackendGlobalAddressFactory.class.isInstance(factory))
+                                                                 .collect(Collectors.toSet());
+            }
+            if (replyToAddressFactories.size() > 1) {
                 throw new IllegalStateException("multiple global transports were registered but "
                         + MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT + " was not set.");
+            } else {
+                addressFactory = replyToAddressFactories.iterator().next();
             }
         }
         return addressFactory;
