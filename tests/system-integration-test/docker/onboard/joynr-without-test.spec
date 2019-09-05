@@ -62,7 +62,7 @@ mv /data/build/joynr/package/RPM/tmp $RPM_BUILD_ROOT
 %preun
 
 %files
-%defattr(-,root,root,-)
+%defattr(-,root,root,755)
 /usr/bin/cluster-controller
 /etc/joynr
 /usr/share/doc
