@@ -97,8 +97,7 @@ async function main(): Promise<void> {
     if (fidlFile) {
         parsedJson = JSON.parse(fs.readFileSync(fidlFile, "utf8"));
         Object.values(parsedJson.interfaces).forEach(paths => {
-            const mappedPaths = paths.map(fidlPath => path.join(path.dirname(fidlFile), fidlPath));
-            modelPathArray = modelPathArray.concat(mappedPaths);
+            modelPathArray = modelPathArray.concat(paths);
         });
     }
 
@@ -106,8 +105,7 @@ async function main(): Promise<void> {
     if (fidlFile) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         Object.entries(parsedJson!.interfaces).forEach(([fidlFileGroup, fidlFiles]) => {
-            const mappedPaths = fidlFiles.map(fidlPath => path.join(path.dirname(fidlFile), fidlPath));
-            createJoynrIncludes(mappedPaths, outputPath, fidlFileGroup);
+            createJoynrIncludes(fidlFiles, outputPath, fidlFileGroup);
         });
     } else if (argv.includes) {
         let files: string[] = [];
@@ -121,7 +119,7 @@ async function main(): Promise<void> {
         });
         createJoynrIncludes(files, outputPath);
     }
-    const files = (await globAsync(`${outputPath}/**/*(!.d).ts`)).filter(file => !file.includes(".d.ts"));
+    const files = (await globAsync(`${outputPath}/**/*.ts`)).filter(file => !file.includes(".d.ts"));
     if (argv.js) {
         compileToJS(files);
     }
@@ -147,7 +145,7 @@ async function generateTSSources(modelPaths: string | string[], outputPath: stri
  * @param fileNames list of files to be compiled
  */
 function compileToJS(fileNames: string[]): void {
-    log("compiling to JS");
+    log(`compiling ${fileNames.length} files to JS`);
     const compileOptions = {
         noEmitOnError: true,
         noImplicitAny: true,
