@@ -120,9 +120,6 @@ function execute_in_docker {
 	fi
 	docker run --rm -t $DOCKER_RUN_ADD_FLAGS --privileged \
 		$ADDITIONAL_DOCKER_ARGS \
-		-e http_proxy=$http_proxy \
-		-e https_proxy=$https_proxy \
-		-e no_proxy=$no_proxy \
 		-v $JOYNR_REPODIR:/data/src:Z \
 		-v $MAVEN_SETTINGS:/home/joynr/.m2/settings.xml:z \
 		-v $MAVEN_REPODIR:/home/joynr/.m2/repository:Z \
@@ -135,7 +132,7 @@ if [ $NO_JAVA_BUILD ]; then
 	echo "Skipping Java build ..."
 else
 	# Build Java
-	execute_in_docker '"echo \"Generate Java API\" && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests"'
+	execute_in_docker '"echo \"Generate Java API\" && . /etc/profile && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests"'
 fi
 
 # create cpp build dir:
@@ -146,13 +143,13 @@ if [ $NO_CPP_BUILD ]; then
 else
 	# assume joynr JAVA and joynr-generator-standalone are already built and C++ code has been generated
 
-	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-MoCOCrW-package.sh 2>&1"'
+	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-MoCOCrW-package.sh 2>&1"'
 
-	execute_in_docker '"echo \"Building and packaging smrf\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"'
+	execute_in_docker '"echo \"Building and packaging smrf\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"'
 
-	execute_in_docker '"echo \"Building joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs '"${JOBS}"' --enableclangformatter OFF --buildtests OFF 2>&1"'
+	execute_in_docker '"echo \"Building joynr c++\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs '"${JOBS}"' --enableclangformatter OFF --buildtests OFF 2>&1"'
 
-	execute_in_docker '"echo \"Packaging joynr c++\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"'
+	execute_in_docker '"echo \"Packaging joynr c++\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"'
 
 fi
 
@@ -160,14 +157,14 @@ if [ $NO_CPP_TEST_BUILD ]; then
 	echo "Skipping C++ test build ..."
 else
 	# dummyKeychain is also built here
-	execute_in_docker '"echo \"Building C++ System Integration Tests\" && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-tests.sh system-integration-test --jobs '"${JOBS}"' --clangformatter OFF 2>&1"'
+	execute_in_docker '"echo \"Building C++ System Integration Tests\" && . /etc/profile && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-tests.sh system-integration-test --jobs '"${JOBS}"' --clangformatter OFF 2>&1"'
 fi
 
 if [ $NO_NODE_BUILD ]; then
 	echo "Skipping Node test build ..."
 else
 	# only build joynr javascript, test-base and sit-node-app
-	execute_in_docker '"echo \"Building sit node app\" && cd /data/src && mvn clean install -P javascript -am --projects io.joynr.javascript:libjoynr-js,io.joynr.tests:test-base,io.joynr.tests.system-integration-test:sit-node-app && cd tests/system-integration-test/sit-node-app && npm -verbose install"' $JS_BUILD_DOCKER_IMAGE
+	execute_in_docker '"echo \"Building sit node app\" && . /etc/profile && cd /data/src && mvn clean install -P javascript -am --projects io.joynr.javascript:libjoynr-js,io.joynr.tests:test-base,io.joynr.tests.system-integration-test:sit-node-app && cd tests/system-integration-test/sit-node-app && npm -verbose install"' $JS_BUILD_DOCKER_IMAGE
 fi
 
 if [ -d ${DOCKER_BUILDDIR} ]; then
@@ -180,6 +177,11 @@ mkdir ${DOCKER_BUILDDIR}/sit-java-app
 cp $SIT_DIR/sit-java-app/target/sit-java-app-*-jar-with-dependencies.jar ${DOCKER_BUILDDIR}/sit-java-app
 
 cp -R -L $SIT_DIR/sit-node-app ${DOCKER_BUILDDIR}
+rm ${DOCKER_BUILDDIR}/sit-node-app/node_modules/.bin/ts-node
+(
+	cd ${DOCKER_BUILDDIR}/sit-node-app/node_modules/.bin
+	ln -s ../ts-node/dist/bin.js ts-node
+)
 
 cp -R $CPP_BUILDDIR/tests ${DOCKER_BUILDDIR}
 
@@ -202,12 +204,13 @@ cp run-onboard-sit.sh ${DOCKER_BUILDDIR}
 cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     FROM ${DOCKER_REPOSITORY}${BASE_DOCKER_IMAGE}
 
-    RUN echo "current date: $CURRENTDATE" && curl www.google.de > /dev/null
+    RUN echo "current date: $CURRENTDATE" && . /etc/profile && curl www.google.de > /dev/null
 
     ###################################################
     # Install boost
     ###################################################
-    RUN dnf install -y \
+    RUN . /etc/profile \
+        && dnf install -y \
         boost \
         mosquitto \
         openssl
@@ -216,8 +219,8 @@ cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     # Install MoCOCrW
     ###################################################
     COPY MoCOCrW.tar.gz /tmp/MoCOCrW.tar.gz
-    RUN cd / && \
-        tar xvf /tmp/MoCOCrW.tar.gz
+    RUN cd / \
+        && tar xvf /tmp/MoCOCrW.tar.gz
 
     ###################################################
     # Install joynr and smrf
@@ -268,11 +271,14 @@ cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     ENV NODE_VERSION $NODE_VERSION
 
     # install nvm
-    RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh | bash
+    RUN . /etc/profile \
+        && mkdir -p $NVM_DIR \
+        && curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
 
     # install node and npm
     # having the nvm directory writable makes it possible to use nvm to change node versions manually
-    RUN source $NVM_DIR/nvm.sh \
+    RUN . /etc/profile \
+        && source $NVM_DIR/nvm.sh \
         && nvm install $NODE_VERSION \
         && nvm alias default $NODE_VERSION \
         && nvm use default \
@@ -293,8 +299,8 @@ EOF
 chmod 666 $DOCKER_BUILDDIR/Dockerfile
 
 echo "environment:" `env`
-echo "docker build -t sit-onboard-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR"
-docker build -t sit-onboard-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR
+echo "docker build -t sit-onboard-apps:latest $DOCKER_BUILDDIR"
+docker build -t sit-onboard-apps:latest $DOCKER_BUILDDIR
 
 echo "### end build_docker_image.sh for joynr-backend-jee ###"
 rm -rf $DOCKER_BUILDDIR
