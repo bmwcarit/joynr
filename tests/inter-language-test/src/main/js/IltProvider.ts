@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * #L%
-*/
+ */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import joynr from "joynr";

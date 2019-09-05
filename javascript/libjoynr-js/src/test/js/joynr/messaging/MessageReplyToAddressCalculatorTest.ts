@@ -34,7 +34,7 @@ describe("libjoynr-js.joynr.messaging.MessageReplyToAddressCalculator", () => {
         serializedGlobalAddress = JSON.stringify(globalAddress);
     });
 
-    it("setReplyTo throws if replyToAddress not specified", function() {
+    it("setReplyTo throws if replyToAddress not specified", () => {
         const request = new JoynrMessage({
             type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
             payload: ""

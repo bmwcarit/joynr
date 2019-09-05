@@ -11,8 +11,11 @@
     "test-base": "file:../test-base",
     "ws": "^6.2.1"
   },
-  "config": {},
+  "config": {
+    "glob": "src/main/js/**/*.ts"
+  },
   "scripts": {
+    "lint": "../../node_modules/.bin/eslint $npm_package_config_glob",
     "startPerformance": "export configName=\"config\" && node -r ts-node/register --expose-gc src/main/js/runPerformanceTests",
     "startMemory": "export configName=\"memoryConfig\" && node -r ts-node/register --expose-gc src/main/js/runPerformanceTests",
     "startBroadcast": "export configName=\"broadcastConfig\" && node -r ts-node/register --expose-gc src/main/js/runPerformanceTests",
@@ -21,8 +24,6 @@
   },
   "devDependencies": {
     "@types/heapdump": "^0.3.1",
-    "@types/ws": "^6.0.1",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.5.2"
+    "@types/ws": "^6.0.1"
   }
 }

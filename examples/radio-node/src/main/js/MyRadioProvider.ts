@@ -19,6 +19,10 @@
 
 import { RadioProviderImplementation } from "../generated/js/joynr/vehicle/RadioProvider";
 import * as RadioProvider from "../generated/js/joynr/vehicle/RadioProvider";
+import {
+    AddFavoriteStationReturns1,
+    GetLocationOfCurrentStationReturns1
+} from "../generated/js/joynr/vehicle/RadioProxy";
 import { prettyLog } from "./logging";
 
 import joynr = require("joynr");
@@ -90,11 +94,11 @@ class MyRadioProvider implements RadioProviderImplementation {
         this.shuffleStations = this.shuffleStations.bind(this);
     }
 
-    public setProvider(radioProvider: RadioProvider) {
+    public setProvider(radioProvider: RadioProvider): void {
         this.myRadioProvider = radioProvider;
     }
 
-    public addFavoriteStation(opArgs: any) {
+    public addFavoriteStation(opArgs: any): AddFavoriteStationReturns1 {
         prettyLog(`radioProvider.addFavoriteStation(${JSON.stringify(opArgs)}) called`);
 
         if (opArgs === undefined) {
@@ -131,12 +135,14 @@ class MyRadioProvider implements RadioProviderImplementation {
         };
     }
 
-    public addFavoriteStationList(opArgs: any) {
+    public addFavoriteStationList(opArgs: any): AddFavoriteStationReturns1 {
         prettyLog(`radioProvider.addFavoriteStationList(${JSON.stringify(opArgs)}) called`);
-        return false;
+        return {
+            success: false
+        };
     }
 
-    public shuffleStations() {
+    public shuffleStations(): void {
         prettyLog(`radioProvider.shuffleStations() called`);
         this.currentStationIndex++;
         this.currentStationIndex %= this.stationsList.length;
@@ -144,14 +150,14 @@ class MyRadioProvider implements RadioProviderImplementation {
         this.currentStation.valueChanged(this.stationsList[this.currentStationIndex]);
     }
 
-    public fireWeakSignal() {
+    public fireWeakSignal(): void {
         const broadcast = this.myRadioProvider.weakSignal;
         const outputParams = broadcast.createBroadcastOutputParameters();
         outputParams.setWeakSignalStation(this.stationsList[this.currentStationIndex]);
         broadcast.fire(outputParams);
     }
 
-    public fireWeakSignalWithPartition() {
+    public fireWeakSignalWithPartition(): void {
         const broadcast = this.myRadioProvider.weakSignal;
         const outputParams = broadcast.createBroadcastOutputParameters();
         const currentStation = this.stationsList[this.currentStationIndex];
@@ -159,7 +165,7 @@ class MyRadioProvider implements RadioProviderImplementation {
         broadcast.fire(outputParams, [currentStation.country.name]);
     }
 
-    public getLocationOfCurrentStation() {
+    public getLocationOfCurrentStation(): GetLocationOfCurrentStationReturns1 {
         prettyLog("radioProvider.getLocationOfCurrentStation called");
         return {
             country: this.stationsList[this.currentStationIndex].country,

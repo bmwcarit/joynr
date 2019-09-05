@@ -16,9 +16,11 @@
       "port": "4242"
     },
     "bounceProxyBaseUrl": "http://localhost:8080",
-    "brokerUri": "tcp://localhost:1883"
+    "brokerUri": "tcp://localhost:1883",
+    "glob": "src/main/js/**/*.ts"
   },
   "scripts": {
+    "lint": "../../node_modules/.bin/eslint $npm_package_config_glob",
     "startconsumer": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri ts-node src/main/js/radioConsumer",
     "startprovider": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri ts-node src/main/js/radioProvider"
   }

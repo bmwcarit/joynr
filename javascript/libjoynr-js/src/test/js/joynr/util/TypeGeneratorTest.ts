@@ -113,13 +113,13 @@ describe("libjoynr-js.joynr.TypeGenerator.Compound", () => {
         expect(TStruct.MINOR_VERSION).toEqual(13);
     });
 
-    it("StructWithTypedefMembers: checkMembers accepts correct types", function() {
+    it("StructWithTypedefMembers: checkMembers accepts correct types", () => {
         expect(() =>
             TStructWithTypedefMembers.checkMembers(testStructWithTypeDefMembers, Typing.checkPropertyIfDefined)
         ).not.toThrow();
     });
 
-    it("StructWithTypedefMembers: checkMembers detects wrong types", function() {
+    it("StructWithTypedefMembers: checkMembers detects wrong types", () => {
         let testStruct: any;
 
         testStruct = new TStructWithTypedefMembers(testStructWithTypeDefMembers);
@@ -171,7 +171,7 @@ describe("libjoynr-js.joynr.TypeGenerator.Compound", () => {
         );
     });
 
-    it("StructWithTypedefMembers with ObjectNullMaps: checkMembers detects wrong types", function() {
+    it("StructWithTypedefMembers with ObjectNullMaps: checkMembers detects wrong types", () => {
         let testStruct: any;
 
         testStruct = new TStructWithTypedefMembers(testStructWithObjectNullMaps);

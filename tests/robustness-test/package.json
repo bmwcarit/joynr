@@ -10,10 +10,12 @@
   },
   "config": {
     "domain": "joynr-robustness-test-domain",
-    "testcase": "js_tests"
+    "testcase": "js_tests",
+    "glob": "src/main/js/**/*.ts"
   },
   "scripts": {
-    "build": "tsc",
+    "lint": "../../node_modules/.bin/eslint $npm_package_config_glob",
+    "build": "npm run lint && tsc",
     "startprovider": "node .output/src/main/js/provider.js $npm_package_config_domain",
     "startjest": "export domain=$npm_package_config_domain && export testcase=$npm_package_config_testcase && ../../node_modules/.bin/jest -i"
   }

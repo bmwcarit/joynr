@@ -29,9 +29,11 @@
       "keyPath": "/data/ssl-data/private/client.key.pem",
       "caPath": "/data/ssl-data/certs/ca.cert.pem",
       "ownerId": "client"
-    }
+    },
+    "glob": "src/main/js/**/*.ts"
   },
   "scripts": {
+    "lint": "../../../node_modules/.bin/eslint $npm_package_config_glob",
     "startconsumer": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port ts-node src/main/js/consumer.ts",
     "startprovider": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port ts-node src/main/js/provider.ts",
     "startconsumertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId ts-node src/main/js/consumer.ts",

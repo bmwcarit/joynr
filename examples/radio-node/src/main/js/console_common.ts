@@ -20,9 +20,9 @@
 import { log } from "./logging";
 import { prettyLog } from "./logging";
 
-const showHelp = function(
+function showHelp(
     modes: Record<string, { value: string; description: string; options: Record<string, string> }>
-) {
+): void {
     let optionsText;
     let modeKey;
     let optionKey;
@@ -44,6 +44,6 @@ const showHelp = function(
         }
     }
     log("");
-};
+}
 
 export = showHelp;

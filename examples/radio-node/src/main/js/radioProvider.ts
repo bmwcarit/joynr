@@ -66,7 +66,7 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
         }
     };
 
-    rl.on("line", function(line) {
+    rl.on("line", line => {
         const input = line.trim().split(" ");
         switch (input[0]) {
             case MODES.HELP.value:
@@ -93,7 +93,7 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
         rl.prompt();
     });
 
-    rl.on("close", function() {
+    rl.on("close", () => {
         res();
     });
 

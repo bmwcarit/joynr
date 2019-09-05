@@ -37,10 +37,12 @@ class CustomerLoggingAppender {
 
         const formattedMessage = loggingEvent.messages.join(",");
         const logLevel: LogLevel = loggingEvent.level.name.toLowerCase() as any;
+        // eslint-disable-next-line no-console
         console[logLevel](formattedMessage);
     }
 }
 
+// eslint-disable-next-line no-console
 console.debug = console.log;
 
 export = CustomerLoggingAppender;

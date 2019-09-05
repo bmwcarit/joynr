@@ -22,7 +22,7 @@ import yargs = require("yargs");
 import path = require("path");
 import { execSync } from "child_process";
 import * as ts from "typescript";
-import * as glob from "glob";
+import glob = require("glob");
 import * as util from "util";
 import * as handlebars from "handlebars";
 import * as fs from "fs";
@@ -44,7 +44,12 @@ interface FidlFilesJson {
     interfaces: Record<string (fidlFileGroup), string[] (relative Paths to fidl files)>;
 }`;
 
-async function main() {
+// eslint-disable-next-line no-console
+const log = console.log;
+// eslint-disable-next-line no-console
+const error = console.error;
+
+async function main(): Promise<void> {
     const argv = yargs
         .usage("Usage: $0 [options]")
         .example(`$0 -m Radio.fidl -m Test.fidl -o src-gen`, "compile 2 different .fidl files")
@@ -80,7 +85,7 @@ async function main() {
     const fidlFile = argv.fidlFile as string | undefined;
 
     if (!modelPath && !fidlFile) {
-        console.error("Please provide either modelPath or fidlFile option");
+        error("Please provide either modelPath or fidlFile option");
         process.exit(1);
     }
 
@@ -99,6 +104,7 @@ async function main() {
 
     await generateTSSources(modelPathArray, outputPath);
     if (fidlFile) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         Object.entries(parsedJson!.interfaces).forEach(([fidlFileGroup, fidlFiles]) => {
             const mappedPaths = fidlFiles.map(fidlPath => path.join(path.dirname(fidlFile), fidlPath));
             createJoynrIncludes(mappedPaths, outputPath, fidlFileGroup);
@@ -119,20 +125,20 @@ async function main() {
     if (argv.js) {
         compileToJS(files);
     }
-    console.log("All done!");
+    log("All done!");
     process.exit(0);
 }
 
-async function generateTSSources(modelPaths: string | string[], outputPath: string) {
+async function generateTSSources(modelPaths: string | string[], outputPath: string): Promise<void> {
     ([] as string[]).concat(modelPaths).forEach(path => {
         const command =
             `java -jar ${generatorPath}` +
             ` -modelPath ${path} -outputPath ${outputPath}` +
             ` -generationLanguage javascript`;
-        console.log(`executing command: ${command}`);
+        log(`executing command: ${command}`);
         execSync(command);
     });
-    console.log(`ts generation done`);
+    log(`ts generation done`);
 }
 
 /**
@@ -140,8 +146,8 @@ async function generateTSSources(modelPaths: string | string[], outputPath: stri
  * https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
  * @param fileNames list of files to be compiled
  */
-function compileToJS(fileNames: string[]) {
-    console.log("compiling to JS");
+function compileToJS(fileNames: string[]): void {
+    log("compiling to JS");
     const compileOptions = {
         noEmitOnError: true,
         noImplicitAny: true,
@@ -161,16 +167,17 @@ function compileToJS(fileNames: string[]) {
 
     allDiagnostics.forEach(diagnostic => {
         if (diagnostic.file) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
             const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-            console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+            log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
         } else {
-            console.log(`${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`);
+            log(`${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`);
         }
     });
 
     const exitCode = emitResult.emitSkipped ? 1 : 0;
-    console.log(`Process exiting with code '${exitCode}'.`);
+    log(`Process exiting with code '${exitCode}'.`);
     process.exit(exitCode);
 }
 
@@ -184,7 +191,7 @@ handlebars.registerHelper("ifObject", function(this: any, item, options) {
     }
 });
 
-handlebars.registerHelper("concat", function(...args) {
+handlebars.registerHelper("concat", (...args) => {
     return new handlebars.SafeString(
         args
             .slice(0, -1)
@@ -229,10 +236,12 @@ function createRequiresFromDir(dir: string, relativeFromDir: string): Record<str
     return modulePaths;
 }
 
-function createJoynrIncludes(fidlFiles: string[], outputFolder: string, fidlFileGroup: string = "joynr-includes") {
-    console.log(
-        `creating joynr includes for fidlFiles ${JSON.stringify(fidlFiles)} and fidlFileGroup ${fidlFileGroup}`
-    );
+function createJoynrIncludes(
+    fidlFiles: string[],
+    outputFolder: string,
+    fidlFileGroup: string = "joynr-includes"
+): void {
+    log(`creating joynr includes for fidlFiles ${JSON.stringify(fidlFiles)} and fidlFileGroup ${fidlFileGroup}`);
     const templateFilePath = path.join(__dirname, "joynr-require-interface.hbs");
     const templateFile = fs.readFileSync(templateFilePath, "utf8");
     const requiresTemplate = handlebars.compile(templateFile, { noEscape: true });
@@ -242,9 +251,12 @@ function createJoynrIncludes(fidlFiles: string[], outputFolder: string, fidlFile
     fidlFiles.forEach(fidlFile => {
         // Gather the package name in order to construct a path, generate the method
         // names and paths and then generate the file's contents.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const fidlFileContents = fs.readFileSync(fidlFile, "utf8")!;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const packagePath = fidlFileContents.match(/^package\s+(.+)$/m)![1];
         const packagePathParts = packagePath.split(".");
+        // eslint-disable-next-line prefer-spread
         const outputPathSuffix = path.join.apply(path, packagePathParts);
         const outputFolderPerGroup = path.join(outputFolder, fidlFileGroup);
         const newFilename = path.join(outputFolderPerGroup, `${packagePathParts.pop()}`);
@@ -275,6 +287,6 @@ function createJoynrIncludes(fidlFiles: string[], outputFolder: string, fidlFile
 
 if (!module.parent) {
     main().catch(err => {
-        console.log(err);
+        log(err);
     });
 }

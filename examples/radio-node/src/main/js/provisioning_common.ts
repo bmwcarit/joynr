@@ -21,40 +21,45 @@ import CustomLoggingAppender from "./CustomLoggingAppender";
 
 const provisioning = {
     ccAddress: {
-        protocol : "ws",
-        path : ""
+        protocol: "ws",
+        path: ""
     },
 
     logging: {
-        appenderClasses : {
-            "Custom" : CustomLoggingAppender
+        appenderClasses: {
+            Custom: CustomLoggingAppender
         },
-        configuration : {
-            appenders : {
-                appender : [ {
-                    type : "Custom",
-                    name : "CUSTOM",
-                    PatternLayout : {
-                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+        configuration: {
+            appenders: {
+                appender: [
+                    {
+                        type: "Custom",
+                        name: "CUSTOM",
+                        PatternLayout: {
+                            pattern: "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                        }
+                    },
+                    {
+                        type: "Console",
+                        name: "STDOUT",
+                        PatternLayout: {
+                            pattern: "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
+                        }
                     }
-                }, {
-                    type : "Console",
-                    name : "STDOUT",
-                    PatternLayout : {
-                        pattern : "[%d{HH:mm:ss,SSS}][%c][%p] %m{2}"
-                    }
-                } ]
+                ]
             },
-            loggers : {
-                root : {
-                    level : "debug",
-                    AppenderRef : [ {
-                        ref : "CUSTOM"
-                    } ]
+            loggers: {
+                root: {
+                    level: "debug",
+                    AppenderRef: [
+                        {
+                            ref: "CUSTOM"
+                        }
+                    ]
                 }
             }
         }
     }
 };
 
-export = provisioning
+export = provisioning;
