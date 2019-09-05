@@ -20,6 +20,10 @@
 
 #include <gtest/gtest.h>
 
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/NoCompatibleProviderFoundException.h"
+#include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/exceptions/SubscriptionException.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
@@ -56,6 +60,72 @@ void PrintTo(const joynr::system::RoutingTypes::WebSocketAddress& value, ::std::
 }
 
 } // namespace system
+
+namespace exceptions {
+
+void printException(const joynr::exceptions::JoynrException& value, ::std::ostream* os) {
+    *os << joynr::serializer::serializeToJson(value) << std::endl;
+}
+
+void PrintTo(const joynr::exceptions::JoynrException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::JoynrRuntimeException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::JoynrConfigurationException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::JoynrTimeOutException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::JoynrMessageNotSentException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::JoynrDelayMessageException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::JoynrParseError& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::DiscoveryException& value, ::std::ostream* os) {
+    *os << joynr::serializer::serializeToJson(value) << std::endl;
+}
+
+void PrintTo(const joynr::exceptions::NoCompatibleProviderFoundException& value, ::std::ostream* os) {
+    *os << joynr::serializer::serializeToJson(value) << std::endl;
+}
+
+void PrintTo(const joynr::exceptions::ProviderRuntimeException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::MethodInvocationException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::SubscriptionException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::PublicationMissedException& value, ::std::ostream* os) {
+printException(value, os);
+}
+
+void PrintTo(const joynr::exceptions::ApplicationException& value, ::std::ostream* os) {
+    printException(value, os);
+}
+
+
+} // namespace exceptions
+
 } // namespace joynr
 
 void PrintTo(const StatusCodeEnum& value, ::std::ostream* os)

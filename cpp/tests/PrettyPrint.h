@@ -44,7 +44,54 @@ namespace system {
     void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os);
     class WebSocketAddress;
     void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
-}
-}
+} // namespace system
+
+namespace exceptions {
+
+class JoynrException;
+void PrintTo(const joynr::exceptions::JoynrException& value, ::std::ostream* os);
+
+class JoynrRuntimeException;
+void PrintTo(const joynr::exceptions::JoynrRuntimeException& value, ::std::ostream* os);
+
+class JoynrConfigurationException;
+void PrintTo(const joynr::exceptions::JoynrConfigurationException& value, ::std::ostream* os);
+
+class JoynrTimeOutException;
+void PrintTo(const joynr::exceptions::JoynrTimeOutException& value, ::std::ostream* os);
+
+class JoynrMessageNotSentException;
+void PrintTo(const joynr::exceptions::JoynrMessageNotSentException& value, ::std::ostream* os);
+
+class JoynrDelayMessageException;
+void PrintTo(const joynr::exceptions::JoynrDelayMessageException& value, ::std::ostream* os);
+
+class JoynrParseError;
+void PrintTo(const joynr::exceptions::JoynrParseError& value, ::std::ostream* os);
+
+class DiscoveryException;
+void PrintTo(const joynr::exceptions::DiscoveryException& value, ::std::ostream* os);
+
+class NoCompatibleProviderFoundException;
+void PrintTo(const joynr::exceptions::NoCompatibleProviderFoundException& value, ::std::ostream* os);
+
+class ProviderRuntimeException;
+void PrintTo(const joynr::exceptions::ProviderRuntimeException& value, ::std::ostream* os);
+
+class MethodInvocationException;
+void PrintTo(const joynr::exceptions::MethodInvocationException& value, ::std::ostream* os);
+
+class SubscriptionException;
+void PrintTo(const joynr::exceptions::SubscriptionException& value, ::std::ostream* os);
+
+class PublicationMissedException;
+void PrintTo(const joynr::exceptions::PublicationMissedException& value, ::std::ostream* os);
+
+class ApplicationException;
+void PrintTo(const joynr::exceptions::ApplicationException& value, ::std::ostream* os);
+
+} // namespace exceptions
+
+} // namespace joynr
 void PrintTo(const joynr::StatusCodeEnum& value, ::std::ostream* os);
 #endif // PRETTYPRINT_H_

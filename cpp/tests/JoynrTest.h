@@ -146,7 +146,9 @@ MATCHER_P(MessageHasExpiryDate, expiryDate, "") {
     return arg->getExpiryDate() == expiryDate;
 }
 
-MATCHER_P2(joynrException, typeName, msg, "") {
+MATCHER_P2(joynrException, typeName, msg,
+           "JoynrException with typeName=" + ::testing::PrintToString(typeName)
+           + " and message=" + ::testing::PrintToString(msg)) {
     return arg.getTypeName() == typeName && arg.getMessage() == msg;
 }
 
