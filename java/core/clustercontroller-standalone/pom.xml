@@ -163,6 +163,11 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<archive>
+								<manifest>
+									<mainClass>io.joynr.runtime.ClusterController</mainClass>
+								</manifest>
+							</archive>
 						</configuration>
 					</execution>
 				</executions>

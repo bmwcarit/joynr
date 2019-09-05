@@ -70,7 +70,7 @@ tools/android/pom.xml \
 tools/android/slf4j-android-bindings/pom.xml \
 tools/android/slf4j-android-bindings/AndroidManifest.xml
 
-_sed 's/clustercontroller-standalone-'${oldVersion}'.jar/clustercontroller-standalone-'${newVersion}'.jar/g' \
+_sed 's/clustercontroller-standalone-'${oldVersion}'-jar-with-dependencies.jar/clustercontroller-standalone-'${newVersion}'-jar-with-dependencies.jar/g' \
 java/core/clustercontroller-standalone/README
 
 _sed 's/Version:        '${oldVersionWithoutSuffix}'/Version:        '${newVersionWithoutSuffix}'/g' \
