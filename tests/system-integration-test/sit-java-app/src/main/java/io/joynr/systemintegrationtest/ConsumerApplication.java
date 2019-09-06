@@ -19,20 +19,27 @@
 package io.joynr.systemintegrationtest;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import com.google.inject.Module;
-import com.google.inject.name.Named;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -54,9 +61,10 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     public static final String SYSTEMINTEGRATIONTEST_PROVIDER_DOMAIN = "system-integration-test.provider.domain";
     private static final String STATIC_PERSISTENCE_FILE = "java-consumer.persistence_file";
 
-    @Inject
-    @Named(SYSTEMINTEGRATIONTEST_PROVIDER_DOMAIN)
-    private String providerDomain;
+    private static String providerDomain;
+    private static String gbidsParameter = "";
+    private static String[] gbids;
+    private static boolean globalOnly = false;
     private SystemIntegrationTestProxy systemIntegrationTestProxy;
     private static Semaphore proxyCreated = new Semaphore(0);
 
@@ -66,12 +74,58 @@ public class ConsumerApplication extends AbstractJoynrApplication {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException {
-        if (args.length != 1 && args.length != 2) {
-            LOG.error("USAGE: java {} <provider-domain> [websocket]", ConsumerApplication.class.getName());
-            return;
+        CommandLine line;
+        Options options = new Options();
+        Options helpOptions = new Options();
+        setupOptions(options, helpOptions);
+        CommandLineParser parser = new DefaultParser();
+
+        // check for '-h' option alone first. This is required in order to avoid
+        // reports about missing other args when using only '-h', which should supported
+        // to just get help / usage info.
+        try {
+            line = parser.parse(helpOptions, args);
+
+            if (line.hasOption('h')) {
+                HelpFormatter formatter = new HelpFormatter();
+                // use 'options' here to print help about all possible parameters
+                formatter.printHelp(ProviderApplication.class.getName(), options, true);
+                System.exit(0);
+            }
+        } catch (ParseException e) {
+            // ignore, since any option except '-h' will cause this exception
         }
-        String providerDomain = args[0];
-        LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
+
+        try {
+            line = parser.parse(options, args);
+
+            if (line.hasOption('d')) {
+                providerDomain = line.getOptionValue('d');
+                LOG.info("found domain = " + providerDomain);
+            }
+            if (line.hasOption('g')) {
+                gbidsParameter = line.getOptionValue('g');
+                LOG.info("found gbids = " + gbidsParameter);
+            }
+            if (line.hasOption('G')) {
+                globalOnly = true;
+                LOG.info("globalOnly = " + globalOnly);
+            }
+        } catch (ParseException e) {
+            LOG.error("failed to parse command line: " + e);
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(ProviderApplication.class.getName(), options, true);
+            System.exit(1);
+        }
+
+        if (!gbidsParameter.isEmpty()) {
+            gbids = Arrays.stream(gbidsParameter.split(",")).map(a -> a.trim()).toArray(String[]::new);
+            LOG.debug("Searching for providers on domain \"{}\", gbids \"{}\"", providerDomain, gbids);
+        } else {
+            gbids = new String[0];
+            LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
+        }
+
         Properties joynrConfig = new Properties();
         Module runtimeModule = getRuntimeModule(args, joynrConfig);
         LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
@@ -87,6 +141,44 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         myConsumerApp.run();
 
         myConsumerApp.shutdown();
+    }
+
+    private static void setupOptions(Options options, Options helpOptions) {
+        Option optionDomain = Option.builder("d")
+                                    .required(true)
+                                    .argName("domain")
+                                    .desc("the domain of the provider (required)")
+                                    .longOpt("domain")
+                                    .hasArg(true)
+                                    .numberOfArgs(1)
+                                    .type(String.class)
+                                    .build();
+        Option optionHelp = Option.builder("h")
+                                  .required(false)
+                                  .desc("print this message")
+                                  .longOpt("help")
+                                  .hasArg(false)
+                                  .build();
+        Option optionGbids = Option.builder("g")
+                                   .required(false)
+                                   .desc("optional, if present, provider is looked up for these gbids")
+                                   .longOpt("gbids")
+                                   .hasArg(true)
+                                   .numberOfArgs(1)
+                                   .type(String.class)
+                                   .build();
+        Option optionGlobalOnly = Option.builder("G")
+                                        .required(false)
+                                        .argName("globalOnly")
+                                        .desc("search only globally for provider")
+                                        .longOpt("global-only")
+                                        .hasArg(false)
+                                        .build();
+        options.addOption(optionDomain);
+        options.addOption(optionHelp);
+        options.addOption(optionGbids);
+        options.addOption(optionGlobalOnly);
+        helpOptions.addOption(optionHelp);
     }
 
     private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
@@ -118,28 +210,35 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     public void run() {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryTimeoutMs(10000);
-        discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
+        if (globalOnly == true) {
+            discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+            discoveryQos.setCacheMaxAgeMs(0L);
+        } else {
+            discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
+        }
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
-
-        ProxyBuilder<SystemIntegrationTestProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain,
-                                                                                        SystemIntegrationTestProxy.class);
 
         boolean success = false;
         try {
-            systemIntegrationTestProxy = proxyBuilder.setMessagingQos(new MessagingQos(10000))
-                                                     .setDiscoveryQos(discoveryQos)
-                                                     .build(new ProxyCreatedCallback<SystemIntegrationTestProxy>() {
-                                                         @Override
-                                                         public void onProxyCreationFinished(SystemIntegrationTestProxy result) {
-                                                             LOG.info("proxy created");
-                                                             proxyCreated.release();
-                                                         }
+            ProxyBuilder<SystemIntegrationTestProxy> proxyBuilder = runtime.getProxyBuilder(providerDomain,
+                                                                                            SystemIntegrationTestProxy.class)
+                                                                           .setMessagingQos(new MessagingQos(10000))
+                                                                           .setDiscoveryQos(discoveryQos);
+            if (gbids.length > 0) {
+                proxyBuilder = proxyBuilder.setGbids(gbids);
+            }
+            systemIntegrationTestProxy = proxyBuilder.build(new ProxyCreatedCallback<SystemIntegrationTestProxy>() {
+                @Override
+                public void onProxyCreationFinished(SystemIntegrationTestProxy result) {
+                    LOG.info("proxy created");
+                    proxyCreated.release();
+                }
 
-                                                         @Override
-                                                         public void onProxyCreationError(JoynrRuntimeException error) {
-                                                             LOG.error("error creating proxy");
-                                                         }
-                                                     });
+                @Override
+                public void onProxyCreationError(JoynrRuntimeException error) {
+                    LOG.error("error creating proxy");
+                }
+            });
             try {
                 if (proxyCreated.tryAcquire(11000, TimeUnit.MILLISECONDS) == false) {
                     throw new DiscoveryException("proxy not created in time");

@@ -18,8 +18,16 @@
  */
 package io.joynr.systemintegrationtest;
 
+import java.util.Arrays;
 import java.util.Properties;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,9 +48,11 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.types.ProviderScope;
 import joynr.types.ProviderQos;
 
 public class ProviderApplication extends AbstractJoynrApplication {
@@ -53,17 +63,68 @@ public class ProviderApplication extends AbstractJoynrApplication {
     private static boolean runForever = false;
     private static boolean shutdownHookCondition = false;
     private static String localDomain;
+    private static String gbidsParameter = "";
+    private static String[] gbids;
+    private static boolean registerGlobally = false;
 
     public static void main(String[] args) throws Exception {
-        if ((args.length != 1 && args.length != 2) || (args.length == 2 && !args[1].equals("runForever"))) {
-            LOG.error("\n\nUSAGE: java {} <local-domain> [runForever]\n\n NOTE: Providers are registered on the local domain.",
-                      ProviderApplication.class.getName());
-            return;
+        CommandLine line;
+        Options options = new Options();
+        Options helpOptions = new Options();
+        setupOptions(options, helpOptions);
+        CommandLineParser parser = new DefaultParser();
+
+        // check for '-h' option alone first. This is required in order to avoid
+        // reports about missing other args when using only '-h', which should supported
+        // to just get help / usage info.
+        try {
+            line = parser.parse(helpOptions, args);
+
+            if (line.hasOption('h')) {
+                HelpFormatter formatter = new HelpFormatter();
+                // use 'options' here to print help about all possible parameters
+                formatter.printHelp(ProviderApplication.class.getName(), options, true);
+                System.exit(0);
+            }
+        } catch (ParseException e) {
+            // ignore, since any option except '-h' will cause this exception
         }
-        localDomain = args[0];
+
+        try {
+            line = parser.parse(options, args);
+
+            if (line.hasOption('d')) {
+                localDomain = line.getOptionValue('d');
+                LOG.info("found domain = " + localDomain);
+            }
+            if (line.hasOption('g')) {
+                gbidsParameter = line.getOptionValue('g');
+                LOG.info("found gbids = " + gbidsParameter);
+            }
+            if (line.hasOption('r')) {
+                runForever = true;
+                LOG.info("found runForever = " + runForever);
+            }
+            if (line.hasOption('G')) {
+                registerGlobally = true;
+                LOG.info("registerGlobally = " + registerGlobally);
+            }
+        } catch (ParseException e) {
+            LOG.error("failed to parse command line: " + e);
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(ProviderApplication.class.getName(), options, true);
+            System.exit(1);
+        }
+
+        if (!gbidsParameter.isEmpty()) {
+            gbids = Arrays.stream(gbidsParameter.split(",")).map(a -> a.trim()).toArray(String[]::new);
+        } else {
+            gbids = new String[0];
+        }
+        LOG.info("gbidsParameter = " + gbidsParameter + ", gbids = " + Arrays.toString(gbids));
 
         Properties joynrConfig = new Properties();
-        Module runtimeModule = getRuntimeModule(args, joynrConfig);
+        Module runtimeModule = getRuntimeModule(joynrConfig);
 
         LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
         LOG.debug("Registering provider on domain \"{}\"", localDomain);
@@ -78,14 +139,56 @@ public class ProviderApplication extends AbstractJoynrApplication {
                                                                      runtimeModule,
                                                                      new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(ProviderApplication.class, appConfig));
 
-        if (args.length == 2) {
-            runForever = true;
-        }
         joynrApplication.run();
         joynrApplication.shutdown();
     }
 
-    private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
+    private static void setupOptions(Options options, Options helpOptions) {
+        Option optionDomain = Option.builder("d")
+                                    .required(true)
+                                    .argName("domain")
+                                    .desc("the domain of the provider (required)")
+                                    .longOpt("domain")
+                                    .hasArg(true)
+                                    .numberOfArgs(1)
+                                    .type(String.class)
+                                    .build();
+        Option optionHelp = Option.builder("h")
+                                  .required(false)
+                                  .desc("print this message")
+                                  .longOpt("help")
+                                  .hasArg(false)
+                                  .build();
+        Option optionRunforever = Option.builder("r")
+                                        .required(false)
+                                        .desc("optional, if present, the provider is running forever")
+                                        .longOpt("runforever")
+                                        .hasArg(false)
+                                        .build();
+        Option optionGbids = Option.builder("g")
+                                   .required(false)
+                                   .desc("optional, if present, provider is registered for these gbids")
+                                   .longOpt("gbids")
+                                   .hasArg(true)
+                                   .numberOfArgs(1)
+                                   .type(String.class)
+                                   .build();
+        Option optionGlobal = Option.builder("G")
+                                    .required(false)
+                                    .argName("global")
+                                    .desc("register provider globally")
+                                    .longOpt("global")
+                                    .hasArg(false)
+                                    .build();
+        options.addOption(optionDomain);
+        options.addOption(optionHelp);
+        options.addOption(optionRunforever);
+        options.addOption(optionGbids);
+        options.addOption(optionGlobal);
+        helpOptions.addOption(optionHelp);
+    }
+
+    private static Module getRuntimeModule(Properties joynrConfig) {
         configureWebSocket(joynrConfig);
         return new LibjoynrWebSocketRuntimeModule();
     }
@@ -101,6 +204,8 @@ public class ProviderApplication extends AbstractJoynrApplication {
     public void run() {
         provider = new Provider();
         ProviderQos providerQos = new ProviderQos();
+        // by default, ProviderScope is set to GLOBAL
+        providerQos.setScope(registerGlobally == true ? ProviderScope.GLOBAL : ProviderScope.LOCAL);
         providerQos.setPriority(System.currentTimeMillis());
 
         // access to provider is needed inside the hook, so it must be added here
@@ -128,7 +233,13 @@ public class ProviderApplication extends AbstractJoynrApplication {
         LOG.info("adding shutdown hook");
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-        runtime.getProviderRegistrar(localDomain, provider).withProviderQos(providerQos).register();
+        ProviderRegistrar providerRegistrar = runtime.getProviderRegistrar(localDomain, provider)
+                                                     .withProviderQos(providerQos);
+        if (gbids.length > 0) {
+            LOG.info("gbids.length > 0, gbids.length = " + gbids.length);
+            providerRegistrar.withGbids(gbids);
+        }
+        providerRegistrar.register();
 
         if (!runForever) {
             try {
