@@ -365,10 +365,10 @@ describe("Consumer test", () => {
 
         it("callMethodFireAndForgetWithoutParameter", done => {
             /*
-        * FireAndForget methods do not have a return value and the calling proxy does not receive an answer to a fireAndForget method call.
-        * The attribute attributeFireAndForget is used in fireAndForget method calls to check if the method is called at the provider.
-        * The provider will change the attribute to a (fireAndForget) method specific value which will be checked in the subscription listener.
-        */
+             * FireAndForget methods do not have a return value and the calling proxy does not receive an answer to a fireAndForget method call.
+             * The attribute attributeFireAndForget is used in fireAndForget method calls to check if the method is called at the provider.
+             * The provider will change the attribute to a (fireAndForget) method specific value which will be checked in the subscription listener.
+             */
             log("callMethodFireAndForgetWithoutParameter");
             let expected = -1;
             const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
