@@ -83,6 +83,10 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	import MessagingQos = require("joynr/joynr/messaging/MessagingQos");
 	import JoynrDiscoveryQos = require("joynr/joynr/proxy/DiscoveryQos");
 
+	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
+		import «datatype.joynrName» = require("«relativePathToBase() + datatype.getDependencyPath()»");
+	«ENDFOR»
+
 	namespace «proxyName» {
 		export interface ProxySettings {
 			domain: string;
@@ -117,10 +121,6 @@ class ProxyGenerator extends InterfaceJsTemplate {
 			ENDFOR»
 		«ENDFOR»
 	}
-
-	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-	import «datatype.joynrName» from "«relativePathToBase() + datatype.getDependencyPath()»";
-	«ENDFOR»
 
 	/**
 	 * @classdesc
