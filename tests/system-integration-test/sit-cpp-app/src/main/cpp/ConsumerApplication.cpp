@@ -24,9 +24,11 @@
 #include <string>
 #include <stdexcept>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
+#include <boost/tokenizer.hpp>
 
 #include "joynr/DiscoveryQos.h"
 #include "joynr/JoynrRuntime.h"
@@ -63,6 +65,9 @@ int main(int argc, char* argv[])
     std::string sslCertFilename;
     std::string sslPrivateKeyFilename;
     std::string sslCaCertFilename;
+    std::string gbidsParam;
+    bool globalOnly = false;
+    std::vector<std::string> gbids;
     std::uint64_t runs = 0;
 
     po::options_description cmdLineOptions("Available options");
@@ -82,8 +87,9 @@ int main(int argc, char* argv[])
             "Absolute path to certificate of CA.")("runs,r",
                                                    po::value(&runs)->default_value(1),
                                                    "Specify number of RPC calls to perform.")(
+            "gbids,g", po::value(&gbidsParam), "gbids for lookup")(
+            "global-only,G", "select only globally visible provider")(
             "help,h", "Print help message");
-
     try {
         po::variables_map variablesMap;
         po::store(po::command_line_parser(argc, argv)
@@ -96,8 +102,15 @@ int main(int argc, char* argv[])
             std::cout << cmdLineOptions << std::endl;
             return EXIT_SUCCESS;
         }
+        if (variablesMap.count("global-only")) {
+            JOYNR_LOG_INFO(logger, "globalOnly set");
+            globalOnly = true;
+        }
 
         po::notify(variablesMap);
+
+        boost::tokenizer<> tokenizer(gbidsParam);
+        std::copy(tokenizer.begin(), tokenizer.end(), std::back_inserter(gbids));
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         std::cerr << cmdLineOptions << std::endl;
@@ -127,15 +140,33 @@ int main(int argc, char* argv[])
     std::shared_ptr<ProxyBuilder<test::SystemIntegrationTestProxy>> proxyBuilder =
             runtime->createProxyBuilder<test::SystemIntegrationTestProxy>(providerDomain);
 
-    JOYNR_LOG_INFO(logger, "Create proxy for domain {}", providerDomain);
+    JOYNR_LOG_INFO(logger,
+                   "Create proxy for domain {}, gbids {}",
+                   providerDomain,
+                   boost::algorithm::join(gbids, ", "));
 
     DiscoveryQos discoveryQos;
+    if (globalOnly) {
+        discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::Enum::GLOBAL_ONLY);
+        discoveryQos.setCacheMaxAgeMs(0L);
+    } else {
+        discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
+    }
     discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Mins
-    discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
-    std::shared_ptr<test::SystemIntegrationTestProxy> proxy(
-            proxyBuilder->setMessagingQos(MessagingQos())->setDiscoveryQos(discoveryQos)->build());
+    std::shared_ptr<test::SystemIntegrationTestProxy> proxy;
+
+    if (gbids.size() > 0) {
+        proxy = proxyBuilder->setMessagingQos(MessagingQos())
+                        ->setDiscoveryQos(discoveryQos)
+                        ->setGbids(gbids)
+                        ->build();
+    } else {
+        proxy = proxyBuilder->setMessagingQos(MessagingQos())
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build();
+    }
 
     bool success = true;
 

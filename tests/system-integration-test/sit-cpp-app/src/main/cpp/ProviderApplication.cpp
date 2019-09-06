@@ -23,15 +23,18 @@
 #include <string>
 #include <stdexcept>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
+#include <boost/tokenizer.hpp>
 
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"
+#include "joynr/Util.h"
 
 #include "SystemIntegrationTestProvider.h"
 #include "SitUtil.h"
@@ -63,12 +66,14 @@ int main(int argc, char* argv[])
     std::string sslCertFilename;
     std::string sslPrivateKeyFilename;
     std::string sslCaCertFilename;
+    std::string gbidsParam;
+    bool globalOnly = false;
+    std::vector<std::string> gbids;
 
     po::options_description cmdLineOptions("Available options");
     cmdLineOptions.add_options()(
             "domain,d", po::value(&providerDomain)->required(), "joynr domain to be used")(
             "runForever,r",
-            po::value(&runForever)->default_value(false),
             "If not set the provider will terminate"
             "after answering the first request.")("pathtosettings,p",
                                                   po::value(&pathToSettings),
@@ -81,8 +86,9 @@ int main(int argc, char* argv[])
             "Absolute path to private key for this application.")(
             "ssl-ca-cert-pem",
             po::value(&sslCaCertFilename),
-            "Absolute path to certificate of CA.")("help,h", "Print help message");
-
+            "Absolute path to certificate of CA.")(
+            "gbids,g", po::value(&gbidsParam)->required(), "gbids to register for")(
+            "global-only,G", "register provider globally")("help,h", "Print help message");
     try {
         po::variables_map variablesMap;
         po::store(po::command_line_parser(argc, argv)
@@ -95,8 +101,18 @@ int main(int argc, char* argv[])
             std::cout << cmdLineOptions << std::endl;
             return EXIT_SUCCESS;
         }
+        if (variablesMap.count("global-only")) {
+            JOYNR_LOG_INFO(logger, "globalOnly set");
+            globalOnly = true;
+        }
+
+        if (variablesMap.count("runForever")) {
+            runForever = true;
+        }
 
         po::notify(variablesMap);
+        boost::tokenizer<> tokenizer(gbidsParam);
+        std::copy(tokenizer.begin(), tokenizer.end(), std::back_inserter(gbids));
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         std::cerr << cmdLineOptions << std::endl;
@@ -126,7 +142,10 @@ int main(int argc, char* argv[])
     try {
         joynr::Semaphore semaphore;
 
-        JOYNR_LOG_INFO(logger, "Registering provider on domain {}", providerDomain);
+        JOYNR_LOG_INFO(logger,
+                       "Registering provider on domain {}, gbids {}",
+                       providerDomain,
+                       boost::algorithm::join(gbids, ", "));
         auto provider =
                 std::make_shared<SystemIntegrationTestProvider>([&]() { semaphore.notify(); });
 
@@ -135,10 +154,21 @@ int main(int argc, char* argv[])
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch());
         providerQos.setPriority(millisSinceEpoch.count());
-        providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        if (globalOnly) {
+            providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+        } else {
+            providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+        }
 
-        runtime->registerProvider<test::SystemIntegrationTestProvider>(
-                providerDomain, provider, providerQos);
+        if (gbids.size() > 0) {
+            const bool persist = true;
+            const bool awaitGlobalRegistration = true;
+            runtime->registerProvider<test::SystemIntegrationTestProvider>(
+                    providerDomain, provider, providerQos, persist, awaitGlobalRegistration, gbids);
+        } else {
+            runtime->registerProvider<test::SystemIntegrationTestProvider>(
+                    providerDomain, provider, providerQos);
+        }
 
         if (runForever) {
             while (true) {
