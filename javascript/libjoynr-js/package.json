@@ -7,9 +7,11 @@
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "private": true,
   "dependencies": {
-    "joynr": "file:./src/main/js"
+    "joynr": "file:./src/main/js",
+    "jscodeshift": "0.6.4"
   },
   "devDependencies": {
+    "@types/jscodeshift": "0.6.0",
     "@types/nanoid": "1.2.1",
     "@types/ws": "6.0.1",
     "exit-hook": "1.1.1",
@@ -31,18 +33,18 @@
     "lint:fix": "../../node_modules/.bin/eslint $npm_package_config_glob --fix",
     "test": "npm run ts:test:ci && npm run ts:test:sit",
     "build:doc": "typedoc --exclude 'src/main/js/node_modules/**/*.ts' --excludeExternals --out wiki/typedoc src/main/js",
-    "build:fast": "npm run build:skip && npm run test",
+    "build:fast": "npm run build:install && npm run build:skip && npm run test",
     "build": "npm run clean && npm run build:fast && npm run build:doc",
     "build:install": "npm --prefix src/main/js i && npm --prefix ../.. i && npm i",
     "build:skip": "npm run build:install && npm run sig && npm run lint && npm run fixRequire && npm run ts:package",
-    "fixRequire": "ln -s .. src/main/js/node_modules/joynr",
+    "fixRequire": "node_modules/.bin/jscodeshift -t scripts/relativizeImports.js --parser=ts `find src/main/js/generated/ -name *.ts`",
     "ts:compile": "../../node_modules/.bin/tsc",
     "ts:compile:dts": "../../node_modules/.bin/tsc -d",
     "ts:check": "../../node_modules/.bin/tsc --noEmit",
     "ts:test": "../../node_modules/.bin/jest --config jest.config.js --silent",
     "ts:test:ci": "../../node_modules/.bin/jest --config jest.config.js --coverage",
     "ts:test:sit": "../../node_modules/.bin/jest --config jest.config.integration.js -i --force-exit",
-    "ts:package": "npm run ts:compile:dts && cp src/main/js/package.json .output/src/main/js && cp package.json .output && npm --prefix .output i && npm --prefix .output/src/main/js i && if [ ! -L .output/src/main/js/node_modules/joynr ]; then ln -s .. .output/src/main/js/node_modules/joynr; fi && cp -r  src/main/js/META-INF/ .output/src/main/js && cp src/main/js/NOTICE-JS .output/src/main/js/"
+    "ts:package": "npm run ts:compile:dts && cp src/main/js/package.json .output/src/main/js && cp package.json .output && npm --prefix .output i && npm --prefix .output/src/main/js i && cp -r  src/main/js/META-INF/ .output/src/main/js && cp src/main/js/NOTICE-JS .output/src/main/js/"
   },
   "repository": {
     "type": "git",
