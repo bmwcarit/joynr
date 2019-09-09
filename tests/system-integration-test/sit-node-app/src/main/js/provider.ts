@@ -17,7 +17,7 @@
  * #L%
  */
 
-import joynr from "joynr";
+import joynr = require("joynr");
 
 import testbase from "test-base";
 import SystemIntegrationTestProvider from "../generated-sources/joynr/test/SystemIntegrationTestProvider";
@@ -49,11 +49,14 @@ log(`tlsCertPath: ${process.env.tlsCertPath}`);
 log(`tlsKeyPath: ${process.env.tlsKeyPath}`);
 log(`tlsCaPath: ${process.env.tlsCaPath}`);
 log(`ownerId: ${process.env.ownerId}`);
+log(`gbids: ${process.env.gbids}`);
 
-const domain = process.env.domain;
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const domain = process.env.domain!;
 provisioning.ccAddress.host = process.env.cchost;
 provisioning.ccAddress.port = process.env.ccport;
 provisioning.ccAddress.protocol = process.env.ccprotocol;
+const gbids = process.env.gbids ? process.env.gbids.split(",") : undefined;
 
 if (!provisioning.persistency) {
     provisioning.persistency = {};
@@ -94,7 +97,14 @@ joynr
             implementation
         );
 
-        return joynr.registration.registerProvider(domain, systemIntegrationTestProvider, providerQos);
+        if (gbids) {
+            return joynr.registration.register({ domain, providerQos, provider: systemIntegrationTestProvider, gbids });
+        }
+        return joynr.registration.registerInAllKnownBackends({
+            domain,
+            providerQos,
+            provider: systemIntegrationTestProvider
+        });
     })
     .then(() => {
         log("provider registered successfully");

@@ -17,7 +17,7 @@
  * #L%
  */
 
-import joynr from "joynr";
+import joynr = require("joynr");
 import testbase from "test-base";
 import fs from "fs";
 
@@ -31,7 +31,7 @@ process.on("uncaughtException", e => {
 const provisioning = testbase.provisioning_common;
 const prefix = process.env.ccprotocol === "wss" ? "nodeTlsConsumer: " : "nodeConsumer: ";
 
-function log(message: string) {
+function log(message: string): void {
     testbase.logging.log(prefix + message);
 }
 
@@ -58,8 +58,11 @@ log(`tlsCertPath: ${process.env.tlsCertPath}`);
 log(`tlsKeyPath: ${process.env.tlsKeyPath}`);
 log(`tlsCaPath: ${process.env.tlsCaPath}`);
 log(`ownerId: ${process.env.ownerId}`);
+log(`gbids: ${process.env.gbids}`);
 
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const domain = process.env.domain!;
+const gbids = process.env.gbids ? process.env.gbids.split(",") : undefined;
 provisioning.ccAddress.host = process.env.cchost;
 provisioning.ccAddress.port = process.env.ccport;
 provisioning.ccAddress.protocol = process.env.ccprotocol;
@@ -79,23 +82,22 @@ if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath
     provisioning.keychain.ownerId = process.env.ownerId;
 }
 
-const runTest = function(systemIntegrationTestProxy: SystemIntegrationTestProxy) {
+async function runTest(systemIntegrationTestProxy: SystemIntegrationTestProxy): Promise<void> {
     const addends = {
         addendA: 123,
         addendB: 321
     };
-    return systemIntegrationTestProxy.add(addends).then(opArgs => {
-        if (opArgs.result === undefined) {
-            throw new Error("systemIntegrationTestProxy.add failed: result undefined");
-        }
-        if (opArgs.result !== addends.addendA + addends.addendB) {
-            log(`${opArgs.result} != ${addends.addendA} + ${addends.addendB}`);
-            throw new Error(
-                `systemIntegrationTestProxy.add failed: ${opArgs.result} != ${addends.addendA} + ${addends.addendB}`
-            );
-        }
-    });
-};
+    const opArgs = await systemIntegrationTestProxy.add(addends);
+    if (opArgs.result === undefined) {
+        throw new Error("systemIntegrationTestProxy.add failed: result undefined");
+    }
+    if (opArgs.result !== addends.addendA + addends.addendB) {
+        log(`${opArgs.result} != ${addends.addendA} + ${addends.addendB}`);
+        throw new Error(
+            `systemIntegrationTestProxy.add failed: ${opArgs.result} != ${addends.addendA} + ${addends.addendB}`
+        );
+    }
+}
 
 joynr
     .load(provisioning)
@@ -112,7 +114,8 @@ joynr
         return joynr.proxyBuilder.build(SystemIntegrationTestProxy, {
             domain,
             messagingQos,
-            discoveryQos
+            discoveryQos,
+            gbids
         });
     })
     .then(systemIntegrationTestProxy => {
