@@ -18,7 +18,6 @@
     "joynr": "1.11.0-SNAPSHOT"
   },
   "scripts": {
-    "postinstall": "npm link typescript",
     "build": " tsc --listFiles --listEmittedFiles"
   },
   "devDependencies": {
