@@ -29,51 +29,47 @@ import ProviderImplementation from "./MultipleVersionsInterfaceProviderImplement
 
 let multipleVersionsInterfaceProvider: any, MultipleVersionsInterfaceProvider, providerDomain: string;
 
-function initializeTest(_provisioningSuffix: any, providedDomain: string, settings: any): Promise<void> {
+async function initializeTest(_provisioningSuffix: any, providedDomain: string, settings: any): Promise<void> {
     providerDomain = providedDomain;
 
     joynr.selectRuntime("inprocess");
-    return joynr.load(provisioning as any).then(() => {
-        const providerQos = new joynr.types.ProviderQos({
-            customParameters: [],
-            priority: 5,
-            scope: joynr.types.ProviderScope.GLOBAL,
-            supportsOnChangeSubscriptions: false
-        });
-
-        switch (settings.versioning) {
-            case "nameVersion1":
-                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion1;
-                break;
-            case "nameVersion2":
-                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion2;
-                break;
-            case "packageVersion1":
-                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderPackageVersion1;
-                break;
-            case "packageVersion2":
-                MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderPackageVersion2;
-                break;
-            default:
-                throw new Error("Please specify the versioning type used for provider generation!");
-        }
-
-        multipleVersionsInterfaceProvider = joynr.providerBuilder.build(
-            MultipleVersionsInterfaceProvider,
-            new ProviderImplementation()
-        );
-
-        return joynr.registration
-            .registerProvider(providerDomain, multipleVersionsInterfaceProvider, providerQos)
-            .then(() => {
-                return joynr;
-            })
-            .catch((e: any) => {
-                return joynr.shutdown().then(() => {
-                    throw e;
-                });
-            });
+    await joynr.load(provisioning as any);
+    const providerQos = new joynr.types.ProviderQos({
+        customParameters: [],
+        priority: 5,
+        scope: joynr.types.ProviderScope.GLOBAL,
+        supportsOnChangeSubscriptions: false
     });
+
+    switch (settings.versioning) {
+        case "nameVersion1":
+            MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion1;
+            break;
+        case "nameVersion2":
+            MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion2;
+            break;
+        case "packageVersion1":
+            MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderPackageVersion1;
+            break;
+        case "packageVersion2":
+            MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderPackageVersion2;
+            break;
+        default:
+            throw new Error("Please specify the versioning type used for provider generation!");
+    }
+
+    multipleVersionsInterfaceProvider = joynr.providerBuilder.build(
+        MultipleVersionsInterfaceProvider,
+        new ProviderImplementation()
+    );
+
+    await joynr.registration
+        .registerProvider(providerDomain, multipleVersionsInterfaceProvider, providerQos)
+        .catch((e: any) => {
+            return joynr.shutdown().then(() => {
+                throw e;
+            });
+        });
 }
 
 function terminateTest(): Promise<void> {
