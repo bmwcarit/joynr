@@ -29,7 +29,6 @@ import SharedMqttClient from "../messaging/mqtt/SharedMqttClient";
 import MqttMulticastAddressCalculator from "../messaging/mqtt/MqttMulticastAddressCalculator";
 import MessagingSkeletonFactory from "../messaging/MessagingSkeletonFactory";
 import MessagingStubFactory from "../messaging/MessagingStubFactory";
-import InProcessSkeleton from "../util/InProcessSkeleton";
 import InProcessMessagingStubFactory from "../messaging/inprocess/InProcessMessagingStubFactory";
 import InProcessAddress from "../messaging/inprocess/InProcessAddress";
 import MessagingQos from "../messaging/MessagingQos";
@@ -166,19 +165,6 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
             })
         };
 
-        super.initializeComponents(provisioning, messageRouterSettings);
-
-        const mqttMessagingSkeleton = new MqttMessagingSkeleton({
-            address: globalClusterControllerAddress,
-            client: mqttClient,
-            messageRouter: this.messageRouter
-        });
-
-        this.messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-        messagingSkeletonFactory.setSkeletons(this.messagingSkeletons);
-
-        this.messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
-
         const localCapabilitiesStore = new CapabilitiesStore(
             CapabilitiesUtil.toDiscoveryEntries(defaultLibjoynrSettings.capabilities || [])
         );
@@ -198,12 +184,25 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
         const capabilityDiscovery = new CapabilityDiscovery(
             localCapabilitiesStore,
             globalCapabilitiesCache,
-            this.messageRouter,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.proxyBuilder!,
             defaultProxyBuildSettings.domain,
             provisioning.gbids || clusterControllerSettings.gbids
         );
+
+        super.initializeComponents(provisioning, messageRouterSettings, capabilityDiscovery);
+
+        const mqttMessagingSkeleton = new MqttMessagingSkeleton({
+            address: globalClusterControllerAddress,
+            client: mqttClient,
+            messageRouter: this.messageRouter
+        });
+
+        this.messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
+        messagingSkeletonFactory.setSkeletons(this.messagingSkeletons);
+
+        this.messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        capabilityDiscovery.setDependencies(this.messageRouter, this.proxyBuilder!);
 
         mqttClient.onConnected().then(() => {
             // TODO remove workaround when multiple backend support is implemented in JS
@@ -213,8 +212,6 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
             });
             capabilityDiscovery.globalAddressReady(globalClusterControllerAddressWithGbid);
         });
-
-        this.discovery.setSkeleton(new InProcessSkeleton(capabilityDiscovery));
 
         const period = provisioning.capabilitiesFreshnessUpdateIntervalMs || 3600000; // default: 1 hour
         this.freshnessIntervalId = LongTimer.setInterval(() => {

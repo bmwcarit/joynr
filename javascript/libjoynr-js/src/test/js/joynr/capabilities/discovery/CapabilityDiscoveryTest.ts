@@ -185,28 +185,15 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
             build: jest.fn()
         };
         proxyBuilderSpy.build.mockReturnValue(Promise.resolve(globalCapDirSpy));
-        capabilityDiscovery = new CapabilityDiscovery(
-            localCapStoreSpy,
-            globalCapCacheSpy,
-            messageRouterSpy,
-            proxyBuilderSpy,
-            "io.joynr",
-            knownGbids
-        );
+        capabilityDiscovery = new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, "io.joynr", knownGbids);
+        capabilityDiscovery.setDependencies(messageRouterSpy, proxyBuilderSpy);
         capabilityDiscovery.globalAddressReady(address);
         done();
     });
 
     it(`throws if instantiated without knownGbids`, () => {
         expect(() => {
-            new CapabilityDiscovery(
-                localCapStoreSpy,
-                globalCapCacheSpy,
-                messageRouterSpy,
-                proxyBuilderSpy,
-                "io.joynr",
-                []
-            );
+            new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, "io.joynr", []);
         }).toThrow();
     });
 
@@ -220,14 +207,8 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
     it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides non-empty result", () => {
         localCapStoreSpy = getSpiedLookupObjWithReturnValue(discoveryEntries);
         globalCapCacheSpy = getSpiedLookupObjWithReturnValue([]);
-        capabilityDiscovery = new CapabilityDiscovery(
-            localCapStoreSpy,
-            globalCapCacheSpy,
-            messageRouterSpy,
-            proxyBuilderSpy,
-            "io.joynr",
-            knownGbids
-        );
+        capabilityDiscovery = new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, "io.joynr", knownGbids);
+        capabilityDiscovery.setDependencies(messageRouterSpy, proxyBuilderSpy);
         capabilityDiscovery.globalAddressReady(address);
 
         capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
@@ -356,11 +337,10 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         const capabilityDiscovery = new CapabilityDiscovery(
             localCapStoreSpy as any,
             globalCapCacheSpy as any,
-            messageRouterSpy,
-            proxyBuilderSpy as any,
             "io.joynr",
             knownGbids
         );
+        capabilityDiscovery.setDependencies(messageRouterSpy, proxyBuilderSpy as any);
         capabilityDiscovery.globalAddressReady(address);
         const discoveryQos = new DiscoveryQos({
             cacheMaxAge: 0,
@@ -652,14 +632,8 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
     it("lookup with multiple domains should throw an exception", async () => {
         localCapStoreSpy = getSpiedLookupObjWithReturnValue(discoveryEntries);
         globalCapCacheSpy = getSpiedLookupObjWithReturnValue([]);
-        capabilityDiscovery = new CapabilityDiscovery(
-            localCapStoreSpy,
-            globalCapCacheSpy,
-            messageRouterSpy,
-            proxyBuilderSpy,
-            "io.joynr",
-            knownGbids
-        );
+        capabilityDiscovery = new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, "io.joynr", knownGbids);
+        capabilityDiscovery.setDependencies(messageRouterSpy, proxyBuilderSpy);
         capabilityDiscovery.globalAddressReady(address);
         await expect(
             capabilityDiscovery.lookup([domain, domain], interfaceName, discoveryQos, gbids)

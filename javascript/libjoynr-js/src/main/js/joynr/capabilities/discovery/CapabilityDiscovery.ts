@@ -63,8 +63,8 @@ interface QueuedGlobalLookups {
 
 class CapabilityDiscovery implements DiscoveryStub {
     private globalCapabilitiesDomain: string;
-    private proxyBuilder: ProxyBuilder;
-    private messageRouter: MessageRouter;
+    private proxyBuilder!: ProxyBuilder;
+    private messageRouter!: MessageRouter;
     private globalCapabilitiesCache: CapabilitiesStore;
     private localCapabilitiesStore: CapabilitiesStore;
     private queuedGlobalLookups: QueuedGlobalLookups[];
@@ -80,8 +80,6 @@ class CapabilityDiscovery implements DiscoveryStub {
      *
      * @param localCapabilitiesStore the local capabilities store
      * @param globalCapabilitiesCache the cache for the global capabilities directory
-     * @param messageRouter the message router
-     * @param proxyBuilder the proxy builder used to create the GlobalCapabilitiesDirectoryProxy
      * @param globalCapabilitiesDomain the domain to communicate with the GlobalCapablitiesDirectory
      *                                     GlobalCapab
      * @param knownGbids known global backend identifiers provided by provisioning
@@ -89,8 +87,6 @@ class CapabilityDiscovery implements DiscoveryStub {
     public constructor(
         localCapabilitiesStore: CapabilitiesStore,
         globalCapabilitiesCache: CapabilitiesStore,
-        messageRouter: MessageRouter,
-        proxyBuilder: ProxyBuilder,
         globalCapabilitiesDomain: string,
         knownGbids: string[]
     ) {
@@ -105,18 +101,19 @@ class CapabilityDiscovery implements DiscoveryStub {
 
         this.localCapabilitiesStore = localCapabilitiesStore;
         this.globalCapabilitiesCache = globalCapabilitiesCache;
-        this.messageRouter = messageRouter;
-        this.proxyBuilder = proxyBuilder;
         this.globalCapabilitiesDomain = globalCapabilitiesDomain;
         this.knownGbids = knownGbids;
+    }
 
-        // bind all public methods to this because they need to be copied to inProcessStub.
-        this.add = this.add.bind(this);
-        this.lookup = this.lookup.bind(this);
-        this.touch = this.touch.bind(this);
-        this.remove = this.remove.bind(this);
-        this.globalAddressReady = this.globalAddressReady.bind(this);
-        this.addToAll = this.addToAll.bind(this);
+    /**
+     * Set necessary dependencies
+     *
+     * @param messageRouter the message router
+     * @param proxyBuilder the proxy builder used to create the GlobalCapabilitiesDirectoryProxy
+     */
+    public setDependencies(messageRouter: MessageRouter, proxyBuilder: ProxyBuilder): void {
+        this.messageRouter = messageRouter;
+        this.proxyBuilder = proxyBuilder;
     }
 
     /**

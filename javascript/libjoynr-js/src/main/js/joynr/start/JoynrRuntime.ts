@@ -18,6 +18,7 @@
  */
 import * as DiscoveryEntryWithMetaInfo from "../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
 import Arbitrator from "../capabilities/arbitration/Arbitrator";
+import { DiscoveryStub } from "../capabilities/interface/DiscoveryStub";
 
 import ProviderBuilder from "../provider/ProviderBuilder";
 import ProxyBuilder from "../proxy/ProxyBuilder";
@@ -34,7 +35,6 @@ import MessageQueue from "../messaging/routing/MessageQueue";
 import InProcessMessagingSkeleton from "../messaging/inprocess/InProcessMessagingSkeleton";
 import InProcessMessagingStub from "../messaging/inprocess/InProcessMessagingStub";
 import InProcessAddress from "../messaging/inprocess/InProcessAddress";
-import InProcessStub from "../util/InProcessStub";
 import MessagingQos from "../messaging/MessagingQos";
 import DiscoveryQos from "../proxy/DiscoveryQos";
 import TypeRegistrySingleton from "../types/TypeRegistrySingleton";
@@ -55,7 +55,7 @@ type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 class JoynrRuntime<T extends Provisioning> {
     protected provisioning!: T;
     protected shutdownSettings?: ShutdownSettings;
-    protected discovery: any;
+    protected discovery!: DiscoveryStub;
     protected persistencyConfig: any;
     protected persistency!: Persistency;
     protected joynrState: typeof JoynrStates[keyof typeof JoynrStates];
@@ -149,8 +149,10 @@ class JoynrRuntime<T extends Provisioning> {
     protected initializeComponents(
         provisioning: T,
         messageRouterSettings: Omit<MessageRouterSettings, "persistency" | "messagingSkeletonFactory" | "messageQueue">,
+        discovery: DiscoveryStub,
         typedCapabilities?: DiscoveryEntryWithMetaInfo[]
     ): void {
+        this.discovery = discovery;
         const messageQueueSettings: { maxQueueSizeInKBytes?: number } = {};
         if (provisioning.messaging !== undefined && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {
             messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
@@ -194,7 +196,6 @@ class JoynrRuntime<T extends Provisioning> {
         this.dispatcher.registerMessageRouter(this.messageRouter);
 
         this.participantIdStorage = new ParticipantIdStorage(this.persistencyConfig.capabilities, nanoid);
-        this.discovery = new InProcessStub();
 
         this.registration = new CapabilitiesRegistrar({
             discoveryStub: this.discovery,

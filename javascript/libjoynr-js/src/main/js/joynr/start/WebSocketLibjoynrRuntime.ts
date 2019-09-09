@@ -17,7 +17,6 @@
  * #L%
  */
 import * as WebSocketProtocol from "../../generated/joynr/system/RoutingTypes/WebSocketProtocol";
-import { DiscoveryStub } from "../capabilities/interface/DiscoveryStub";
 import JoynrException from "../exceptions/JoynrException";
 import SharedWebSocket from "../messaging/websocket/SharedWebSocket";
 import WebSocketMessagingSkeleton from "../messaging/websocket/WebSocketMessagingSkeleton";
@@ -28,7 +27,6 @@ import WebSocketAddress from "../../generated/joynr/system/RoutingTypes/WebSocke
 import WebSocketClientAddress from "../../generated/joynr/system/RoutingTypes/WebSocketClientAddress";
 import InProcessMessagingStubFactory from "../messaging/inprocess/InProcessMessagingStubFactory";
 import InProcessAddress from "../messaging/inprocess/InProcessAddress";
-import InProcessSkeleton from "../util/InProcessSkeleton";
 import MessagingQos from "../messaging/MessagingQos";
 import DiscoveryQos from "../proxy/DiscoveryQos";
 import DiscoveryProxy from "../../generated/joynr/system/DiscoveryProxy";
@@ -46,6 +44,7 @@ import defaultLibjoynrSettings from "./settings/defaultLibjoynrSettings";
 import JoynrMessage from "../../joynr/messaging/JoynrMessage";
 import JoynrRuntime from "./JoynrRuntime";
 import JoynrStates = require("./JoynrStates");
+import LocalDiscoveryAggregator = require("../capabilities/discovery/LocalDiscoveryAggregator");
 
 const log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
@@ -176,8 +175,10 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
 
         this.messagingSkeletons[WebSocketAddress._typeName] = this.webSocketMessagingSkeleton;
 
+        const localDiscoveryAggregator = new LocalDiscoveryAggregator();
+
         await super.initializePersistency(provisioning);
-        super.initializeComponents(provisioning, messageRouterSettings, typedCapabilities);
+        super.initializeComponents(provisioning, messageRouterSettings, localDiscoveryAggregator, typedCapabilities);
 
         this.webSocketMessagingSkeleton.registerListener(this.messageRouter.route);
 
@@ -214,47 +215,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
                 });
             })
             .then((newDiscoveryProxy: DiscoveryProxy) => {
-                this.discovery.setSkeleton(
-                    // eslint-disable-next-line @typescript-eslint/no-object-literal-type-assertion
-                    new InProcessSkeleton({
-                        lookup: function lookup(domains, interfaceName, discoveryQos, gbids) {
-                            // eslint-disable-next-line promise/no-nesting
-                            return newDiscoveryProxy
-                                .lookup({
-                                    domains,
-                                    interfaceName,
-                                    discoveryQos,
-                                    gbids
-                                })
-                                .then(opArgs => {
-                                    return opArgs.result;
-                                });
-                        },
-                        add: function add(discoveryEntry, awaitGlobalRegistration, gbids) {
-                            return newDiscoveryProxy.add({
-                                discoveryEntry,
-                                awaitGlobalRegistration,
-                                gbids
-                            });
-                        },
-                        addToAll: (discoveryEntry, awaitGlobalRegistration) => {
-                            return newDiscoveryProxy.addToAll({
-                                discoveryEntry,
-                                awaitGlobalRegistration
-                            });
-                        },
-                        remove: function remove(participantId) {
-                            return newDiscoveryProxy.remove({
-                                participantId
-                            });
-                        }
-                    } as DiscoveryStub)
-                );
-            })
-            .catch((error: any) => {
-                throw new Error(`Failed to create discovery proxy: ${error}`);
-            })
-            .then(() => {
+                localDiscoveryAggregator.setDiscoveryProxy(newDiscoveryProxy);
                 this.joynrState = JoynrStates.STARTED;
                 this.publicationManager.restore();
                 log.debug("joynr web socket initialized");
