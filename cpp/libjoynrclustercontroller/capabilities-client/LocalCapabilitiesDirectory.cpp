@@ -276,7 +276,7 @@ void LocalCapabilitiesDirectory::addInternal(
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::recursive_mutex> lock(thisSharedPtr->cacheLock);
                 JOYNR_LOG_INFO(logger(),
-                               "Global capability '{}' added successfully for GBIDs ({})}), "
+                               "Global capability '{}' added successfully for GBIDs ({}), "
                                "#registeredGlobalCapabilities {}",
                                globalDiscoveryEntry.toString(),
                                util::vectorToString(gbids),
@@ -355,7 +355,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                             const exceptions::JoynrRuntimeException& exception) {
                         JOYNR_LOG_WARN(logger(),
                                        "Global provider reregistration for participantId {} and "
-                                       "gbids ({}) failed: {} ({}})",
+                                       "gbids ({}) failed: {} ({})",
                                        participantId,
                                        util::vectorToString(gbids),
                                        exception.getMessage(),
@@ -1177,7 +1177,7 @@ void LocalCapabilitiesDirectory::lookup(
                 const std::string gbidString = util::vectorToString(gbidsForLookup);
                 JOYNR_LOG_DEBUG(logger(),
                                 "participantId {} has no capability entry "
-                                "(DiscoveryError::NO_ENTRY_FOR_PARTICIPANT) for GBIDs: .",
+                                "(DiscoveryError::NO_ENTRY_FOR_PARTICIPANT) for GBIDs: ({})",
                                 participantId,
                                 gbidString);
                 onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
@@ -1256,7 +1256,7 @@ void LocalCapabilitiesDirectory::remove(
                         [participantId, gbids](const exceptions::JoynrRuntimeException& exception) {
                     JOYNR_LOG_WARN(
                             logger(),
-                            "Failed to remove participantId {} globally for GBIDs ({}): {} ({}})",
+                            "Failed to remove participantId {} globally for GBIDs ({}): {} ({})",
                             participantId,
                             util::vectorToString(gbids),
                             exception.getMessage(),
