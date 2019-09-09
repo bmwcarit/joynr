@@ -35,7 +35,7 @@ let defaultExpiryIntervalMs = 6 * 7 * 24 * 60 * 60 * 1000; // 6 Weeks
 
 interface RegistrationSettings {
     domain: string;
-    provider: JoynrProvider & { constructor: JoynrProviderType };
+    provider: JoynrProvider;
     providerQos: ProviderQos;
     expiryDateMs?: number;
     loggingContext?: Record<string, any>;
@@ -164,7 +164,7 @@ class CapabilitiesRegistrar {
         if (missingImplementations.length > 0) {
             throw new Error(
                 `provider: ${domain}/${provider.interfaceName}.v${
-                    provider.constructor.MAJOR_VERSION
+                    (provider.constructor as JoynrProviderType).MAJOR_VERSION
                 } is missing: ${missingImplementations.toString()}`
             );
         }
@@ -207,8 +207,8 @@ class CapabilitiesRegistrar {
         try {
             const discoveryEntry = new DiscoveryEntry({
                 providerVersion: new Version({
-                    majorVersion: provider.constructor.MAJOR_VERSION,
-                    minorVersion: provider.constructor.MINOR_VERSION
+                    majorVersion: (provider.constructor as JoynrProviderType).MAJOR_VERSION,
+                    minorVersion: (provider.constructor as JoynrProviderType).MINOR_VERSION
                 }),
                 domain,
                 interfaceName: provider.interfaceName,
@@ -232,7 +232,7 @@ class CapabilitiesRegistrar {
         log.info(
             `Provider registered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
                 provider.interfaceName
-            }, majorVersion: ${provider.constructor.MAJOR_VERSION}`
+            }, majorVersion: ${(provider.constructor as JoynrProviderType).MAJOR_VERSION}`
         );
         return participantId;
     }
@@ -256,7 +256,7 @@ class CapabilitiesRegistrar {
      */
     public async registerProvider(
         domain: string,
-        provider: JoynrProvider & { constructor: JoynrProviderType },
+        provider: JoynrProvider,
         providerQos: ProviderQos,
         expiryDateMs?: number,
         loggingContext?: Record<string, any>,
@@ -286,10 +286,7 @@ class CapabilitiesRegistrar {
      * @param provider.interfaceName
      * @returns an A+ promise
      */
-    public async unregisterProvider(
-        domain: string,
-        provider: JoynrProvider & { constructor: JoynrProviderType }
-    ): Promise<void> {
+    public async unregisterProvider(domain: string, provider: JoynrProvider): Promise<void> {
         this.checkIfReady();
         // retrieve participantId
         const participantId = this.participantIdStorage.getParticipantId(domain, provider);
@@ -309,7 +306,7 @@ class CapabilitiesRegistrar {
         log.info(
             `Provider unregistered: participantId: ${participantId}, domain: ${domain}, interfaceName: ${
                 provider.interfaceName
-            }, majorVersion: ${provider.constructor.MAJOR_VERSION}`
+            }, majorVersion: ${(provider.constructor as JoynrProviderType).MAJOR_VERSION}`
         );
     }
 

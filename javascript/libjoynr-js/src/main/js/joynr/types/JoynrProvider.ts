@@ -57,7 +57,8 @@ export abstract class JoynrProvider extends JoynrObject {
     }
 }
 
-export interface JoynrProviderType {
+export interface JoynrProviderType extends Function {
+    new (...args: any[]): JoynrProvider;
     MAJOR_VERSION: number;
     MINOR_VERSION: number;
     getUsedJoynrtypes: any[];

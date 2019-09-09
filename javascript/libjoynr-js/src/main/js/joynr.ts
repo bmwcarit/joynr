@@ -33,6 +33,7 @@ import ProxyBuilder = require("./joynr/proxy/ProxyBuilder");
 import ProviderBuilder = require("./joynr/provider/ProviderBuilder");
 import loggingManager = require("./joynr/system/LoggingManager");
 import ParticipantIdStorage = require("./joynr/capabilities/ParticipantIdStorage");
+import CapabilitiesRegistrar = require("./joynr/capabilities/CapabilitiesRegistrar");
 
 /**
  * copies all non private members and methods to joynr
@@ -66,7 +67,7 @@ class Joynr extends JoynrApi implements Pick<JoynrRuntime<Provisioning>, JoynrKe
     public participantIdStorage!: ParticipantIdStorage;
     public providerBuilder!: ProviderBuilder;
     public proxyBuilder!: ProxyBuilder;
-    public registration: any;
+    public registration!: CapabilitiesRegistrar;
     public typeRegistry!: TypeRegistry;
     public shutdown!: (settings?: any) => Promise<any>;
     public terminateAllSubscriptions!: (timeout?: number) => Promise<any>;
