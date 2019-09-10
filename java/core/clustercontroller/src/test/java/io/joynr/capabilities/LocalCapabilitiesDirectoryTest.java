@@ -1429,7 +1429,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                        cachedEntry);
 
         doReturn(cachedEntry).when(globalDiscoveryEntryCacheMock).lookup(eq(expectedEntry.getParticipantId()),
-                                                                         eq(Long.MAX_VALUE));
+                                                                         eq(30000L));
 
         Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(localEntry, true, knownGbids);
         checkPromiseSuccess(promiseAdd, "add failed");
@@ -1438,7 +1438,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                     discoveryQos,
                                                                                     new String[]{ knownGbids[1] });
 
-        verify(globalDiscoveryEntryCacheMock).lookup(eq(expectedEntry.getParticipantId()), eq(Long.MAX_VALUE));
+        verify(globalDiscoveryEntryCacheMock).lookup(eq(expectedEntry.getParticipantId()), eq(30000L));
         DiscoveryEntryWithMetaInfo result1 = (DiscoveryEntryWithMetaInfo) checkPromiseSuccess(promiseLookup1,
                                                                                               "lookup failed")[0];
         assertEquals(expectedEntry, result1);
@@ -2448,9 +2448,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                  anyLong(),
                                                                  Matchers.<String[]> any());
 
-        Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId,
-                                                                             new DiscoveryQos(),
-                                                                             knownGbids);
+        Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids);
 
         checkPromiseException(promise, expectedException);
     }
@@ -2464,9 +2462,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                           anyLong(),
                                                                           Matchers.<String[]> any());
 
-        Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId,
-                                                                             new DiscoveryQos(),
-                                                                             knownGbids);
+        DiscoveryQos discoveryQos = new DiscoveryQos(10000L, 500L, DiscoveryScope.LOCAL_AND_GLOBAL, false);
+        Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids);
 
         checkPromiseError(promise, expectedError);
     }
