@@ -9,6 +9,7 @@ None.
 
 ## Other changes
 * **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
+* **[Java]** Updated net.sourceforge.htmlunit:htmlunit to 2.36.0
 
 ## Configuration property changes
 None.
