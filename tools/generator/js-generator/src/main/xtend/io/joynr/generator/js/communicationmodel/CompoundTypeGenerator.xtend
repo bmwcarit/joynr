@@ -116,7 +116,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 
 		/**
 		 * @param members - an object containing the individual member elements
-		 «FOR member : members»
+		 «FOR member : membersRecursive»
 		 * @param members.«member.joynrName» - «IF member.comment !== null»«FOR comment : member.comment.elements»«comment.
 			comment.replaceAll("\n", "\n" + "* ")»«ENDFOR»«ENDIF»
 		 «ENDFOR»
@@ -131,7 +131,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		}
 
 		public static checkMembers(_instance: «type.joynrName», _check: Function): void {
-			«FOR member : members»
+			«FOR member : membersRecursive»
 				_check(_instance.«member.joynrName», «member.checkPropertyTypeName», "members.«member.joynrName»");
 			«ENDFOR»
 		}
@@ -147,7 +147,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		public static MINOR_VERSION = «minorVersion»;
 
 		public static readonly _memberTypes: Record<string, string> = {
-			«FOR member : members SEPARATOR ","»
+			«FOR member : membersRecursive SEPARATOR ","»
 				«member.joynrName»: "«member.joynrTypeName»"
 			«ENDFOR»
 		};
