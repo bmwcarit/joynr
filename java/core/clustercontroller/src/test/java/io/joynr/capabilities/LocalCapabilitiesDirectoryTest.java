@@ -2050,6 +2050,110 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
+    public void lookupByDomainInterfaceWithGbids_localOnly_noLocalEntry_doesNotInvokeGcd_returnsEmptyArray() throws Exception {
+        String[] domains = { discoveryEntry.getDomain() };
+        final long cacheMaxAge = 10000L;
+        final long discoveryTimeout = 5000L;
+
+        DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, DiscoveryScope.LOCAL_ONLY, false);
+        when(localDiscoveryEntryStoreMock.lookup(eq(domains), eq(INTERFACE_NAME))).thenReturn(new ArrayList<>());
+        Promise<Lookup2Deferred> lookupPromise = localCapabilitiesDirectory.lookup(domains,
+                                                                                   INTERFACE_NAME,
+                                                                                   discoveryQos,
+                                                                                   new String[0]);
+
+        Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
+        DiscoveryEntryWithMetaInfo[] capturedDiscoveryEntries = (DiscoveryEntryWithMetaInfo[]) values[0];
+        assertEquals(0, capturedDiscoveryEntries.length);
+        verify(globalCapabilitiesDirectoryClient,
+               never()).lookup(any(), any(String[].class), anyString(), anyLong(), any());
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByDomainInterfaceWithGbids_localOnly_localEntries_doesNotInvokeGcd_returnsLocalEntries() throws Exception {
+        DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_ONLY;
+        boolean localEntriesAvailable = true;
+        boolean invokesGcd = false;
+        boolean returnsLocalEntry = true;
+        lookupByDomainInterfaceDiscoveryScopeTest(discoveryScope, localEntriesAvailable, invokesGcd, returnsLocalEntry);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByDomainInterfaceWithGbids_localThenGlobal_noLocalEntry_invokesGcd_returnsRemoteResult() throws Exception {
+        DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
+        boolean localEntriesAvailable = false;
+        boolean invokesGcd = true;
+        boolean returnsLocalEntry = false;
+        lookupByDomainInterfaceDiscoveryScopeTest(discoveryScope, localEntriesAvailable, invokesGcd, returnsLocalEntry);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByDomainInterfaceWithGbids_localThenGlobal_localEntries_doesNotInvokeGcd_returnsLocalEntries() throws Exception {
+        DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
+        boolean localEntriesAvailable = true;
+        boolean invokesGcd = false;
+        boolean returnsLocalEntry = true;
+        lookupByDomainInterfaceDiscoveryScopeTest(discoveryScope, localEntriesAvailable, invokesGcd, returnsLocalEntry);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByDomainInterfaceWithGbids_localAndGlobal_noLocalEntry_invokesGcd_returnsRemoteResult() throws Exception {
+        DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_AND_GLOBAL;
+        boolean localEntriesAvailable = false;
+        boolean invokesGcd = true;
+        boolean returnsLocalEntry = false;
+        lookupByDomainInterfaceDiscoveryScopeTest(discoveryScope, localEntriesAvailable, invokesGcd, returnsLocalEntry);
+    }
+
+    private void lookupByDomainInterfaceDiscoveryScopeTest(DiscoveryScope discoveryScope,
+                                                           boolean localEntriesAvailable,
+                                                           boolean invokesGcd,
+                                                           boolean returnsLocalEntry) throws Exception {
+        String[] domains = { discoveryEntry.getDomain() };
+        List<DiscoveryEntry> discoveryEntries = Arrays.asList(discoveryEntry);
+        List<GlobalDiscoveryEntry> globalDiscoveryEntries = Arrays.asList(globalDiscoveryEntry);
+        final long cacheMaxAge = 10000L;
+        final long discoveryTimeout = 5000L;
+
+        DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, discoveryScope, false);
+        if (localEntriesAvailable) {
+            when(localDiscoveryEntryStoreMock.lookup(eq(domains), eq(INTERFACE_NAME))).thenReturn(discoveryEntries);
+        }
+        doAnswer(createLookupAnswer(globalDiscoveryEntries)).when(globalCapabilitiesDirectoryClient)
+                                                            .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                    Mockito.<String[]> any(),
+                                                                    anyString(),
+                                                                    anyLong(),
+                                                                    any());
+
+        Promise<Lookup2Deferred> lookupPromise = localCapabilitiesDirectory.lookup(domains,
+                                                                                   INTERFACE_NAME,
+                                                                                   discoveryQos,
+                                                                                   new String[0]);
+
+        Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
+        DiscoveryEntryWithMetaInfo[] capturedDiscoveryEntries = (DiscoveryEntryWithMetaInfo[]) values[0];
+        if (invokesGcd) {
+            verify(globalCapabilitiesDirectoryClient).lookup(any(),
+                                                             eq(domains),
+                                                             eq(INTERFACE_NAME),
+                                                             eq(discoveryTimeout),
+                                                             any());
+        } else {
+            verify(globalCapabilitiesDirectoryClient,
+                   never()).lookup(any(), any(String[].class), anyString(), anyLong(), any());
+        }
+        if (returnsLocalEntry) {
+            DiscoveryEntryWithMetaInfo expectedLocalDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                         discoveryEntry);
+            assertEquals(expectedLocalDiscoveryEntry, capturedDiscoveryEntries[0]);
+        } else {
+            DiscoveryEntryWithMetaInfo expectedGlobalDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                          globalDiscoveryEntry);
+            assertEquals(expectedGlobalDiscoveryEntry, capturedDiscoveryEntries[0]);
+        }
+    }
+
     @Test(timeout = TEST_TIMEOUT)
     public void lookupByParticipantIdWithGbids_respectsCacheMaxAge() throws Exception {
         String participantId = discoveryEntry.getParticipantId();
@@ -2065,6 +2169,23 @@ public class LocalCapabilitiesDirectoryTest {
 
         verify(globalDiscoveryEntryCacheMock).lookup(eq(participantId), eq(cacheMaxAge));
     }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByDomainInterfaceWithGbids_respectsCacheMaxAge() throws Exception {
+        String[] domains = { discoveryEntry.getDomain() };
+        final long cacheMaxAge = 10000L;
+        final long discoveryTimeout = 5000L;
+
+        DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge,
+                                                     discoveryTimeout,
+                                                     DiscoveryScope.LOCAL_AND_GLOBAL,
+                                                     false);
+
+        localCapabilitiesDirectory.lookup(domains, INTERFACE_NAME, discoveryQos, new String[0]);
+
+        verify(globalDiscoveryEntryCacheMock).lookup(eq(domains), eq(INTERFACE_NAME), eq(cacheMaxAge));
+    }
+
     @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantId_DiscoveryEntryWithMetaInfoContainsExpectedIsLocalValue_globalEntry() throws Exception {
         String participantId = "participantId";
