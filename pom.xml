@@ -430,7 +430,7 @@
 		-->
 		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.9.9</jackson.version>
-		<jackson.databind.version>2.9.9.2</jackson.databind.version>
+		<jackson.databind.version>2.9.9.3</jackson.databind.version>
 		<guice.version>3.0</guice.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
