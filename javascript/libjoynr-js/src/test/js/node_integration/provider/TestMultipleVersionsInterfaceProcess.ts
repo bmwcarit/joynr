@@ -26,13 +26,14 @@ import MultipleVersionsInterfaceProviderNameVersion2 from "../../../generated/jo
 import MultipleVersionsInterfaceProviderPackageVersion1 from "../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider";
 import MultipleVersionsInterfaceProviderPackageVersion2 from "../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider";
 import ProviderImplementation from "./MultipleVersionsInterfaceProviderImplementation";
+import InProcessRuntime = require("../../../../main/js/joynr/start/InProcessRuntime");
 
 let multipleVersionsInterfaceProvider: any, MultipleVersionsInterfaceProvider, providerDomain: string;
 
 async function initializeTest(_provisioningSuffix: any, providedDomain: string, settings: any): Promise<void> {
     providerDomain = providedDomain;
 
-    joynr.selectRuntime("inprocess");
+    joynr.selectRuntime(InProcessRuntime);
     await joynr.load(provisioning as any);
     const providerQos = new joynr.types.ProviderQos({
         customParameters: [],

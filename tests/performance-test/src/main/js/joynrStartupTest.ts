@@ -49,7 +49,6 @@ logMemory();
 import EchoProvider from "../generated-javascript/joynr/tests/performance/EchoProvider";
 import { implementation } from "./EchoProviderImpl";
 import joynr from "joynr";
-joynr.selectRuntime("websocket.libjoynr");
 
 console.log("memory consumption after requiring jonyr and selecting runtime");
 logMemory();

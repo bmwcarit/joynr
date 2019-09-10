@@ -25,6 +25,7 @@ import provisioning from "../../resources/joynr/provisioning/provisioning_cc";
 import joynr from "../../../main/js/joynr";
 import testUtil from "../../js/testUtil";
 import SubscriptionQos = require("../../../main/js/joynr/proxy/SubscriptionQos");
+import InProcessRuntime from "../../../main/js/joynr/start/InProcessRuntime";
 import Mock = jest.Mock;
 
 class End2EndAbstractTest {
@@ -123,9 +124,7 @@ class End2EndAbstractTest {
         // @ts-ignore
         joynr.loaded = false;
         process.removeAllListeners("exit");
-        joynr.selectRuntime("inprocess");
-
-        await joynr.load(testProvisioning);
+        await joynr.selectRuntime(InProcessRuntime).load(testProvisioning);
         IntegrationUtils.initialize();
         this.childId = await IntegrationUtils.initializeChildProcess(
             this.providerChildProcessName,

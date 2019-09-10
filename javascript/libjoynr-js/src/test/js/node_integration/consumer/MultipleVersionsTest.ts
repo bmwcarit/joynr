@@ -33,13 +33,14 @@ import provisioning from "../../../resources/joynr/provisioning/provisioning_cc"
 
 const domain = "MultipleVersionsTestDomain";
 import joynr from "joynr";
+import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
 let afterTest: Function;
 
 describe("libjoynr-js.integration.MultipleVersionsTest", () => {
     beforeEach(async () => {
         // @ts-ignore
         joynr.loaded = false;
-        joynr.selectRuntime("inprocess");
+        joynr.selectRuntime(InProcessRuntime);
         await joynr.load(provisioning as any);
     });
 

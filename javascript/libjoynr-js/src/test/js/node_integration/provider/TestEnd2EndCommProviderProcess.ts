@@ -28,6 +28,7 @@ import Country from "../../../generated/joynr/datatypes/exampleTypes/Country";
 import ErrorList from "../../../generated/joynr/vehicle/radiotypes/ErrorList";
 import StringMap = require("../../../generated/joynr/datatypes/exampleTypes/StringMap");
 import ComplexStructMap = require("../../../generated/joynr/datatypes/exampleTypes/ComplexStructMap");
+import InProcessRuntime = require("../../../../main/js/joynr/start/InProcessRuntime");
 
 let providerDomain: string;
 
@@ -70,7 +71,7 @@ async function initializeTest(provisioningSuffix: string, providedDomain: string
     // @ts-ignore
     provisioning.channelId = `End2EndCommTestParticipantId${provisioningSuffix}`;
 
-    joynr.selectRuntime("inprocess");
+    joynr.selectRuntime(InProcessRuntime);
     await joynr.load(provisioning as any);
 
     providerQos = new joynr.types.ProviderQos({

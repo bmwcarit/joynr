@@ -34,6 +34,7 @@ import ProviderBuilder = require("./joynr/provider/ProviderBuilder");
 import loggingManager = require("./joynr/system/LoggingManager");
 import ParticipantIdStorage = require("./joynr/capabilities/ParticipantIdStorage");
 import CapabilitiesRegistrar = require("./joynr/capabilities/CapabilitiesRegistrar");
+import WebSocketLibjoynrRuntime = require("./joynr/start/WebSocketLibjoynrRuntime");
 
 /**
  * copies all non private members and methods to joynr
@@ -50,6 +51,10 @@ function wrapRuntime(joynr: any, runtime: JoynrRuntime<Provisioning>): void {
             }
         }
     );
+}
+
+interface Type<T> extends Function {
+    new (...args: any[]): T;
 }
 
 type JoynrKeys =
@@ -74,7 +79,7 @@ class Joynr extends JoynrApi implements Pick<JoynrRuntime<Provisioning>, JoynrKe
 
     private loaded: boolean = false;
     public JoynrObject = JoynrObject;
-    public _selectedRuntime = "websocket.libjoynr";
+    private selectedRuntime: Type<JoynrRuntime<Provisioning>> = WebSocketLibjoynrRuntime;
 
     /**
      * @param provisioning
@@ -82,45 +87,43 @@ class Joynr extends JoynrApi implements Pick<JoynrRuntime<Provisioning>, JoynrKe
      */
     public async load(provisioning: InProcessProvisioning | WebSocketLibjoynrProvisioning): Promise<Joynr> {
         this.loaded = true;
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const Runtime =
-            this._selectedRuntime === "websocket.libjoynr"
-                ? require("./joynr/start/WebSocketLibjoynrRuntime")
-                : require("./joynr/start/InProcessRuntime");
-        const runtime = new Runtime();
-        try {
-            await runtime.start(provisioning);
-            wrapRuntime(this, runtime);
+        const runtime = new this.selectedRuntime();
+        await runtime.start(provisioning);
+        wrapRuntime(this, runtime);
 
-            // make sure the runtime is shutdown when process.exit(...)
-            // gets called since otherwise the process might not
-            // terminate. Ignore any exception thrown in case shutdown
-            // had already been invoked manually before reaching this
-            // point.
-            if (typeof process === "object" && typeof process.on === "function") {
-                process.on(
-                    "exit",
-                    (): void => {
-                        try {
-                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                            this.shutdown!({ clearSubscriptionsEnabled: false });
-                        } catch (error) {
-                            // ignore
-                        }
+        // make sure the runtime is shutdown when process.exit(...)
+        // gets called since otherwise the process might not
+        // terminate. Ignore any exception thrown in case shutdown
+        // had already been invoked manually before reaching this
+        // point.
+        if (typeof process === "object" && typeof process.on === "function") {
+            process.on(
+                "exit",
+                (): void => {
+                    try {
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        this.shutdown!({ clearSubscriptionsEnabled: false });
+                    } catch (error) {
+                        // ignore
                     }
-                );
-            }
-            return this;
-        } catch (error1) {
-            return Promise.reject(error1);
+                }
+            );
         }
+        return this;
     }
 
-    public selectRuntime(runtime: string): void {
+    /**
+     * Changes the selected default joynr runtime from websocket to the passed runtime
+     *
+     * @param runtime child class of JoynrRuntime
+     * @returns joynr for easy chaining
+     */
+    public selectRuntime(runtime: Type<JoynrRuntime<any>>): joynr {
         if (this.loaded) {
             throw new Error("joynr.selectRuntime: this method must be invoked before calling joynr.load()");
         }
-        this._selectedRuntime = runtime;
+        this.selectedRuntime = runtime;
+        return this;
     }
 }
 type joynr = Joynr;

@@ -25,6 +25,7 @@ import joynr from "../../../../main/js/joynr";
 import provisioning from "../../../resources/joynr/provisioning/provisioning_cc";
 import DatatypesProvider from "../../../generated/joynr/datatypes/DatatypesProvider";
 import TestEnd2EndDatatypesTestData from "../TestEnd2EndDatatypesTestData";
+import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
 
 let providerDomain: string;
 
@@ -55,7 +56,7 @@ async function initializeTest(provisioningSuffix: string, providedDomain: string
     // @ts-ignore
     provisioning.channelId = `End2EndDatatypesTestParticipantId${provisioningSuffix}`;
 
-    joynr.selectRuntime("inprocess");
+    joynr.selectRuntime(InProcessRuntime);
     await joynr.load(provisioning as any);
     providerQos = new joynr.types.ProviderQos({
         customParameters: [],

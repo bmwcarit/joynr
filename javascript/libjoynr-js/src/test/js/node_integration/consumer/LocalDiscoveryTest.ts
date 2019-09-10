@@ -17,7 +17,7 @@
  * #L%
  */
 
-import joynr from "../../../../main/js/joynr";
+import joynr = require("joynr");
 
 import RadioProxy from "../../../generated/joynr/vehicle/RadioProxy";
 import TestWithVersionProvider from "../../../generated/joynr/tests/TestWithVersionProvider";
@@ -25,6 +25,7 @@ import TestWithVersionProxy from "../../../generated/joynr/tests/TestWithVersion
 import * as IntegrationUtils from "../IntegrationUtils";
 import provisioning from "../../../resources/joynr/provisioning/provisioning_cc";
 import DiscoveryQos from "../../../../main/js/joynr/proxy/DiscoveryQos";
+import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
 
 describe("libjoynr-js.integration.localDiscoveryTest", () => {
     let provisioningSuffix: any;
@@ -43,7 +44,7 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
         (provisioning as any).channelId = provisioningSuffix;
         // @ts-ignore
         joynr.loaded = false;
-        joynr.selectRuntime("inprocess");
+        joynr.selectRuntime(InProcessRuntime);
 
         await joynr.load(provisioning as any);
         IntegrationUtils.initialize();

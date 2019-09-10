@@ -37,7 +37,6 @@ error(`Using testType: ${testType}`);
 const provisioning = PerformanceUtilities.getProvisioning(false);
 provisioning.ccAddress.host = options.cchost;
 provisioning.ccAddress.port = options.ccport;
-joynr.selectRuntime("websocket.libjoynr");
 
 let echoProxy: EchoProxy;
 

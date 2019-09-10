@@ -28,7 +28,6 @@ import * as EchoProviderImpl from "./EchoProviderImpl";
 const domain = options.domain;
 
 import joynr from "joynr";
-joynr.selectRuntime("websocket.libjoynr");
 
 import testbase from "test-base";
 const provisioning = PerformanceUtilities.getProvisioning(true);
