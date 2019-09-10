@@ -102,6 +102,7 @@ This project has dependencies to:
   JUnit under Eclipse Public License 1.0
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   Mockito under The MIT License
+  org.brotli:dec under MIT License
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
   SLF4J API Module under MIT License

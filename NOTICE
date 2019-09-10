@@ -481,6 +481,7 @@ This project has dependencies to:
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
   org.apache.tools.ant under Apache License, Version 2.0
+  org.brotli:dec under MIT License
   org.eclipse.emf.common under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore under The Eclipse Public License Version 1.0
   org.eclipse.emf.ecore.xmi under The Eclipse Public License Version 1.0
