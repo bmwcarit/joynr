@@ -330,45 +330,6 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void addCapabilityWithNullGbids() throws InterruptedException {
-        final boolean awaitGlobalRegistration = true;
-        String[] gbids = null;
-        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test(timeout = TEST_TIMEOUT)
-    public void addCapabilityWithGbidsWithNullEntry() throws InterruptedException {
-        final boolean awaitGlobalRegistration = true;
-        String[] gbids = new String[]{ knownGbids[0], null };
-        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test(timeout = TEST_TIMEOUT)
-    public void addCapabilityWithGbidsWithEmptyStringEntry() throws InterruptedException {
-        final boolean awaitGlobalRegistration = true;
-        String[] gbids = new String[]{ knownGbids[0], "" };
-        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test(timeout = TEST_TIMEOUT)
-    public void addCapabilityWithGbidsWithDuplicateStringEntries() throws InterruptedException {
-        final boolean awaitGlobalRegistration = true;
-        String[] gbids = new String[]{ knownGbids[0], knownGbids[0] };
-        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkPromiseError(promise, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test(timeout = TEST_TIMEOUT)
-    public void addCapabilityWithUnknownGbidEntry() throws InterruptedException {
-        final boolean awaitGlobalRegistration = true;
-        String[] gbids = new String[]{ knownGbids[0], "unknownGbid" };
-        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkPromiseError(promise, DiscoveryError.UNKNOWN_GBID);
-    }
-
     @Test(timeout = TEST_TIMEOUT)
     public void addLocalOnlyCapability() throws InterruptedException {
 
