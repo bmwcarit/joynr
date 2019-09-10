@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
-    "lodash": "4.17.11",
+    "lodash": "4.17.12",
     "test-base": "file:../test-base"
   },
   "devDependencies": {
