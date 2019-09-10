@@ -42,7 +42,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
+import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -64,13 +64,13 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private int backpressureIncomingMqttRequestsLowerThreshold;
     private MqttAddress replyToAddress;
     private MessageRouter messageRouter;
-    private ReplyToAddressRegistrar replyToAddressRegistrar;
     private String channelId;
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
     private MqttStatusReceiver mqttStatusReceiver;
     protected final String[] gbids;
+    protected final RoutingTable routingTable;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -83,13 +83,13 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          MessageRouter messageRouter,
-                                         ReplyToAddressRegistrar replyToAddressRegistrar,
                                          MqttClientFactory mqttClientFactory,
                                          @Named(CHANNELID) String channelId,
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
                                          Set<JoynrMessageProcessor> messageProcessors,
-                                         MqttStatusReceiver mqttStatusReceiver) {
+                                         MqttStatusReceiver mqttStatusReceiver,
+                                         RoutingTable routingTable) {
         sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
@@ -100,12 +100,12 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
-        this.replyToAddressRegistrar = replyToAddressRegistrar;
         this.mqttClientFactory = mqttClientFactory;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.mqttStatusReceiver = mqttStatusReceiver;
         this.gbids = gbids.clone();
+        this.routingTable = routingTable;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}",
                      new Object[]{ sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
     }
@@ -121,24 +121,24 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                        backpressureIncomingMqttRequestsLowerThreshold,
                                                                        replyToAddress,
                                                                        messageRouter,
-                                                                       replyToAddressRegistrar,
                                                                        mqttClientFactory,
                                                                        channelId,
                                                                        mqttTopicPrefixProvider,
                                                                        rawMessagingPreprocessor,
                                                                        messageProcessors,
-                                                                       mqttStatusReceiver);
+                                                                       mqttStatusReceiver,
+                                                                       routingTable);
         }
         return new MqttMessagingSkeletonFactory(gbids,
                                                 ownAddress,
                                                 maxIncomingMqttRequests,
                                                 messageRouter,
-                                                replyToAddressRegistrar,
                                                 mqttClientFactory,
                                                 mqttTopicPrefixProvider,
                                                 rawMessagingPreprocessor,
                                                 messageProcessors,
-                                                mqttStatusReceiver);
+                                                mqttStatusReceiver,
+                                                routingTable);
     }
 
 }

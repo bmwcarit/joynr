@@ -21,15 +21,20 @@ package io.joynr.jeeintegration.messaging;
 import com.google.inject.Inject;
 
 import io.joynr.messaging.AbstractMessagingSkeletonFactory;
-import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.routing.AbstractGlobalMessagingSkeleton;
+import io.joynr.messaging.routing.RoutingTable;
 
 public class NoOpMqttMessagingSkeletonFactory extends AbstractMessagingSkeletonFactory {
 
     @Inject
-    public NoOpMqttMessagingSkeletonFactory(MqttClientFactory mqttClientFactory, String[] gbids) {
+    public NoOpMqttMessagingSkeletonFactory(MqttClientFactory mqttClientFactory,
+                                            String[] gbids,
+                                            RoutingTable routingTable) {
         super();
-        IMessagingSkeleton messagingSkeleton = new NoOpMqttMessagingSkeleton(mqttClientFactory, gbids);
+        AbstractGlobalMessagingSkeleton messagingSkeleton = new NoOpMqttMessagingSkeleton(mqttClientFactory,
+                                                                                          gbids,
+                                                                                          routingTable);
         messagingSkeletonList.add(messagingSkeleton);
     }
 }

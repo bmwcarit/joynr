@@ -37,7 +37,6 @@ import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.messaging.routing.CcRoutingTableAddressValidator;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import io.joynr.messaging.routing.RoutingProviderImpl;
 import io.joynr.messaging.routing.RoutingTableAddressValidator;
 import io.joynr.messaging.sender.CcMessageSender;
@@ -59,7 +58,6 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
         bind(CcMessageRouter.class).in(Singleton.class);
         bind(MessageRouter.class).to(CcMessageRouter.class);
         bind(MulticastReceiverRegistrar.class).to(CcMessageRouter.class);
-        bind(ReplyToAddressRegistrar.class).in(Singleton.class);
         bind(RoutingTableAddressValidator.class).to(CcRoutingTableAddressValidator.class);
 
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))

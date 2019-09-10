@@ -28,20 +28,23 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.routing.AbstractGlobalMessagingSkeleton;
+import io.joynr.messaging.routing.RoutingTable;
 
 /**
  * Because the messaging stub will refuse to send a message via MQTT unless a messaging skeleton has been registered
  * for the MqttAddress type, we bind a dummy implementation in this module which simply does nothing (no operation -
  * NoOp).
  */
-public class NoOpMqttMessagingSkeleton implements IMqttMessagingSkeleton {
+public class NoOpMqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton implements IMqttMessagingSkeleton {
     private final static Logger logger = LoggerFactory.getLogger(NoOpMqttMessagingSkeleton.class);
 
     private MqttClientFactory mqttClientFactory;
     private Set<JoynrMqttClient> mqttClients;
     private final String[] gbids;
 
-    public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory, String[] gbids) {
+    public NoOpMqttMessagingSkeleton(MqttClientFactory mqttClientFactory, String[] gbids, RoutingTable routingTable) {
+        super(routingTable);
         this.mqttClientFactory = mqttClientFactory;
         this.gbids = gbids.clone();
         mqttClients = new HashSet<>();

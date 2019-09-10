@@ -24,7 +24,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
+import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonFactory {
@@ -34,25 +34,25 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                         MqttAddress ownAddress,
                                         int maxIncomingMqttRequests,
                                         MessageRouter messageRouter,
-                                        ReplyToAddressRegistrar replyToAddressRegistrar,
                                         MqttClientFactory mqttClientFactory,
                                         MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                         RawMessagingPreprocessor rawMessagingPreprocessor,
                                         Set<JoynrMessageProcessor> messageProcessors,
-                                        MqttStatusReceiver mqttStatusReceiver) {
+                                        MqttStatusReceiver mqttStatusReceiver,
+                                        RoutingTable routingTable) {
         super();
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
                                        new MqttMessagingSkeleton(ownAddress.getTopic(),
                                                                  maxIncomingMqttRequests,
                                                                  messageRouter,
-                                                                 replyToAddressRegistrar,
                                                                  mqttClientFactory,
                                                                  mqttTopicPrefixProvider,
                                                                  rawMessagingPreprocessor,
                                                                  messageProcessors,
                                                                  mqttStatusReceiver,
-                                                                 gbid));
+                                                                 gbid,
+                                                                 routingTable));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }

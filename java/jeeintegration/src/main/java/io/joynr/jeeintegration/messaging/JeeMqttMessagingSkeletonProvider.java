@@ -45,7 +45,7 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
+import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -72,13 +72,13 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             MessageRouter messageRouter,
-                                            ReplyToAddressRegistrar replyToAddressRegistrar,
                                             MqttClientFactory mqttClientFactory,
                                             @Named(CHANNELID) String channelId,
                                             MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                             RawMessagingPreprocessor rawMessagingPreprocessor,
                                             Set<JoynrMessageProcessor> messageProcessors,
-                                            JoynrStatusMetricsAggregator jeeJoynrStatusMetrics) {
+                                            JoynrStatusMetricsAggregator jeeJoynrStatusMetrics,
+                                            RoutingTable routingTable) {
         super(gbids,
               enableSharedSubscriptions,
               ownAddress,
@@ -88,13 +88,13 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               backpressureIncomingMqttRequestsLowerThreshold,
               replyToAddress,
               messageRouter,
-              replyToAddressRegistrar,
               mqttClientFactory,
               channelId,
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors,
-              jeeJoynrStatusMetrics);
+              jeeJoynrStatusMetrics,
+              routingTable);
         httpBridgeEnabled = enableHttpBridge;
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}",
                      new Object[]{ httpBridgeEnabled, ownAddress, channelId });
@@ -103,7 +103,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     @Override
     public IMessagingSkeletonFactory get() {
         if (httpBridgeEnabled) {
-            return new NoOpMqttMessagingSkeletonFactory(mqttClientFactory, gbids);
+            return new NoOpMqttMessagingSkeletonFactory(mqttClientFactory, gbids, routingTable);
         } else {
             return super.get();
         }

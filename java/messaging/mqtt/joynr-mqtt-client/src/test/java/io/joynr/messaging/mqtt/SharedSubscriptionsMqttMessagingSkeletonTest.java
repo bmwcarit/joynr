@@ -41,7 +41,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
+import io.joynr.messaging.routing.RoutingTable;
 import joynr.Message;
 
 /**
@@ -69,7 +69,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     private MessageRouter messageRouter;
 
     @Mock
-    private ReplyToAddressRegistrar replyToAddressRegistrar;
+    private RoutingTable routingTable;
 
     @Mock
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
@@ -93,14 +93,14 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                backpressureIncomingMqttRequestsLowerThreshold,
                                                                replyToTopic,
                                                                messageRouter,
-                                                               replyToAddressRegistrar,
                                                                mqttClientFactory,
                                                                channelId,
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
                                                                new HashSet<JoynrMessageProcessor>(),
                                                                mqttStatusReceiver,
-                                                               ownGbid);
+                                                               ownGbid,
+                                                               routingTable);
         subject.init();
         verify(mqttClient).subscribe(startsWith("$share/"));
     }

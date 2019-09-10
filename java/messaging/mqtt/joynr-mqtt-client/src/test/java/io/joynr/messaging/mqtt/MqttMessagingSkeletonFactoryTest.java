@@ -38,7 +38,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
+import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,7 +53,7 @@ public class MqttMessagingSkeletonFactoryTest {
     @Mock
     private MessageRouter messageRouter;
     @Mock
-    private ReplyToAddressRegistrar replyToAddressRegistrar;
+    private RoutingTable routingTable;
     @Mock
     private MqttClientFactory mqttClientFactory;
     @Mock
@@ -69,12 +69,12 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 ownAddress,
                                                                                 maxIncomingMqttRequests,
                                                                                 messageRouter,
-                                                                                replyToAddressRegistrar,
                                                                                 mqttClientFactory,
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
-                                                                                mqttStatusReceiver);
+                                                                                mqttStatusReceiver,
+                                                                                routingTable);
 
         JoynrMqttClient mqttClient1 = mock(JoynrMqttClient.class);
         JoynrMqttClient mqttClient2 = mock(JoynrMqttClient.class);
@@ -159,12 +159,12 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 ownAddress,
                                                                                 maxIncomingMqttRequests,
                                                                                 messageRouter,
-                                                                                replyToAddressRegistrar,
                                                                                 mqttClientFactory,
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
-                                                                                mqttStatusReceiver);
+                                                                                mqttStatusReceiver,
+                                                                                routingTable);
         testInitAllSkeletons(factory);
     }
 
@@ -183,13 +183,13 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                                                       backpressureIncomingMqttRequestsLowerThreshold,
                                                                                                                       replyToAddress,
                                                                                                                       messageRouter,
-                                                                                                                      replyToAddressRegistrar,
                                                                                                                       mqttClientFactory,
                                                                                                                       channelId,
                                                                                                                       mqttTopicPrefixProvider,
                                                                                                                       rawMessagingPreprocessor,
                                                                                                                       messageProcessors,
-                                                                                                                      mqttStatusReceiver);
+                                                                                                                      mqttStatusReceiver,
+                                                                                                                      routingTable);
         testInitAllSkeletons(factory);
     }
 

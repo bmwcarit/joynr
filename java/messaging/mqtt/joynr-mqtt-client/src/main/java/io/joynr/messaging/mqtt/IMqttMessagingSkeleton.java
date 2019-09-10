@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,8 @@
 package io.joynr.messaging.mqtt;
 
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingMulticastSubscriber;
-import io.joynr.messaging.IMessagingSkeleton;
 
-public interface IMqttMessagingSkeleton extends IMessagingSkeleton, IMessagingMulticastSubscriber {
+public interface IMqttMessagingSkeleton {
 
     public void transmit(byte[] serializedMessage, FailureAction failureAction);
 }

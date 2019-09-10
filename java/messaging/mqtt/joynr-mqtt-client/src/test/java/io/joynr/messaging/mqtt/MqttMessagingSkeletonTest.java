@@ -60,9 +60,10 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
+import io.joynr.messaging.routing.RoutingTable;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
@@ -77,7 +78,7 @@ public class MqttMessagingSkeletonTest {
     private MessageRouter messageRouter;
 
     @Mock
-    private ReplyToAddressRegistrar replyToAddressRegistrar;
+    private RoutingTable routingTable;
 
     @Mock
     private MqttClientFactory mqttClientFactory;
@@ -98,13 +99,13 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
-                                            replyToAddressRegistrar,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
                                             mqttStatusReceiver,
-                                            ownGbid);
+                                            ownGbid,
+                                            routingTable);
         when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClientReceiver);
         when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClientSender);
         subject.init();
@@ -187,18 +188,17 @@ public class MqttMessagingSkeletonTest {
     }
 
     @Test
-    public void testReplyToAddressRegistrarIsCalled() throws Exception {
+    public void testRegistrationOfReplyToAddress() throws Exception {
         ImmutableMessage rqMessage = createTestRequestMessage();
 
         subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
 
-        ArgumentCaptor<ImmutableMessage> immutableMessageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        verify(replyToAddressRegistrar).registerGlobalRoutingEntry(immutableMessageCaptor.capture(), eq(ownGbid));
+        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
+        final MqttAddress expectedAddress = new MqttAddress(ownGbid, "testTopic");
+        verify(routingTable).put(rqMessage.getSender(), expectedAddress, true, 100000L);
 
-        assertArrayEquals(rqMessage.getSerializedMessage(), immutableMessageCaptor.getValue().getSerializedMessage());
-        assertTrue(immutableMessageCaptor.getValue().isReceivedFromGlobal());
-
-        verify(messageRouter).route(eq(immutableMessageCaptor.getValue()));
+        verify(messageRouter).route(captor.capture());
+        assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
     }
 
     @Test
@@ -210,13 +210,13 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
-                                            replyToAddressRegistrar,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             rawMessagingPreprocessorMock,
                                             new HashSet<JoynrMessageProcessor>(),
                                             mqttStatusReceiver,
-                                            ownGbid);
+                                            ownGbid,
+                                            routingTable);
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
@@ -237,13 +237,13 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
-                                            replyToAddressRegistrar,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(Arrays.asList(processorMock)),
                                             mqttStatusReceiver,
-                                            ownGbid);
+                                            ownGbid,
+                                            routingTable);
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
@@ -353,13 +353,13 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequestsNoLimit,
                                             messageRouter,
-                                            replyToAddressRegistrar,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
                                             mqttStatusReceiver,
-                                            ownGbid);
+                                            ownGbid,
+                                            routingTable);
         subject.init();
 
         // number of incoming messages is arbitrarily selected

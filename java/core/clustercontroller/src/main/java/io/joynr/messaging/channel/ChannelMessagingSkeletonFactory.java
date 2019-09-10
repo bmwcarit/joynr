@@ -30,22 +30,22 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessageReceiver;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
+import io.joynr.messaging.routing.RoutingTable;
 
 public class ChannelMessagingSkeletonFactory extends AbstractMessagingSkeletonFactory {
 
     @Inject
     public ChannelMessagingSkeletonFactory(MessageRouter messageRouter,
-                                           ReplyToAddressRegistrar replyToAddressRegistrar,
                                            MessageReceiver messageReceiver,
                                            Set<JoynrMessageProcessor> messageProcessors,
-                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbidsArray) {
+                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbidsArray,
+                                           RoutingTable routingTable) {
         super();
         IMessagingSkeleton messagingSkeleton = new ChannelMessagingSkeleton(messageRouter,
-                                                                            replyToAddressRegistrar,
                                                                             messageReceiver,
                                                                             messageProcessors,
-                                                                            gbidsArray[0]);
+                                                                            gbidsArray[0],
+                                                                            routingTable);
         messagingSkeletonList.add(messagingSkeleton);
     }
 

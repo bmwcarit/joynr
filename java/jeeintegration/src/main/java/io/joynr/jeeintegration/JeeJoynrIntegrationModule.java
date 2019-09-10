@@ -40,7 +40,6 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.routing.ReplyToAddressRegistrar;
 import io.joynr.runtime.JoynrInjectionConstants;
 import joynr.system.RoutingTypes.Address;
 
@@ -77,8 +76,6 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))
                                             .toInstance(scheduledExecutorService);
         bind(ExecutorService.class).toInstance(scheduledExecutorService);
-
-        bind(ReplyToAddressRegistrar.class).in(Singleton.class);
 
         MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
         messagingSkeletonFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
