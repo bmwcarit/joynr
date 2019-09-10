@@ -823,7 +823,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public Promise<Lookup3Deferred> lookup(String participantId) {
-        DiscoveryQos discoveryQos = new DiscoveryQos();
+        DiscoveryQos discoveryQos = new DiscoveryQos(Long.MAX_VALUE,
+                                                     Long.MAX_VALUE,
+                                                     DiscoveryScope.LOCAL_AND_GLOBAL,
+                                                     false);
         Promise<Lookup4Deferred> lookupPromise = lookup(participantId, discoveryQos, new String[]{});
         Lookup3Deferred lookup3Deferred = new Lookup3Deferred();
         lookupPromise.then(new PromiseListener() {
@@ -862,7 +865,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             gbids = knownGbids;
         }
 
-        discoveryQos = new DiscoveryQos(Long.MAX_VALUE, Long.MAX_VALUE, DiscoveryScope.LOCAL_AND_GLOBAL, false);
         lookup(participantId, discoveryQos, gbids, new CapabilityCallback() {
 
             @Override
