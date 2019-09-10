@@ -11,6 +11,7 @@ None.
 * **[Java]** Fixed a bug that requests for GlobalCapabilitiesDirectory from a joynr runtime that
   uses the empty GBID could not be answered.
 * **[Java]** Updated jackson to version 2.9.10
+* **[Java]** Updated net.sourceforge.htmlunit:htmlunit to 2.36.0
 
 ## Configuration property changes
 None.
