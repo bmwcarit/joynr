@@ -137,7 +137,7 @@ class SharedMqttClient {
         const subscribeObject: mqtt.ISubscriptionMap = {};
         for (let i = 0; i < this.queuedSubscriptions.length; i++) {
             const topic = this.queuedSubscriptions[i];
-            subscribeObject[topic] = this.qosLevel;
+            subscribeObject[topic] = { qos: this.qosLevel };
         }
         this.queuedSubscriptions = [];
         this.client.subscribe(subscribeObject, (err: Error, _granted: mqtt.ISubscriptionGrant[]) => {
