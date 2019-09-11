@@ -15,6 +15,7 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
   are now removed by the Routing Table cleanup background job, provided the related proxy instances
   have already been collected by the Java garbage collector.
+* **[Java]** Updated jackson.databind to version 2.9.9.3, net.sourceforge.htmlunit:htmlunit to 2.36.0
 
 ## Configuration property changes
 None.
@@ -31,7 +32,7 @@ None.
   * org.franca:org.franca.core updated from version 0.13.0 to 0.13.1
   * org.franca:org.franca.core.dsl updated from version 0.13.0 to 0.13.1
   * org.franca:org.franca.deploymodel.dsl updated from version 0.13.0 to 0.13.1
-* **[Java]** Update jackson to version 2.9.9, jackson.databind to 2.9.9.2
+* **[Java]** Updated jackson to version 2.9.9, jackson.databind to 2.9.9.2
 * **[C++]** Client Websocket TLS connections will be encrypted by default
 * **[JS]** Part of the project was rewritten into TypeScript (TS).
 * **[Android]** Added libjoynr-android-websocket-runtime, updated joynr-generator-gradle-plugin
