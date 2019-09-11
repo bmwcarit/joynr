@@ -21,7 +21,7 @@ cpp/runtimes/include/joynr/JoynrRuntimeExport.h
 dependency-reduced-pom.xml
 local.properties
 *.bundle.js
-.tsbuildinfo
+*.tsbuildinfo
 target/
 javascript/joynr-generator/jars/
 javascript/joynr-generator/src/*.js
