@@ -22,7 +22,7 @@
   "scripts": {
     "clean": "rm -rf node_modules ../../javascript/libjoynr-js/.output",
     "install:browserify": "node bundle.js",
-    "startprovider": "ts-node src/main/js/provider.ts $npm_package_config_domain",
+    "startprovider": "../../node_modules/.bin/ts-node src/main/js/provider.ts $npm_package_config_domain",
     "startproviderbundle": "node src/main/js/provider.bundle.js $npm_package_config_domain",
     "startjasmine": "export domain=$npm_package_config_domain && ../../node_modules/.bin/jest -i",
     "build:fast": "cd ../../javascript/libjoynr-js && npm run ts:package && cd - && npm i && npm run install:browserify && npm run lint",
