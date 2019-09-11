@@ -248,7 +248,32 @@ public:
         onSuccess();
     }
 
+    void testRemoveUsesSameGbidOrderAsAdd(const std::vector<std::string>& selectedGbids)
     {
+        const bool awaitGlobalRegistration = true;
+        const std::vector<std::string>& expectedGbids {selectedGbids};
+        types::ProviderQos providerQos;
+        providerQos.setScope(types::ProviderScope::GLOBAL);
+        entry.setQos(providerQos);
+
+        checkAddToGcdClient(expectedGbids);
+
+        localCapabilitiesDirectory->add(
+                entry,
+                awaitGlobalRegistration,
+                selectedGbids,
+                createAddOnSuccessFunction(),
+                unexpectedOnDiscoveryError);
+        EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+        EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+                    remove(Eq(dummyParticipantIdsVector[0]),
+                           Eq(expectedGbids), _, _, _)).Times(1);
+
+        localCapabilitiesDirectory->remove(dummyParticipantIdsVector[0], defaultOnSuccess, defaultProviderRuntimeExceptionError);
+
+        Mock::VerifyAndClearExpectations(globalCapabilitiesDirectoryClient.get());
+    }
 
     std::vector<types::GlobalDiscoveryEntry> getGlobalDiscoveryEntries(const std::uint8_t numEntries)
     {
@@ -895,6 +920,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemove_GcdNotCalledIfParticipantIsNot
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveUsesSameGbidOrderAsAdd)
+{
+    testRemoveUsesSameGbidOrderAsAdd({KNOWN_GBIDS[0]});
+    testRemoveUsesSameGbidOrderAsAdd({KNOWN_GBIDS[1]});
+    testRemoveUsesSameGbidOrderAsAdd({KNOWN_GBIDS[0], KNOWN_GBIDS[1] });
+    testRemoveUsesSameGbidOrderAsAdd({KNOWN_GBIDS[1], KNOWN_GBIDS[0] });
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
