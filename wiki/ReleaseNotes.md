@@ -11,6 +11,16 @@ the versioning scheme [here](JoynrVersioning.md).
   `registerProviderInAllBackends` and `registerProviderInAllBackendsAsync` have been
   introduced.
 
+* **[JS]** The `joynr` npm package was fully converted to typescript. It's now shipped with
+  additional `.d.ts` files supporting the usage of typescript and enabling auto-completion for pure
+  JS inside modern IDEs.
+
+* **[JS]** `joynr-generator-standalone-1.11.0.jar` and later versions will now output `.ts` files
+  instead of `.js` files. In order to help compile those files to js and for an easier access to
+  the generator the new npm package `joynr-generator` was introduced. `joynr-generator` also
+  supports `.json` files listing `.fidl` files and the generation of `joynr-includes` facilitating
+  the import of generated code.
+
 ## Other changes
 * **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
   are now removed by the Routing Table cleanup background job, provided the related proxy instances
