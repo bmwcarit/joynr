@@ -276,6 +276,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockJoynrClusterControllerMqttConnectionData.h
         mock/MockProxyBuilder.h
         mock/MockGlobalCapabilitiesDirectoryClient.h
+        mock/MockGlobalCapabilitiesDirectoryProxy.h
         mock/MockSubscriptionManager.h
         mock/MockSubscriptionCallback.h
         mock/MockParticipantIdStorage.h
