@@ -537,10 +537,12 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             replySettings,
             Reply.create({
                 error: new MethodInvocationException({
-                    detailMessage: `error handling request: {"paramDatatypes":["String"],"params":["myTestParameter"],"methodName":"testFunction","requestReplyId":"${
+                    detailMessage: `error handling request: {"methodName":"testFunction","paramDatatypes":["String"],"params":["myTestParameter"],"requestReplyId":"${
                         test.request.requestReplyId
                     }","_typeName":"joynr.Request"} for providerParticipantId nonExistentProviderId`
                 }),
+
+                // {"methodName":"testFunction","paramDatatypes":["String"],"params":["myTestParameter"],"requestReplyId":"FVeNNFkkEDgfHMrslmHU__18","_typeName":"joynr.Request"}
                 requestReplyId: test.request.requestReplyId
             })
         );
@@ -585,7 +587,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             Reply.create({
                 error: new MethodInvocationException({
                     detailMessage:
-                        'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider',
+                        'Could not find an operation "getNotExistentOperationOrAttribute" or an attribute "NotExistentOperationOrAttribute" in the provider',
                     providerVersion: new Version({
                         majorVersion: 47,
                         minorVersion: 11
@@ -610,7 +612,7 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
             Reply.create({
                 error: new MethodInvocationException({
                     detailMessage:
-                        'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "notExistentOperationOrAttribute" in the provider',
+                        'Could not find an operation "setNotExistentOperationOrAttribute" or an attribute "NotExistentOperationOrAttribute" in the provider',
                     providerVersion: new Version({
                         majorVersion: 47,
                         minorVersion: 11

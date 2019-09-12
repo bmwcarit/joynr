@@ -17,7 +17,6 @@
  * #L%
  */
 import * as WebSocketProtocol from "../../generated/joynr/system/RoutingTypes/WebSocketProtocol";
-import JoynrException from "../exceptions/JoynrException";
 import SharedWebSocket from "../messaging/websocket/SharedWebSocket";
 import WebSocketMessagingSkeleton from "../messaging/websocket/WebSocketMessagingSkeleton";
 import WebSocketMessagingStubFactory from "../messaging/websocket/WebSocketMessagingStubFactory";
@@ -197,11 +196,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
                 return this.messageRouter.setRoutingProxy(newRoutingProxy);
             })
             .catch((error: any) => {
-                throw new Error(
-                    `Failed to create routing proxy: ${error}${
-                        error instanceof JoynrException ? ` ${error.detailMessage}` : ""
-                    }`
-                );
+                throw new Error(`Failed to create routing proxy: ${error}`);
             })
             .then(() => {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

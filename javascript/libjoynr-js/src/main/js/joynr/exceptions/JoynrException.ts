@@ -34,8 +34,9 @@ class JoynrException extends Error {
      * @param [settings.detailMessage] message containing details about the error
      */
     public constructor(settings: { detailMessage: string }) {
-        super();
+        super(settings.detailMessage);
         this.detailMessage = (settings && settings.detailMessage) || "";
+        Error.captureStackTrace(this, this.constructor);
     }
 
     public static _typeName = "joynr.exceptions.JoynrException";

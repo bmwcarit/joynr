@@ -28,7 +28,6 @@ import LoggingManager from "../../system/LoggingManager";
 import InProcessAddress from "../inprocess/InProcessAddress";
 import JoynrMessage from "../JoynrMessage";
 import MessageReplyToAddressCalculator from "../MessageReplyToAddressCalculator";
-import JoynrException from "../../exceptions/JoynrException";
 import JoynrRuntimeException from "../../exceptions/JoynrRuntimeException";
 import * as Typing from "../../util/Typing";
 import * as UtilInternal from "../../util/UtilInternal";
@@ -296,11 +295,7 @@ class MessageRouter {
 
     private routeInternalTransmitOnError(error: Error): void {
         //error while transmitting message
-        log.debug(
-            `Error while transmitting message: ${error}${
-                error instanceof JoynrException ? ` ${error.detailMessage}` : ""
-            }`
-        );
+        log.debug(`Error while transmitting message: ${error}`);
         //TODO queue message and retry later
     }
 
@@ -530,11 +525,7 @@ class MessageRouter {
             .then(() => this.routingProxy.replyToAddress.get())
             .then(address => this.setReplyToAddress(address))
             .catch((error: Error) => {
-                throw new Error(
-                    `Failed to get replyToAddress from parent router: ${error}${
-                        error instanceof JoynrException ? ` ${error.detailMessage}` : ""
-                    }`
-                );
+                throw new Error(`Failed to get replyToAddress from parent router: ${error}`);
             })
             .then(() => this.processQueuedRoutingProxyCalls());
     }
