@@ -16,10 +16,7 @@
  * limitations under the License.
  * #L%
  */
-import {
-    InProcessProvisioning,
-    WebSocketLibjoynrProvisioning
-} from "../../../../../javascript/libjoynr-js/src/main/js/joynr/start/interface/Provisioning";
+import { InProcessProvisioning, WebSocketLibjoynrProvisioning } from "joynr/joynr/start/interface/Provisioning";
 import { log, prettyLog } from "./logging";
 import joynr from "joynr";
 import LocalStorage from "joynr/global/LocalStorageNode";
@@ -31,6 +28,7 @@ import RadioStation from "../generated/js/joynr/vehicle/RadioStation";
 import Country from "../generated/js/joynr/vehicle/Country";
 import showHelp from "./console_common";
 import readline from "readline";
+import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
 
 const persistencyLocation = "./radioLocalStorageConsumer";
 const localStorage = new LocalStorage({ location: persistencyLocation, clearPersistency: false });
@@ -372,7 +370,7 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
         provisioning.brokerUri = process.env.brokerUri;
         provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl;
         provisioning.bounceProxyUrl = `${process.env.bounceProxyBaseUrl}/bounceproxy/`;
-        joynr.selectRuntime("inprocess");
+        joynr.selectRuntime(InProcessRuntime);
     } else if (process.env.runtime === "websocket") {
         if (process.env.cchost === undefined || process.env.ccport === undefined) {
             log("please pass cchost and ccport as argument");
@@ -380,7 +378,6 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
         }
         provisioning.ccAddress.host = process.env.cchost;
         provisioning.ccAddress.port = Number(process.env.ccport);
-        joynr.selectRuntime("websocket.libjoynr");
     }
     await localStorage.init();
     await joynr.load(provisioning);

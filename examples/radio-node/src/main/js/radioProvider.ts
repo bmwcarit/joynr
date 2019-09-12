@@ -17,10 +17,7 @@
  * #L%
  */
 
-import {
-    InProcessProvisioning,
-    WebSocketLibjoynrProvisioning
-} from "../../../../../javascript/libjoynr-js/src/main/js/joynr/start/interface/Provisioning";
+import { InProcessProvisioning, WebSocketLibjoynrProvisioning } from "joynr/joynr/start/interface/Provisioning";
 import { log } from "./logging";
 
 import joynr from "joynr";
@@ -28,6 +25,7 @@ import readline from "readline";
 import showHelp from "./console_common";
 import RadioProvider from "../generated/js/joynr/vehicle/RadioProvider";
 import MyRadioProvider from "./MyRadioProvider";
+import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
 const provisioning: InProcessProvisioning & WebSocketLibjoynrProvisioning = require("./provisioning_common");
 
 const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
@@ -107,7 +105,8 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
         log("please pass a domain as argument");
         process.exit(0);
     }
-    const domain = process.env.domain;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const domain = process.env.domain!;
     log(`domain: ${domain}`);
 
     provisioning.persistency = {
@@ -120,11 +119,10 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
             provisioning.brokerUri = process.env.brokerUri!;
             provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl!;
             provisioning.bounceProxyUrl = `${provisioning.bounceProxyBaseUrl}/bounceproxy/`;
-            joynr.selectRuntime("inprocess");
+            joynr.selectRuntime(InProcessRuntime);
         } else if (process.env.runtime === "websocket") {
             provisioning.ccAddress.host = process.env.cchost!;
             provisioning.ccAddress.port = (process.env.ccport as unknown) as number;
-            joynr.selectRuntime("websocket.libjoynr");
         }
     }
 
