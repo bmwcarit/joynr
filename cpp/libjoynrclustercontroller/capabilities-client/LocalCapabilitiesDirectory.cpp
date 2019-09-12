@@ -604,6 +604,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
         auto onSuccess = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
             participantId,
+            discoveryScope = discoveryQos.getDiscoveryScope(),
             callback
         ](const std::vector<joynr::types::GlobalDiscoveryEntry>& result)
         {
@@ -612,7 +613,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                         result,
                         thisSharedPtr->getCachedLocalCapabilities(participantId),
                         callback,
-                        joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+                        discoveryScope);
             }
         };
         auto onRuntimeError =
