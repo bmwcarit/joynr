@@ -1,4 +1,4 @@
-FROM fedora:27
+FROM fedora:30
 
 ###################################################
 # create data directories and volumes
