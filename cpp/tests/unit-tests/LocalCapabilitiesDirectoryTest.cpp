@@ -156,13 +156,13 @@ public:
                                              PUBLIC_KEY_ID);
         globalCapEntryMap.insert({EXTERNAL_ADDRESSES_VECTOR[0], globalCapEntry});
         entry = types::DiscoveryEntry(defaultProviderVersion,
-                                           DOMAIN_1_NAME,
-                                           INTERFACE_1_NAME,
-                                           dummyParticipantIdsVector[0],
-                                           types::ProviderQos(),
-                                           lastSeenDateMs,
-                                           expiryDateMs,
-                                           PUBLIC_KEY_ID);
+                                      DOMAIN_1_NAME,
+                                      INTERFACE_1_NAME,
+                                      dummyParticipantIdsVector[0],
+                                      types::ProviderQos(),
+                                      lastSeenDateMs,
+                                      expiryDateMs,
+                                      PUBLIC_KEY_ID);
         expectedGlobalCapEntry = types::GlobalDiscoveryEntry(entry.getProviderVersion(),
                                                              entry.getDomain(),
                                                              entry.getInterfaceName(),
@@ -874,6 +874,182 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllIsProperlyRejected_invalidGbi
 TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllIsProperlyRejected_unknownGbid)
 {
     testAddToAllIsProperlyRejected(types::DiscoveryError::UNKNOWN_GBID);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_globalOnly_emptyCache_invokesGcd)
+{
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
+    const std::vector<types::GlobalDiscoveryEntry>& discoveryEntriesResultList{};
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            lookup(ElementsAre(DOMAIN_1_NAME), INTERFACE_1_NAME, Eq(KNOWN_GBIDS), _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<4>(discoveryEntriesResultList));
+
+    auto onSuccess = [this] (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
+        EXPECT_EQ(0, result.size());
+        semaphore.notify();
+    };
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
+                                       INTERFACE_1_NAME,
+                                       discoveryQos,
+                                       onSuccess,
+                                       unexpectedProviderRuntimeExceptionFunction);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_globalOnly_remoteEntryInCache_doesNotInvokeGcd)
+{
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
+    const std::vector<types::GlobalDiscoveryEntry> discoveryEntriesResultList = getGlobalDiscoveryEntries(2);
+    const std::vector<types::GlobalDiscoveryEntry> expectedResult = discoveryEntriesResultList;
+
+    auto onSuccess = [this, &expectedResult]
+            (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
+        EXPECT_EQ(expectedResult.size(), result.size());
+        semaphore.notify();
+    };
+
+    // add DiscoveryEntries to cache
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            lookup(ElementsAre(DOMAIN_1_NAME), INTERFACE_1_NAME, Eq(KNOWN_GBIDS), _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<4>(discoveryEntriesResultList));
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
+                                       INTERFACE_1_NAME,
+                                       discoveryQos,
+                                       onSuccess,
+                                       defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    Mock::VerifyAndClearExpectations(globalCapabilitiesDirectoryClient.get());
+
+    // do actual lookup
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
+                                       INTERFACE_1_NAME,
+                                       discoveryQos,
+                                       onSuccess,
+                                       defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_localThenGlobal_emptyCache_invokesGcd)
+{
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    const std::vector<types::GlobalDiscoveryEntry>& discoveryEntriesResultList{};
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            lookup(ElementsAre(DOMAIN_1_NAME), INTERFACE_1_NAME, Eq(KNOWN_GBIDS), _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<4>(discoveryEntriesResultList));
+
+    auto onSuccess = [this] (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
+        EXPECT_EQ(0, result.size());
+        semaphore.notify();
+    };
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
+                                       INTERFACE_1_NAME,
+                                       discoveryQos,
+                                       onSuccess,
+                                       defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_localThenGlobal_localEntryCached_doesNotInvokeGcd)
+{
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
+
+    // add local capability
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+    entry.setQos(providerQos);
+    const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, entry);
+    localCapabilitiesDirectory->add(entry, createAddOnSuccessFunction(), unexpectedProviderRuntimeExceptionFunction);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    // do actual lookup
+    auto onSuccess = [this, &expectedEntry]
+            (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
+        ASSERT_EQ(1, result.size());
+        EXPECT_EQ(expectedEntry, result[0]);
+        semaphore.notify();
+    };
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
+                                       INTERFACE_1_NAME,
+                                       discoveryQos,
+                                       onSuccess,
+                                       defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_localThenGlobal_remoteEntryCached_doesNotInvokeGcd)
+{
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    const std::vector<types::GlobalDiscoveryEntry> discoveryEntriesResultList = getGlobalDiscoveryEntries(1);
+    const types::DiscoveryEntryWithMetaInfo expectedResult = util::convert(false, discoveryEntriesResultList[0]);
+
+    auto onSuccess = [this, &expectedResult]
+            (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
+        ASSERT_EQ(1, result.size());
+        EXPECT_EQ(expectedResult, result[0]);
+        semaphore.notify();
+    };
+
+    // add DiscoveryEntries to cache
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient,
+            lookup(ElementsAre(DOMAIN_1_NAME), INTERFACE_1_NAME, Eq(KNOWN_GBIDS), _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<4>(discoveryEntriesResultList));
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
+                                       INTERFACE_1_NAME,
+                                       discoveryQos,
+                                       onSuccess,
+                                       defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+
+    Mock::VerifyAndClearExpectations(globalCapabilitiesDirectoryClient.get());
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
+
+    localCapabilitiesDirectory->lookup({DOMAIN_1_NAME},
+                                       INTERFACE_1_NAME,
+                                       discoveryQos,
+                                       onSuccess,
+                                       defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, lookupByParticipantId_localThenGlobal_localEntry_doesNotInvokeGcdAndReturnsLocalEntry)
+{
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+
+    // add local capability
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    entry.setQos(providerQos);
+    const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, entry);
+    localCapabilitiesDirectory->add(entry, createAddOnSuccessFunction(), defaultProviderRuntimeExceptionError);
+
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
+
+    auto onSuccess = [this, &expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
+        EXPECT_EQ(expectedEntry, result);
+        semaphore.notify();
+    };
+
+    localCapabilitiesDirectory->lookup(dummyParticipantIdsVector[0],
+                                       onSuccess,
+                                       defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(TIMEOUT)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilities_invokesGcdClient)
