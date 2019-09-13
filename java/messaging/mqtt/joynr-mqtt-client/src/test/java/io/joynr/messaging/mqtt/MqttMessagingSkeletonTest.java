@@ -40,6 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,6 +55,8 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
@@ -64,6 +67,7 @@ import io.joynr.messaging.routing.RoutingTable;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonTest {
@@ -95,7 +99,10 @@ public class MqttMessagingSkeletonTest {
     private MqttStatusReceiver mqttStatusReceiver;
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
+        Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
+        objectMapperField.setAccessible(true);
+        objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,

@@ -24,13 +24,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.messaging.FailureAction;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 final class MqttMessagingSkeletonTestUtil {
     static final FailureAction failIfCalledAction = new FailureAction() {
@@ -73,7 +72,6 @@ final class MqttMessagingSkeletonTestUtil {
     static ImmutableMessage createTestMessage(String messageType) throws Exception {
         MutableMessage message = new MutableMessage();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");
 
         message.setSender("someSender");
@@ -82,7 +80,7 @@ final class MqttMessagingSkeletonTestUtil {
         message.setTtlMs(100000);
         message.setPayload(new byte[]{ 0, 1, 2 });
         message.setType(messageType);
-        message.setReplyTo(objectMapper.writeValueAsString(address));
+        message.setReplyTo(RoutingTypesUtil.toAddressString(address));
 
         return message.getImmutableMessage();
     }

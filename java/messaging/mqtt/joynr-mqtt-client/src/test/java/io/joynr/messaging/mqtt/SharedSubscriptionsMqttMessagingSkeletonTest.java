@@ -28,6 +28,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.List;
 
@@ -37,12 +38,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.Message;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 /**
  * Unit tests for {@link SharedSubscriptionsMqttMessagingSkeleton}.
@@ -80,7 +84,10 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     private SharedSubscriptionsMqttMessagingSkeleton subject;
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
+        Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
+        objectMapperField.setAccessible(true);
+        objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
         when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClient);
         when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClient);
     }
