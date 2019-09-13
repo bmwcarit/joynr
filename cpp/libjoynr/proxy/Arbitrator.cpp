@@ -148,13 +148,7 @@ void Arbitrator::startArbitration(
                 break;
             } else if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs <=
                        thisSharedPtr->discoveryQos.getRetryIntervalMs()) {
-                /*
-                 * no retry possible -> wait until discoveryTimeout is reached and inform caller
-                 * about cancelled arbitration
-                 */
-                auto waitIntervalMs = std::chrono::milliseconds(
-                        thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs);
-                thisSharedPtr->semaphore.waitFor(waitIntervalMs);
+                // no retry possible -> inform caller about cancelled arbitration immediately
                 break;
             } else {
                 // wait for retry interval and attempt a new arbitration

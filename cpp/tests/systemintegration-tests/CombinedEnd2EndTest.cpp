@@ -809,62 +809,40 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
     runtime1->unregisterProvider(providerParticipantId);
 }
 
-TEST_P(CombinedEnd2EndTest, subscribeToNonExistentDomain)
+TEST_P(CombinedEnd2EndTest, buildProxyForNonExistentDomain_throwsDiscoveryException)
 {
-
-    // Setup a mock listener - this will never be called
-    auto subscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
-
-    std::string nonexistentDomain(std::string("non-existent-").append(uuid));
-
     // Create a proxy to a non-existent domain
+    const std::string nonexistentDomain(std::string("non-existent-").append(uuid));
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime2->createProxyBuilder<tests::testProxy>(nonexistentDomain);
+    const std::uint64_t qosRoundTripTTL = 40000;
+    const int discoveryTimeoutMs = 5000;
+    const int retryIntervalMs = discoveryTimeoutMs + 1; // no retry
     DiscoveryQos discoveryQosOtherTimeout;
     discoveryQosOtherTimeout.setArbitrationStrategy(
             DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-
-    const int arbitrationTimeout = 5000;
-
-    std::uint64_t qosRoundTripTTL = 40000;
-    discoveryQosOtherTimeout.setDiscoveryTimeoutMs(arbitrationTimeout);
+    discoveryQosOtherTimeout.setDiscoveryTimeoutMs(discoveryTimeoutMs);
+    discoveryQosOtherTimeout.setRetryIntervalMs(retryIntervalMs);
 
     // Time how long arbitration takes
     auto start = std::chrono::system_clock::now();
-    bool haveDiscoveryException = false;
     int elapsed = 0;
 
-    // Expect an ArbitrationException
+    // Expect a DiscoveryException
     try {
-        // Send a message and expect to get a result
         std::shared_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQosOtherTimeout)
                         ->build());
-        auto subscriptionQos =
-                std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
-                                                                       1000,   // publication ttl
-                                                                       1000,   // minInterval_ms
-                                                                       2000,   //  maxInterval_ms
-                                                                       3000);  // alertInterval_ms
-
-        testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
-
+        std::ignore = testProxy;
+        FAIL() << "unexpected success, expected DiscoveryException";
     } catch (const exceptions::DiscoveryException& e) {
-        haveDiscoveryException = true;
         auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
         elapsed = duration.count();
-        if (elapsed < arbitrationTimeout) {
-            JOYNR_LOG_DEBUG(logger(),
-                            "Expected joynr::exceptions::DiscoveryException has been thrown too "
-                            "early. Message: {}",
-                            e.getMessage());
-        }
+        ASSERT_LT(elapsed, discoveryTimeoutMs) << "Expected joynr::exceptions::DiscoveryException "
+                                                  "has been thrown too late. Message: " + e.getMessage();
     }
-
-    ASSERT_TRUE(haveDiscoveryException);
-    ASSERT_GE(elapsed, arbitrationTimeout);
 }
 
 TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)

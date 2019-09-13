@@ -131,11 +131,11 @@ protected:
     Semaphore semaphore;
 };
 
-TEST_F(ArbitratorTest, arbitrationTimeout)
+TEST_F(ArbitratorTest, arbitrationTimeout_callsOnErrorIfNoRetryIsPossible)
 {
     types::Version providerVersion;
-    std::int64_t discoveryTimeoutMs = std::chrono::milliseconds(1000).count();
-    std::int64_t retryIntervalMs = std::chrono::milliseconds(450).count();
+    const std::int64_t discoveryTimeoutMs = std::chrono::milliseconds(1000).count();
+    const std::int64_t retryIntervalMs = std::chrono::milliseconds(400).count();
     DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
@@ -159,20 +159,19 @@ TEST_F(ArbitratorTest, arbitrationTimeout)
 
     auto start = std::chrono::system_clock::now();
 
-    EXPECT_CALL(*mockArbitrator, attemptArbitration()).Times(AtLeast(1));
+    EXPECT_CALL(*mockArbitrator, attemptArbitration()).Times(2);
     mockArbitrator->startArbitration(onSuccess, onError);
 
     // Wait for timeout
-    // Wait for more than discoveryTimeoutMs milliseconds since it might take some time until the
-    // timeout is reported
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs * 10)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs)));
 
     auto now = std::chrono::system_clock::now();
 
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
 
     JOYNR_LOG_DEBUG(logger(), "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
-    ASSERT_GE(elapsed.count(), discoveryTimeoutMs);
+    ASSERT_LT(elapsed.count(), discoveryTimeoutMs);
+    ASSERT_GE(elapsed.count(), 2 * retryIntervalMs);
     mockArbitrator->stopArbitration();
 }
 
