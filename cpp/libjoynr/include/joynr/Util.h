@@ -132,18 +132,6 @@ std::set<T> vectorToSet(const std::vector<T>& v)
 }
 
 template <typename T>
-std::string vectorToString(const std::vector<T>& v)
-{
-    std::string element;
-    std::string vectorString;
-    for (const auto& e : v) {
-        vectorString += element.empty() ? "" : element + ",";
-        element = std::string(e);
-    }
-    return vectorString + element;
-}
-
-template <typename T>
 bool setContainsSet(const std::set<T>& haystack, const std::set<T>& needles)
 {
     return std::includes(haystack.cbegin(), haystack.cend(), needles.cbegin(), needles.cend());

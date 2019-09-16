@@ -21,6 +21,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/none.hpp>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -70,7 +71,7 @@ static std::string getExcpetionMsgUnableToLookup(
     static const std::string exceptionMsgPart2 = ") from discovery. JoynrException: ";
     const std::string params = participantId.empty() ? "domain: " + domain + ", interface: " + interfaceName
                                                      : "participantId: " + participantId;
-    const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + util::vectorToString(gbids);
+    const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + boost::algorithm::join(gbids, ", ");
     return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + exception.getMessage() + ", continuing.";
 }
 static std::string getErrorMsgUnableToLookup(
@@ -81,7 +82,7 @@ static std::string getErrorMsgUnableToLookup(
     static const std::string exceptionMsgPart2 = ") from discovery. DiscoveryError: ";
     const std::string params = participantId.empty() ? "domain: " + domain + ", interface: " + interfaceName
                                                      : "participantId: " + participantId;
-    const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + util::vectorToString(gbids);
+    const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + boost::algorithm::join(gbids, ", ");
     const std::string errorString = types::DiscoveryError::getLiteral(error);
     std::string suffix;
     switch (error) {

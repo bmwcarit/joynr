@@ -47,7 +47,7 @@ Arbitrator::Arbitrator(
           pendingFuture(),
           discoveryProxy(discoveryProxy),
           gbids(gbids),
-          gbidString(util::vectorToString(gbids)),
+          gbidString(boost::algorithm::join(gbids, ", ")),
           discoveryQos(discoveryQos),
           systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
                              discoveryQos.getDiscoveryTimeoutMs(),

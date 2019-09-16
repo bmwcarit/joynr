@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <ostream>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/range/join.hpp>
@@ -225,7 +226,7 @@ void LocalCapabilitiesDirectory::addInternal(
                             "Exception occurred during the execution of capabilitiesProxy->add for "
                             "'{}' for GBIDs ({}). Error: {} ({})",
                             globalDiscoveryEntry.toString(),
-                            util::vectorToString(gbids),
+                            boost::algorithm::join(gbids, ", "),
                             error.getMessage(),
                             error.getTypeName());
             if (awaitGlobalRegistration && onError) {
@@ -252,7 +253,7 @@ void LocalCapabilitiesDirectory::addInternal(
                     "DiscoveryError occurred during the execution of capabilitiesProxy->add for "
                     "'{}' for GBIDs ({}). Error: {}",
                     globalDiscoveryEntry.toString(),
-                    util::vectorToString(gbids),
+                    boost::algorithm::join(gbids, ", "),
                     types::DiscoveryError::getLiteral(error));
             if (awaitGlobalRegistration && onError) {
                 // no need to remove entry as in this case the entry was not yet added
@@ -279,7 +280,7 @@ void LocalCapabilitiesDirectory::addInternal(
                                "Global capability '{}' added successfully for GBIDs ({}), "
                                "#registeredGlobalCapabilities {}",
                                globalDiscoveryEntry.toString(),
-                               util::vectorToString(gbids),
+                               boost::algorithm::join(gbids, ", "),
                                thisSharedPtr->countGlobalCapabilities());
                 if (awaitGlobalRegistration) {
                     thisSharedPtr->insertInGlobalLookupCache(globalDiscoveryEntry, gbids);
@@ -348,7 +349,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                                        "Global provider reregistration for participantId {} and "
                                        "gbids ({}) failed: {} (DiscoveryError)",
                                        participantId,
-                                       util::vectorToString(gbids),
+                                       boost::algorithm::join(gbids, ", "),
                                        types::DiscoveryError::getLiteral(error));
                     };
                     auto onRuntimeError = [participantId, gbids](
@@ -357,7 +358,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                                        "Global provider reregistration for participantId {} and "
                                        "gbids ({}) failed: {} ({})",
                                        participantId,
-                                       util::vectorToString(gbids),
+                                       boost::algorithm::join(gbids, ", "),
                                        exception.getMessage(),
                                        exception.getTypeName());
                     };
@@ -1174,7 +1175,7 @@ void LocalCapabilitiesDirectory::lookup(
     {
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             if (capabilities.size() == 0) {
-                const std::string gbidString = util::vectorToString(gbidsForLookup);
+                const std::string gbidString = boost::algorithm::join(gbidsForLookup, ", ");
                 JOYNR_LOG_DEBUG(logger(),
                                 "participantId {} has no capability entry "
                                 "(DiscoveryError::NO_ENTRY_FOR_PARTICIPANT) for GBIDs: ({})",
@@ -1236,7 +1237,7 @@ void LocalCapabilitiesDirectory::remove(
                                 participantId);
             } else {
                 gbids = foundGbids->second;
-                const std::string gbidString = util::vectorToString(gbids);
+                const std::string gbidString = boost::algorithm::join(gbids, ", ");
                 JOYNR_LOG_INFO(logger(),
                                "Removing globally registered participantId: {} from GBIDs: {}",
                                participantId,
@@ -1249,7 +1250,7 @@ void LocalCapabilitiesDirectory::remove(
                     JOYNR_LOG_WARN(logger(),
                                    "Error removing participantId {} globally for GBIDs ({}): {}",
                                    participantId,
-                                   util::vectorToString(gbids),
+                                   boost::algorithm::join(gbids, ", "),
                                    types::DiscoveryError::getLiteral(error));
                 };
                 auto onRuntimeError =
@@ -1258,7 +1259,7 @@ void LocalCapabilitiesDirectory::remove(
                             logger(),
                             "Failed to remove participantId {} globally for GBIDs ({}): {} ({})",
                             participantId,
-                            util::vectorToString(gbids),
+                            boost::algorithm::join(gbids, ", "),
                             exception.getMessage(),
                             exception.getTypeName());
                 };
@@ -1464,7 +1465,7 @@ void LocalCapabilitiesDirectory::insertInGlobalLookupCache(const types::Discover
             logger(),
             "Added global capability to cache {}, registered GBIDs: {}, #globalLookupCache: {}",
             entry.toString(),
-            util::vectorToString(allGbids),
+            boost::algorithm::join(allGbids, ", "),
             globalLookupCache.size());
 }
 
