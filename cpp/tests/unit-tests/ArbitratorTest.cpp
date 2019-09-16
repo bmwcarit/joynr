@@ -1119,19 +1119,18 @@ TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
     arbitrator->stopArbitration();
 }
 
-INSTANTIATE_TEST_CASE_P(changeArbitrationStrategy,
-                        ArbitratorTestWithParams,
-                        ::testing::Values(DiscoveryQos::ArbitrationStrategy::LAST_SEEN,
-                                          DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT,
-                                          DiscoveryQos::ArbitrationStrategy::KEYWORD,
-                                          DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY));
 
 /*
  * Tests that the arbitrators report an exception if no entries were found during the last retry
  */
-void ArbitratorTest::testExceptionEmptyResult(std::shared_ptr<Arbitrator> arbitrator,
-                                              const DiscoveryQos& discoveryQos)
+TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
 {
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(this->arbitrationStrategy);
+    discoveryQos.setDiscoveryTimeoutMs(199);
+    discoveryQos.setRetryIntervalMs(100);
+    joynr::types::Version expectedVersion(47, 11);
+
     // discovery entries for first lookup
     types::ProviderQos providerQos(
             std::vector<types::CustomParameter>(), // custom provider parameters
@@ -1139,54 +1138,82 @@ void ArbitratorTest::testExceptionEmptyResult(std::shared_ptr<Arbitrator> arbitr
             joynr::types::ProviderScope::GLOBAL,   // discovery scope
             false                                  // supports on change notifications
             );
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries1;
     joynr::types::Version providerVersion(22, 23);
-    discoveryEntries1.push_back(joynr::types::DiscoveryEntryWithMetaInfo(providerVersion,
-                                                                         domain,
-                                                                         interfaceName,
-                                                                         "testParticipantId",
-                                                                         providerQos,
-                                                                         lastSeenDateMs,
-                                                                         expiryDateMs,
-                                                                         publicKeyId,
-                                                                         false));
+    types::DiscoveryEntryWithMetaInfo discoveryEntry1(providerVersion,
+                                                      domain,
+                                                      interfaceName,
+                                                      "testParticipantId",
+                                                      providerQos,
+                                                      lastSeenDateMs,
+                                                      expiryDateMs,
+                                                      publicKeyId,
+                                                      false);
 
-    // discoveryEntries for subsequent lookups
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries2;
+    std::function<void(const exceptions::DiscoveryException&)> onError;
 
-    auto mockFuture1 = std::make_shared<
-            joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
-    mockFuture1->onSuccess(discoveryEntries1);
-    auto mockFuture2 = std::make_shared<
-            joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
-    mockFuture2->onSuccess(discoveryEntries2);
-    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
-            .WillOnce(Return(mockFuture1))
-            .WillRepeatedly(Return(mockFuture2));
+    if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+        const std::string fixedParticipantId("fixedParticipantId");
+        discoveryQos.addCustomParameter("fixedParticipantId", fixedParticipantId);
+        discoveryEntry1.setParticipantId(fixedParticipantId);
+
+        auto mockFuture1 = std::make_shared<
+                joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+        mockFuture1->onSuccess(discoveryEntry1);
+        auto mockFuture2 = std::make_shared<
+                joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+        auto exception = std::make_shared<exceptions::ApplicationException>(
+                    "no entry found",
+                    std::make_shared<types::DiscoveryError>(
+                        types::DiscoveryError::getLiteral(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT)));
+        mockFuture2->onError(exception);
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(
+                        Matcher<const std::string&>(_), _, _, _, _, _, _))
+                .WillOnce(Return(mockFuture1)) // return matching entry with incompatible version
+                .WillRepeatedly(Return(mockFuture2)); // NO_ENTRY_FOR_PARTICIPANT
+
+        onError = [this, fixedParticipantId](const exceptions::DiscoveryException& exception) {
+                EXPECT_THAT(exception,
+                            joynrException(exceptions::DiscoveryException::TYPE_NAME(),
+                                           getErrorMsgUnableToLookup(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT,
+                                                                     fixedParticipantId)));
+                semaphore.notify();
+            };
+    } else {
+        if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::KEYWORD) {
+            // Search for this keyword value
+            const std::string keywordValue("unittests-keyword");
+            discoveryQos.addCustomParameter("keyword", keywordValue);
+            providerQos.setCustomParameters({types::CustomParameter("keyword", keywordValue)});
+        }
+
+        std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries1;
+        discoveryEntries1.push_back(discoveryEntry1);
+
+        // discoveryEntries for subsequent lookups
+        std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries2;
+
+        auto mockFuture1 = std::make_shared<
+                joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+        mockFuture1->onSuccess(discoveryEntries1);
+        auto mockFuture2 = std::make_shared<
+                joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+        mockFuture2->onSuccess(discoveryEntries2);
+        EXPECT_CALL(*mockDiscovery, lookupAsyncMock(
+                        Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
+                .WillOnce(Return(mockFuture1)) // return matching entry with incompatible version
+                .WillRepeatedly(Return(mockFuture2)); // return empty result
+
+        onError = [this](const exceptions::DiscoveryException& exception) {
+                EXPECT_THAT(exception,
+                            joynrException(exceptions::DiscoveryException::TYPE_NAME(),
+                                           exceptionMsgNoEntriesFound));
+                semaphore.notify();
+        };
+    }
 
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
 
-    auto onError = [this](const exceptions::DiscoveryException& exception) {
-        EXPECT_THAT(exception,
-                    joynrException(exceptions::DiscoveryException::TYPE_NAME(),
-                                   exceptionMsgNoEntriesFound));
-        semaphore.notify();
-    };
-
-    arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(semaphore.waitFor(
-            std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
-    arbitrator->stopArbitration();
-}
-
-TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionEmptyResult)
-{
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
-    joynr::types::Version expectedVersion(47, 11);
-    auto qosArbitrator = std::make_shared<Arbitrator>(domain,
+    auto arbitrator = std::make_shared<Arbitrator>(domain,
                                                       interfaceName,
                                                       expectedVersion,
                                                       mockDiscovery,
@@ -1194,51 +1221,18 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsExceptionEmptyResult)
                                                       emptyGbidsVector,
                                                       move(qosArbitrationStrategyFunction));
 
-    testExceptionEmptyResult(qosArbitrator, discoveryQos);
+    arbitrator->startArbitration(onSuccess, onError);
+    EXPECT_TRUE(semaphore.waitFor(
+            std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
+    arbitrator->stopArbitration();
 }
 
-TEST_F(ArbitratorTest, getKeywordProviderReturnsExceptionEmptyResult)
-{
-    // Search for this keyword value
-    const std::string keywordValue("unittests-keyword");
-
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
-    discoveryQos.addCustomParameter("keyword", keywordValue);
-    joynr::types::Version expectedVersion(47, 11);
-    auto keywordArbitrator = std::make_shared<Arbitrator>(domain,
-                                                          interfaceName,
-                                                          expectedVersion,
-                                                          mockDiscovery,
-                                                          discoveryQos,
-                                                          emptyGbidsVector,
-                                                          move(keywordArbitrationStrategyFunction));
-
-    testExceptionEmptyResult(keywordArbitrator, discoveryQos);
-}
-
-// Arbitrator has no special exception for empty results
-
-TEST_F(ArbitratorTest, getLastSeenReturnsExceptionEmptyResult)
-{
-    DiscoveryQos discoveryQos;
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
-    joynr::types::Version expectedVersion(47, 11);
-    auto lastSeenArbitrator =
-            std::make_shared<Arbitrator>(domain,
-                                         interfaceName,
-                                         expectedVersion,
-                                         mockDiscovery,
-                                         discoveryQos,
-                                         emptyGbidsVector,
-                                         move(lastSeenArbitrationStrategyFunction));
-
-    testExceptionEmptyResult(lastSeenArbitrator, discoveryQos);
-}
+INSTANTIATE_TEST_CASE_P(changeArbitrationStrategy,
+                        ArbitratorTestWithParams,
+                        ::testing::Values(DiscoveryQos::ArbitrationStrategy::LAST_SEEN,
+                                          DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT,
+                                          DiscoveryQos::ArbitrationStrategy::KEYWORD,
+                                          DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY));
 
 template <int Duration>
 void letThreadSleep()
