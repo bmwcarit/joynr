@@ -44,6 +44,10 @@ std::shared_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
         arbitrationStrategyFunction = std::make_unique<LastSeenArbitrationStrategyFunction>();
         break;
     case DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT:
+        if (discoveryQos.getCustomParameters().count("fixedParticipantId") == 0) {
+            throw exceptions::DiscoveryException(
+                    "Arbitrator creation failed: CustomParameter \"fixedParticipantId\" not set");
+        }
         arbitrationStrategyFunction =
                 std::make_unique<FixedParticipantArbitrationStrategyFunction>();
         break;
@@ -54,7 +58,8 @@ std::shared_ptr<Arbitrator> ArbitratorFactory::createArbitrator(
         break;
     case DiscoveryQos::ArbitrationStrategy::KEYWORD:
         if (discoveryQos.getCustomParameters().count("keyword") == 0) {
-            throw exceptions::DiscoveryException("Arbitrator creation failed: keyword not set");
+            throw exceptions::DiscoveryException(
+                    "Arbitrator creation failed: CustomParameter \"keyword\" not set");
         }
         arbitrationStrategyFunction = std::make_unique<KeywordArbitrationStrategyFunction>();
         break;
