@@ -191,6 +191,12 @@ option(
 )
 message(STATUS "option ENABLE_DOXYGEN=" ${ENABLE_DOXYGEN})
 
+option(
+    ENABLE_MQTT_OCSP
+    "Enable OCSP in mosquitto?"
+    OFF
+)
+message(STATUS "option ENABLE_MQTT_OCSP=" ${ENABLE_MQTT_OCSP})
 
 option(
     BUILD_CLUSTER_CONTROLLER
@@ -520,6 +526,10 @@ if(EXISTS "/etc/fedora-release")
     message(STATUS "Fedora release detected, eNULL cipher not available - disabling.")
     add_definitions(-DJOYNR_WS_TLS_DISABLE_UNENCRYPTED_TRAFFIC)
 endif()
+
+if(ENABLE_MQTT_OCSP)
+    add_definitions(-DMQTT_OCSP_ENABLED)
+endif(ENABLE_MQTT_OCSP)
 
 ######## DEFAULT COMPILER FLAGS #############
 
