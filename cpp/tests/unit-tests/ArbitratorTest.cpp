@@ -21,6 +21,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/none.hpp>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -37,35 +38,66 @@
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/types/DiscoveryError.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
 
 #include "tests/PrettyPrint.h"
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockDiscovery.h"
 
-using ::testing::AtLeast;
-using ::testing::Throw;
-using ::testing::Return;
 using ::testing::_;
 using ::testing::A;
-using ::testing::InvokeWithoutArgs;
+using ::testing::AtLeast;
+using ::testing::Eq;
 using ::testing::DoAll;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Matcher;
+using ::testing::Return;
+using ::testing::Throw;
 
 using namespace joynr;
 
 static const std::string domain("unittest-domain");
 static const std::string interfaceName("unittest-interface");
+static const std::vector<std::string> gbids {"testGbid1", "testGbid2", "testGbid3"};
 static const std::string exceptionMsgNoEntriesFound =
         "No entries found for domain: " + domain + ", interface: " + interfaceName;
 static std::string getExcpetionMsgUnableToLookup(
         const exceptions::JoynrException& exception,
+        const std::vector<std::string>& gbids,
         const std::string& participantId = "") {
     static const std::string exceptionMsgPart1 = "Unable to lookup provider (";
     static const std::string exceptionMsgPart2 = ") from discovery. JoynrException: ";
     const std::string params = participantId.empty() ? "domain: " + domain + ", interface: " + interfaceName
                                                      : "participantId: " + participantId;
-    return exceptionMsgPart1 + params + exceptionMsgPart2 + exception.getMessage() + ", continuing.";
+    const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + util::vectorToString(gbids);
+    return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + exception.getMessage() + ", continuing.";
+}
+static std::string getErrorMsgUnableToLookup(
+        const types::DiscoveryError::Enum& error,
+        const std::vector<std::string>& gbids,
+        const std::string& participantId = "") {
+    static const std::string exceptionMsgPart1 = "Unable to lookup provider (";
+    static const std::string exceptionMsgPart2 = ") from discovery. DiscoveryError: ";
+    const std::string params = participantId.empty() ? "domain: " + domain + ", interface: " + interfaceName
+                                                     : "participantId: " + participantId;
+    const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + util::vectorToString(gbids);
+    const std::string errorString = types::DiscoveryError::getLiteral(error);
+    std::string suffix;
+    switch (error) {
+    case types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT:
+    case types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS: {
+        suffix = ", continuing.";
+        break;
+    }
+    case types::DiscoveryError::UNKNOWN_GBID:
+    case types::DiscoveryError::INVALID_GBID:
+    case types::DiscoveryError::INTERNAL_ERROR:
+    default:
+        suffix =  ", giving up.";
+        break;
+    }
+    return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + errorString + suffix;
 }
 
 class MockArbitrator : public Arbitrator
@@ -1037,6 +1069,129 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
     lastSeenArbitrator->stopArbitration();
 }
 
+TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEntryForParticipant_retries)
+{
+    const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT;
+    const std::int64_t discoveryTimeoutMs = 199;
+    const std::int64_t retryIntervalMs = 100;
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(retryIntervalMs);
+    const std::string participantId = "unittests-participantId";
+    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+
+    const std::string expectedErrorMessage = getErrorMsgUnableToLookup(error, gbids, participantId);
+
+    auto exception = std::make_shared<exceptions::ApplicationException>(
+                "no entry found",
+                std::make_shared<types::DiscoveryError>(
+                    types::DiscoveryError::getLiteral(error)));
+    auto mockFutureFixedPartId =
+            std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+    mockFutureFixedPartId->onError(exception);
+
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(
+                    _, // participantId
+                    _, // discoveryQos
+                    _, // gbids
+                    _, // onSuccess
+                    _, // onApplicationError
+                    _, // onRuntimeError
+                    _)) // qos
+            .Times(2) // 1 retry
+            .WillRepeatedly(Return(mockFutureFixedPartId));
+
+    joynr::types::Version version;
+    auto arbitrator = ArbitratorFactory::createArbitrator(
+            domain, interfaceName, version, mockDiscovery, discoveryQos, gbids);
+
+    auto onSuccess = [this](const types::DiscoveryEntryWithMetaInfo& result) {
+         FAIL() << "Got result: " << result.toString();
+    };
+    auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception,
+                    joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
+                                   expectedErrorMessage));
+        semaphore.notify();
+    };
+
+    auto start = std::chrono::system_clock::now();
+
+    arbitrator->startArbitration(onSuccess, onError);
+    EXPECT_TRUE(semaphore.waitFor(
+            std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
+
+    auto now = std::chrono::system_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+
+    JOYNR_LOG_DEBUG(logger(), "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
+    ASSERT_LT(elapsed.count(), discoveryTimeoutMs);
+    ASSERT_GE(elapsed.count(), retryIntervalMs);
+    arbitrator->stopArbitration();
+}
+
+TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEntryForSelectedBackends_retries)
+{
+    const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS;
+    const std::int64_t discoveryTimeoutMs = 199;
+    const std::int64_t retryIntervalMs = 100;
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
+    discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(retryIntervalMs);
+
+    const std::string expectedErrorMessage = getErrorMsgUnableToLookup(error, gbids);
+
+    auto exception = std::make_shared<exceptions::ApplicationException>(
+                "no entry found",
+                std::make_shared<types::DiscoveryError>(
+                    types::DiscoveryError::getLiteral(error)));
+    auto mockFuture =
+            std::make_shared<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onError(exception);
+
+    EXPECT_CALL(*mockDiscovery, lookupAsyncMock(
+                    _, // domains
+                    _, // interfaceName
+                    _, // discoveryQos
+                    _, // gbids
+                    _, // onSuccess
+                    _, // onApplicationError
+                    _, // onRuntimeError
+                    _)) // qos
+            .Times(2) // 1 retry
+            .WillRepeatedly(Return(mockFuture));
+
+    joynr::types::Version version;
+    auto arbitrator = ArbitratorFactory::createArbitrator(
+            domain, interfaceName, version, mockDiscovery, discoveryQos, gbids);
+
+    auto onSuccess = [this](const types::DiscoveryEntryWithMetaInfo& result) {
+         FAIL() << "Got result: " << result.toString();
+    };
+    auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& exception) {
+        EXPECT_THAT(exception,
+                    joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
+                                   expectedErrorMessage));
+        semaphore.notify();
+    };
+
+    auto start = std::chrono::system_clock::now();
+
+    arbitrator->startArbitration(onSuccess, onError);
+    EXPECT_TRUE(semaphore.waitFor(
+            std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
+
+    auto now = std::chrono::system_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+
+    JOYNR_LOG_DEBUG(logger(), "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
+    ASSERT_LT(elapsed.count(), discoveryTimeoutMs);
+    ASSERT_GE(elapsed.count(), retryIntervalMs);
+    arbitrator->stopArbitration();
+}
+
 /*
  * Tests that the arbitrators report the exception from the discoveryProxy if the lookup fails
  * during the last retry
@@ -1051,8 +1206,187 @@ public:
     }
 
 protected:
+    void testCallsDiscoveryProxyCorrectly(const std::vector<std::string>& gbids,
+                                          const std::vector<std::string>& expectedGbids) {
+        const std::vector<std::string> expectedDomains {domain};
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(this->arbitrationStrategy);
+        discoveryQos.setDiscoveryTimeoutMs(100);
+        discoveryQos.setRetryIntervalMs(200); // no retry
+
+        types::DiscoveryQos expectedDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
+                                                 discoveryQos.getDiscoveryTimeoutMs(),
+                                                 discoveryQos.getDiscoveryScope(),
+                                                 discoveryQos.getProviderMustSupportOnChange());
+
+        if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+            const std::string participantId = "unittests-participantId";
+            discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+
+            auto mockFutureFixedPartId =
+                    std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+            mockFutureFixedPartId->onError(
+                    std::make_shared<exceptions::JoynrRuntimeException>("exception"));
+
+            EXPECT_CALL(*mockDiscovery, lookupAsyncMock(
+                            Eq(participantId), // participantId
+                            Eq(expectedDiscoveryQos), // discoveryQos
+                            Eq(expectedGbids), // gbids
+                            _, // onSuccess
+                            _, // onApplicationError
+                            _, // onRuntimeError
+                            Eq(boost::none))) // qos
+                    .WillOnce(Return(mockFutureFixedPartId));
+        } else {
+            if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::KEYWORD) {
+                discoveryQos.addCustomParameter("keyword", "keywordValue");
+            }
+            auto mockFuture = std::make_shared<
+                    joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+            mockFuture->onError(
+                    std::make_shared<exceptions::JoynrRuntimeException>("exception"));
+
+            EXPECT_CALL(*mockDiscovery, lookupAsyncMock(
+                            Eq(expectedDomains), // domains
+                            Eq(interfaceName), // interfaceName
+                            Eq(expectedDiscoveryQos), // discoveryQos
+                            Eq(expectedGbids), // gbids
+                            _, // onSuccess
+                            _, // onApplicationError
+                            _, // onRuntimeError
+                            Eq(boost::none))) // qos
+                    .WillOnce(Return(mockFuture));
+        }
+
+        joynr::types::Version version;
+        auto arbitrator = ArbitratorFactory::createArbitrator(
+                domain, interfaceName, version, mockDiscovery, discoveryQos, gbids);
+
+        auto onSuccess = [this](const types::DiscoveryEntryWithMetaInfo&) {
+            semaphore.notify();
+        };
+        auto onError = [this](const exceptions::DiscoveryException&) {
+            semaphore.notify();
+        };
+
+        arbitrator->startArbitration(onSuccess, onError);
+        EXPECT_TRUE(semaphore.waitFor(
+                std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
+        arbitrator->stopArbitration();
+    };
+
+    void testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(const types::DiscoveryError::Enum& error)
+    {
+        const std::int64_t retryIntervalMs = 100;
+        DiscoveryQos discoveryQos;
+        discoveryQos.setArbitrationStrategy(this->arbitrationStrategy);
+        discoveryQos.setDiscoveryTimeoutMs(199);
+        discoveryQos.setRetryIntervalMs(retryIntervalMs);
+
+        auto exception = std::make_shared<exceptions::ApplicationException>(
+                    "no entry found",
+                    std::make_shared<types::DiscoveryError>(
+                        types::DiscoveryError::getLiteral(error)));
+        std::string expectedErrorMessage;
+        if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+            const std::string participantId = "unittests-participantId";
+            discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+            expectedErrorMessage = getErrorMsgUnableToLookup(error, gbids, participantId);
+
+            auto mockFutureFixedPartId =
+                    std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+            mockFutureFixedPartId->onError(exception);
+
+            EXPECT_CALL(*mockDiscovery, lookupAsyncMock(
+                            _, // participantId
+                            _, // discoveryQos
+                            _, // gbids
+                            _, // onSuccess
+                            _, // onApplicationError
+                            _, // onRuntimeError
+                            _)) // qos
+                    .WillOnce(Return(mockFutureFixedPartId));
+        } else {
+            if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::KEYWORD) {
+                discoveryQos.addCustomParameter("keyword", "keywordValue");
+            }
+            expectedErrorMessage = getErrorMsgUnableToLookup(error, gbids);
+            auto mockFuture = std::make_shared<
+                    joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+            mockFuture->onError(exception);
+
+            EXPECT_CALL(*mockDiscovery, lookupAsyncMock(
+                            _, // domains
+                            _, // interfaceName
+                            _, // discoveryQos
+                            _, // gbids
+                            _, // onSuccess
+                            _, // onApplicationError
+                            _, // onRuntimeError
+                            _)) // qos
+                    .WillOnce(Return(mockFuture));
+        }
+
+        joynr::types::Version version;
+        auto arbitrator = ArbitratorFactory::createArbitrator(
+                domain, interfaceName, version, mockDiscovery, discoveryQos, gbids);
+
+        auto onSuccess = [this](const types::DiscoveryEntryWithMetaInfo& result) {
+             FAIL() << "Got result: " << result.toString();
+        };
+        auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& exception) {
+            EXPECT_THAT(exception,
+                        joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
+                                       expectedErrorMessage));
+            semaphore.notify();
+        };
+
+        auto start = std::chrono::system_clock::now();
+
+        arbitrator->startArbitration(onSuccess, onError);
+        EXPECT_TRUE(semaphore.waitFor(
+                std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
+
+        auto now = std::chrono::system_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+
+        JOYNR_LOG_DEBUG(logger(), "Time elapsed for unsuccessful arbitration : {}", elapsed.count());
+        ASSERT_LT(elapsed.count(), retryIntervalMs);
+        arbitrator->stopArbitration();
+    }
+
     const DiscoveryQos::ArbitrationStrategy arbitrationStrategy;
 };
+
+TEST_P(ArbitratorTestWithParams, callsDiscoveryProxyCorrectly_withGbids)
+{
+    const std::vector<std::string> expectedGbids = gbids;
+
+    testCallsDiscoveryProxyCorrectly(gbids, expectedGbids);
+}
+
+TEST_P(ArbitratorTestWithParams, callsDiscoveryProxyCorrectly_withoutGbids)
+{
+    const std::vector<std::string> gbids {};
+    const std::vector<std::string> expectedGbids = gbids;
+
+    testCallsDiscoveryProxyCorrectly(gbids, expectedGbids);
+}
+
+TEST_P(ArbitratorTestWithParams, discoveryException_discoveryErrorFromDiscoveryProxy_unknownGbid_doesNotretry)
+{
+    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(types::DiscoveryError::UNKNOWN_GBID);
+}
+
+TEST_P(ArbitratorTestWithParams, discoveryException_discoveryErrorFromDiscoveryProxy_invalidGbid_doesNotretry)
+{
+    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(types::DiscoveryError::INVALID_GBID);
+}
+
+TEST_P(ArbitratorTestWithParams, discoveryException_discoveryErrorFromDiscoveryProxy_internalError_doesNotretry)
+{
+    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(types::DiscoveryError::INTERNAL_ERROR);
+}
 
 TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
 {
@@ -1068,7 +1402,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
 
     if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
         const std::string participantId = "unittests-participantId";
-        expectedExceptionMsg = getExcpetionMsgUnableToLookup(expectedException, participantId);
+        expectedExceptionMsg = getExcpetionMsgUnableToLookup(expectedException, emptyGbidsVector, participantId);
         discoveryQos.addCustomParameter("fixedParticipantId", participantId);
 
         auto mockFutureFixedPartId1 =
@@ -1084,7 +1418,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
                 .WillOnce(Return(mockFutureFixedPartId1))
                 .WillRepeatedly(Return(mockFutureFixedPartId2));
     } else {
-        expectedExceptionMsg = getExcpetionMsgUnableToLookup(expectedException);
+        expectedExceptionMsg = getExcpetionMsgUnableToLookup(expectedException, emptyGbidsVector);
         if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::KEYWORD) {
             discoveryQos.addCustomParameter("keyword", "keywordValue");
         }
@@ -1175,6 +1509,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
                 EXPECT_THAT(exception,
                             joynrException(exceptions::DiscoveryException::TYPE_NAME(),
                                            getErrorMsgUnableToLookup(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT,
+                                                                     emptyGbidsVector,
                                                                      fixedParticipantId)));
                 semaphore.notify();
             };
@@ -1214,12 +1549,12 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
     auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
 
     auto arbitrator = std::make_shared<Arbitrator>(domain,
-                                                      interfaceName,
-                                                      expectedVersion,
-                                                      mockDiscovery,
-                                                      discoveryQos,
-                                                      emptyGbidsVector,
-                                                      move(qosArbitrationStrategyFunction));
+                                                   interfaceName,
+                                                   expectedVersion,
+                                                   mockDiscovery,
+                                                   discoveryQos,
+                                                   emptyGbidsVector,
+                                                   move(qosArbitrationStrategyFunction));
 
     arbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(semaphore.waitFor(
