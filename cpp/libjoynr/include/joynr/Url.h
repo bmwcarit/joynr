@@ -51,7 +51,7 @@ public:
     std::string toString() const;
 
 private:
-    std::vector<std::string> queryItems;
+    std::vector<std::string> _queryItems;
 };
 
 /**
@@ -93,14 +93,14 @@ public:
      * @param query The query
      * @param fragment The fragment
      */
-    Url(const std::string& protocol,
-        const std::string& user,
-        const std::string& password,
-        const std::string& host,
-        std::uint16_t port,
-        const std::string& path,
-        const std::string& query,
-        const std::string& fragment);
+    Url(const std::string& _protocol,
+        const std::string& _user,
+        const std::string& _password,
+        const std::string& _host,
+        std::uint16_t _port,
+        const std::string& _path,
+        const std::string& _query,
+        const std::string& _fragment);
 
     /**
      * @brief Copy a Url
@@ -200,16 +200,16 @@ public:
     std::string toString() const;
 
 private:
-    std::string protocol;
-    std::string user;
-    std::string password;
-    std::string host;
-    std::uint16_t port;
-    std::string path;
-    std::string query;
-    std::string fragment;
-    bool valid;
-    bool isIPv6HexAddress;
+    std::string _protocol;
+    std::string _user;
+    std::string _password;
+    std::string _host;
+    std::uint16_t _port;
+    std::string _path;
+    std::string _query;
+    std::string _fragment;
+    bool _valid;
+    bool _isIPv6HexAddress;
 
     void parseUrl(const std::string& text);
     std::uint16_t portFromProtocol(const std::string& proto);

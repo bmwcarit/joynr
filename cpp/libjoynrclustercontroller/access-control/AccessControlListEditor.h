@@ -127,9 +127,9 @@ private:
     bool hasRoleOwner(const std::string& domain);
     bool hasRoleWorker(const std::string& domain, infrastructure::DacTypes::Role::Enum role);
 
-    std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore;
-    std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
-    bool aclAudit;
+    std::shared_ptr<LocalDomainAccessStore> _localDomainAccessStore;
+    std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
+    bool _aclAudit;
 };
 
 } // namespace joynr

@@ -39,7 +39,7 @@ std::int64_t OnChangeSubscriptionQos::MAX_MIN_INTERVAL_MS()
     return maxMinInterval;
 }
 
-OnChangeSubscriptionQos::OnChangeSubscriptionQos() : minIntervalMs(MIN_MIN_INTERVAL_MS())
+OnChangeSubscriptionQos::OnChangeSubscriptionQos() : _minIntervalMs(MIN_MIN_INTERVAL_MS())
 {
 }
 
@@ -47,49 +47,49 @@ OnChangeSubscriptionQos::OnChangeSubscriptionQos(std::int64_t validityMs,
                                                  std::int64_t publicationTtlMs,
                                                  std::int64_t minIntervalMs)
         : UnicastSubscriptionQos(validityMs, publicationTtlMs),
-          minIntervalMs(DEFAULT_MIN_INTERVAL_MS())
+          _minIntervalMs(DEFAULT_MIN_INTERVAL_MS())
 {
     setMinIntervalMs(minIntervalMs);
 }
 
 OnChangeSubscriptionQos::OnChangeSubscriptionQos(const OnChangeSubscriptionQos& other)
         : UnicastSubscriptionQos::UnicastSubscriptionQos(other),
-          minIntervalMs(other.getMinIntervalMs())
+          _minIntervalMs(other.getMinIntervalMs())
 {
 }
 
 std::int64_t OnChangeSubscriptionQos::getMinIntervalMs() const
 {
-    return minIntervalMs;
+    return _minIntervalMs;
 }
 
 void OnChangeSubscriptionQos::setMinIntervalMs(std::int64_t minIntervalMs)
 {
     if (minIntervalMs < MIN_MIN_INTERVAL_MS()) {
-        this->minIntervalMs = MIN_MIN_INTERVAL_MS();
+        this->_minIntervalMs = MIN_MIN_INTERVAL_MS();
         return;
     }
     if (minIntervalMs > MAX_MIN_INTERVAL_MS()) {
-        this->minIntervalMs = MAX_MIN_INTERVAL_MS();
+        this->_minIntervalMs = MAX_MIN_INTERVAL_MS();
         return;
     }
 
-    this->minIntervalMs = minIntervalMs;
+    this->_minIntervalMs = minIntervalMs;
 }
 
 OnChangeSubscriptionQos& OnChangeSubscriptionQos::operator=(const OnChangeSubscriptionQos& other)
 {
-    expiryDateMs = other.getExpiryDateMs();
-    publicationTtlMs = other.getPublicationTtlMs();
-    minIntervalMs = other.getMinIntervalMs();
+    _expiryDateMs = other.getExpiryDateMs();
+    _publicationTtlMs = other.getPublicationTtlMs();
+    _minIntervalMs = other.getMinIntervalMs();
     return *this;
 }
 
 bool OnChangeSubscriptionQos::operator==(const OnChangeSubscriptionQos& other) const
 {
-    return expiryDateMs == other.getExpiryDateMs() &&
-           publicationTtlMs == other.getPublicationTtlMs() &&
-           minIntervalMs == other.getMinIntervalMs();
+    return _expiryDateMs == other.getExpiryDateMs() &&
+           _publicationTtlMs == other.getPublicationTtlMs() &&
+           _minIntervalMs == other.getMinIntervalMs();
 }
 
 } // namespace joynr

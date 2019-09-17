@@ -83,39 +83,39 @@ public:
             std::uint16_t port)
             : IWebsocketCcMessagingSkeleton(),
               std::enable_shared_from_this<WebSocketCcMessagingSkeleton<Config>>(),
-              ioService(ioService),
-              webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              endpoint(),
-              clientsMutex(),
-              clients(),
-              receiver(),
-              messageRouter(std::move(messageRouter)),
-              messagingStubFactory(std::move(messagingStubFactory)),
-              port(port),
-              shuttingDown(false)
+              _ioService(ioService),
+              _webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              _endpoint(),
+              _clientsMutex(),
+              _clients(),
+              _receiver(),
+              _messageRouter(std::move(messageRouter)),
+              _messagingStubFactory(std::move(messagingStubFactory)),
+              _port(port),
+              _shuttingDown(false)
     {
     }
 
     virtual void init() override
     {
-        webSocketPpSingleThreadedIOService->start();
+        _webSocketPpSingleThreadedIOService->start();
         boost::asio::io_service& endpointIoService =
-                webSocketPpSingleThreadedIOService->getIOService();
+                _webSocketPpSingleThreadedIOService->getIOService();
         websocketpp::lib::error_code initializationError;
 
-        endpoint.init_asio(&endpointIoService, initializationError);
+        _endpoint.init_asio(&endpointIoService, initializationError);
         if (initializationError) {
             JOYNR_LOG_FATAL(logger(),
                             "error during WebSocketCcMessagingSkeleton initialization: ",
                             initializationError.message());
             return;
         }
-        endpoint.clear_access_channels(websocketpp::log::alevel::all);
-        endpoint.clear_error_channels(websocketpp::log::alevel::all);
+        _endpoint.clear_access_channels(websocketpp::log::alevel::all);
+        _endpoint.clear_error_channels(websocketpp::log::alevel::all);
 
         // register handlers
-        endpoint.set_close_handler([thisWeakPtr = joynr::util::as_weak_ptr(
-                                            this->shared_from_this())](ConnectionHandle hdl) {
+        _endpoint.set_close_handler([thisWeakPtr = joynr::util::as_weak_ptr(
+                                             this->shared_from_this())](ConnectionHandle hdl) {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 thisSharedPtr->onConnectionClosed(hdl);
             }
@@ -123,16 +123,16 @@ public:
 
         // new connections are handled in onInitMessageReceived; if initialization was successful,
         // any further messages for this connection are handled in onMessageReceived
-        endpoint.set_message_handler([thisWeakPtr =
-                                              joynr::util::as_weak_ptr(this->shared_from_this())](
+        _endpoint.set_message_handler([thisWeakPtr =
+                                               joynr::util::as_weak_ptr(this->shared_from_this())](
                 ConnectionHandle hdl, MessagePtr message) {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 thisSharedPtr->onInitMessageReceived(hdl, message);
             }
         });
 
-        receiver.registerReceiveCallback([thisWeakPtr = joynr::util::as_weak_ptr(
-                                                  this->shared_from_this())](
+        _receiver.registerReceiveCallback([thisWeakPtr = joynr::util::as_weak_ptr(
+                                                   this->shared_from_this())](
                 ConnectionHandle && hdl, smrf::ByteVector && msg) {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 thisSharedPtr->onMessageReceived(std::move(hdl), std::move(msg));
@@ -146,29 +146,29 @@ public:
     ~WebSocketCcMessagingSkeleton() override
     {
         // make sure shutdown() has been invoked earlier
-        assert(shuttingDown);
+        assert(_shuttingDown);
     }
 
     void shutdown() override
     {
         // make sure shutdown() is called only once
         {
-            std::lock_guard<std::mutex> lock(clientsMutex);
-            assert(!shuttingDown);
-            shuttingDown = true;
+            std::lock_guard<std::mutex> lock1(_clientsMutex);
+            assert(!_shuttingDown);
+            _shuttingDown = true;
         }
 
         websocketpp::lib::error_code shutdownError;
-        endpoint.stop_listening(shutdownError);
+        _endpoint.stop_listening(shutdownError);
         if (shutdownError) {
             JOYNR_LOG_ERROR(logger(),
                             "error during WebSocketCcMessagingSkeleton shutdown: ",
                             shutdownError.message());
         }
 
-        for (const auto& elem : clients) {
+        for (const auto& elem : _clients) {
             websocketpp::lib::error_code websocketError;
-            endpoint.close(elem.first, websocketpp::close::status::normal, "", websocketError);
+            _endpoint.close(elem.first, websocketpp::close::status::normal, "", websocketError);
             if (websocketError) {
                 if (websocketError != websocketpp::error::bad_connection) {
                     JOYNR_LOG_ERROR(logger(),
@@ -185,7 +185,7 @@ public:
         // referenced within the endpoint by an internally created
         // thread from tcp::resolver which is joined by the endpoint
         // destructor
-        webSocketPpSingleThreadedIOService->stop();
+        _webSocketPpSingleThreadedIOService->stop();
     }
 
     void transmit(
@@ -193,7 +193,7 @@ public:
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) override
     {
         try {
-            messageRouter->route(std::move(message));
+            _messageRouter->route(std::move(message));
         } catch (exceptions::JoynrRuntimeException& e) {
             onFailure(e);
         }
@@ -205,9 +205,9 @@ protected:
     using ConnectionHandle = websocketpp::connection_hdl;
 
     ADD_LOGGER(WebSocketCcMessagingSkeleton)
-    boost::asio::io_service& ioService;
-    std::shared_ptr<SingleThreadedIOService> webSocketPpSingleThreadedIOService;
-    Server endpoint;
+    boost::asio::io_service& _ioService;
+    std::shared_ptr<SingleThreadedIOService> _webSocketPpSingleThreadedIOService;
+    Server _endpoint;
 
     virtual bool validateIncomingMessage(const ConnectionHandle& hdl,
                                          std::shared_ptr<ImmutableMessage> message) = 0;
@@ -216,9 +216,9 @@ protected:
     void startAccept()
     {
         try {
-            endpoint.set_reuse_addr(true);
-            endpoint.listen(port);
-            endpoint.start_accept();
+            _endpoint.set_reuse_addr(true);
+            _endpoint.listen(_port);
+            _endpoint.start_accept();
         } catch (const std::exception& e) {
             JOYNR_LOG_FATAL(logger(), "WebSocket server could not be started: \"{}\"", e.what());
         }
@@ -227,38 +227,38 @@ protected:
     // List of client connections
     struct CertEntry
     {
-        CertEntry() : webSocketClientAddress(), ownerId()
+        CertEntry() : _webSocketClientAddress(), _ownerId()
         {
         }
         explicit CertEntry(
                 const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
                 std::string ownerId)
-                : webSocketClientAddress(webSocketClientAddress), ownerId(std::move(ownerId))
+                : _webSocketClientAddress(webSocketClientAddress), _ownerId(std::move(ownerId))
         {
         }
         CertEntry(CertEntry&&) = default;
         CertEntry& operator=(CertEntry&&) = default;
-        joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
-        std::string ownerId;
+        joynr::system::RoutingTypes::WebSocketClientAddress _webSocketClientAddress;
+        std::string _ownerId;
     };
 
-    std::mutex clientsMutex;
-    std::map<ConnectionHandle, CertEntry, std::owner_less<ConnectionHandle>> clients;
+    std::mutex _clientsMutex;
+    std::map<ConnectionHandle, CertEntry, std::owner_less<ConnectionHandle>> _clients;
 
 private:
     void onConnectionClosed(ConnectionHandle hdl)
     {
-        std::lock_guard<std::mutex> lock(clientsMutex);
-        if (shuttingDown) {
+        std::lock_guard<std::mutex> lock2(_clientsMutex);
+        if (_shuttingDown) {
             return;
         }
-        auto it = clients.find(hdl);
-        if (it != clients.cend()) {
+        auto it = _clients.find(hdl);
+        if (it != _clients.cend()) {
             JOYNR_LOG_INFO(logger(),
                            "Closed connection for websocket client id: {}",
-                           it->second.webSocketClientAddress.getId());
-            messagingStubFactory->onMessagingStubClosed(it->second.webSocketClientAddress);
-            clients.erase(it);
+                           it->second._webSocketClientAddress.getId());
+            _messagingStubFactory->onMessagingStubClosed(it->second._webSocketClientAddress);
+            _clients.erase(it);
         }
     }
 
@@ -296,34 +296,34 @@ private:
                            "Init connection for websocket client id: {}",
                            clientAddress->getId());
 
-            auto sender = std::make_shared<WebSocketPpSender<Server>>(endpoint);
+            auto sender = std::make_shared<WebSocketPpSender<Server>>(_endpoint);
             sender->setConnectionHandle(hdl);
 
-            messagingStubFactory->addClient(*clientAddress, std::move(sender));
+            _messagingStubFactory->addClient(*clientAddress, std::move(sender));
 
-            typename Server::connection_ptr connection = endpoint.get_con_from_hdl(hdl);
+            typename Server::connection_ptr connection = _endpoint.get_con_from_hdl(hdl);
             connection->set_message_handler(
                     std::bind(&WebSocketPpReceiver<Server>::onMessageReceived,
-                              &receiver,
+                              &_receiver,
                               std::placeholders::_1,
                               std::placeholders::_2));
             {
-                std::lock_guard<std::mutex> lock(clientsMutex);
+                std::lock_guard<std::mutex> lock3(_clientsMutex);
                 // search whether this connection handler has been mapped to a cert. (secure
                 // connection)
                 // if so, then move the client address to it. Otherwise, make a new entry with an
                 // empty ownerId
-                auto it = clients.find(hdl);
-                if (it != clients.cend()) {
-                    it->second.webSocketClientAddress = *clientAddress;
+                auto it = _clients.find(hdl);
+                if (it != _clients.cend()) {
+                    it->second._webSocketClientAddress = *clientAddress;
                 } else {
                     // insecure connection, no CN exists
                     auto certEntry = CertEntry(*clientAddress, std::string());
-                    clients[hdl] = std::move(certEntry);
+                    _clients[hdl] = std::move(certEntry);
                 }
             }
 
-            messageRouter->sendQueuedMessages(std::move(clientAddress));
+            _messageRouter->sendQueuedMessages(std::move(clientAddress));
         } else {
             JOYNR_LOG_ERROR(
                     logger(), "received an initial message with wrong format: \"{}\"", initMessage);
@@ -377,15 +377,15 @@ private:
                 message, "{\"_typeName\":\"joynr.system.RoutingTypes.WebSocketClientAddress\"");
     }
 
-    std::shared_ptr<Semaphore> webSocketPpSingleThreadedIOServiceDestructed;
-    WebSocketPpReceiver<Server> receiver;
+    std::shared_ptr<Semaphore> _webSocketPpSingleThreadedIOServiceDestructed;
+    WebSocketPpReceiver<Server> _receiver;
 
     /*! Router for incoming messages */
-    std::shared_ptr<IMessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> _messageRouter;
     /*! Factory to build outgoing messaging stubs */
-    std::shared_ptr<WebSocketMessagingStubFactory> messagingStubFactory;
-    std::uint16_t port;
-    std::atomic<bool> shuttingDown;
+    std::shared_ptr<WebSocketMessagingStubFactory> _messagingStubFactory;
+    std::uint16_t _port;
+    std::atomic<bool> _shuttingDown;
 
     DISALLOW_COPY_AND_ASSIGN(WebSocketCcMessagingSkeleton);
 };

@@ -44,8 +44,8 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttTransportStatus);
 
-    std::shared_ptr<MosquittoConnection> mosquittoConnection;
-    std::function<void(bool)> availabilityChangedCallback;
+    std::shared_ptr<MosquittoConnection> _mosquittoConnection;
+    std::function<void(bool)> _availabilityChangedCallback;
 };
 
 } // namespace joynr

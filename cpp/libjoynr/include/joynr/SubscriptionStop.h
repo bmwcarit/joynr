@@ -48,11 +48,11 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(subscriptionId));
+        archive(MUESLI_NVP(_subscriptionId));
     }
 
 private:
-    std::string subscriptionId;
+    std::string _subscriptionId;
 };
 
 } // namespace joynr

@@ -24,46 +24,46 @@
 namespace joynr
 {
 
-SubscriptionRequest::SubscriptionRequest() : subscriptionId(), subscribedToName(), qos()
+SubscriptionRequest::SubscriptionRequest() : _subscriptionId(), _subscribedToName(), _qos()
 {
-    subscriptionId = util::createUuid();
+    _subscriptionId = util::createUuid();
 }
 
 const std::string& SubscriptionRequest::getSubscriptionId() const
 {
-    return subscriptionId;
+    return _subscriptionId;
 }
 
 const std::string& SubscriptionRequest::getSubscribeToName() const
 {
-    return subscribedToName;
+    return _subscribedToName;
 }
 
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
 {
-    bool equal = *qos == *(subscriptionRequest.qos);
-    return subscriptionId == subscriptionRequest.getSubscriptionId() &&
-           subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
+    bool equal = *_qos == *(subscriptionRequest._qos);
+    return _subscriptionId == subscriptionRequest.getSubscriptionId() &&
+           _subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }
 
 void SubscriptionRequest::setSubscriptionId(const std::string& id)
 {
-    this->subscriptionId = id;
+    this->_subscriptionId = id;
 }
 
 void SubscriptionRequest::setSubscriptionId(std::string&& id)
 {
-    this->subscriptionId = std::move(id);
+    this->_subscriptionId = std::move(id);
 }
 
 void SubscriptionRequest::setSubscribeToName(const std::string& subscribedToName)
 {
-    this->subscribedToName = subscribedToName;
+    this->_subscribedToName = subscribedToName;
 }
 
 void SubscriptionRequest::setSubscribeToName(std::string&& subscribedToName)
 {
-    this->subscribedToName = std::move(subscribedToName);
+    this->_subscribedToName = std::move(subscribedToName);
 }
 
 std::string SubscriptionRequest::toString() const
@@ -73,12 +73,12 @@ std::string SubscriptionRequest::toString() const
 
 std::shared_ptr<SubscriptionQos> SubscriptionRequest::getQos() const
 {
-    return qos;
+    return _qos;
 }
 
 void SubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
 {
-    this->qos = std::move(qos);
+    this->_qos = std::move(qos);
 }
 
 } // namespace joynr

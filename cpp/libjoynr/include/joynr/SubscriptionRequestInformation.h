@@ -59,11 +59,11 @@ public:
     {
         archive(muesli::BaseClass<SubscriptionRequest>(this),
                 muesli::BaseClass<SubscriptionInformation>(this),
-                MUESLI_NVP(callContext));
+                MUESLI_NVP(_callContext));
     }
 
 private:
-    CallContext callContext;
+    CallContext _callContext;
 };
 
 } // namespace joynr

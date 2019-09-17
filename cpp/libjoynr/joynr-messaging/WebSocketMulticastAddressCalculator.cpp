@@ -30,7 +30,7 @@ namespace joynr
 {
 WebSocketMulticastAddressCalculator::WebSocketMulticastAddressCalculator(
         std::shared_ptr<const system::RoutingTypes::WebSocketAddress> clusterControllerAddress)
-        : clusterControllerAddress(clusterControllerAddress)
+        : _clusterControllerAddress(clusterControllerAddress)
 {
 }
 
@@ -39,6 +39,6 @@ WebSocketMulticastAddressCalculator::compute(const ImmutableMessage& message)
 {
     std::ignore = message;
     return std::vector<std::shared_ptr<const system::RoutingTypes::Address>>{
-            clusterControllerAddress};
+            _clusterControllerAddress};
 }
 } // namespace joynr

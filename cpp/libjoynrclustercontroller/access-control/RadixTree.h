@@ -54,7 +54,7 @@ public:
                                                          RadixTreeNode<K, V>*>
     {
     public:
-        explicit ParentIterator(RadixTreeNode* node) : node(node)
+        explicit ParentIterator(RadixTreeNode* node) : _node(node)
         {
         }
 
@@ -63,32 +63,32 @@ public:
 
         void increment()
         {
-            node = node->getNextRealParent();
+            _node = _node->getNextRealParent();
         }
 
         bool equal(const ParentIterator& other) const
         {
-            return node == other.node;
+            return _node == other._node;
         }
 
         RadixTreeNode* dereference() const
         {
-            return node;
+            return _node;
         }
 
-        RadixTreeNode* node;
+        RadixTreeNode* _node;
     };
 
     class ParentRange
     {
     public:
-        ParentRange(RadixTreeNode* node) : node(node)
+        ParentRange(RadixTreeNode* node) : _node(node)
         {
         }
 
         auto begin()
         {
-            return ParentIterator<Key, Value>(node->getNextRealParent());
+            return ParentIterator<Key, Value>(_node->getNextRealParent());
         }
 
         auto end()
@@ -97,50 +97,50 @@ public:
         }
 
     private:
-        RadixTreeNode* node;
+        RadixTreeNode* _node;
     };
 
     template <typename KeyType, typename ValueType>
     RadixTreeNode(KeyType&& key, ValueType&& value)
-            : key(std::forward<KeyType>(key)), value(std::forward<ValueType>(value))
+            : _key(std::forward<KeyType>(key)), _value(std::forward<ValueType>(value))
     {
     }
 
-    RadixTreeNode() : parent(nullptr)
+    RadixTreeNode() : _parent(nullptr)
     {
     }
 
     Key getFullKey() const
     {
         auto currentNode = this;
-        Key fullKey = currentNode->key;
+        Key fullKey = currentNode->_key;
         while (!currentNode->isRoot()) {
-            currentNode = currentNode->parent;
-            fullKey = currentNode->key + fullKey;
+            currentNode = currentNode->_parent;
+            fullKey = currentNode->_key + fullKey;
         }
         return fullKey;
     }
 
     bool isLeaf() const
     {
-        return !children || children->size() == 0;
+        return !_children || _children->size() == 0;
     }
 
     const Value& getValue() const
     {
-        assert(value);
-        return *value;
+        assert(_value);
+        return *_value;
     }
 
     Value& getValue()
     {
-        assert(value);
-        return *value;
+        assert(_value);
+        return *_value;
     }
 
     Key& getKey()
     {
-        return key;
+        return _key;
     }
 
     ParentRange parents()
@@ -151,9 +151,9 @@ public:
 
     RadixTreeNode* getNextRealParent() const
     {
-        RadixTreeNode* parentNode = parent;
+        RadixTreeNode* parentNode = _parent;
         while (parentNode && parentNode->isInternal()) {
-            parentNode = parentNode->parent;
+            parentNode = parentNode->_parent;
         }
         return parentNode;
     }
@@ -163,35 +163,35 @@ public:
         assert(!isInternal());
 
         if (isRoot()) {
-            value = boost::none;
+            _value = boost::none;
             return;
         }
 
-        RadixTreeNode* parent = this->parent;
-        assert(parent->children);
+        RadixTreeNode* parent = this->_parent;
+        assert(parent->_children);
 
         if (isLeaf()) {
-            parent->children->erase(this->key);
-        } else if (children->size() == 1) {
+            parent->_children->erase(this->_key);
+        } else if (_children->size() == 1) {
             // move child up to this node's parent
-            ChildPtr& child = this->children->begin()->second;
-            child->key = this->key + child->key;
+            ChildPtr& child = this->_children->begin()->second;
+            child->_key = this->_key + child->_key;
             parent->insertChild(std::move(child));
-            parent->children->erase(this->key);
+            parent->_children->erase(this->_key);
         } else {
             // more than 1 child
             // make this node an internal one
-            value = boost::none;
+            _value = boost::none;
         }
 
         // parent of erased node is an internal node with only one child left
         // => move that one child to its grandparent
-        if (!parent->isRoot() && parent->isInternal() && parent->children->size() == 1) {
-            RadixTreeNode* grandParent = parent->parent;
-            ChildPtr& child = parent->children->begin()->second;
-            child->key = parent->key + child->key;
+        if (!parent->isRoot() && parent->isInternal() && parent->_children->size() == 1) {
+            RadixTreeNode* grandParent = parent->_parent;
+            ChildPtr& child = parent->_children->begin()->second;
+            child->_key = parent->_key + child->_key;
             grandParent->insertChild(std::move(child));
-            grandParent->children->erase(parent->key);
+            grandParent->_children->erase(parent->_key);
         }
     }
 
@@ -199,40 +199,40 @@ private:
     template <typename KeyType, typename ValueType>
     RadixTreeNode* addChild(KeyType&& newKey, ValueType&& newValue)
     {
-        if (!children) {
+        if (!_children) {
             return insertChild(std::make_unique<RadixTreeNode>(
                     std::forward<KeyType>(newKey), std::forward<ValueType>(newValue)));
         }
 
         // is there already a child whose key starts with the first char of key?
-        auto found = children->end();
-        for (auto it = children->begin(); it != children->end(); ++it) {
-            if (it->second->key.front() == newKey.front()) {
+        auto found = _children->end();
+        for (auto it = _children->begin(); it != _children->end(); ++it) {
+            if (it->second->_key.front() == newKey.front()) {
                 found = it;
                 break;
             }
         }
 
         // no matching child found, insert new node as it is
-        if (found == children->end()) {
+        if (found == _children->end()) {
             return insertChild(std::make_unique<RadixTreeNode>(
                     std::forward<KeyType>(newKey), std::forward<ValueType>(newValue)));
         }
 
         ChildPtr& foundNode = found->second;
         // there is already a child with the exact same key, overwrite its value
-        if (foundNode->key == newKey) {
-            foundNode->value = std::forward<ValueType>(newValue);
+        if (foundNode->_key == newKey) {
+            foundNode->_value = std::forward<ValueType>(newValue);
             return foundNode.get();
         }
 
         // new node needs to be inserted in the subtree
         // determine its location
         auto result = std::mismatch(
-                newKey.begin(), newKey.end(), foundNode->key.begin(), foundNode->key.end());
+                newKey.begin(), newKey.end(), foundNode->_key.begin(), foundNode->_key.end());
 
         // 1) insert as child of 'foundNode' with the remaining part of key
-        if (result.second == foundNode->key.end()) {
+        if (result.second == foundNode->_key.end()) {
             return foundNode->addChild(
                     Key(result.first, newKey.end()), std::forward<ValueType>(newValue));
         }
@@ -240,9 +240,9 @@ private:
         else if (result.first == newKey.end()) {
             auto newNode = std::make_unique<RadixTreeNode>(
                     std::forward<KeyType>(newKey), std::forward<ValueType>(newValue));
-            foundNode->key = Key(result.second, foundNode->key.end());
+            foundNode->_key = Key(result.second, foundNode->_key.end());
             newNode->insertChild(std::move(foundNode));
-            children->erase(found);
+            _children->erase(found);
             return insertChild(std::move(newNode));
         }
         // 3) insert as sibling of 'foundNode'
@@ -251,23 +251,23 @@ private:
                     std::make_unique<RadixTreeNode>(Key(newKey.begin(), result.first), boost::none);
             newParent->insertChild(std::make_unique<RadixTreeNode>(
                     Key(result.first, newKey.end()), std::forward<ValueType>(newValue)));
-            foundNode->key = Key(result.second, foundNode->key.end());
+            foundNode->_key = Key(result.second, foundNode->_key.end());
             newParent->insertChild(std::move(foundNode));
-            children->erase(found);
+            _children->erase(found);
             return insertChild(std::move(newParent));
         }
     }
 
     RadixTreeNode* insertChild(ChildPtr child)
     {
-        if (!children) {
-            children.emplace();
+        if (!_children) {
+            _children.emplace();
         }
-        auto emplaceResult = children->emplace(child->key, std::move(child));
+        auto emplaceResult = _children->emplace(child->_key, std::move(child));
         assert(emplaceResult.second);
         auto it = emplaceResult.first;
         ChildPtr& childPtr = it->second;
-        childPtr->parent = this;
+        childPtr->_parent = this;
         return childPtr.get();
     }
 
@@ -277,12 +277,14 @@ private:
             return const_cast<RadixTreeNode*>(this);
         }
 
-        for (auto& childIt : *children) {
+        for (auto& childIt : *_children) {
             const ChildPtr& child = childIt.second;
-            if (child->key.front() == key.front()) {
-                if (child->key.size() <= key.size() &&
-                    key.compare(0, child->key.size(), child->key) == 0) {
-                    return child->find(Key(key.begin() + child->key.size(), key.end()));
+            if (child->_key.front() == key.front()) {
+                if (child->_key.size() <= key.size() &&
+                    key.compare(0, child->_key.size(), child->_key) == 0) {
+                    return child->find(
+                            Key(key.begin() + static_cast<std::int64_t>(child->_key.size()),
+                                key.end()));
                 }
             }
         }
@@ -291,18 +293,18 @@ private:
 
     bool isRoot() const
     {
-        return parent == nullptr;
+        return _parent == nullptr;
     }
 
     bool isInternal() const
     {
-        return !value;
+        return !_value;
     }
 
     template <typename Fun>
     void visit(const Fun& fun, std::vector<std::reference_wrapper<Key>>& parentKeys)
     {
-        parentKeys.push_back(key);
+        parentKeys.push_back(_key);
         if (!isInternal()) {
             fun(*this, parentKeys);
         }
@@ -312,17 +314,17 @@ private:
             return;
         }
 
-        for (auto& childIt : *children) {
+        for (auto& childIt : *_children) {
             const ChildPtr& child = childIt.second;
             child->visit(fun, parentKeys);
         }
         parentKeys.pop_back();
     }
 
-    RadixTreeNode* parent;
-    Key key;
-    boost::optional<Value> value;
-    boost::optional<ChildMap> children;
+    RadixTreeNode* _parent;
+    Key _key;
+    boost::optional<Value> _value;
+    boost::optional<ChildMap> _children;
 };
 
 template <typename Key, typename Value>
@@ -332,7 +334,7 @@ class RadixTree
 public:
     using Node = RadixTreeNode<Key, Value>;
 
-    RadixTree() : root()
+    RadixTree() : _root()
     {
     }
 
@@ -340,17 +342,17 @@ public:
     Node* insert(KeyType&& key, ValueType&& value)
     {
         if (!key.empty()) {
-            return root.addChild(std::forward<KeyType>(key), std::forward<ValueType>(value));
+            return _root.addChild(std::forward<KeyType>(key), std::forward<ValueType>(value));
         }
-        root.value = std::forward<ValueType>(value);
-        return &root;
+        _root._value = std::forward<ValueType>(value);
+        return &_root;
     }
 
     Node* longestMatch(const Key& key) const
     {
-        Node* node = root.find(key);
+        Node* node = _root.find(key);
         while (node->isInternal() && !node->isRoot()) {
-            node = node->parent;
+            node = node->_parent;
         }
         if (node->isRoot() && node->isInternal()) {
             return nullptr;
@@ -362,11 +364,11 @@ public:
     void visit(const Fun& fun)
     {
         std::vector<std::reference_wrapper<Key>> keys;
-        root.visit(fun, keys);
+        _root.visit(fun, keys);
     }
 
 private:
-    RadixTreeNode<Key, Value> root;
+    RadixTreeNode<Key, Value> _root;
 };
 
 } // namespace joynr

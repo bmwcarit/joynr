@@ -23,37 +23,37 @@
 namespace joynr
 {
 
-InterfaceAddress::InterfaceAddress() : domain(), interfaceName()
+InterfaceAddress::InterfaceAddress() : _domain(), _interfaceName()
 {
 }
 
 InterfaceAddress::InterfaceAddress(const std::string& domain, const std::string& interfaceName)
-        : domain(domain), interfaceName(interfaceName)
+        : _domain(domain), _interfaceName(interfaceName)
 {
 }
 
 const std::string& InterfaceAddress::getDomain() const
 {
-    return domain;
+    return _domain;
 }
 
 const std::string& InterfaceAddress::getInterface() const
 {
-    return interfaceName;
+    return _interfaceName;
 }
 
 bool InterfaceAddress::operator==(const InterfaceAddress& interfaceAddress) const
 {
-    return ((domain == interfaceAddress.domain) &&
-            (interfaceName == interfaceAddress.interfaceName));
+    return ((_domain == interfaceAddress._domain) &&
+            (_interfaceName == interfaceAddress._interfaceName));
 }
 
 bool InterfaceAddress::operator<(const InterfaceAddress& interfaceAddress) const
 {
-    if (domain == interfaceAddress.domain) {
-        return interfaceName > interfaceAddress.getInterface();
+    if (_domain == interfaceAddress._domain) {
+        return _interfaceName > interfaceAddress.getInterface();
     }
-    return domain < interfaceAddress.getDomain();
+    return _domain < interfaceAddress.getDomain();
 }
 
 std::size_t InterfaceAddress::hashCode() const

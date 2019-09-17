@@ -56,7 +56,7 @@ public:
     std::string toString() const;
 
 private:
-    std::chrono::system_clock::time_point timePoint;
+    std::chrono::system_clock::time_point _timePoint;
 };
 } // namespace joynr
 

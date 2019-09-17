@@ -64,7 +64,7 @@ public:
         // remove wildcard symbol at the end
         key.pop_back();
 
-        RadixTreeNode* longestMatch = storage.longestMatch(key);
+        RadixTreeNode* longestMatch = _storage.longestMatch(key);
         if (longestMatch != nullptr) {
             // node with exact key already in tree
             if (longestMatch->getFullKey() == key) {
@@ -89,14 +89,14 @@ public:
         newSet->insert(entry);
         StorageEntry newStorageEntry;
         setStorageEntry<ACEntry>(newStorageEntry, newSet);
-        storage.insert(std::move(key), std::move(newStorageEntry));
+        _storage.insert(std::move(key), std::move(newStorageEntry));
     }
 
     template <typename ACEntry>
     OptionalSet<ACEntry> getLongestMatch(const std::string& query) const
     {
         // get longest match from storage
-        RadixTreeNode* longestMatch = storage.longestMatch(query);
+        RadixTreeNode* longestMatch = _storage.longestMatch(query);
         if (longestMatch == nullptr) {
             // entry does not exist in radix tree
             return boost::none;
@@ -137,7 +137,7 @@ public:
                     });
             stream << key << "->" << serializer::serializeToJson(node.getValue()) << std::endl;
         };
-        storage.visit(visitor);
+        _storage.visit(visitor);
         return stream.str();
     }
 
@@ -202,7 +202,7 @@ private:
         }
     };
 
-    RadixTree<std::string, StorageEntry> storage;
+    RadixTree<std::string, StorageEntry> _storage;
     using RadixTreeNode = RadixTree<std::string, StorageEntry>::Node;
 };
 

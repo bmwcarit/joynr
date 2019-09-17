@@ -104,11 +104,11 @@ public:
      * @param receivedFromGlobal the new value of receivedFromGlobal
      * @see isReceivedFromGlobal()
      */
-    void setReceivedFromGlobal(bool receivedFromGlobal);
+    void setReceivedFromGlobal(bool _receivedFromGlobal);
 
-    void setCreator(const std::string& creator);
+    void setCreator(const std::string& _creator);
 
-    void setCreator(std::string&& creator);
+    void setCreator(std::string&& _creator);
 
     const std::string& getCreator() const;
 
@@ -119,15 +119,15 @@ public:
     {
         const auto& recipient = getRecipient();
         const auto& sender = getSender();
-        const auto expiryDate = messageDeserializer.getTtlMs();
+        const auto expiryDate = _messageDeserializer.getTtlMs();
         smrf::ByteArrayView body = getUnencryptedBody();
         const std::string payload(body.data(), body.data() + body.size());
         archive(MUESLI_NVP(sender),
                 MUESLI_NVP(recipient),
                 MUESLI_NVP(expiryDate),
-                MUESLI_NVP(headers),
-                MUESLI_NVP(receivedFromGlobal),
-                MUESLI_NVP(creator),
+                MUESLI_NVP(_headers),
+                MUESLI_NVP(_receivedFromGlobal),
+                MUESLI_NVP(_creator),
                 MUESLI_NVP(payload));
     }
 
@@ -140,19 +140,19 @@ private:
     void init();
     bool isCustomHeaderKey(const std::string& key) const;
 
-    smrf::ByteVector serializedMessage;
-    smrf::MessageDeserializer messageDeserializer;
-    std::unordered_map<std::string, std::string> headers;
-    mutable boost::optional<smrf::ByteArrayView> bodyView;
-    mutable boost::optional<smrf::ByteVector> decompressedBody;
+    smrf::ByteVector _serializedMessage;
+    smrf::MessageDeserializer _messageDeserializer;
+    std::unordered_map<std::string, std::string> _headers;
+    mutable boost::optional<smrf::ByteArrayView> _bodyView;
+    mutable boost::optional<smrf::ByteVector> _decompressedBody;
 
     // receivedFromGlobal is a transient attribute which will not be serialized.
     // It is only used locally for routing decisions.
-    bool receivedFromGlobal;
-    bool accessControlChecked;
+    bool _receivedFromGlobal;
+    bool _accessControlChecked;
 
-    std::string creator;
-    RequiredHeaders requiredHeaders;
+    std::string _creator;
+    RequiredHeaders _requiredHeaders;
     ADD_LOGGER(ImmutableMessage)
 };
 

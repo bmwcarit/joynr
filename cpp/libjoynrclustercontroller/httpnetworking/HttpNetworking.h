@@ -234,15 +234,15 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpNetworking);
     HttpNetworking();
     HttpRequestBuilder* createRequestBuilder(const std::string& url);
-    static HttpNetworking* httpNetworking;
-    std::shared_ptr<ICurlHandlePool> curlHandlePool;
+    static HttpNetworking* _httpNetworking;
+    std::shared_ptr<ICurlHandlePool> _curlHandlePool;
 
-    std::string proxy;
-    std::chrono::milliseconds connectTimeout;
-    std::string certificateAuthority;
-    std::string clientCertificate;
-    std::string clientCertificatePassword;
-    bool httpDebug;
+    std::string _proxy;
+    std::chrono::milliseconds _connectTimeout;
+    std::string _certificateAuthority;
+    std::string _clientCertificate;
+    std::string _clientCertificatePassword;
+    bool _httpDebug;
 };
 
 } // namespace joynr

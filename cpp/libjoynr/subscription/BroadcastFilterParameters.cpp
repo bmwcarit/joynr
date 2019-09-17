@@ -21,30 +21,30 @@
 namespace joynr
 {
 
-BroadcastFilterParameters::BroadcastFilterParameters() : filterParameters()
+BroadcastFilterParameters::BroadcastFilterParameters() : _filterParameters()
 {
 }
 
 bool BroadcastFilterParameters::operator==(const BroadcastFilterParameters& other) const
 {
-    return this->filterParameters == other.filterParameters;
+    return this->_filterParameters == other._filterParameters;
 }
 
 void BroadcastFilterParameters::setFilterParameter(const std::string& parameter,
                                                    const std::string& value)
 {
-    filterParameters.insert({parameter, value});
+    _filterParameters.insert({parameter, value});
 }
 
 const std::map<std::string, std::string>& BroadcastFilterParameters::getFilterParameters() const
 {
-    return filterParameters;
+    return _filterParameters;
 }
 
 std::string BroadcastFilterParameters::getFilterParameter(const std::string& parameter) const
 {
-    std::map<std::string, std::string>::const_iterator it = filterParameters.find(parameter);
-    if (it != filterParameters.cend()) {
+    std::map<std::string, std::string>::const_iterator it = _filterParameters.find(parameter);
+    if (it != _filterParameters.cend()) {
         return it->second;
     } else {
         return std::string();
@@ -53,7 +53,7 @@ std::string BroadcastFilterParameters::getFilterParameter(const std::string& par
 
 void BroadcastFilterParameters::setFilterParameters(const std::map<std::string, std::string>& value)
 {
-    filterParameters = value;
+    _filterParameters = value;
 }
 
 } // namespace joynr

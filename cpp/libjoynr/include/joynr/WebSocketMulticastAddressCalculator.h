@@ -47,7 +47,7 @@ public:
             const ImmutableMessage& message) override;
 
 private:
-    std::shared_ptr<const system::RoutingTypes::WebSocketAddress> clusterControllerAddress;
+    std::shared_ptr<const system::RoutingTypes::WebSocketAddress> _clusterControllerAddress;
 };
 
 } // namespace joynr

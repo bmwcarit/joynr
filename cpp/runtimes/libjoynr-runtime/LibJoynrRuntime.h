@@ -67,17 +67,17 @@ protected:
 
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 
-    std::shared_ptr<SubscriptionManager> subscriptionManager;
-    std::shared_ptr<IMessageSender> messageSender;
-    std::shared_ptr<IDispatcher> joynrDispatcher;
-    std::shared_ptr<joynr::system::RoutingProxy> ccRoutingProxy;
+    std::shared_ptr<SubscriptionManager> _subscriptionManager;
+    std::shared_ptr<IMessageSender> _messageSender;
+    std::shared_ptr<IDispatcher> _joynrDispatcher;
+    std::shared_ptr<joynr::system::RoutingProxy> _ccRoutingProxy;
 
     // take ownership, so a pointer is used
-    std::unique_ptr<Settings> settings;
+    std::unique_ptr<Settings> _settings;
     // use pointer for settings object to check the configuration before initialization
-    LibjoynrSettings* libjoynrSettings;
+    LibjoynrSettings* _libjoynrSettings;
 
-    std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
+    std::shared_ptr<InProcessMessagingSkeleton> _dispatcherMessagingSkeleton;
 
     virtual void startLibJoynrMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter) = 0;
 
@@ -90,8 +90,8 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrRuntime);
-    std::shared_ptr<LibJoynrMessageRouter> libJoynrMessageRouter;
-    std::atomic<bool> libJoynrRuntimeIsShuttingDown;
+    std::shared_ptr<LibJoynrMessageRouter> _libJoynrMessageRouter;
+    std::atomic<bool> _libJoynrRuntimeIsShuttingDown;
     ADD_LOGGER(LibJoynrRuntime)
 };
 

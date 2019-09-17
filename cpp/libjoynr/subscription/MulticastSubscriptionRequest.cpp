@@ -47,7 +47,7 @@ void MulticastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
             std::dynamic_pointer_cast<MulticastSubscriptionQos>(qos);
     assert(onChangeQos);
     // force object slicing
-    this->qos = std::make_shared<MulticastSubscriptionQos>(*onChangeQos);
+    this->_qos = std::make_shared<MulticastSubscriptionQos>(*onChangeQos);
 }
 
 const std::string& MulticastSubscriptionRequest::getMulticastId() const

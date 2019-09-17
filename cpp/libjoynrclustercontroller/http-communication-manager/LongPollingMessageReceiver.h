@@ -72,25 +72,25 @@ public:
 private:
     void checkServerTime();
     DISALLOW_COPY_AND_ASSIGN(LongPollingMessageReceiver);
-    const BrokerUrl brokerUrl;
-    const std::string channelId;
-    const std::string receiverId;
-    const LongPollingMessageReceiverSettings settings;
+    const BrokerUrl _brokerUrl;
+    const std::string _channelId;
+    const std::string _receiverId;
+    const LongPollingMessageReceiverSettings _settings;
 
-    bool interrupted;
-    std::mutex interruptedMutex;
-    std::condition_variable interruptedWait;
+    bool _interrupted;
+    std::mutex _interruptedMutex;
+    std::condition_variable _interruptedWait;
 
     ADD_LOGGER(LongPollingMessageReceiver)
 
     // Ownership shared between this and HttpReceiver
-    std::shared_ptr<Semaphore> channelCreatedSemaphore;
+    std::shared_ptr<Semaphore> _channelCreatedSemaphore;
 
     /*! On message received callback */
-    std::function<void(smrf::ByteVector&&)> onMessageReceived;
-    std::unique_ptr<HttpRequest> currentRequest;
+    std::function<void(smrf::ByteVector&&)> _onMessageReceived;
+    std::unique_ptr<HttpRequest> _currentRequest;
 
-    std::unique_ptr<std::thread> thread;
+    std::unique_ptr<std::thread> _thread;
 };
 
 } // namespace joynr

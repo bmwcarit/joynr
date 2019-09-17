@@ -19,6 +19,8 @@
 #ifndef IDISPATCHER_H
 #define IDISPATCHER_H
 
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #include <memory>
 #include <string>
 

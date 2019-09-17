@@ -61,7 +61,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SystemServicesSettings);
-    Settings& settings;
+    Settings& _settings;
     ADD_LOGGER(SystemServicesSettings)
     void checkSettings() const;
 };

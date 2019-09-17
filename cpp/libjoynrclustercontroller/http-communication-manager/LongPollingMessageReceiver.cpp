@@ -45,17 +45,17 @@ LongPollingMessageReceiver::LongPollingMessageReceiver(
         const LongPollingMessageReceiverSettings& settings,
         std::shared_ptr<Semaphore> channelCreatedSemaphore,
         std::function<void(smrf::ByteVector&&)> onMessageReceived)
-        : brokerUrl(brokerUrl),
-          channelId(channelId),
-          receiverId(receiverId),
-          settings(settings),
-          interrupted(false),
-          interruptedMutex(),
-          interruptedWait(),
-          channelCreatedSemaphore(channelCreatedSemaphore),
-          onMessageReceived(std::move(onMessageReceived)),
-          currentRequest(),
-          thread(nullptr)
+        : _brokerUrl(brokerUrl),
+          _channelId(channelId),
+          _receiverId(receiverId),
+          _settings(settings),
+          _interrupted(false),
+          _interruptedMutex(),
+          _interruptedWait(),
+          _channelCreatedSemaphore(channelCreatedSemaphore),
+          _onMessageReceived(std::move(onMessageReceived)),
+          _currentRequest(),
+          _thread(nullptr)
 {
 }
 
@@ -66,73 +66,73 @@ LongPollingMessageReceiver::~LongPollingMessageReceiver()
 
 void LongPollingMessageReceiver::interrupt()
 {
-    std::unique_lock<std::mutex> lock(interruptedMutex);
-    if (currentRequest) {
-        currentRequest->interrupt();
+    std::unique_lock<std::mutex> lock(_interruptedMutex);
+    if (_currentRequest) {
+        _currentRequest->interrupt();
     }
-    interrupted = true;
-    interruptedWait.notify_all();
+    _interrupted = true;
+    _interruptedWait.notify_all();
 }
 
 bool LongPollingMessageReceiver::isInterrupted()
 {
-    return interrupted;
+    return _interrupted;
 }
 
 void LongPollingMessageReceiver::start()
 {
-    if (!thread) {
+    if (!_thread) {
         // already started
         return;
     }
 
-    thread = std::make_unique<std::thread>(&LongPollingMessageReceiver::run, this);
-    assert(thread != nullptr);
+    _thread = std::make_unique<std::thread>(&LongPollingMessageReceiver::run, this);
+    assert(_thread != nullptr);
 }
 
 void LongPollingMessageReceiver::stop()
 {
     interrupt();
-    if (!thread) {
+    if (!_thread) {
         return;
     }
 
-    if (thread->joinable()) {
-        thread->join();
+    if (_thread->joinable()) {
+        _thread->join();
     }
-    thread.reset();
+    _thread.reset();
 }
 
 void LongPollingMessageReceiver::run()
 {
     checkServerTime();
-    std::string createChannelUrl = brokerUrl.getCreateChannelUrl(channelId).toString();
-    JOYNR_LOG_DEBUG(logger(), "Running lpmr with channelId {}", channelId);
+    std::string createChannelUrl = _brokerUrl.getCreateChannelUrl(_channelId).toString();
+    JOYNR_LOG_DEBUG(logger(), "Running lpmr with channelId {}", _channelId);
     std::shared_ptr<IHttpPostBuilder> createChannelRequestBuilder(
             HttpNetworking::getInstance()->createHttpPostBuilder(createChannelUrl));
-    currentRequest.reset(
-            createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", receiverId)
+    _currentRequest.reset(
+            createChannelRequestBuilder->addHeader("X-Atmosphere-tracking-id", _receiverId)
                     ->withContentType("application/json")
-                    ->withTimeout(settings.brokerTimeout)
+                    ->withTimeout(_settings.brokerTimeout)
                     ->build());
 
     std::string channelUrl;
     while (channelUrl.empty() && !isInterrupted()) {
         JOYNR_LOG_TRACE(logger(), "sending create channel request");
-        HttpResult createChannelResult = currentRequest->execute();
+        HttpResult createChannelResult = _currentRequest->execute();
         if (createChannelResult.getStatusCode() == 201) {
             const std::unordered_multimap<std::string, std::string>& headers =
                     createChannelResult.getHeaders();
             auto it = headers.find("Location");
             channelUrl = it->second;
             JOYNR_LOG_DEBUG(logger(), "channel creation successfull; channel url: {}", channelUrl);
-            channelCreatedSemaphore->notify();
+            _channelCreatedSemaphore->notify();
         } else {
             JOYNR_LOG_WARN(logger(),
                            "channel creation failed); status code: {}",
                            createChannelResult.getStatusCode());
-            std::unique_lock<std::mutex> lock(interruptedMutex);
-            interruptedWait.wait_for(lock, settings.createChannelRetryInterval);
+            std::unique_lock<std::mutex> lock(_interruptedMutex);
+            _interruptedWait.wait_for(lock, _settings.createChannelRetryInterval);
         }
     }
 
@@ -143,14 +143,14 @@ void LongPollingMessageReceiver::run()
         std::shared_ptr<IHttpGetBuilder> longPollRequestBuilder(
                 HttpNetworking::getInstance()->createHttpGetBuilder(channelUrl));
 
-        currentRequest.reset(longPollRequestBuilder->acceptGzip()
-                                     ->addHeader("Accept", "application/json")
-                                     ->addHeader("X-Atmosphere-tracking-id", receiverId)
-                                     ->withTimeout(settings.longPollTimeout)
-                                     ->build());
+        _currentRequest.reset(longPollRequestBuilder->acceptGzip()
+                                      ->addHeader("Accept", "application/json")
+                                      ->addHeader("X-Atmosphere-tracking-id", _receiverId)
+                                      ->withTimeout(_settings.longPollTimeout)
+                                      ->build());
 
         JOYNR_LOG_TRACE(logger(), "sending long polling request; url: {}", channelUrl);
-        HttpResult longPollingResult = currentRequest->execute();
+        HttpResult longPollingResult = _currentRequest->execute();
         if (!isInterrupted()) {
             // TODO: remove HttpErrorCodes and use constants.
             // there is a bug in atmosphere, which currently gives back 503 instead of 200 as a
@@ -177,8 +177,8 @@ void LongPollingMessageReceiver::run()
                                 "long polling failed; error message: {}; contents: {}",
                                 longPollingResult.getErrorMessage(),
                                 body);
-                std::unique_lock<std::mutex> lock(interruptedMutex);
-                interruptedWait.wait_for(lock, settings.createChannelRetryInterval);
+                std::unique_lock<std::mutex> lock(_interruptedMutex);
+                _interruptedWait.wait_for(lock, _settings.createChannelRetryInterval);
             }
         }
     }
@@ -186,9 +186,9 @@ void LongPollingMessageReceiver::run()
 
 void LongPollingMessageReceiver::processReceivedInput(const std::string& receivedInput)
 {
-    if (onMessageReceived) {
+    if (_onMessageReceived) {
         smrf::ByteVector rawMessage(receivedInput.begin(), receivedInput.end());
-        onMessageReceived(std::move(rawMessage));
+        _onMessageReceived(std::move(rawMessage));
     } else {
         JOYNR_LOG_ERROR(logger(),
                         "Discarding received message, since onMessageReceived callback is empty.");
@@ -197,13 +197,13 @@ void LongPollingMessageReceiver::processReceivedInput(const std::string& receive
 
 void LongPollingMessageReceiver::checkServerTime()
 {
-    std::string timeCheckUrl = brokerUrl.getTimeCheckUrl().toString();
+    std::string timeCheckUrl = _brokerUrl.getTimeCheckUrl().toString();
 
     std::unique_ptr<IHttpGetBuilder> timeCheckRequestBuilder(
             HttpNetworking::getInstance()->createHttpGetBuilder(timeCheckUrl));
     std::shared_ptr<HttpRequest> timeCheckRequest(
             timeCheckRequestBuilder->addHeader("Accept", "text/plain")
-                    ->withTimeout(settings.brokerTimeout)
+                    ->withTimeout(_settings.brokerTimeout)
                     ->build());
     JOYNR_LOG_TRACE(
             logger(), "CheckServerTime: sending request to Bounce Proxy ({})", timeCheckUrl);
@@ -211,8 +211,8 @@ void LongPollingMessageReceiver::checkServerTime()
     HttpResult timeCheckResult = timeCheckRequest->execute();
     const TimePoint localTimeAfterRequest = TimePoint::now();
 
-    std::uint64_t localTime =
-            (localTimeBeforeRequest.toMilliseconds() + localTimeAfterRequest.toMilliseconds()) / 2;
+    std::uint64_t localTime = static_cast<std::uint64_t>(
+            (localTimeBeforeRequest.toMilliseconds() + localTimeAfterRequest.toMilliseconds()) / 2);
     if (timeCheckResult.getStatusCode() != 200) {
         JOYNR_LOG_ERROR(logger(),
                         "CheckServerTime: Bounce Proxy not reached [statusCode={}] [body={}]",
@@ -241,8 +241,8 @@ void LongPollingMessageReceiver::checkServerTime()
 
         JOYNR_LOG_DEBUG(logger(),
                         "CheckServerTime [server time={}] [local time={}] [diff={} ms]",
-                        TimePoint::fromAbsoluteMs(serverTime).toString(),
-                        TimePoint::fromAbsoluteMs(localTime).toString(),
+                        TimePoint::fromAbsoluteMs(static_cast<std::int64_t>(serverTime)).toString(),
+                        TimePoint::fromAbsoluteMs(static_cast<std::int64_t>(localTime)).toString(),
                         diff);
 
         if (diff > 500) {

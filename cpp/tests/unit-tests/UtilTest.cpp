@@ -142,11 +142,11 @@ TEST(UtilTest, isAdditionOnPointerSafe)
 
     // no overflow
     int payloadLength = 0x1;
-    EXPECT_FALSE(util::isAdditionOnPointerSafe(address, payloadLength));
+    EXPECT_FALSE(util::isAdditionOnPointerCausesOverflow(address, payloadLength));
 
     // overflow
     payloadLength = 0x2;
-    EXPECT_TRUE(util::isAdditionOnPointerSafe(address, payloadLength));
+    EXPECT_TRUE(util::isAdditionOnPointerCausesOverflow(address, payloadLength));
 }
 
 TEST(UtilTest, setContainsSet)

@@ -25,18 +25,18 @@ namespace joynr
 
 RequestCaller::RequestCaller(const std::string& interfaceName,
                              const types::Version& providerVersion)
-        : interfaceName(interfaceName), providerVersion(providerVersion)
+        : _interfaceName(interfaceName), _providerVersion(providerVersion)
 {
 }
 
 RequestCaller::RequestCaller(std::string&& interfaceName, types::Version&& providerVersion)
-        : interfaceName(std::move(interfaceName)), providerVersion(std::move(providerVersion))
+        : _interfaceName(std::move(interfaceName)), _providerVersion(std::move(providerVersion))
 {
 }
 
 const std::string& RequestCaller::getInterfaceName() const
 {
-    return interfaceName;
+    return _interfaceName;
 }
 
 void RequestCaller::registerAttributeListener(
@@ -69,7 +69,7 @@ void RequestCaller::unregisterBroadcastListener(
 
 types::Version RequestCaller::getProviderVersion()
 {
-    return providerVersion;
+    return _providerVersion;
 }
 
 } // namespace joynr

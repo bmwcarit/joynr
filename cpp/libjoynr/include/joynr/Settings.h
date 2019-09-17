@@ -115,9 +115,9 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(Settings);
 
-    std::string filename;
-    boost::property_tree::ptree propertyTree;
-    bool loaded;
+    std::string _filename;
+    boost::property_tree::ptree _propertyTree;
+    bool _loaded;
 
     static void merge(const boost::property_tree::ptree& from,
                       boost::property_tree::ptree& to,
@@ -138,7 +138,7 @@ T Settings::get(const std::string& path) const
     boost::property_tree::path treePath = createPath(path);
 
     // Get the value with the path
-    return propertyTree.get<T>(treePath, T());
+    return _propertyTree.get<T>(treePath, T());
 }
 
 template <class T>
@@ -148,7 +148,7 @@ boost::optional<T> Settings::getOptional(const std::string& path) const
     const boost::property_tree::path treePath = createPath(path);
 
     // Get the value with the path
-    return propertyTree.get_optional<T>(treePath);
+    return _propertyTree.get_optional<T>(treePath);
 }
 
 template <class T>
@@ -157,7 +157,7 @@ void Settings::set(const std::string& path, const T& value)
     // Create a '/' delimited path
     boost::property_tree::path treePath = createPath(path);
 
-    propertyTree.put(treePath, value);
+    _propertyTree.put(treePath, value);
 }
 
 } // namespace joynr

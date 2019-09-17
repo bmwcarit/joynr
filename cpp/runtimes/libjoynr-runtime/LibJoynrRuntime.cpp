@@ -51,59 +51,59 @@ class ITransportStatus;
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
                                  std::shared_ptr<IKeychain> keyChain)
         : JoynrRuntimeImpl(*settings, std::move(keyChain)),
-          subscriptionManager(nullptr),
-          messageSender(nullptr),
-          joynrDispatcher(nullptr),
-          settings(std::move(settings)),
-          libjoynrSettings(new LibjoynrSettings(*this->settings)),
-          dispatcherMessagingSkeleton(nullptr),
-          libJoynrMessageRouter(nullptr),
-          libJoynrRuntimeIsShuttingDown(false)
+          _subscriptionManager(nullptr),
+          _messageSender(nullptr),
+          _joynrDispatcher(nullptr),
+          _settings(std::move(settings)),
+          _libjoynrSettings(new LibjoynrSettings(*this->_settings)),
+          _dispatcherMessagingSkeleton(nullptr),
+          _libJoynrMessageRouter(nullptr),
+          _libJoynrRuntimeIsShuttingDown(false)
 {
-    libjoynrSettings->printSettings();
-    singleThreadIOService->start();
+    _libjoynrSettings->printSettings();
+    _singleThreadIOService->start();
 }
 
 LibJoynrRuntime::~LibJoynrRuntime()
 {
     // make sure shutdown() has been called earlier
-    assert(libJoynrRuntimeIsShuttingDown);
+    assert(_libJoynrRuntimeIsShuttingDown);
 }
 
 void LibJoynrRuntime::shutdown()
 {
     // protect against parallel and multiple calls of shutdown()
     bool previousValue = std::atomic_exchange_explicit(
-            &libJoynrRuntimeIsShuttingDown, true, std::memory_order_acquire);
+            &_libJoynrRuntimeIsShuttingDown, true, std::memory_order_acquire);
     assert(!previousValue);
     // bail out in case assert is disabled
     if (previousValue) {
         return;
     }
 
-    std::lock_guard<std::mutex> lock(proxyBuildersMutex);
-    for (auto proxyBuilder : proxyBuilders) {
+    std::lock_guard<std::mutex> lock(_proxyBuildersMutex);
+    for (auto proxyBuilder : _proxyBuilders) {
         proxyBuilder->stop();
         proxyBuilder.reset();
     }
-    proxyBuilders.clear();
+    _proxyBuilders.clear();
 
-    if (joynrDispatcher) {
-        joynrDispatcher->shutdown();
-        joynrDispatcher.reset();
+    if (_joynrDispatcher) {
+        _joynrDispatcher->shutdown();
+        _joynrDispatcher.reset();
     }
-    if (publicationManager) {
-        publicationManager->shutdown();
+    if (_publicationManager) {
+        _publicationManager->shutdown();
     }
-    if (subscriptionManager) {
-        subscriptionManager->shutdown();
+    if (_subscriptionManager) {
+        _subscriptionManager->shutdown();
     }
-    if (libjoynrSettings) {
-        delete libjoynrSettings;
-        libjoynrSettings = nullptr;
+    if (_libjoynrSettings) {
+        delete _libjoynrSettings;
+        _libjoynrSettings = nullptr;
     }
-    if (libJoynrMessageRouter) {
-        libJoynrMessageRouter->shutdown();
+    if (_libJoynrMessageRouter) {
+        _libJoynrMessageRouter->shutdown();
     }
 }
 
@@ -125,62 +125,62 @@ void LibJoynrRuntime::init(
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     std::string routingProviderParticipantId =
-            systemServicesSettings.getCcRoutingProviderParticipantId();
+            _systemServicesSettings.getCcRoutingProviderParticipantId();
     // create message router
-    libJoynrMessageRouter = std::make_shared<LibJoynrMessageRouter>(
-            messagingSettings,
+    _libJoynrMessageRouter = std::make_shared<LibJoynrMessageRouter>(
+            _messagingSettings,
             libjoynrMessagingAddress,
             std::move(messagingStubFactory),
-            singleThreadIOService->getIOService(),
+            _singleThreadIOService->getIOService(),
             std::move(addressCalculator),
-            libjoynrSettings->isMessageRouterPersistencyEnabled(),
+            _libjoynrSettings->isMessageRouterPersistencyEnabled(),
             std::vector<std::shared_ptr<ITransportStatus>>{},
             std::make_unique<MessageQueue<std::string>>(),
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
-    libJoynrMessageRouter->init();
+    _libJoynrMessageRouter->init();
 
-    libJoynrMessageRouter->loadRoutingTable(
-            libjoynrSettings->getMessageRouterPersistenceFilename());
-    libJoynrMessageRouter->setParentAddress(routingProviderParticipantId, ccMessagingAddress);
-    startLibJoynrMessagingSkeleton(libJoynrMessageRouter);
+    _libJoynrMessageRouter->loadRoutingTable(
+            _libjoynrSettings->getMessageRouterPersistenceFilename());
+    _libJoynrMessageRouter->setParentAddress(routingProviderParticipantId, ccMessagingAddress);
+    startLibJoynrMessagingSkeleton(_libJoynrMessageRouter);
 
-    messageSender = std::make_shared<MessageSender>(
-            libJoynrMessageRouter, keyChain, messagingSettings.getTtlUpliftMs());
-    joynrDispatcher =
-            std::make_shared<Dispatcher>(messageSender, singleThreadIOService->getIOService());
-    messageSender->registerDispatcher(joynrDispatcher);
+    _messageSender = std::make_shared<MessageSender>(
+            _libJoynrMessageRouter, _keyChain, _messagingSettings.getTtlUpliftMs());
+    _joynrDispatcher =
+            std::make_shared<Dispatcher>(_messageSender, _singleThreadIOService->getIOService());
+    _messageSender->registerDispatcher(_joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
-    dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
-    dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
+    _dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(_joynrDispatcher);
+    _dispatcherAddress = std::make_shared<InProcessMessagingAddress>(_dispatcherMessagingSkeleton);
 
-    publicationManager = std::make_shared<PublicationManager>(
-            singleThreadIOService->getIOService(),
-            messageSender,
-            libjoynrSettings->isSubscriptionPersistencyEnabled(),
-            messagingSettings.getTtlUpliftMs());
-    publicationManager->loadSavedAttributeSubscriptionRequestsMap(
-            libjoynrSettings->getSubscriptionRequestPersistenceFilename());
-    publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
-            libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
+    _publicationManager = std::make_shared<PublicationManager>(
+            _singleThreadIOService->getIOService(),
+            _messageSender,
+            _libjoynrSettings->isSubscriptionPersistencyEnabled(),
+            _messagingSettings.getTtlUpliftMs());
+    _publicationManager->loadSavedAttributeSubscriptionRequestsMap(
+            _libjoynrSettings->getSubscriptionRequestPersistenceFilename());
+    _publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
+            _libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
 
-    subscriptionManager = std::make_shared<SubscriptionManager>(
-            singleThreadIOService->getIOService(), libJoynrMessageRouter);
+    _subscriptionManager = std::make_shared<SubscriptionManager>(
+            _singleThreadIOService->getIOService(), _libJoynrMessageRouter);
 
     auto joynrMessagingConnectorFactory =
-            std::make_shared<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
+            std::make_shared<JoynrMessagingConnectorFactory>(_messageSender, _subscriptionManager);
 
-    proxyFactory = std::make_unique<ProxyFactory>(joynrMessagingConnectorFactory);
+    _proxyFactory = std::make_unique<ProxyFactory>(joynrMessagingConnectorFactory);
 
     // Set up the persistence file for storing provider participant ids
-    std::string persistenceFilename = libjoynrSettings->getParticipantIdsPersistenceFilename();
-    participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
+    std::string persistenceFilename = _libjoynrSettings->getParticipantIdsPersistenceFilename();
+    _participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     // initialize the dispatchers
-    joynrDispatcher->registerPublicationManager(publicationManager);
-    joynrDispatcher->registerSubscriptionManager(subscriptionManager);
+    _joynrDispatcher->registerPublicationManager(_publicationManager);
+    _joynrDispatcher->registerSubscriptionManager(_subscriptionManager);
 
-    discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(getProvisionedEntries());
+    _discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(getProvisionedEntries());
 
     auto onSuccessBuildInternalProxies =
             [ thisSharedPtr = shared_from_this(), this, onSuccess, onError ]()
@@ -192,19 +192,19 @@ void LibJoynrRuntime::init(
             auto onSuccessGetReplyToAddress = [thisSharedPtr, this, onSuccess, savedGlobalAddress](
                     const std::string& replyAddress) {
 
-                messageSender->setReplyToAddress(replyAddress);
+                _messageSender->setReplyToAddress(replyAddress);
 
                 std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-                dispatcherList.push_back(joynrDispatcher);
+                dispatcherList.push_back(_joynrDispatcher);
 
-                capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
+                _capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
                         dispatcherList,
-                        discoveryProxy,
-                        participantIdStorage,
-                        dispatcherAddress,
-                        libJoynrMessageRouter,
-                        messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
-                        publicationManager,
+                        _discoveryProxy,
+                        _participantIdStorage,
+                        _dispatcherAddress,
+                        _libJoynrMessageRouter,
+                        _messagingSettings.getDiscoveryEntryExpiryIntervalMs(),
+                        _publicationManager,
                         savedGlobalAddress);
 
                 if (onSuccess) {
@@ -222,7 +222,7 @@ void LibJoynrRuntime::init(
                 }
             };
 
-            ccRoutingProxy->getReplyToAddressAsync(
+            _ccRoutingProxy->getReplyToAddressAsync(
                     std::move(onSuccessGetReplyToAddress), std::move(onErrorGetReplyToAddress));
         };
 
@@ -235,7 +235,7 @@ void LibJoynrRuntime::init(
             }
         };
 
-        ccRoutingProxy->getGlobalAddressAsync(
+        _ccRoutingProxy->getGlobalAddressAsync(
                 std::move(onSuccessGetGlobalAddress), std::move(onErrorGetGlobalAddress));
     };
 
@@ -271,15 +271,15 @@ void LibJoynrRuntime::buildInternalProxies(
     const bool isGloballyVisible = false;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = true;
-    const std::string systemServicesDomain = systemServicesSettings.getDomain();
+    const std::string systemServicesDomain = _systemServicesSettings.getDomain();
 
-    ccRoutingProxy = std::make_shared<joynr::system::RoutingProxy>(
+    _ccRoutingProxy = std::make_shared<joynr::system::RoutingProxy>(
             shared_from_this(), connectorFactory, systemServicesDomain, joynrInternalMessagingQos);
     const std::string ccRoutingProviderParticipantId =
-            systemServicesSettings.getCcRoutingProviderParticipantId();
+            _systemServicesSettings.getCcRoutingProviderParticipantId();
     const joynr::types::DiscoveryEntryWithMetaInfo ccRoutingDiscoveryEntry =
             getProvisionedEntries()[ccRoutingProviderParticipantId];
-    ccRoutingProxy->handleArbitrationFinished(ccRoutingDiscoveryEntry);
+    _ccRoutingProxy->handleArbitrationFinished(ccRoutingDiscoveryEntry);
 
     // the following adds a RoutingEntry only to local RoutingTable since parentRouter is not set
     // yet
@@ -316,14 +316,14 @@ void LibJoynrRuntime::buildInternalProxies(
                                                                     systemServicesDomain,
                                                                     joynrInternalMessagingQos);
             const std::string ccDiscoveryProviderParticipantId =
-                    systemServicesSettings.getCcDiscoveryProviderParticipantId();
+                    _systemServicesSettings.getCcDiscoveryProviderParticipantId();
             const joynr::types::DiscoveryEntryWithMetaInfo ccDiscoveryEntry =
                     getProvisionedEntries()[ccDiscoveryProviderParticipantId];
             clusterControllerDiscovery->handleArbitrationFinished(ccDiscoveryEntry);
 
             auto onSuccessAddNextHopDiscoveryProxy =
                     [onSuccess, clusterControllerDiscovery, thisSharedPtr, this]() {
-                discoveryProxy->setDiscoveryProxy(clusterControllerDiscovery);
+                _discoveryProxy->setDiscoveryProxy(clusterControllerDiscovery);
                 onSuccess();
             };
 
@@ -336,13 +336,13 @@ void LibJoynrRuntime::buildInternalProxies(
                 onError(error);
             };
 
-            libJoynrMessageRouter->addNextHop(clusterControllerDiscovery->getProxyParticipantId(),
-                                              dispatcherAddress,
-                                              isGloballyVisible,
-                                              expiryDateMs,
-                                              isSticky,
-                                              onSuccessAddNextHopDiscoveryProxy,
-                                              onErrorAddNextHopDiscoveryProxy);
+            _libJoynrMessageRouter->addNextHop(clusterControllerDiscovery->getProxyParticipantId(),
+                                               _dispatcherAddress,
+                                               isGloballyVisible,
+                                               expiryDateMs,
+                                               isSticky,
+                                               onSuccessAddNextHopDiscoveryProxy,
+                                               onErrorAddNextHopDiscoveryProxy);
         };
 
         auto onErrorSetParentRouter =
@@ -353,8 +353,8 @@ void LibJoynrRuntime::buildInternalProxies(
             onError(error);
         };
 
-        libJoynrMessageRouter->setParentRouter(
-                ccRoutingProxy, onSuccessSetParentRouter, onErrorSetParentRouter);
+        _libJoynrMessageRouter->setParentRouter(
+                _ccRoutingProxy, onSuccessSetParentRouter, onErrorSetParentRouter);
     };
 
     auto onErrorAddNextHopRoutingProxy =
@@ -363,18 +363,18 @@ void LibJoynrRuntime::buildInternalProxies(
         onError(error);
     };
 
-    libJoynrMessageRouter->addNextHop(ccRoutingProxy->getProxyParticipantId(),
-                                      dispatcherAddress,
-                                      isGloballyVisible,
-                                      expiryDateMs,
-                                      isSticky,
-                                      onSuccessAddNextHopRoutingProxy,
-                                      onErrorAddNextHopRoutingProxy);
+    _libJoynrMessageRouter->addNextHop(_ccRoutingProxy->getProxyParticipantId(),
+                                       _dispatcherAddress,
+                                       isGloballyVisible,
+                                       expiryDateMs,
+                                       isSticky,
+                                       onSuccessAddNextHopRoutingProxy,
+                                       onErrorAddNextHopRoutingProxy);
 }
 
 std::shared_ptr<IMessageRouter> LibJoynrRuntime::getMessageRouter()
 {
-    return libJoynrMessageRouter;
+    return _libJoynrMessageRouter;
 }
 
 } // namespace joynr

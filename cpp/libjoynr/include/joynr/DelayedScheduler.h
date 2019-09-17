@@ -47,7 +47,7 @@ public:
     typedef std::uint32_t RunnableHandle;
 
     /*! Invalid handle */
-    static const RunnableHandle INVALID_RUNNABLE_HANDLE = 0;
+    static const RunnableHandle _INVALID_RUNNABLE_HANDLE = 0;
 
     /**
      * @brief Constructor
@@ -115,24 +115,24 @@ private:
 
 private:
     /*! Default delay set by the constructor */
-    const std::chrono::milliseconds defaultDelayMs;
+    const std::chrono::milliseconds _defaultDelayMs;
 
     /*! Callback on timer expired */
-    std::function<void(std::shared_ptr<Runnable>)> onWorkAvailable;
+    std::function<void(std::shared_ptr<Runnable>)> _onWorkAvailable;
 
     /*! Flag indicating @ref DelayedScheduler will be stopped */
-    bool stoppingDelayedScheduler;
+    bool _stoppingDelayedScheduler;
 
-    std::unordered_map<RunnableHandle, DelayedRunnable> delayedRunnables;
+    std::unordered_map<RunnableHandle, DelayedRunnable> _delayedRunnables;
 
     /*! Guard to limit write access to @ref delayedRunnables */
-    std::mutex writeLock;
+    std::mutex _writeLock;
 
     /*! Next runnable handle which will be returned by ::schedule */
-    RunnableHandle nextRunnableHandle;
+    RunnableHandle _nextRunnableHandle;
 
     /*! Used for async timers. */
-    boost::asio::io_service& ioService;
+    boost::asio::io_service& _ioService;
 };
 
 } // namespace joynr

@@ -943,7 +943,7 @@ private:
         ReadLocker lock(readWriteLock);
 
         auto range = table.equal_range(std::make_tuple(userId, domain, interfaceName));
-        std::size_t size = std::distance(range.first, range.second);
+        std::size_t size = static_cast<std::size_t>(std::distance(range.first, range.second));
 
         if (size == 0) {
             return true;

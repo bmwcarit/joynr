@@ -28,21 +28,29 @@ namespace joynr
 {
 
 Url::Url()
-        : protocol(), user(), password(), host(), port(), path(), query(), fragment(), valid(false)
+        : _protocol(),
+          _user(),
+          _password(),
+          _host(),
+          _port(),
+          _path(),
+          _query(),
+          _fragment(),
+          _valid(false)
 {
 }
 
 Url::Url(const std::string& text)
-        : protocol(),
-          user(),
-          password(),
-          host(),
-          port(),
-          path(),
-          query(),
-          fragment(),
-          valid(false),
-          isIPv6HexAddress(false)
+        : _protocol(),
+          _user(),
+          _password(),
+          _host(),
+          _port(),
+          _path(),
+          _query(),
+          _fragment(),
+          _valid(false),
+          _isIPv6HexAddress(false)
 {
     parseUrl(text);
 }
@@ -51,16 +59,16 @@ Url::Url(const std::string& protocol,
          const std::string& host,
          std::uint16_t port,
          const std::string& path)
-        : protocol(protocol),
-          user(),
-          password(),
-          host(host),
-          port(port),
-          path(path),
-          query(),
-          fragment(),
-          valid(false),
-          isIPv6HexAddress(false)
+        : _protocol(protocol),
+          _user(),
+          _password(),
+          _host(host),
+          _port(port),
+          _path(path),
+          _query(),
+          _fragment(),
+          _valid(false),
+          _isIPv6HexAddress(false)
 {
     // Set valid to true if member variables are valid
     validate();
@@ -74,16 +82,16 @@ Url::Url(const std::string& protocol,
          const std::string& path,
          const std::string& query,
          const std::string& fragment)
-        : protocol(protocol),
-          user(user),
-          password(password),
-          host(host),
-          port(port),
-          path(path),
-          query(query),
-          fragment(fragment),
-          valid(false),
-          isIPv6HexAddress(false)
+        : _protocol(protocol),
+          _user(user),
+          _password(password),
+          _host(host),
+          _port(port),
+          _path(path),
+          _query(query),
+          _fragment(fragment),
+          _valid(false),
+          _isIPv6HexAddress(false)
 {
     // Set valid to true if member variables are valid
     validate();
@@ -91,70 +99,70 @@ Url::Url(const std::string& protocol,
 
 bool Url::operator==(const Url& other) const
 {
-    if (!(valid && other.valid)) {
+    if (!(_valid && other._valid)) {
         return false;
     }
 
-    return (port == other.port && protocol == other.protocol && user == other.user &&
-            password == other.password && host == other.host && path == other.path &&
-            query == other.query && fragment == other.fragment);
+    return (_port == other._port && _protocol == other._protocol && _user == other._user &&
+            _password == other._password && _host == other._host && _path == other._path &&
+            _query == other._query && _fragment == other._fragment);
 }
 
 const std::string& Url::getProtocol() const
 {
-    return protocol;
+    return _protocol;
 }
 
 const std::string& Url::getUser() const
 {
-    return user;
+    return _user;
 }
 
 const std::string& Url::getPassword() const
 {
-    return password;
+    return _password;
 }
 
 const std::string& Url::getHost() const
 {
-    return host;
+    return _host;
 }
 
 std::uint16_t Url::getPort() const
 {
-    return port;
+    return _port;
 }
 
 const std::string& Url::getPath() const
 {
-    return path;
+    return _path;
 }
 
 void Url::setPath(const std::string& path)
 {
-    this->path = path;
+    this->_path = path;
     validate();
 }
 
 const std::string& Url::getQuery() const
 {
-    return query;
+    return _query;
 }
 
 void Url::setQuery(UrlQuery query)
 {
-    this->query = query.toString();
+    this->_query = query.toString();
     validate();
 }
 
 const std::string& Url::getFragment() const
 {
-    return fragment;
+    return _fragment;
 }
 
 bool Url::isValid() const
 {
-    return valid;
+    return _valid;
 }
 
 void Url::parseUrl(const std::string& text)
@@ -188,14 +196,14 @@ void Url::parseUrl(const std::string& text)
             if (ch == ':') {
                 state = State::SCHEME_SEP;
             } else {
-                protocol += ch;
+                _protocol += ch;
             }
             break;
         case State::SCHEME_SEP:
             if (ch != '/') {
                 state = State::USER;
                 branchStart = i;
-                user += ch;
+                _user += ch;
             }
             break;
         case State::USER:
@@ -205,9 +213,9 @@ void Url::parseUrl(const std::string& text)
                 // There was no auth - backtrack
                 state = State::HOST;
                 i = branchStart - 1;
-                user.clear();
+                _user.clear();
             } else {
-                user += ch;
+                _user += ch;
             }
             break;
         case State::PASSWORD:
@@ -217,10 +225,10 @@ void Url::parseUrl(const std::string& text)
                 // There was no auth - backtrack
                 state = State::HOST;
                 i = branchStart - 1;
-                user.clear();
-                password.clear();
+                _user.clear();
+                _password.clear();
             } else {
-                password += ch;
+                _password += ch;
             }
             break;
         case State::HOST:
@@ -228,24 +236,24 @@ void Url::parseUrl(const std::string& text)
                 state = State::PORT;
             } else if (ch == '/') {
                 state = State::PATH;
-                path += ch;
+                _path += ch;
             } else if (ch == '[') {
                 state = State::IPV6;
             } else {
-                host += ch;
+                _host += ch;
             }
             break;
         case State::IPV6:
             if (ch == ']') {
                 state = State::HOST;
             } else {
-                host += ch;
+                _host += ch;
             }
             break;
         case State::PORT:
             if (ch == '/') {
                 state = State::PATH;
-                path += ch;
+                _path += ch;
             } else {
                 portString += ch;
             }
@@ -256,18 +264,18 @@ void Url::parseUrl(const std::string& text)
             } else if (ch == '#') {
                 state = State::FRAGMENT;
             } else {
-                path += ch;
+                _path += ch;
             }
             break;
         case State::QUERY:
             if (ch == '#') {
                 state = State::FRAGMENT;
             } else {
-                query += ch;
+                _query += ch;
             }
             break;
         case State::FRAGMENT:
-            fragment += ch;
+            _fragment += ch;
             if (i == text.size()) {
                 state = State::TERMINATE;
             }
@@ -280,9 +288,9 @@ void Url::parseUrl(const std::string& text)
 
     // Post process the port
     if (portString.empty()) {
-        port = portFromProtocol(protocol);
+        _port = portFromProtocol(_protocol);
     } else {
-        port = std::stoi(portString);
+        _port = std::stoi(portString);
     }
 
     // Set valid to true if the member variables appear correct
@@ -292,26 +300,26 @@ void Url::parseUrl(const std::string& text)
 std::string Url::toString() const
 {
     std::stringstream stringBuilder;
-    stringBuilder << protocol << "://";
-    if (!user.empty()) {
-        stringBuilder << user;
-        if (!password.empty()) {
-            stringBuilder << ":" << password;
+    stringBuilder << _protocol << "://";
+    if (!_user.empty()) {
+        stringBuilder << _user;
+        if (!_password.empty()) {
+            stringBuilder << ":" << _password;
         }
         stringBuilder << "@";
     }
-    stringBuilder << (isIPv6HexAddress ? "[" : "") << host << (isIPv6HexAddress ? "]" : "");
-    if (port != 0) {
-        stringBuilder << ":" << port;
+    stringBuilder << (_isIPv6HexAddress ? "[" : "") << _host << (_isIPv6HexAddress ? "]" : "");
+    if (_port != 0) {
+        stringBuilder << ":" << _port;
     }
-    if (!path.empty()) {
-        stringBuilder << path;
+    if (!_path.empty()) {
+        stringBuilder << _path;
     }
-    if (!query.empty()) {
-        stringBuilder << "?" << query;
+    if (!_query.empty()) {
+        stringBuilder << "?" << _query;
     }
-    if (!fragment.empty()) {
-        stringBuilder << "#" << fragment;
+    if (!_fragment.empty()) {
+        stringBuilder << "#" << _fragment;
     }
 
     return stringBuilder.str();
@@ -335,44 +343,44 @@ std::uint16_t Url::portFromProtocol(const std::string& proto)
 void Url::validate()
 {
     // Check - valid will remain false on error
-    if (protocol.empty() || host.empty()) {
+    if (_protocol.empty() || _host.empty()) {
         return;
     }
     // Post process the path
-    if (path.empty()) {
-        path = "/";
+    if (_path.empty()) {
+        _path = "/";
     }
 
     // only URI string contains [...] in case of IPv6 hexadecimal address
-    if ((host.find("[") != std::string::npos) || (host.find("]") != std::string::npos)) {
+    if ((_host.find("[") != std::string::npos) || (_host.find("]") != std::string::npos)) {
         return;
     }
 
-    if (host.find(":") != std::string::npos) {
-        isIPv6HexAddress = true;
+    if (_host.find(":") != std::string::npos) {
+        _isIPv6HexAddress = true;
     }
 
     // Assume success
-    valid = true;
+    _valid = true;
 }
 
-UrlQuery::UrlQuery() : queryItems()
+UrlQuery::UrlQuery() : _queryItems()
 {
 }
 
 void UrlQuery::addQueryItem(const std::string& itemName, const std::string& itemValue)
 {
     std::string queryItem = itemName + "=" + itemValue;
-    queryItems.push_back(queryItem);
+    _queryItems.push_back(queryItem);
 }
 
 std::string UrlQuery::toString() const
 {
-    if (queryItems.empty()) {
+    if (_queryItems.empty()) {
         return "";
     }
 
-    std::string result = boost::algorithm::join(queryItems, "&");
+    std::string result = boost::algorithm::join(_queryItems, "&");
     return result;
 }
 

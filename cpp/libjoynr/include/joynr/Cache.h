@@ -39,7 +39,7 @@ public:
     /**
      * @brief Cache with default macCost is 100
      */
-    Cache() : cacheMap(), cacheCapacity(100)
+    Cache() : _cacheMap(), _cacheCapacity(100)
     {
     }
     /**
@@ -47,7 +47,7 @@ public:
      * @param cacheCapacity
      */
     explicit Cache(std::uint32_t cacheCapacity)
-            : cacheMap(), cacheCapacity(static_cast<std::size_t>(cacheCapacity))
+            : _cacheMap(), _cacheCapacity(static_cast<std::size_t>(cacheCapacity))
     {
     }
     /**
@@ -57,7 +57,7 @@ public:
      */
     bool contains(const Key& key) const
     {
-        return cacheMap.find(key) != cacheMap.cend();
+        return _cacheMap.find(key) != _cacheMap.cend();
     }
     /**
      * @brief object to lookup object in the cache
@@ -66,8 +66,8 @@ public:
      */
     Value* object(const Key& key) const
     {
-        auto elementIterator = cacheMap.find(key);
-        if (elementIterator == cacheMap.end()) {
+        auto elementIterator = _cacheMap.find(key);
+        if (elementIterator == _cacheMap.end()) {
             return nullptr;
         }
         return elementIterator->second.get();
@@ -81,10 +81,10 @@ public:
     void setCacheCapacity(std::uint32_t cacheCapacity)
     {
         std::size_t capacity = static_cast<std::size_t>(cacheCapacity);
-        if (capacity < cacheMap.size()) {
-            removeElementsFromTheBeginning(cacheMap.size() - capacity);
+        if (capacity < _cacheMap.size()) {
+            removeElementsFromTheBeginning(_cacheMap.size() - capacity);
         }
-        this->cacheCapacity = capacity;
+        this->_cacheCapacity = capacity;
     }
     /**
      * @brief insert value under given key. If cache contains value with same key
@@ -95,24 +95,24 @@ public:
      */
     void insert(Key key, Value* value)
     {
-        if (cacheMap.size() == cacheCapacity) {
+        if (_cacheMap.size() == _cacheCapacity) {
             removeElementsFromTheBeginning(1);
-            assert(cacheMap.size() == cacheCapacity - 1);
+            assert(_cacheMap.size() == _cacheCapacity - 1);
         }
-        std::size_t sizeOld = cacheMap.size();
-        cacheMap.insert(std::make_pair(key, std::unique_ptr<Value>(value)));
-        std::size_t sizeNew = cacheMap.size();
+        std::size_t sizeOld = _cacheMap.size();
+        _cacheMap.insert(std::make_pair(key, std::unique_ptr<Value>(value)));
+        std::size_t sizeNew = _cacheMap.size();
         assert(sizeOld != sizeNew);
         assert(sizeNew != 0);
-        assert(sizeNew <= cacheCapacity);
-        assert(cacheMap.find(key) != cacheMap.end());
+        assert(sizeNew <= _cacheCapacity);
+        assert(_cacheMap.find(key) != _cacheMap.end());
     }
     /**
      * @brief clear removes and destroys all values
      */
     void clear()
     {
-        cacheMap.clear();
+        _cacheMap.clear();
     }
     /**
      * @brief size
@@ -120,7 +120,7 @@ public:
      */
     int size()
     {
-        return cacheMap.size();
+        return _cacheMap.size();
     }
 
     /**
@@ -129,9 +129,9 @@ public:
      */
     void remove(const Key& key)
     {
-        auto elementIterator = cacheMap.find(key);
-        if (elementIterator != cacheMap.end()) {
-            cacheMap.erase(elementIterator);
+        auto elementIterator = _cacheMap.find(key);
+        if (elementIterator != _cacheMap.end()) {
+            _cacheMap.erase(elementIterator);
         }
     }
 
@@ -142,8 +142,8 @@ public:
     std::vector<Key> keys() const
     {
         std::vector<Key> keys;
-        keys.reserve(cacheMap.size());
-        for (auto&& mapIterator : cacheMap) {
+        keys.reserve(_cacheMap.size());
+        for (auto&& mapIterator : _cacheMap) {
             keys.push_back(mapIterator.first);
         }
 
@@ -151,8 +151,8 @@ public:
     }
 
 private:
-    std::map<Key, std::unique_ptr<Value>> cacheMap;
-    std::size_t cacheCapacity;
+    std::map<Key, std::unique_ptr<Value>> _cacheMap;
+    std::size_t _cacheCapacity;
 
     /**
      * @brief removeElementsFromTheBeginning removes given number of elements from the beginning
@@ -161,9 +161,9 @@ private:
     void removeElementsFromTheBeginning(int numberOfElements)
     {
         while (numberOfElements != 0) {
-            auto firstAndOldestElement = cacheMap.begin();
-            std::unique_ptr<Value> olderstValue(std::move(cacheMap.begin()->second));
-            cacheMap.erase(firstAndOldestElement);
+            auto firstAndOldestElement = _cacheMap.begin();
+            std::unique_ptr<Value> olderstValue(std::move(_cacheMap.begin()->second));
+            _cacheMap.erase(firstAndOldestElement);
 
             Value* value_ptr = olderstValue.release();
             delete value_ptr;

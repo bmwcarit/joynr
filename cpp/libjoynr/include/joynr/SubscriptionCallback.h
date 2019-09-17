@@ -44,9 +44,9 @@ public:
     explicit SubscriptionCallback(const std::string& subscriptionId,
                                   std::shared_ptr<Future<std::string>> future,
                                   std::weak_ptr<ISubscriptionManager> subscriptionManager)
-            : subscriptionId(subscriptionId),
-              future(std::move(future)),
-              subscriptionManager(std::move(subscriptionManager))
+            : _subscriptionId(subscriptionId),
+              _future(std::move(future)),
+              _subscriptionManager(std::move(subscriptionManager))
     {
     }
 
@@ -78,20 +78,20 @@ public:
 
     void execute(const SubscriptionReply& subscriptionReply) override
     {
-        if (auto subscriptionManagerSharedPtr = subscriptionManager.lock()) {
+        if (auto subscriptionManagerSharedPtr = _subscriptionManager.lock()) {
             std::shared_ptr<exceptions::JoynrRuntimeException> error = subscriptionReply.getError();
             std::shared_ptr<ISubscriptionListenerBase> listener =
-                    subscriptionManagerSharedPtr->getSubscriptionListener(subscriptionId);
+                    subscriptionManagerSharedPtr->getSubscriptionListener(_subscriptionId);
             if (error) {
                 subscriptionManagerSharedPtr->unregisterSubscription(
                         subscriptionReply.getSubscriptionId());
-                future->onError(error);
+                _future->onError(error);
 
                 if (listener) {
                     listener->onError(*error);
                 }
             } else {
-                future->onSuccess(subscriptionReply.getSubscriptionId());
+                _future->onSuccess(subscriptionReply.getSubscriptionId());
 
                 if (listener) {
                     listener->onSubscribed(subscriptionReply.getSubscriptionId());
@@ -101,9 +101,9 @@ public:
     }
 
 protected:
-    std::string subscriptionId;
-    std::shared_ptr<Future<std::string>> future;
-    std::weak_ptr<ISubscriptionManager> subscriptionManager;
+    std::string _subscriptionId;
+    std::shared_ptr<Future<std::string>> _future;
+    std::weak_ptr<ISubscriptionManager> _subscriptionManager;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);

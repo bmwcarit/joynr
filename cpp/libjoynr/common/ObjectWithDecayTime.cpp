@@ -21,23 +21,23 @@
 namespace joynr
 {
 
-ObjectWithDecayTime::ObjectWithDecayTime(const TimePoint& decayTime) : decayTime(decayTime)
+ObjectWithDecayTime::ObjectWithDecayTime(const TimePoint& decayTime) : _decayTime(decayTime)
 {
 }
 
 std::chrono::milliseconds ObjectWithDecayTime::getRemainingTtl() const
 {
-    return decayTime - TimePoint::now();
+    return _decayTime - TimePoint::now();
 }
 
 TimePoint ObjectWithDecayTime::getDecayTime() const
 {
-    return decayTime;
+    return _decayTime;
 }
 
 bool ObjectWithDecayTime::isExpired() const
 {
-    return TimePoint::now() > decayTime;
+    return TimePoint::now() > _decayTime;
 }
 
 } // namespace joynr

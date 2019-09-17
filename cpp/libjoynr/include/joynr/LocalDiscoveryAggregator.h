@@ -158,9 +158,9 @@ private:
             const std::string& participantId,
             std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess) noexcept;
 
-    std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
+    std::shared_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
     const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>
-            provisionedDiscoveryEntries;
+            _provisionedDiscoveryEntries;
 };
 } // namespace joynr
 #endif // LOCALDISCOVERYAGGREGATOR_H

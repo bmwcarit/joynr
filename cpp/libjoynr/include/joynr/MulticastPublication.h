@@ -47,13 +47,13 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<BasePublication>(this), MUESLI_NVP(multicastId));
+        archive(muesli::BaseClass<BasePublication>(this), MUESLI_NVP(_multicastId));
     }
 
 private:
     // printing MulticastPublication with google-test and google-mock
     friend void PrintTo(const MulticastPublication& MulticastPublication, ::std::ostream* os);
-    std::string multicastId;
+    std::string _multicastId;
 };
 
 } // namespace joynr

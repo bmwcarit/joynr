@@ -25,9 +25,9 @@
 namespace joynr
 {
 
-SystemServicesSettings::SystemServicesSettings(Settings& settings) : settings(settings)
+SystemServicesSettings::SystemServicesSettings(Settings& settings) : _settings(settings)
 {
-    settings.fillEmptySettingsWithDefaults(DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME());
+    _settings.fillEmptySettingsWithDefaults(DEFAULT_SYSTEM_SERVICES_SETTINGS_FILENAME());
     checkSettings();
 }
 
@@ -71,68 +71,68 @@ const std::string& SystemServicesSettings::DEFAULT_SYSTEM_SERVICES_SETTINGS_FILE
 
 std::string SystemServicesSettings::getDomain() const
 {
-    return settings.get<std::string>(SETTING_DOMAIN());
+    return _settings.get<std::string>(SETTING_DOMAIN());
 }
 
 void SystemServicesSettings::setJoynrSystemServicesDomain(const std::string& systemServicesDomain)
 {
-    settings.set(SETTING_DOMAIN(), systemServicesDomain);
+    _settings.set(SETTING_DOMAIN(), systemServicesDomain);
 }
 
 std::string SystemServicesSettings::getCcRoutingProviderParticipantId() const
 {
-    return settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID());
+    return _settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID());
 }
 
 void SystemServicesSettings::setCcRoutingProviderParticipantId(const std::string& participantId)
 {
-    settings.set(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(), participantId);
+    _settings.set(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(), participantId);
 }
 
 std::string SystemServicesSettings::getCcDiscoveryProviderParticipantId() const
 {
-    return settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID());
+    return _settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID());
 }
 
 void SystemServicesSettings::setCcDiscoveryProviderParticipantId(const std::string& participantId)
 {
-    settings.set(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(), participantId);
+    _settings.set(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(), participantId);
 }
 
 std::string SystemServicesSettings::getCcMessageNotificationProviderParticipantId() const
 {
-    return settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID());
+    return _settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID());
 }
 
 void SystemServicesSettings::setCcMessageNotificationProviderParticipantId(
         const std::string& participantId)
 {
-    settings.set(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(), participantId);
+    _settings.set(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(), participantId);
 }
 
 std::string SystemServicesSettings::getCcAccessControlListEditorProviderParticipantId() const
 {
-    return settings.get<std::string>(SETTING_CC_ACCESSCONTROLLISTEDITORPROVIDER_PARTICIPANTID());
+    return _settings.get<std::string>(SETTING_CC_ACCESSCONTROLLISTEDITORPROVIDER_PARTICIPANTID());
 }
 
 void SystemServicesSettings::setCcAccessControlListEditorProviderParticipantId(
         const std::string& participantId)
 {
-    settings.set(SETTING_CC_ACCESSCONTROLLISTEDITORPROVIDER_PARTICIPANTID(), participantId);
+    _settings.set(SETTING_CC_ACCESSCONTROLLISTEDITORPROVIDER_PARTICIPANTID(), participantId);
 }
 
 bool SystemServicesSettings::contains(const std::string& key) const
 {
-    return settings.contains(key);
+    return _settings.contains(key);
 }
 
 // Checks messaging settings and sets defaults
 void SystemServicesSettings::checkSettings() const
 {
-    assert(settings.contains(SETTING_DOMAIN()));
-    assert(settings.contains(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
-    assert(settings.contains(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
-    assert(settings.contains(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));
+    assert(_settings.contains(SETTING_DOMAIN()));
+    assert(_settings.contains(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
+    assert(_settings.contains(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+    assert(_settings.contains(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));
 }
 
 void SystemServicesSettings::printSettings() const
@@ -140,20 +140,20 @@ void SystemServicesSettings::printSettings() const
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_DOMAIN(),
-                   settings.get<std::string>(SETTING_DOMAIN()));
+                   _settings.get<std::string>(SETTING_DOMAIN()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID(),
-                   settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
+                   _settings.get<std::string>(SETTING_CC_ROUTINGPROVIDER_PARTICIPANTID()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID(),
-                   settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
+                   _settings.get<std::string>(SETTING_CC_DISCOVERYPROVIDER_PARTICIPANTID()));
     JOYNR_LOG_INFO(
             logger(),
             "SETTING: {} = {}",
             SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID(),
-            settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));
+            _settings.get<std::string>(SETTING_CC_MESSAGENOTIFICATIONPROVIDER_PARTICIPANTID()));
 }
 
 } // namespace joynr

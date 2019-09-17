@@ -24,11 +24,11 @@
 namespace joynr
 {
 
-TimePoint::TimePoint() : timePoint()
+TimePoint::TimePoint() : _timePoint()
 {
 }
 
-TimePoint::TimePoint(const std::chrono::system_clock::time_point& timePoint) : timePoint(timePoint)
+TimePoint::TimePoint(const std::chrono::system_clock::time_point& timePoint) : _timePoint(timePoint)
 {
 }
 
@@ -59,36 +59,36 @@ TimePoint TimePoint::min()
 
 std::int64_t TimePoint::toMilliseconds() const
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(timePoint.time_since_epoch())
+    return std::chrono::duration_cast<std::chrono::milliseconds>(_timePoint.time_since_epoch())
             .count();
 }
 
 bool TimePoint::operator<(const TimePoint& rhs) const
 {
-    return this->timePoint < rhs.timePoint;
+    return this->_timePoint < rhs._timePoint;
 }
 
 bool TimePoint::operator>(const TimePoint& rhs) const
 {
-    return this->timePoint > rhs.timePoint;
+    return this->_timePoint > rhs._timePoint;
 }
 
 std::chrono::milliseconds TimePoint::operator-(const TimePoint& rhs) const
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(this->timePoint - rhs.timePoint);
+    return std::chrono::duration_cast<std::chrono::milliseconds>(this->_timePoint - rhs._timePoint);
 }
 
 TimePoint TimePoint::operator+(std::int64_t durationMs) const
 {
-    const auto result = this->timePoint + std::chrono::milliseconds(durationMs);
+    const auto result = this->_timePoint + std::chrono::milliseconds(durationMs);
     // check for overflow
     if (durationMs > 0) {
-        bool positiveOverflow = result < this->timePoint;
+        bool positiveOverflow = result < this->_timePoint;
         if (positiveOverflow) {
             return max();
         }
     } else if (durationMs < 0) {
-        bool negativeOverflow = result > this->timePoint;
+        bool negativeOverflow = result > this->_timePoint;
         if (negativeOverflow) {
             return min();
         }
@@ -103,7 +103,7 @@ TimePoint TimePoint::operator+(const std::chrono::milliseconds& duration) const
 
 TimePoint TimePoint::operator-(const std::chrono::milliseconds& duration) const
 {
-    return TimePoint(this->timePoint - duration);
+    return TimePoint(this->_timePoint - duration);
 }
 
 bool TimePoint::operator==(const TimePoint& other) const
@@ -118,7 +118,7 @@ bool TimePoint::operator!=(const TimePoint& other) const
 
 std::string TimePoint::toString() const
 {
-    std::time_t time = std::chrono::system_clock::to_time_t(timePoint);
+    std::time_t time = std::chrono::system_clock::to_time_t(_timePoint);
     return std::ctime(&time);
 }
 

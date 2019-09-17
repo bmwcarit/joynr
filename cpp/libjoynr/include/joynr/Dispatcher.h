@@ -82,16 +82,16 @@ private:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Dispatcher);
-    std::shared_ptr<IMessageSender> messageSender;
-    RequestCallerDirectory requestCallerDirectory;
-    ReplyCallerDirectory replyCallerDirectory;
-    std::weak_ptr<PublicationManager> publicationManager;
-    std::shared_ptr<ISubscriptionManager> subscriptionManager;
-    std::shared_ptr<ThreadPool> handleReceivedMessageThreadPool;
+    std::shared_ptr<IMessageSender> _messageSender;
+    RequestCallerDirectory _requestCallerDirectory;
+    ReplyCallerDirectory _replyCallerDirectory;
+    std::weak_ptr<PublicationManager> _publicationManager;
+    std::shared_ptr<ISubscriptionManager> _subscriptionManager;
+    std::shared_ptr<ThreadPool> _handleReceivedMessageThreadPool;
     ADD_LOGGER(Dispatcher)
-    std::mutex subscriptionHandlingMutex;
-    bool isShuttingDown;
-    ReadWriteLock isShuttingDownLock;
+    std::mutex _subscriptionHandlingMutex;
+    bool _isShuttingDown;
+    ReadWriteLock _isShuttingDownLock;
 
     friend class ReceivedMessageRunnable;
 };

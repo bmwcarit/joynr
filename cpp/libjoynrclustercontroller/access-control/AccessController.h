@@ -67,11 +67,11 @@ private:
     bool needsHasConsumerPermissionCheck(const ImmutableMessage& message) const;
     bool needsHasProviderPermissionCheck() const;
 
-    std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
-    std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
-    std::shared_ptr<ProviderRegistrationObserver> providerRegistrationObserver;
-    std::vector<std::string> whitelistParticipantIds;
-    std::vector<std::string> knownGbids;
+    std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectory;
+    std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
+    std::shared_ptr<ProviderRegistrationObserver> _providerRegistrationObserver;
+    std::vector<std::string> _whitelistParticipantIds;
+    std::vector<std::string> _knownGbids;
 
     ADD_LOGGER(AccessController)
 };

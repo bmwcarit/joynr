@@ -44,7 +44,7 @@ public:
      */
     void shutdown()
     {
-        runtimeImpl->shutdown();
+        _runtimeImpl->shutdown();
     }
 
     /**
@@ -79,14 +79,14 @@ public:
             bool awaitGlobalRegistration = false,
             std::vector<std::string> gbids = std::vector<std::string>()) noexcept
     {
-        return runtimeImpl->registerProviderAsync(domain,
-                                                  provider,
-                                                  providerQos,
-                                                  std::move(onSuccess),
-                                                  std::move(onError),
-                                                  persist,
-                                                  awaitGlobalRegistration,
-                                                  gbids);
+        return _runtimeImpl->registerProviderAsync(domain,
+                                                   provider,
+                                                   providerQos,
+                                                   std::move(onSuccess),
+                                                   std::move(onError),
+                                                   persist,
+                                                   awaitGlobalRegistration,
+                                                   gbids);
     }
 
     /**
@@ -163,13 +163,13 @@ public:
             bool persist = true,
             bool awaitGlobalRegistration = false) noexcept
     {
-        return runtimeImpl->registerProviderInAllBackendsAsync(domain,
-                                                               provider,
-                                                               providerQos,
-                                                               std::move(onSuccess),
-                                                               std::move(onError),
-                                                               persist,
-                                                               awaitGlobalRegistration);
+        return _runtimeImpl->registerProviderInAllBackendsAsync(domain,
+                                                                provider,
+                                                                providerQos,
+                                                                std::move(onSuccess),
+                                                                std::move(onError),
+                                                                persist,
+                                                                awaitGlobalRegistration);
     }
 
     /**
@@ -228,7 +228,7 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
-        return runtimeImpl->unregisterProviderAsync(
+        return _runtimeImpl->unregisterProviderAsync(
                 participantId, std::move(onSuccess), std::move(onError));
     }
 
@@ -252,7 +252,7 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
-        return runtimeImpl->unregisterProviderAsync(
+        return _runtimeImpl->unregisterProviderAsync(
                 domain, provider, std::move(onSuccess), std::move(onError));
     }
 
@@ -318,7 +318,7 @@ public:
     template <class TIntfProxy>
     std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
-        return runtimeImpl->createProxyBuilder<TIntfProxy>(domain);
+        return _runtimeImpl->createProxyBuilder<TIntfProxy>(domain);
     }
 
     /**
@@ -382,13 +382,13 @@ public:
      * @param settings The system service settings
      */
     explicit JoynrRuntime(std::shared_ptr<JoynrRuntimeImpl> runtimeImpl)
-            : runtimeImpl(std::move(runtimeImpl))
+            : _runtimeImpl(std::move(runtimeImpl))
     {
     }
 
 protected:
 private:
-    std::shared_ptr<JoynrRuntimeImpl> runtimeImpl;
+    std::shared_ptr<JoynrRuntimeImpl> _runtimeImpl;
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntime);
     ADD_LOGGER(JoynrRuntime)
 };

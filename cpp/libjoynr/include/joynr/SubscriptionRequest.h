@@ -64,7 +64,7 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(subscriptionId), MUESLI_NVP(subscribedToName), MUESLI_NVP(qos));
+        archive(MUESLI_NVP(_subscriptionId), MUESLI_NVP(_subscribedToName), MUESLI_NVP(_qos));
     }
 
 protected:
@@ -75,10 +75,10 @@ protected:
       be determined when registering
       the subscription, and thus must be stored while waiting for arbitrations.
       */
-    std::string subscriptionId;
-    std::string subscribedToName;
+    std::string _subscriptionId;
+    std::string _subscribedToName;
 
-    std::shared_ptr<SubscriptionQos> qos;
+    std::shared_ptr<SubscriptionQos> _qos;
 };
 
 } // namespace joynr

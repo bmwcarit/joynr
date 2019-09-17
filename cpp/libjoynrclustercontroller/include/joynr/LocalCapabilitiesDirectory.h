@@ -226,7 +226,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
-    ClusterControllerSettings& clusterControllerSettings; // to retrieve info about persistency
+    ClusterControllerSettings& _clusterControllerSettings; // to retrieve info about persistency
 
     struct ValidateGBIDsEnum
     {
@@ -293,34 +293,34 @@ private:
                                                         std::chrono::milliseconds maxCacheAge);
 
     ADD_LOGGER(LocalCapabilitiesDirectory)
-    std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient;
-    std::string localAddress;
-    mutable std::recursive_mutex cacheLock;
-    std::mutex pendingLookupsLock;
+    std::shared_ptr<IGlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
+    std::string _localAddress;
+    mutable std::recursive_mutex _cacheLock;
+    std::mutex _pendingLookupsLock;
 
-    capabilities::Storage locallyRegisteredCapabilities;
-    capabilities::CachingStorage globalLookupCache;
+    capabilities::Storage _locallyRegisteredCapabilities;
+    capabilities::CachingStorage _globalLookupCache;
 
-    std::weak_ptr<IMessageRouter> messageRouter;
-    std::vector<std::shared_ptr<IProviderRegistrationObserver>> observers;
+    std::weak_ptr<IMessageRouter> _messageRouter;
+    std::vector<std::shared_ptr<IProviderRegistrationObserver>> _observers;
 
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
-            pendingLookups;
+            _pendingLookups;
 
-    std::weak_ptr<IAccessController> accessController;
+    std::weak_ptr<IAccessController> _accessController;
 
-    boost::asio::steady_timer checkExpiredDiscoveryEntriesTimer;
-    const bool isLocalCapabilitiesDirectoryPersistencyEnabled;
+    boost::asio::steady_timer _checkExpiredDiscoveryEntriesTimer;
+    const bool _isLocalCapabilitiesDirectoryPersistencyEnabled;
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
     std::string joinToString(const std::vector<types::DiscoveryEntry>& discoveryEntries) const;
     void remove(const types::DiscoveryEntry& discoveryEntry);
-    boost::asio::steady_timer freshnessUpdateTimer;
-    std::string clusterControllerId;
-    const std::vector<std::string> knownGbids;
-    std::unordered_set<std::string> knownGbidsSet;
-    std::unordered_map<std::string, std::vector<std::string>> globalParticipantIdsToGbidsMap;
+    boost::asio::steady_timer _freshnessUpdateTimer;
+    std::string _clusterControllerId;
+    const std::vector<std::string> _knownGbids;
+    std::unordered_set<std::string> _knownGbidsSet;
+    std::unordered_map<std::string, std::vector<std::string>> _globalParticipantIdsToGbidsMap;
     void scheduleFreshnessUpdate();
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
@@ -370,8 +370,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallback);
-    std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> onSuccess;
-    std::function<void(const types::DiscoveryError::Enum&)> onErrorCallback;
+    std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> _onSuccess;
+    std::function<void(const types::DiscoveryError::Enum&)> _onErrorCallback;
 };
 
 } // namespace joynr

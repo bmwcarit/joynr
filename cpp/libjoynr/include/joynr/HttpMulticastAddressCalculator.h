@@ -47,7 +47,7 @@ public:
             const ImmutableMessage& message) override;
 
 private:
-    std::shared_ptr<const system::RoutingTypes::ChannelAddress> globalAddress;
+    std::shared_ptr<const system::RoutingTypes::ChannelAddress> _globalAddress;
 };
 
 } // namespace joynr

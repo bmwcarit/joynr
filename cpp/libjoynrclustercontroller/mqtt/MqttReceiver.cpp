@@ -31,13 +31,13 @@ MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnect
                            const std::string& channelIdForMqttTopic,
                            const std::string& gbid,
                            const std::string& unicastTopicPrefix)
-        : mosquittoConnection(std::move(mosquittoConnection)), settings(settings)
+        : _mosquittoConnection(std::move(mosquittoConnection)), _settings(settings)
 {
     const std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
 
-    globalClusterControllerAddress =
+    _globalClusterControllerAddress =
             system::RoutingTypes::MqttAddress(gbid, unicastChannelIdForMqttTopic);
-    this->mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
+    this->_mosquittoConnection->registerChannelId(unicastChannelIdForMqttTopic);
 }
 
 void MqttReceiver::updateSettings()
@@ -56,11 +56,11 @@ void MqttReceiver::stopReceiveQueue()
 
 const std::string MqttReceiver::getSerializedGlobalClusterControllerAddress() const
 {
-    return joynr::serializer::serializeToJson(globalClusterControllerAddress);
+    return joynr::serializer::serializeToJson(_globalClusterControllerAddress);
 }
 const system::RoutingTypes::MqttAddress& MqttReceiver::getGlobalClusterControllerAddress() const
 {
-    return globalClusterControllerAddress;
+    return _globalClusterControllerAddress;
 }
 
 bool MqttReceiver::tryToDeleteChannel()
@@ -70,23 +70,23 @@ bool MqttReceiver::tryToDeleteChannel()
 
 bool MqttReceiver::isConnected()
 {
-    return mosquittoConnection->isSubscribedToChannelTopic();
+    return _mosquittoConnection->isSubscribedToChannelTopic();
 }
 
 void MqttReceiver::registerReceiveCallback(
         std::function<void(smrf::ByteVector&&)> onMessageReceived)
 {
-    mosquittoConnection->registerReceiveCallback(std::move(onMessageReceived));
+    _mosquittoConnection->registerReceiveCallback(std::move(onMessageReceived));
 }
 
 void MqttReceiver::subscribeToTopic(const std::string& topic)
 {
-    mosquittoConnection->subscribeToTopic(topic);
+    _mosquittoConnection->subscribeToTopic(topic);
 }
 
 void MqttReceiver::unsubscribeFromTopic(const std::string& topic)
 {
-    mosquittoConnection->unsubscribeFromTopic(topic);
+    _mosquittoConnection->unsubscribeFromTopic(topic);
 }
 
 } // namespace joynr

@@ -64,30 +64,30 @@ public:
     Directory(const std::string& directoryName,
               boost::asio::io_service& ioService,
               SaveFilterFunction fun)
-            : callbackMap(),
-              timeoutTimerMap(),
-              mutex(),
-              ioService(ioService),
-              saveFilterFunction(std::move(fun)),
-              isShutdown(false)
+            : _callbackMap(),
+              _timeoutTimerMap(),
+              _mutex(),
+              _ioService(ioService),
+              _saveFilterFunction(std::move(fun)),
+              _isShutdown(false)
     {
         std::ignore = directoryName;
     }
 
     Directory(const std::string& directoryName, boost::asio::io_service& ioService)
-            : callbackMap(),
-              timeoutTimerMap(),
-              mutex(),
-              ioService(ioService),
-              saveFilterFunction(),
-              isShutdown(false)
+            : _callbackMap(),
+              _timeoutTimerMap(),
+              _mutex(),
+              _ioService(ioService),
+              _saveFilterFunction(),
+              _isShutdown(false)
     {
         std::ignore = directoryName;
     }
 
     ~Directory()
     {
-        JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", callbackMap.size());
+        JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", _callbackMap.size());
     }
 
     /*
@@ -96,9 +96,9 @@ public:
      */
     std::shared_ptr<T> lookup(const Key& keyId)
     {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto found = callbackMap.find(keyId);
-        if (found == callbackMap.cend()) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        auto found = _callbackMap.find(keyId);
+        if (found == _callbackMap.cend()) {
             return nullptr;
         }
         return found->second;
@@ -111,11 +111,11 @@ public:
     std::shared_ptr<T> take(const Key& keyId)
     {
         std::shared_ptr<T> value;
-        std::lock_guard<std::mutex> lock(mutex);
-        auto found = callbackMap.find(keyId);
-        if (found != callbackMap.cend()) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        auto found = _callbackMap.find(keyId);
+        if (found != _callbackMap.cend()) {
             value = found->second;
-            callbackMap.erase(keyId);
+            _callbackMap.erase(keyId);
         }
         return value;
     }
@@ -125,8 +125,8 @@ public:
      */
     bool contains(const Key& keyId)
     {
-        std::lock_guard<std::mutex> lock(mutex);
-        return callbackMap.find(keyId) != callbackMap.cend();
+        std::lock_guard<std::mutex> lock(_mutex);
+        return _callbackMap.find(keyId) != _callbackMap.cend();
     }
 
     /*
@@ -134,8 +134,8 @@ public:
      */
     void add(const Key& keyId, std::shared_ptr<T> value)
     {
-        std::lock_guard<std::mutex> lock(mutex);
-        callbackMap[keyId] = std::move(value);
+        std::lock_guard<std::mutex> lock(_mutex);
+        _callbackMap[keyId] = std::move(value);
     }
 
     /*
@@ -145,9 +145,9 @@ public:
     {
         // Insert the value
         {
-            std::lock_guard<std::mutex> lock(mutex);
+            std::lock_guard<std::mutex> lock(_mutex);
 
-            if (isShutdown) {
+            if (_isShutdown) {
                 JOYNR_LOG_TRACE(logger(), "add failed: already shutdown");
                 return;
             }
@@ -155,14 +155,14 @@ public:
             // An existing entry shall be overwritten by the new entry.
             // When we use unordered_map::emplace, we must remove the
             // existing entry first.
-            auto existingTimerIt = timeoutTimerMap.find(keyId);
-            if (existingTimerIt != timeoutTimerMap.end()) {
-                timeoutTimerMap.erase(existingTimerIt);
+            auto existingTimerIt = _timeoutTimerMap.find(keyId);
+            if (existingTimerIt != _timeoutTimerMap.end()) {
+                _timeoutTimerMap.erase(existingTimerIt);
             }
 
-            auto insertionResult = timeoutTimerMap.emplace(std::piecewise_construct,
-                                                           std::forward_as_tuple(keyId),
-                                                           std::forward_as_tuple(ioService));
+            auto insertionResult = _timeoutTimerMap.emplace(std::piecewise_construct,
+                                                            std::forward_as_tuple(keyId),
+                                                            std::forward_as_tuple(_ioService));
 
             assert(insertionResult.second); // Success indication
             auto timerIt = insertionResult.first;
@@ -178,7 +178,7 @@ public:
                 }
             });
 
-            callbackMap[keyId] = std::move(value);
+            _callbackMap[keyId] = std::move(value);
         }
     }
 
@@ -187,23 +187,23 @@ public:
      */
     void remove(const Key& keyId)
     {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
 
-        callbackMap.erase(keyId);
-        timeoutTimerMap.erase(keyId);
+        _callbackMap.erase(keyId);
+        _timeoutTimerMap.erase(keyId);
     }
 
     void shutdown()
     {
-        std::lock_guard<std::mutex> lock(mutex);
-        isShutdown = true;
-        timeoutTimerMap.clear();
+        std::lock_guard<std::mutex> lock(_mutex);
+        _isShutdown = true;
+        _timeoutTimerMap.clear();
     }
 
     template <typename Archive>
     void save(Archive& archive)
     {
-        if (saveFilterFunction) {
+        if (_saveFilterFunction) {
             saveImplFiltered(archive);
         } else {
             saveImplNonFiltered(archive);
@@ -213,24 +213,24 @@ public:
     template <typename Archive>
     void load(Archive& archive)
     {
-        archive(MUESLI_NVP(callbackMap));
+        archive(MUESLI_NVP(_callbackMap));
     }
 
 private:
     template <typename Archive>
     void saveImplNonFiltered(Archive& archive)
     {
-        archive(MUESLI_NVP(callbackMap));
+        archive(MUESLI_NVP(_callbackMap));
     }
 
     template <typename Archive>
     void saveImplFiltered(Archive& archive)
     {
         std::unordered_map<Key, std::shared_ptr<T>> tempCallbackMap;
-        std::copy_if(callbackMap.cbegin(),
-                     callbackMap.cend(),
+        std::copy_if(_callbackMap.cbegin(),
+                     _callbackMap.cend(),
                      std::inserter(tempCallbackMap, tempCallbackMap.begin()),
-                     [this](auto entry) { return saveFilterFunction(entry.second); });
+                     [this](auto entry) { return _saveFilterFunction(entry.second); });
         archive(muesli::make_nvp("callbackMap", tempCallbackMap));
     }
 
@@ -252,16 +252,16 @@ private:
     }
 
 protected:
-    std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
-    std::unordered_map<Key, SteadyTimer> timeoutTimerMap;
+    std::unordered_map<Key, std::shared_ptr<T>> _callbackMap;
+    std::unordered_map<Key, SteadyTimer> _timeoutTimerMap;
     ADD_LOGGER(Directory)
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    std::mutex mutex;
-    boost::asio::io_service& ioService;
-    SaveFilterFunction saveFilterFunction;
-    bool isShutdown;
+    std::mutex _mutex;
+    boost::asio::io_service& _ioService;
+    SaveFilterFunction _saveFilterFunction;
+    bool _isShutdown;
 };
 
 } // namespace joynr

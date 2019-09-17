@@ -58,6 +58,7 @@ void ParticipantIdStorage::loadEntriesFromFile()
             StorageItem item{it->first, it->second.data()};
             auto retVal = storage.insert(std::move(item));
             assert(retVal.second);
+            std::ignore = retVal;
         }
     } catch (const std::exception& ex) {
         JOYNR_LOG_WARN(logger(),
@@ -74,7 +75,7 @@ void ParticipantIdStorage::loadEntriesFromFile()
 
 void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
                                                     const std::string& interfaceName,
-                                                    std::uint32_t majorVersion,
+                                                    std::int32_t majorVersion,
                                                     const std::string& participantId)
 {
     assert(!domain.empty());
@@ -97,14 +98,14 @@ void ParticipantIdStorage::setProviderParticipantId(const std::string& domain,
 
 std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
                                                            const std::string& interfaceName,
-                                                           std::uint32_t majorVersion)
+                                                           std::int32_t majorVersion)
 {
     return getProviderParticipantId(domain, interfaceName, majorVersion, "");
 }
 
 std::string ParticipantIdStorage::getProviderParticipantId(const std::string& domain,
                                                            const std::string& interfaceName,
-                                                           std::uint32_t majorVersion,
+                                                           std::int32_t majorVersion,
                                                            const std::string& defaultValue)
 {
     assert(!domain.empty());
@@ -172,7 +173,7 @@ void ParticipantIdStorage::writeStoreToFile()
 
 std::string ParticipantIdStorage::createProviderKey(const std::string& domain,
                                                     const std::string& interfaceName,
-                                                    std::uint32_t majorVersion)
+                                                    std::int32_t majorVersion)
 {
     std::string key = (boost::format(STORAGE_FORMAT_STRING()) % domain % interfaceName %
                        std::to_string(majorVersion)).str();

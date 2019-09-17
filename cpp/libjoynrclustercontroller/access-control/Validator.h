@@ -76,9 +76,9 @@ public:
     Validator(const boost::optional<MasterEntry>& masterEntryOptional,
               const boost::optional<MediatorEntry>& mediatorEntryOptional,
               const boost::optional<OwnerEntry>& ownerEntryOptional)
-            : masterEntryOptional(masterEntryOptional),
-              mediatorEntryOptional(mediatorEntryOptional),
-              ownerEntryOptional(ownerEntryOptional)
+            : _masterEntryOptional(masterEntryOptional),
+              _mediatorEntryOptional(mediatorEntryOptional),
+              _ownerEntryOptional(ownerEntryOptional)
     {
     }
 
@@ -96,10 +96,10 @@ public:
     bool isOwnerValid() const
     {
         bool isOwnerValid = true;
-        if (mediatorEntryOptional) {
-            isOwnerValid = isMediatorValid() && validateOwner(*mediatorEntryOptional);
-        } else if (masterEntryOptional) {
-            isOwnerValid = validateOwner(*masterEntryOptional);
+        if (_mediatorEntryOptional) {
+            isOwnerValid = isMediatorValid() && validateOwner(*_mediatorEntryOptional);
+        } else if (_masterEntryOptional) {
+            isOwnerValid = validateOwner(*_masterEntryOptional);
         }
 
         return isOwnerValid;
@@ -108,39 +108,39 @@ public:
     bool isMediatorValid() const
     {
         // if mediator entry is missing, always return true
-        if (!mediatorEntryOptional) {
+        if (!_mediatorEntryOptional) {
             return true;
         }
 
         // if master entry is not set, mediator is valid
-        if (!masterEntryOptional) {
+        if (!_masterEntryOptional) {
             return true;
         }
 
         bool isMediatorValid = true;
 
         auto masterPossiblePermissions =
-                util::vectorToSet(getPossiblePermissions(*masterEntryOptional));
-        if (masterPossiblePermissions.count(getDefaultPermission(*mediatorEntryOptional)) == 0) {
+                util::vectorToSet(getPossiblePermissions(*_masterEntryOptional));
+        if (masterPossiblePermissions.count(getDefaultPermission(*_mediatorEntryOptional)) == 0) {
             isMediatorValid = false;
         } else {
             // Convert the lists to sets so that intersections can be easily calculated
             auto mediatorPossiblePermissions =
-                    util::vectorToSet(getPossiblePermissions(*mediatorEntryOptional));
+                    util::vectorToSet(getPossiblePermissions(*_mediatorEntryOptional));
             if (!util::setContainsSet(masterPossiblePermissions, mediatorPossiblePermissions)) {
                 isMediatorValid = false;
             }
         }
 
         auto masterPossibleTrustLevels =
-                util::vectorToSet(masterEntryOptional->getPossibleRequiredTrustLevels());
+                util::vectorToSet(_masterEntryOptional->getPossibleRequiredTrustLevels());
         if (masterPossibleTrustLevels.count(
-                    mediatorEntryOptional->getDefaultRequiredTrustLevel()) == 0) {
+                    _mediatorEntryOptional->getDefaultRequiredTrustLevel()) == 0) {
             isMediatorValid = false;
         } else {
             // Convert the lists to sets so that intersections can be easily calculated
             auto mediatorPossibleTrustLevels =
-                    util::vectorToSet(mediatorEntryOptional->getPossibleRequiredTrustLevels());
+                    util::vectorToSet(_mediatorEntryOptional->getPossibleRequiredTrustLevels());
             if (!util::setContainsSet(masterPossibleTrustLevels, mediatorPossibleTrustLevels)) {
                 isMediatorValid = false;
             }
@@ -150,14 +150,14 @@ public:
     }
 
 private:
-    boost::optional<MasterEntry> masterEntryOptional;
-    boost::optional<MediatorEntry> mediatorEntryOptional;
-    boost::optional<OwnerEntry> ownerEntryOptional;
+    boost::optional<MasterEntry> _masterEntryOptional;
+    boost::optional<MediatorEntry> _mediatorEntryOptional;
+    boost::optional<OwnerEntry> _ownerEntryOptional;
 
     bool validateOwner(const MasterEntry& targetMasterEntry) const
     {
         // if owner entry is missing, always return true
-        if (!ownerEntryOptional) {
+        if (!_ownerEntryOptional) {
             return true;
         }
 
@@ -166,7 +166,7 @@ private:
         if (!ownerPermissionInPossiblePermissions(targetMasterEntry)) {
             isValid = false;
         } else if (!util::vectorContains(possibleRequiredTrustLevels,
-                                         ownerEntryOptional->getRequiredTrustLevel())) {
+                                         _ownerEntryOptional->getRequiredTrustLevel())) {
             isValid = false;
         }
 
@@ -178,7 +178,7 @@ private:
     {
         const auto& possiblePermissions = targetMasterEntry.getPossibleProviderPermissions();
         return util::vectorContains(
-                possiblePermissions, ownerEntryOptional->getProviderPermission());
+                possiblePermissions, _ownerEntryOptional->getProviderPermission());
     }
 
     bool ownerPermissionInPossiblePermissions(
@@ -186,7 +186,7 @@ private:
     {
         const auto& possiblePermissions = targetMasterEntry.getPossibleConsumerPermissions();
         return util::vectorContains(
-                possiblePermissions, ownerEntryOptional->getConsumerPermission());
+                possiblePermissions, _ownerEntryOptional->getConsumerPermission());
     }
 
     auto getPossiblePermissions(

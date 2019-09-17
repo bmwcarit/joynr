@@ -49,8 +49,8 @@ public:
             const ImmutableMessage& message) override;
 
 private:
-    std::string mqttMulticastTopicPrefix;
-    std::vector<std::string> availableGbids;
+    std::string _mqttMulticastTopicPrefix;
+    std::vector<std::string> _availableGbids;
 };
 
 } // namespace joynr

@@ -24,7 +24,7 @@
 namespace joynr
 {
 
-BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : filterParameters()
+BroadcastSubscriptionRequest::BroadcastSubscriptionRequest() : _filterParameters()
 {
 }
 
@@ -46,13 +46,13 @@ std::string BroadcastSubscriptionRequest::toString() const
 const boost::optional<BroadcastFilterParameters>& BroadcastSubscriptionRequest::
         getFilterParameters() const
 {
-    return filterParameters;
+    return _filterParameters;
 }
 
 void BroadcastSubscriptionRequest::setFilterParameters(
         const BroadcastFilterParameters& filterParameters)
 {
-    this->filterParameters = filterParameters;
+    this->_filterParameters = filterParameters;
 }
 
 void BroadcastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
@@ -61,7 +61,7 @@ void BroadcastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
             std::dynamic_pointer_cast<OnChangeSubscriptionQos>(qos);
     assert(onChangeQos);
     // force object slicing
-    this->qos = std::make_shared<OnChangeSubscriptionQos>(*onChangeQos);
+    this->_qos = std::make_shared<OnChangeSubscriptionQos>(*onChangeQos);
 }
 
 } // namespace joynr

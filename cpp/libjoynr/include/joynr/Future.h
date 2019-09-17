@@ -50,10 +50,10 @@ public:
      */
     void wait(std::int64_t timeOut)
     {
-        if (resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
-            resultReceived.notify();
+        if (_resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
+            _resultReceived.notify();
         } else {
-            status = StatusCodeEnum::WAIT_TIMED_OUT;
+            _status = StatusCodeEnum::WAIT_TIMED_OUT;
             throw exceptions::JoynrTimeOutException("Request did not finish in time");
         }
     }
@@ -64,9 +64,9 @@ public:
      */
     void wait()
     {
-        JOYNR_LOG_TRACE(logger(), "resultReceived.getStatus():{}", resultReceived.getStatus());
-        resultReceived.wait();
-        resultReceived.notify();
+        JOYNR_LOG_TRACE(logger(), "resultReceived.getStatus():{}", _resultReceived.getStatus());
+        _resultReceived.wait();
+        _resultReceived.notify();
     }
 
     /**
@@ -75,7 +75,7 @@ public:
      */
     StatusCodeEnum getStatus() const
     {
-        return status;
+        return _status;
     }
 
     /**
@@ -84,7 +84,7 @@ public:
      */
     bool isOk() const
     {
-        return status == StatusCodeEnum::SUCCESS;
+        return _status == StatusCodeEnum::SUCCESS;
     }
 
     /**
@@ -94,26 +94,26 @@ public:
     void onError(std::shared_ptr<exceptions::JoynrException> error)
     {
         JOYNR_LOG_TRACE(logger(), "onError has been invoked");
-        this->error = std::move(error);
-        status = StatusCodeEnum::ERROR;
-        resultReceived.notify();
+        this->_error = std::move(error);
+        _status = StatusCodeEnum::ERROR;
+        _resultReceived.notify();
     }
 
 protected:
-    FutureBase() : error(nullptr), status(StatusCodeEnum::IN_PROGRESS), resultReceived(0)
+    FutureBase() : _error(nullptr), _status(StatusCodeEnum::IN_PROGRESS), _resultReceived(0)
     {
     }
 
     void checkOk() const
     {
         if (!isOk()) {
-            exceptions::JoynrExceptionUtil::throwJoynrException(*error);
+            exceptions::JoynrExceptionUtil::throwJoynrException(*_error);
         }
     }
 
-    std::shared_ptr<exceptions::JoynrException> error;
-    StatusCodeEnum status;
-    Semaphore resultReceived;
+    std::shared_ptr<exceptions::JoynrException> _error;
+    StatusCodeEnum _status;
+    Semaphore _resultReceived;
     ADD_LOGGER(FutureBase)
 };
 
@@ -135,7 +135,7 @@ public:
     /**
      * @brief Constructor
      */
-    Future<Ts...>() : FutureBase<Future<Ts...>>(), results()
+    Future<Ts...>() : FutureBase<Future<Ts...>>(), _results()
     {
     }
 
@@ -150,7 +150,7 @@ public:
     {
         auto l = {
                 0,
-                (void(copyResultsImpl(std::get<Indices>(destination), std::get<Indices>(results))),
+                (void(copyResultsImpl(std::get<Indices>(destination), std::get<Indices>(_results))),
                  0)...};
         std::ignore = l;
     }
@@ -195,14 +195,14 @@ public:
     void onSuccess(Ts... results)
     {
         JOYNR_LOG_TRACE(this->logger(), "onSuccess has been invoked");
-        this->status = StatusCodeEnum::SUCCESS;
+        this->_status = StatusCodeEnum::SUCCESS;
         // transform variadic templates into a std::tuple
-        this->results = std::make_tuple(std::move(results)...);
-        this->resultReceived.notify();
+        this->_results = std::make_tuple(std::move(results)...);
+        this->_resultReceived.notify();
     }
 
 private:
-    std::tuple<Ts...> results;
+    std::tuple<Ts...> _results;
 };
 
 template <>
@@ -246,8 +246,8 @@ public:
      */
     void onSuccess()
     {
-        this->status = StatusCodeEnum::SUCCESS;
-        this->resultReceived.notify();
+        this->_status = StatusCodeEnum::SUCCESS;
+        this->_resultReceived.notify();
     }
 };
 
@@ -260,7 +260,7 @@ public:
         this->wait();
         this->checkOk();
 
-        value = std::move(result);
+        value = std::move(_result);
     }
 
     void get(std::int64_t timeOut, std::unique_ptr<T>& value)
@@ -268,18 +268,18 @@ public:
         this->wait(timeOut);
         this->checkOk();
 
-        value = std::move(result);
+        value = std::move(_result);
     }
 
     void onSuccess(std::unique_ptr<T> value)
     {
-        result = std::move(value);
-        this->status = StatusCodeEnum::SUCCESS;
-        this->resultReceived.notify();
+        _result = std::move(value);
+        this->_status = StatusCodeEnum::SUCCESS;
+        this->_resultReceived.notify();
     }
 
 private:
-    std::unique_ptr<T> result;
+    std::unique_ptr<T> _result;
 };
 
 } // namespace joynr

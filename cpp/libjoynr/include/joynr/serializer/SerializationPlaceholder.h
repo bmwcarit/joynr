@@ -63,7 +63,7 @@ public:
     void save(Archive& ar) const
     {
         if (containsOutboundData()) {
-            serializable->save(ar);
+            _serializable->save(ar);
         } else {
             ar(std::nullptr_t{});
         }
@@ -73,7 +73,7 @@ public:
     void load(Archive& ar)
     {
         using Deserializable = typename GetDeserializable<std::decay_t<Archive>>::type;
-        deserializable = Deserializable(ar);
+        _deserializable = Deserializable(ar);
     }
 
     template <typename... Ts>
@@ -83,42 +83,43 @@ public:
         if (containsOutboundData()) {
             using TypedSerializable = Serializable<OutputArchiveRefVariant, Ts...>;
             const TypedSerializable* typedSerializable =
-                    dynamic_cast<const TypedSerializable*>(serializable.get());
+                    dynamic_cast<const TypedSerializable*>(_serializable.get());
             if (typedSerializable != nullptr) {
                 std::tie(args...) = typedSerializable->getData();
             } else {
                 using RequestedType = std::tuple<Ts...>;
                 throw std::invalid_argument(
-                        "Serializable mismatch: contains " + serializable->typeName() +
+                        "Serializable mismatch: contains " + _serializable->typeName() +
                         " requested" + boost::typeindex::type_id<RequestedType>().pretty_name());
             }
         } else if (containsInboundData()) {
             boost::apply_visitor(
                     [&args...](auto& x) { x.template get<std::tuple<Ts&...>>(std::tie(args...)); },
-                    *deserializable);
+                    *_deserializable);
         }
     }
 
     template <typename... Ts>
     void setData(Ts&&... arg)
     {
-        serializable = std::make_unique<Serializable<OutputArchiveRefVariant, std::decay_t<Ts>...>>(
-                std::forward<Ts>(arg)...);
+        _serializable =
+                std::make_unique<Serializable<OutputArchiveRefVariant, std::decay_t<Ts>...>>(
+                        std::forward<Ts>(arg)...);
     }
 
     bool containsOutboundData() const
     {
-        return serializable != nullptr;
+        return _serializable != nullptr;
     }
 
     bool containsInboundData() const
     {
-        return deserializable.is_initialized();
+        return _deserializable.is_initialized();
     }
 
 private:
-    std::unique_ptr<ISerializable<OutputArchiveRefVariant>> serializable;
-    boost::optional<DeserializableVariant> deserializable;
+    std::unique_ptr<ISerializable<OutputArchiveRefVariant>> _serializable;
+    boost::optional<DeserializableVariant> _deserializable;
 };
 
 } // namespace serializer

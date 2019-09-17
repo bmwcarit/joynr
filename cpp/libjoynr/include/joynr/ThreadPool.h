@@ -95,22 +95,22 @@ private:
     ADD_LOGGER(ThreadPool)
 
     /*! Worker threads */
-    std::vector<std::thread> threads;
+    std::vector<std::thread> _threads;
 
     /*! FIFO queue of work that could be done right now */
-    BlockingQueue scheduler;
+    BlockingQueue _scheduler;
 
     /*! Flag indicating @ref threads to keep running */
-    std::atomic_bool keepRunning;
+    std::atomic_bool _keepRunning;
 
     /*! Currently running work in @ref threads */
-    std::set<std::shared_ptr<Runnable>> currentlyRunning;
+    std::set<std::shared_ptr<Runnable>> _currentlyRunning;
 
-    std::mutex mutex;
+    std::mutex _mutex;
 
-    std::uint8_t numberOfThreads;
+    std::uint8_t _numberOfThreads;
 
-    std::string name;
+    std::string _name;
 };
 
 } // namespace joynr

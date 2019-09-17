@@ -45,39 +45,39 @@ MqttMessagingSkeleton::MqttMessagingSkeleton(std::weak_ptr<IMessageRouter> messa
                                              const std::string& multicastTopicPrefix,
                                              const std::string& ownGbid,
                                              uint64_t ttlUplift)
-        : ownGbid(ownGbid),
-          messageRouter(std::move(messageRouter)),
-          mqttReceiver(std::move(mqttReceiver)),
-          ttlUplift(ttlUplift),
-          multicastSubscriptionCount(),
-          multicastSubscriptionCountMutex(),
-          multicastTopicPrefix(multicastTopicPrefix)
+        : _ownGbid(ownGbid),
+          _messageRouter(std::move(messageRouter)),
+          _mqttReceiver(std::move(mqttReceiver)),
+          _ttlUplift(ttlUplift),
+          _multicastSubscriptionCount(),
+          _multicastSubscriptionCountMutex(),
+          _multicastTopicPrefix(multicastTopicPrefix)
 {
 }
 
 void MqttMessagingSkeleton::registerMulticastSubscription(const std::string& multicastId)
 {
     std::string mqttTopic = translateMulticastWildcard(multicastId);
-    std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
-    if (multicastSubscriptionCount.find(mqttTopic) == multicastSubscriptionCount.cend()) {
-        mqttReceiver->subscribeToTopic(multicastTopicPrefix + mqttTopic);
-        multicastSubscriptionCount[mqttTopic] = 1;
+    std::lock_guard<std::mutex> lock(_multicastSubscriptionCountMutex);
+    if (_multicastSubscriptionCount.find(mqttTopic) == _multicastSubscriptionCount.cend()) {
+        _mqttReceiver->subscribeToTopic(_multicastTopicPrefix + mqttTopic);
+        _multicastSubscriptionCount[mqttTopic] = 1;
     } else {
-        multicastSubscriptionCount[mqttTopic]++;
+        _multicastSubscriptionCount[mqttTopic]++;
     }
 }
 
 void MqttMessagingSkeleton::unregisterMulticastSubscription(const std::string& multicastId)
 {
     std::string mqttTopic = translateMulticastWildcard(multicastId);
-    std::lock_guard<std::mutex> lock(multicastSubscriptionCountMutex);
-    auto countIterator = multicastSubscriptionCount.find(mqttTopic);
-    if (countIterator == multicastSubscriptionCount.cend()) {
+    std::lock_guard<std::mutex> lock(_multicastSubscriptionCountMutex);
+    auto countIterator = _multicastSubscriptionCount.find(mqttTopic);
+    if (countIterator == _multicastSubscriptionCount.cend()) {
         JOYNR_LOG_ERROR(
                 logger(), "unregister multicast subscription called for non existing subscription");
     } else if (countIterator->second == 1) {
-        multicastSubscriptionCount.erase(mqttTopic);
-        mqttReceiver->unsubscribeFromTopic(multicastTopicPrefix + mqttTopic);
+        _multicastSubscriptionCount.erase(mqttTopic);
+        _mqttReceiver->unsubscribeFromTopic(_multicastTopicPrefix + mqttTopic);
     } else {
         countIterator->second--;
     }
@@ -90,8 +90,8 @@ void MqttMessagingSkeleton::transmit(
     message->setReceivedFromGlobal(true);
 
     try {
-        if (auto messageRouterSharedPtr = messageRouter.lock()) {
-            registerGlobalRoutingEntryIfRequired(*message, messageRouterSharedPtr, ownGbid);
+        if (auto messageRouterSharedPtr = _messageRouter.lock()) {
+            registerGlobalRoutingEntryIfRequired(*message, messageRouterSharedPtr, _ownGbid);
             messageRouterSharedPtr->route(std::move(message));
         } else {
             std::string errorMessage(
@@ -120,21 +120,21 @@ void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
     if (logger().getLogLevel() == LogLevel::Debug) {
         JOYNR_LOG_DEBUG(logger(),
                         "<<< INCOMING FROM >{}< <<< {}",
-                        ownGbid,
+                        _ownGbid,
                         immutableMessage->getTrackingInfo());
     } else {
         JOYNR_LOG_TRACE(logger(),
                         "<<< INCOMING FROM >{}< <<< {}",
-                        ownGbid,
+                        _ownGbid,
                         immutableMessage->toLogMessage());
     }
 
-    auto onFailure = [ messageId = immutableMessage->getId(), ownGbid = ownGbid ](
+    auto onFailure = [ messageId = immutableMessage->getId(), _ownGbid = _ownGbid ](
             const exceptions::JoynrRuntimeException& e)
     {
         JOYNR_LOG_ERROR(logger(),
                         "Incoming Message from {} with ID {} could not be sent! reason: {}",
-                        ownGbid,
+                        _ownGbid,
                         messageId,
                         e.getMessage());
     };

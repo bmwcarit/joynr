@@ -38,7 +38,7 @@ public:
     bool isExpired() const;
 
 protected:
-    TimePoint decayTime;
+    TimePoint _decayTime;
 };
 
 } // namespace joynr

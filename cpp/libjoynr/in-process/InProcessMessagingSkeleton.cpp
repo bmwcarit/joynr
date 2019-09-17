@@ -25,7 +25,7 @@ namespace joynr
 {
 
 InProcessMessagingSkeleton::InProcessMessagingSkeleton(std::weak_ptr<IDispatcher> dispatcher)
-        : dispatcher(std::move(dispatcher))
+        : _dispatcher(std::move(dispatcher))
 {
 }
 
@@ -33,7 +33,7 @@ void InProcessMessagingSkeleton::transmit(
         std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    if (auto dispatcherSharedPtr = dispatcher.lock()) {
+    if (auto dispatcherSharedPtr = _dispatcher.lock()) {
         dispatcherSharedPtr->receive(message);
     } else {
         onFailure(exceptions::JoynrRuntimeException(

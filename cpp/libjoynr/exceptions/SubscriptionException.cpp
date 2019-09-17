@@ -24,36 +24,36 @@ namespace joynr
 namespace exceptions
 {
 
-SubscriptionException::SubscriptionException() noexcept : JoynrRuntimeException(), subscriptionId()
+SubscriptionException::SubscriptionException() noexcept : JoynrRuntimeException(), _subscriptionId()
 {
 }
 
 SubscriptionException::SubscriptionException(const std::string& message,
                                              const std::string& subscriptionId) noexcept
         : JoynrRuntimeException(message),
-          subscriptionId(subscriptionId)
+          _subscriptionId(subscriptionId)
 {
 }
 
 SubscriptionException::SubscriptionException(const std::string& subscriptionId) noexcept
         : JoynrRuntimeException(subscriptionId),
-          subscriptionId(subscriptionId)
+          _subscriptionId(subscriptionId)
 {
 }
 
 SubscriptionException::SubscriptionException(const SubscriptionException& other)
-        : JoynrRuntimeException(other), subscriptionId(other.subscriptionId)
+        : JoynrRuntimeException(other), _subscriptionId(other._subscriptionId)
 {
 }
 
 const std::string& SubscriptionException::getSubscriptionId() const
 {
-    return subscriptionId;
+    return _subscriptionId;
 }
 
 void SubscriptionException::setSubscriptionId(const std::string& subscriptionId)
 {
-    this->subscriptionId = subscriptionId;
+    this->_subscriptionId = subscriptionId;
 }
 
 const std::string& SubscriptionException::getTypeName() const
@@ -74,7 +74,7 @@ const std::string& SubscriptionException::TYPE_NAME()
 
 bool SubscriptionException::operator==(const SubscriptionException& other) const
 {
-    return message == other.getMessage() && subscriptionId == other.getSubscriptionId();
+    return _message == other.getMessage() && _subscriptionId == other.getSubscriptionId();
 }
 
 } // namespace exceptions

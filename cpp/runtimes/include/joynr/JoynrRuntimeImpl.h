@@ -87,18 +87,18 @@ public:
             bool awaitGlobalRegistration = false,
             std::vector<std::string> gbids = std::vector<std::string>()) noexcept
     {
-        assert(capabilitiesRegistrar);
+        assert(_capabilitiesRegistrar);
         assert(!domain.empty());
         const bool addToAll = false;
-        return capabilitiesRegistrar->addAsync(domain,
-                                               provider,
-                                               providerQos,
-                                               std::move(onSuccess),
-                                               std::move(onError),
-                                               persist,
-                                               awaitGlobalRegistration,
-                                               addToAll,
-                                               gbids);
+        return _capabilitiesRegistrar->addAsync(domain,
+                                                provider,
+                                                providerQos,
+                                                std::move(onSuccess),
+                                                std::move(onError),
+                                                persist,
+                                                awaitGlobalRegistration,
+                                                addToAll,
+                                                gbids);
     }
 
     /**
@@ -172,17 +172,17 @@ public:
             bool persist = true,
             bool awaitGlobalRegistration = false) noexcept
     {
-        assert(capabilitiesRegistrar);
+        assert(_capabilitiesRegistrar);
         assert(!domain.empty());
         const bool addToAll = true;
-        return capabilitiesRegistrar->addAsync(domain,
-                                               provider,
-                                               providerQos,
-                                               std::move(onSuccess),
-                                               std::move(onError),
-                                               persist,
-                                               awaitGlobalRegistration,
-                                               addToAll);
+        return _capabilitiesRegistrar->addAsync(domain,
+                                                provider,
+                                                providerQos,
+                                                std::move(onSuccess),
+                                                std::move(onError),
+                                                persist,
+                                                awaitGlobalRegistration,
+                                                addToAll);
     }
 
     /**
@@ -239,8 +239,9 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
-        assert(capabilitiesRegistrar);
-        capabilitiesRegistrar->removeAsync(participantId, std::move(onSuccess), std::move(onError));
+        assert(_capabilitiesRegistrar);
+        _capabilitiesRegistrar->removeAsync(
+                participantId, std::move(onSuccess), std::move(onError));
     }
 
     /**
@@ -263,9 +264,9 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
     {
-        assert(capabilitiesRegistrar);
+        assert(_capabilitiesRegistrar);
         assert(!domain.empty());
-        return capabilitiesRegistrar->removeAsync(
+        return _capabilitiesRegistrar->removeAsync(
                 domain, provider, std::move(onSuccess), std::move(onError));
     }
 
@@ -330,22 +331,22 @@ public:
     template <class TIntfProxy>
     std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
-        if (!proxyFactory) {
+        if (!_proxyFactory) {
             throw exceptions::JoynrRuntimeException(
                     "Exception in JoynrRuntime: Cannot perform arbitration as "
                     "runtime is not yet fully initialized.");
         }
 
         auto proxyBuilder = std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
-                                                                       *proxyFactory,
-                                                                       requestCallerDirectory,
-                                                                       discoveryProxy,
+                                                                       *_proxyFactory,
+                                                                       _requestCallerDirectory,
+                                                                       _discoveryProxy,
                                                                        domain,
-                                                                       dispatcherAddress,
+                                                                       _dispatcherAddress,
                                                                        getMessageRouter(),
-                                                                       messagingSettings);
-        std::lock_guard<std::mutex> lock(proxyBuildersMutex);
-        proxyBuilders.push_back(proxyBuilder);
+                                                                       _messagingSettings);
+        std::lock_guard<std::mutex> lock(_proxyBuildersMutex);
+        _proxyBuilders.push_back(proxyBuilder);
         return proxyBuilder;
     }
 
@@ -377,34 +378,34 @@ protected:
     virtual std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
             const;
 
-    std::shared_ptr<SingleThreadedIOService> singleThreadIOService;
+    std::shared_ptr<SingleThreadedIOService> _singleThreadIOService;
 
     /** @brief Factory for creating proxy instances */
-    std::unique_ptr<ProxyFactory> proxyFactory;
+    std::unique_ptr<ProxyFactory> _proxyFactory;
     /** Is forwarded to proxy builder objects. They use it to identify in-process providers **/
-    std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
+    std::shared_ptr<IRequestCallerDirectory> _requestCallerDirectory;
     /** @brief Creates and persists participant id */
-    std::shared_ptr<ParticipantIdStorage> participantIdStorage;
+    std::shared_ptr<ParticipantIdStorage> _participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */
-    std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
+    std::unique_ptr<CapabilitiesRegistrar> _capabilitiesRegistrar;
     /**
      * @brief Messaging settings
      */
-    MessagingSettings messagingSettings;
+    MessagingSettings _messagingSettings;
     /** @brief System services settings */
-    SystemServicesSettings systemServicesSettings;
+    SystemServicesSettings _systemServicesSettings;
     /** @brief Address of the dispatcher */
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress;
     /** @brief Wrapper for discovery proxies */
-    std::shared_ptr<LocalDiscoveryAggregator> discoveryProxy;
+    std::shared_ptr<LocalDiscoveryAggregator> _discoveryProxy;
     /**
      * @brief Publication manager receives subscription requests and prepares publications
      * which are send back to the subscription manager.
      */
-    std::shared_ptr<PublicationManager> publicationManager;
-    std::shared_ptr<IKeychain> keyChain;
-    std::vector<std::shared_ptr<IProxyBuilderBase>> proxyBuilders;
-    std::mutex proxyBuildersMutex;
+    std::shared_ptr<PublicationManager> _publicationManager;
+    std::shared_ptr<IKeychain> _keyChain;
+    std::vector<std::shared_ptr<IProxyBuilderBase>> _proxyBuilders;
+    std::mutex _proxyBuildersMutex;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(JoynrRuntimeImpl);

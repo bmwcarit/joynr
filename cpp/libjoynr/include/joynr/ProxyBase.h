@@ -60,12 +60,12 @@ protected:
     virtual void handleArbitrationFinished(
             const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
 
-    std::weak_ptr<JoynrRuntimeImpl> runtime;
-    std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory;
-    std::string domain;
-    MessagingQos qosSettings;
-    std::string proxyParticipantId;
-    types::DiscoveryEntryWithMetaInfo providerDiscoveryEntry;
+    std::weak_ptr<JoynrRuntimeImpl> _runtime;
+    std::shared_ptr<JoynrMessagingConnectorFactory> _connectorFactory;
+    std::string _domain;
+    MessagingQos _qosSettings;
+    std::string _proxyParticipantId;
+    types::DiscoveryEntryWithMetaInfo _providerDiscoveryEntry;
     ADD_LOGGER(ProxyBase)
 };
 

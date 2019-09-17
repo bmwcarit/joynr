@@ -36,7 +36,7 @@ namespace joynr
 class DefaultHttpRequest : public HttpRequest
 {
 public:
-    DefaultHttpRequest(void* handle, const std::string& content, curl_slist* headers);
+    DefaultHttpRequest(void* _handle, const std::string& content, curl_slist* headers);
     HttpResult execute() override;
     void interrupt() override;
     ~DefaultHttpRequest() override;
@@ -46,10 +46,10 @@ private:
     static size_t writeToString(void* buffer, size_t size, size_t nmemb, void* userp);
     static size_t writeToMultiMap(void* buffer, size_t size, size_t nmemb, void* userp);
 
-    void* handle;
-    curl_slist* headers;
+    void* _handle;
+    curl_slist* _headers;
 
-    std::string content;
+    std::string _content;
     ADD_LOGGER(DefaultHttpRequest)
 };
 

@@ -78,11 +78,11 @@ public:
     void serialize(Archive& ar)
     {
         ar(muesli::BaseClass<JoynrRuntimeException>(this),
-           muesli::make_nvp("providerVersion", providerVersion));
+           muesli::make_nvp("providerVersion", _providerVersion));
     }
 
 private:
-    joynr::types::Version providerVersion;
+    joynr::types::Version _providerVersion;
 };
 
 } // namespace exceptions

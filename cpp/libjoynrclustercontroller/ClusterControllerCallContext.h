@@ -42,8 +42,8 @@ public:
     void invalidate();
 
 private:
-    bool isValid;
-    bool isInternalProviderRegistration;
+    bool _isValid;
+    bool _isInternalProviderRegistration;
 
     ADD_LOGGER(ClusterControllerCallContext)
 };

@@ -222,7 +222,7 @@ public:
      * Won't be transmitted over the network (transient flag). Default is false.
      * @param localMessage
      */
-    void setLocalMessage(bool localMessage);
+    void setLocalMessage(bool _localMessage);
 
     /**
      * @brief Sets the encrypt flag
@@ -251,42 +251,42 @@ public:
     template <typename Archive>
     void save(Archive& archive)
     {
-        const auto expiryDate = this->expiryDate.toMilliseconds();
-        const std::string effort = this->effort.get_value_or(std::string());
-        const std::string replyTo = this->replyTo.get_value_or(std::string());
-        archive(MUESLI_NVP(sender),
-                MUESLI_NVP(recipient),
+        const auto expiryDate = this->_expiryDate.toMilliseconds();
+        const std::string effort = this->_effort.get_value_or(std::string());
+        const std::string replyTo = this->_replyTo.get_value_or(std::string());
+        archive(MUESLI_NVP(_sender),
+                MUESLI_NVP(_recipient),
                 MUESLI_NVP(expiryDate),
-                MUESLI_NVP(type),
-                MUESLI_NVP(id),
+                MUESLI_NVP(_type),
+                MUESLI_NVP(_id),
                 MUESLI_NVP(replyTo),
                 MUESLI_NVP(effort),
-                MUESLI_NVP(customHeaders),
-                MUESLI_NVP(payload));
+                MUESLI_NVP(_customHeaders),
+                MUESLI_NVP(_payload));
     }
 
 private:
-    std::string sender;
-    std::string recipient;
-    std::shared_ptr<IKeychain> keyChain;
-    TimePoint expiryDate;
-    std::string type;
-    std::string id;
-    boost::optional<std::string> replyTo;
-    boost::optional<std::string> effort;
-    std::unordered_map<std::string, std::string> customHeaders;
-    std::string payload;
-    bool ttlAbsolute;
+    std::string _sender;
+    std::string _recipient;
+    std::shared_ptr<IKeychain> _keyChain;
+    TimePoint _expiryDate;
+    std::string _type;
+    std::string _id;
+    boost::optional<std::string> _replyTo;
+    boost::optional<std::string> _effort;
+    std::unordered_map<std::string, std::string> _customHeaders;
+    std::string _payload;
+    bool _ttlAbsolute;
 
     // Transient flag which marks message that are send to a provider which is registered
     // on the local cluster-controller.
-    bool localMessage;
+    bool _localMessage;
 
     /** @brief Specifies whether message will be sent encrypted */
-    bool encrypt;
+    bool _encrypt;
 
     /** @brief Specifies whether message will be sent compressed */
-    bool compress;
+    bool _compress;
 };
 
 } // namespace joynr

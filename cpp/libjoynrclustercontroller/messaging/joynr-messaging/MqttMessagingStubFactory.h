@@ -43,8 +43,8 @@ public:
                                                        onMessagingStubClosedCallback) override;
 
 private:
-    std::shared_ptr<ITransportMessageSender> messageSender;
-    const std::string gbid;
+    std::shared_ptr<ITransportMessageSender> _messageSender;
+    const std::string _gbid;
     ADD_LOGGER(MqttMessagingStubFactory)
 };
 

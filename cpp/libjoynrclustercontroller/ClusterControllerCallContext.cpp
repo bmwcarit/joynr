@@ -22,39 +22,39 @@
 namespace joynr
 {
 ClusterControllerCallContext::ClusterControllerCallContext()
-        : isValid(false), isInternalProviderRegistration(false)
+        : _isValid(false), _isInternalProviderRegistration(false)
 {
 }
 
 void ClusterControllerCallContext::setIsValid(bool isValid)
 {
-    this->isValid = isValid;
-    JOYNR_LOG_TRACE(logger(), "setValid: {}", this->isValid);
+    this->_isValid = isValid;
+    JOYNR_LOG_TRACE(logger(), "setValid: {}", this->_isValid);
 }
 
 bool ClusterControllerCallContext::getIsValid() const
 {
-    return isValid;
+    return _isValid;
 }
 
 void ClusterControllerCallContext::setIsInternalProviderRegistration(
         bool isInternalProviderRegistration)
 {
-    this->isInternalProviderRegistration = isInternalProviderRegistration;
+    this->_isInternalProviderRegistration = isInternalProviderRegistration;
     JOYNR_LOG_TRACE(logger(),
                     "setIsInternalProviderRegistration: {}",
-                    this->isInternalProviderRegistration);
+                    this->_isInternalProviderRegistration);
 }
 
 bool ClusterControllerCallContext::getIsInternalProviderRegistration() const
 {
-    return isInternalProviderRegistration;
+    return _isInternalProviderRegistration;
 }
 
 void ClusterControllerCallContext::invalidate()
 {
     JOYNR_LOG_TRACE(logger(), "invalidate");
-    isValid = false;
-    isInternalProviderRegistration = false;
+    _isValid = false;
+    _isInternalProviderRegistration = false;
 }
 } // namespace joynr

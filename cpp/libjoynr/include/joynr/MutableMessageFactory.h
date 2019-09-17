@@ -119,9 +119,9 @@ private:
                  std::string&& payload,
                  bool upliftTtl = true) const;
 
-    std::unique_ptr<IPlatformSecurityManager> securityManager;
-    std::uint64_t ttlUpliftMs;
-    std::shared_ptr<IKeychain> keyChain;
+    std::unique_ptr<IPlatformSecurityManager> _securityManager;
+    std::uint64_t _ttlUpliftMs;
+    std::shared_ptr<IKeychain> _keyChain;
     ADD_LOGGER(MutableMessageFactory)
 };
 

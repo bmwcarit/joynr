@@ -68,7 +68,7 @@ public:
      */
     virtual void setProviderParticipantId(const std::string& domain,
                                           const std::string& interfaceName,
-                                          std::uint32_t majorVersion,
+                                          int32_t majorVersion,
                                           const std::string& participantId);
 
     /**
@@ -76,14 +76,14 @@ public:
      */
     virtual std::string getProviderParticipantId(const std::string& domain,
                                                  const std::string& interfaceName,
-                                                 std::uint32_t majorVersion);
+                                                 std::int32_t majorVersion);
 
     /**
      * Get a provider participant id or use a default
      */
     virtual std::string getProviderParticipantId(const std::string& domain,
                                                  const std::string& interfaceName,
-                                                 std::uint32_t majorVersion,
+                                                 std::int32_t majorVersion,
                                                  const std::string& defaultValue);
 
 private:
@@ -117,7 +117,7 @@ private:
 
     std::string createProviderKey(const std::string& domain,
                                   const std::string& interfaceName,
-                                  std::uint32_t majorVersion);
+                                  std::int32_t majorVersion);
     void loadEntriesFromFile();
     void writeStoreToFile();
 

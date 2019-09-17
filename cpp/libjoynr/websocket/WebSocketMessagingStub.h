@@ -61,7 +61,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketMessagingStub);
 
     /*! Message sender for outgoing messages over WebSocket */
-    std::shared_ptr<IWebSocketSendInterface> webSocket;
+    std::shared_ptr<IWebSocketSendInterface> _webSocket;
 
     ADD_LOGGER(WebSocketMessagingStub)
 };

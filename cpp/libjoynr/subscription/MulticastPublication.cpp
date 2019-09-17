@@ -22,33 +22,33 @@
 namespace joynr
 {
 
-MulticastPublication::MulticastPublication() : BasePublication(), multicastId()
+MulticastPublication::MulticastPublication() : BasePublication(), _multicastId()
 {
 }
 
 MulticastPublication::MulticastPublication(BaseReply&& baseReply)
-        : BasePublication(std::move(baseReply)), multicastId()
+        : BasePublication(std::move(baseReply)), _multicastId()
 {
 }
 
 const std::string& MulticastPublication::getMulticastId() const
 {
-    return multicastId;
+    return _multicastId;
 }
 
 void MulticastPublication::setMulticastId(const std::string& multicastId)
 {
-    this->multicastId = multicastId;
+    this->_multicastId = multicastId;
 }
 
 void MulticastPublication::setMulticastId(std::string&& multicastId)
 {
-    this->multicastId = std::move(multicastId);
+    this->_multicastId = std::move(multicastId);
 }
 
 bool MulticastPublication::operator==(const MulticastPublication& other) const
 {
-    return multicastId == other.getMulticastId() && BasePublication::operator==(other);
+    return _multicastId == other.getMulticastId() && BasePublication::operator==(other);
 }
 
 bool MulticastPublication::operator!=(const MulticastPublication& other) const
@@ -60,7 +60,7 @@ bool MulticastPublication::operator!=(const MulticastPublication& other) const
 void PrintTo(const MulticastPublication& multicastPublication, ::std::ostream* os)
 {
     *os << "MulticastPublication{";
-    *os << "multicastId:" << multicastPublication.multicastId;
+    *os << "multicastId:" << multicastPublication._multicastId;
     *os << ", ";
     *os << "error:" << multicastPublication.getError()
             ? "null"

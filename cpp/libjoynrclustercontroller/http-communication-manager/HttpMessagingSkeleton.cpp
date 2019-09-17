@@ -29,7 +29,7 @@ namespace joynr
 {
 
 HttpMessagingSkeleton::HttpMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter)
-        : messageRouter(std::move(messageRouter))
+        : _messageRouter(std::move(messageRouter))
 {
 }
 
@@ -40,7 +40,7 @@ void HttpMessagingSkeleton::transmit(
     message->setReceivedFromGlobal(true);
 
     try {
-        if (auto messageRouterSharedPtr = messageRouter.lock()) {
+        if (auto messageRouterSharedPtr = _messageRouter.lock()) {
             registerGlobalRoutingEntryIfRequired(*message, messageRouterSharedPtr);
             messageRouterSharedPtr->route(std::move(message));
         } else {

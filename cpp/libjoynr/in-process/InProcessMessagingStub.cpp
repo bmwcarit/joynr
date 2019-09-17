@@ -26,7 +26,7 @@ namespace joynr
 {
 
 InProcessMessagingStub::InProcessMessagingStub(std::shared_ptr<InProcessMessagingSkeleton> skeleton)
-        : skeleton(std::move(skeleton))
+        : _skeleton(std::move(skeleton))
 {
 }
 
@@ -34,8 +34,8 @@ void InProcessMessagingStub::transmit(
         std::shared_ptr<ImmutableMessage> message,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
-    assert(skeleton != nullptr);
-    skeleton->transmit(std::move(message), onFailure);
+    assert(_skeleton != nullptr);
+    _skeleton->transmit(std::move(message), onFailure);
 }
 
 } // namespace joynr

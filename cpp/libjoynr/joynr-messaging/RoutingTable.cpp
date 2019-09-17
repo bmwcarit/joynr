@@ -24,19 +24,19 @@ namespace joynr
 {
 
 RoutingTable::RoutingTable(const std::string& gcdParticipantId)
-        : multiIndexContainer(), gcdParticipantId(gcdParticipantId)
+        : _multiIndexContainer(), _gcdParticipantId(gcdParticipantId)
 {
 }
 
 RoutingTable::~RoutingTable()
 {
-    JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", multiIndexContainer.size());
+    JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", _multiIndexContainer.size());
 }
 
 boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByParticipantId(
         const std::string& participantId) const
 {
-    auto& index = boost::multi_index::get<routingtable::tags::ParticipantId>(multiIndexContainer);
+    auto& index = boost::multi_index::get<routingtable::tags::ParticipantId>(_multiIndexContainer);
     auto found = index.find(participantId);
     if (found == index.end()) {
         return boost::none;
@@ -49,17 +49,17 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
         const std::string& gbid) const
 {
     auto found = lookupRoutingEntryByParticipantId(participantId);
-    if (found && (participantId == this->gcdParticipantId)) {
-        auto address = found->address;
+    if (found && (participantId == this->_gcdParticipantId)) {
+        auto address = found->_address;
         if (auto mqttAddress =
                     dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get())) {
             const auto newMqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
                     gbid, mqttAddress->getTopic());
             return routingtable::RoutingEntry(participantId,
                                               newMqttAddress,
-                                              found->isGloballyVisible,
-                                              found->expiryDateMs,
-                                              found->isSticky);
+                                              found->_isGloballyVisible,
+                                              found->_expiryDateMs,
+                                              found->_isSticky);
         }
     }
     return found;
@@ -70,17 +70,17 @@ std::unordered_set<std::string> RoutingTable::lookupParticipantIdsByAddress(
 {
     std::unordered_set<std::string> result;
     const auto& addressIndex =
-            boost::multi_index::get<routingtable::tags::Address>(multiIndexContainer);
+            boost::multi_index::get<routingtable::tags::Address>(_multiIndexContainer);
     auto found = addressIndex.equal_range(searchValue);
     for (auto it = found.first; it != found.second; ++it) {
-        result.insert(it->participantId);
+        result.insert(it->_participantId);
     }
     return result;
 }
 
 bool RoutingTable::containsParticipantId(const std::string& participantId) const
 {
-    auto& index = boost::multi_index::get<routingtable::tags::ParticipantId>(multiIndexContainer);
+    auto& index = boost::multi_index::get<routingtable::tags::ParticipantId>(_multiIndexContainer);
     auto found = index.find(participantId);
     return found != index.end();
 }
@@ -96,54 +96,54 @@ void RoutingTable::add(const std::string& participantId,
                                             std::move(isGloballyVisible),
                                             std::move(expiryDateMs),
                                             std::move(isSticky));
-    auto result = multiIndexContainer.insert(routingEntry);
+    auto result = _multiIndexContainer.insert(routingEntry);
     if (!result.second) {
-        multiIndexContainer.replace(result.first, routingEntry);
+        _multiIndexContainer.replace(result.first, routingEntry);
         JOYNR_LOG_INFO(logger(),
                        "Replaced routing entry: new: {}, old: {}, #entries: {}",
                        routingEntry.toString(),
                        result.first->toString(),
-                       multiIndexContainer.size());
+                       _multiIndexContainer.size());
     } else {
         JOYNR_LOG_INFO(logger(),
                        "Added routing entry: {}, #entries: {}",
                        routingEntry.toString(),
-                       multiIndexContainer.size());
+                       _multiIndexContainer.size());
     }
 }
 
 void RoutingTable::remove(const std::string& participantId)
 {
     const auto routingEntry = lookupRoutingEntryByParticipantId(participantId);
-    if (routingEntry && routingEntry->isSticky) {
+    if (routingEntry && routingEntry->_isSticky) {
         JOYNR_LOG_WARN(logger(),
                        "Cannot remove sticky routing entry (participantId={}, address={}, "
                        "isGloballyVisible={}, expiryDateMs={}) from routing table",
                        participantId,
-                       routingEntry->address->toString(),
-                       routingEntry->isGloballyVisible,
-                       routingEntry->expiryDateMs);
+                       routingEntry->_address->toString(),
+                       routingEntry->_isGloballyVisible,
+                       routingEntry->_expiryDateMs);
         return;
     }
     JOYNR_LOG_INFO(logger(),
                    "Removing routing entry for participantId: {}, #entries before removal: {}",
                    participantId,
-                   multiIndexContainer.size());
-    multiIndexContainer.erase(participantId);
+                   _multiIndexContainer.size());
+    _multiIndexContainer.erase(participantId);
 }
 
 void RoutingTable::purge()
 {
     bool expiredEntriesFound = false;
-    auto& index = boost::multi_index::get<routingtable::tags::ExpiryDate>(multiIndexContainer);
+    auto& index = boost::multi_index::get<routingtable::tags::ExpiryDate>(_multiIndexContainer);
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                        std::chrono::system_clock::now().time_since_epoch()).count();
     auto last = index.upper_bound(now);
     std::vector<std::string> expiredParticipantIds;
     for (auto routingEntryIterator = index.lower_bound(0); routingEntryIterator != last;
          ++routingEntryIterator) {
-        if (!routingEntryIterator->isSticky) {
-            expiredParticipantIds.push_back(routingEntryIterator->participantId);
+        if (!routingEntryIterator->_isSticky) {
+            expiredParticipantIds.push_back(routingEntryIterator->_participantId);
             expiredEntriesFound = true;
         }
     }

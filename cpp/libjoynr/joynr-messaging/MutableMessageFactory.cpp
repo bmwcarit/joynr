@@ -43,9 +43,9 @@ namespace joynr
 
 MutableMessageFactory::MutableMessageFactory(std::uint64_t ttlUpliftMs,
                                              std::shared_ptr<IKeychain> keyChain)
-        : securityManager(std::make_unique<DummyPlatformSecurityManager>()),
-          ttlUpliftMs(ttlUpliftMs),
-          keyChain(std::move(keyChain))
+        : _securityManager(std::make_unique<DummyPlatformSecurityManager>()),
+          _ttlUpliftMs(ttlUpliftMs),
+          _keyChain(std::move(keyChain))
 {
 }
 
@@ -199,14 +199,15 @@ void MutableMessageFactory::initMsg(MutableMessage& msg,
                                     std::string&& payload,
                                     bool upliftTtl) const
 {
-    std::int64_t ttl = qos.getTtl();
+    std::int64_t ttl = static_cast<std::int64_t>(qos.getTtl());
     if (upliftTtl &&
-        ttl < (std::numeric_limits<std::int64_t>::max() - static_cast<std::int64_t>(ttlUpliftMs))) {
-        ttl += ttlUpliftMs;
+        ttl < (std::numeric_limits<std::int64_t>::max() -
+               static_cast<std::int64_t>(_ttlUpliftMs))) {
+        ttl += static_cast<std::int64_t>(_ttlUpliftMs);
     }
     msg.setSender(senderParticipantId);
     msg.setRecipient(receiverParticipantId);
-    msg.setKeychain(keyChain);
+    msg.setKeychain(_keyChain);
 
     for (const auto& it : qos.getCustomMessageHeaders()) {
         msg.setCustomHeader(it.first, it.second);

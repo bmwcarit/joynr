@@ -50,25 +50,25 @@ public:
     template <typename... Ts>
     void setParams(Ts&&... values)
     {
-        params.setData(std::forward<Ts>(values)...);
+        _params.setData(std::forward<Ts>(values)...);
     }
 
     template <typename... Ts>
     void getParams(Ts&... values)
     {
-        params.getData(values...);
+        _params.getData(values...);
     }
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(methodName), MUESLI_NVP(paramDatatypes), MUESLI_NVP(params));
+        archive(MUESLI_NVP(_methodName), MUESLI_NVP(_paramDatatypes), MUESLI_NVP(_params));
     }
 
 private:
-    std::string methodName;
-    std::vector<std::string> paramDatatypes;
-    joynr::serializer::SerializationPlaceholder params;
+    std::string _methodName;
+    std::vector<std::string> _paramDatatypes;
+    joynr::serializer::SerializationPlaceholder _params;
 };
 
 } // namespace joynr

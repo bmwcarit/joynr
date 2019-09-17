@@ -72,13 +72,13 @@ public:
      * @param messageRouter A shared pointer to the message router object
      * @param messagingSettings Reference to the messaging settings object
      */
-    ProxyBuilder(std::weak_ptr<JoynrRuntimeImpl> runtime,
-                 ProxyFactory& proxyFactory,
-                 std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
-                 std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
-                 const std::string& domain,
-                 std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
-                 std::shared_ptr<IMessageRouter> messageRouter,
+    ProxyBuilder(std::weak_ptr<JoynrRuntimeImpl> _runtime,
+                 ProxyFactory& _proxyFactory,
+                 std::shared_ptr<IRequestCallerDirectory> _requestCallerDirectory,
+                 std::weak_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy,
+                 const std::string& _domain,
+                 std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress,
+                 std::shared_ptr<IMessageRouter> _messageRouter,
                  MessagingSettings& messagingSettings);
 
     /** Destructor */
@@ -95,13 +95,13 @@ public:
 
     void stop() override
     {
-        std::lock_guard<std::mutex> lock(arbitratorsMutex);
-        shuttingDown = true;
-        for (auto arbitrator : arbitrators) {
+        std::lock_guard<std::mutex> lock(_arbitratorsMutex);
+        _shuttingDown = true;
+        for (auto arbitrator : _arbitrators) {
             arbitrator->stopArbitration();
             arbitrator.reset();
         }
-        arbitrators.clear();
+        _arbitrators.clear();
     }
 
     /**
@@ -122,7 +122,7 @@ public:
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) noexcept override;
+    ProxyBuilder* setMessagingQos(const MessagingQos& _messagingQos) noexcept override;
 
     /**
      * @brief OPTIONAL - Sets the discovery Qos settings. If no discovery Qos is provided, a default
@@ -130,7 +130,7 @@ public:
      * @param discoveryQos The discovery quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept override;
+    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& _discoveryQos) noexcept override;
 
     /**
      * @brief Sets the GBIDs (Global Backend Identifiers) to select the backends in which the
@@ -143,30 +143,30 @@ public:
      * @return The ProxyBuilder object
      * @throw std::invalid_argument if provided gbids vector is empty
      */
-    ProxyBuilder* setGbids(const std::vector<std::string>& gbids) override;
+    ProxyBuilder* setGbids(const std::vector<std::string>& _gbids) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
-    std::weak_ptr<JoynrRuntimeImpl> runtime;
-    ProxyFactory& proxyFactory;
-    std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory;
-    std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::vector<std::shared_ptr<Arbitrator>> arbitrators;
-    std::mutex arbitratorsMutex;
-    bool shuttingDown;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    std::shared_ptr<IMessageRouter> messageRouter;
+    std::weak_ptr<JoynrRuntimeImpl> _runtime;
+    ProxyFactory& _proxyFactory;
+    std::shared_ptr<IRequestCallerDirectory> _requestCallerDirectory;
+    std::weak_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
+    std::vector<std::shared_ptr<Arbitrator>> _arbitrators;
+    std::mutex _arbitratorsMutex;
+    bool _shuttingDown;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress;
+    std::shared_ptr<IMessageRouter> _messageRouter;
 
-    std::string domain;
-    std::uint64_t messagingMaximumTtlMs;
-    MessagingQos messagingQos;
-    std::int64_t discoveryDefaultTimeoutMs;
-    std::int64_t discoveryDefaultRetryIntervalMs;
-    DiscoveryQos discoveryQos;
-    std::vector<std::string> gbids;
+    std::string _domain;
+    std::uint64_t _messagingMaximumTtlMs;
+    MessagingQos _messagingQos;
+    std::int64_t _discoveryDefaultTimeoutMs;
+    std::int64_t _discoveryDefaultRetryIntervalMs;
+    DiscoveryQos _discoveryQos;
+    std::vector<std::string> _gbids;
 
-    static const std::string runtimeAlreadyDestroyed;
+    static const std::string _runtimeAlreadyDestroyed;
 
     ADD_LOGGER(ProxyBuilder)
 };
@@ -181,37 +181,37 @@ ProxyBuilder<T>::ProxyBuilder(
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
         std::shared_ptr<IMessageRouter> messageRouter,
         MessagingSettings& messagingSettings)
-        : runtime(std::move(runtime)),
-          proxyFactory(proxyFactory),
-          requestCallerDirectory(requestCallerDirectory),
-          discoveryProxy(discoveryProxy),
-          arbitrators(),
-          arbitratorsMutex(),
-          shuttingDown(false),
-          dispatcherAddress(dispatcherAddress),
-          messageRouter(messageRouter),
-          domain(domain),
-          messagingMaximumTtlMs(messagingSettings.getMaximumTtlMs()),
-          messagingQos(),
-          discoveryDefaultTimeoutMs(messagingSettings.getDiscoveryDefaultTimeoutMs()),
-          discoveryDefaultRetryIntervalMs(messagingSettings.getDiscoveryDefaultRetryIntervalMs()),
-          discoveryQos(),
-          gbids()
+        : _runtime(std::move(runtime)),
+          _proxyFactory(proxyFactory),
+          _requestCallerDirectory(requestCallerDirectory),
+          _discoveryProxy(discoveryProxy),
+          _arbitrators(),
+          _arbitratorsMutex(),
+          _shuttingDown(false),
+          _dispatcherAddress(dispatcherAddress),
+          _messageRouter(messageRouter),
+          _domain(domain),
+          _messagingMaximumTtlMs(messagingSettings.getMaximumTtlMs()),
+          _messagingQos(),
+          _discoveryDefaultTimeoutMs(messagingSettings.getDiscoveryDefaultTimeoutMs()),
+          _discoveryDefaultRetryIntervalMs(messagingSettings.getDiscoveryDefaultRetryIntervalMs()),
+          _discoveryQos(),
+          _gbids()
 {
-    discoveryQos.setDiscoveryTimeoutMs(discoveryDefaultTimeoutMs);
-    discoveryQos.setRetryIntervalMs(discoveryDefaultRetryIntervalMs);
+    _discoveryQos.setDiscoveryTimeoutMs(_discoveryDefaultTimeoutMs);
+    _discoveryQos.setRetryIntervalMs(_discoveryDefaultRetryIntervalMs);
 }
 
 template <class T>
-const std::string ProxyBuilder<T>::runtimeAlreadyDestroyed =
+const std::string ProxyBuilder<T>::_runtimeAlreadyDestroyed =
         "required runtime has been already destroyed";
 
 template <class T>
 std::shared_ptr<T> ProxyBuilder<T>::build()
 {
-    auto runtimeSharedPtr = runtime.lock();
+    auto runtimeSharedPtr = _runtime.lock();
     if (runtimeSharedPtr == nullptr) {
-        throw exceptions::DiscoveryException(runtimeAlreadyDestroyed);
+        throw exceptions::DiscoveryException(_runtimeAlreadyDestroyed);
     }
     auto proxyFuture = std::make_shared<Future<std::shared_ptr<T>>>();
 
@@ -235,11 +235,11 @@ void ProxyBuilder<T>::buildAsync(
         std::function<void(std::shared_ptr<T> proxy)> onSuccess,
         std::function<void(const exceptions::DiscoveryException& exception)> onError) noexcept
 {
-    auto runtimeSharedPtr = runtime.lock();
-    std::lock_guard<std::mutex> lock(arbitratorsMutex);
+    auto runtimeSharedPtr = _runtime.lock();
+    std::lock_guard<std::mutex> lock(_arbitratorsMutex);
 
-    if (runtimeSharedPtr == nullptr || shuttingDown) {
-        const exceptions::DiscoveryException error(runtimeAlreadyDestroyed);
+    if (runtimeSharedPtr == nullptr || _shuttingDown) {
+        const exceptions::DiscoveryException error(_runtimeAlreadyDestroyed);
         onError(error);
     }
 
@@ -257,12 +257,12 @@ void ProxyBuilder<T>::buildAsync(
         // accesssing internal inherited member runtime
         auto proxyBuilderSharedPtr = thisWeakPtr.lock();
         if (proxyBuilderSharedPtr == nullptr) {
-            onError(exceptions::DiscoveryException(runtimeAlreadyDestroyed));
+            onError(exceptions::DiscoveryException(_runtimeAlreadyDestroyed));
             return;
         }
-        auto runtimeSharedPtr = runtime.lock();
+        auto runtimeSharedPtr = _runtime.lock();
         if (runtimeSharedPtr == nullptr) {
-            onError(exceptions::DiscoveryException(runtimeAlreadyDestroyed));
+            onError(exceptions::DiscoveryException(_runtimeAlreadyDestroyed));
             return;
         }
 
@@ -273,7 +273,7 @@ void ProxyBuilder<T>::buildAsync(
         }
 
         std::shared_ptr<T> proxy =
-                proxyFactory.createProxy<T>(runtimeSharedPtr, domain, messagingQos);
+                _proxyFactory.createProxy<T>(runtimeSharedPtr, _domain, _messagingQos);
         proxy->handleArbitrationFinished(discoverEntry);
 
         JOYNR_LOG_INFO(logger(),
@@ -282,7 +282,7 @@ void ProxyBuilder<T>::buildAsync(
                        "interface: {}",
                        proxy->getProxyParticipantId(),
                        discoverEntry.getParticipantId(),
-                       domain,
+                       _domain,
                        T::INTERFACE_NAME());
 
         bool isGloballyVisible = !discoverEntry.getIsLocal();
@@ -298,29 +298,29 @@ void ProxyBuilder<T>::buildAsync(
             }
         };
 
-        messageRouter->setToKnown(discoverEntry.getParticipantId());
-        messageRouter->addNextHop(proxy->getProxyParticipantId(),
-                                  dispatcherAddress,
-                                  isGloballyVisible,
-                                  expiryDateMs,
-                                  isSticky,
-                                  onSuccessAddNextHop,
-                                  onErrorAddNextHop);
+        _messageRouter->setToKnown(discoverEntry.getParticipantId());
+        _messageRouter->addNextHop(proxy->getProxyParticipantId(),
+                                   _dispatcherAddress,
+                                   isGloballyVisible,
+                                   expiryDateMs,
+                                   isSticky,
+                                   onSuccessAddNextHop,
+                                   onErrorAddNextHop);
     };
 
     auto arbitrator = ArbitratorFactory::createArbitrator(
-            domain, T::INTERFACE_NAME(), interfaceVersion, discoveryProxy, discoveryQos, gbids);
+            _domain, T::INTERFACE_NAME(), interfaceVersion, _discoveryProxy, _discoveryQos, _gbids);
     arbitrator->startArbitration(std::move(arbitrationSucceeds), std::move(onError));
-    arbitrators.push_back(std::move(arbitrator));
+    _arbitrators.push_back(std::move(arbitrator));
 }
 
 template <class T>
 ProxyBuilder<T>* ProxyBuilder<T>::setMessagingQos(const MessagingQos& messagingQos) noexcept
 {
-    this->messagingQos = messagingQos;
+    this->_messagingQos = messagingQos;
     // check validity of messaging maximum TTL
-    if (this->messagingQos.getTtl() > messagingMaximumTtlMs) {
-        this->messagingQos.setTtl(messagingMaximumTtlMs);
+    if (this->_messagingQos.getTtl() > _messagingMaximumTtlMs) {
+        this->_messagingQos.setTtl(_messagingMaximumTtlMs);
     }
     return this;
 }
@@ -332,12 +332,12 @@ template <class T>
 */
 ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept
 {
-    this->discoveryQos = discoveryQos;
-    if (this->discoveryQos.getDiscoveryTimeoutMs() == DiscoveryQos::NO_VALUE()) {
-        this->discoveryQos.setDiscoveryTimeoutMs(discoveryDefaultTimeoutMs);
+    this->_discoveryQos = discoveryQos;
+    if (this->_discoveryQos.getDiscoveryTimeoutMs() == DiscoveryQos::NO_VALUE()) {
+        this->_discoveryQos.setDiscoveryTimeoutMs(_discoveryDefaultTimeoutMs);
     }
-    if (this->discoveryQos.getRetryIntervalMs() == DiscoveryQos::NO_VALUE()) {
-        this->discoveryQos.setRetryIntervalMs(discoveryDefaultRetryIntervalMs);
+    if (this->_discoveryQos.getRetryIntervalMs() == DiscoveryQos::NO_VALUE()) {
+        this->_discoveryQos.setRetryIntervalMs(_discoveryDefaultRetryIntervalMs);
     }
     return this;
 }
@@ -348,7 +348,7 @@ ProxyBuilder<T>* ProxyBuilder<T>::setGbids(const std::vector<std::string>& gbids
     if (gbids.size() == 0) {
         throw std::invalid_argument("GBIDs vector must not be empty.");
     }
-    this->gbids = gbids;
+    this->_gbids = gbids;
     return this;
 }
 

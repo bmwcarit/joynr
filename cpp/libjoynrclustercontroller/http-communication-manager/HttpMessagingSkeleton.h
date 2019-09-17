@@ -58,7 +58,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingSkeleton);
     ADD_LOGGER(HttpMessagingSkeleton)
 
-    std::weak_ptr<IMessageRouter> messageRouter;
+    std::weak_ptr<IMessageRouter> _messageRouter;
 };
 
 } // namespace joynr

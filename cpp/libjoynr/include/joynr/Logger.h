@@ -19,6 +19,10 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wduplicated-branches"
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -244,4 +248,7 @@ struct Logger
 };
 
 } // namespace joynr
+
+#pragma GCC diagnostic pop
+
 #endif // LOGGER_H

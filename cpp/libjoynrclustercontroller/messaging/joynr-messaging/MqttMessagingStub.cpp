@@ -27,7 +27,7 @@ namespace joynr
 
 MqttMessagingStub::MqttMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                      const system::RoutingTypes::MqttAddress& destinationAddress)
-        : messageSender(std::move(messageSender)), destinationAddress(destinationAddress)
+        : _messageSender(std::move(messageSender)), _destinationAddress(destinationAddress)
 {
 }
 
@@ -38,15 +38,15 @@ void MqttMessagingStub::transmit(
     if (logger().getLogLevel() == LogLevel::Debug) {
         JOYNR_LOG_DEBUG(logger(),
                         ">>> OUTGOING TO >{}< >>> {}",
-                        destinationAddress.getBrokerUri(),
+                        _destinationAddress.getBrokerUri(),
                         message->getTrackingInfo());
     } else {
         JOYNR_LOG_TRACE(logger(),
                         ">>> OUTGOING TO >{}< >>> {}",
-                        destinationAddress.getBrokerUri(),
+                        _destinationAddress.getBrokerUri(),
                         message->toLogMessage());
     }
-    messageSender->sendMessage(destinationAddress, std::move(message), onFailure);
+    _messageSender->sendMessage(_destinationAddress, std::move(message), onFailure);
 }
 
 } // namespace joynr

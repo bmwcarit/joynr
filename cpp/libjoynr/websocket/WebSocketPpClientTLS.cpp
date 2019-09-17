@@ -35,7 +35,7 @@ WebSocketPpClientTLS::WebSocketPpClientTLS(const WebSocketSettings& wsSettings,
         : WebSocketPpClient<websocketpp::config::asio_tls_client>(wsSettings, ioService),
           useEncryptedTls{wsSettings.getEncryptedTlsUsage()}
 {
-    endpoint.set_tls_init_handler(
+    _endpoint.set_tls_init_handler(
             [this, keyChain](ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
                 std::ignore = hdl;
                 return createSSLContext(keyChain);

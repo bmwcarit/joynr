@@ -58,34 +58,34 @@ public:
             const std::string& domain,
             const std::string& interfaceName,
             TrustLevel::Enum trustlevel,
-            std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback);
+            std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> _callback);
 
     // Callbacks made from the LocalDomainAccessController
     void permission(Permission::Enum permission) override;
     void operationNeeded() override;
 
 private:
-    AccessController& owningAccessController;
-    std::shared_ptr<ImmutableMessage> message;
-    std::string domain;
-    std::string interfaceName;
-    TrustLevel::Enum trustlevel;
-    std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback;
+    AccessController& _owningAccessController;
+    std::shared_ptr<ImmutableMessage> _message;
+    std::string _domain;
+    std::string _interfaceName;
+    TrustLevel::Enum _trustlevel;
+    std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> _callback;
 };
 
 AccessController::LdacConsumerPermissionCallback::LdacConsumerPermissionCallback(
-        AccessController& parent,
+        AccessController& owningAccessController,
         std::shared_ptr<ImmutableMessage> message,
         const std::string& domain,
         const std::string& interfaceName,
         TrustLevel::Enum trustlevel,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
-        : owningAccessController(parent),
-          message(std::move(message)),
-          domain(domain),
-          interfaceName(interfaceName),
-          trustlevel(trustlevel),
-          callback(callback)
+        : _owningAccessController(owningAccessController),
+          _message(std::move(message)),
+          _domain(domain),
+          _interfaceName(interfaceName),
+          _trustlevel(trustlevel),
+          _callback(callback)
 {
 }
 
@@ -99,27 +99,27 @@ void AccessController::LdacConsumerPermissionCallback::permission(Permission::En
     }
 
     if (hasPermission == IAccessController::Enum::NO) {
-        JOYNR_LOG_ERROR(owningAccessController.logger(),
+        JOYNR_LOG_ERROR(_owningAccessController.logger(),
                         "Message {} to domain {}, interface {} from creator {} failed ACL check",
-                        message->getId(),
-                        domain,
-                        interfaceName,
-                        message->getCreator());
+                        _message->getId(),
+                        _domain,
+                        _interfaceName,
+                        _message->getCreator());
     }
-    callback->hasConsumerPermission(hasPermission);
+    _callback->hasConsumerPermission(hasPermission);
 }
 
 void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 {
     // we only support operation-level ACL for unencrypted messages
 
-    assert(!message->isEncrypted());
+    assert(!_message->isEncrypted());
     std::string operation;
-    const std::string& messageType = message->getType();
+    const std::string& messageType = _message->getType();
     if (messageType == Message::VALUE_MESSAGE_TYPE_ONE_WAY()) {
         try {
             OneWayRequest request;
-            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
+            joynr::serializer::deserializeFromJson(request, _message->getUnencryptedBody());
             operation = request.getMethodName();
         } catch (const std::exception& e) {
             JOYNR_LOG_ERROR(logger(), "could not deserialize OneWayRequest - error {}", e.what());
@@ -127,7 +127,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_REQUEST()) {
         try {
             Request request;
-            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
+            joynr::serializer::deserializeFromJson(request, _message->getUnencryptedBody());
             operation = request.getMethodName();
         } catch (const std::exception& e) {
             JOYNR_LOG_ERROR(logger(), "could not deserialize Request - error {}", e.what());
@@ -135,7 +135,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST()) {
         try {
             SubscriptionRequest request;
-            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
+            joynr::serializer::deserializeFromJson(request, _message->getUnencryptedBody());
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
@@ -145,7 +145,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST()) {
         try {
             BroadcastSubscriptionRequest request;
-            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
+            joynr::serializer::deserializeFromJson(request, _message->getUnencryptedBody());
             operation = request.getSubscribeToName();
 
         } catch (const std::invalid_argument& e) {
@@ -156,7 +156,7 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     } else if (messageType == Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST()) {
         try {
             MulticastSubscriptionRequest request;
-            joynr::serializer::deserializeFromJson(request, message->getUnencryptedBody());
+            joynr::serializer::deserializeFromJson(request, _message->getUnencryptedBody());
             operation = request.getSubscribeToName();
         } catch (const std::invalid_argument& e) {
             JOYNR_LOG_ERROR(logger(),
@@ -166,32 +166,32 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     }
 
     if (operation.empty()) {
-        JOYNR_LOG_ERROR(owningAccessController.logger(), "Could not deserialize request");
-        callback->hasConsumerPermission(IAccessController::Enum::NO);
+        JOYNR_LOG_ERROR(_owningAccessController.logger(), "Could not deserialize request");
+        _callback->hasConsumerPermission(IAccessController::Enum::NO);
         return;
     }
 
     // Get the permission for given operation
     Permission::Enum permission =
-            owningAccessController.localDomainAccessController->getConsumerPermission(
-                    message->getCreator(), domain, interfaceName, operation, trustlevel);
+            _owningAccessController._localDomainAccessController->getConsumerPermission(
+                    _message->getCreator(), _domain, _interfaceName, operation, _trustlevel);
     assert(permission != Permission::ASK && "Permission.ASK user dialog not yet implemented.");
 
     IAccessController::Enum hasPermission = IAccessController::Enum::NO;
     if (permission == Permission::Enum::YES) {
         hasPermission = IAccessController::Enum::YES;
     } else {
-        JOYNR_LOG_ERROR(owningAccessController.logger(),
+        JOYNR_LOG_ERROR(_owningAccessController.logger(),
                         "Message {} to domain {}, interface/operation {}/{} from creator {} failed "
                         "ACL check",
-                        message->getId(),
-                        domain,
-                        interfaceName,
+                        _message->getId(),
+                        _domain,
+                        _interfaceName,
                         operation,
-                        message->getCreator());
+                        _message->getCreator());
     }
 
-    callback->hasConsumerPermission(hasPermission);
+    _callback->hasConsumerPermission(hasPermission);
 }
 
 //--------- AccessController ---------------------------------------------------
@@ -202,7 +202,7 @@ class AccessController::ProviderRegistrationObserver
 public:
     explicit ProviderRegistrationObserver(
             std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
-            : localDomainAccessController(localDomainAccessController)
+            : _localDomainAccessController(localDomainAccessController)
     {
     }
     void onProviderAdd(const DiscoveryEntry& discoveryEntry) override
@@ -213,41 +213,41 @@ public:
 
     void onProviderRemove(const DiscoveryEntry& discoveryEntry) override
     {
-        localDomainAccessController->unregisterProvider(
+        _localDomainAccessController->unregisterProvider(
                 discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
     }
 
 private:
-    std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
+    std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
 };
 
 AccessController::AccessController(
         std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
         std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
         std::vector<std::string> knownGbids)
-        : localCapabilitiesDirectory(localCapabilitiesDirectory),
-          localDomainAccessController(localDomainAccessController),
-          providerRegistrationObserver(
+        : _localCapabilitiesDirectory(localCapabilitiesDirectory),
+          _localDomainAccessController(localDomainAccessController),
+          _providerRegistrationObserver(
                   std::make_shared<ProviderRegistrationObserver>(localDomainAccessController)),
-          whitelistParticipantIds(),
-          knownGbids(knownGbids)
+          _whitelistParticipantIds(),
+          _knownGbids(knownGbids)
 {
-    localCapabilitiesDirectory->addProviderRegistrationObserver(providerRegistrationObserver);
+    localCapabilitiesDirectory->addProviderRegistrationObserver(_providerRegistrationObserver);
 }
 
 AccessController::~AccessController()
 {
-    localCapabilitiesDirectory->removeProviderRegistrationObserver(providerRegistrationObserver);
+    _localCapabilitiesDirectory->removeProviderRegistrationObserver(_providerRegistrationObserver);
 }
 
 void AccessController::addParticipantToWhitelist(const std::string& participantId)
 {
-    whitelistParticipantIds.push_back(participantId);
+    _whitelistParticipantIds.push_back(participantId);
 }
 
 bool AccessController::needsHasConsumerPermissionCheck(const ImmutableMessage& message) const
 {
-    if (util::vectorContains(whitelistParticipantIds, message.getRecipient())) {
+    if (util::vectorContains(_whitelistParticipantIds, message.getRecipient())) {
         return false;
     }
 
@@ -312,7 +312,7 @@ void AccessController::hasConsumerPermission(
             // For now TrustLevel::HIGH is assumed.
 
             const std::string& msgCreatorUid = message->getCreator();
-            thisSharedPtr->localDomainAccessController->getConsumerPermission(
+            thisSharedPtr->_localDomainAccessController->getConsumerPermission(
                     msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
         }
     };
@@ -326,11 +326,11 @@ void AccessController::hasConsumerPermission(
     // Lookup participantId in the local Capabilities Directory
     types::DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
-    localCapabilitiesDirectory->lookup(message->getRecipient(),
-                                       discoveryQos,
-                                       knownGbids,
-                                       std::move(lookupSuccessCallback),
-                                       std::move(lookupErrorCallback));
+    _localCapabilitiesDirectory->lookup(message->getRecipient(),
+                                        discoveryQos,
+                                        _knownGbids,
+                                        std::move(lookupSuccessCallback),
+                                        std::move(lookupErrorCallback));
 }
 
 bool AccessController::hasProviderPermission(const std::string& userId,
@@ -342,7 +342,7 @@ bool AccessController::hasProviderPermission(const std::string& userId,
         return true;
     }
 
-    return localDomainAccessController->getProviderPermission(
+    return _localDomainAccessController->getProviderPermission(
                    userId, domain, interfaceName, trustLevel) == Permission::Enum::YES;
 }
 

@@ -56,11 +56,11 @@ struct ExpiryDate;
 struct RoutingEntry
 {
     RoutingEntry()
-            : participantId(),
-              address(),
-              isGloballyVisible(true),
-              expiryDateMs(std::numeric_limits<std::int64_t>::max()),
-              isSticky(false)
+            : _participantId(),
+              _address(),
+              _isGloballyVisible(true),
+              _expiryDateMs(std::numeric_limits<std::int64_t>::max()),
+              _isSticky(false)
     {
     }
 
@@ -69,11 +69,11 @@ struct RoutingEntry
                           bool isGloballyVisible,
                           std::int64_t expiryDateMs,
                           bool isSticky)
-            : participantId(std::move(participantId)),
-              address(std::move(address)),
-              isGloballyVisible(isGloballyVisible),
-              expiryDateMs(std::move(expiryDateMs)),
-              isSticky(std::move(isSticky))
+            : _participantId(std::move(participantId)),
+              _address(std::move(address)),
+              _isGloballyVisible(isGloballyVisible),
+              _expiryDateMs(std::move(expiryDateMs)),
+              _isSticky(std::move(isSticky))
     {
     }
 
@@ -89,19 +89,19 @@ struct RoutingEntry
      */
     bool operator==(const RoutingEntry& other) const
     {
-        if (this->participantId != other.participantId) {
+        if (this->_participantId != other._participantId) {
             return false;
         }
-        if (this->isGloballyVisible != other.isGloballyVisible) {
+        if (this->_isGloballyVisible != other._isGloballyVisible) {
             return false;
         }
-        if (this->expiryDateMs != other.expiryDateMs) {
+        if (this->_expiryDateMs != other._expiryDateMs) {
             return false;
         }
-        if (this->isSticky != other.isSticky) {
+        if (this->_isSticky != other._isSticky) {
             return false;
         }
-        if (*(this->address) != *(other.address)) {
+        if (*(this->_address) != *(other._address)) {
             return false;
         }
         return true;
@@ -110,12 +110,12 @@ struct RoutingEntry
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(participantId), MUESLI_NVP(address), MUESLI_NVP(isGloballyVisible));
+        archive(MUESLI_NVP(_participantId), MUESLI_NVP(_address), MUESLI_NVP(_isGloballyVisible));
     }
 
     std::size_t hashCode() const
     {
-        return address->hashCode();
+        return _address->hashCode();
     }
 
     std::string toString() const
@@ -123,11 +123,11 @@ struct RoutingEntry
         return joynr::serializer::serializeToJson(*this);
     }
 
-    std::string participantId;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
-    bool isGloballyVisible;
-    std::int64_t expiryDateMs;
-    bool isSticky; // true if entry should be protected from being purged
+    std::string _participantId;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> _address;
+    bool _isGloballyVisible;
+    std::int64_t _expiryDateMs;
+    bool _isSticky; // true if entry should be protected from being purged
 };
 } // namespace routingtable
 
@@ -184,12 +184,12 @@ public:
     {
         MultiIndexContainer tempMultiIndexContainer;
         auto& index =
-                boost::multi_index::get<routingtable::tags::ParticipantId>(multiIndexContainer);
+                boost::multi_index::get<routingtable::tags::ParticipantId>(_multiIndexContainer);
         auto entry = index.cbegin();
         auto last = index.cend();
         for (; entry != last; ++entry) {
             const joynr::InProcessMessagingAddress* inprocessAddress =
-                    dynamic_cast<const joynr::InProcessMessagingAddress*>(entry->address.get());
+                    dynamic_cast<const joynr::InProcessMessagingAddress*>(entry->_address.get());
             if (inprocessAddress == nullptr) {
                 tempMultiIndexContainer.insert(*entry);
             }
@@ -200,7 +200,7 @@ public:
     template <typename Archive>
     void load(Archive& archive)
     {
-        archive(multiIndexContainer);
+        archive(_multiIndexContainer);
     }
 
 private:
@@ -230,25 +230,25 @@ private:
                             boost::multi_index::tag<routingtable::tags::ParticipantId>,
                             BOOST_MULTI_INDEX_MEMBER(routingtable::RoutingEntry,
                                                      std::string,
-                                                     participantId)>,
+                                                     _participantId)>,
                     boost::multi_index::hashed_non_unique<
                             boost::multi_index::tag<routingtable::tags::Address>,
                             BOOST_MULTI_INDEX_MEMBER(
                                     routingtable::RoutingEntry,
                                     std::shared_ptr<const joynr::system::RoutingTypes::Address>,
-                                    address),
+                                    _address),
                             AddressHash,
                             AddressEqual>,
                     boost::multi_index::ordered_non_unique<
                             boost::multi_index::tag<routingtable::tags::ExpiryDate>,
                             BOOST_MULTI_INDEX_MEMBER(routingtable::RoutingEntry,
                                                      std::int64_t,
-                                                     expiryDateMs)>>>;
+                                                     _expiryDateMs)>>>;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTable);
-    MultiIndexContainer multiIndexContainer;
-    std::string gcdParticipantId;
+    MultiIndexContainer _multiIndexContainer;
+    std::string _gcdParticipantId;
     ADD_LOGGER(RoutingTable)
 };
 

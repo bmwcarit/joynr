@@ -24,14 +24,14 @@ namespace joynr
 {
 
 MessagingPropertiesPersistence::MessagingPropertiesPersistence(const std::string& filename)
-        : filename(filename)
+        : _filename(filename)
 {
 }
 
 std::string MessagingPropertiesPersistence::getIdFromPersistence(const std::string& key)
 {
     // Read and write to the persistence file using a Settings object
-    Settings settings(filename);
+    Settings settings(_filename);
 
     std::string id;
 

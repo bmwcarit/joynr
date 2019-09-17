@@ -59,12 +59,12 @@ public:
         archive(muesli::make_nvp("multicastReceivers", persistedMulticastReceivers));
 
         {
-            std::lock_guard<std::recursive_mutex> lock(mutex);
+            std::lock_guard<std::recursive_mutex> lock(_mutex);
 
-            multicastReceivers.clear();
+            _multicastReceivers.clear();
             for (const auto& multicastReceiverEntry : persistedMulticastReceivers) {
-                multicastReceivers.emplace(MulticastMatcher(multicastReceiverEntry.first),
-                                           multicastReceiverEntry.second);
+                _multicastReceivers.emplace(MulticastMatcher(multicastReceiverEntry.first),
+                                            multicastReceiverEntry.second);
             }
         }
     }
@@ -76,11 +76,11 @@ public:
                 convertedMulticastReceivers;
 
         {
-            std::lock_guard<std::recursive_mutex> lock(mutex);
+            std::lock_guard<std::recursive_mutex> lock(_mutex);
 
-            for (const auto& multicastReceiverEntry : multicastReceivers) {
+            for (const auto& multicastReceiverEntry : _multicastReceivers) {
                 convertedMulticastReceivers.emplace(
-                        multicastReceiverEntry.first.multicastId, multicastReceiverEntry.second);
+                        multicastReceiverEntry.first._multicastId, multicastReceiverEntry.second);
             }
         }
 
@@ -92,9 +92,9 @@ private:
     ADD_LOGGER(MulticastReceiverDirectory)
 
     std::unordered_map<MulticastMatcher, std::unordered_set<std::string>, MulticastMatcherHash>
-            multicastReceivers;
+            _multicastReceivers;
 
-    mutable std::recursive_mutex mutex;
+    mutable std::recursive_mutex _mutex;
 };
 
 } // namespace joynr

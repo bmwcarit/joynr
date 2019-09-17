@@ -22,7 +22,7 @@
 namespace joynr
 {
 
-Request::Request() : OneWayRequest(), requestReplyId(util::createUuid())
+Request::Request() : OneWayRequest(), _requestReplyId(util::createUuid())
 {
 }
 
@@ -33,17 +33,17 @@ bool Request::operator==(const Request& other) const
 
 const std::string& Request::getRequestReplyId() const
 {
-    return requestReplyId;
+    return _requestReplyId;
 }
 
 void Request::setRequestReplyId(std::string&& requestReplyId)
 {
-    this->requestReplyId = std::move(requestReplyId);
+    this->_requestReplyId = std::move(requestReplyId);
 }
 
 void Request::setRequestReplyId(const std::string& requestReplyId)
 {
-    this->requestReplyId = requestReplyId;
+    this->_requestReplyId = requestReplyId;
 }
 
 } // namespace joynr

@@ -113,9 +113,9 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClient);
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy;
-    MessagingQos messagingQos;
-    const std::uint64_t touchTtl;
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> _capabilitiesProxy;
+    MessagingQos _messagingQos;
+    const std::uint64_t _touchTtl;
     ADD_LOGGER(GlobalCapabilitiesDirectoryClient)
 };
 

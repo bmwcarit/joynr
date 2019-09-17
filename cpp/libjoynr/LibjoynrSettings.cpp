@@ -24,7 +24,7 @@
 namespace joynr
 {
 
-LibjoynrSettings::LibjoynrSettings(Settings& settings) : settings(settings)
+LibjoynrSettings::LibjoynrSettings(Settings& settings) : _settings(settings)
 {
     checkSettings();
 }
@@ -32,33 +32,33 @@ LibjoynrSettings::LibjoynrSettings(Settings& settings) : settings(settings)
 void LibjoynrSettings::checkSettings()
 {
     // set default values
-    if (!settings.contains(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME())) {
+    if (!_settings.contains(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME())) {
         setBroadcastSubscriptionRequestPersistenceFilename(
                 DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
     }
 
-    if (!settings.contains(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME())) {
+    if (!_settings.contains(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME())) {
         setMessageRouterPersistenceFilename(DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME());
     }
 
-    if (!settings.contains(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME())) {
+    if (!_settings.contains(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME())) {
         setParticipantIdsPersistenceFilename(DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
     }
 
-    if (!settings.contains(SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME())) {
+    if (!_settings.contains(SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME())) {
         setSubscriptionRequestPersistenceFilename(
                 DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
     }
 
-    if (!settings.contains(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED())) {
+    if (!_settings.contains(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED())) {
         setMessageRouterPersistencyEnabled(DEFAULT_MESSAGE_ROUTER_PERSISTENCY_ENABLED());
     }
 
-    if (!settings.contains(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED())) {
+    if (!_settings.contains(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED())) {
         setSubscriptionPersistencyEnabled(DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED());
     }
 
-    if (!settings.contains(SETTING_CLEAR_SUBSCRIPTION_ENABLED())) {
+    if (!_settings.contains(SETTING_CLEAR_SUBSCRIPTION_ENABLED())) {
         setClearSubscriptionEnabled(DEFAULT_CLEAR_SUBSCRIPTION_ENABLED());
     }
 }
@@ -146,73 +146,73 @@ bool LibjoynrSettings::DEFAULT_CLEAR_SUBSCRIPTION_ENABLED()
 
 std::string LibjoynrSettings::getBroadcastSubscriptionRequestPersistenceFilename() const
 {
-    return settings.get<std::string>(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
+    return _settings.get<std::string>(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
 }
 
 void LibjoynrSettings::setBroadcastSubscriptionRequestPersistenceFilename(
         const std::string& filename)
 {
-    settings.set(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(), filename);
+    _settings.set(SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(), filename);
 }
 
 std::string LibjoynrSettings::getMessageRouterPersistenceFilename() const
 {
-    return settings.get<std::string>(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME());
+    return _settings.get<std::string>(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME());
 }
 
 void LibjoynrSettings::setMessageRouterPersistenceFilename(const std::string& filename)
 {
-    settings.set(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(), filename);
+    _settings.set(SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME(), filename);
 }
 
 std::string LibjoynrSettings::getParticipantIdsPersistenceFilename() const
 {
-    return settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
+    return _settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME());
 }
 
 void LibjoynrSettings::setParticipantIdsPersistenceFilename(const std::string& filename)
 {
-    settings.set(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(), filename);
+    _settings.set(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(), filename);
 }
 
 std::string LibjoynrSettings::getSubscriptionRequestPersistenceFilename() const
 {
-    return settings.get<std::string>(SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
+    return _settings.get<std::string>(SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME());
 }
 
 void LibjoynrSettings::setSubscriptionRequestPersistenceFilename(const std::string& filename)
 {
-    settings.set(SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(), filename);
+    _settings.set(SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME(), filename);
 }
 
 bool LibjoynrSettings::isMessageRouterPersistencyEnabled() const
 {
-    return settings.get<bool>(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED());
+    return _settings.get<bool>(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED());
 }
 
 void LibjoynrSettings::setMessageRouterPersistencyEnabled(bool enable)
 {
-    settings.set(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED(), enable);
+    _settings.set(SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED(), enable);
 }
 
 bool LibjoynrSettings::isSubscriptionPersistencyEnabled() const
 {
-    return settings.get<bool>(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED());
+    return _settings.get<bool>(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED());
 }
 
 void LibjoynrSettings::setSubscriptionPersistencyEnabled(bool enable)
 {
-    settings.set(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED(), enable);
+    _settings.set(SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED(), enable);
 }
 
 void LibjoynrSettings::setClearSubscriptionEnabled(bool enable)
 {
-    settings.set(SETTING_CLEAR_SUBSCRIPTION_ENABLED(), enable);
+    _settings.set(SETTING_CLEAR_SUBSCRIPTION_ENABLED(), enable);
 }
 
 bool LibjoynrSettings::isClearSubscriptionEnabled() const
 {
-    return settings.get<bool>(SETTING_CLEAR_SUBSCRIPTION_ENABLED());
+    return _settings.get<bool>(SETTING_CLEAR_SUBSCRIPTION_ENABLED());
 }
 
 void LibjoynrSettings::printSettings() const
@@ -256,7 +256,7 @@ void LibjoynrSettings::printSettings() const
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME(),
-                   settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
+                   _settings.get<std::string>(SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME()));
 }
 
 } // namespace joynr

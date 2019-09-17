@@ -27,18 +27,18 @@
 namespace joynr
 {
 
-WebSocketSettings::WebSocketSettings(Settings& settings) : settings(settings)
+WebSocketSettings::WebSocketSettings(Settings& settings) : _settings(settings)
 {
-    settings.fillEmptySettingsWithDefaults(DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
+    _settings.fillEmptySettingsWithDefaults(DEFAULT_WEBSOCKET_SETTINGS_FILENAME());
     checkSettings();
 }
 
 void WebSocketSettings::checkSettings()
 {
-    assert(settings.contains(SETTING_CC_MESSAGING_URL()));
-    assert(settings.contains(SETTING_RECONNECT_SLEEP_TIME_MS()));
+    assert(_settings.contains(SETTING_CC_MESSAGING_URL()));
+    assert(_settings.contains(SETTING_RECONNECT_SLEEP_TIME_MS()));
 
-    if (!settings.contains(SETTING_TLS_ENCRYPTION())) {
+    if (!_settings.contains(SETTING_TLS_ENCRYPTION())) {
         setEncryptedTlsUsage(DEFAULT_TLS_ENCRYPTION());
     }
 }
@@ -92,12 +92,12 @@ bool WebSocketSettings::DEFAULT_TLS_ENCRYPTION()
 
 std::string WebSocketSettings::getClusterControllerMessagingUrl() const
 {
-    return settings.get<std::string>(WebSocketSettings::SETTING_CC_MESSAGING_URL());
+    return _settings.get<std::string>(WebSocketSettings::SETTING_CC_MESSAGING_URL());
 }
 
 void WebSocketSettings::setClusterControllerMessagingUrl(const std::string& url)
 {
-    settings.set(WebSocketSettings::SETTING_CC_MESSAGING_URL(), url);
+    _settings.set(WebSocketSettings::SETTING_CC_MESSAGING_URL(), url);
 }
 
 joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
@@ -122,61 +122,61 @@ joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
 
 bool WebSocketSettings::getEncryptedTlsUsage() const
 {
-    return settings.get<bool>(WebSocketSettings::SETTING_TLS_ENCRYPTION());
+    return _settings.get<bool>(WebSocketSettings::SETTING_TLS_ENCRYPTION());
 }
 
 void WebSocketSettings::setEncryptedTlsUsage(bool encryptedTls)
 {
-    settings.set(WebSocketSettings::SETTING_TLS_ENCRYPTION(), encryptedTls);
+    _settings.set(WebSocketSettings::SETTING_TLS_ENCRYPTION(), encryptedTls);
 }
 
 std::chrono::milliseconds WebSocketSettings::getReconnectSleepTimeMs() const
 {
     return std::chrono::milliseconds(
-            settings.get<std::int64_t>(WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS()));
+            _settings.get<std::int64_t>(WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS()));
 }
 
 void WebSocketSettings::setReconnectSleepTimeMs(
         const std::chrono::milliseconds reconnectSleepTimeMs)
 {
-    settings.set(
+    _settings.set(
             WebSocketSettings::SETTING_RECONNECT_SLEEP_TIME_MS(), reconnectSleepTimeMs.count());
 }
 
 void WebSocketSettings::setCertificateAuthorityPemFilename(const std::string& filename)
 {
-    settings.set(WebSocketSettings::SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME(), filename);
+    _settings.set(WebSocketSettings::SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME(), filename);
 }
 
 std::string WebSocketSettings::getCertificateAuthorityPemFilename() const
 {
-    return settings.get<std::string>(
+    return _settings.get<std::string>(
             WebSocketSettings::SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME());
 }
 
 void WebSocketSettings::setCertificatePemFilename(const std::string& filename)
 {
-    settings.set(WebSocketSettings::SETTING_CERTIFICATE_PEM_FILENAME(), filename);
+    _settings.set(WebSocketSettings::SETTING_CERTIFICATE_PEM_FILENAME(), filename);
 }
 
 std::string WebSocketSettings::getCertificatePemFilename() const
 {
-    return settings.get<std::string>(WebSocketSettings::SETTING_CERTIFICATE_PEM_FILENAME());
+    return _settings.get<std::string>(WebSocketSettings::SETTING_CERTIFICATE_PEM_FILENAME());
 }
 
 void WebSocketSettings::setPrivateKeyPemFilename(const std::string& filename)
 {
-    settings.set(WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME(), filename);
+    _settings.set(WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME(), filename);
 }
 
 std::string WebSocketSettings::getPrivateKeyPemFilename() const
 {
-    return settings.get<std::string>(WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME());
+    return _settings.get<std::string>(WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME());
 }
 
 bool WebSocketSettings::contains(const std::string& key) const
 {
-    return settings.contains(key);
+    return _settings.contains(key);
 }
 
 void WebSocketSettings::printSettings() const
@@ -184,27 +184,27 @@ void WebSocketSettings::printSettings() const
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_CC_MESSAGING_URL(),
-                   settings.get<std::string>(SETTING_CC_MESSAGING_URL()));
+                   _settings.get<std::string>(SETTING_CC_MESSAGING_URL()));
 
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME(),
-                   settings.get<std::string>(SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME()));
+                   _settings.get<std::string>(SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME()));
 
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_CERTIFICATE_PEM_FILENAME(),
-                   settings.get<std::string>(SETTING_CERTIFICATE_PEM_FILENAME()));
+                   _settings.get<std::string>(SETTING_CERTIFICATE_PEM_FILENAME()));
 
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_PRIVATE_KEY_PEM_FILENAME(),
-                   settings.get<std::string>(SETTING_PRIVATE_KEY_PEM_FILENAME()));
+                   _settings.get<std::string>(SETTING_PRIVATE_KEY_PEM_FILENAME()));
 
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_TLS_ENCRYPTION(),
-                   settings.get<std::string>(SETTING_TLS_ENCRYPTION()));
+                   _settings.get<std::string>(SETTING_TLS_ENCRYPTION()));
 }
 
 } // namespace joynr

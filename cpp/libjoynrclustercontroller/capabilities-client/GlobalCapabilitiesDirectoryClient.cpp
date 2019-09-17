@@ -30,9 +30,10 @@ namespace joynr
 
 GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
         const ClusterControllerSettings& clusterControllerSettings)
-        : capabilitiesProxy(nullptr),
-          messagingQos(),
-          touchTtl(clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())
+        : _capabilitiesProxy(nullptr),
+          _messagingQos(),
+          _touchTtl(static_cast<std::uint64_t>(
+                  clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count()))
 {
 }
 
@@ -43,14 +44,14 @@ void GlobalCapabilitiesDirectoryClient::add(
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
 {
-    MessagingQos addMessagingQos = messagingQos;
+    MessagingQos addMessagingQos = _messagingQos;
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
-    capabilitiesProxy->addAsync(entry,
-                                std::move(gbids),
-                                std::move(onSuccess),
-                                std::move(onError),
-                                std::move(onRuntimeError),
-                                addMessagingQos);
+    _capabilitiesProxy->addAsync(entry,
+                                 std::move(gbids),
+                                 std::move(onSuccess),
+                                 std::move(onError),
+                                 std::move(onRuntimeError),
+                                 addMessagingQos);
 }
 
 void GlobalCapabilitiesDirectoryClient::remove(
@@ -60,14 +61,14 @@ void GlobalCapabilitiesDirectoryClient::remove(
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
 {
-    MessagingQos removeMessagingQos = messagingQos;
+    MessagingQos removeMessagingQos = _messagingQos;
     removeMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
-    capabilitiesProxy->removeAsync(participantId,
-                                   std::move(gbids),
-                                   std::move(onSuccess),
-                                   std::move(onError),
-                                   std::move(onRuntimeError),
-                                   std::move(removeMessagingQos));
+    _capabilitiesProxy->removeAsync(participantId,
+                                    std::move(gbids),
+                                    std::move(onSuccess),
+                                    std::move(onError),
+                                    std::move(onRuntimeError),
+                                    std::move(removeMessagingQos));
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(
@@ -79,16 +80,16 @@ void GlobalCapabilitiesDirectoryClient::lookup(
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
 {
-    MessagingQos lookupMessagingQos = messagingQos;
-    lookupMessagingQos.setTtl(messagingTtl);
+    MessagingQos lookupMessagingQos = _messagingQos;
+    lookupMessagingQos.setTtl(static_cast<std::uint64_t>(messagingTtl));
     lookupMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
-    capabilitiesProxy->lookupAsync(domains,
-                                   interfaceName,
-                                   std::move(gbids),
-                                   std::move(onSuccess),
-                                   std::move(onError),
-                                   std::move(onRuntimeError),
-                                   lookupMessagingQos);
+    _capabilitiesProxy->lookupAsync(domains,
+                                    interfaceName,
+                                    std::move(gbids),
+                                    std::move(onSuccess),
+                                    std::move(onError),
+                                    std::move(onRuntimeError),
+                                    lookupMessagingQos);
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(
@@ -100,20 +101,20 @@ void GlobalCapabilitiesDirectoryClient::lookup(
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
 {
-    MessagingQos lookupMessagingQos = messagingQos;
-    lookupMessagingQos.setTtl(messagingTtl);
+    MessagingQos lookupMessagingQos = _messagingQos;
+    lookupMessagingQos.setTtl(static_cast<std::uint64_t>(messagingTtl));
     lookupMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
-    capabilitiesProxy->lookupAsync(participantId,
-                                   std::move(gbids),
-                                   [onSuccess = std::move(onSuccess)](
-                                           const joynr::types::GlobalDiscoveryEntry& capability) {
-                                       std::vector<joynr::types::GlobalDiscoveryEntry> result;
-                                       result.push_back(capability);
-                                       onSuccess(result);
-                                   },
-                                   std::move(onError),
-                                   std::move(onRuntimeError),
-                                   lookupMessagingQos);
+    _capabilitiesProxy->lookupAsync(participantId,
+                                    std::move(gbids),
+                                    [onSuccess = std::move(onSuccess)](
+                                            const joynr::types::GlobalDiscoveryEntry& capability) {
+                                        std::vector<joynr::types::GlobalDiscoveryEntry> result;
+                                        result.push_back(capability);
+                                        onSuccess(result);
+                                    },
+                                    std::move(onError),
+                                    std::move(onRuntimeError),
+                                    lookupMessagingQos);
 }
 
 void GlobalCapabilitiesDirectoryClient::touch(
@@ -121,9 +122,9 @@ void GlobalCapabilitiesDirectoryClient::touch(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
 {
-    MessagingQos touchMessagingQos = messagingQos;
-    touchMessagingQos.setTtl(touchTtl);
-    capabilitiesProxy->touchAsync(
+    MessagingQos touchMessagingQos = _messagingQos;
+    touchMessagingQos.setTtl(_touchTtl);
+    _capabilitiesProxy->touchAsync(
             clusterControllerId, std::move(onSuccess), std::move(onError), touchMessagingQos);
 }
 
@@ -131,8 +132,8 @@ void GlobalCapabilitiesDirectoryClient::setProxy(
         std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy,
         MessagingQos messagingQos)
 {
-    this->capabilitiesProxy = std::move(capabilitiesProxy);
-    this->messagingQos = std::move(messagingQos);
+    this->_capabilitiesProxy = std::move(capabilitiesProxy);
+    this->_messagingQos = std::move(messagingQos);
 }
 
 } // namespace joynr

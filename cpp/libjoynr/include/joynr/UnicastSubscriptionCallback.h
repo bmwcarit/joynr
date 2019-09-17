@@ -53,9 +53,9 @@ public:
     void onError(const BasePublication& publication, const exceptions::JoynrRuntimeException& error)
     {
         std::ignore = publication;
-        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+        if (auto subscriptionManagerSharedPtr = Base::_subscriptionManager.lock()) {
             std::shared_ptr<ISubscriptionListenerBase> listener =
-                    subscriptionManagerSharedPtr->getSubscriptionListener(Base::subscriptionId);
+                    subscriptionManagerSharedPtr->getSubscriptionListener(Base::_subscriptionId);
 
             if (listener) {
                 listener->onError(error);
@@ -68,9 +68,9 @@ public:
             const BasePublication& publication)
     {
         std::ignore = publication;
-        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+        if (auto subscriptionManagerSharedPtr = Base::_subscriptionManager.lock()) {
             auto listener = std::dynamic_pointer_cast<ISubscriptionListener<void>>(
-                    subscriptionManagerSharedPtr->getSubscriptionListener(Base::subscriptionId));
+                    subscriptionManagerSharedPtr->getSubscriptionListener(Base::_subscriptionId));
 
             if (listener) {
                 listener->onReceive();
@@ -85,9 +85,9 @@ public:
             const Ts&... values)
     {
         std::ignore = publication;
-        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+        if (auto subscriptionManagerSharedPtr = Base::_subscriptionManager.lock()) {
             auto listener = std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(
-                    subscriptionManagerSharedPtr->getSubscriptionListener(Base::subscriptionId));
+                    subscriptionManagerSharedPtr->getSubscriptionListener(Base::_subscriptionId));
 
             if (listener) {
                 listener->onReceive(value, values...);

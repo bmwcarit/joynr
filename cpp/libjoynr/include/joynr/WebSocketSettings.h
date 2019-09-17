@@ -86,7 +86,7 @@ public:
 private:
     void operator=(const WebSocketSettings& other);
 
-    Settings& settings;
+    Settings& _settings;
     ADD_LOGGER(WebSocketSettings)
     void checkSettings();
 };

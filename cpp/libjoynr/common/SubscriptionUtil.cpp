@@ -44,10 +44,12 @@ bool SubscriptionUtil::isOnChangeSubscription(std::shared_ptr<SubscriptionQos> q
 
 std::int64_t SubscriptionUtil::getAlertInterval(std::shared_ptr<SubscriptionQos> qos)
 {
-    if (auto typedQos = std::dynamic_pointer_cast<OnChangeWithKeepAliveSubscriptionQos>(qos)) {
-        return typedQos->getAlertAfterIntervalMs();
-    } else if (auto typedQos = std::dynamic_pointer_cast<PeriodicSubscriptionQos>(qos)) {
-        return typedQos->getAlertAfterIntervalMs();
+    if (auto typedOnChangeWithKeepAliveSubscriptionQos =
+                std::dynamic_pointer_cast<OnChangeWithKeepAliveSubscriptionQos>(qos)) {
+        return typedOnChangeWithKeepAliveSubscriptionQos->getAlertAfterIntervalMs();
+    } else if (auto typedPeriodicSubscriptionQos =
+                       std::dynamic_pointer_cast<PeriodicSubscriptionQos>(qos)) {
+        return typedPeriodicSubscriptionQos->getAlertAfterIntervalMs();
     }
     return -1;
 }
@@ -62,10 +64,12 @@ std::int64_t SubscriptionUtil::getMinInterval(std::shared_ptr<SubscriptionQos> q
 
 std::int64_t SubscriptionUtil::getPeriodicPublicationInterval(std::shared_ptr<SubscriptionQos> qos)
 {
-    if (auto typedQos = std::dynamic_pointer_cast<OnChangeWithKeepAliveSubscriptionQos>(qos)) {
-        return typedQos->getMaxIntervalMs();
-    } else if (auto typedQos = std::dynamic_pointer_cast<PeriodicSubscriptionQos>(qos)) {
-        return typedQos->getPeriodMs();
+    if (auto typedOnChangeWithKeepAliveSubscriptionQos =
+                std::dynamic_pointer_cast<OnChangeWithKeepAliveSubscriptionQos>(qos)) {
+        return typedOnChangeWithKeepAliveSubscriptionQos->getMaxIntervalMs();
+    } else if (auto typedPeriodicSubscriptionQos =
+                       std::dynamic_pointer_cast<PeriodicSubscriptionQos>(qos)) {
+        return typedPeriodicSubscriptionQos->getPeriodMs();
     }
     return -1;
 }

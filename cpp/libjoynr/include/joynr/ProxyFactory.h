@@ -44,13 +44,13 @@ public:
                                    const std::string& domain,
                                    const MessagingQos& qosSettings)
     {
-        auto proxy = std::make_shared<T>(runtime, connectorFactory, domain, qosSettings);
+        auto proxy = std::make_shared<T>(runtime, _connectorFactory, domain, qosSettings);
         return proxy;
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyFactory);
-    std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory;
+    std::shared_ptr<JoynrMessagingConnectorFactory> _connectorFactory;
 };
 
 } // namespace joynr

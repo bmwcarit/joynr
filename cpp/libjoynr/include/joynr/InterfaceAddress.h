@@ -47,8 +47,8 @@ public:
     std::size_t hashCode() const;
 
 private:
-    std::string domain;
-    std::string interfaceName;
+    std::string _domain;
+    std::string _interfaceName;
 };
 
 std::size_t hash_value(const InterfaceAddress& tInterfaceAddress);

@@ -76,14 +76,14 @@ private:
     template <typename Archive>
     friend void serialize(Archive& archive, CallContext& callContext);
 
-    std::string principal;
+    std::string _principal;
     ADD_LOGGER(CallContext)
 };
 
 template <typename Archive>
 void serialize(Archive& archive, CallContext& callContext)
 {
-    archive(MUESLI_NVP(callContext.principal));
+    archive(MUESLI_NVP(callContext._principal));
 }
 
 } // namespace joynr

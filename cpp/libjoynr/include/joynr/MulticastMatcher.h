@@ -34,16 +34,16 @@ namespace joynr
 class MulticastMatcher
 {
 public:
-    std::string multicastId;
-    std::regex pattern;
+    std::string _multicastId;
+    std::regex _pattern;
 
-    explicit MulticastMatcher(const std::string& multicastId);
+    explicit MulticastMatcher(const std::string& _multicastId);
     bool doesMatch(const std::string& incomingMulticastId) const;
     bool operator==(const MulticastMatcher& other) const;
 
 private:
-    const std::string regExpPlusSign;
-    const std::string regExpKleenStarSign;
+    const std::string _regExpPlusSign;
+    const std::string _regExpKleenStarSign;
 };
 
 class MulticastMatcherHash
@@ -51,7 +51,7 @@ class MulticastMatcherHash
 public:
     std::size_t operator()(const MulticastMatcher& k) const
     {
-        return std::hash<std::string>()(k.multicastId);
+        return std::hash<std::string>()(k._multicastId);
     }
 };
 

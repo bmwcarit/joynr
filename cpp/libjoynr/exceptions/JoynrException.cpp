@@ -85,27 +85,27 @@ const std::string& ApplicationException::TYPE_NAME()
     return TYPE_NAME;
 }
 
-JoynrException::JoynrException() noexcept : message()
+JoynrException::JoynrException() noexcept : _message()
 {
 }
 
-JoynrException::JoynrException(const std::string& message) noexcept : message(message)
+JoynrException::JoynrException(const std::string& message) noexcept : _message(message)
 {
 }
 
 const char* JoynrException::what() const noexcept
 {
-    return message.is_initialized() ? message->c_str() : std::exception::what();
+    return _message.is_initialized() ? _message->c_str() : std::exception::what();
 }
 
 std::string JoynrException::getMessage() const noexcept
 {
-    return message.is_initialized() ? *message : std::string(std::exception::what());
+    return _message.is_initialized() ? *_message : std::string(std::exception::what());
 }
 
 void JoynrException::setMessage(const std::string& message)
 {
-    this->message = message;
+    this->_message = message;
 }
 
 const std::string& JoynrException::getTypeName() const
@@ -115,7 +115,7 @@ const std::string& JoynrException::getTypeName() const
 
 bool JoynrException::operator==(const JoynrException& other) const
 {
-    return message == other.getMessage();
+    return _message == other.getMessage();
 }
 
 JoynrRuntimeException::JoynrRuntimeException(const std::string& message) noexcept
@@ -181,31 +181,31 @@ JoynrMessageNotSentException* JoynrMessageNotSentException::clone() const
 const std::chrono::milliseconds JoynrDelayMessageException::DEFAULT_DELAY_MS(1000);
 
 JoynrDelayMessageException::JoynrDelayMessageException() noexcept : JoynrRuntimeException(),
-                                                                    delayMs(DEFAULT_DELAY_MS)
+                                                                    _delayMs(DEFAULT_DELAY_MS)
 {
 }
 
 JoynrDelayMessageException::JoynrDelayMessageException(const std::string& message) noexcept
         : JoynrRuntimeException(message),
-          delayMs(DEFAULT_DELAY_MS)
+          _delayMs(DEFAULT_DELAY_MS)
 {
 }
 
 JoynrDelayMessageException::JoynrDelayMessageException(const std::chrono::milliseconds delayMs,
                                                        const std::string& message) noexcept
         : JoynrRuntimeException(message),
-          delayMs(delayMs)
+          _delayMs(delayMs)
 {
 }
 
 std::chrono::milliseconds JoynrDelayMessageException::getDelayMs() const noexcept
 {
-    return delayMs;
+    return _delayMs;
 }
 
 void JoynrDelayMessageException::setDelayMs(const std::chrono::milliseconds& delayMs) noexcept
 {
-    this->delayMs = delayMs;
+    this->_delayMs = delayMs;
 }
 
 const std::string& JoynrDelayMessageException::getTypeName() const
@@ -220,7 +220,7 @@ JoynrDelayMessageException* JoynrDelayMessageException::clone() const
 
 bool JoynrDelayMessageException::operator==(const JoynrDelayMessageException& other) const
 {
-    return message == other.getMessage() && delayMs == other.getDelayMs();
+    return _message == other.getMessage() && _delayMs == other.getDelayMs();
 }
 
 JoynrParseError::JoynrParseError(const std::string& message) noexcept
@@ -259,19 +259,19 @@ ProviderRuntimeException* ProviderRuntimeException::clone() const
 }
 
 PublicationMissedException::PublicationMissedException() noexcept : JoynrRuntimeException(),
-                                                                    subscriptionId()
+                                                                    _subscriptionId()
 {
 }
 
 PublicationMissedException::PublicationMissedException(const std::string& subscriptionId) noexcept
         : JoynrRuntimeException(subscriptionId),
-          subscriptionId(subscriptionId)
+          _subscriptionId(subscriptionId)
 {
 }
 
 std::string PublicationMissedException::getSubscriptionId() const noexcept
 {
-    return subscriptionId;
+    return _subscriptionId;
 }
 
 const std::string& PublicationMissedException::getTypeName() const
@@ -281,7 +281,7 @@ const std::string& PublicationMissedException::getTypeName() const
 
 void PublicationMissedException::setSubscriptionId(const std::string& newValue) noexcept
 {
-    subscriptionId = newValue;
+    _subscriptionId = newValue;
     setMessage(newValue);
 }
 
@@ -292,23 +292,23 @@ PublicationMissedException* PublicationMissedException::clone() const
 
 bool PublicationMissedException::operator==(const PublicationMissedException& other) const
 {
-    return message == other.getMessage() && subscriptionId == other.getSubscriptionId();
+    return _message == other.getMessage() && _subscriptionId == other.getSubscriptionId();
 }
 
-ApplicationException::ApplicationException() noexcept : JoynrException(), error()
+ApplicationException::ApplicationException() noexcept : JoynrException(), _error()
 {
 }
 
 ApplicationException::ApplicationException(
         const std::string& message,
         std::shared_ptr<ApplicationExceptionError> error) noexcept : JoynrException(message),
-                                                                     error(std::move(error))
+                                                                     _error(std::move(error))
 {
 }
 
 std::string ApplicationException::getName() const noexcept
 {
-    return error->getName();
+    return _error->getName();
 }
 
 const std::string& ApplicationException::getTypeName() const
@@ -323,10 +323,10 @@ ApplicationException* ApplicationException::clone() const
 
 bool ApplicationException::operator==(const ApplicationException& other) const
 {
-    const ApplicationExceptionError* const errorPtr = error.get();
-    const ApplicationExceptionError* const otherErrorPtr = other.error.get();
-    return typeid(*errorPtr) == typeid(*(otherErrorPtr)) && message == other.getMessage() &&
-           error->getName() == other.error->getName();
+    const ApplicationExceptionError* const errorPtr = _error.get();
+    const ApplicationExceptionError* const otherErrorPtr = other._error.get();
+    return typeid(*errorPtr) == typeid(*(otherErrorPtr)) && _message == other.getMessage() &&
+           _error->getName() == other._error->getName();
 }
 
 } // namespace exceptions

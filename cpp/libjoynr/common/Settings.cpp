@@ -29,16 +29,17 @@ namespace ptree = boost::property_tree;
 namespace joynr
 {
 
-Settings::Settings() : filename(), propertyTree(), loaded(false)
+Settings::Settings() : _filename(), _propertyTree(), _loaded(false)
 {
 }
 
-Settings::Settings(const std::string& filename) : filename(filename), propertyTree(), loaded(false)
+Settings::Settings(const std::string& filename)
+        : _filename(filename), _propertyTree(), _loaded(false)
 {
     try {
         JOYNR_LOG_INFO(logger(), "attempting to read settings file: {}", filename);
-        ptree::read_ini(filename, propertyTree);
-        loaded = true;
+        ptree::read_ini(filename, _propertyTree);
+        _loaded = true;
     } catch (const ptree::ini_parser_error& e) {
         JOYNR_LOG_ERROR(logger(), "Could not read settings file: {}", e.what());
         // The file does not exist or is an invalid format.
@@ -49,7 +50,7 @@ Settings::Settings(const std::string& filename) : filename(filename), propertyTr
 
 bool Settings::isLoaded() const
 {
-    return loaded;
+    return _loaded;
 }
 
 bool Settings::contains(const std::string& path) const
@@ -58,7 +59,7 @@ bool Settings::contains(const std::string& path) const
     ptree::ptree::path_type treePath = createPath(path);
 
     // Get the child node with the path
-    const auto& child = propertyTree.get_child_optional(treePath);
+    const auto& child = _propertyTree.get_child_optional(treePath);
 
     // Use boost::optional operator bool()
     return bool(child);
@@ -67,18 +68,18 @@ bool Settings::contains(const std::string& path) const
 bool Settings::sync()
 {
     try {
-        if (contentChanged(propertyTree, filename)) {
-            ptree::write_ini(filename, propertyTree);
+        if (contentChanged(_propertyTree, _filename)) {
+            ptree::write_ini(_filename, _propertyTree);
             return true;
         } else {
             JOYNR_LOG_INFO(logger(),
                            "Settings file \"{}\" not updated because its content did not change",
-                           filename);
+                           _filename);
         }
     } catch (const ptree::ini_parser_error& e) {
         JOYNR_LOG_ERROR(logger(),
                         "settings file \"{}\" cannot be written due to the following error: {})",
-                        filename,
+                        _filename,
                         e.message());
     }
     return false;
@@ -86,11 +87,11 @@ bool Settings::sync()
 
 void Settings::merge(const Settings& from, Settings& to, bool overwrite)
 {
-    const ptree::ptree& fromTree = from.propertyTree;
-    ptree::ptree& toTree = to.propertyTree;
+    const ptree::ptree& fromTree = from._propertyTree;
+    ptree::ptree& toTree = to._propertyTree;
 
     merge(fromTree, toTree, overwrite);
-    to.loaded = true;
+    to._loaded = true;
 }
 
 bool Settings::contentChanged(const boost::property_tree::ptree& propertyTreeToCompare,

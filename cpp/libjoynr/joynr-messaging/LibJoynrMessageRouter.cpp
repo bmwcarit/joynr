@@ -65,30 +65,30 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
                                 std::move(transportStatuses),
                                 std::move(messageQueue),
                                 std::move(transportNotAvailableQueue)),
-          parentRouter(nullptr),
-          parentAddress(nullptr),
-          incomingAddress(incomingAddress),
-          runningParentResolves(),
-          parentResolveMutex(),
-          parentClusterControllerReplyToAddressMutex(),
-          parentClusterControllerReplyToAddress(),
-          DEFAULT_IS_GLOBALLY_VISIBLE(false)
+          _parentRouter(nullptr),
+          _parentAddress(nullptr),
+          _incomingAddress(incomingAddress),
+          _runningParentResolves(),
+          _parentResolveMutex(),
+          _parentClusterControllerReplyToAddressMutex(),
+          _parentClusterControllerReplyToAddress(),
+          _DEFAULT_IS_GLOBALLY_VISIBLE(false)
 {
 }
 
 void LibJoynrMessageRouter::shutdown()
 {
     AbstractMessageRouter::shutdown();
-    parentRouter.reset();
-    parentAddress.reset();
+    _parentRouter.reset();
+    _parentAddress.reset();
 }
 
 void LibJoynrMessageRouter::setParentAddress(
         std::string parentParticipantId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress)
 {
-    this->parentAddress = std::move(parentAddress);
-    addProvisionedNextHop(parentParticipantId, this->parentAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    this->_parentAddress = std::move(parentAddress);
+    addProvisionedNextHop(parentParticipantId, this->_parentAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 }
 
 void LibJoynrMessageRouter::setParentRouter(
@@ -96,14 +96,14 @@ void LibJoynrMessageRouter::setParentRouter(
         std::function<void(void)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    assert(parentAddress);
-    this->parentRouter = std::move(parentRouter);
+    assert(_parentAddress);
+    this->_parentRouter = std::move(parentRouter);
 
     // add the next hop to parent router
     // this is necessary because during normal registration, the parent proxy is not yet set
     // because the routing provider is local, therefore isGloballyVisible is false
     const bool isGloballyVisible = false;
-    addNextHopToParent(this->parentRouter->getProxyParticipantId(),
+    addNextHopToParent(this->_parentRouter->getProxyParticipantId(),
                        isGloballyVisible,
                        std::move(onSuccess),
                        std::move(onError));
@@ -114,12 +114,12 @@ void LibJoynrMessageRouter::setToKnown(const std::string& participantId)
     JOYNR_LOG_TRACE(logger(),
                     "LibJoynrMessageRouter::setToKnown called for participantId {}",
                     participantId);
-    bool isGloballyVisible = DEFAULT_IS_GLOBALLY_VISIBLE;
+    bool isGloballyVisible = _DEFAULT_IS_GLOBALLY_VISIBLE;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    if (parentAddress) {
+    if (_parentAddress) {
         (void)addToRoutingTable(
-                participantId, isGloballyVisible, parentAddress, expiryDateMs, isSticky);
+                participantId, isGloballyVisible, _parentAddress, expiryDateMs, isSticky);
     }
 }
 
@@ -133,7 +133,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
     JOYNR_LOG_TRACE(logger(), "Route message with Id {}", message->getId());
     AbstractMessageRouter::AddressUnorderedSet destAddresses;
     {
-        ReadLocker lock(messageQueueRetryLock);
+        ReadLocker lock(_messageQueueRetryLock);
         // search for the destination addresses
         destAddresses = getDestinationAddresses(*message, lock);
 
@@ -150,14 +150,14 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
 
             lock.unlock();
             // and try to resolve destination address via parent message router
-            std::unique_lock<std::mutex> parentResolveLock(parentResolveMutex);
-            if (runningParentResolves.find(destinationPartId) == runningParentResolves.end()) {
+            std::unique_lock<std::mutex> parentResolveLock(_parentResolveMutex);
+            if (_runningParentResolves.find(destinationPartId) == _runningParentResolves.end()) {
                 if (!isParentMessageRouterSet()) {
                     // ignore, in case routing is not possible
                     return;
                 }
 
-                runningParentResolves.insert(destinationPartId);
+                _runningParentResolves.insert(destinationPartId);
                 parentResolveLock.unlock();
 
                 std::function<void(const bool&)> onSuccess = [
@@ -171,20 +171,20 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                             JOYNR_LOG_INFO(logger(),
                                            "Got destination address for participant {}",
                                            destinationPartId);
-                            WriteLocker lock(thisSharedPtr->messageQueueRetryLock);
+                            WriteLocker lock1(thisSharedPtr->_messageQueueRetryLock);
                             // save next hop in the routing table
                             constexpr std::int64_t expiryDateMs =
                                     std::numeric_limits<std::int64_t>::max();
                             const bool isSticky = false;
                             bool addToRoutingTableSuccessful = thisSharedPtr->addToRoutingTable(
                                     destinationPartId,
-                                    thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
-                                    thisSharedPtr->parentAddress,
+                                    thisSharedPtr->_DEFAULT_IS_GLOBALLY_VISIBLE,
+                                    thisSharedPtr->_parentAddress,
                                     expiryDateMs,
                                     isSticky);
                             if (addToRoutingTableSuccessful) {
                                 thisSharedPtr->sendQueuedMessages(
-                                        destinationPartId, thisSharedPtr->parentAddress, lock);
+                                        destinationPartId, thisSharedPtr->_parentAddress, lock1);
                             } else {
                                 JOYNR_LOG_ERROR(logger(),
                                                 "Failed to add participant {} to routing table",
@@ -220,7 +220,7 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                     }
                 };
 
-                parentRouter->resolveNextHopAsync(
+                _parentRouter->resolveNextHopAsync(
                         destinationPartId, std::move(onSuccess), std::move(onError));
             }
             return;
@@ -244,7 +244,7 @@ void LibJoynrMessageRouter::sendQueuedMessages(
                     destinationPartId,
                     address->toString());
     while (true) {
-        std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
+        std::shared_ptr<ImmutableMessage> item(_messageQueue->getNextMessageFor(destinationPartId));
         if (!item) {
             break;
         }
@@ -262,7 +262,7 @@ bool LibJoynrMessageRouter::publishToGlobal(const ImmutableMessage& message)
 
 bool LibJoynrMessageRouter::isParentMessageRouterSet()
 {
-    if (!parentRouter) {
+    if (!_parentRouter) {
         JOYNR_LOG_TRACE(logger(),
                         "Parent message router not set. Discard this message if it appears "
                         "during libJoynr initialization. It can be related to a configuration "
@@ -304,43 +304,43 @@ void LibJoynrMessageRouter::addNextHopToParent(
     // add to parent router
     if (auto channelAddress =
                 std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(
-                        incomingAddress)) {
-        parentRouter->addNextHopAsync(participantId,
-                                      *channelAddress,
-                                      isGloballyVisible,
-                                      std::move(onSuccess),
-                                      std::move(onErrorWrapper));
+                        _incomingAddress)) {
+        _parentRouter->addNextHopAsync(participantId,
+                                       *channelAddress,
+                                       isGloballyVisible,
+                                       std::move(onSuccess),
+                                       std::move(onErrorWrapper));
     } else if (auto mqttAddress =
                        std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(
-                               incomingAddress)) {
-        parentRouter->addNextHopAsync(participantId,
-                                      *mqttAddress,
-                                      isGloballyVisible,
-                                      std::move(onSuccess),
-                                      std::move(onErrorWrapper));
+                               _incomingAddress)) {
+        _parentRouter->addNextHopAsync(participantId,
+                                       *mqttAddress,
+                                       isGloballyVisible,
+                                       std::move(onSuccess),
+                                       std::move(onErrorWrapper));
     } else if (auto browserAddress =
                        std::dynamic_pointer_cast<const joynr::system::RoutingTypes::BrowserAddress>(
-                               incomingAddress)) {
-        parentRouter->addNextHopAsync(participantId,
-                                      *browserAddress,
-                                      isGloballyVisible,
-                                      std::move(onSuccess),
-                                      std::move(onErrorWrapper));
+                               _incomingAddress)) {
+        _parentRouter->addNextHopAsync(participantId,
+                                       *browserAddress,
+                                       isGloballyVisible,
+                                       std::move(onSuccess),
+                                       std::move(onErrorWrapper));
     } else if (auto webSocketAddress = std::dynamic_pointer_cast<
-                       const joynr::system::RoutingTypes::WebSocketAddress>(incomingAddress)) {
-        parentRouter->addNextHopAsync(participantId,
-                                      *webSocketAddress,
-                                      isGloballyVisible,
-                                      std::move(onSuccess),
-                                      std::move(onErrorWrapper));
+                       const joynr::system::RoutingTypes::WebSocketAddress>(_incomingAddress)) {
+        _parentRouter->addNextHopAsync(participantId,
+                                       *webSocketAddress,
+                                       isGloballyVisible,
+                                       std::move(onSuccess),
+                                       std::move(onErrorWrapper));
     } else if (auto webSocketClientAddress = std::dynamic_pointer_cast<
                        const joynr::system::RoutingTypes::WebSocketClientAddress>(
-                       incomingAddress)) {
-        parentRouter->addNextHopAsync(participantId,
-                                      *webSocketClientAddress,
-                                      isGloballyVisible,
-                                      std::move(onSuccess),
-                                      std::move(onErrorWrapper));
+                       _incomingAddress)) {
+        _parentRouter->addNextHopAsync(participantId,
+                                       *webSocketClientAddress,
+                                       isGloballyVisible,
+                                       std::move(onSuccess),
+                                       std::move(onErrorWrapper));
     }
 }
 
@@ -366,16 +366,16 @@ bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingE
     if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
         return true;
     }
-    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) == nullptr) {
+    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry._address.get()) == nullptr) {
         if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
             return true;
         } else if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(
-                           oldEntry.address.get()) == nullptr) {
+                           oldEntry._address.get()) == nullptr) {
             // old address is WebSocketClientAddress or MqttAddress/ChannelAddress
             if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
                 return true;
             } else if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(
-                               oldEntry.address.get()) == nullptr) {
+                               oldEntry._address.get()) == nullptr) {
                 // old address is MqttAddress or ChannelAddress
                 if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
                     typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
@@ -404,7 +404,7 @@ void LibJoynrMessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     assert(address);
-    WriteLocker lock(messageQueueRetryLock);
+    WriteLocker lock(_messageQueueRetryLock);
 
     bool addToRoutingTableSuccessful =
             addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
@@ -433,8 +433,8 @@ void LibJoynrMessageRouter::removeNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     {
-        WriteLocker lock(routingTableLock);
-        routingTable.remove(participantId);
+        WriteLocker lock(_routingTableLock);
+        _routingTable.remove(participantId);
     }
 
     saveRoutingTable();
@@ -462,7 +462,7 @@ void LibJoynrMessageRouter::removeNextHop(
     };
 
     // remove from parent router
-    parentRouter->removeNextHopAsync(
+    _parentRouter->removeNextHopAsync(
             participantId, std::move(onSuccess), std::move(onErrorWrapper));
 }
 
@@ -482,11 +482,11 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     }
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
-        ReadLocker lock(routingTableLock);
+        ReadLocker lock(_routingTableLock);
         const auto routingEntry =
-                routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
+                _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (routingEntry) {
-            providerAddress = routingEntry->address;
+            providerAddress = routingEntry->_address;
         }
     }
 
@@ -499,7 +499,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     ]()
     {
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
-            thisSharedPtr->multicastReceiverDirectory.registerMulticastReceiver(
+            thisSharedPtr->_multicastReceiverDirectory.registerMulticastReceiver(
                     multicastId, subscriberParticipantId);
             JOYNR_LOG_TRACE(logger(),
                             "added multicast receiver={} for multicastId={}",
@@ -548,12 +548,12 @@ void LibJoynrMessageRouter::addMulticastReceiver(
                     const bool isSticky = false;
                     bool addToRoutingTableSuccessful = thisSharedPtr->addToRoutingTable(
                             providerParticipantId,
-                            thisSharedPtr->DEFAULT_IS_GLOBALLY_VISIBLE,
-                            thisSharedPtr->parentAddress,
+                            thisSharedPtr->_DEFAULT_IS_GLOBALLY_VISIBLE,
+                            thisSharedPtr->_parentAddress,
                             expiryDateMs,
                             isSticky);
                     if (addToRoutingTableSuccessful) {
-                        thisSharedPtr->parentRouter->addMulticastReceiverAsync(
+                        thisSharedPtr->_parentRouter->addMulticastReceiverAsync(
                                 multicastId,
                                 subscriberParticipantId,
                                 providerParticipantId,
@@ -590,7 +590,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
                     providerParticipantId + "). Error from parent router: " + error.getMessage());
             onErrorWrapper(exception);
         };
-        parentRouter->resolveNextHopAsync(
+        _parentRouter->resolveNextHopAsync(
                 providerParticipantId, std::move(onResolved), std::move(onResolveError));
         return;
     }
@@ -598,11 +598,11 @@ void LibJoynrMessageRouter::addMulticastReceiver(
     auto inProcessAddress =
             std::dynamic_pointer_cast<const joynr::InProcessMessagingAddress>(providerAddress);
     if (!inProcessAddress) {
-        parentRouter->addMulticastReceiverAsync(multicastId,
-                                                subscriberParticipantId,
-                                                providerParticipantId,
-                                                std::move(onSuccessWrapper),
-                                                std::move(onErrorWrapper));
+        _parentRouter->addMulticastReceiverAsync(multicastId,
+                                                 subscriberParticipantId,
+                                                 providerParticipantId,
+                                                 std::move(onSuccessWrapper),
+                                                 std::move(onErrorWrapper));
     } else {
         onSuccessWrapper();
     }
@@ -615,15 +615,15 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+    _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
-        ReadLocker lock(routingTableLock);
+        ReadLocker lock(_routingTableLock);
         const auto routingEntry =
-                routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
+                _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (routingEntry) {
-            providerAddress = routingEntry->address;
+            providerAddress = routingEntry->_address;
         }
     }
 
@@ -655,18 +655,18 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
             onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
         }
     };
-    parentRouter->removeMulticastReceiverAsync(multicastId,
-                                               subscriberParticipantId,
-                                               providerParticipantId,
-                                               std::move(onSuccess),
-                                               std::move(onErrorWrapper));
+    _parentRouter->removeMulticastReceiverAsync(multicastId,
+                                                subscriberParticipantId,
+                                                providerParticipantId,
+                                                std::move(onSuccess),
+                                                std::move(onErrorWrapper));
 }
 
 void LibJoynrMessageRouter::removeRunningParentResolvers(const std::string& destinationPartId)
 {
-    std::lock_guard<std::mutex> lock(parentResolveMutex);
-    if (runningParentResolves.find(destinationPartId) != runningParentResolves.cend()) {
-        runningParentResolves.erase(destinationPartId);
+    std::lock_guard<std::mutex> lock(_parentResolveMutex);
+    if (_runningParentResolves.find(destinationPartId) != _runningParentResolves.cend()) {
+        _runningParentResolves.erase(destinationPartId);
     }
 }
 

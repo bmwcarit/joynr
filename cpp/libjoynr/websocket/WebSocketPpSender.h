@@ -37,7 +37,7 @@ protected:
     using ConnectionHandle = websocketpp::connection_hdl;
 
 public:
-    WebSocketPpSender(Endpoint& endpoint) : endpoint(endpoint), connectionHandle()
+    WebSocketPpSender(Endpoint& endpoint) : _endpoint(endpoint), _connectionHandle()
     {
     }
 
@@ -49,11 +49,11 @@ public:
     {
         JOYNR_LOG_TRACE(logger(), "outgoing binary message of size {}", msg.size());
         websocketpp::lib::error_code websocketError;
-        endpoint.send(connectionHandle,
-                      msg.data(),
-                      msg.size(),
-                      websocketpp::frame::opcode::binary,
-                      websocketError);
+        _endpoint.send(_connectionHandle,
+                       msg.data(),
+                       msg.size(),
+                       websocketpp::frame::opcode::binary,
+                       websocketError);
         if (websocketError) {
             onFailure(exceptions::JoynrDelayMessageException(
                     "Error sending binary message via WebSocketPpSender: " +
@@ -78,7 +78,7 @@ public:
     {
         try {
             if (typename Endpoint::connection_ptr connection =
-                        endpoint.get_con_from_hdl(connectionHandle)) {
+                        _endpoint.get_con_from_hdl(_connectionHandle)) {
                 return connection->get_state() == websocketpp::session::state::open;
             }
         } catch (const websocketpp::exception& e) {
@@ -91,17 +91,17 @@ public:
 
     void setConnectionHandle(ConnectionHandle connection)
     {
-        this->connectionHandle = connection;
+        this->_connectionHandle = connection;
     }
 
     void resetConnectionHandle()
     {
-        this->connectionHandle.reset();
+        this->_connectionHandle.reset();
     }
 
 private:
-    Endpoint& endpoint;
-    ConnectionHandle connectionHandle;
+    Endpoint& _endpoint;
+    ConnectionHandle _connectionHandle;
     ADD_LOGGER(WebSocketPpSender)
 };
 

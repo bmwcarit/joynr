@@ -47,7 +47,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessMessagingSkeleton);
-    std::weak_ptr<IDispatcher> dispatcher;
+    std::weak_ptr<IDispatcher> _dispatcher;
 };
 
 } // namespace joynr

@@ -111,11 +111,11 @@ protected:
     template <typename T>
     void onAttributeValueChanged(const std::string& attributeName, const T& value)
     {
-        ReadLocker locker(lockAttributeListeners);
+        ReadLocker locker(_lockAttributeListeners);
 
-        if (attributeListeners.find(attributeName) != attributeListeners.cend()) {
+        if (_attributeListeners.find(attributeName) != _attributeListeners.cend()) {
             std::vector<std::shared_ptr<SubscriptionAttributeListener>>& listeners =
-                    attributeListeners[attributeName];
+                    _attributeListeners[attributeName];
 
             // Inform all the attribute listeners for this attribute
             for (std::shared_ptr<SubscriptionAttributeListener> listener : listeners) {
@@ -136,9 +136,9 @@ protected:
                                 const Ts&... values)
     {
 
-        ReadLocker locker(lockSelectiveBroadcastListeners);
+        ReadLocker locker(_lockSelectiveBroadcastListeners);
         const std::vector<std::shared_ptr<UnicastBroadcastListener>>& listeners =
-                selectiveBroadcastListeners[broadcastName];
+                _selectiveBroadcastListeners[broadcastName];
         // Inform all the broadcast listeners for this broadcast
         for (std::shared_ptr<UnicastBroadcastListener> listener : listeners) {
             listener->selectiveBroadcastOccurred(filters, values...);
@@ -157,9 +157,9 @@ protected:
     {
         util::validatePartitions(partitions, false /*do not allow wildcard*/);
 
-        ReadLocker locker(lockBroadcastListeners);
+        ReadLocker locker(_lockBroadcastListeners);
         // Inform all the broadcast listeners for this broadcast
-        for (std::shared_ptr<MulticastBroadcastListener> listener : broadcastListeners) {
+        for (std::shared_ptr<MulticastBroadcastListener> listener : _broadcastListeners) {
             listener->broadcastOccurred(broadcastName, partitions, values...);
         }
     }
@@ -181,14 +181,14 @@ protected:
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractJoynrProvider);
 
-    ReadWriteLock lockAttributeListeners;
-    ReadWriteLock lockBroadcastListeners;
-    ReadWriteLock lockSelectiveBroadcastListeners;
+    ReadWriteLock _lockAttributeListeners;
+    ReadWriteLock _lockBroadcastListeners;
+    ReadWriteLock _lockSelectiveBroadcastListeners;
     std::map<std::string, std::vector<std::shared_ptr<SubscriptionAttributeListener>>>
-            attributeListeners;
+            _attributeListeners;
     std::map<std::string, std::vector<std::shared_ptr<UnicastBroadcastListener>>>
-            selectiveBroadcastListeners;
-    std::vector<std::shared_ptr<MulticastBroadcastListener>> broadcastListeners;
+            _selectiveBroadcastListeners;
+    std::vector<std::shared_ptr<MulticastBroadcastListener>> _broadcastListeners;
 
     friend class End2EndBroadcastTest;
     friend class End2EndSubscriptionTest;

@@ -22,25 +22,25 @@
 namespace joynr
 {
 
-BasePublication::BasePublication() : error()
+BasePublication::BasePublication() : _error()
 {
 }
 
 BasePublication::BasePublication(BaseReply&& baseReply)
-        : BaseReply::BaseReply(std::move(baseReply)), error()
+        : BaseReply::BaseReply(std::move(baseReply)), _error()
 {
 }
 
 bool BasePublication::operator==(const BasePublication& other) const
 {
     // if error ptr do not point to the same object
-    if (error != other.getError()) {
+    if (_error != other.getError()) {
         // if exactly one of error and other.getError() is a nullptr
-        if (error == nullptr || other.getError() == nullptr) {
+        if (_error == nullptr || other.getError() == nullptr) {
             return false;
         }
         // compare actual objects
-        if (!(*error.get() == *other.getError().get())) {
+        if (!(*_error.get() == *other.getError().get())) {
             return false;
         }
     }
@@ -55,19 +55,20 @@ bool BasePublication::operator!=(const BasePublication& other) const
 
 std::shared_ptr<exceptions::JoynrRuntimeException> BasePublication::getError() const
 {
-    return error;
+    return _error;
 }
 
 void BasePublication::setError(std::shared_ptr<exceptions::JoynrRuntimeException> error)
 {
-    this->error = std::move(error);
+    this->_error = std::move(error);
 }
 
 // printing SubscriptionPublication with google-test and google-mock
 void PrintTo(const BasePublication& abstractPublication, ::std::ostream* os)
 {
     *os << "BasePublication{";
-    *os << "error:" << abstractPublication.error ? "null" : abstractPublication.error->getMessage();
+    *os << "error:" << abstractPublication._error ? "null"
+                                                  : abstractPublication._error->getMessage();
     *os << ", SKIPPED printing BaseReply";
     *os << "}";
 }

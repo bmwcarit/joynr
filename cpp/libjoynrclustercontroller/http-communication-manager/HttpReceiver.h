@@ -93,20 +93,20 @@ private:
        Once the channel is created, one resource will be released.
        On Channel deletion, the semaphore tries to acquire a resource again, so that the next cycle
        of createChannel works as well. */
-    std::shared_ptr<Semaphore> channelCreatedSemaphore;
-    std::string channelId; // currently channelid is used to construct the channelUrl or
-                           // channelLocation.
+    std::shared_ptr<Semaphore> _channelCreatedSemaphore;
+    std::string _channelId; // currently channelid is used to construct the channelUrl or
+                            // channelLocation.
     // Receiver ID is used to uniquely identify a message receiver (X-Atmosphere-tracking-id).
     // Allows for registering multiple receivers for a single channel.
-    std::string receiverId;
+    std::string _receiverId;
 
-    system::RoutingTypes::ChannelAddress globalClusterControllerAddress;
+    system::RoutingTypes::ChannelAddress _globalClusterControllerAddress;
 
-    MessagingSettings settings;
-    std::unique_ptr<LongPollingMessageReceiver> messageReceiver;
+    MessagingSettings _settings;
+    std::unique_ptr<LongPollingMessageReceiver> _messageReceiver;
 
     /*! On text message received callback */
-    std::function<void(smrf::ByteVector&&)> onMessageReceived;
+    std::function<void(smrf::ByteVector&&)> _onMessageReceived;
 
     ADD_LOGGER(HttpReceiver)
 };

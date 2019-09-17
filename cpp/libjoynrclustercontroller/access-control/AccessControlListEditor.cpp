@@ -33,9 +33,9 @@ AccessControlListEditor::AccessControlListEditor(
         std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
         std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
         bool auditMode)
-        : localDomainAccessStore(std::move(localDomainAccessStore)),
-          localDomainAccessController(std::move(localDomainAccessController)),
-          aclAudit(auditMode)
+        : _localDomainAccessStore(std::move(localDomainAccessStore)),
+          _localDomainAccessController(std::move(localDomainAccessController)),
+          _aclAudit(auditMode)
 {
 }
 
@@ -49,7 +49,7 @@ void AccessControlListEditor::updateMasterAccessControlEntry(
         onSuccess(false);
     } else {
         bool updateSuccess =
-                localDomainAccessStore->updateMasterAccessControlEntry(updatedMasterAce);
+                _localDomainAccessStore->updateMasterAccessControlEntry(updatedMasterAce);
         onSuccess(updateSuccess);
     }
 }
@@ -66,7 +66,7 @@ void AccessControlListEditor::removeMasterAccessControlEntry(
     if (!hasRoleMaster(domain)) {
         onSuccess(false);
     } else {
-        bool updateSuccess = localDomainAccessStore->removeMasterAccessControlEntry(
+        bool updateSuccess = _localDomainAccessStore->removeMasterAccessControlEntry(
                 uid, domain, interfaceName, operation);
         onSuccess(updateSuccess);
     }
@@ -83,7 +83,7 @@ void AccessControlListEditor::updateMediatorAccessControlEntry(
         onSuccess(false);
     } else {
         bool updateSuccess =
-                localDomainAccessStore->updateMediatorAccessControlEntry(updatedMediatorAce);
+                _localDomainAccessStore->updateMediatorAccessControlEntry(updatedMediatorAce);
         onSuccess(updateSuccess);
     }
 }
@@ -100,7 +100,7 @@ void AccessControlListEditor::removeMediatorAccessControlEntry(
     if (!hasRoleMaster(domain)) {
         onSuccess(false);
     } else {
-        bool updateSuccess = localDomainAccessStore->removeMediatorAccessControlEntry(
+        bool updateSuccess = _localDomainAccessStore->removeMediatorAccessControlEntry(
                 uid, domain, interfaceName, operation);
         onSuccess(updateSuccess);
     }
@@ -115,7 +115,8 @@ void AccessControlListEditor::updateOwnerAccessControlEntry(
     if (!hasRoleOwner(updatedOwnerAce.getDomain())) {
         onSuccess(false);
     } else {
-        bool updateSuccess = localDomainAccessStore->updateOwnerAccessControlEntry(updatedOwnerAce);
+        bool updateSuccess =
+                _localDomainAccessStore->updateOwnerAccessControlEntry(updatedOwnerAce);
         onSuccess(updateSuccess);
     }
 }
@@ -132,7 +133,7 @@ void AccessControlListEditor::removeOwnerAccessControlEntry(
     if (!hasRoleOwner(domain)) {
         onSuccess(false);
     } else {
-        bool updateSuccess = localDomainAccessStore->removeOwnerAccessControlEntry(
+        bool updateSuccess = _localDomainAccessStore->removeOwnerAccessControlEntry(
                 uid, domain, interfaceName, operation);
         onSuccess(updateSuccess);
     }
@@ -148,7 +149,7 @@ void AccessControlListEditor::updateMasterRegistrationControlEntry(
         onSuccess(false);
     } else {
         bool updateSuccess =
-                localDomainAccessStore->updateMasterRegistrationControlEntry(updatedMasterRce);
+                _localDomainAccessStore->updateMasterRegistrationControlEntry(updatedMasterRce);
         onSuccess(updateSuccess);
     }
 }
@@ -164,7 +165,7 @@ void AccessControlListEditor::removeMasterRegistrationControlEntry(
     if (!hasRoleMaster(domain)) {
         onSuccess(false);
     } else {
-        bool updateSuccess = localDomainAccessStore->removeMasterRegistrationControlEntry(
+        bool updateSuccess = _localDomainAccessStore->removeMasterRegistrationControlEntry(
                 uid, domain, interfaceName);
         onSuccess(updateSuccess);
     }
@@ -181,7 +182,7 @@ void AccessControlListEditor::updateMediatorRegistrationControlEntry(
         onSuccess(false);
     } else {
         bool updateSuccess =
-                localDomainAccessStore->updateMediatorRegistrationControlEntry(updatedMediatorRce);
+                _localDomainAccessStore->updateMediatorRegistrationControlEntry(updatedMediatorRce);
         onSuccess(updateSuccess);
     }
 }
@@ -197,7 +198,7 @@ void AccessControlListEditor::removeMediatorRegistrationControlEntry(
     if (!hasRoleMaster(domain)) {
         onSuccess(false);
     } else {
-        bool updateSuccess = localDomainAccessStore->removeMediatorRegistrationControlEntry(
+        bool updateSuccess = _localDomainAccessStore->removeMediatorRegistrationControlEntry(
                 uid, domain, interfaceName);
         onSuccess(updateSuccess);
     }
@@ -213,7 +214,7 @@ void AccessControlListEditor::updateOwnerRegistrationControlEntry(
         onSuccess(false);
     } else {
         bool updateSuccess =
-                localDomainAccessStore->updateOwnerRegistrationControlEntry(updatedOwnerRce);
+                _localDomainAccessStore->updateOwnerRegistrationControlEntry(updatedOwnerRce);
         onSuccess(updateSuccess);
     }
 }
@@ -229,7 +230,7 @@ void AccessControlListEditor::removeOwnerRegistrationControlEntry(
     if (!hasRoleOwner(domain)) {
         onSuccess(false);
     } else {
-        bool updateSuccess = localDomainAccessStore->removeOwnerRegistrationControlEntry(
+        bool updateSuccess = _localDomainAccessStore->removeOwnerRegistrationControlEntry(
                 uid, domain, interfaceName);
         onSuccess(updateSuccess);
     }
@@ -256,9 +257,9 @@ bool AccessControlListEditor::hasRoleWorker(const std::string& domain,
                     uid,
                     joynr::infrastructure::DacTypes::Role::getLiteral(role));
 
-    bool hasRole = localDomainAccessController->hasRole(uid, domain, role);
+    bool hasRole = _localDomainAccessController->hasRole(uid, domain, role);
 
-    if (aclAudit) {
+    if (_aclAudit) {
         if (!hasRole) {
             JOYNR_LOG_ERROR(logger(),
                             "ACL AUDIT: id '{}' does NOT have the roles to modify domain {}",

@@ -23,7 +23,7 @@ namespace joynr
 {
 
 ProxyFactory::ProxyFactory(std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory)
-        : connectorFactory(std::move(connectorFactory))
+        : _connectorFactory(std::move(connectorFactory))
 {
 }
 

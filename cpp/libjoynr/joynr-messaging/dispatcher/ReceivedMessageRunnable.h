@@ -50,8 +50,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ReceivedMessageRunnable);
-    std::shared_ptr<ImmutableMessage> message;
-    std::weak_ptr<Dispatcher> dispatcher;
+    std::shared_ptr<ImmutableMessage> _message;
+    std::weak_ptr<Dispatcher> _dispatcher;
     ADD_LOGGER(ReceivedMessageRunnable)
 };
 

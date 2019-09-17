@@ -22,43 +22,43 @@
 namespace joynr
 {
 
-OneWayRequest::OneWayRequest() : methodName(), paramDatatypes(), params()
+OneWayRequest::OneWayRequest() : _methodName(), _paramDatatypes(), _params()
 {
 }
 
 bool OneWayRequest::operator==(const OneWayRequest& other) const
 {
-    return methodName == other.getMethodName() && paramDatatypes == other.paramDatatypes;
+    return _methodName == other.getMethodName() && _paramDatatypes == other._paramDatatypes;
 }
 
 const std::string& OneWayRequest::getMethodName() const
 {
-    return methodName;
+    return _methodName;
 }
 
 void OneWayRequest::setMethodName(const std::string& methodName)
 {
-    this->methodName = methodName;
+    this->_methodName = methodName;
 }
 
 void OneWayRequest::setMethodName(std::string&& methodName)
 {
-    this->methodName = std::move(methodName);
+    this->_methodName = std::move(methodName);
 }
 
 const std::vector<std::string>& OneWayRequest::getParamDatatypes() const
 {
-    return paramDatatypes;
+    return _paramDatatypes;
 }
 
 void OneWayRequest::setParamDatatypes(const std::vector<std::string>& paramDatatypes)
 {
-    this->paramDatatypes = paramDatatypes;
+    this->_paramDatatypes = paramDatatypes;
 }
 
 void OneWayRequest::setParamDatatypes(std::vector<std::string>&& paramDatatypes)
 {
-    this->paramDatatypes = std::move(paramDatatypes);
+    this->_paramDatatypes = std::move(paramDatatypes);
 }
 
 } // namespace joynr

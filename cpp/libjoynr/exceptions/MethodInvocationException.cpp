@@ -25,36 +25,36 @@ namespace exceptions
 {
 
 MethodInvocationException::MethodInvocationException() noexcept : JoynrRuntimeException(),
-                                                                  providerVersion()
+                                                                  _providerVersion()
 {
 }
 
 MethodInvocationException::MethodInvocationException(const std::string& message) noexcept
         : JoynrRuntimeException(message),
-          providerVersion()
+          _providerVersion()
 {
 }
 
 MethodInvocationException::MethodInvocationException(
         const std::string& message,
         const joynr::types::Version& providerVersion) noexcept : JoynrRuntimeException(message),
-                                                                 providerVersion(providerVersion)
+                                                                 _providerVersion(providerVersion)
 {
 }
 
 MethodInvocationException::MethodInvocationException(const MethodInvocationException& other)
-        : JoynrRuntimeException(other), providerVersion(other.providerVersion)
+        : JoynrRuntimeException(other), _providerVersion(other._providerVersion)
 {
 }
 
 const joynr::types::Version& MethodInvocationException::getProviderVersion() const
 {
-    return providerVersion;
+    return _providerVersion;
 }
 
 void MethodInvocationException::setProviderVersion(const joynr::types::Version& providerVersion)
 {
-    this->providerVersion = providerVersion;
+    this->_providerVersion = providerVersion;
 }
 
 const std::string& MethodInvocationException::getTypeName() const
@@ -75,7 +75,7 @@ const std::string& MethodInvocationException::TYPE_NAME()
 
 bool MethodInvocationException::operator==(const MethodInvocationException& other) const
 {
-    return message == other.getMessage() && providerVersion == other.getProviderVersion();
+    return _message == other.getMessage() && _providerVersion == other.getProviderVersion();
 }
 
 } // namespace exceptions

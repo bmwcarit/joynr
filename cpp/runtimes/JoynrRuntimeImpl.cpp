@@ -33,20 +33,20 @@ namespace joynr
 {
 
 JoynrRuntimeImpl::JoynrRuntimeImpl(Settings& settings, std::shared_ptr<IKeychain> keyChain)
-        : singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
-          proxyFactory(nullptr),
-          requestCallerDirectory(nullptr),
-          participantIdStorage(nullptr),
-          capabilitiesRegistrar(nullptr),
-          messagingSettings(settings),
-          systemServicesSettings(settings),
-          dispatcherAddress(nullptr),
-          discoveryProxy(nullptr),
-          publicationManager(nullptr),
-          keyChain(std::move(keyChain))
+        : _singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
+          _proxyFactory(nullptr),
+          _requestCallerDirectory(nullptr),
+          _participantIdStorage(nullptr),
+          _capabilitiesRegistrar(nullptr),
+          _messagingSettings(settings),
+          _systemServicesSettings(settings),
+          _dispatcherAddress(nullptr),
+          _discoveryProxy(nullptr),
+          _publicationManager(nullptr),
+          _keyChain(std::move(keyChain))
 {
-    messagingSettings.printSettings();
-    systemServicesSettings.printSettings();
+    _messagingSettings.printSettings();
+    _systemServicesSettings.printSettings();
 }
 
 JoynrRuntimeImpl::~JoynrRuntimeImpl()
@@ -94,9 +94,9 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrRuntimeImpl
             joynr::system::IDiscovery::MAJOR_VERSION, joynr::system::IDiscovery::MINOR_VERSION);
     joynr::types::DiscoveryEntryWithMetaInfo routingProviderDiscoveryEntry(
             routingProviderVersion,
-            systemServicesSettings.getDomain(),
+            _systemServicesSettings.getDomain(),
             joynr::system::IRouting::INTERFACE_NAME(),
-            systemServicesSettings.getCcRoutingProviderParticipantId(),
+            _systemServicesSettings.getCcRoutingProviderParticipantId(),
             joynr::types::ProviderQos(),
             lastSeenDateMs,
             expiryDateMs,
@@ -106,9 +106,9 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrRuntimeImpl
             routingProviderDiscoveryEntry.getParticipantId(), routingProviderDiscoveryEntry));
     joynr::types::DiscoveryEntryWithMetaInfo discoveryProviderDiscoveryEntry(
             discoveryProviderVersion,
-            systemServicesSettings.getDomain(),
+            _systemServicesSettings.getDomain(),
             joynr::system::IDiscovery::INTERFACE_NAME(),
-            systemServicesSettings.getCcDiscoveryProviderParticipantId(),
+            _systemServicesSettings.getCcDiscoveryProviderParticipantId(),
             joynr::types::ProviderQos(),
             lastSeenDateMs,
             expiryDateMs,

@@ -22,18 +22,18 @@
 namespace joynr
 {
 
-SubscriptionReply::SubscriptionReply() : subscriptionId(), error(nullptr)
+SubscriptionReply::SubscriptionReply() : _subscriptionId(), _error(nullptr)
 {
 }
 
 SubscriptionReply::SubscriptionReply(const SubscriptionReply& other)
-        : subscriptionId(other.getSubscriptionId()), error(other.getError())
+        : _subscriptionId(other.getSubscriptionId()), _error(other.getError())
 {
 }
 
 SubscriptionReply& SubscriptionReply::operator=(const SubscriptionReply& other)
 {
-    this->subscriptionId = other.getSubscriptionId();
+    this->_subscriptionId = other.getSubscriptionId();
     return *this;
 }
 
@@ -41,10 +41,10 @@ std::string SubscriptionReply::toString() const
 {
     std::ostringstream typeAsString;
     typeAsString << "SubscriptionReply{";
-    typeAsString << "subscriptionId:" + subscriptionId;
-    if (error) {
+    typeAsString << "subscriptionId:" + _subscriptionId;
+    if (_error) {
         typeAsString << ", ";
-        typeAsString << "error: SubscriptionException: " + error->getMessage();
+        typeAsString << "error: SubscriptionException: " + _error->getMessage();
     }
     typeAsString << "}";
     return typeAsString.str();
@@ -58,44 +58,44 @@ void PrintTo(const SubscriptionReply& subscriptionReply, ::std::ostream* os)
 
 const std::string& SubscriptionReply::getSubscriptionId() const
 {
-    return subscriptionId;
+    return _subscriptionId;
 }
 
 void SubscriptionReply::setSubscriptionId(const std::string& subscriptionId)
 {
-    this->subscriptionId = subscriptionId;
+    this->_subscriptionId = subscriptionId;
 }
 
 void SubscriptionReply::setSubscriptionId(std::string&& subscriptionId)
 {
-    this->subscriptionId = std::move(subscriptionId);
+    this->_subscriptionId = std::move(subscriptionId);
 }
 
 std::shared_ptr<exceptions::SubscriptionException> SubscriptionReply::getError() const
 {
-    return error;
+    return _error;
 }
 
 void SubscriptionReply::setError(std::shared_ptr<exceptions::SubscriptionException> error)
 {
-    this->error = std::move(error);
+    this->_error = std::move(error);
 }
 
 bool SubscriptionReply::operator==(const SubscriptionReply& other) const
 {
     // if error ptr do not point to the same object
-    if (error != other.getError()) {
+    if (_error != other.getError()) {
         // if exactly one of error and other.getError() is a nullptr
-        if (error == nullptr || other.getError() == nullptr) {
+        if (_error == nullptr || other.getError() == nullptr) {
             return false;
         }
         // compare actual objects
-        if (!(*error.get() == *other.getError().get())) {
+        if (!(*_error.get() == *other.getError().get())) {
             return false;
         }
     }
 
-    return subscriptionId == other.getSubscriptionId();
+    return _subscriptionId == other.getSubscriptionId();
 }
 
 bool SubscriptionReply::operator!=(const SubscriptionReply& other) const

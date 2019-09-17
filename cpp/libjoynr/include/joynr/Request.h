@@ -47,12 +47,12 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<OneWayRequest>(this), MUESLI_NVP(requestReplyId));
+        archive(muesli::BaseClass<OneWayRequest>(this), MUESLI_NVP(_requestReplyId));
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Request);
-    std::string requestReplyId;
+    std::string _requestReplyId;
 };
 
 } // namespace joynr

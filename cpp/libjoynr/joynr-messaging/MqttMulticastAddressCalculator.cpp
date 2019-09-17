@@ -32,7 +32,7 @@ namespace joynr
 MqttMulticastAddressCalculator::MqttMulticastAddressCalculator(
         const std::string& mqttMulticastTopicPrefix,
         std::vector<std::string> availableGbids)
-        : mqttMulticastTopicPrefix(mqttMulticastTopicPrefix), availableGbids(availableGbids)
+        : _mqttMulticastTopicPrefix(mqttMulticastTopicPrefix), _availableGbids(availableGbids)
 {
 }
 
@@ -41,9 +41,9 @@ std::vector<std::shared_ptr<const system::RoutingTypes::Address>> MqttMulticastA
 {
     std::vector<std::shared_ptr<const system::RoutingTypes::Address>> globalAddressesVector;
 
-    for (const auto& gbid : availableGbids) {
+    for (const auto& gbid : _availableGbids) {
         globalAddressesVector.push_back(std::make_shared<const system::RoutingTypes::MqttAddress>(
-                gbid, mqttMulticastTopicPrefix + message.getRecipient()));
+                gbid, _mqttMulticastTopicPrefix + message.getRecipient()));
     }
     return globalAddressesVector;
 }

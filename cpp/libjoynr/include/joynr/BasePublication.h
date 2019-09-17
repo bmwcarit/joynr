@@ -49,13 +49,13 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(error));
+        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(_error));
     }
 
 private:
     // printing BasePublication with google-test and google-mock
     friend void PrintTo(const BasePublication& basePublication, ::std::ostream* os);
-    std::shared_ptr<exceptions::JoynrRuntimeException> error;
+    std::shared_ptr<exceptions::JoynrRuntimeException> _error;
 };
 
 } // namespace joynr

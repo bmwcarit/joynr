@@ -53,29 +53,29 @@ public:
     using ConnectionPtr = typename Client::connection_ptr;
 
     WebSocketPpClient(const WebSocketSettings& wsSettings, boost::asio::io_service& ioService)
-            : webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              endpoint(),
-              connection(),
-              isRunning(true),
-              reconnectTimer(ioService),
-              state(State::Disconnected),
-              performingInitialConnect(true),
-              address(),
-              reconnectSleepTimeMs(wsSettings.getReconnectSleepTimeMs()),
-              sender(nullptr),
-              receiver(),
-              isShuttingDown(false),
-              isShuttingDownLock()
+            : _webSocketPpSingleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              _endpoint(),
+              _connection(),
+              _isRunning(true),
+              _reconnectTimer(ioService),
+              _state(State::Disconnected),
+              _performingInitialConnect(true),
+              _address(),
+              _reconnectSleepTimeMs(wsSettings.getReconnectSleepTimeMs()),
+              _sender(nullptr),
+              _receiver(),
+              _isShuttingDown(false),
+              _isShuttingDownLock()
     {
-        webSocketPpSingleThreadedIOService->start();
+        _webSocketPpSingleThreadedIOService->start();
         boost::asio::io_service& endpointIoService =
-                webSocketPpSingleThreadedIOService->getIOService();
+                _webSocketPpSingleThreadedIOService->getIOService();
 
         websocketpp::lib::error_code initializationError;
 
-        endpoint.clear_access_channels(websocketpp::log::alevel::all);
-        endpoint.clear_error_channels(websocketpp::log::alevel::all);
-        endpoint.init_asio(&endpointIoService, initializationError);
+        _endpoint.clear_access_channels(websocketpp::log::alevel::all);
+        _endpoint.clear_error_channels(websocketpp::log::alevel::all);
+        _endpoint.init_asio(&endpointIoService, initializationError);
         if (initializationError) {
             JOYNR_LOG_FATAL(logger(),
                             "error during WebSocketPp initialization: ",
@@ -83,37 +83,37 @@ public:
             return;
         }
 
-        endpoint.start_perpetual();
+        _endpoint.start_perpetual();
 
         // register handlers
-        endpoint.set_open_handler(
+        _endpoint.set_open_handler(
                 std::bind(&WebSocketPpClient::onConnectionOpened, this, std::placeholders::_1));
-        endpoint.set_fail_handler(
+        _endpoint.set_fail_handler(
                 std::bind(&WebSocketPpClient::onConnectionFailed, this, std::placeholders::_1));
-        endpoint.set_close_handler(
+        _endpoint.set_close_handler(
                 std::bind(&WebSocketPpClient::onConnectionClosed, this, std::placeholders::_1));
-        endpoint.set_message_handler(std::bind(&WebSocketPpReceiver<Client>::onMessageReceived,
-                                               &receiver,
-                                               std::placeholders::_1,
-                                               std::placeholders::_2));
+        _endpoint.set_message_handler(std::bind(&WebSocketPpReceiver<Client>::onMessageReceived,
+                                                &_receiver,
+                                                std::placeholders::_1,
+                                                std::placeholders::_2));
 
-        sender = std::make_shared<WebSocketPpSender<Client>>(endpoint);
+        _sender = std::make_shared<WebSocketPpSender<Client>>(_endpoint);
     }
 
     ~WebSocketPpClient() override
     {
         // make sure stop() has been invoked earlier
-        assert(isShuttingDown);
+        assert(_isShuttingDown);
     }
 
     void stop() final
     {
         // make sure stop() is not called multiple times
-        std::lock_guard<std::mutex> lock(isShuttingDownLock);
-        assert(!isShuttingDown);
-        isShuttingDown = true;
+        std::lock_guard<std::mutex> lock(_isShuttingDownLock);
+        assert(!_isShuttingDown);
+        _isShuttingDown = true;
 
-        endpoint.stop_perpetual();
+        _endpoint.stop_perpetual();
         close();
         // prior to destruction of the endpoint, the background thread
         // under direct control of the webSocketPpSingleThreadedIOService
@@ -122,17 +122,17 @@ public:
         // referenced within the endpoint by an internally created
         // thread from tcp::resolver which is joined by the endpoint
         // destructor
-        webSocketPpSingleThreadedIOService->stop();
+        _webSocketPpSingleThreadedIOService->stop();
     }
 
     void registerConnectCallback(std::function<void()> callback) final
     {
-        onConnectionOpenedCallback = std::move(callback);
+        _onConnectionOpenedCallback = std::move(callback);
     }
 
     void registerReconnectCallback(std::function<void()> callback) final
     {
-        onConnectionReestablishedCallback = std::move(callback);
+        _onConnectionReestablishedCallback = std::move(callback);
     }
 
     /**
@@ -145,7 +145,7 @@ public:
      */
     void registerDisconnectCallback(std::function<void()> onWebSocketDisconnected) final
     {
-        onConnectionClosedCallback = std::move(onWebSocketDisconnected);
+        _onConnectionClosedCallback = std::move(onWebSocketDisconnected);
     }
 
     /**
@@ -156,25 +156,25 @@ public:
     void registerReceiveCallback(
             std::function<void(ConnectionHandle&&, smrf::ByteVector&&)> onMessageReceived) final
     {
-        receiver.registerReceiveCallback(onMessageReceived);
+        _receiver.registerReceiveCallback(onMessageReceived);
     }
 
     void connect(const system::RoutingTypes::WebSocketAddress& address) final
     {
-        this->address = address;
+        this->_address = address;
 
-        performingInitialConnect = true;
+        _performingInitialConnect = true;
         reconnect();
     }
 
     void close() final
     {
-        if (isRunning) {
-            isRunning = false;
+        if (_isRunning) {
+            _isRunning = false;
             boost::system::error_code timerError;
             // ignore errors
-            reconnectTimer.cancel(timerError);
-            if (state == State::Connected) {
+            _reconnectTimer.cancel(timerError);
+            if (_state == State::Connected) {
                 disconnect();
             }
         }
@@ -186,25 +186,25 @@ public:
      */
     bool isConnected() const final
     {
-        return state == State::Connected;
+        return _state == State::Connected;
     }
 
     void send(const smrf::ByteArrayView& msg,
               const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) final
     {
-        sender->send(msg, onFailure);
+        _sender->send(msg, onFailure);
     }
 
     std::shared_ptr<IWebSocketSendInterface> getSender() const final
     {
-        return sender;
+        return _sender;
     }
 
 protected:
     enum class State { Disconnected, Disconnecting, Connecting, Connected };
 
-    std::shared_ptr<SingleThreadedIOService> webSocketPpSingleThreadedIOService;
-    Client endpoint;
+    std::shared_ptr<SingleThreadedIOService> _webSocketPpSingleThreadedIOService;
+    Client _endpoint;
     ADD_LOGGER(WebSocketPpClient)
 
 private:
@@ -222,16 +222,16 @@ private:
                             "reconnect called with error code from reconnect timer: {}",
                             reconnectTimerError.message());
         }
-        bool secure = address.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS;
+        bool secure = _address.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS;
 
         assert((!secure && std::is_same<Config, websocketpp::config::asio_client>::value) ||
                (secure && std::is_same<Config, websocketpp::config::asio_tls_client>::value));
 
-        websocketpp::uri uri(secure, address.getHost(), address.getPort(), address.getPath());
+        websocketpp::uri uri(secure, _address.getHost(), _address.getPort(), _address.getPath());
         JOYNR_LOG_INFO(logger(), "Connecting to websocket server {}", uri.str());
 
         websocketpp::lib::error_code websocketError;
-        ConnectionPtr connectionPtr = endpoint.get_connection(uri.str(), websocketError);
+        ConnectionPtr connectionPtr = _endpoint.get_connection(uri.str(), websocketError);
 
         if (websocketError) {
             JOYNR_LOG_ERROR(logger(),
@@ -241,22 +241,22 @@ private:
             return;
         }
 
-        state = State::Connecting;
-        sender->resetConnectionHandle();
-        endpoint.connect(connectionPtr);
+        _state = State::Connecting;
+        _sender->resetConnectionHandle();
+        _endpoint.connect(connectionPtr);
     }
 
     void delayedReconnect()
     {
         boost::system::error_code reconnectTimerError;
-        reconnectTimer.expires_from_now(reconnectSleepTimeMs, reconnectTimerError);
+        _reconnectTimer.expires_from_now(_reconnectSleepTimeMs, reconnectTimerError);
         if (reconnectTimerError) {
             JOYNR_LOG_FATAL(logger(),
                             "Error from reconnect timer: {}: {}",
                             reconnectTimerError.value(),
                             reconnectTimerError.message());
         } else {
-            reconnectTimer.async_wait(
+            _reconnectTimer.async_wait(
                     std::bind(&WebSocketPpClient::reconnect, this, std::placeholders::_1));
         }
     }
@@ -264,7 +264,7 @@ private:
     void disconnect()
     {
         websocketpp::lib::error_code websocketError;
-        endpoint.close(connection, websocketpp::close::status::normal, "", websocketError);
+        _endpoint.close(_connection, websocketpp::close::status::normal, "", websocketError);
         if (websocketError) {
             if (websocketError != websocketpp::error::bad_connection) {
                 JOYNR_LOG_ERROR(logger(),
@@ -276,24 +276,24 @@ private:
 
     void onConnectionOpened(ConnectionHandle hdl)
     {
-        connection = hdl;
-        sender->setConnectionHandle(connection);
-        state = State::Connected;
+        _connection = hdl;
+        _sender->setConnectionHandle(_connection);
+        _state = State::Connected;
         JOYNR_LOG_INFO(logger(), "connection established");
 
-        if (performingInitialConnect) {
-            if (onConnectionOpenedCallback) {
-                onConnectionOpenedCallback();
+        if (_performingInitialConnect) {
+            if (_onConnectionOpenedCallback) {
+                _onConnectionOpenedCallback();
             }
         } else {
-            if (onConnectionReestablishedCallback) {
-                onConnectionReestablishedCallback();
+            if (_onConnectionReestablishedCallback) {
+                _onConnectionReestablishedCallback();
             }
         }
 
-        performingInitialConnect = false;
+        _performingInitialConnect = false;
 
-        if (!isRunning) {
+        if (!_isRunning) {
             disconnect();
         }
     }
@@ -301,12 +301,12 @@ private:
     void onConnectionClosed(ConnectionHandle hdl)
     {
         std::ignore = hdl;
-        state = State::Disconnected;
-        sender->resetConnectionHandle();
-        if (!isRunning) {
+        _state = State::Disconnected;
+        _sender->resetConnectionHandle();
+        if (!_isRunning) {
             JOYNR_LOG_INFO(logger(), "connection closed");
-            if (onConnectionClosedCallback) {
-                onConnectionClosedCallback();
+            if (_onConnectionClosedCallback) {
+                _onConnectionClosedCallback();
             }
         } else {
             JOYNR_LOG_WARN(logger(), "connection closed unexpectedly. Trying to reconnect...");
@@ -316,12 +316,12 @@ private:
 
     void onConnectionFailed(ConnectionHandle hdl)
     {
-        state = State::Disconnected;
-        sender->resetConnectionHandle();
-        if (!isRunning) {
+        _state = State::Disconnected;
+        _sender->resetConnectionHandle();
+        if (!_isRunning) {
             JOYNR_LOG_INFO(logger(), "connection closed");
         } else {
-            ConnectionPtr con = endpoint.get_con_from_hdl(hdl);
+            ConnectionPtr con = _endpoint.get_con_from_hdl(hdl);
             JOYNR_LOG_WARN(logger(),
                            "websocket connection failed - error: {}. Trying to reconnect...",
                            con->get_ec().message());
@@ -329,24 +329,24 @@ private:
         }
     }
 
-    ConnectionHandle connection;
-    std::atomic<bool> isRunning;
-    boost::asio::steady_timer reconnectTimer;
-    std::atomic<State> state;
-    bool performingInitialConnect;
+    ConnectionHandle _connection;
+    std::atomic<bool> _isRunning;
+    boost::asio::steady_timer _reconnectTimer;
+    std::atomic<State> _state;
+    bool _performingInitialConnect;
 
     // store address for reconnect
-    system::RoutingTypes::WebSocketAddress address;
-    std::chrono::milliseconds reconnectSleepTimeMs;
+    system::RoutingTypes::WebSocketAddress _address;
+    std::chrono::milliseconds _reconnectSleepTimeMs;
 
-    std::function<void()> onConnectionOpenedCallback;
-    std::function<void()> onConnectionClosedCallback;
-    std::function<void()> onConnectionReestablishedCallback;
+    std::function<void()> _onConnectionOpenedCallback;
+    std::function<void()> _onConnectionClosedCallback;
+    std::function<void()> _onConnectionReestablishedCallback;
 
-    std::shared_ptr<WebSocketPpSender<Client>> sender;
-    WebSocketPpReceiver<Client> receiver;
-    std::atomic<bool> isShuttingDown;
-    std::mutex isShuttingDownLock;
+    std::shared_ptr<WebSocketPpSender<Client>> _sender;
+    WebSocketPpReceiver<Client> _receiver;
+    std::atomic<bool> _isShuttingDown;
+    std::mutex _isShuttingDownLock;
 };
 
 } // namespace joynr

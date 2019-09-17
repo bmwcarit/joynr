@@ -80,7 +80,7 @@ public:
 private:
     void operator=(const LibjoynrSettings& other) = delete;
 
-    Settings& settings;
+    Settings& _settings;
     ADD_LOGGER(LibjoynrSettings)
     void checkSettings();
 };

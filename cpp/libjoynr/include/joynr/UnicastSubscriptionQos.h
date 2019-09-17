@@ -121,12 +121,12 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<SubscriptionQos>(this), MUESLI_NVP(publicationTtlMs));
+        archive(muesli::BaseClass<SubscriptionQos>(this), MUESLI_NVP(_publicationTtlMs));
     }
 
 protected:
     /** @brief The publication time to live in milliseconds */
-    std::int64_t publicationTtlMs;
+    std::int64_t _publicationTtlMs;
 };
 
 } // namespace joynr

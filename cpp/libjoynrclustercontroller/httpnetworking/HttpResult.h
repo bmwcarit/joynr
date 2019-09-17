@@ -51,10 +51,10 @@ public:
     const std::unordered_multimap<std::string, std::string>& getHeaders() const;
 
 private:
-    std::int32_t curlError;
-    std::int64_t statusCode;
-    std::shared_ptr<std::string> body;
-    std::shared_ptr<std::unordered_multimap<std::string, std::string>> headers;
+    std::int32_t _curlError;
+    std::int64_t _statusCode;
+    std::shared_ptr<std::string> _body;
+    std::shared_ptr<std::unordered_multimap<std::string, std::string>> _headers;
 };
 
 } // namespace joynr

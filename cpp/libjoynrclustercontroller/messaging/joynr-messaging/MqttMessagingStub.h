@@ -46,8 +46,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingStub);
-    std::shared_ptr<ITransportMessageSender> messageSender;
-    const system::RoutingTypes::MqttAddress destinationAddress;
+    std::shared_ptr<ITransportMessageSender> _messageSender;
+    const system::RoutingTypes::MqttAddress _destinationAddress;
     ADD_LOGGER(MqttMessagingStub)
 };
 

@@ -52,8 +52,8 @@ public:
     ThreadPoolDelayedScheduler(
             std::uint8_t numberOfThreads,
             const std::string& name,
-            boost::asio::io_service& ioService,
-            std::chrono::milliseconds defaultDelayMs = std::chrono::milliseconds::zero());
+            boost::asio::io_service& _ioService,
+            std::chrono::milliseconds _defaultDelayMs = std::chrono::milliseconds::zero());
 
     /**
      * @brief Destructor

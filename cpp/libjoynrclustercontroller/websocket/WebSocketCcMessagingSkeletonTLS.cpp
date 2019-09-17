@@ -38,10 +38,10 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
                   std::move(messageRouter),
                   std::move(messagingStubFactory),
                   serverAddress.getPort()),
-          useEncryptedTls(useEncryptedTls),
-          caPemFile(caPemFile),
-          certPemFile(certPemFile),
-          privateKeyPemFile(privateKeyPemFile)
+          _useEncryptedTls(useEncryptedTls),
+          _caPemFile(caPemFile),
+          _certPemFile(certPemFile),
+          _privateKeyPemFile(privateKeyPemFile)
 {
 }
 
@@ -54,19 +54,20 @@ void WebSocketCcMessagingSkeletonTLS::init()
     ::SSL_load_error_strings();
     ::OpenSSL_add_all_algorithms();
 
-    endpoint.set_tls_init_handler([thisWeakPtr = joynr::util::as_weak_ptr(std::dynamic_pointer_cast<
+    _endpoint
+            .set_tls_init_handler([thisWeakPtr = joynr::util::as_weak_ptr(std::dynamic_pointer_cast<
                                            WebSocketCcMessagingSkeletonTLS>(
                                            this->shared_from_this()))](ConnectionHandle hdl)
                                           ->std::shared_ptr<SSLContext> {
-        if (auto thisSharedPtr = thisWeakPtr.lock()) {
-            return thisSharedPtr->createSSLContext(thisSharedPtr->caPemFile,
-                                                   thisSharedPtr->certPemFile,
-                                                   thisSharedPtr->privateKeyPemFile,
-                                                   std::move(hdl));
-        } else {
-            return nullptr;
-        }
-    });
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    return thisSharedPtr->createSSLContext(thisSharedPtr->_caPemFile,
+                                                           thisSharedPtr->_certPemFile,
+                                                           thisSharedPtr->_privateKeyPemFile,
+                                                           std::move(hdl));
+                } else {
+                    return nullptr;
+                }
+            });
 
     startAccept();
 }
@@ -96,10 +97,10 @@ bool WebSocketCcMessagingSkeletonTLS::validateIncomingMessage(
         const ConnectionHandle& hdl,
         std::shared_ptr<ImmutableMessage> message)
 {
-    std::lock_guard<std::mutex> lock(clientsMutex);
+    std::lock_guard<std::mutex> lock1(_clientsMutex);
 
-    auto it = clients.find(hdl);
-    if (it == clients.cend()) {
+    auto it = _clients.find(hdl);
+    if (it == _clients.cend()) {
         // This should never be the case
         JOYNR_LOG_FATAL(logger(),
                         "Clients map contains no entry for connection/ConnectionHandle of incoming "
@@ -107,7 +108,7 @@ bool WebSocketCcMessagingSkeletonTLS::validateIncomingMessage(
                         message->getId());
         return false;
     }
-    const std::string& expectedOwnerId = it->second.ownerId;
+    const std::string& expectedOwnerId = it->second._ownerId;
     if (expectedOwnerId.empty()) {
         // This should never happen because the ownerId is already checked in sslContext verify
         // callback
@@ -180,8 +181,8 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
                 // mapping the connection handler to the ownerId in clients map
                 joynr::system::RoutingTypes::WebSocketClientAddress clientAddress;
                 auto certEntry = CertEntry(std::move(clientAddress), std::move(ownerId));
-                std::lock_guard<std::mutex> lock(thisSharedPtr->clientsMutex);
-                thisSharedPtr->clients[std::move(hdl)] = std::move(certEntry);
+                std::lock_guard<std::mutex> lock2(thisSharedPtr->_clientsMutex);
+                thisSharedPtr->_clients[std::move(hdl)] = std::move(certEntry);
                 return preverified;
             } else {
                 JOYNR_LOG_ERROR(logger(),

@@ -56,7 +56,7 @@ size_t DefaultHttpRequest::writeToMultiMap(void* buffer, size_t size, size_t nme
 DefaultHttpRequest::DefaultHttpRequest(void* handle,
                                        const std::string& content,
                                        curl_slist* headers)
-        : handle(handle), headers(headers), content(content)
+        : _handle(handle), _headers(headers), _content(content)
 {
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeToString);
     curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, writeToMultiMap);
@@ -65,42 +65,42 @@ DefaultHttpRequest::DefaultHttpRequest(void* handle,
         curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
     }
 
-    if (!this->content.empty()) {
-        curl_easy_setopt(handle, CURLOPT_POSTFIELDS, this->content.data());
-        curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, this->content.size());
+    if (!this->_content.empty()) {
+        curl_easy_setopt(handle, CURLOPT_POSTFIELDS, this->_content.data());
+        curl_easy_setopt(handle, CURLOPT_POSTFIELDSIZE, this->_content.size());
     }
 }
 
 DefaultHttpRequest::~DefaultHttpRequest()
 {
-    if (headers != nullptr) {
-        curl_slist_free_all(headers);
+    if (_headers != nullptr) {
+        curl_slist_free_all(_headers);
     }
-    if (handle != nullptr) {
-        HttpNetworking::getInstance()->getCurlHandlePool()->returnHandle(handle);
+    if (_handle != nullptr) {
+        HttpNetworking::getInstance()->getCurlHandlePool()->returnHandle(_handle);
     }
 }
 
 HttpResult DefaultHttpRequest::execute()
 {
     std::string* body = new std::string;
-    curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
-    curl_easy_setopt(handle, CURLOPT_WRITEDATA, body);
+    curl_easy_setopt(_handle, CURLOPT_NOSIGNAL, 1);
+    curl_easy_setopt(_handle, CURLOPT_WRITEDATA, body);
 
     auto headers = new std::unordered_multimap<std::string, std::string>();
-    curl_easy_setopt(handle, CURLOPT_WRITEHEADER, headers);
+    curl_easy_setopt(_handle, CURLOPT_WRITEHEADER, headers);
 
     CURLcode curlError;
-    curlError = curl_easy_perform(handle);
+    curlError = curl_easy_perform(_handle);
 
     std::int64_t statusCode = 0;
-    curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &statusCode);
+    curl_easy_getinfo(_handle, CURLINFO_RESPONSE_CODE, &statusCode);
 
     // Check for internal curl errors
     if (curlError == CURLE_FAILED_INIT) {
         // Delete the handle that we were using
-        HttpNetworking::getInstance()->getCurlHandlePool()->deleteHandle(handle);
-        handle = nullptr;
+        HttpNetworking::getInstance()->getCurlHandlePool()->deleteHandle(_handle);
+        _handle = nullptr;
     }
 
     return HttpResult(curlError, statusCode, body, headers);
@@ -108,8 +108,8 @@ HttpResult DefaultHttpRequest::execute()
 
 void DefaultHttpRequest::interrupt()
 {
-    if (handle != nullptr) {
-        curl_easy_setopt(handle, CURLOPT_TIMEOUT_MS, 1);
+    if (_handle != nullptr) {
+        curl_easy_setopt(_handle, CURLOPT_TIMEOUT_MS, 1);
     }
 }
 

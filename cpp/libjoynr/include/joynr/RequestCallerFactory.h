@@ -38,8 +38,8 @@ public:
     template <class T>
     static std::shared_ptr<RequestCaller> create(std::shared_ptr<T> provider)
     {
-        using RequestCaller = typename RequestCallerTraits<T>::RequestCaller;
-        return std::make_shared<RequestCaller>(provider);
+        using _RequestCaller = typename RequestCallerTraits<T>::RequestCaller;
+        return std::make_shared<_RequestCaller>(provider);
     }
 };
 

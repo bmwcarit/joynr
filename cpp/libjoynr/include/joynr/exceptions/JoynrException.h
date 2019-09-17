@@ -81,14 +81,14 @@ public:
     template <typename Archive>
     void serialize(Archive& ar)
     {
-        ar(muesli::make_nvp("detailMessage", message));
+        ar(muesli::make_nvp("detailMessage", _message));
     }
 
 protected:
     /**
      * @brief the detail message of the exception.
      */
-    boost::optional<std::string> message;
+    boost::optional<std::string> _message;
     /**
      * @brief Constructor for a JoynrException without detail message.
      */
@@ -247,11 +247,11 @@ public:
     void serialize(Archive& ar)
     {
         ar(muesli::BaseClass<JoynrRuntimeException>(this),
-           muesli::make_nvp("delayMs", delayMs.count()));
+           muesli::make_nvp("delayMs", _delayMs.count()));
     }
 
 private:
-    std::chrono::milliseconds delayMs;
+    std::chrono::milliseconds _delayMs;
 };
 
 /**
@@ -368,23 +368,23 @@ public:
     void serialize(Archive& ar)
     {
         ar(muesli::BaseClass<JoynrRuntimeException>(this),
-           muesli::make_nvp("subscriptionId", subscriptionId));
+           muesli::make_nvp("subscriptionId", _subscriptionId));
     }
 
 private:
-    std::string subscriptionId;
+    std::string _subscriptionId;
 };
 
 class ApplicationExceptionError
 {
 public:
-    ApplicationExceptionError() : name()
+    ApplicationExceptionError() : _name()
     {
     }
-    explicit ApplicationExceptionError(const std::string& name) : name(name)
+    explicit ApplicationExceptionError(const std::string& name) : _name(name)
     {
     }
-    explicit ApplicationExceptionError(std::string&& name) : name(std::move(name))
+    explicit ApplicationExceptionError(std::string&& name) : _name(std::move(name))
     {
     }
     // shall be polymorphic AND abstract
@@ -392,15 +392,15 @@ public:
     template <typename Archive>
     void serialize(Archive& ar)
     {
-        ar(muesli::make_nvp("name", name));
+        ar(muesli::make_nvp("name", _name));
     }
     const std::string& getName() const
     {
-        return name;
+        return _name;
     }
 
 private:
-    std::string name;
+    std::string _name;
 };
 
 inline ApplicationExceptionError::~ApplicationExceptionError() = default;
@@ -461,12 +461,12 @@ public:
     template <typename Archive>
     void serialize(Archive& ar)
     {
-        ar(muesli::BaseClass<JoynrException>(this), muesli::make_nvp("error", error));
+        ar(muesli::BaseClass<JoynrException>(this), muesli::make_nvp("error", _error));
     }
 
 private:
     // FIXME should be a unique_ptr, but cannot be due to throwJoynrException
-    std::shared_ptr<ApplicationExceptionError> error;
+    std::shared_ptr<ApplicationExceptionError> _error;
 };
 
 } // namespace exceptions

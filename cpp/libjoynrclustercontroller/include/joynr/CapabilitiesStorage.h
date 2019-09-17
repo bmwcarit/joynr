@@ -69,19 +69,19 @@ namespace bmi = boost::multi_index;
 
 struct LocalDiscoveryEntry : public DiscoveryEntry
 {
-    LocalDiscoveryEntry() : DiscoveryEntry(), gbids()
+    LocalDiscoveryEntry() : DiscoveryEntry(), _gbids()
     {
     }
     LocalDiscoveryEntry(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {})
-            : DiscoveryEntry(entry), gbids(gbids)
+            : DiscoveryEntry(entry), _gbids(gbids)
     {
     }
-    std::vector<std::string> gbids;
+    std::vector<std::string> _gbids;
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<joynr::types::DiscoveryEntry>(this), MUESLI_NVP(gbids));
+        archive(muesli::BaseClass<joynr::types::DiscoveryEntry>(this), MUESLI_NVP(_gbids));
     }
 };
 
@@ -99,15 +99,15 @@ using Timestamp = std::chrono::time_point<std::chrono::system_clock>;
 struct CachedDiscoveryEntry : public DiscoveryEntry
 {
     CachedDiscoveryEntry(const DiscoveryEntry& entry, Timestamp timestamp)
-            : DiscoveryEntry(entry), timestamp(timestamp)
+            : DiscoveryEntry(entry), _timestamp(timestamp)
     {
     }
-    Timestamp timestamp;
+    Timestamp _timestamp;
 };
 
 using ContainerIndices = Container::index_specifier_type_list;
 using SequencedContainerIndices = boost::mpl::push_front<ContainerIndices, bmi::sequenced<>>::type;
-using TimestampKey = BOOST_MULTI_INDEX_MEMBER(CachedDiscoveryEntry, Timestamp, timestamp);
+using TimestampKey = BOOST_MULTI_INDEX_MEMBER(CachedDiscoveryEntry, Timestamp, _timestamp);
 using TimestampIndex = bmi::ordered_non_unique<bmi::tag<tags::Timestamp>, TimestampKey>;
 using CacheContainerIndices =
         boost::mpl::push_back<SequencedContainerIndices, TimestampIndex>::type;
@@ -131,7 +131,7 @@ public:
 
     void removeByParticipantId(const std::string& participantId)
     {
-        auto& index = container.template get<tags::ParticipantId>();
+        auto& index = _container.template get<tags::ParticipantId>();
         auto it = index.find(participantId);
         if (it != index.end()) {
             index.erase(it);
@@ -140,48 +140,48 @@ public:
 
     void clear()
     {
-        container.clear();
+        _container.clear();
     }
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(container);
+        archive(_container);
     }
 
     auto begin()
     {
-        return container.begin();
+        return _container.begin();
     }
 
     auto begin() const
     {
-        return container.begin();
+        return _container.begin();
     }
 
     auto cbegin() const
     {
-        return container.cbegin();
+        return _container.cbegin();
     }
 
     auto end()
     {
-        return container.end();
+        return _container.end();
     }
 
     auto end() const
     {
-        return container.end();
+        return _container.end();
     }
 
     auto cend() const
     {
-        return container.cend();
+        return _container.cend();
     }
 
     auto size() const
     {
-        return container.size();
+        return _container.size();
     }
 
     /**
@@ -190,7 +190,7 @@ public:
      */
     std::vector<DiscoveryEntry> removeExpired()
     {
-        auto& index = container.template get<tags::ExpiryDate>();
+        auto& index = _container.template get<tags::ExpiryDate>();
         auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch()).count();
         auto last = index.lower_bound(now);
@@ -207,7 +207,7 @@ protected:
     {
         std::vector<DiscoveryEntry> result;
 
-        auto& index = container.template get<tags::DomainAndInterface>();
+        auto& index = _container.template get<tags::DomainAndInterface>();
         auto range = index.equal_range(std::tie(domain, interface));
         std::copy_if(range.first, range.second, std::back_inserter(result), filterFun);
 
@@ -220,7 +220,7 @@ protected:
     {
         boost::optional<DiscoveryEntry> result;
 
-        auto& index = container.template get<tags::ParticipantId>();
+        auto& index = _container.template get<tags::ParticipantId>();
         auto it = index.find(participantId);
         if (it != index.end()) {
             if (filterFun(*it)) {
@@ -239,7 +239,7 @@ protected:
         }
     };
 
-    C container;
+    C _container;
 };
 
 class Storage : public BaseStorage<Container>
@@ -247,7 +247,7 @@ class Storage : public BaseStorage<Container>
 public:
     void insert(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {})
     {
-        auto& index = container.get<tags::ParticipantId>();
+        auto& index = _container.get<tags::ParticipantId>();
         LocalDiscoveryEntry entryWithGbids(entry, gbids);
         auto insertResult = index.insert(entryWithGbids);
 
@@ -271,19 +271,19 @@ private:
         auto now = std::chrono::system_clock::now();
         return [maxAge, now](const CachedDiscoveryEntry& cachedEntry) {
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                    now - cachedEntry.timestamp);
+                    now - cachedEntry._timestamp);
             return elapsed <= maxAge;
         };
     }
 
 public:
-    CachingStorage(std::size_t maxElementCount = 1000) : maxElementCount(maxElementCount)
+    CachingStorage(std::size_t maxElementCount = 1000) : _maxElementCount(maxElementCount)
     {
     }
 
     void insert(const DiscoveryEntry& entry)
     {
-        auto& index = container.get<tags::ParticipantId>();
+        auto& index = _container.get<tags::ParticipantId>();
 
         auto now = std::chrono::system_clock::now();
         CachedDiscoveryEntry cachedEntry(entry, now);
@@ -299,10 +299,10 @@ public:
             assert(replaceResult);
 
             // rank to top
-            auto sequencedIt = container.project<0>(existingIt);
-            container.relocate(container.begin(), sequencedIt);
-        } else if (container.size() > maxElementCount) {
-            container.pop_back();
+            auto sequencedIt = _container.project<0>(existingIt);
+            _container.relocate(_container.begin(), sequencedIt);
+        } else if (_container.size() > _maxElementCount) {
+            _container.pop_back();
         }
     }
 
@@ -322,7 +322,7 @@ public:
     }
 
 private:
-    std::size_t maxElementCount;
+    std::size_t _maxElementCount;
 };
 
 } // namespace capabilities

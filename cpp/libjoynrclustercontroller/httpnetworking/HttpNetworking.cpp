@@ -25,48 +25,48 @@
 namespace joynr
 {
 
-HttpNetworking* HttpNetworking::httpNetworking = new HttpNetworking();
+HttpNetworking* HttpNetworking::_httpNetworking = new HttpNetworking();
 
 HttpNetworking::HttpNetworking()
-        : curlHandlePool(std::make_shared<PerThreadCurlHandlePool>()),
-          proxy(),
-          connectTimeout(std::chrono::milliseconds::zero()),
-          certificateAuthority(),
-          clientCertificate(),
-          clientCertificatePassword(),
-          httpDebug(false)
+        : _curlHandlePool(std::make_shared<PerThreadCurlHandlePool>()),
+          _proxy(),
+          _connectTimeout(std::chrono::milliseconds::zero()),
+          _certificateAuthority(),
+          _clientCertificate(),
+          _clientCertificatePassword(),
+          _httpDebug(false)
 {
     curl_global_init(CURL_GLOBAL_ALL);
 }
 
 HttpNetworking* HttpNetworking::getInstance()
 {
-    return httpNetworking;
+    return _httpNetworking;
 }
 
 HttpRequestBuilder* HttpNetworking::createRequestBuilder(const std::string& url)
 {
     HttpRequestBuilder* requestBuilder = new HttpRequestBuilder(url);
-    if (!proxy.empty()) {
-        requestBuilder->withProxy(proxy);
+    if (!_proxy.empty()) {
+        requestBuilder->withProxy(_proxy);
     }
-    if (httpDebug) {
+    if (_httpDebug) {
         requestBuilder->withDebug();
     }
     // Set the connect timeout
-    requestBuilder->withConnectTimeout(connectTimeout);
+    requestBuilder->withConnectTimeout(_connectTimeout);
 
     // Check for HTTPS options
-    if (!certificateAuthority.empty()) {
-        requestBuilder->withCertificateAuthority(certificateAuthority);
+    if (!_certificateAuthority.empty()) {
+        requestBuilder->withCertificateAuthority(_certificateAuthority);
     }
 
-    if (!clientCertificate.empty()) {
-        requestBuilder->withClientCertificate(clientCertificate);
+    if (!_clientCertificate.empty()) {
+        requestBuilder->withClientCertificate(_clientCertificate);
     }
 
-    if (!clientCertificatePassword.empty()) {
-        requestBuilder->withClientCertificatePassword(clientCertificatePassword);
+    if (!_clientCertificatePassword.empty()) {
+        requestBuilder->withClientCertificatePassword(_clientCertificatePassword);
     }
 
     return requestBuilder;
@@ -89,37 +89,37 @@ IHttpPostBuilder* HttpNetworking::createHttpPostBuilder(const std::string& url)
 
 void HttpNetworking::setGlobalProxy(const std::string& proxy)
 {
-    this->proxy = proxy;
+    this->_proxy = proxy;
 }
 
 void HttpNetworking::setHTTPDebugOn()
 {
-    this->httpDebug = true;
+    this->_httpDebug = true;
 }
 
 void HttpNetworking::setConnectTimeout(std::chrono::milliseconds connectTimeout)
 {
-    this->connectTimeout = connectTimeout;
+    this->_connectTimeout = connectTimeout;
 }
 
 void HttpNetworking::setCertificateAuthority(const std::string& certificateAuthority)
 {
-    this->certificateAuthority = certificateAuthority;
+    this->_certificateAuthority = certificateAuthority;
 }
 
 void HttpNetworking::setClientCertificate(const std::string& clientCertificate)
 {
-    this->clientCertificate = clientCertificate;
+    this->_clientCertificate = clientCertificate;
 }
 
 void HttpNetworking::setClientCertificatePassword(const std::string& clientCertificatePassword)
 {
-    this->clientCertificatePassword = clientCertificatePassword;
+    this->_clientCertificatePassword = clientCertificatePassword;
 }
 
 std::shared_ptr<ICurlHandlePool> HttpNetworking::getCurlHandlePool() const
 {
-    return curlHandlePool;
+    return _curlHandlePool;
 }
 
 } // namespace joynr

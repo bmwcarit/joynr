@@ -68,14 +68,14 @@ public:
                                 boost::optional<MessagingQos> qos = boost::none);
 
 protected:
-    std::weak_ptr<IMessageSender> messageSender;
-    std::weak_ptr<ISubscriptionManager> subscriptionManager;
-    std::string domain;
-    std::string interfaceName;
-    std::string proxyParticipantId;
-    std::string providerParticipantId;
-    MessagingQos qosSettings;
-    types::DiscoveryEntryWithMetaInfo providerDiscoveryEntry;
+    std::weak_ptr<IMessageSender> _messageSender;
+    std::weak_ptr<ISubscriptionManager> _subscriptionManager;
+    std::string _domain;
+    std::string _interfaceName;
+    std::string _proxyParticipantId;
+    std::string _providerParticipantId;
+    MessagingQos _qosSettings;
+    types::DiscoveryEntryWithMetaInfo _providerDiscoveryEntry;
     ADD_LOGGER(AbstractJoynrMessagingConnector)
 
 private:

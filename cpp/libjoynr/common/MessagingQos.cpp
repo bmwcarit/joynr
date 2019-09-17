@@ -29,12 +29,12 @@ MessagingQos::MessagingQos(std::uint64_t ttl,
                            MessagingQosEffort::Enum effort,
                            bool encrypt,
                            bool compress)
-        : ttl(ttl), effort(effort), encrypt(encrypt), compress(compress), messageHeaders()
+        : _ttl(ttl), _effort(effort), _encrypt(encrypt), _compress(compress), _messageHeaders()
 {
 }
 
 MessagingQos::MessagingQos(MessagingQosEffort::Enum effort, bool encrypt)
-        : MessagingQos::MessagingQos(default_ttl, effort, encrypt, false)
+        : MessagingQos::MessagingQos(_default_ttl, effort, encrypt, false)
 {
 }
 
@@ -45,48 +45,48 @@ MessagingQos::MessagingQos(std::uint64_t ttl, bool encrypt)
 
 std::uint64_t MessagingQos::getTtl() const
 {
-    return ttl;
+    return _ttl;
 }
 
 void MessagingQos::setTtl(const std::uint64_t& ttl)
 {
-    this->ttl = ttl;
+    this->_ttl = ttl;
 }
 
 MessagingQosEffort::Enum MessagingQos::getEffort() const
 {
-    return effort;
+    return _effort;
 }
 
 void MessagingQos::setEffort(const MessagingQosEffort::Enum effort)
 {
-    this->effort = effort;
+    this->_effort = effort;
 }
 
 bool MessagingQos::getEncrypt() const
 {
-    return encrypt;
+    return _encrypt;
 }
 
 void MessagingQos::setEncrypt(const bool encrypt)
 {
-    this->encrypt = encrypt;
+    this->_encrypt = encrypt;
 }
 
 bool MessagingQos::getCompress() const
 {
-    return compress;
+    return _compress;
 }
 
 void MessagingQos::setCompress(const bool compress)
 {
-    this->compress = compress;
+    this->_compress = compress;
 }
 
 void MessagingQos::putCustomMessageHeader(const std::string& key, const std::string& value)
 {
     checkCustomHeaderKeyValue(key, value);
-    messageHeaders[key] = value;
+    _messageHeaders[key] = value;
 }
 
 void MessagingQos::putAllCustomMessageHeaders(
@@ -95,7 +95,7 @@ void MessagingQos::putAllCustomMessageHeaders(
     for (const auto& it : values) {
         checkCustomHeaderKeyValue(it.first, it.second);
     }
-    messageHeaders = values;
+    _messageHeaders = values;
 }
 
 void MessagingQos::checkCustomHeaderKeyValue(const std::string& key, const std::string& value) const
@@ -113,7 +113,7 @@ void MessagingQos::checkCustomHeaderKeyValue(const std::string& key, const std::
 
 const std::unordered_map<std::string, std::string>& MessagingQos::getCustomMessageHeaders() const
 {
-    return messageHeaders;
+    return _messageHeaders;
 }
 
 bool MessagingQos::operator==(const MessagingQos& other) const

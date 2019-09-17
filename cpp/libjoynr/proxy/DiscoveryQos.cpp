@@ -47,24 +47,24 @@ joynr::types::DiscoveryScope::Enum& DiscoveryQos::DEFAULT_DISCOVERYSCOPE()
 }
 
 DiscoveryQos::DiscoveryQos()
-        : customParameters(),
-          arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
-          discoveryTimeoutMs(NO_VALUE()),
-          cacheMaxAgeMs(DEFAULT_CACHEMAXAGE_MS()),
-          discoveryScope(DEFAULT_DISCOVERYSCOPE()),
-          providerMustSupportOnChange(false),
-          retryIntervalMs(NO_VALUE())
+        : _customParameters(),
+          _arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
+          _discoveryTimeoutMs(NO_VALUE()),
+          _cacheMaxAgeMs(DEFAULT_CACHEMAXAGE_MS()),
+          _discoveryScope(DEFAULT_DISCOVERYSCOPE()),
+          _providerMustSupportOnChange(false),
+          _retryIntervalMs(NO_VALUE())
 {
 }
 
-DiscoveryQos::DiscoveryQos(std::int64_t cacheMaxAge)
-        : customParameters(),
-          arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
-          discoveryTimeoutMs(NO_VALUE()),
-          cacheMaxAgeMs(cacheMaxAge),
-          discoveryScope(DEFAULT_DISCOVERYSCOPE()),
-          providerMustSupportOnChange(false),
-          retryIntervalMs(NO_VALUE())
+DiscoveryQos::DiscoveryQos(std::int64_t cacheMaxAgeMs)
+        : _customParameters(),
+          _arbitrationStrategy(DEFAULT_ARBITRATIONSTRATEGY()),
+          _discoveryTimeoutMs(NO_VALUE()),
+          _cacheMaxAgeMs(cacheMaxAgeMs),
+          _discoveryScope(DEFAULT_DISCOVERYSCOPE()),
+          _providerMustSupportOnChange(false),
+          _retryIntervalMs(NO_VALUE())
 {
 }
 
@@ -75,61 +75,61 @@ std::int64_t DiscoveryQos::NO_VALUE()
 
 void DiscoveryQos::setArbitrationStrategy(ArbitrationStrategy arbitrationStrategy)
 {
-    this->arbitrationStrategy = arbitrationStrategy;
+    this->_arbitrationStrategy = arbitrationStrategy;
 }
 
 void DiscoveryQos::setDiscoveryTimeoutMs(std::int64_t discoveryTimeoutMs)
 {
-    this->discoveryTimeoutMs = discoveryTimeoutMs;
-    if (this->discoveryTimeoutMs < 0) {
-        this->discoveryTimeoutMs = 0;
+    this->_discoveryTimeoutMs = discoveryTimeoutMs;
+    if (this->_discoveryTimeoutMs < 0) {
+        this->_discoveryTimeoutMs = 0;
     }
 }
 
 std::int64_t DiscoveryQos::getDiscoveryTimeoutMs() const
 {
-    return discoveryTimeoutMs;
+    return _discoveryTimeoutMs;
 }
 
 DiscoveryQos::ArbitrationStrategy DiscoveryQos::getArbitrationStrategy() const
 {
-    return arbitrationStrategy;
+    return _arbitrationStrategy;
 }
 
 void DiscoveryQos::addCustomParameter(std::string name, std::string value)
 {
     types::CustomParameter param(name, value);
-    customParameters[name] = param;
+    _customParameters[name] = param;
 }
 
 types::CustomParameter DiscoveryQos::getCustomParameter(std::string name) const
 {
-    return customParameters.at(name);
+    return _customParameters.at(name);
 }
 
 std::map<std::string, types::CustomParameter> DiscoveryQos::getCustomParameters() const
 {
-    return customParameters;
+    return _customParameters;
 }
 
 std::int64_t DiscoveryQos::getCacheMaxAgeMs() const
 {
-    return cacheMaxAgeMs;
+    return _cacheMaxAgeMs;
 }
 
 void DiscoveryQos::setCacheMaxAgeMs(const std::int64_t cacheMaxAgeMs)
 {
-    this->cacheMaxAgeMs = cacheMaxAgeMs;
+    this->_cacheMaxAgeMs = cacheMaxAgeMs;
 }
 
 bool DiscoveryQos::getProviderMustSupportOnChange() const
 {
-    return providerMustSupportOnChange;
+    return _providerMustSupportOnChange;
 }
 
 void DiscoveryQos::setProviderMustSupportOnChange(bool providerMustSupportOnChange)
 {
-    this->providerMustSupportOnChange = providerMustSupportOnChange;
+    this->_providerMustSupportOnChange = providerMustSupportOnChange;
 }
 
 const std::string DiscoveryQos::KEYWORD_PARAMETER()
@@ -140,22 +140,22 @@ const std::string DiscoveryQos::KEYWORD_PARAMETER()
 
 joynr::types::DiscoveryScope::Enum DiscoveryQos::getDiscoveryScope() const
 {
-    return discoveryScope;
+    return _discoveryScope;
 }
 
 void DiscoveryQos::setDiscoveryScope(joynr::types::DiscoveryScope::Enum discoveryScope)
 {
-    this->discoveryScope = discoveryScope;
+    this->_discoveryScope = discoveryScope;
 }
 
 std::int64_t DiscoveryQos::getRetryIntervalMs() const
 {
-    return this->retryIntervalMs;
+    return this->_retryIntervalMs;
 }
 
 void DiscoveryQos::setRetryIntervalMs(std::int64_t retryIntervalMs)
 {
-    this->retryIntervalMs = retryIntervalMs;
+    this->_retryIntervalMs = retryIntervalMs;
 }
 
 } // namespace joynr

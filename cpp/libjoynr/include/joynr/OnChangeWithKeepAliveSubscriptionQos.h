@@ -79,7 +79,7 @@ public:
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterIntervalMs
      */
     OnChangeWithKeepAliveSubscriptionQos(std::int64_t validityMs,
-                                         std::int64_t publicationTtlMs,
+                                         std::int64_t _publicationTtlMs,
                                          std::int64_t minIntervalMs,
                                          std::int64_t maxIntervalMs,
                                          std::int64_t alertAfterIntervalMs);
@@ -219,8 +219,8 @@ public:
     void serialize(Archive& archive)
     {
         archive(muesli::BaseClass<OnChangeSubscriptionQos>(this),
-                MUESLI_NVP(maxIntervalMs),
-                MUESLI_NVP(alertAfterIntervalMs));
+                MUESLI_NVP(_maxIntervalMs),
+                MUESLI_NVP(_alertAfterIntervalMs));
     }
 
 protected:
@@ -230,13 +230,13 @@ protected:
      * The provider will send notifications every maximum interval in milliseconds,
      * even if the value didn't change.
      */
-    std::int64_t maxIntervalMs;
+    std::int64_t _maxIntervalMs;
 
     /**
      * @brief time span in milliseconds after which a publicationMissed
      * will be called if no publications were received
      */
-    std::int64_t alertAfterIntervalMs;
+    std::int64_t _alertAfterIntervalMs;
 
 private:
     ADD_LOGGER(OnChangeWithKeepAliveSubscriptionQos)

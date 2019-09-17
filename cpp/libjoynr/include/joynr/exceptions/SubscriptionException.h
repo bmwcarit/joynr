@@ -83,11 +83,11 @@ public:
     template <typename Archive>
     void serialize(Archive& ar)
     {
-        ar(muesli::BaseClass<JoynrRuntimeException>(this), MUESLI_NVP(subscriptionId));
+        ar(muesli::BaseClass<JoynrRuntimeException>(this), MUESLI_NVP(_subscriptionId));
     }
 
 private:
-    std::string subscriptionId;
+    std::string _subscriptionId;
 };
 
 } // namespace exceptions

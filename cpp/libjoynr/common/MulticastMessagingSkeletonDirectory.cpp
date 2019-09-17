@@ -31,7 +31,7 @@ std::shared_ptr<IMessagingMulticastSubscriber> MulticastMessagingSkeletonDirecto
 {
     const system::RoutingTypes::Address& addressRef = *address;
     std::type_index typeIndex(typeid(addressRef));
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     std::string localGbid = "";
     if (contains(address)) {
         auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(address.get());
@@ -42,7 +42,7 @@ std::shared_ptr<IMessagingMulticastSubscriber> MulticastMessagingSkeletonDirecto
                         "get messaging skeleton for address {}, gbid: {}",
                         address->toString(),
                         localGbid);
-        return multicastSkeletons[std::make_pair(typeIndex, localGbid)];
+        return _multicastSkeletons[std::make_pair(typeIndex, localGbid)];
     }
     JOYNR_LOG_WARN(
             logger(), "No messaging skeleton registered for address {}", address->toString());
@@ -52,7 +52,7 @@ std::shared_ptr<IMessagingMulticastSubscriber> MulticastMessagingSkeletonDirecto
 bool MulticastMessagingSkeletonDirectory::contains(
         std::shared_ptr<const system::RoutingTypes::Address> address)
 {
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     const system::RoutingTypes::Address& addressRef = *address;
     std::type_index typeIndex(typeid(addressRef));
     auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(address.get());
@@ -60,8 +60,8 @@ bool MulticastMessagingSkeletonDirectory::contains(
     if (mqttAddress) {
         localGbid = mqttAddress->getBrokerUri();
     }
-    return multicastSkeletons.find(std::make_pair(typeIndex, localGbid)) !=
-           multicastSkeletons.cend();
+    return _multicastSkeletons.find(std::make_pair(typeIndex, localGbid)) !=
+           _multicastSkeletons.cend();
 }
 
 } // namespace joynr

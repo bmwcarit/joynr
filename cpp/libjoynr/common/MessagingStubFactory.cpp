@@ -16,6 +16,10 @@
  * limitations under the License.
  * #L%
  */
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 #include "joynr/MessagingStubFactory.h"
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
@@ -23,22 +27,22 @@
 namespace joynr
 {
 
-MessagingStubFactory::MessagingStubFactory() : address2MessagingStubMap(), factoryList()
+MessagingStubFactory::MessagingStubFactory() : _address2MessagingStubMap(), _factoryList()
 {
 }
 
 std::shared_ptr<IMessagingStub> MessagingStubFactory::create(
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
-    std::shared_ptr<IMessagingStub> stub = address2MessagingStubMap.value(destinationAddress);
+    std::shared_ptr<IMessagingStub> stub = _address2MessagingStubMap.value(destinationAddress);
     if (!stub) {
-        for (auto const& factory : factoryList) {
+        for (auto const& factory : _factoryList) {
             if (factory->canCreate(*destinationAddress)) {
-                auto stub = factory->create(*destinationAddress);
-                if (stub) {
-                    address2MessagingStubMap.insert(destinationAddress, stub);
+                auto createStub = factory->create(*destinationAddress);
+                if (createStub) {
+                    _address2MessagingStubMap.insert(destinationAddress, createStub);
                 }
-                return stub;
+                return createStub;
             }
         }
     }
@@ -49,25 +53,27 @@ void MessagingStubFactory::remove(
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
     if (contains(destinationAddress)) {
-        address2MessagingStubMap.remove(destinationAddress);
+        _address2MessagingStubMap.remove(destinationAddress);
     }
 }
 
 bool MessagingStubFactory::contains(
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
-    return address2MessagingStubMap.contains(destinationAddress);
+    return _address2MessagingStubMap.contains(destinationAddress);
 }
 
 void MessagingStubFactory::registerStubFactory(
         std::shared_ptr<IMiddlewareMessagingStubFactory> factory)
 {
-    factoryList.push_back(std::move(factory));
+    _factoryList.push_back(std::move(factory));
 }
 
 void MessagingStubFactory::shutdown()
 {
-    factoryList.clear();
+    _factoryList.clear();
 }
 
 } // namespace joynr
+
+#pragma GCC diagnostic pop

@@ -86,11 +86,11 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttReceiver);
 
-    system::RoutingTypes::MqttAddress globalClusterControllerAddress;
+    system::RoutingTypes::MqttAddress _globalClusterControllerAddress;
 
-    std::shared_ptr<MosquittoConnection> mosquittoConnection;
+    std::shared_ptr<MosquittoConnection> _mosquittoConnection;
 
-    const MessagingSettings& settings;
+    const MessagingSettings& _settings;
 
     ADD_LOGGER(MqttReceiver)
 };

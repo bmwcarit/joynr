@@ -31,14 +31,14 @@ CapabilitiesRegistrar::CapabilitiesRegistrar(
         std::int64_t defaultExpiryIntervalMs,
         std::weak_ptr<PublicationManager> publicationManager,
         const std::string& globalAddress)
-        : dispatcherList(std::move(dispatcherList)),
-          discoveryProxy(discoveryProxy),
-          participantIdStorage(std::move(participantIdStorage)),
-          dispatcherAddress(std::move(dispatcherAddress)),
-          messageRouter(std::move(messageRouter)),
-          defaultExpiryIntervalMs(defaultExpiryIntervalMs),
-          publicationManager(std::move(publicationManager)),
-          globalAddress(globalAddress)
+        : _dispatcherList(std::move(dispatcherList)),
+          _discoveryProxy(discoveryProxy),
+          _participantIdStorage(std::move(participantIdStorage)),
+          _dispatcherAddress(std::move(dispatcherAddress)),
+          _messageRouter(std::move(messageRouter)),
+          _defaultExpiryIntervalMs(defaultExpiryIntervalMs),
+          _publicationManager(std::move(publicationManager)),
+          _globalAddress(globalAddress)
 {
 }
 
@@ -48,8 +48,8 @@ void CapabilitiesRegistrar::removeAsync(
         std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
 {
     auto onSuccessWrapper = [
-        dispatcherList = this->dispatcherList,
-        messageRouter = util::as_weak_ptr(messageRouter),
+        dispatcherList = this->_dispatcherList,
+        messageRouter = util::as_weak_ptr(_messageRouter),
         participantId,
         onSuccess = std::move(onSuccess),
         onError
@@ -64,17 +64,17 @@ void CapabilitiesRegistrar::removeAsync(
         }
     };
 
-    discoveryProxy->removeAsync(participantId, std::move(onSuccessWrapper), std::move(onError));
+    _discoveryProxy->removeAsync(participantId, std::move(onSuccessWrapper), std::move(onError));
 }
 
 void CapabilitiesRegistrar::addDispatcher(std::shared_ptr<IDispatcher> dispatcher)
 {
-    dispatcherList.push_back(std::move(dispatcher));
+    _dispatcherList.push_back(std::move(dispatcher));
 }
 
 void CapabilitiesRegistrar::removeDispatcher(std::shared_ptr<IDispatcher> dispatcher)
 {
-    util::removeAll(dispatcherList, dispatcher);
+    util::removeAll(_dispatcherList, dispatcher);
 }
 
 } // namespace joynr

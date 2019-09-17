@@ -162,19 +162,19 @@ private:
     bool allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
                                  const system::RoutingTypes::Address& newAddress) final;
 
-    std::shared_ptr<joynr::system::RoutingProxy> parentRouter;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> parentAddress;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> incomingAddress;
-    std::unordered_set<std::string> runningParentResolves;
-    mutable std::mutex parentResolveMutex;
+    std::shared_ptr<joynr::system::RoutingProxy> _parentRouter;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> _parentAddress;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> _incomingAddress;
+    std::unordered_set<std::string> _runningParentResolves;
+    mutable std::mutex _parentResolveMutex;
 
     bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const final;
 
     void removeRunningParentResolvers(const std::string& destinationPartId);
 
-    std::mutex parentClusterControllerReplyToAddressMutex;
-    std::string parentClusterControllerReplyToAddress;
-    const bool DEFAULT_IS_GLOBALLY_VISIBLE;
+    std::mutex _parentClusterControllerReplyToAddressMutex;
+    std::string _parentClusterControllerReplyToAddress;
+    const bool _DEFAULT_IS_GLOBALLY_VISIBLE;
 };
 
 } // namespace joynr

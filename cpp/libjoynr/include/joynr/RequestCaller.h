@@ -65,8 +65,8 @@ protected:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RequestCaller);
-    std::string interfaceName;
-    types::Version providerVersion;
+    std::string _interfaceName;
+    types::Version _providerVersion;
 };
 
 } // namespace joynr

@@ -54,7 +54,7 @@ public:
 
     void onError(const BasePublication& publication, const exceptions::JoynrRuntimeException& error)
     {
-        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+        if (auto subscriptionManagerSharedPtr = Base::_subscriptionManager.lock()) {
             const MulticastPublication& multicastPublication =
                     static_cast<const MulticastPublication&>(publication);
             std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
@@ -70,7 +70,7 @@ public:
     std::enable_if_t<std::is_void<Holder>::value, void> onSuccess(
             const BasePublication& publication)
     {
-        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+        if (auto subscriptionManagerSharedPtr = Base::_subscriptionManager.lock()) {
             const MulticastPublication& multicastPublication =
                     static_cast<const MulticastPublication&>(publication);
             std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =
@@ -91,7 +91,7 @@ public:
             const Holder& value,
             const Ts&... values)
     {
-        if (auto subscriptionManagerSharedPtr = Base::subscriptionManager.lock()) {
+        if (auto subscriptionManagerSharedPtr = Base::_subscriptionManager.lock()) {
             const MulticastPublication& multicastPublication =
                     static_cast<const MulticastPublication&>(publication);
             std::forward_list<std::shared_ptr<ISubscriptionListenerBase>> listeners =

@@ -185,14 +185,14 @@ private:
 
     void stopSubscription(std::shared_ptr<Subscription> subscription);
 
-    ThreadSafeMap<std::string, std::shared_ptr<Subscription>> subscriptions;
+    ThreadSafeMap<std::string, std::shared_ptr<Subscription>> _subscriptions;
 
-    MulticastReceiverDirectory multicastSubscribers;
-    std::recursive_mutex multicastSubscribersMutex;
+    MulticastReceiverDirectory _multicastSubscribers;
+    std::recursive_mutex _multicastSubscribersMutex;
 
-    std::shared_ptr<IMessageRouter> messageRouter;
+    std::shared_ptr<IMessageRouter> _messageRouter;
 
-    std::shared_ptr<DelayedScheduler> missedPublicationScheduler;
+    std::shared_ptr<DelayedScheduler> _missedPublicationScheduler;
     ADD_LOGGER(SubscriptionManager)
     /**
       * @class SubscriptionManager::MissedPublicationRunnable
@@ -220,11 +220,11 @@ private:
     private:
         DISALLOW_COPY_AND_ASSIGN(MissedPublicationRunnable);
         std::int64_t timeSinceLastExpectedPublication(std::int64_t timeSinceLastPublication);
-        std::int64_t expectedIntervalMSecs;
-        std::shared_ptr<Subscription> subscription;
-        const std::string subscriptionId;
-        std::int64_t alertAfterInterval;
-        std::weak_ptr<SubscriptionManager> subscriptionManager;
+        std::int64_t _expectedIntervalMSecs;
+        std::shared_ptr<Subscription> _subscription;
+        const std::string _subscriptionId;
+        std::int64_t _alertAfterInterval;
+        std::weak_ptr<SubscriptionManager> _subscriptionManager;
         ADD_LOGGER(MissedPublicationRunnable)
     };
     /**
@@ -246,8 +246,8 @@ private:
 
     private:
         DISALLOW_COPY_AND_ASSIGN(SubscriptionEndRunnable);
-        std::string subscriptionId;
-        std::weak_ptr<SubscriptionManager> subscriptionManager;
+        std::string _subscriptionId;
+        std::weak_ptr<SubscriptionManager> _subscriptionManager;
         ADD_LOGGER(SubscriptionEndRunnable)
     };
 };

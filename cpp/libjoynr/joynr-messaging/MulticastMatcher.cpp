@@ -25,10 +25,10 @@ namespace joynr
 {
 
 MulticastMatcher::MulticastMatcher(const std::string& multicastId)
-        : multicastId(multicastId),
-          pattern(),
-          regExpPlusSign(R"([a-zA-Z0-9]+)"),
-          regExpKleenStarSign(R"((/[a-zA-Z0-9]+)*)")
+        : _multicastId(multicastId),
+          _pattern(),
+          _regExpPlusSign(R"([a-zA-Z0-9]+)"),
+          _regExpKleenStarSign(R"((/[a-zA-Z0-9]+)*)")
 {
     std::string multicastIdPattern = multicastId;
 
@@ -37,31 +37,31 @@ MulticastMatcher::MulticastMatcher(const std::string& multicastId)
     size_t pos = 0;
     while ((pos = multicastIdPattern.find(joynr::util::SINGLE_LEVEL_WILDCARD, pos)) !=
            std::string::npos) {
-        multicastIdPattern.replace(pos, 1, regExpPlusSign);
-        pos += regExpPlusSign.length();
+        multicastIdPattern.replace(pos, 1, _regExpPlusSign);
+        pos += _regExpPlusSign.length();
     }
 
     // transform '*' into a regex matching a sequence of alphanumeric characters longer
     // then 1 separated by a forward slash '/'
     // also, use knowledge that * can only appear at the end of the multicastId
     if (multicastId.back() == joynr::util::MULTI_LEVEL_WILDCARD[0]) {
-        multicastIdPattern.replace(multicastIdPattern.length() - 2, 2, regExpKleenStarSign);
+        multicastIdPattern.replace(multicastIdPattern.length() - 2, 2, _regExpKleenStarSign);
     }
 
     multicastIdPattern.insert(0, 1, '^');
     multicastIdPattern.append("$");
 
-    pattern.assign(multicastIdPattern);
+    _pattern.assign(multicastIdPattern);
 }
 
 bool MulticastMatcher::doesMatch(const std::string& incomingMulticastId) const
 {
-    return std::regex_search(incomingMulticastId, pattern);
+    return std::regex_search(incomingMulticastId, _pattern);
 }
 
 bool MulticastMatcher::operator==(const MulticastMatcher& other) const
 {
-    return multicastId == other.multicastId;
+    return _multicastId == other._multicastId;
 }
 
 } // namespace joynr

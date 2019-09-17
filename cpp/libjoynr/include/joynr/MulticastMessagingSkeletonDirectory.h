@@ -52,12 +52,12 @@ public:
                         "register messaging skeleton for address type {}, gbid: {}",
                         typeIndex.name(),
                         gbid);
-        std::lock_guard<std::recursive_mutex> lock(mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         JOYNR_LOG_DEBUG(logger(),
                         "register messaging skeleton for address type {}, gbid: {}",
                         typeIndex.name(),
                         gbid);
-        multicastSkeletons[std::make_pair(typeIndex, gbid)] = std::move(skeleton);
+        _multicastSkeletons[std::make_pair(typeIndex, gbid)] = std::move(skeleton);
     }
 
     template <class T,
@@ -67,16 +67,16 @@ public:
         std::type_index typeIndex = typeid(T);
         JOYNR_LOG_DEBUG(
                 logger(), "unregister messaging skeletons for address type {}", typeIndex.name());
-        std::lock_guard<std::recursive_mutex> lock(mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         std::vector<std::pair<std::type_index, std::string>> removalList;
-        for (const auto& entryOfRegisteredSkeleton : multicastSkeletons) {
+        for (const auto& entryOfRegisteredSkeleton : _multicastSkeletons) {
             auto pairKey = entryOfRegisteredSkeleton.first;
             if (pairKey.first == typeIndex) {
                 removalList.push_back(std::make_pair(typeIndex, pairKey.second));
             }
         }
         for (const auto& entry : removalList) {
-            multicastSkeletons.erase(entry);
+            _multicastSkeletons.erase(entry);
         }
     }
 
@@ -89,9 +89,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MulticastMessagingSkeletonDirectory);
     ADD_LOGGER(MulticastMessagingSkeletonDirectory)
     std::map<std::pair<std::type_index, std::string>,
-             std::shared_ptr<IMessagingMulticastSubscriber>> multicastSkeletons;
+             std::shared_ptr<IMessagingMulticastSubscriber>> _multicastSkeletons;
 
-    std::recursive_mutex mutex;
+    std::recursive_mutex _mutex;
 };
 
 } // namespace joynr

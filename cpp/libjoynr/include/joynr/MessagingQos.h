@@ -44,7 +44,7 @@ public:
      * @param encrypt Specifies, whether messages will be sent encrypted
      * @param compress Specifies, whether messages will be sent compressed
      */
-    explicit MessagingQos(std::uint64_t ttl = default_ttl,
+    explicit MessagingQos(std::uint64_t ttl = _default_ttl,
                           MessagingQosEffort::Enum effort = MessagingQosEffort::Enum::NORMAL,
                           bool encrypt = false,
                           bool compress = false);
@@ -150,22 +150,22 @@ public:
 
 private:
     /** @brief The default time to live in milliseconds */
-    const static std::uint64_t default_ttl = 60000;
+    const static std::uint64_t _default_ttl = 60000;
 
     /** @brief The time to live in milliseconds */
-    std::uint64_t ttl;
+    std::uint64_t _ttl;
 
     /** @brief The effort to expend during message delivery */
-    MessagingQosEffort::Enum effort;
+    MessagingQosEffort::Enum _effort;
 
     /** @brief Specifies, whether messages will be sent encrypted */
-    bool encrypt;
+    bool _encrypt;
 
     /** @brief Specifies, whether messages will be sent compressed */
-    bool compress;
+    bool _compress;
 
     /** @brief The map of custom message headers */
-    std::unordered_map<std::string, std::string> messageHeaders;
+    std::unordered_map<std::string, std::string> _messageHeaders;
 
     /**
      * @brief Checks that the key and value of a custom message header contain

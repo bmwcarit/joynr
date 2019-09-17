@@ -46,8 +46,8 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingStub);
-    std::shared_ptr<ITransportMessageSender> messageSender;
-    const system::RoutingTypes::ChannelAddress destinationAddress;
+    std::shared_ptr<ITransportMessageSender> _messageSender;
+    const system::RoutingTypes::ChannelAddress _destinationAddress;
 
     ADD_LOGGER(HttpMessagingStub)
 };

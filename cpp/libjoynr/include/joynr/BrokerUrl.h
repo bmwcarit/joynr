@@ -52,8 +52,8 @@ public:
     std::string toString() const;
 
 private:
-    std::string brokerBaseUrl;
-    Url brokerChannelsBaseUrl;
+    std::string _brokerBaseUrl;
+    Url _brokerChannelsBaseUrl;
 };
 
 } // namespace joynr

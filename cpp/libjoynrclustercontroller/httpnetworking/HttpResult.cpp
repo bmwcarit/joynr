@@ -28,29 +28,29 @@ HttpResult::HttpResult(std::int32_t curlError,
                        std::int64_t statusCode,
                        std::string* body,
                        std::unordered_multimap<std::string, std::string>* headers)
-        : curlError(curlError), statusCode(statusCode), body(body), headers(headers)
+        : _curlError(curlError), _statusCode(statusCode), _body(body), _headers(headers)
 {
 }
 
 bool HttpResult::isCurlError() const
 {
-    return (curlError != 0);
+    return (_curlError != 0);
 }
 
 std::int32_t HttpResult::getCurlError() const
 {
-    return curlError;
+    return _curlError;
 }
 
 std::int64_t HttpResult::getStatusCode() const
 {
-    return statusCode;
+    return _statusCode;
 }
 
 std::string HttpResult::getErrorMessage() const
 {
     if (isCurlError()) {
-        switch (curlError) {
+        switch (_curlError) {
         case CURLE_COULDNT_RESOLVE_PROXY:
             return std::string("Could not resolve network proxy address");
         case CURLE_COULDNT_RESOLVE_HOST:
@@ -63,10 +63,10 @@ std::string HttpResult::getErrorMessage() const
             return std::string("SSL connection error");
         default:
             return (boost::format("Error during HTTP request/response, curl error code: %1%: %2%") %
-                    curlError % curl_easy_strerror(static_cast<CURLcode>(curlError))).str();
+                    _curlError % curl_easy_strerror(static_cast<CURLcode>(_curlError))).str();
         }
     } else {
-        switch (statusCode) {
+        switch (_statusCode) {
         case 407:
             return std::string("407 Proxy authentication required");
         case 500:
@@ -76,19 +76,19 @@ std::string HttpResult::getErrorMessage() const
         case 503:
             return std::string("503 Service unavailable");
         default:
-            return (boost::format("HTTP error, status code : %1%") % statusCode).str();
+            return (boost::format("HTTP error, status code : %1%") % _statusCode).str();
         }
     }
 }
 
 const std::string& HttpResult::getBody() const
 {
-    return *body;
+    return *_body;
 }
 
 const std::unordered_multimap<std::string, std::string>& HttpResult::getHeaders() const
 {
-    return *headers;
+    return *_headers;
 }
 
 } // namespace joynr

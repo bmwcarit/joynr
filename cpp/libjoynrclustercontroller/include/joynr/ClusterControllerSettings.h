@@ -202,7 +202,7 @@ public:
 private:
     void operator=(const ClusterControllerSettings& other) = delete;
 
-    Settings& settings;
+    Settings& _settings;
     ADD_LOGGER(ClusterControllerSettings)
     void checkSettings();
 };

@@ -296,13 +296,13 @@ public:
     static const std::string KEYWORD_PARAMETER();
 
 private:
-    std::map<std::string, types::CustomParameter> customParameters;
-    ArbitrationStrategy arbitrationStrategy;
-    std::int64_t discoveryTimeoutMs;
-    std::int64_t cacheMaxAgeMs;
-    joynr::types::DiscoveryScope::Enum discoveryScope;
-    bool providerMustSupportOnChange;
-    std::int64_t retryIntervalMs;
+    std::map<std::string, types::CustomParameter> _customParameters;
+    ArbitrationStrategy _arbitrationStrategy;
+    std::int64_t _discoveryTimeoutMs;
+    std::int64_t _cacheMaxAgeMs;
+    joynr::types::DiscoveryScope::Enum _discoveryScope;
+    bool _providerMustSupportOnChange;
+    std::int64_t _retryIntervalMs;
 };
 
 } // namespace joynr

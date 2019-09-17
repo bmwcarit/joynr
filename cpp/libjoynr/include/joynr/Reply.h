@@ -50,15 +50,17 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(requestReplyId), MUESLI_NVP(error));
+        archive(muesli::BaseClass<BaseReply>(this),
+                MUESLI_NVP(_requestReplyId),
+                MUESLI_NVP(_error));
     }
 
     std::shared_ptr<exceptions::JoynrException> getError() const;
     void setError(std::shared_ptr<exceptions::JoynrException> error);
 
 private:
-    std::string requestReplyId;
-    std::shared_ptr<exceptions::JoynrException> error;
+    std::string _requestReplyId;
+    std::shared_ptr<exceptions::JoynrException> _error;
 };
 
 } // namespace joynr

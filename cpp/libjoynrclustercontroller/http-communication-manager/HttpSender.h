@@ -56,9 +56,9 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpSender);
-    const BrokerUrl brokerUrl;
-    const std::chrono::milliseconds maxAttemptTtl;
-    const std::chrono::milliseconds messageSendRetryInterval;
+    const BrokerUrl _brokerUrl;
+    const std::chrono::milliseconds _maxAttemptTtl;
+    const std::chrono::milliseconds _messageSendRetryInterval;
     ADD_LOGGER(HttpSender)
 
     HttpResult buildRequestAndSend(const std::string& data,

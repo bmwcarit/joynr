@@ -195,14 +195,14 @@ protected:
     std::chrono::milliseconds createDelayWithExponentialBackoff(
             std::uint32_t sendMsgRetryIntervalMs,
             std::uint32_t tryCount) const;
-    RoutingTable routingTable;
-    ReadWriteLock routingTableLock;
-    MulticastReceiverDirectory multicastReceiverDirectory;
-    MessagingSettings messagingSettings;
-    bool persistRoutingTable;
-    std::shared_ptr<IMessagingStubFactory> messagingStubFactory;
-    std::shared_ptr<ThreadPoolDelayedScheduler> messageScheduler;
-    std::unique_ptr<MessageQueue<std::string>> messageQueue;
+    RoutingTable _routingTable;
+    ReadWriteLock _routingTableLock;
+    MulticastReceiverDirectory _multicastReceiverDirectory;
+    MessagingSettings _messagingSettings;
+    bool _persistRoutingTable;
+    std::shared_ptr<IMessagingStubFactory> _messagingStubFactory;
+    std::shared_ptr<ThreadPoolDelayedScheduler> _messageScheduler;
+    std::unique_ptr<MessageQueue<std::string>> _messageQueue;
     // MessageQueue ReadLocker is required to protect calls to queueMessage and
     // getDestinationAddresses:
     // The routing table must not be modified between getDestinationAddresses and queueMessage.
@@ -210,15 +210,15 @@ protected:
     // and sendMessages:
     // Routing table look ups and insertions to the messageQueue must not be done between addNextHop
     // and sendMessages calls.
-    ReadWriteLock messageQueueRetryLock;
-    std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue;
-    std::mutex transportAvailabilityMutex;
-    std::string routingTableFileName;
-    std::unique_ptr<IMulticastAddressCalculator> addressCalculator;
-    SteadyTimer messageQueueCleanerTimer;
-    const std::chrono::milliseconds messageQueueCleanerTimerPeriodMs;
-    SteadyTimer routingTableCleanerTimer;
-    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
+    ReadWriteLock _messageQueueRetryLock;
+    std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> _transportNotAvailableQueue;
+    std::mutex _transportAvailabilityMutex;
+    std::string _routingTableFileName;
+    std::unique_ptr<IMulticastAddressCalculator> _addressCalculator;
+    SteadyTimer _messageQueueCleanerTimer;
+    const std::chrono::milliseconds _messageQueueCleanerTimerPeriodMs;
+    SteadyTimer _routingTableCleanerTimer;
+    std::vector<std::shared_ptr<ITransportStatus>> _transportStatuses;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
@@ -226,9 +226,9 @@ private:
 
     void checkExpiryDate(const ImmutableMessage& message);
     AddressUnorderedSet lookupAddresses(const std::unordered_set<std::string>& participantIds);
-    std::atomic<bool> isShuttingDown;
-    std::atomic<std::uint64_t> numberOfRoutedMessages;
-    const std::uint64_t maxAclRetryIntervalMs;
+    std::atomic<bool> _isShuttingDown;
+    std::atomic<std::uint64_t> _numberOfRoutedMessages;
+    const std::uint64_t _maxAclRetryIntervalMs;
 };
 
 /**
@@ -246,11 +246,11 @@ public:
     void run() override;
 
 private:
-    std::shared_ptr<ImmutableMessage> message;
-    std::shared_ptr<IMessagingStub> messagingStub;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress;
-    std::weak_ptr<AbstractMessageRouter> messageRouter;
-    std::uint32_t tryCount;
+    std::shared_ptr<ImmutableMessage> _message;
+    std::shared_ptr<IMessagingStub> _messagingStub;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> _destAddress;
+    std::weak_ptr<AbstractMessageRouter> _messageRouter;
+    std::uint32_t _tryCount;
 
     ADD_LOGGER(MessageRunnable)
 };

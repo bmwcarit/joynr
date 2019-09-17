@@ -30,7 +30,7 @@ namespace joynr
 MqttMessagingStubFactory::MqttMessagingStubFactory(
         std::shared_ptr<ITransportMessageSender> messageSender,
         const std::string& gbid)
-        : messageSender(messageSender), gbid(gbid)
+        : _messageSender(messageSender), _gbid(gbid)
 {
 }
 
@@ -43,11 +43,11 @@ bool MqttMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Addr
         return false;
     }
 
-    if (gbid != (mqttAddress->getBrokerUri())) {
+    if (_gbid != (mqttAddress->getBrokerUri())) {
         JOYNR_LOG_ERROR(logger(),
                         "GBID: {} is unknown in MqttMessagingStubFactory for GBID: {}",
                         mqttAddress->getBrokerUri(),
-                        gbid);
+                        _gbid);
         return false;
     }
 
@@ -64,14 +64,14 @@ std::shared_ptr<IMessagingStub> MqttMessagingStubFactory::create(
         return nullptr;
     }
 
-    if (gbid != (mqttAddress->getBrokerUri())) {
+    if (_gbid != (mqttAddress->getBrokerUri())) {
         JOYNR_LOG_FATAL(logger(),
                         "GBID: {} is unknown in MqttMessagingStubFactory for GBID: {}",
                         mqttAddress->getBrokerUri(),
-                        gbid);
+                        _gbid);
         return nullptr;
     }
-    return std::make_shared<MqttMessagingStub>(messageSender, *mqttAddress);
+    return std::make_shared<MqttMessagingStub>(_messageSender, *mqttAddress);
 }
 
 void MqttMessagingStubFactory::registerOnMessagingStubClosedCallback(

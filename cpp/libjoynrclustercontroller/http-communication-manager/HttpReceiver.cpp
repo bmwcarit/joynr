@@ -31,20 +31,20 @@ namespace joynr
 HttpReceiver::HttpReceiver(const MessagingSettings& settings,
                            const std::string& channelId,
                            const std::string& receiverId)
-        : channelCreatedSemaphore(std::make_shared<Semaphore>(0)),
-          channelId(channelId),
-          receiverId(receiverId),
-          globalClusterControllerAddress(),
-          settings(settings),
-          messageReceiver(nullptr),
-          onMessageReceived(nullptr)
+        : _channelCreatedSemaphore(std::make_shared<Semaphore>(0)),
+          _channelId(channelId),
+          _receiverId(receiverId),
+          _globalClusterControllerAddress(),
+          _settings(settings),
+          _messageReceiver(nullptr),
+          _onMessageReceived(nullptr)
 {
     JOYNR_LOG_DEBUG(logger(), "Print settings... ");
     settings.printSettings();
     updateSettings();
     JOYNR_LOG_DEBUG(logger(), "Init finished.");
 
-    globalClusterControllerAddress = system::RoutingTypes::ChannelAddress(
+    _globalClusterControllerAddress = system::RoutingTypes::ChannelAddress(
             settings.getBrokerUrl().getBrokerChannelsBaseUrl().toString() + channelId + "/",
             channelId);
 
@@ -55,27 +55,27 @@ HttpReceiver::HttpReceiver(const MessagingSettings& settings,
 void HttpReceiver::updateSettings()
 {
     // Setup the proxy to use
-    if (settings.getLocalProxyHost().empty()) {
+    if (_settings.getLocalProxyHost().empty()) {
         HttpNetworking::getInstance()->setGlobalProxy(std::string());
     } else {
-        HttpNetworking::getInstance()->setGlobalProxy(settings.getLocalProxyHost() + ":" +
-                                                      settings.getLocalProxyPort());
+        HttpNetworking::getInstance()->setGlobalProxy(_settings.getLocalProxyHost() + ":" +
+                                                      _settings.getLocalProxyPort());
     }
 
     // Turn on HTTP debug
-    if (settings.getHttpDebug()) {
+    if (_settings.getHttpDebug()) {
         HttpNetworking::getInstance()->setHTTPDebugOn();
     }
 
     // Set the connect timeout
     HttpNetworking::getInstance()->setConnectTimeout(
-            std::chrono::milliseconds(settings.getHttpConnectTimeout()));
+            std::chrono::milliseconds(_settings.getHttpConnectTimeout()));
 
     // HTTPS settings
-    HttpNetworking::getInstance()->setCertificateAuthority(settings.getCertificateAuthority());
-    HttpNetworking::getInstance()->setClientCertificate(settings.getClientCertificate());
+    HttpNetworking::getInstance()->setCertificateAuthority(_settings.getCertificateAuthority());
+    HttpNetworking::getInstance()->setClientCertificate(_settings.getClientCertificate());
     HttpNetworking::getInstance()->setClientCertificatePassword(
-            settings.getClientCertificatePassword());
+            _settings.getClientCertificatePassword());
 }
 
 HttpReceiver::~HttpReceiver()
@@ -85,30 +85,30 @@ HttpReceiver::~HttpReceiver()
 
 void HttpReceiver::startReceiveQueue()
 {
-    if (!onMessageReceived) {
+    if (!_onMessageReceived) {
         JOYNR_LOG_FATAL(logger(), "FAIL::receiveQueue started with no onMessageReceived.");
     }
 
     // Get the settings specific to long polling
     LongPollingMessageReceiverSettings longPollSettings = {
-            std::chrono::milliseconds(settings.getBrokerTimeoutMs()),
-            std::chrono::milliseconds(settings.getLongPollTimeoutMs()),
-            std::chrono::milliseconds(settings.getLongPollRetryInterval()),
-            std::chrono::milliseconds(settings.getCreateChannelRetryInterval())};
+            std::chrono::milliseconds(_settings.getBrokerTimeoutMs()),
+            std::chrono::milliseconds(_settings.getLongPollTimeoutMs()),
+            std::chrono::milliseconds(_settings.getLongPollRetryInterval()),
+            std::chrono::milliseconds(_settings.getCreateChannelRetryInterval())};
 
     JOYNR_LOG_DEBUG(logger(), "startReceiveQueue");
-    messageReceiver = std::make_unique<LongPollingMessageReceiver>(settings.getBrokerUrl(),
-                                                                   channelId,
-                                                                   receiverId,
-                                                                   longPollSettings,
-                                                                   channelCreatedSemaphore,
-                                                                   onMessageReceived);
-    messageReceiver->start();
+    _messageReceiver = std::make_unique<LongPollingMessageReceiver>(_settings.getBrokerUrl(),
+                                                                    _channelId,
+                                                                    _receiverId,
+                                                                    longPollSettings,
+                                                                    _channelCreatedSemaphore,
+                                                                    _onMessageReceived);
+    _messageReceiver->start();
 }
 
 bool HttpReceiver::isConnected()
 {
-    return channelCreatedSemaphore->waitFor(std::chrono::milliseconds::zero());
+    return _channelCreatedSemaphore->waitFor(std::chrono::milliseconds::zero());
 }
 
 void HttpReceiver::stopReceiveQueue()
@@ -116,19 +116,19 @@ void HttpReceiver::stopReceiveQueue()
     // currently channelCreatedSemaphore is not released here. This would be necessary if
     // stopReceivequeue is called, before channel is created.
     JOYNR_LOG_DEBUG(logger(), "stopReceiveQueue");
-    if (messageReceiver) {
-        messageReceiver.reset();
+    if (_messageReceiver) {
+        _messageReceiver.reset();
     }
 }
 
 const std::string HttpReceiver::getSerializedGlobalClusterControllerAddress() const
 {
-    return joynr::serializer::serializeToJson(globalClusterControllerAddress);
+    return joynr::serializer::serializeToJson(_globalClusterControllerAddress);
 }
 
 const system::RoutingTypes::ChannelAddress& HttpReceiver::getGlobalClusterControllerAddress() const
 {
-    return globalClusterControllerAddress;
+    return _globalClusterControllerAddress;
 }
 
 bool HttpReceiver::tryToDeleteChannel()
@@ -137,7 +137,7 @@ bool HttpReceiver::tryToDeleteChannel()
     // messageSender.
     // TODO channelUrl is known only to the LongPollingMessageReceiver!
     std::string deleteChannelUrl =
-            settings.getBrokerUrl()
+            _settings.getBrokerUrl()
                     .getDeleteChannelUrl(getSerializedGlobalClusterControllerAddress())
                     .toString();
     std::shared_ptr<IHttpDeleteBuilder> deleteChannelRequestBuilder(
@@ -148,7 +148,7 @@ bool HttpReceiver::tryToDeleteChannel()
     HttpResult deleteChannelResult = deleteChannelRequest->execute();
     std::int64_t statusCode = deleteChannelResult.getStatusCode();
     if (statusCode == 200) {
-        channelCreatedSemaphore->waitFor(
+        _channelCreatedSemaphore->waitFor(
                 std::chrono::seconds(5)); // Reset the channel created Semaphore.
         JOYNR_LOG_DEBUG(logger(), "channel deletion successfull");
 
@@ -167,7 +167,7 @@ bool HttpReceiver::tryToDeleteChannel()
 void HttpReceiver::registerReceiveCallback(
         std::function<void(smrf::ByteVector&&)> onMessageReceived)
 {
-    this->onMessageReceived = std::move(onMessageReceived);
+    this->_onMessageReceived = std::move(onMessageReceived);
 }
 
 } // namespace joynr

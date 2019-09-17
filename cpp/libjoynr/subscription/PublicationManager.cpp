@@ -67,16 +67,16 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublisherRunnable);
-    std::weak_ptr<PublicationManager> publicationManager;
-    std::string subscriptionId;
+    std::weak_ptr<PublicationManager> _publicationManager;
+    std::string _subscriptionId;
 };
 
 class PublicationManager::PublicationEndRunnable : public Runnable
 {
 public:
     ~PublicationEndRunnable() override = default;
-    PublicationEndRunnable(std::weak_ptr<PublicationManager> publicationManager,
-                           const std::string& subscriptionId);
+    PublicationEndRunnable(std::weak_ptr<PublicationManager> _publicationManager,
+                           const std::string& _subscriptionId);
 
     void shutdown() override;
 
@@ -85,16 +85,16 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PublicationEndRunnable);
-    std::weak_ptr<PublicationManager> publicationManager;
-    std::string subscriptionId;
+    std::weak_ptr<PublicationManager> _publicationManager;
+    std::string _subscriptionId;
 };
 
 //------ PublicationManager ----------------------------------------------------
 
 PublicationManager::~PublicationManager()
 {
-    std::lock_guard<std::mutex> shutDownLocker(shutDownMutex);
-    assert(shuttingDown);
+    std::lock_guard<std::mutex> shutDownLocker(_shutDownMutex);
+    assert(_shuttingDown);
 }
 
 void PublicationManager::shutdown()
@@ -102,16 +102,16 @@ void PublicationManager::shutdown()
     // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true
     // except extra parameter is provided
     {
-        std::lock_guard<std::mutex> shutDownLocker(shutDownMutex);
-        assert(!shuttingDown);
-        if (shuttingDown) {
+        std::lock_guard<std::mutex> shutDownLocker(_shutDownMutex);
+        assert(!_shuttingDown);
+        if (_shuttingDown) {
             return;
         }
-        shuttingDown = true;
+        _shuttingDown = true;
     }
 
     JOYNR_LOG_TRACE(logger(), "shutting down thread pool and scheduler ...");
-    delayedScheduler->shutdown();
+    _delayedScheduler->shutdown();
 
     JOYNR_LOG_TRACE(logger(), "saving subscriptionsMap...");
     bool finalSave = true;
@@ -121,13 +121,13 @@ void PublicationManager::shutdown()
     // Remove all publications
     JOYNR_LOG_TRACE(logger(), "removing publications");
 
-    while (subscriptionId2SubscriptionRequest.size() > 0) {
-        auto subscriptionRequest = subscriptionId2SubscriptionRequest.begin();
+    while (_subscriptionId2SubscriptionRequest.size() > 0) {
+        auto subscriptionRequest = _subscriptionId2SubscriptionRequest.begin();
         removeAttributePublication((subscriptionRequest->second)->getSubscriptionId(), false);
     }
 
-    while (subscriptionId2BroadcastSubscriptionRequest.size() > 0) {
-        auto broadcastRequest = subscriptionId2BroadcastSubscriptionRequest.begin();
+    while (_subscriptionId2BroadcastSubscriptionRequest.size() > 0) {
+        auto broadcastRequest = _subscriptionId2BroadcastSubscriptionRequest.begin();
         removeBroadcastPublication((broadcastRequest->second)->getSubscriptionId(), false);
     }
 }
@@ -137,28 +137,28 @@ PublicationManager::PublicationManager(boost::asio::io_service& ioService,
                                        bool enableSubscriptionStorage,
                                        std::uint64_t ttlUplift,
                                        int maxThreads)
-        : messageSender(messageSender),
-          publications(),
-          subscriptionId2SubscriptionRequest(),
-          subscriptionId2BroadcastSubscriptionRequest(),
-          fileWriteLock(),
-          delayedScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
-                                                                        "PubManager",
-                                                                        ioService)),
-          shutDownMutex(),
-          shuttingDown(false),
-          subscriptionRequestStorageFileName(),
-          broadcastSubscriptionRequestStorageFileName(),
-          queuedSubscriptionRequests(),
-          queuedSubscriptionRequestsMutex(),
-          queuedBroadcastSubscriptionRequests(),
-          queuedBroadcastSubscriptionRequestsMutex(),
-          currentScheduledPublications(),
-          currentScheduledPublicationsMutex(),
-          broadcastFilterLock(),
-          ttlUplift(ttlUplift),
-          enableSubscriptionStorage(enableSubscriptionStorage),
-          publicationsMutex()
+        : _messageSender(messageSender),
+          _publications(),
+          _subscriptionId2SubscriptionRequest(),
+          _subscriptionId2BroadcastSubscriptionRequest(),
+          _fileWriteLock(),
+          _delayedScheduler(std::make_shared<ThreadPoolDelayedScheduler>(maxThreads,
+                                                                         "PubManager",
+                                                                         ioService)),
+          _shutDownMutex(),
+          _shuttingDown(false),
+          _subscriptionRequestStorageFileName(),
+          _broadcastSubscriptionRequestStorageFileName(),
+          _queuedSubscriptionRequests(),
+          _queuedSubscriptionRequestsMutex(),
+          _queuedBroadcastSubscriptionRequests(),
+          _queuedBroadcastSubscriptionRequestsMutex(),
+          _currentScheduledPublications(),
+          _currentScheduledPublicationsMutex(),
+          _broadcastFilterLock(),
+          _ttlUplift(ttlUplift),
+          _enableSubscriptionStorage(enableSubscriptionStorage),
+          _publicationsMutex()
 {
 }
 
@@ -181,7 +181,7 @@ void PublicationManager::sendSubscriptionReply(std::weak_ptr<IPublicationSender>
         messagingQos.setTtl(INT64_MAX);
     } else {
         const auto timePoint = TimePoint::fromAbsoluteMs(expiryDateMs);
-        messagingQos.setTtl(timePoint.relativeFromNow().count());
+        messagingQos.setTtl(static_cast<std::uint64_t>(timePoint.relativeFromNow().count()));
     }
     if (auto publicationSenderSharedPtr = publicationSender.lock()) {
         publicationSenderSharedPtr->sendSubscriptionReply(
@@ -239,12 +239,13 @@ void PublicationManager::addSubscriptionCleanupIfNecessary(std::shared_ptr<Publi
         std::chrono::hours tolerance = std::chrono::hours(1);
         const TimePoint max = TimePoint::max() - tolerance;
         TimePoint publicationEnd;
-        if (qos->getExpiryDateMs() > max.toMilliseconds() - static_cast<std::int64_t>(ttlUplift)) {
+        if (qos->getExpiryDateMs() > max.toMilliseconds() - static_cast<std::int64_t>(_ttlUplift)) {
             publicationEnd = max;
         } else {
-            publicationEnd = TimePoint::fromAbsoluteMs(qos->getExpiryDateMs() + ttlUplift);
+            publicationEnd = TimePoint::fromAbsoluteMs(qos->getExpiryDateMs() +
+                                                       static_cast<std::int64_t>(_ttlUplift));
         }
-        publication->publicationEndRunnableHandle = delayedScheduler->schedule(
+        publication->_publicationEndRunnableHandle = _delayedScheduler->schedule(
                 std::make_shared<PublicationEndRunnable>(shared_from_this(), subscriptionId),
                 publicationEnd.relativeFromNow());
         JOYNR_LOG_TRACE(logger(),
@@ -268,16 +269,16 @@ void PublicationManager::handleAttributeSubscriptionRequest(
         removeAttributePublication(subscriptionId);
     }
 
-    subscriptionId2SubscriptionRequest.insert(subscriptionId, requestInfo);
+    _subscriptionId2SubscriptionRequest.insert(subscriptionId, requestInfo);
     // Make note of the publication
-    publications.insert(subscriptionId, publication);
+    _publications.insert(subscriptionId, publication);
 
     saveAttributeSubscriptionRequestsMap();
 
     JOYNR_LOG_DEBUG(logger(), "added subscription: {}", requestInfo->toString());
 
     {
-        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         // Add an onChange publication if needed
         addOnChangePublication(subscriptionId, requestInfo, publication);
 
@@ -289,8 +290,8 @@ void PublicationManager::handleAttributeSubscriptionRequest(
             addSubscriptionCleanupIfNecessary(publication, qos, subscriptionId);
             {
                 std::lock_guard<std::mutex> currentScheduledLocker(
-                        currentScheduledPublicationsMutex);
-                currentScheduledPublications.push_back(subscriptionId);
+                        _currentScheduledPublicationsMutex);
+                _currentScheduledPublications.push_back(subscriptionId);
             }
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
@@ -298,11 +299,12 @@ void PublicationManager::handleAttributeSubscriptionRequest(
                                   qos->getExpiryDateMs(),
                                   subscriptionId);
             // sent at least once the current value
-            delayedScheduler->schedule(
+            _delayedScheduler->schedule(
                     std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId));
         } else {
             JOYNR_LOG_WARN(logger(), "publication end is in the past");
-            const TimePoint expiryDate = TimePoint::fromRelativeMs(60000) + ttlUplift;
+            const TimePoint expiryDate =
+                    TimePoint::fromRelativeMs(60000) + static_cast<std::int64_t>(_ttlUplift);
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),
@@ -319,7 +321,7 @@ void PublicationManager::addOnChangePublication(
         std::shared_ptr<SubscriptionRequestInformation> request,
         std::shared_ptr<Publication> publication)
 {
-    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         JOYNR_LOG_TRACE(logger(), "adding onChange subscription: {}", subscriptionId);
 
@@ -328,11 +330,11 @@ void PublicationManager::addOnChangePublication(
                 std::make_shared<SubscriptionAttributeListener>(subscriptionId, shared_from_this());
 
         // Register the attribute listener
-        std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
+        std::shared_ptr<RequestCaller> requestCaller = publication->_requestCaller;
         requestCaller->registerAttributeListener(request->getSubscribeToName(), attributeListener);
 
         // Make note of the attribute listener so that it can be unregistered
-        publication->attributeListener = std::move(attributeListener);
+        publication->_attributeListener = std::move(attributeListener);
     }
 }
 
@@ -343,18 +345,18 @@ void PublicationManager::addBroadcastPublication(
 {
     JOYNR_LOG_TRACE(logger(), "adding broadcast subscription: {}", subscriptionId);
 
-    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
 
     // Create a broadcast listener to listen for broadcast events
     std::shared_ptr<UnicastBroadcastListener> broadcastListener =
             std::make_shared<UnicastBroadcastListener>(subscriptionId, shared_from_this());
 
     // Register the broadcast listener
-    std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
+    std::shared_ptr<RequestCaller> requestCaller = publication->_requestCaller;
     requestCaller->registerBroadcastListener(request->getSubscribeToName(), broadcastListener);
 
     // Make note of the attribute listener so that it can be unregistered
-    publication->broadcastListener = std::move(broadcastListener);
+    publication->_broadcastListener = std::move(broadcastListener);
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,
@@ -369,12 +371,12 @@ void PublicationManager::add(const std::string& proxyParticipantId,
                                                                         CallContextStorage::get(),
                                                                         subscriptionRequest);
     {
-        std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
-        queuedSubscriptionRequests.insert(
+        std::lock_guard<std::mutex> queueLocker(_queuedSubscriptionRequestsMutex);
+        _queuedSubscriptionRequests.insert(
                 std::make_pair(requestInfo->getProviderId(), requestInfo));
     }
 
-    subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
+    _subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
     saveAttributeSubscriptionRequestsMap();
 }
 
@@ -420,16 +422,16 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
         removeBroadcastPublication(subscriptionId);
     }
 
-    subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId, requestInfo);
+    _subscriptionId2BroadcastSubscriptionRequest.insert(subscriptionId, requestInfo);
 
     // Make note of the publication
-    publications.insert(subscriptionId, publication);
+    _publications.insert(subscriptionId, publication);
     JOYNR_LOG_DEBUG(logger(), "added subscription: {}", requestInfo->toString());
 
     saveBroadcastSubscriptionRequestsMap();
 
     {
-        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         // Add an onChange publication if needed
         addBroadcastPublication(subscriptionId, requestInfo, publication);
 
@@ -446,7 +448,8 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
                                   subscriptionId);
         } else {
             JOYNR_LOG_WARN(logger(), "publication end is in the past");
-            const TimePoint expiryDate = TimePoint::fromRelativeMs(60000) + ttlUplift;
+            const TimePoint expiryDate =
+                    TimePoint::fromRelativeMs(60000) + static_cast<std::int64_t>(_ttlUplift);
             sendSubscriptionReply(publicationSender,
                                   requestInfo->getProviderId(),
                                   requestInfo->getProxyId(),
@@ -468,12 +471,12 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     auto requestInfo = std::make_shared<BroadcastSubscriptionRequestInformation>(
             proxyParticipantId, providerParticipantId, subscriptionRequest);
     {
-        std::lock_guard<std::mutex> queueLocker(queuedBroadcastSubscriptionRequestsMutex);
-        queuedBroadcastSubscriptionRequests.insert(
+        std::lock_guard<std::mutex> queueLocker(_queuedBroadcastSubscriptionRequestsMutex);
+        _queuedBroadcastSubscriptionRequests.insert(
                 std::make_pair(requestInfo->getProviderId(), requestInfo));
     }
 
-    subscriptionId2BroadcastSubscriptionRequest.insert(
+    _subscriptionId2BroadcastSubscriptionRequest.insert(
             requestInfo->getSubscriptionId(), requestInfo);
     saveBroadcastSubscriptionRequestsMap();
 }
@@ -494,7 +497,7 @@ void PublicationManager::removeAllSubscriptions(const std::string& providerId)
                 }
             }
         };
-        subscriptionId2SubscriptionRequest.applyReadFun(callback);
+        _subscriptionId2SubscriptionRequest.applyReadFun(callback);
     }
 
     std::vector<std::string> broadcastsToRemove;
@@ -508,7 +511,7 @@ void PublicationManager::removeAllSubscriptions(const std::string& providerId)
                 }
             }
         };
-        subscriptionId2BroadcastSubscriptionRequest.applyReadFun(callback);
+        _subscriptionId2BroadcastSubscriptionRequest.applyReadFun(callback);
     }
 
     // Remove each publication
@@ -538,7 +541,7 @@ void PublicationManager::stopPublication(const std::string& subscriptionId)
 
 bool PublicationManager::publicationExists(const std::string& subscriptionId) const
 {
-    return publications.contains(subscriptionId);
+    return _publications.contains(subscriptionId);
 }
 
 void PublicationManager::restore(const std::string& providerId,
@@ -548,13 +551,13 @@ void PublicationManager::restore(const std::string& providerId,
     JOYNR_LOG_TRACE(logger(), "restore: entering ...");
 
     {
-        std::lock_guard<std::mutex> queueLocker(queuedSubscriptionRequestsMutex);
+        std::lock_guard<std::mutex> queueLocker(_queuedSubscriptionRequestsMutex);
         std::multimap<std::string, std::shared_ptr<SubscriptionRequestInformation>>::iterator
-                queuedSubscriptionRequestsIterator = queuedSubscriptionRequests.find(providerId);
-        while (queuedSubscriptionRequestsIterator != queuedSubscriptionRequests.end()) {
+                queuedSubscriptionRequestsIterator = _queuedSubscriptionRequests.find(providerId);
+        while (queuedSubscriptionRequestsIterator != _queuedSubscriptionRequests.end()) {
             std::shared_ptr<SubscriptionRequestInformation> requestInfo(
                     queuedSubscriptionRequestsIterator->second);
-            queuedSubscriptionRequests.erase(queuedSubscriptionRequestsIterator);
+            _queuedSubscriptionRequests.erase(queuedSubscriptionRequestsIterator);
             if (!isSubscriptionExpired(requestInfo->getQos())) {
                 JOYNR_LOG_TRACE(logger(),
                                 "Restoring subscription for provider: {} {}",
@@ -562,21 +565,21 @@ void PublicationManager::restore(const std::string& providerId,
                                 requestInfo->toString());
                 handleAttributeSubscriptionRequest(requestInfo, requestCaller, publicationSender);
             }
-            queuedSubscriptionRequestsIterator = queuedSubscriptionRequests.find(providerId);
+            queuedSubscriptionRequestsIterator = _queuedSubscriptionRequests.find(providerId);
         }
     }
 
     {
-        std::lock_guard<std::mutex> queueLocker(queuedBroadcastSubscriptionRequestsMutex);
+        std::lock_guard<std::mutex> queueLocker(_queuedBroadcastSubscriptionRequestsMutex);
         std::multimap<std::string,
                       std::shared_ptr<BroadcastSubscriptionRequestInformation>>::iterator
                 queuedBroadcastSubscriptionRequestsIterator =
-                        queuedBroadcastSubscriptionRequests.find(providerId);
+                        _queuedBroadcastSubscriptionRequests.find(providerId);
         while (queuedBroadcastSubscriptionRequestsIterator !=
-               queuedBroadcastSubscriptionRequests.end()) {
+               _queuedBroadcastSubscriptionRequests.end()) {
             std::shared_ptr<BroadcastSubscriptionRequestInformation> requestInfo(
                     queuedBroadcastSubscriptionRequestsIterator->second);
-            queuedBroadcastSubscriptionRequests.erase(queuedBroadcastSubscriptionRequestsIterator);
+            _queuedBroadcastSubscriptionRequests.erase(queuedBroadcastSubscriptionRequestsIterator);
             if (!isSubscriptionExpired(requestInfo->getQos())) {
                 JOYNR_LOG_TRACE(logger(),
                                 "Restoring subscription for provider: {}  {}",
@@ -585,7 +588,7 @@ void PublicationManager::restore(const std::string& providerId,
                 handleBroadcastSubscriptionRequest(requestInfo, requestCaller, publicationSender);
             }
             queuedBroadcastSubscriptionRequestsIterator =
-                    queuedBroadcastSubscriptionRequests.find(providerId);
+                    _queuedBroadcastSubscriptionRequests.find(providerId);
         }
     }
 }
@@ -595,14 +598,14 @@ void PublicationManager::loadSavedAttributeSubscriptionRequestsMap(const std::st
     JOYNR_LOG_TRACE(logger(), "Loading stored AttributeSubscriptionrequests.");
 
     // update reference file
-    if (fileName != subscriptionRequestStorageFileName) {
-        subscriptionRequestStorageFileName = std::move(fileName);
+    if (fileName != _subscriptionRequestStorageFileName) {
+        _subscriptionRequestStorageFileName = std::move(fileName);
     }
 
     loadSavedSubscriptionRequestsMap<SubscriptionRequestInformation>(
-            subscriptionRequestStorageFileName,
-            queuedSubscriptionRequestsMutex,
-            queuedSubscriptionRequests);
+            _subscriptionRequestStorageFileName,
+            _queuedSubscriptionRequestsMutex,
+            _queuedSubscriptionRequests);
 }
 
 void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName)
@@ -610,14 +613,14 @@ void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap(const std::st
     JOYNR_LOG_TRACE(logger(), "Loading stored BroadcastSubscriptionrequests.");
 
     // update reference file
-    if (fileName != broadcastSubscriptionRequestStorageFileName) {
-        broadcastSubscriptionRequestStorageFileName = std::move(fileName);
+    if (fileName != _broadcastSubscriptionRequestStorageFileName) {
+        _broadcastSubscriptionRequestStorageFileName = std::move(fileName);
     }
 
     loadSavedSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
-            broadcastSubscriptionRequestStorageFileName,
-            queuedBroadcastSubscriptionRequestsMutex,
-            queuedBroadcastSubscriptionRequests);
+            _broadcastSubscriptionRequestStorageFileName,
+            _queuedBroadcastSubscriptionRequestsMutex,
+            _queuedBroadcastSubscriptionRequests);
 }
 
 // This function assumes that subscriptionList is a copy that is exclusively used by this function
@@ -625,8 +628,8 @@ void PublicationManager::saveBroadcastSubscriptionRequestsMap(bool saveOnShutdow
 {
     JOYNR_LOG_TRACE(logger(), "Saving active broadcastSubscriptionRequests to file.");
 
-    saveSubscriptionRequestsMap(subscriptionId2BroadcastSubscriptionRequest,
-                                broadcastSubscriptionRequestStorageFileName,
+    saveSubscriptionRequestsMap(_subscriptionId2BroadcastSubscriptionRequest,
+                                _broadcastSubscriptionRequestStorageFileName,
                                 saveOnShutdown);
 }
 
@@ -635,15 +638,15 @@ void PublicationManager::saveAttributeSubscriptionRequestsMap(bool finalSave)
     JOYNR_LOG_TRACE(logger(), "Saving active attribute subscriptionRequests to file.");
 
     saveSubscriptionRequestsMap(
-            subscriptionId2SubscriptionRequest, subscriptionRequestStorageFileName, finalSave);
+            _subscriptionId2SubscriptionRequest, _subscriptionRequestStorageFileName, finalSave);
 }
 
 template <typename Map>
-void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
+void PublicationManager::saveSubscriptionRequestsMap(const Map& mmap,
                                                      const std::string& storageFilename,
                                                      bool finalSave)
 {
-    if (!enableSubscriptionStorage) {
+    if (!_enableSubscriptionStorage) {
         return;
     }
 
@@ -658,15 +661,15 @@ void PublicationManager::saveSubscriptionRequestsMap(const Map& map,
     }
 
     std::vector<typename Map::mapped_type> subscriptionVector;
-    subscriptionVector.reserve(map.size());
+    subscriptionVector.reserve(mmap.size());
 
-    auto callback = [&subscriptionVector](auto&& map) {
-        for (auto&& entry : map) {
+    auto callback = [&subscriptionVector](auto&& localMap) {
+        for (auto&& entry : localMap) {
             subscriptionVector.push_back(entry.second);
         }
     };
 
-    map.applyReadFun(callback);
+    mmap.applyReadFun(callback);
 
     try {
         joynr::util::saveStringToFile(
@@ -688,7 +691,7 @@ void PublicationManager::loadSavedSubscriptionRequestsMap(
                   "loadSavedSubscriptionRequestsMap can only be used for subclasses of "
                   "SubscriptionRequest");
 
-    if (!enableSubscriptionStorage) {
+    if (!_enableSubscriptionStorage) {
         return;
     }
 
@@ -736,14 +739,14 @@ void PublicationManager::removeAttributePublication(const std::string& subscript
 {
     JOYNR_LOG_DEBUG(logger(), "removePublication: {}", subscriptionId);
 
-    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
-    std::shared_ptr<Publication> publication = publications.take(subscriptionId);
+    std::unique_lock<std::mutex> publicationsLock(_publicationsMutex);
+    std::shared_ptr<Publication> publication = _publications.take(subscriptionId);
     publicationsLock.unlock();
     std::shared_ptr<SubscriptionRequestInformation> request =
-            subscriptionId2SubscriptionRequest.take(subscriptionId);
+            _subscriptionId2SubscriptionRequest.take(subscriptionId);
 
     if (publication && request) {
-        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         // Delete the onChange publication if needed
         removeOnChangePublication(subscriptionId, request, publication);
     }
@@ -758,20 +761,20 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
 {
     JOYNR_LOG_DEBUG(logger(), "removeBroadcast: {}", subscriptionId);
 
-    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
-    std::shared_ptr<Publication> publication = publications.take(subscriptionId);
+    std::unique_lock<std::mutex> publicationsLock(_publicationsMutex);
+    std::shared_ptr<Publication> publication = _publications.take(subscriptionId);
     publicationsLock.unlock();
 
     std::shared_ptr<BroadcastSubscriptionRequestInformation> request =
-            subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId);
+            _subscriptionId2BroadcastSubscriptionRequest.take(subscriptionId);
 
     if (publication && request) {
-        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         // Remove listener
-        std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
+        std::shared_ptr<RequestCaller> requestCaller = publication->_requestCaller;
         requestCaller->unregisterBroadcastListener(
-                request->getSubscribeToName(), publication->broadcastListener);
-        publication->broadcastListener = nullptr;
+                request->getSubscribeToName(), publication->_broadcastListener);
+        publication->_broadcastListener = nullptr;
 
         removePublicationEndRunnable(publication);
     }
@@ -788,17 +791,17 @@ void PublicationManager::removeOnChangePublication(
 {
     assert(request);
     assert(publication);
-    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
     JOYNR_LOG_TRACE(logger(), "Removing onChange publication for id = {}", subscriptionId);
     // to silence unused-variable compiler warnings
     std::ignore = subscriptionId;
 
     if (SubscriptionUtil::isOnChangeSubscription(request->getQos())) {
         // Unregister and delete the attribute listener
-        std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
+        std::shared_ptr<RequestCaller> requestCaller = publication->_requestCaller;
         requestCaller->unregisterAttributeListener(
-                request->getSubscribeToName(), publication->attributeListener);
-        publication->attributeListener = nullptr;
+                request->getSubscribeToName(), publication->_attributeListener);
+        publication->_attributeListener = nullptr;
     }
     removePublicationEndRunnable(publication);
 }
@@ -807,20 +810,20 @@ void PublicationManager::removeOnChangePublication(
 void PublicationManager::removePublicationEndRunnable(std::shared_ptr<Publication> publication)
 {
     assert(publication);
-    if (publication->publicationEndRunnableHandle != DelayedScheduler::INVALID_RUNNABLE_HANDLE &&
+    if (publication->_publicationEndRunnableHandle != DelayedScheduler::_INVALID_RUNNABLE_HANDLE &&
         !isShuttingDown()) {
         JOYNR_LOG_TRACE(logger(),
                         "Unscheduling PublicationEndRunnable with handle: {}",
-                        publication->publicationEndRunnableHandle);
-        delayedScheduler->unschedule(publication->publicationEndRunnableHandle);
-        publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
+                        publication->_publicationEndRunnableHandle);
+        _delayedScheduler->unschedule(publication->_publicationEndRunnableHandle);
+        publication->_publicationEndRunnableHandle = DelayedScheduler::_INVALID_RUNNABLE_HANDLE;
     }
 }
 
 bool PublicationManager::isShuttingDown()
 {
-    std::lock_guard<std::mutex> shuwDownLocker(shutDownMutex);
-    return shuttingDown;
+    std::lock_guard<std::mutex> shuwDownLocker(_shutDownMutex);
+    return _shuttingDown;
 }
 
 std::int64_t PublicationManager::getPublicationTtlMs(
@@ -868,11 +871,11 @@ void PublicationManager::sendSubscriptionPublication(
 
     MessagingQos mQos;
 
-    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
     // Set the TTL
-    mQos.setTtl(getPublicationTtlMs(request));
+    mQos.setTtl(static_cast<std::uint64_t>(getPublicationTtlMs(request)));
 
-    std::weak_ptr<IPublicationSender> publicationSender = publication->sender;
+    std::weak_ptr<IPublicationSender> publicationSender = publication->_sender;
 
     if (auto publicationSenderSharedPtr = publicationSender.lock()) {
         publicationSenderSharedPtr->sendSubscriptionPublication(
@@ -883,11 +886,11 @@ void PublicationManager::sendSubscriptionPublication(
         // Make note of when this publication was sent
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
-        publication->timeOfLastPublication = now;
+        publication->_timeOfLastPublication = now;
 
         {
-            std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
-            util::removeAll(currentScheduledPublications, request->getSubscriptionId());
+            std::lock_guard<std::mutex> currentScheduledLocker(_currentScheduledPublicationsMutex);
+            util::removeAll(_currentScheduledPublications, request->getSubscriptionId());
         }
         JOYNR_LOG_TRACE(logger(), "sent publication @ {}", now);
     } else {
@@ -923,13 +926,13 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
     }
 
     // Get the subscription details
-    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
-    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::unique_lock<std::mutex> publicationsLock(_publicationsMutex);
+    std::shared_ptr<Publication> publication = _publications.value(subscriptionId);
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
-            subscriptionId2SubscriptionRequest.value(subscriptionId);
+            _subscriptionId2SubscriptionRequest.value(subscriptionId);
 
     if (publication && subscriptionRequest) {
-        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         publicationsLock.unlock();
         // See if the publication is needed
         const std::shared_ptr<SubscriptionQos> qos = subscriptionRequest->getQos();
@@ -939,7 +942,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
         // check if the subscription qos needs a periodic publication
         if (publicationInterval > 0) {
-            std::int64_t timeSinceLast = now - publication->timeOfLastPublication;
+            std::int64_t timeSinceLast = now - publication->_timeOfLastPublication;
             // publish only if not published in the current interval
             if (timeSinceLast < publicationInterval) {
                 JOYNR_LOG_TRACE(
@@ -950,14 +953,14 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
                 std::int64_t delayUntilNextPublication = publicationInterval - timeSinceLast;
                 assert(delayUntilNextPublication >= 0);
-                delayedScheduler->schedule(
+                _delayedScheduler->schedule(
                         std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
                         std::chrono::milliseconds(delayUntilNextPublication));
                 return;
             }
         }
 
-        std::shared_ptr<RequestCaller> requestCaller = publication->requestCaller;
+        std::shared_ptr<RequestCaller> requestCaller = publication->_requestCaller;
         const std::string& interfaceName = requestCaller->getInterfaceName();
         std::shared_ptr<IRequestInterpreter> requestInterpreter =
                 InterfaceRegistrar::instance().getRequestInterpreter(
@@ -986,7 +989,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
                 JOYNR_LOG_TRACE(
                         logger(), "rescheduling runnable with delay: {}", publicationInterval);
-                delayedScheduler->schedule(
+                _delayedScheduler->schedule(
                         std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
                         std::chrono::milliseconds(publicationInterval));
             }
@@ -1006,7 +1009,7 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
             if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
                 JOYNR_LOG_TRACE(
                         logger(), "rescheduling runnable with delay: {}", publicationInterval);
-                delayedScheduler->schedule(
+                _delayedScheduler->schedule(
                         std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
                         std::chrono::milliseconds(publicationInterval));
             }
@@ -1025,30 +1028,30 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
 
 void PublicationManager::removePublication(const std::string& subscriptionId)
 {
-    if (subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
+    if (_subscriptionId2SubscriptionRequest.contains(subscriptionId)) {
         removeAttributePublication(subscriptionId);
-    } else if (subscriptionId2BroadcastSubscriptionRequest.contains(subscriptionId)) {
+    } else if (_subscriptionId2BroadcastSubscriptionRequest.contains(subscriptionId)) {
         removeBroadcastPublication(subscriptionId);
     }
 }
 
 bool PublicationManager::isPublicationAlreadyScheduled(const std::string& subscriptionId)
 {
-    std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
-    return util::vectorContains(currentScheduledPublications, subscriptionId);
+    std::lock_guard<std::mutex> currentScheduledLocker(_currentScheduledPublicationsMutex);
+    return util::vectorContains(_currentScheduledPublications, subscriptionId);
 }
 
 std::int64_t PublicationManager::getTimeUntilNextPublication(
         std::shared_ptr<Publication> publication,
         const std::shared_ptr<SubscriptionQos> qos)
 {
-    std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+    std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
     // Check the last publication time against the min interval
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::system_clock::now().time_since_epoch()).count();
     std::int64_t minInterval = SubscriptionUtil::getMinInterval(qos);
 
-    std::int64_t timeSinceLast = now - publication->timeOfLastPublication;
+    std::int64_t timeSinceLast = now - publication->_timeOfLastPublication;
 
     if (minInterval > 0 && timeSinceLast < minInterval) {
         return minInterval - timeSinceLast;
@@ -1061,13 +1064,13 @@ void PublicationManager::reschedulePublication(const std::string& subscriptionId
                                                std::int64_t nextPublication)
 {
     if (nextPublication > 0) {
-        std::lock_guard<std::mutex> currentScheduledLocker(currentScheduledPublicationsMutex);
+        std::lock_guard<std::mutex> currentScheduledLocker(_currentScheduledPublicationsMutex);
 
         // Schedule a publication so that the change is not forgotten
-        if (!util::vectorContains(currentScheduledPublications, subscriptionId)) {
+        if (!util::vectorContains(_currentScheduledPublications, subscriptionId)) {
             JOYNR_LOG_TRACE(logger(), "rescheduling runnable with delay: {}", nextPublication);
-            currentScheduledPublications.push_back(subscriptionId);
-            delayedScheduler->schedule(
+            _currentScheduledPublications.push_back(subscriptionId);
+            _delayedScheduler->schedule(
                     std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
                     std::chrono::milliseconds(nextPublication));
         }
@@ -1078,13 +1081,13 @@ void PublicationManager::reschedulePublication(const std::string& subscriptionId
 
 PublicationManager::Publication::Publication(std::weak_ptr<IPublicationSender> publicationSender,
                                              std::shared_ptr<RequestCaller> requestCaller)
-        : timeOfLastPublication(0),
-          sender(publicationSender),
-          requestCaller(std::move(requestCaller)),
-          attributeListener(nullptr),
-          broadcastListener(nullptr),
-          mutex(),
-          publicationEndRunnableHandle(DelayedScheduler::INVALID_RUNNABLE_HANDLE)
+        : _timeOfLastPublication(0),
+          _sender(publicationSender),
+          _requestCaller(std::move(requestCaller)),
+          _attributeListener(nullptr),
+          _broadcastListener(nullptr),
+          _mutex(),
+          _publicationEndRunnableHandle(DelayedScheduler::_INVALID_RUNNABLE_HANDLE)
 {
 }
 
@@ -1094,8 +1097,8 @@ PublicationManager::PublisherRunnable::PublisherRunnable(
         std::weak_ptr<PublicationManager> publicationManager,
         const std::string& subscriptionId)
         : Runnable(),
-          publicationManager(std::move(publicationManager)),
-          subscriptionId(subscriptionId)
+          _publicationManager(std::move(publicationManager)),
+          _subscriptionId(subscriptionId)
 {
 }
 
@@ -1105,8 +1108,8 @@ void PublicationManager::PublisherRunnable::shutdown()
 
 void PublicationManager::PublisherRunnable::run()
 {
-    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
-        publicationManagerSharedPtr->pollSubscription(subscriptionId);
+    if (auto publicationManagerSharedPtr = _publicationManager.lock()) {
+        publicationManagerSharedPtr->pollSubscription(_subscriptionId);
     }
 }
 
@@ -1115,7 +1118,7 @@ void PublicationManager::PublisherRunnable::run()
 PublicationManager::PublicationEndRunnable::PublicationEndRunnable(
         std::weak_ptr<PublicationManager> publicationManager,
         const std::string& subscriptionId)
-        : Runnable(), publicationManager(publicationManager), subscriptionId(subscriptionId)
+        : Runnable(), _publicationManager(publicationManager), _subscriptionId(subscriptionId)
 {
 }
 
@@ -1125,18 +1128,18 @@ void PublicationManager::PublicationEndRunnable::shutdown()
 
 void PublicationManager::PublicationEndRunnable::run()
 {
-    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+    if (auto publicationManagerSharedPtr = _publicationManager.lock()) {
         std::unique_lock<std::mutex> publicationsLock(
-                publicationManagerSharedPtr->publicationsMutex);
+                publicationManagerSharedPtr->_publicationsMutex);
         std::shared_ptr<Publication> publication =
-                publicationManagerSharedPtr->publications.value(subscriptionId);
+                publicationManagerSharedPtr->_publications.value(_subscriptionId);
         if (publication) {
-            std::lock_guard<std::recursive_mutex> lock((publication->mutex));
-            publication->publicationEndRunnableHandle = DelayedScheduler::INVALID_RUNNABLE_HANDLE;
+            std::lock_guard<std::recursive_mutex> lock((publication->_mutex));
+            publication->_publicationEndRunnableHandle = DelayedScheduler::_INVALID_RUNNABLE_HANDLE;
         }
         publicationsLock.unlock();
         // publicationsMutex is acquired again in next call
-        publicationManagerSharedPtr->removePublication(subscriptionId);
+        publicationManagerSharedPtr->removePublication(_subscriptionId);
     }
 }
 

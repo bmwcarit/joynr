@@ -69,13 +69,13 @@ public:
 
     void hasConsumerPermission(IAccessController::Enum hasPermission);
 
-    std::weak_ptr<CcMessageRouter> owningMessageRouter;
-    std::shared_ptr<ImmutableMessage> message;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> destination;
+    std::weak_ptr<CcMessageRouter> _owningMessageRouter;
+    std::shared_ptr<ImmutableMessage> _message;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> _destination;
 
 private:
-    const bool aclAudit;
-    std::uint32_t tryCount;
+    const bool _aclAudit;
+    std::uint32_t _tryCount;
     ADD_LOGGER(ConsumerPermissionCallback)
 };
 
@@ -133,7 +133,7 @@ CcMessageRouter::CcMessageRouter(
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue,
-        const system::RoutingTypes::Address& ownAddress)
+        const system::RoutingTypes::Address& ownGlobalAddress)
         : AbstractMessageRouter(messagingSettings,
                                 std::move(messagingStubFactory),
                                 ioService,
@@ -143,20 +143,20 @@ CcMessageRouter::CcMessageRouter(
                                 std::move(messageQueue),
                                 std::move(transportNotAvailableQueue)),
           joynr::system::RoutingAbstractProvider(),
-          multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
-          securityManager(std::move(securityManager)),
-          accessController(),
-          multicastReceiverDirectoryFilename(),
-          globalClusterControllerAddress(globalClusterControllerAddress),
-          messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
-          messageNotificationProviderParticipantId(messageNotificationProviderParticipantId),
-          clusterControllerSettings(clusterControllerSettings),
-          multicastReceiverDirectoryPersistencyEnabled(
+          _multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
+          _securityManager(std::move(securityManager)),
+          _accessController(),
+          _multicastReceiverDirectoryFilename(),
+          _globalClusterControllerAddress(globalClusterControllerAddress),
+          _messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
+          _messageNotificationProviderParticipantId(messageNotificationProviderParticipantId),
+          _clusterControllerSettings(clusterControllerSettings),
+          _multicastReceiverDirectoryPersistencyEnabled(
                   clusterControllerSettings.isMulticastReceiverDirectoryPersistencyEnabled()),
-          ownGlobalAddress(ownAddress),
-          messageSender()
+          _ownGlobalAddress(ownGlobalAddress),
+          _messageSender()
 {
-    messageNotificationProvider->addBroadcastFilter(
+    _messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
 }
 
@@ -166,21 +166,21 @@ CcMessageRouter::~CcMessageRouter()
 
 void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> accessController)
 {
-    this->accessController = std::move(accessController);
+    this->_accessController = std::move(accessController);
 }
 
 void CcMessageRouter::setMessageSender(std::weak_ptr<IMessageSender> messageSender)
 {
-    this->messageSender = std::move(messageSender);
+    this->_messageSender = std::move(messageSender);
 }
 
 void CcMessageRouter::saveMulticastReceiverDirectory() const
 {
-    if (!multicastReceiverDirectoryPersistencyEnabled) {
+    if (!_multicastReceiverDirectoryPersistencyEnabled) {
         return;
     }
 
-    if (multicastReceiverDirectoryFilename.empty()) {
+    if (_multicastReceiverDirectoryFilename.empty()) {
         JOYNR_LOG_INFO(
                 logger(), "Did not save multicast receiver directory: No filename specified");
         return;
@@ -188,8 +188,8 @@ void CcMessageRouter::saveMulticastReceiverDirectory() const
 
     try {
         joynr::util::saveStringToFile(
-                multicastReceiverDirectoryFilename,
-                joynr::serializer::serializeToJson(multicastReceiverDirectory));
+                _multicastReceiverDirectoryFilename,
+                joynr::serializer::serializeToJson(_multicastReceiverDirectory));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_INFO(logger(), ex.what());
     }
@@ -197,13 +197,13 @@ void CcMessageRouter::saveMulticastReceiverDirectory() const
 
 void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
 {
-    if (!multicastReceiverDirectoryPersistencyEnabled) {
+    if (!_multicastReceiverDirectoryPersistencyEnabled) {
         return;
     }
 
-    multicastReceiverDirectoryFilename = std::move(filename);
+    _multicastReceiverDirectoryFilename = std::move(filename);
 
-    if (multicastReceiverDirectoryFilename.empty()) {
+    if (_multicastReceiverDirectoryFilename.empty()) {
         JOYNR_LOG_INFO(
                 logger(), "Did not load multicast receiver directory: No filename specified");
         return;
@@ -211,8 +211,8 @@ void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
 
     try {
         joynr::serializer::deserializeFromJson(
-                multicastReceiverDirectory,
-                joynr::util::loadStringFromFile(multicastReceiverDirectoryFilename));
+                _multicastReceiverDirectory,
+                joynr::util::loadStringFromFile(_multicastReceiverDirectoryFilename));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger(), ex.what());
         return;
@@ -227,18 +227,18 @@ void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
 std::shared_ptr<system::MessageNotificationProvider> CcMessageRouter::
         getMessageNotificationProvider() const
 {
-    return messageNotificationProvider;
+    return _messageNotificationProvider;
 }
 
 void CcMessageRouter::getGlobalAddress(
         std::function<void(const std::string&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    if (globalClusterControllerAddress.empty()) {
+    if (_globalClusterControllerAddress.empty()) {
         onError(joynr::exceptions::ProviderRuntimeException(
                 "No cluster-controller global address available."));
     } else {
-        onSuccess(globalClusterControllerAddress);
+        onSuccess(_globalClusterControllerAddress);
     }
 }
 
@@ -246,17 +246,17 @@ void CcMessageRouter::getReplyToAddress(
         std::function<void(const std::string&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    if (globalClusterControllerAddress.empty()) {
+    if (_globalClusterControllerAddress.empty()) {
         onError(joynr::exceptions::ProviderRuntimeException(
                 "No cluster-controller reply address available."));
     } else {
-        onSuccess(globalClusterControllerAddress);
+        onSuccess(_globalClusterControllerAddress);
     }
 }
 
 void CcMessageRouter::reestablishMulticastSubscriptions()
 {
-    for (const auto& multicastId : multicastReceiverDirectory.getMulticastIds()) {
+    for (const auto& multicastId : _multicastReceiverDirectory.getMulticastIds()) {
         std::string providerParticipantId;
 
         try {
@@ -266,9 +266,9 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
-        ReadLocker lock(routingTableLock);
+        ReadLocker lock(_routingTableLock);
         const auto routingEntry =
-                routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
+                _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (!routingEntry) {
             JOYNR_LOG_WARN(logger(),
                            "Persisted multicast receivers: No provider address found for "
@@ -277,9 +277,9 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
-        const auto providerAddress = routingEntry->address;
+        const auto providerAddress = routingEntry->_address;
         std::shared_ptr<IMessagingMulticastSubscriber> multicastSubscriber =
-                multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
+                _multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
 
         if (!multicastSubscriber) {
             JOYNR_LOG_WARN(logger(),
@@ -304,7 +304,7 @@ void CcMessageRouter::sendQueuedMessages(
                     destinationPartId,
                     address->toString());
     while (true) {
-        std::shared_ptr<ImmutableMessage> item(messageQueue->getNextMessageFor(destinationPartId));
+        std::shared_ptr<ImmutableMessage> item(_messageQueue->getNextMessageFor(destinationPartId));
         if (!item) {
             break;
         }
@@ -317,14 +317,14 @@ void CcMessageRouter::doAccessControlCheckOrScheduleMessage(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         std::uint32_t tryCount)
 {
-    if (auto gotAccessController = accessController.lock()) {
+    if (auto gotAccessController = _accessController.lock()) {
         // Access control checks are asynchronous, callback will send message
         // if access is granted
         auto callback = std::make_shared<ConsumerPermissionCallback>(
                 std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this()),
                 message,
                 destAddress,
-                clusterControllerSettings.aclAudit(),
+                _clusterControllerSettings.aclAudit(),
                 tryCount);
         gotAccessController->hasConsumerPermission(message, callback);
     } else {
@@ -342,7 +342,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
 {
     assert(message);
     // Validate the message if possible
-    if (securityManager != nullptr && !securityManager->validate(*message)) {
+    if (_securityManager != nullptr && !_securityManager->validate(*message)) {
         std::string errorMessage("messageId " + message->getId() + " failed validation");
         JOYNR_LOG_ERROR(logger(), errorMessage);
         throw exceptions::JoynrMessageNotSentException(errorMessage);
@@ -351,7 +351,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     JOYNR_LOG_TRACE(logger(), "Route message with Id {}", message->getId());
     AbstractMessageRouter::AddressUnorderedSet destAddresses;
     {
-        ReadLocker lock(messageQueueRetryLock);
+        ReadLocker lock(_messageQueueRetryLock);
         // search for the destination addresses
         destAddresses = getDestinationAddresses(*message, lock);
         // if destination address is not known
@@ -361,7 +361,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
                 return;
             }
 
-            if (messagingSettings.getDiscardUnroutableRepliesAndPublications() &&
+            if (_messagingSettings.getDiscardUnroutableRepliesAndPublications() &&
                 ((message->getType() == Message::VALUE_MESSAGE_TYPE_REPLY()) ||
                  (message->getType() == Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY()) ||
                  (message->getType() == Message::VALUE_MESSAGE_TYPE_PUBLICATION()))) {
@@ -400,8 +400,8 @@ bool CcMessageRouter::publishToGlobal(const ImmutableMessage& message)
     // Caution: Do not lock routingTableLock here, it must have been called from outside
     // method gets called from AbstractMessageRouter
     const std::string& participantId = message.getSender();
-    const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
-    if (routingEntry && routingEntry->isGloballyVisible) {
+    const auto routingEntry = _routingTable.lookupRoutingEntryByParticipantId(participantId);
+    if (routingEntry && routingEntry->_isGloballyVisible) {
         return true;
     }
     return false;
@@ -417,11 +417,11 @@ bool CcMessageRouter::isValidForRoutingTable(
         return false;
     }
     if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(address.get()) != nullptr &&
-        typeid(ownGlobalAddress) == typeid(system::RoutingTypes::MqttAddress)) {
+        typeid(_ownGlobalAddress) == typeid(system::RoutingTypes::MqttAddress)) {
         const auto mqttAddress =
                 std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(address);
         const joynr::system::RoutingTypes::MqttAddress& ownMqttAddress =
-                static_cast<const joynr::system::RoutingTypes::MqttAddress&>(ownGlobalAddress);
+                static_cast<const joynr::system::RoutingTypes::MqttAddress&>(_ownGlobalAddress);
         if (mqttAddress->getTopic() == ownMqttAddress.getTopic()) {
             // an address with a topic starting with the own topic is theoretically also possible
             // but very unlikely
@@ -443,17 +443,17 @@ bool CcMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingEntry& 
     if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
         return true;
     }
-    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) == nullptr) {
+    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry._address.get()) == nullptr) {
         if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
             return true;
         } else if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(
-                           oldEntry.address.get()) == nullptr) {
+                           oldEntry._address.get()) == nullptr) {
             // old address is MqttAddress/ChannelAddress or WebSocketAddress
             if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
                 typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
                 return true;
             } else if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(
-                               oldEntry.address.get()) != nullptr) {
+                               oldEntry._address.get()) != nullptr) {
                 // old address is WebSocketAddress
                 if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
                     return true;
@@ -473,8 +473,8 @@ void CcMessageRouter::removeNextHop(
     std::ignore = onError;
 
     {
-        WriteLocker lock(routingTableLock);
-        routingTable.remove(participantId);
+        WriteLocker lock(_routingTableLock);
+        _routingTable.remove(participantId);
     }
 
     saveRoutingTable();
@@ -494,7 +494,7 @@ void CcMessageRouter::addNextHop(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     assert(address);
-    WriteLocker lock(messageQueueRetryLock);
+    WriteLocker lock(_messageQueueRetryLock);
     bool addToRoutingTableSuccessful =
             addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
 
@@ -650,8 +650,8 @@ void CcMessageRouter::resolveNextHop(
 
     bool resolved;
     {
-        ReadLocker lock(routingTableLock);
-        resolved = routingTable.containsParticipantId(participantId);
+        ReadLocker lock(_routingTableLock);
+        resolved = _routingTable.containsParticipantId(participantId);
     }
     onSuccess(resolved);
 }
@@ -668,7 +668,7 @@ void CcMessageRouter::registerMulticastReceiver(
     std::ignore = providerParticipantId;
 
     std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-            multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
+            _multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
     if (skeleton) {
         try {
             skeleton->registerMulticastSubscription(multicastId);
@@ -695,8 +695,8 @@ void CcMessageRouter::addMulticastReceiver(
     boost::optional<routingtable::RoutingEntry> routingEntry;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
-        ReadLocker lock(routingTableLock);
-        routingEntry = routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
+        ReadLocker lock(_routingTableLock);
+        routingEntry = _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
     }
 
     std::function<void()> onSuccessWrapper = [
@@ -708,7 +708,7 @@ void CcMessageRouter::addMulticastReceiver(
     ]()
     {
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
-            thisSharedPtr->multicastReceiverDirectory.registerMulticastReceiver(
+            thisSharedPtr->_multicastReceiverDirectory.registerMulticastReceiver(
                     multicastId, subscriberParticipantId);
             JOYNR_LOG_TRACE(logger(),
                             "added multicast receiver={} for multicastId={}",
@@ -747,7 +747,7 @@ void CcMessageRouter::addMulticastReceiver(
         onErrorWrapper(exception);
         return;
     }
-    providerAddress = routingEntry->address;
+    providerAddress = routingEntry->_address;
 
     if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(providerAddress.get()) != nullptr) {
         registerMulticastReceiver(multicastId,
@@ -786,7 +786,7 @@ void CcMessageRouter::stopSubscription(std::shared_ptr<ImmutableMessage> message
 
     const std::string& subscriptionId = publication.getSubscriptionId();
 
-    if (auto messageSenderSharedPtr = messageSender.lock()) {
+    if (auto messageSenderSharedPtr = _messageSender.lock()) {
         SubscriptionStop subscriptionStop;
         subscriptionStop.setSubscriptionId(subscriptionId);
         joynr::MessagingQos qos;
@@ -819,10 +819,10 @@ void CcMessageRouter::removeMulticastReceiver(
 
     // we need the list of all participantIds that match this destAddress
     std::unordered_set<std::string> multicastReceivers =
-            multicastReceiverDirectory.getReceivers(multicastId);
+            _multicastReceiverDirectory.getReceivers(multicastId);
     for (const auto& participantId : multicastReceivers) {
-        const auto routingEntry = routingTable.lookupRoutingEntryByParticipantId(participantId);
-        if (routingEntry && destAddress == routingEntry->address) {
+        const auto routingEntry = _routingTable.lookupRoutingEntryByParticipantId(participantId);
+        if (routingEntry && destAddress == routingEntry->_address) {
             // for the time being, just do it async
             JOYNR_LOG_INFO(logger(),
                            "removeMulticastReceiver: calling removeMulticastReceiver "
@@ -843,14 +843,14 @@ void CcMessageRouter::removeMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+    _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
 
     saveMulticastReceiverDirectory();
 
     boost::optional<routingtable::RoutingEntry> routingEntry;
     {
-        ReadLocker lock(routingTableLock);
-        routingEntry = routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
+        ReadLocker lock(_routingTableLock);
+        routingEntry = _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
     }
 
     if (!routingEntry) {
@@ -863,10 +863,10 @@ void CcMessageRouter::removeMulticastReceiver(
         }
         return;
     }
-    const auto providerAddress = routingEntry->address;
+    const auto providerAddress = routingEntry->_address;
     if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(providerAddress.get()) != nullptr) {
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-                multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
+                _multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
         if (skeleton) {
             skeleton->unregisterMulticastSubscription(multicastId);
         } else {
@@ -889,17 +889,17 @@ void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
     // do not fire a broadcast for an undeliverable message sent by
     // messageNotificationProvider (e.g. messageQueueForDelivery publication)
     // since it may cause an endless loop
-    if (message->getSender() != messageNotificationProviderParticipantId) {
-        messageNotificationProvider->fireMessageQueuedForDelivery(
+    if (message->getSender() != _messageNotificationProviderParticipantId) {
+        _messageNotificationProvider->fireMessageQueuedForDelivery(
                 message->getRecipient(), message->getType());
     }
     std::string recipient = message->getRecipient();
-    messageQueue->queueMessage(std::move(recipient), std::move(message));
+    _messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
 
 bool CcMessageRouter::canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const
 {
-    if (auto gotAccessController = accessController.lock()) {
+    if (auto gotAccessController = _accessController.lock()) {
         return message->isAccessControlChecked();
     }
     return true;
@@ -915,62 +915,62 @@ ConsumerPermissionCallback::ConsumerPermissionCallback(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destination,
         bool aclAudit,
         std::uint32_t tryCount)
-        : owningMessageRouter(owningMessageRouter),
-          message(message),
-          destination(destination),
-          aclAudit(aclAudit),
-          tryCount(tryCount)
+        : _owningMessageRouter(owningMessageRouter),
+          _message(message),
+          _destination(destination),
+          _aclAudit(aclAudit),
+          _tryCount(tryCount)
 {
 }
 
 void ConsumerPermissionCallback::hasConsumerPermission(IAccessController::Enum hasPermission)
 {
-    if (aclAudit) {
+    if (_aclAudit) {
         if (hasPermission == IAccessController::Enum::NO) {
             JOYNR_LOG_ERROR(logger(),
                             "ACL AUDIT: message with id '{}' is not allowed by ACL",
-                            message->getId());
+                            _message->getId());
             hasPermission = IAccessController::Enum::YES;
         } else if (hasPermission == IAccessController::Enum::YES) {
             JOYNR_LOG_TRACE(logger(),
                             "ACL AUDIT: message with id '{}' is allowed by ACL, ",
-                            message->getId());
+                            _message->getId());
         }
     }
     if (hasPermission == IAccessController::Enum::YES) {
-        message->setAccessControlChecked();
-        if (auto owningMessageRouterSharedPtr = owningMessageRouter.lock()) {
-            owningMessageRouterSharedPtr->scheduleMessage(message, destination);
+        _message->setAccessControlChecked();
+        if (auto owningMessageRouterSharedPtr = _owningMessageRouter.lock()) {
+            owningMessageRouterSharedPtr->scheduleMessage(_message, _destination);
         } else {
             JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent because messageRouter is not "
                             "available",
-                            message->getId());
+                            _message->getId());
         }
     } else if (hasPermission == IAccessController::Enum::RETRY) {
-        if (auto owningMessageRouterSharedPtr = owningMessageRouter.lock()) {
+        if (auto owningMessageRouterSharedPtr = _owningMessageRouter.lock()) {
             JOYNR_LOG_TRACE(logger(),
                             "ACL RETRY: check cannot be performed, message with id '{}' will be "
                             "rescheduled.",
-                            message->getId());
+                            _message->getId());
             owningMessageRouterSharedPtr->scheduleMessage(
-                    message,
-                    destination,
-                    tryCount + 1,
+                    _message,
+                    _destination,
+                    _tryCount + 1,
                     owningMessageRouterSharedPtr->createDelayWithExponentialBackoff(
-                            owningMessageRouterSharedPtr->messagingSettings
+                            owningMessageRouterSharedPtr->_messagingSettings
                                     .getSendMsgRetryInterval(),
-                            tryCount));
+                            _tryCount));
         } else {
             JOYNR_LOG_ERROR(logger(),
                             "Message with Id {} could not be sent because messageRouter is not "
                             "available",
-                            message->getId());
+                            _message->getId());
         }
     } else {
         JOYNR_LOG_TRACE(logger(),
                         "ACL NO Permission: message with id '{}' will be dropped.",
-                        message->getId());
+                        _message->getId());
     }
 }
 

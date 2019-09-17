@@ -25,6 +25,9 @@
 
 namespace joynr
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 class DltSink : public spdlog::sinks::sink
 {
 private:
@@ -103,5 +106,7 @@ protected:
         }
     }
 };
+
+#pragma GCC diagnostic pop
 } // namespace joynr
 #endif // DLTSINK_H

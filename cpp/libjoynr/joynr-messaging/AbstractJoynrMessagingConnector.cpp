@@ -31,14 +31,14 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         const std::string& proxyParticipantId,
         const MessagingQos& qosSettings,
         const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
-        : messageSender(messageSender),
-          subscriptionManager(subscriptionManager),
-          domain(domain),
-          interfaceName(interfaceName),
-          proxyParticipantId(proxyParticipantId),
-          providerParticipantId(providerDiscoveryEntry.getParticipantId()),
-          qosSettings(qosSettings),
-          providerDiscoveryEntry(providerDiscoveryEntry)
+        : _messageSender(messageSender),
+          _subscriptionManager(subscriptionManager),
+          _domain(domain),
+          _interfaceName(interfaceName),
+          _proxyParticipantId(proxyParticipantId),
+          _providerParticipantId(providerDiscoveryEntry.getParticipantId()),
+          _qosSettings(qosSettings),
+          _providerDiscoveryEntry(providerDiscoveryEntry)
 {
 }
 
@@ -46,25 +46,25 @@ void AbstractJoynrMessagingConnector::operationRequest(std::shared_ptr<IReplyCal
                                                        Request&& request,
                                                        boost::optional<MessagingQos> qos)
 {
-    if (auto ptr = messageSender.lock()) {
-        ptr->sendRequest(proxyParticipantId,
-                         providerParticipantId,
-                         qos ? *qos : qosSettings,
+    if (auto ptr = _messageSender.lock()) {
+        ptr->sendRequest(_proxyParticipantId,
+                         _providerParticipantId,
+                         qos ? *qos : _qosSettings,
                          request,
                          std::move(replyCaller),
-                         providerDiscoveryEntry.getIsLocal());
+                         _providerDiscoveryEntry.getIsLocal());
     }
 }
 
 void AbstractJoynrMessagingConnector::operationOneWayRequest(OneWayRequest&& request,
                                                              boost::optional<MessagingQos> qos)
 {
-    if (auto ptr = messageSender.lock()) {
-        ptr->sendOneWayRequest(proxyParticipantId,
-                               providerParticipantId,
-                               qos ? *qos : qosSettings,
+    if (auto ptr = _messageSender.lock()) {
+        ptr->sendOneWayRequest(_proxyParticipantId,
+                               _providerParticipantId,
+                               qos ? *qos : _qosSettings,
                                request,
-                               providerDiscoveryEntry.getIsLocal());
+                               _providerDiscoveryEntry.getIsLocal());
     }
 }
 

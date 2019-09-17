@@ -30,7 +30,7 @@ namespace joynr
 {
 HttpMulticastAddressCalculator::HttpMulticastAddressCalculator(
         std::shared_ptr<const system::RoutingTypes::ChannelAddress> globalAddress)
-        : globalAddress(globalAddress)
+        : _globalAddress(globalAddress)
 {
 }
 

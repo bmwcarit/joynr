@@ -208,61 +208,61 @@ private:
     DISALLOW_COPY_AND_ASSIGN(PublicationManager);
 
     // Used for multicast publication
-    std::weak_ptr<IMessageSender> messageSender;
+    std::weak_ptr<IMessageSender> _messageSender;
 
     // A class that groups together the information needed for a publication
     class Publication;
 
     // Information for each publication is keyed by subcriptionId
-    ThreadSafeMap<std::string, std::shared_ptr<Publication>> publications;
+    ThreadSafeMap<std::string, std::shared_ptr<Publication>> _publications;
     ThreadSafeMap<std::string, std::shared_ptr<SubscriptionRequestInformation>>
-            subscriptionId2SubscriptionRequest;
+            _subscriptionId2SubscriptionRequest;
     ThreadSafeMap<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
-            subscriptionId2BroadcastSubscriptionRequest;
+            _subscriptionId2BroadcastSubscriptionRequest;
 
-    std::mutex fileWriteLock;
+    std::mutex _fileWriteLock;
     // Publications are scheduled to run on a thread pool
-    std::shared_ptr<DelayedScheduler> delayedScheduler;
+    std::shared_ptr<DelayedScheduler> _delayedScheduler;
 
     // Support for clean shutdowns
-    std::mutex shutDownMutex;
-    bool shuttingDown;
+    std::mutex _shutDownMutex;
+    bool _shuttingDown;
 
     // Subscription persistence
-    std::string subscriptionRequestStorageFileName;
-    std::string broadcastSubscriptionRequestStorageFileName;
+    std::string _subscriptionRequestStorageFileName;
+    std::string _broadcastSubscriptionRequestStorageFileName;
 
     // Queues all subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
     std::multimap<std::string, std::shared_ptr<SubscriptionRequestInformation>>
-            queuedSubscriptionRequests;
-    std::mutex queuedSubscriptionRequestsMutex;
+            _queuedSubscriptionRequests;
+    std::mutex _queuedSubscriptionRequestsMutex;
 
     // Queues all broadcast subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
     // the corresponding provider is added
     std::multimap<std::string, std::shared_ptr<BroadcastSubscriptionRequestInformation>>
-            queuedBroadcastSubscriptionRequests;
-    std::mutex queuedBroadcastSubscriptionRequestsMutex;
+            _queuedBroadcastSubscriptionRequests;
+    std::mutex _queuedBroadcastSubscriptionRequestsMutex;
 
     // Logging
     ADD_LOGGER(PublicationManager)
 
     // List of subscriptionId's of runnables scheduled with delay <= qos.getMinIntervalMs_ms()
-    std::vector<std::string> currentScheduledPublications;
-    std::mutex currentScheduledPublicationsMutex;
+    std::vector<std::string> _currentScheduledPublications;
+    std::mutex _currentScheduledPublicationsMutex;
 
     // Read/write lock for broadcast filters
-    mutable ReadWriteLock broadcastFilterLock;
+    mutable ReadWriteLock _broadcastFilterLock;
 
-    std::uint64_t ttlUplift;
+    std::uint64_t _ttlUplift;
 
     // Configuration if persistency is enabled or not
-    bool enableSubscriptionStorage;
+    bool _enableSubscriptionStorage;
 
     // lock for publications map
-    std::mutex publicationsMutex;
+    std::mutex _publicationsMutex;
 
     // PublisherRunnables are used to send publications via a ThreadPool
     class PublisherRunnable;
@@ -316,7 +316,7 @@ private:
                                              const std::shared_ptr<SubscriptionQos> qos);
 
     template <typename Map>
-    void saveSubscriptionRequestsMap(const Map& map,
+    void saveSubscriptionRequestsMap(const Map& mmap,
                                      const std::string& storageFilename,
                                      bool saveOnShutdown);
 
@@ -400,13 +400,13 @@ public:
     // This class is not responsible for deleting the PublicationSender or AttributeListener
     ~Publication() = default;
 
-    std::int64_t timeOfLastPublication;
-    std::weak_ptr<IPublicationSender> sender;
-    std::shared_ptr<RequestCaller> requestCaller;
-    std::shared_ptr<SubscriptionAttributeListener> attributeListener;
-    std::shared_ptr<UnicastBroadcastListener> broadcastListener;
-    std::recursive_mutex mutex;
-    DelayedScheduler::RunnableHandle publicationEndRunnableHandle;
+    std::int64_t _timeOfLastPublication;
+    std::weak_ptr<IPublicationSender> _sender;
+    std::shared_ptr<RequestCaller> _requestCaller;
+    std::shared_ptr<SubscriptionAttributeListener> _attributeListener;
+    std::shared_ptr<UnicastBroadcastListener> _broadcastListener;
+    std::recursive_mutex _mutex;
+    DelayedScheduler::RunnableHandle _publicationEndRunnableHandle;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Publication);
@@ -418,10 +418,10 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
     JOYNR_LOG_DEBUG(logger(), "attributeValueChanged for onChange subscription {}", subscriptionId);
 
     // See if the subscription is still valid
-    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
-    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::unique_lock<std::mutex> publicationsLock(_publicationsMutex);
+    std::shared_ptr<Publication> publication = _publications.value(subscriptionId);
     std::shared_ptr<SubscriptionRequestInformation> subscriptionRequest =
-            subscriptionId2SubscriptionRequest.value(subscriptionId);
+            _subscriptionId2SubscriptionRequest.value(subscriptionId);
     if (!publication || !subscriptionRequest) {
         JOYNR_LOG_ERROR(logger(),
                         "attributeValueChanged called for non-existing subscription {}",
@@ -430,7 +430,7 @@ void PublicationManager::attributeValueChanged(const std::string& subscriptionId
     }
 
     {
-        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         publicationsLock.unlock();
         if (!isPublicationAlreadyScheduled(subscriptionId)) {
             std::int64_t timeUntilNextPublication =
@@ -462,7 +462,7 @@ void PublicationManager::broadcastOccurred(const std::string& broadcastName,
             util::createMulticastId(providerParticipantId, broadcastName, partitions));
     publication.setResponse(values...);
     MessagingQos mQos;
-    if (auto messageSenderSharedPtr = messageSender.lock()) {
+    if (auto messageSenderSharedPtr = _messageSender.lock()) {
         messageSenderSharedPtr->sendMulticast(providerParticipantId, publication, mQos);
     } else {
         JOYNR_LOG_ERROR(logger(),
@@ -479,10 +479,10 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
                     subscriptionId,
                     sizeof...(Ts));
 
-    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
-    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::unique_lock<std::mutex> publicationsLock(_publicationsMutex);
+    std::shared_ptr<Publication> publication = _publications.value(subscriptionId);
     std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+            _subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
     // See if the subscription is still valid
     if (!publication || !subscriptionRequest) {
         JOYNR_LOG_ERROR(logger(),
@@ -492,7 +492,7 @@ void PublicationManager::broadcastOccurred(const std::string& subscriptionId, co
     }
 
     {
-        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         publicationsLock.unlock();
         // Only proceed if publication can immediately be sent
         std::int64_t timeUntilNextPublication =
@@ -526,10 +526,10 @@ void PublicationManager::selectiveBroadcastOccurred(
                     subscriptionId,
                     sizeof...(Ts));
 
-    std::unique_lock<std::mutex> publicationsLock(publicationsMutex);
-    std::shared_ptr<Publication> publication = publications.value(subscriptionId);
+    std::unique_lock<std::mutex> publicationsLock(_publicationsMutex);
+    std::shared_ptr<Publication> publication = _publications.value(subscriptionId);
     std::shared_ptr<BroadcastSubscriptionRequestInformation> subscriptionRequest =
-            subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
+            _subscriptionId2BroadcastSubscriptionRequest.value(subscriptionId);
 
     // See if the subscription is still valid
     if (!publication || !subscriptionRequest) {
@@ -540,7 +540,7 @@ void PublicationManager::selectiveBroadcastOccurred(
     }
 
     {
-        std::lock_guard<std::recursive_mutex> publicationLocker((publication->mutex));
+        std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         publicationsLock.unlock();
         // Only proceed if publication can immediately be sent
         std::int64_t timeUntilNextPublication =

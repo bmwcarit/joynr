@@ -30,7 +30,7 @@ const std::string NoCompatibleProviderFoundException::TYPE_NAME =
 NoCompatibleProviderFoundException::NoCompatibleProviderFoundException(
         const std::unordered_set<joynr::types::Version>& discoveredIncompatibleVersions) noexcept
         : DiscoveryException(),
-          discoveredIncompatibleVersions(discoveredIncompatibleVersions)
+          _discoveredIncompatibleVersions(discoveredIncompatibleVersions)
 {
     std::string messageStr = "Unable to find a provider with a compatible version. " +
                              std::to_string(discoveredIncompatibleVersions.size()) +
@@ -38,7 +38,7 @@ NoCompatibleProviderFoundException::NoCompatibleProviderFoundException(
     for (const auto& version : discoveredIncompatibleVersions) {
         messageStr += " " + version.toString();
     }
-    message = messageStr;
+    _message = messageStr;
 }
 
 const std::string& NoCompatibleProviderFoundException::getTypeName() const
@@ -49,7 +49,7 @@ const std::string& NoCompatibleProviderFoundException::getTypeName() const
 const std::unordered_set<joynr::types::Version>& NoCompatibleProviderFoundException::
         getDiscoveredIncompatibleVersions() const
 {
-    return discoveredIncompatibleVersions;
+    return _discoveredIncompatibleVersions;
 }
 
 NoCompatibleProviderFoundException* NoCompatibleProviderFoundException::clone() const

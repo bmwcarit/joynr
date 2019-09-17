@@ -29,17 +29,17 @@ class ContentWithDecayTime : public ObjectWithDecayTime
 {
 public:
     ContentWithDecayTime(const T& content, const TimePoint& decayTime)
-            : ObjectWithDecayTime(decayTime), content(content)
+            : ObjectWithDecayTime(decayTime), _content(content)
     {
     }
 
     T getContent() const
     {
-        return content;
+        return _content;
     }
 
 private:
-    T content;
+    T _content;
 };
 
 } // namespace joynr

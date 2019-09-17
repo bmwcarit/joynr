@@ -66,7 +66,7 @@ class ArchiveVariantWrapper
 {
 public:
     explicit ArchiveVariantWrapper(Variant&& archiveVariant)
-            : archiveVariant(std::move(archiveVariant))
+            : _archiveVariant(std::move(archiveVariant))
     {
     }
 
@@ -74,11 +74,11 @@ public:
     void operator()(Ts&&... args)
     {
         boost::apply_visitor([&args...](auto&& archive) { (*archive)(std::forward<Ts>(args)...); },
-                             archiveVariant);
+                             _archiveVariant);
     }
 
 private:
-    Variant archiveVariant;
+    Variant _archiveVariant;
 };
 
 template <typename ArchiveVariant, typename RegisteredArchives, typename Stream>

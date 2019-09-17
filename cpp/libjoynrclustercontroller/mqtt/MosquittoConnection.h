@@ -120,43 +120,43 @@ private:
     void cleanupLibrary();
 
     void createSubscriptions();
-    void subscribeToTopicInternal(const std::string& topic, const bool isChannelTopic = false);
+    void subscribeToTopicInternal(const std::string& _topic, const bool isChannelTopic = false);
     void setReadyToSend(bool readyToSend);
     static std::string getErrorString(int rc);
 
-    const BrokerUrl brokerUrl;
-    const std::chrono::seconds mqttKeepAliveTimeSeconds;
-    const std::chrono::seconds mqttReconnectDelayTimeSeconds;
-    const std::chrono::seconds mqttReconnectMaxDelayTimeSeconds;
-    const bool isMqttExponentialBackoffEnabled;
-    const std::string host;
-    const std::uint16_t port;
+    const BrokerUrl _brokerUrl;
+    const std::chrono::seconds _mqttKeepAliveTimeSeconds;
+    const std::chrono::seconds _mqttReconnectDelayTimeSeconds;
+    const std::chrono::seconds _mqttReconnectMaxDelayTimeSeconds;
+    const bool _isMqttExponentialBackoffEnabled;
+    const std::string _host;
+    const std::uint16_t _port;
 
-    const std::uint16_t mqttQos = 1;
-    const bool mqttRetain = false;
+    const std::uint16_t _mqttQos = 1;
+    const bool _mqttRetain = false;
 
-    std::string channelId;
-    int subscribeChannelMid;
-    std::string topic;
-    std::unordered_set<std::string> additionalTopics;
-    std::recursive_mutex additionalTopicsMutex;
+    std::string _channelId;
+    int _subscribeChannelMid;
+    std::string _topic;
+    std::unordered_set<std::string> _additionalTopics;
+    std::recursive_mutex _additionalTopicsMutex;
 
-    std::atomic<bool> isConnected;
-    std::atomic<bool> isRunning;
-    std::atomic<bool> isWaitingForDisconnect;
-    std::atomic<bool> isChannelIdRegistered;
-    std::atomic<bool> subscribedToChannelTopic;
-    std::atomic<bool> readyToSend;
-    static std::mutex libUseCountMutex;
-    static int libUseCount;
+    std::atomic<bool> _isConnected;
+    std::atomic<bool> _isRunning;
+    std::atomic<bool> _isWaitingForDisconnect;
+    std::atomic<bool> _isChannelIdRegistered;
+    std::atomic<bool> _subscribedToChannelTopic;
+    std::atomic<bool> _readyToSend;
+    static std::mutex _libUseCountMutex;
+    static int _libUseCount;
 
-    std::function<void(smrf::ByteVector&&)> onMessageReceived;
-    std::mutex onReadyToSendChangedMutex;
-    std::function<void(bool)> onReadyToSendChanged;
+    std::function<void(smrf::ByteVector&&)> _onMessageReceived;
+    std::mutex _onReadyToSendChangedMutex;
+    std::function<void(bool)> _onReadyToSendChanged;
 
-    std::mutex stopMutex;
-    bool isStopped;
-    struct mosquitto* mosq;
+    std::mutex _stopMutex;
+    bool _isStopped;
+    struct mosquitto* _mosq;
 
     ADD_LOGGER(MosquittoConnection)
 };

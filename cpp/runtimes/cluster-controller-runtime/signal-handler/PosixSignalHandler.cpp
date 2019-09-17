@@ -72,7 +72,8 @@ void PosixSignalHandler::stopSignalHandling()
     // make sure the background thread terminates, do not block
     int opt = fcntl(PosixSignalHandler::sigWriteFd, F_GETFL, 0);
     fcntl(PosixSignalHandler::sigWriteFd, F_SETFL, opt | O_NONBLOCK);
-    write(PosixSignalHandler::sigWriteFd, &sigTermCharValue, 1);
+    ssize_t bytesWritten = write(PosixSignalHandler::sigWriteFd, &sigTermCharValue, 1);
+    std::ignore = bytesWritten;
 
     JOYNR_LOG_INFO(logger(), "Joining signal handling thread");
     PosixSignalHandler::signalHandlingThread.join();
@@ -122,20 +123,23 @@ void PosixSignalHandler::signalHandlerThreadFunction()
 
 void PosixSignalHandler::handleSignal(int signal)
 {
+    // ret: return the number written bytes to the FD, or -1.
+    ssize_t bytesWritten = 0;
     switch (signal) {
     case SIGUSR1:
-        write(PosixSignalHandler::sigWriteFd, &sigUsr1CharValue, 1);
+        bytesWritten = write(PosixSignalHandler::sigWriteFd, &sigUsr1CharValue, 1);
         break;
     case SIGUSR2:
-        write(PosixSignalHandler::sigWriteFd, &sigUsr2CharValue, 1);
+        bytesWritten = write(PosixSignalHandler::sigWriteFd, &sigUsr2CharValue, 1);
         break;
     case SIGTERM:
-        write(PosixSignalHandler::sigWriteFd, &sigTermCharValue, 1);
+        bytesWritten = write(PosixSignalHandler::sigWriteFd, &sigTermCharValue, 1);
         break;
     default:
         // ignore
         break;
     }
+    std::ignore = bytesWritten;
     return;
 }
 } // namespace joynr

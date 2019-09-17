@@ -28,25 +28,25 @@ ProxyBase::ProxyBase(std::weak_ptr<JoynrRuntimeImpl> runtime,
                      std::shared_ptr<JoynrMessagingConnectorFactory> connectorFactory,
                      const std::string& domain,
                      const MessagingQos& qosSettings)
-        : runtime(std::move(runtime)),
-          connectorFactory(std::move(connectorFactory)),
-          domain(domain),
-          qosSettings(qosSettings),
-          proxyParticipantId(""),
-          providerDiscoveryEntry()
+        : _runtime(std::move(runtime)),
+          _connectorFactory(std::move(connectorFactory)),
+          _domain(domain),
+          _qosSettings(qosSettings),
+          _proxyParticipantId(""),
+          _providerDiscoveryEntry()
 {
-    proxyParticipantId = util::createUuid();
+    _proxyParticipantId = util::createUuid();
 }
 
 void ProxyBase::handleArbitrationFinished(
         const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
 {
-    this->providerDiscoveryEntry = providerDiscoveryEntry;
+    this->_providerDiscoveryEntry = providerDiscoveryEntry;
 }
 
 const std::string& ProxyBase::getProxyParticipantId() const
 {
-    return this->proxyParticipantId;
+    return this->_proxyParticipantId;
 }
 
 } // namespace joynr

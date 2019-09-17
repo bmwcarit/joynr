@@ -32,7 +32,7 @@ namespace joynr
 
 WebSocketLibJoynrMessagingSkeleton::WebSocketLibJoynrMessagingSkeleton(
         std::weak_ptr<IMessageRouter> messageRouter)
-        : messageRouter(std::move(messageRouter))
+        : _messageRouter(std::move(messageRouter))
 {
 }
 
@@ -41,7 +41,7 @@ void WebSocketLibJoynrMessagingSkeleton::transmit(
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
 {
     try {
-        if (auto ptr = messageRouter.lock()) {
+        if (auto ptr = _messageRouter.lock()) {
             ptr->route(message);
         }
     } catch (const exceptions::JoynrRuntimeException& e) {

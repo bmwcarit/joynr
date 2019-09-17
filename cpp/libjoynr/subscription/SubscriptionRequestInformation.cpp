@@ -28,18 +28,18 @@ SubscriptionRequestInformation::SubscriptionRequestInformation(
         const SubscriptionRequest& subscriptionRequest)
         : SubscriptionRequest(subscriptionRequest),
           SubscriptionInformation(proxyParticipantId, providerParticipantId),
-          callContext(callContext)
+          _callContext(callContext)
 {
 }
 
 const CallContext& SubscriptionRequestInformation::getCallContext() const
 {
-    return callContext;
+    return _callContext;
 }
 
 void SubscriptionRequestInformation::setCallContext(const CallContext& callContext)
 {
-    this->callContext = callContext;
+    this->_callContext = callContext;
 }
 
 bool SubscriptionRequestInformation::operator==(
@@ -47,7 +47,7 @@ bool SubscriptionRequestInformation::operator==(
 {
     return SubscriptionRequest::operator==(subscriptionRequestInformation) &&
            SubscriptionInformation::operator==(subscriptionRequestInformation) &&
-           callContext == subscriptionRequestInformation.getCallContext();
+           _callContext == subscriptionRequestInformation.getCallContext();
 }
 
 std::string SubscriptionRequestInformation::toString() const

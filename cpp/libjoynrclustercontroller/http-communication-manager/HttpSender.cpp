@@ -49,9 +49,9 @@ std::int64_t HttpSender::FRACTION_OF_MESSAGE_TTL_USED_PER_CONNECTION_TRIAL()
 HttpSender::HttpSender(const BrokerUrl& brokerUrl,
                        std::chrono::milliseconds maxAttemptTtl,
                        std::chrono::milliseconds messageSendRetryInterval)
-        : brokerUrl(brokerUrl),
-          maxAttemptTtl(maxAttemptTtl),
-          messageSendRetryInterval(messageSendRetryInterval)
+        : _brokerUrl(brokerUrl),
+          _maxAttemptTtl(maxAttemptTtl),
+          _messageSendRetryInterval(messageSendRetryInterval)
 {
 }
 
@@ -101,10 +101,10 @@ void HttpSender::sendMessage(
     auto now = std::chrono::system_clock::now();
     auto timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime);
     std::chrono::milliseconds delay;
-    if (messageSendRetryInterval < timeDiff) {
+    if (_messageSendRetryInterval < timeDiff) {
         delay = std::chrono::milliseconds(10);
     } else {
-        delay = messageSendRetryInterval - timeDiff;
+        delay = _messageSendRetryInterval - timeDiff;
     }
 
     JOYNR_LOG_TRACE(
@@ -145,7 +145,7 @@ HttpResult HttpSender::buildRequestAndSend(const std::string& data,
     JOYNR_LOG_TRACE(logger(), "buildRequestAndSend.sendMessageRequestBuilder...");
     std::shared_ptr<HttpRequest> sendMessageRequest(
             sendMessageRequestBuilder->withContentType("application/json")
-                    ->withTimeout(std::min(maxAttemptTtl, curlTimeout))
+                    ->withTimeout(std::min(_maxAttemptTtl, curlTimeout))
                     ->postContent(data)
                     ->build());
     JOYNR_LOG_TRACE(logger(), "builtRequest");

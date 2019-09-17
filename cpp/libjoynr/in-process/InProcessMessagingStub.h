@@ -41,7 +41,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(InProcessMessagingStub);
-    std::shared_ptr<InProcessMessagingSkeleton> skeleton;
+    std::shared_ptr<InProcessMessagingSkeleton> _skeleton;
 };
 
 } // namespace joynr

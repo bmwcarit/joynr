@@ -69,20 +69,20 @@ public:
     void onMessageReceived(smrf::ByteVector&& rawMessage) override;
 
 protected:
-    const std::string ownGbid;
+    const std::string _ownGbid;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingSkeleton);
     ADD_LOGGER(MqttMessagingSkeleton)
 
-    std::weak_ptr<IMessageRouter> messageRouter;
-    std::shared_ptr<MqttReceiver> mqttReceiver;
+    std::weak_ptr<IMessageRouter> _messageRouter;
+    std::shared_ptr<MqttReceiver> _mqttReceiver;
 
-    std::uint64_t ttlUplift;
+    std::uint64_t _ttlUplift;
 
-    std::unordered_map<std::string, std::uint64_t> multicastSubscriptionCount;
-    std::mutex multicastSubscriptionCountMutex;
-    std::string multicastTopicPrefix;
+    std::unordered_map<std::string, std::uint64_t> _multicastSubscriptionCount;
+    std::mutex _multicastSubscriptionCountMutex;
+    std::string _multicastTopicPrefix;
 };
 
 } // namespace joynr

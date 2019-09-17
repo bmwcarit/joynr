@@ -70,7 +70,7 @@ void validatePartitions(const std::vector<std::string>& partitions, bool allowWi
  * @param offset the offset to be added to the address
  * @return true if an overflow happens, false otherwise
  */
-bool isAdditionOnPointerSafe(std::uintptr_t address, int offset);
+bool isAdditionOnPointerCausesOverflow(std::uintptr_t address, int offset);
 
 /**
  * @brief MT-safe retrieval of string describing error number

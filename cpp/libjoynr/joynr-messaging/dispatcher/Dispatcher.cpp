@@ -52,47 +52,47 @@ Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
                        int maxThreads)
         : std::enable_shared_from_this<Dispatcher>(),
           IDispatcher(),
-          messageSender(std::move(messageSender)),
-          requestCallerDirectory("Dispatcher-RequestCallerDirectory", ioService),
-          replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
-          publicationManager(),
-          subscriptionManager(nullptr),
-          handleReceivedMessageThreadPool(std::make_shared<ThreadPool>("Dispatcher", maxThreads)),
-          subscriptionHandlingMutex(),
-          isShuttingDown(false),
-          isShuttingDownLock()
+          _messageSender(std::move(messageSender)),
+          _requestCallerDirectory("Dispatcher-RequestCallerDirectory", ioService),
+          _replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
+          _publicationManager(),
+          _subscriptionManager(nullptr),
+          _handleReceivedMessageThreadPool(std::make_shared<ThreadPool>("Dispatcher", maxThreads)),
+          _subscriptionHandlingMutex(),
+          _isShuttingDown(false),
+          _isShuttingDownLock()
 {
-    handleReceivedMessageThreadPool->init();
+    _handleReceivedMessageThreadPool->init();
 }
 
 Dispatcher::~Dispatcher()
 {
     JOYNR_LOG_TRACE(logger(), "Destructing Dispatcher");
-    assert(isShuttingDown);
+    assert(_isShuttingDown);
     JOYNR_LOG_TRACE(logger(), "Destructing finished");
 }
 
 void Dispatcher::addRequestCaller(const std::string& participantId,
                                   std::shared_ptr<RequestCaller> requestCaller)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(
                 logger(), "addRequestCaller id= {} cancelled, shutting down", participantId);
         return;
     }
 
-    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
+    std::lock_guard<std::mutex> lock(_subscriptionHandlingMutex);
     JOYNR_LOG_TRACE(logger(), "addRequestCaller id= {}", participantId);
 
-    requestCallerDirectory.add(participantId, requestCaller);
+    _requestCallerDirectory.add(participantId, requestCaller);
     locker.unlock();
 
-    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+    if (auto publicationManagerSharedPtr = _publicationManager.lock()) {
         // publication manager queues received subscription requests, that are
         // received before the corresponding request caller is added
         publicationManagerSharedPtr->restore(
-                participantId, std::move(requestCaller), messageSender);
+                participantId, std::move(requestCaller), _messageSender);
     } else {
         JOYNR_LOG_WARN(logger(), "No publication manager available!");
     }
@@ -100,50 +100,52 @@ void Dispatcher::addRequestCaller(const std::string& participantId,
 
 void Dispatcher::removeRequestCaller(const std::string& participantId)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(
                 logger(), "removeRequestCaller id= {} cancelled, shutting down", participantId);
         return;
     }
-    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
+    std::lock_guard<std::mutex> lock(_subscriptionHandlingMutex);
     JOYNR_LOG_TRACE(logger(), "removeRequestCaller id= {}", participantId);
     locker.unlock();
 
     // TODO if a provider is removed, all publication runnables are stopped
     // the subscription request is deleted,
     // Q: Should it be restored once the provider is registered again?
-    if (auto publicationManagerSharedPtr = publicationManager.lock()) {
+    if (auto publicationManagerSharedPtr = _publicationManager.lock()) {
         publicationManagerSharedPtr->removeAllSubscriptions(participantId);
     }
 
     locker.lock();
-    if (isShuttingDown) {
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(
                 logger(), "removeRequestCaller id= {} cancelled, shutting down", participantId);
         return;
     }
-    requestCallerDirectory.remove(participantId);
+    _requestCallerDirectory.remove(participantId);
 }
 
 void Dispatcher::addReplyCaller(const std::string& requestReplyId,
                                 std::shared_ptr<IReplyCaller> replyCaller,
                                 const MessagingQos& qosSettings)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "addReplyCaller id= {} cancelled, shutting down", requestReplyId);
         return;
     }
     JOYNR_LOG_TRACE(logger(), "addReplyCaller id= {}", requestReplyId);
     // add the callback to the registry that is responsible for reply messages
-    replyCallerDirectory.add(requestReplyId, std::move(replyCaller), qosSettings.getTtl());
+    _replyCallerDirectory.add(requestReplyId,
+                              std::move(replyCaller),
+                              static_cast<std::int64_t>(qosSettings.getTtl()));
 }
 
 void Dispatcher::receive(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(),
                         "received message: {}, operation cancelled, shutting down",
                         message->toLogMessage());
@@ -154,13 +156,13 @@ void Dispatcher::receive(std::shared_ptr<ImmutableMessage> message)
     assert(!message->isEncrypted());
     std::shared_ptr<ReceivedMessageRunnable> receivedMessageRunnable =
             std::make_shared<ReceivedMessageRunnable>(std::move(message), shared_from_this());
-    handleReceivedMessageThreadPool->execute(receivedMessageRunnable);
+    _handleReceivedMessageThreadPool->execute(receivedMessageRunnable);
 }
 
 void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "handleRequestReceived cancelled, shutting down");
         return;
     }
@@ -168,7 +170,7 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
     std::string receiverId = message->getRecipient();
 
     // lookup necessary data
-    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+    std::shared_ptr<RequestCaller> caller = _requestCallerDirectory.lookup(receiverId);
     if (!caller) {
         JOYNR_LOG_ERROR(
                 logger(),
@@ -220,7 +222,7 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
             // send reply back to the original sender (ie. sender and receiver ids are reversed
             // on purpose)
             const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
-            MessagingQos messagingQos(ttl.count());
+            MessagingQos messagingQos(static_cast<std::uint64_t>(ttl.count()));
             messagingQos.setCompress(message->isCompressed());
             const boost::optional<std::string> effort = message->getEffort();
             if (effort) {
@@ -234,7 +236,7 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
                                     *effort);
                 }
             }
-            thisSharedPtr->messageSender->sendReply(
+            thisSharedPtr->_messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
                     messagingQos,
@@ -262,9 +264,9 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
             reply.setRequestReplyId(std::move(requestReplyId));
             reply.setError(exception);
             const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
-            MessagingQos messagingQos(ttl.count());
+            MessagingQos messagingQos(static_cast<std::uint64_t>(ttl.count()));
             messagingQos.setCompress(message->isCompressed());
-            thisSharedPtr->messageSender->sendReply(
+            thisSharedPtr->_messageSender->sendReply(
                     receiverId, // receiver of the request is sender of reply
                     senderId,   // sender of request is receiver of reply
                     messagingQos,
@@ -281,8 +283,8 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
 
 void Dispatcher::handleOneWayRequestReceived(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "handleOneWayRequestReceived cancelled, shutting down");
         return;
     }
@@ -290,7 +292,7 @@ void Dispatcher::handleOneWayRequestReceived(std::shared_ptr<ImmutableMessage> m
 
     // json request
     // lookup necessary data
-    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+    std::shared_ptr<RequestCaller> caller = _requestCallerDirectory.lookup(receiverId);
     if (!caller) {
         JOYNR_LOG_ERROR(
                 logger(),
@@ -332,8 +334,8 @@ void Dispatcher::handleOneWayRequestReceived(std::shared_ptr<ImmutableMessage> m
 
 void Dispatcher::handleReplyReceived(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "handleReplyReceived cancelled, shutting down");
         return;
     }
@@ -350,7 +352,7 @@ void Dispatcher::handleReplyReceived(std::shared_ptr<ImmutableMessage> message)
     }
 
     std::string requestReplyId = reply.getRequestReplyId();
-    std::shared_ptr<IReplyCaller> caller = replyCallerDirectory.take(requestReplyId);
+    std::shared_ptr<IReplyCaller> caller = _replyCallerDirectory.take(requestReplyId);
     if (!caller) {
         // This used to be a fatal error, but it is possible that the replyCallerDirectory
         // removed
@@ -368,16 +370,16 @@ void Dispatcher::handleReplyReceived(std::shared_ptr<ImmutableMessage> message)
 
 void Dispatcher::handleSubscriptionRequestReceived(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "handleSubscriptionRequestReceived cancelled, shutting down");
         return;
     }
     JOYNR_LOG_TRACE(logger(), "Starting handleSubscriptionReceived");
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
-    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    auto publicationManagerSharedPtr = publicationManager.lock();
+    std::lock_guard<std::mutex> lock(_subscriptionHandlingMutex);
+    auto publicationManagerSharedPtr = _publicationManager.lock();
     if (!publicationManagerSharedPtr) {
         JOYNR_LOG_ERROR(logger(),
                         "Unable to handle subscription request object from: {} - no publication "
@@ -387,7 +389,7 @@ void Dispatcher::handleSubscriptionRequestReceived(std::shared_ptr<ImmutableMess
     }
 
     const std::string& receiverId = message->getRecipient();
-    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+    std::shared_ptr<RequestCaller> caller = _requestCallerDirectory.lookup(receiverId);
 
     // PublicationManager is responsible for deleting SubscriptionRequests
     SubscriptionRequest subscriptionRequest;
@@ -414,21 +416,21 @@ void Dispatcher::handleSubscriptionRequestReceived(std::shared_ptr<ImmutableMess
                                          message->getRecipient(),
                                          std::move(caller),
                                          subscriptionRequest,
-                                         messageSender);
+                                         _messageSender);
     }
 }
 
 void Dispatcher::handleMulticastSubscriptionRequestReceived(
         std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(
                 logger(), "handleMulticastSubscriptionRequestReceived cancelled, shutting down");
         return;
     }
     JOYNR_LOG_TRACE(logger(), "Starting handleMulticastSubscriptionRequestReceived");
-    auto publicationManagerSharedPtr = publicationManager.lock();
+    auto publicationManagerSharedPtr = _publicationManager.lock();
     if (!publicationManagerSharedPtr) {
         JOYNR_LOG_ERROR(logger(),
                         "Unable to handle multicast subscription request object from: {} - no "
@@ -452,14 +454,14 @@ void Dispatcher::handleMulticastSubscriptionRequestReceived(
     locker.unlock();
 
     publicationManagerSharedPtr->add(
-            message->getSender(), message->getRecipient(), subscriptionRequest, messageSender);
+            message->getSender(), message->getRecipient(), subscriptionRequest, _messageSender);
 }
 
 void Dispatcher::handleBroadcastSubscriptionRequestReceived(
         std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(
                 logger(), "handleBroadcastSubscriptionRequestReceived cancelled, shutting down");
         return;
@@ -467,8 +469,8 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(
     JOYNR_LOG_TRACE(logger(), "Starting handleBroadcastSubscriptionRequestReceived");
     // Make sure that noone is registering a Caller at the moment, because a racing condition could
     // occour.
-    std::lock_guard<std::mutex> lock(subscriptionHandlingMutex);
-    auto publicationManagerSharedPtr = publicationManager.lock();
+    std::lock_guard<std::mutex> lock(_subscriptionHandlingMutex);
+    auto publicationManagerSharedPtr = _publicationManager.lock();
     if (!publicationManagerSharedPtr) {
         JOYNR_LOG_ERROR(logger(),
                         "Unable to handle broadcast subscription request object from: {} - no "
@@ -478,7 +480,7 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(
     }
 
     const std::string& receiverId = message->getRecipient();
-    std::shared_ptr<RequestCaller> caller = requestCallerDirectory.lookup(receiverId);
+    std::shared_ptr<RequestCaller> caller = _requestCallerDirectory.lookup(receiverId);
 
     // PublicationManager is responsible for deleting SubscriptionRequests
     BroadcastSubscriptionRequest subscriptionRequest;
@@ -506,14 +508,14 @@ void Dispatcher::handleBroadcastSubscriptionRequestReceived(
                                          message->getRecipient(),
                                          std::move(caller),
                                          subscriptionRequest,
-                                         messageSender);
+                                         _messageSender);
     }
 }
 
 void Dispatcher::handleSubscriptionStopReceived(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "handleSubscriptionStopReceived cancelled, shutting down");
         return;
     }
@@ -529,7 +531,7 @@ void Dispatcher::handleSubscriptionStopReceived(std::shared_ptr<ImmutableMessage
                         e.what());
         return;
     }
-    auto publicationManagerSharedPtr = publicationManager.lock();
+    auto publicationManagerSharedPtr = _publicationManager.lock();
     if (!publicationManagerSharedPtr) {
         JOYNR_LOG_ERROR(logger(),
                         "Unable to handle subscription stop object from: {} - no publication "
@@ -544,8 +546,8 @@ void Dispatcher::handleSubscriptionStopReceived(std::shared_ptr<ImmutableMessage
 
 void Dispatcher::handleSubscriptionReplyReceived(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "handleSubscriptionReplyReceived cancelled, shutting down");
         return;
     }
@@ -562,10 +564,10 @@ void Dispatcher::handleSubscriptionReplyReceived(std::shared_ptr<ImmutableMessag
 
     const std::string& subscriptionId = subscriptionReply.getSubscriptionId();
 
-    assert(subscriptionManager != nullptr);
+    assert(_subscriptionManager != nullptr);
 
     std::shared_ptr<ISubscriptionCallback> callback =
-            subscriptionManager->getSubscriptionCallback(subscriptionId);
+            _subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
         JOYNR_LOG_ERROR(logger(),
                         "Dropping subscription reply for non/no more existing subscription "
@@ -580,8 +582,8 @@ void Dispatcher::handleSubscriptionReplyReceived(std::shared_ptr<ImmutableMessag
 
 void Dispatcher::handleMulticastReceived(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "handleMulticastReceived cancelled, shutting down");
         return;
     }
@@ -598,10 +600,10 @@ void Dispatcher::handleMulticastReceived(std::shared_ptr<ImmutableMessage> messa
 
     const std::string& multicastId = multicastPublication.getMulticastId();
 
-    assert(subscriptionManager != nullptr);
+    assert(_subscriptionManager != nullptr);
 
     std::shared_ptr<ISubscriptionCallback> callback =
-            subscriptionManager->getMulticastSubscriptionCallback(multicastId);
+            _subscriptionManager->getMulticastSubscriptionCallback(multicastId);
     if (callback == nullptr) {
         JOYNR_LOG_ERROR(logger(),
                         "Dropping multicast publication for non/no more existing subscription "
@@ -620,8 +622,8 @@ void Dispatcher::handleMulticastReceived(std::shared_ptr<ImmutableMessage> messa
 
 void Dispatcher::handlePublicationReceived(std::shared_ptr<ImmutableMessage> message)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "handlePublicationReceived cancelled, shutting down");
         return;
     }
@@ -640,10 +642,10 @@ void Dispatcher::handlePublicationReceived(std::shared_ptr<ImmutableMessage> mes
 
     const std::string& subscriptionId = subscriptionPublication.getSubscriptionId();
 
-    assert(subscriptionManager != nullptr);
+    assert(_subscriptionManager != nullptr);
 
     std::shared_ptr<ISubscriptionCallback> callback =
-            subscriptionManager->getSubscriptionCallback(subscriptionId);
+            _subscriptionManager->getSubscriptionCallback(subscriptionId);
     if (!callback) {
         JOYNR_LOG_ERROR(logger(),
                         "Dropping publication for non/no more existing subscription with id = {}",
@@ -651,7 +653,7 @@ void Dispatcher::handlePublicationReceived(std::shared_ptr<ImmutableMessage> mes
         return;
     }
 
-    subscriptionManager->touchSubscriptionState(subscriptionId);
+    _subscriptionManager->touchSubscriptionState(subscriptionId);
     locker.unlock();
 
     callback->execute(std::move(subscriptionPublication));
@@ -660,34 +662,34 @@ void Dispatcher::handlePublicationReceived(std::shared_ptr<ImmutableMessage> mes
 void Dispatcher::registerSubscriptionManager(
         std::shared_ptr<ISubscriptionManager> subscriptionManager)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "registerSubscriptionManager cancelled, shutting down");
         return;
     }
-    this->subscriptionManager = std::move(subscriptionManager);
+    this->_subscriptionManager = std::move(subscriptionManager);
 }
 
 void Dispatcher::registerPublicationManager(std::weak_ptr<PublicationManager> publicationManager)
 {
-    ReadLocker locker(isShuttingDownLock);
-    if (isShuttingDown) {
+    ReadLocker locker(_isShuttingDownLock);
+    if (_isShuttingDown) {
         JOYNR_LOG_TRACE(logger(), "registerPublicationManager cancelled, shutting down");
         return;
     }
-    this->publicationManager = std::move(publicationManager);
+    this->_publicationManager = std::move(publicationManager);
 }
 
 void Dispatcher::shutdown()
 {
     {
-        WriteLocker locker(isShuttingDownLock);
-        assert(!isShuttingDown);
-        isShuttingDown = true;
+        WriteLocker locker(_isShuttingDownLock);
+        assert(!_isShuttingDown);
+        _isShuttingDown = true;
     }
-    handleReceivedMessageThreadPool->shutdown();
-    replyCallerDirectory.shutdown();
-    requestCallerDirectory.shutdown();
+    _handleReceivedMessageThreadPool->shutdown();
+    _replyCallerDirectory.shutdown();
+    _requestCallerDirectory.shutdown();
 }
 
 } // namespace joynr

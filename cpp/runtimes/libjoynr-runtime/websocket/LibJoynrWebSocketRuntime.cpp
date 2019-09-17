@@ -40,32 +40,32 @@ namespace joynr
 LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
                                                    std::shared_ptr<IKeychain> keyChain)
         : LibJoynrRuntime(std::move(settings), std::move(keyChain)),
-          wsSettings(*this->settings),
-          websocket(nullptr),
-          initializationMsg(),
-          isShuttingDown(false)
+          _wsSettings(*this->_settings),
+          _websocket(nullptr),
+          _initializationMsg(),
+          _isShuttingDown(false)
 {
-    wsSettings.printSettings();
+    _wsSettings.printSettings();
     createWebsocketClient();
 }
 
 LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 {
-    assert(isShuttingDown);
+    assert(_isShuttingDown);
 }
 
 void LibJoynrWebSocketRuntime::shutdown()
 {
-    assert(!isShuttingDown);
-    isShuttingDown = true;
-    assert(websocket);
-    websocket->stop();
+    assert(!_isShuttingDown);
+    _isShuttingDown = true;
+    assert(_websocket);
+    _websocket->stop();
 
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
-    assert(singleThreadIOService);
-    singleThreadIOService->stop();
+    assert(_singleThreadIOService);
+    _singleThreadIOService->stop();
     LibJoynrRuntime::shutdown();
 }
 
@@ -82,21 +82,21 @@ void LibJoynrWebSocketRuntime::connect(
                     libjoynrMessagingId);
 
     // send initialization message containing libjoynr messaging address
-    initializationMsg = joynr::serializer::serializeToJson(*libjoynrMessagingAddress);
+    _initializationMsg = joynr::serializer::serializeToJson(*libjoynrMessagingAddress);
     JOYNR_LOG_TRACE(logger(),
                     "OUTGOING sending websocket intialization message\nmessage: {}\nto: {}",
-                    initializationMsg,
+                    _initializationMsg,
                     libjoynrMessagingAddress->toString());
 
     // create connection to parent routing service
     auto ccMessagingAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(
-            wsSettings.createClusterControllerMessagingAddress());
+            _wsSettings.createClusterControllerMessagingAddress());
 
     auto factory = std::make_shared<WebSocketMessagingStubFactory>();
-    factory->addServer(*ccMessagingAddress, websocket->getSender());
+    factory->addServer(*ccMessagingAddress, _websocket->getSender());
 
     std::weak_ptr<WebSocketMessagingStubFactory> weakFactoryRef(factory);
-    websocket->registerDisconnectCallback([weakFactoryRef, ccMessagingAddress]() {
+    _websocket->registerDisconnectCallback([weakFactoryRef, ccMessagingAddress]() {
         if (auto factory = weakFactoryRef.lock()) {
             factory->onMessagingStubClosed(*ccMessagingAddress);
         }
@@ -135,9 +135,9 @@ void LibJoynrWebSocketRuntime::connect(
         }
     };
 
-    websocket->registerConnectCallback(connectCallback);
-    websocket->registerReconnectCallback(reconnectCallback);
-    websocket->connect(*ccMessagingAddress);
+    _websocket->registerConnectCallback(connectCallback);
+    _websocket->registerReconnectCallback(reconnectCallback);
+    _websocket->connect(*ccMessagingAddress);
 }
 
 void LibJoynrWebSocketRuntime::sendInitializationMsg()
@@ -148,17 +148,17 @@ void LibJoynrWebSocketRuntime::sendInitializationMsg()
                         "Sending websocket initialization message failed. Error: {}",
                         e.getMessage());
     };
-    smrf::ByteVector rawMessage(initializationMsg.begin(), initializationMsg.end());
-    websocket->send(smrf::ByteArrayView(rawMessage), std::move(onFailure));
+    smrf::ByteVector rawMessage(_initializationMsg.begin(), _initializationMsg.end());
+    _websocket->send(smrf::ByteArrayView(rawMessage), std::move(onFailure));
 }
 
 void LibJoynrWebSocketRuntime::createWebsocketClient()
 {
     system::RoutingTypes::WebSocketAddress webSocketAddress =
-            wsSettings.createClusterControllerMessagingAddress();
+            _wsSettings.createClusterControllerMessagingAddress();
 
     if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WSS) {
-        if (keyChain == nullptr) {
+        if (_keyChain == nullptr) {
             const std::string message(
                     "TLS websocket connection was configured for but no keychain was provided");
             JOYNR_LOG_FATAL(logger(), message);
@@ -166,12 +166,12 @@ void LibJoynrWebSocketRuntime::createWebsocketClient()
         }
 
         JOYNR_LOG_INFO(logger(), "Using TLS connection");
-        websocket = std::make_shared<WebSocketPpClientTLS>(
-                wsSettings, singleThreadIOService->getIOService(), keyChain);
+        _websocket = std::make_shared<WebSocketPpClientTLS>(
+                _wsSettings, _singleThreadIOService->getIOService(), _keyChain);
     } else if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WS) {
         JOYNR_LOG_INFO(logger(), "Using non-TLS connection");
-        websocket = std::make_shared<WebSocketPpClientNonTLS>(
-                wsSettings, singleThreadIOService->getIOService());
+        _websocket = std::make_shared<WebSocketPpClientNonTLS>(
+                _wsSettings, _singleThreadIOService->getIOService());
     } else {
         throw exceptions::JoynrRuntimeException(
                 "Unknown protocol used for settings property 'cluster-controller-messaging-url'");
@@ -184,7 +184,7 @@ void LibJoynrWebSocketRuntime::startLibJoynrMessagingSkeleton(
     auto wsLibJoynrMessagingSkeleton =
             std::make_shared<WebSocketLibJoynrMessagingSkeleton>(util::as_weak_ptr(messageRouter));
     using ConnectionHandle = websocketpp::connection_hdl;
-    websocket->registerReceiveCallback(
+    _websocket->registerReceiveCallback(
             [wsLibJoynrMessagingSkeleton](ConnectionHandle&& hdl, smrf::ByteVector&& msg) {
                 std::ignore = hdl;
                 wsLibJoynrMessagingSkeleton->onMessageReceived(std::move(msg));

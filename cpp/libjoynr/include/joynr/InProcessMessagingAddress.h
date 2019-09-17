@@ -57,11 +57,11 @@ protected:
     {
         const InProcessMessagingAddress& other =
                 static_cast<const InProcessMessagingAddress&>(otherBase);
-        return this->skeleton == other.skeleton && Address::equalsInternal(other, maxUlps);
+        return this->_skeleton == other._skeleton && Address::equalsInternal(other, maxUlps);
     }
 
 private:
-    std::shared_ptr<InProcessMessagingSkeleton> skeleton;
+    std::shared_ptr<InProcessMessagingSkeleton> _skeleton;
 };
 
 } // namespace joynr

@@ -43,29 +43,29 @@ Arbitrator::Arbitrator(
         const std::vector<std::string>& gbids,
         std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction)
         : std::enable_shared_from_this<Arbitrator>(),
-          pendingFutureMutex(),
-          pendingFuture(),
-          discoveryProxy(discoveryProxy),
-          gbids(gbids),
-          gbidString(boost::algorithm::join(gbids, ", ")),
-          discoveryQos(discoveryQos),
-          systemDiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
-                             discoveryQos.getDiscoveryTimeoutMs(),
-                             discoveryQos.getDiscoveryScope(),
-                             discoveryQos.getProviderMustSupportOnChange()),
-          domains({domain}),
-          serializedDomainsList(boost::algorithm::join(domains, ", ")),
-          interfaceName(interfaceName),
-          interfaceVersion(interfaceVersion),
-          discoveredIncompatibleVersions(),
-          arbitrationError("Arbitration could not be finished in time."),
-          arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
-          semaphore(0),
-          arbitrationFinished(false),
-          arbitrationFailedForever(false),
-          arbitrationRunning(false),
-          arbitrationStopped(false),
-          arbitrationThread()
+          _pendingFutureMutex(),
+          _pendingFuture(),
+          _discoveryProxy(discoveryProxy),
+          _gbids(gbids),
+          _gbidString(boost::algorithm::join(gbids, ", ")),
+          _discoveryQos(discoveryQos),
+          _systemDiscoveryQos(_discoveryQos.getCacheMaxAgeMs(),
+                              _discoveryQos.getDiscoveryTimeoutMs(),
+                              _discoveryQos.getDiscoveryScope(),
+                              _discoveryQos.getProviderMustSupportOnChange()),
+          _domains({domain}),
+          _serializedDomainsList(boost::algorithm::join(_domains, ", ")),
+          _interfaceName(interfaceName),
+          _interfaceVersion(interfaceVersion),
+          _discoveredIncompatibleVersions(),
+          _arbitrationError("Arbitration could not be finished in time."),
+          _arbitrationStrategyFunction(std::move(arbitrationStrategyFunction)),
+          _semaphore(0),
+          _arbitrationFinished(false),
+          _arbitrationFailedForever(false),
+          _arbitrationRunning(false),
+          _arbitrationStopped(false),
+          _arbitrationThread()
 {
 }
 
@@ -78,59 +78,60 @@ void Arbitrator::startArbitration(
         std::function<void(const types::DiscoveryEntryWithMetaInfo& discoveryEntry)> onSuccess,
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
-    if (arbitrationRunning) {
+    if (_arbitrationRunning) {
         JOYNR_LOG_ERROR(logger(),
                         "Arbitration already running for domain = [{}], interface = {}, GBIDs = "
                         "{}. A second "
                         "arbitration will not be started.",
-                        serializedDomainsList,
-                        interfaceName,
-                        gbidString);
+                        _serializedDomainsList,
+                        _interfaceName,
+                        _gbidString);
         return;
     }
 
-    startTimePoint = std::chrono::steady_clock::now();
+    _startTimePoint = std::chrono::steady_clock::now();
     JOYNR_LOG_INFO(
             logger(),
             "Arbitration started for domain = [{}], interface = {}, GBIDs = {}, version = {}.{}.",
-            serializedDomainsList,
-            interfaceName,
-            gbidString,
-            std::to_string(interfaceVersion.getMajorVersion()),
-            std::to_string(interfaceVersion.getMinorVersion()));
+            _serializedDomainsList,
+            _interfaceName,
+            _gbidString,
+            std::to_string(_interfaceVersion.getMajorVersion()),
+            std::to_string(_interfaceVersion.getMinorVersion()));
 
-    arbitrationRunning = true;
-    arbitrationStopped = false;
+    _arbitrationRunning = true;
+    _arbitrationStopped = false;
 
-    onSuccessCallback = onSuccess;
-    onErrorCallback = onError;
+    _onSuccessCallback = onSuccess;
+    _onErrorCallback = onError;
 
-    arbitrationThread = std::thread([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())]() {
+    _arbitrationThread = std::thread([thisWeakPtr =
+                                              joynr::util::as_weak_ptr(shared_from_this())]() {
         auto thisSharedPtr = thisWeakPtr.lock();
         if (!thisSharedPtr) {
             return;
         }
 
-        thisSharedPtr->arbitrationFinished = false;
-        thisSharedPtr->arbitrationFailedForever = false;
+        thisSharedPtr->_arbitrationFinished = false;
+        thisSharedPtr->_arbitrationFailedForever = false;
 
         JOYNR_LOG_TRACE(logger(),
                         "Entering arbitration thread for domain: [{}], interface: {}, GBIDs = {}",
-                        thisSharedPtr->serializedDomainsList,
-                        thisSharedPtr->interfaceName,
-                        thisSharedPtr->gbidString);
+                        thisSharedPtr->_serializedDomainsList,
+                        thisSharedPtr->_interfaceName,
+                        thisSharedPtr->_gbidString);
 
-        while (!thisSharedPtr->arbitrationStopped) {
+        while (!thisSharedPtr->_arbitrationStopped) {
             thisSharedPtr->attemptArbitration();
 
             // exit if arbitration has finished successfully
-            if (thisSharedPtr->arbitrationFinished) {
+            if (thisSharedPtr->_arbitrationFinished) {
                 thisSharedPtr->assertNoPendingFuture();
                 return;
             }
 
             // check if we should break the loop and report errors to the user
-            if (thisSharedPtr->arbitrationStopped) {
+            if (thisSharedPtr->_arbitrationStopped) {
                 // stopArbitration has been invoked
                 break;
             }
@@ -139,47 +140,47 @@ void Arbitrator::startArbitration(
             // elapsed
             const std::int64_t durationMs = thisSharedPtr->getDurationMs();
 
-            if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() <= durationMs) {
+            if (thisSharedPtr->_discoveryQos.getDiscoveryTimeoutMs() <= durationMs) {
                 // discovery timeout reached
                 break;
-            } else if (thisSharedPtr->arbitrationFailedForever) {
+            } else if (thisSharedPtr->_arbitrationFailedForever) {
                 // arbitration failed -> inform caller immediately
                 break;
-            } else if (thisSharedPtr->discoveryQos.getDiscoveryTimeoutMs() - durationMs <=
-                       thisSharedPtr->discoveryQos.getRetryIntervalMs()) {
+            } else if (thisSharedPtr->_discoveryQos.getDiscoveryTimeoutMs() - durationMs <=
+                       thisSharedPtr->_discoveryQos.getRetryIntervalMs()) {
                 // no retry possible -> inform caller about cancelled arbitration immediately
                 break;
             } else {
                 // wait for retry interval and attempt a new arbitration
                 JOYNR_LOG_TRACE(logger(),
                                 "Rescheduling arbitration with delay {}ms",
-                                thisSharedPtr->discoveryQos.getRetryIntervalMs());
-                auto waitIntervalMs =
-                        std::chrono::milliseconds(thisSharedPtr->discoveryQos.getRetryIntervalMs());
-                thisSharedPtr->semaphore.waitFor(waitIntervalMs);
+                                thisSharedPtr->_discoveryQos.getRetryIntervalMs());
+                auto waitIntervalMs = std::chrono::milliseconds(
+                        thisSharedPtr->_discoveryQos.getRetryIntervalMs());
+                thisSharedPtr->_semaphore.waitFor(waitIntervalMs);
             }
         }
 
-        if (thisSharedPtr->onErrorCallback) {
-            if (thisSharedPtr->arbitrationStopped) {
-                thisSharedPtr->arbitrationError.setMessage(
-                        "Shutting Down Arbitration for interface " + thisSharedPtr->interfaceName);
-                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+        if (thisSharedPtr->_onErrorCallback) {
+            if (thisSharedPtr->_arbitrationStopped) {
+                thisSharedPtr->_arbitrationError.setMessage(
+                        "Shutting Down Arbitration for interface " + thisSharedPtr->_interfaceName);
+                thisSharedPtr->_onErrorCallback(thisSharedPtr->_arbitrationError);
                 // If this point is reached the arbitration timed out
-            } else if (thisSharedPtr->discoveredIncompatibleVersions.empty()) {
-                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+            } else if (thisSharedPtr->_discoveredIncompatibleVersions.empty()) {
+                thisSharedPtr->_onErrorCallback(thisSharedPtr->_arbitrationError);
             } else {
-                thisSharedPtr->onErrorCallback(exceptions::NoCompatibleProviderFoundException(
-                        thisSharedPtr->discoveredIncompatibleVersions));
+                thisSharedPtr->_onErrorCallback(exceptions::NoCompatibleProviderFoundException(
+                        thisSharedPtr->_discoveredIncompatibleVersions));
             }
         }
 
-        thisSharedPtr->arbitrationRunning = false;
+        thisSharedPtr->_arbitrationRunning = false;
         JOYNR_LOG_DEBUG(logger(),
                         "Exiting arbitration thread for domain: [{}], interface: {}, GBIDs = {}",
-                        thisSharedPtr->serializedDomainsList,
-                        thisSharedPtr->interfaceName,
-                        thisSharedPtr->gbidString);
+                        thisSharedPtr->_serializedDomainsList,
+                        thisSharedPtr->_interfaceName,
+                        thisSharedPtr->_gbidString);
         thisSharedPtr->assertNoPendingFuture();
     });
 }
@@ -188,16 +189,16 @@ void Arbitrator::stopArbitration()
 {
     JOYNR_LOG_DEBUG(logger(),
                     "StopArbitrator for domain: [{}], interface: {}, GBIDs = {}",
-                    serializedDomainsList,
-                    interfaceName,
-                    gbidString);
+                    _serializedDomainsList,
+                    _interfaceName,
+                    _gbidString);
     {
-        std::unique_lock<std::mutex> lock(pendingFutureMutex);
-        arbitrationStopped = true;
+        std::unique_lock<std::mutex> lock(_pendingFutureMutex);
+        _arbitrationStopped = true;
 
         // check if there is a pending future and stop it if still in progress
         auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
-                "Shutting Down Arbitration for interface " + interfaceName);
+                "Shutting Down Arbitration for interface " + _interfaceName);
         boost::apply_visitor([error](auto& future) {
                                  if (future) {
                                      if (future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
@@ -206,33 +207,33 @@ void Arbitrator::stopArbitration()
                                      future.reset();
                                  }
                              },
-                             pendingFuture);
+                             _pendingFuture);
     }
 
-    semaphore.notify();
+    _semaphore.notify();
 
-    if (arbitrationThread.joinable()) {
-        JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread ({}) ...", interfaceName);
-        arbitrationThread.join();
+    if (_arbitrationThread.joinable()) {
+        JOYNR_LOG_DEBUG(logger(), "Thread can be joined. Joining thread ({}) ...", _interfaceName);
+        _arbitrationThread.join();
     }
 }
 
 void Arbitrator::validatePendingFuture()
 {
-    std::unique_lock<std::mutex> lock(pendingFutureMutex);
+    std::unique_lock<std::mutex> lock(_pendingFutureMutex);
     boost::apply_visitor([](auto& future) {
                              if (future) {
                                  assert(future->getStatus() != StatusCodeEnum::IN_PROGRESS);
                                  future.reset();
                              }
                          },
-                         pendingFuture);
+                         _pendingFuture);
 }
 
 void Arbitrator::assertNoPendingFuture()
 {
-    std::unique_lock<std::mutex> lock(pendingFutureMutex);
-    boost::apply_visitor([](auto& future) { assert(!future); }, pendingFuture);
+    std::unique_lock<std::mutex> lock(_pendingFutureMutex);
+    boost::apply_visitor([](auto& future) { assert(!future); }, _pendingFuture);
 }
 
 void Arbitrator::attemptArbitration()
@@ -240,27 +241,27 @@ void Arbitrator::attemptArbitration()
     assertNoPendingFuture();
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     const bool isArbitrationStrateggyFixedParticipant =
-            discoveryQos.getArbitrationStrategy() ==
+            _discoveryQos.getArbitrationStrategy() ==
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT;
     const std::string fixedParticipantId =
             isArbitrationStrateggyFixedParticipant
                     // custom parameter is present in this case, checked in ArbitratorFactory
-                    ? discoveryQos.getCustomParameter("fixedParticipantId").getValue()
+                    ? _discoveryQos.getCustomParameter("fixedParticipantId").getValue()
                     : "";
 
     JOYNR_LOG_DEBUG(logger(),
                     "DISCOVERY lookup for domain: [{}], interface: {}, GBIDs = {}",
-                    serializedDomainsList,
-                    interfaceName,
-                    gbidString);
+                    _serializedDomainsList,
+                    _interfaceName,
+                    _gbidString);
 
     try {
-        auto discoveryProxySharedPtr = discoveryProxy.lock();
+        auto discoveryProxySharedPtr = _discoveryProxy.lock();
         if (!discoveryProxySharedPtr) {
             throw exceptions::JoynrRuntimeException("discoveryProxy not available");
         }
         const std::int64_t durationMs = getDurationMs();
-        const std::int64_t waitTimeMs = discoveryQos.getDiscoveryTimeoutMs() - durationMs;
+        const std::int64_t waitTimeMs = _discoveryQos.getDiscoveryTimeoutMs() - durationMs;
 
         if (waitTimeMs <= 0) {
             throw exceptions::JoynrTimeOutException("arbitration timed out");
@@ -270,13 +271,13 @@ void Arbitrator::attemptArbitration()
             types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
 
             auto future = discoveryProxySharedPtr->lookupAsync(
-                    fixedParticipantId, systemDiscoveryQos, gbids);
+                    fixedParticipantId, _systemDiscoveryQos, _gbids);
             {
-                std::unique_lock<std::mutex> lock(pendingFutureMutex);
-                if (arbitrationStopped) {
+                std::unique_lock<std::mutex> lock(_pendingFutureMutex);
+                if (_arbitrationStopped) {
                     return;
                 } else {
-                    pendingFuture = future;
+                    _pendingFuture = future;
                 }
             }
 
@@ -285,13 +286,13 @@ void Arbitrator::attemptArbitration()
             result.push_back(fixedParticipantResult);
         } else {
             auto future = discoveryProxySharedPtr->lookupAsync(
-                    domains, interfaceName, systemDiscoveryQos, gbids);
+                    _domains, _interfaceName, _systemDiscoveryQos, _gbids);
             {
-                std::unique_lock<std::mutex> lock(pendingFutureMutex);
-                if (arbitrationStopped) {
+                std::unique_lock<std::mutex> lock(_pendingFutureMutex);
+                if (_arbitrationStopped) {
                     return;
                 } else {
-                    pendingFuture = future;
+                    _pendingFuture = future;
                 }
             }
 
@@ -307,9 +308,9 @@ void Arbitrator::attemptArbitration()
                 (isArbitrationStrateggyFixedParticipant
                          ? ("participantId: " + fixedParticipantId)
                          : ("domain: [" +
-                            (domains.empty() ? std::string("EMPTY") : serializedDomainsList) +
-                            "], interface: " + interfaceName)) +
-                (gbids.empty() ? "" : ", GBIDs: " + gbidString) + ") from discovery. ";
+                            (_domains.empty() ? std::string("EMPTY") : _serializedDomainsList) +
+                            "], interface: " + _interfaceName)) +
+                (_gbids.empty() ? "" : ", GBIDs: " + _gbidString) + ") from discovery. ";
         if (exceptions::ApplicationException::TYPE_NAME() == e.getTypeName()) {
             const exceptions::ApplicationException& applicationException =
                     static_cast<const exceptions::ApplicationException&>(e);
@@ -318,7 +319,7 @@ void Arbitrator::attemptArbitration()
             case types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT:
             // fall through
             case types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS: {
-                discoveredIncompatibleVersions.clear();
+                _discoveredIncompatibleVersions.clear();
                 errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error) +
                             ", continuing.";
                 JOYNR_LOG_INFO(logger(), errorMsg);
@@ -331,18 +332,18 @@ void Arbitrator::attemptArbitration()
             case types::DiscoveryError::INTERNAL_ERROR:
             // fall through to default
             default:
-                discoveredIncompatibleVersions.clear();
+                _discoveredIncompatibleVersions.clear();
                 errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error) +
                             ", giving up.";
                 JOYNR_LOG_ERROR(logger(), errorMsg);
-                arbitrationFailedForever = true;
+                _arbitrationFailedForever = true;
                 break;
             }
         } else {
             errorMsg += "JoynrException: " + e.getMessage() + ", continuing.";
             JOYNR_LOG_ERROR(logger(), errorMsg);
         }
-        arbitrationError.setMessage(errorMsg);
+        _arbitrationError.setMessage(errorMsg);
         validatePendingFuture();
     }
     assertNoPendingFuture();
@@ -351,14 +352,15 @@ void Arbitrator::attemptArbitration()
 void Arbitrator::receiveCapabilitiesLookupResults(
         const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries)
 {
-    discoveredIncompatibleVersions.clear();
+    _discoveredIncompatibleVersions.clear();
 
     // Check for empty results
     if (discoveryEntries.empty()) {
-        arbitrationError.setMessage(
+        _arbitrationError.setMessage(
                 "No entries found for domain: [" +
-                (domains.empty() ? std::string("EMPTY") : serializedDomainsList) +
-                "], interface: " + interfaceName + (gbids.empty() ? "" : ", GBIDs: " + gbidString));
+                (_domains.empty() ? std::string("EMPTY") : _serializedDomainsList) +
+                "], interface: " + _interfaceName +
+                (_gbids.empty() ? "" : ", GBIDs: " + _gbidString));
         return;
     }
 
@@ -371,19 +373,19 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         JOYNR_LOG_TRACE(logger(), "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
         providerVersion = discoveryEntry.getProviderVersion();
 
-        if (discoveryQos.getProviderMustSupportOnChange() &&
+        if (_discoveryQos.getProviderMustSupportOnChange() &&
             !providerQos.getSupportsOnChangeSubscriptions()) {
             ++providersWithoutSupportOnChange;
             continue;
         }
 
-        if (providerVersion.getMajorVersion() != interfaceVersion.getMajorVersion() ||
-            providerVersion.getMinorVersion() < interfaceVersion.getMinorVersion()) {
+        if (providerVersion.getMajorVersion() != _interfaceVersion.getMajorVersion() ||
+            providerVersion.getMinorVersion() < _interfaceVersion.getMinorVersion()) {
             JOYNR_LOG_TRACE(logger(),
                             "Skipping capabilitiesEntry with incompatible version, expected: " +
-                                    std::to_string(interfaceVersion.getMajorVersion()) + "." +
-                                    std::to_string(interfaceVersion.getMinorVersion()));
-            discoveredIncompatibleVersions.insert(providerVersion);
+                                    std::to_string(_interfaceVersion.getMajorVersion()) + "." +
+                                    std::to_string(_interfaceVersion.getMinorVersion()));
+            _discoveredIncompatibleVersions.insert(providerVersion);
             ++providersWithIncompatibleVersion;
             continue;
         }
@@ -397,29 +399,29 @@ void Arbitrator::receiveCapabilitiesLookupResults(
             errorMsg = "There was more than one entries in capabilitiesEntries, but none supported "
                        "on change subscriptions.";
             JOYNR_LOG_WARN(logger(), errorMsg);
-            arbitrationError.setMessage(errorMsg);
+            _arbitrationError.setMessage(errorMsg);
         } else if ((providersWithoutSupportOnChange + providersWithIncompatibleVersion) ==
                    discoveryEntries.size()) {
             errorMsg = "There was more than one entries in capabilitiesEntries, but none "
                        "was compatible.";
             JOYNR_LOG_WARN(logger(), errorMsg);
-            arbitrationError.setMessage(errorMsg);
+            _arbitrationError.setMessage(errorMsg);
         }
         return;
     } else {
         types::DiscoveryEntryWithMetaInfo res;
 
         try {
-            res = arbitrationStrategyFunction->select(
-                    discoveryQos.getCustomParameters(), preFilteredDiscoveryEntries);
+            res = _arbitrationStrategyFunction->select(
+                    _discoveryQos.getCustomParameters(), preFilteredDiscoveryEntries);
         } catch (const exceptions::DiscoveryException& e) {
-            arbitrationError = e;
+            _arbitrationError = e;
         }
         if (!res.getParticipantId().empty()) {
-            if (onSuccessCallback) {
-                onSuccessCallback(res);
+            if (_onSuccessCallback) {
+                _onSuccessCallback(res);
             }
-            arbitrationFinished = true;
+            _arbitrationFinished = true;
         }
     }
 }
@@ -427,7 +429,7 @@ void Arbitrator::receiveCapabilitiesLookupResults(
 std::int64_t Arbitrator::getDurationMs() const
 {
     auto now = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTimePoint);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - _startTimePoint);
 
     return duration.count();
 }

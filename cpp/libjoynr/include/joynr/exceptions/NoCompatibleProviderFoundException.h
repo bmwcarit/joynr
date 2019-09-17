@@ -62,7 +62,7 @@ public:
     static const std::string TYPE_NAME;
 
 private:
-    std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
+    std::unordered_set<joynr::types::Version> _discoveredIncompatibleVersions;
 };
 
 } // namespace exceptions

@@ -56,11 +56,11 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(filterParameters));
+        archive(MUESLI_NVP(_filterParameters));
     }
 
 private:
-    std::map<std::string, std::string> filterParameters;
+    std::map<std::string, std::string> _filterParameters;
 };
 
 } // namespace joynr

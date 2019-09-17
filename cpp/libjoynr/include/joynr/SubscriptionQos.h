@@ -122,12 +122,12 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(expiryDateMs));
+        archive(MUESLI_NVP(_expiryDateMs));
     }
 
 protected:
     /** @brief The expiry date in milliseconds */
-    std::int64_t expiryDateMs;
+    std::int64_t _expiryDateMs;
 };
 
 } // namespace joynr

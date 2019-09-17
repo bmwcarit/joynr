@@ -58,17 +58,17 @@ public:
     void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
     void registerOnMessagingStubClosedCallback(std::function<
             void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
-                                                       onMessagingStubClosedCallback) override;
+                                                       _onMessagingStubClosedCallback) override;
 
 private:
     std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress,
-                       std::shared_ptr<IMessagingStub>> serverStubMap;
-    std::mutex serverStubMapMutex;
+                       std::shared_ptr<IMessagingStub>> _serverStubMap;
+    std::mutex _serverStubMapMutex;
     std::unordered_map<joynr::system::RoutingTypes::WebSocketClientAddress,
-                       std::shared_ptr<IMessagingStub>> clientStubMap;
-    std::mutex clientStubMapMutex;
+                       std::shared_ptr<IMessagingStub>> _clientStubMap;
+    std::mutex _clientStubMapMutex;
     std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
-                               destinationAddress)> onMessagingStubClosedCallback;
+                               destinationAddress)> _onMessagingStubClosedCallback;
 
     ADD_LOGGER(WebSocketMessagingStubFactory)
 };

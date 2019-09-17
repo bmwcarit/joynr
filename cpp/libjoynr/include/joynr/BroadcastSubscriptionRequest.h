@@ -58,16 +58,16 @@ public:
     const boost::optional<BroadcastFilterParameters>& getFilterParameters() const;
     void setFilterParameters(const BroadcastFilterParameters& filterParameters);
 
-    void setQos(std::shared_ptr<SubscriptionQos> qos) override;
+    void setQos(std::shared_ptr<SubscriptionQos> _qos) override;
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(filterParameters));
+        archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(_filterParameters));
     }
 
 private:
-    boost::optional<BroadcastFilterParameters> filterParameters;
+    boost::optional<BroadcastFilterParameters> _filterParameters;
 
     ADD_LOGGER(BroadcastSubscriptionRequest)
 };

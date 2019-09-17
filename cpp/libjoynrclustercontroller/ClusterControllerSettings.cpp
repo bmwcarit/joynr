@@ -25,7 +25,7 @@
 namespace joynr
 {
 
-ClusterControllerSettings::ClusterControllerSettings(Settings& settings) : settings(settings)
+ClusterControllerSettings::ClusterControllerSettings(Settings& settings) : _settings(settings)
 {
     settings.fillEmptySettingsWithDefaults(DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME());
     checkSettings();
@@ -34,96 +34,96 @@ ClusterControllerSettings::ClusterControllerSettings(Settings& settings) : setti
 
 void ClusterControllerSettings::checkSettings()
 {
-    if (!settings.contains(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME())) {
+    if (!_settings.contains(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME())) {
         setMulticastReceiverDirectoryPersistenceFilename(
                 DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME());
     }
 
-    if (!settings.contains(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED())) {
+    if (!_settings.contains(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED())) {
         setMulticastReceiverDirectoryPersistencyEnabled(
                 DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED());
     }
 
-    if (!settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME())) {
+    if (!_settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME())) {
         setLocalCapabilitiesDirectoryPersistenceFilename(
                 DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
     }
 
-    if (!settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED())) {
+    if (!_settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED())) {
         setLocalCapabilitiesDirectoryPersistencyEnabled(
                 DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED());
     }
 
-    if (!settings.contains(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED())) {
+    if (!_settings.contains(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED())) {
         setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
                 DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
     }
 
-    if (!settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
+    if (!_settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX())) {
         setMqttClientIdPrefix(DEFAULT_MQTT_CLIENT_ID_PREFIX());
     }
 
-    if (!settings.contains(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME())) {
+    if (!_settings.contains(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME())) {
         setLocalDomainAccessStorePersistenceFilename(
                 DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
     }
 
-    if (!settings.contains(SETTING_MESSAGE_QUEUE_LIMIT())) {
+    if (!_settings.contains(SETTING_MESSAGE_QUEUE_LIMIT())) {
         setMessageQueueLimit(DEFAULT_MESSAGE_QUEUE_LIMIT());
     }
 
-    if (!settings.contains(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT())) {
+    if (!_settings.contains(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT())) {
         setPerParticipantIdMessageQueueLimit(DEFAULT_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT());
     }
 
-    if (!settings.contains(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT())) {
+    if (!_settings.contains(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT())) {
         setTransportNotAvailableQueueLimit(DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
     }
 
-    if (!settings.contains(SETTING_MESSAGE_QUEUE_LIMIT_BYTES())) {
+    if (!_settings.contains(SETTING_MESSAGE_QUEUE_LIMIT_BYTES())) {
         setMessageQueueLimitBytes(DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES());
     }
 
-    if (!settings.contains(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES())) {
+    if (!_settings.contains(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES())) {
         setTransportNotAvailableQueueLimitBytes(
                 DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
     }
 
-    if (!settings.contains(SETTING_MQTT_MULTICAST_TOPIC_PREFIX())) {
+    if (!_settings.contains(SETTING_MQTT_MULTICAST_TOPIC_PREFIX())) {
         setMqttMulticastTopicPrefix(DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX());
     }
-    if (!settings.contains(SETTING_MQTT_UNICAST_TOPIC_PREFIX())) {
+    if (!_settings.contains(SETTING_MQTT_UNICAST_TOPIC_PREFIX())) {
         setMqttMulticastTopicPrefix(DEFAULT_MQTT_UNICAST_TOPIC_PREFIX());
     }
 
-    if (!settings.contains(SETTING_USE_ONLY_LDAS())) {
+    if (!_settings.contains(SETTING_USE_ONLY_LDAS())) {
         setUseOnlyLDAS(DEFAULT_USE_ONLY_LDAS());
     }
 
-    if (!settings.contains(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS())) {
+    if (!_settings.contains(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS())) {
         setPurgeExpiredDiscoveryEntriesIntervalMs(
                 DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
     }
 
-    if (!settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
-        settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
-                     DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
+    if (!_settings.contains(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS())) {
+        _settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                      DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS().count());
     }
 
-    if (!settings.contains(SETTING_MQTT_TLS_ENABLED())) {
-        settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
+    if (!_settings.contains(SETTING_MQTT_TLS_ENABLED())) {
+        _settings.set(SETTING_MQTT_TLS_ENABLED(), DEFAULT_MQTT_TLS_ENABLED());
     }
 
-    if (!settings.contains(SETTING_MQTT_TLS_VERSION())) {
-        settings.set(SETTING_MQTT_TLS_VERSION(), DEFAULT_MQTT_TLS_VERSION());
+    if (!_settings.contains(SETTING_MQTT_TLS_VERSION())) {
+        _settings.set(SETTING_MQTT_TLS_VERSION(), DEFAULT_MQTT_TLS_VERSION());
     }
 
-    if (!settings.contains(SETTING_MQTT_TLS_CIPHERS())) {
-        settings.set(SETTING_MQTT_TLS_CIPHERS(), DEFAULT_MQTT_TLS_CIPHERS());
+    if (!_settings.contains(SETTING_MQTT_TLS_CIPHERS())) {
+        _settings.set(SETTING_MQTT_TLS_CIPHERS(), DEFAULT_MQTT_TLS_CIPHERS());
     }
 
-    if (!settings.contains(SETTING_ACCESS_CONTROL_AUDIT())) {
-        settings.set(SETTING_ACCESS_CONTROL_AUDIT(), DEFAULT_ACCESS_CONTROL_AUDIT());
+    if (!_settings.contains(SETTING_ACCESS_CONTROL_AUDIT())) {
+        _settings.set(SETTING_ACCESS_CONTROL_AUDIT(), DEFAULT_ACCESS_CONTROL_AUDIT());
     }
 
     if (isMqttTlsEnabled()) {
@@ -159,20 +159,21 @@ void ClusterControllerSettings::checkSettings()
                 logger(), "MQTT TLS is disabled but at least one MQTT TLS property was configured");
     }
 
-    if (!settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
+    if (!_settings.contains(SETTING_ACCESS_CONTROL_ENABLE())) {
         setEnableAccessController(DEFAULT_ENABLE_ACCESS_CONTROLLER());
     } else if (enableAccessController() && !getUseOnlyLDAS()) {
-        assert(settings.contains(SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
-        assert(settings.contains(
+        assert(_settings.contains(
+                SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
+        assert(_settings.contains(
                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
 
-        if (!settings.contains(SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS())) {
+        if (!_settings.contains(SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS())) {
             JOYNR_LOG_ERROR(logger(),
                             "Configuration error. Access controller is enabled but "
                             "no {} was defined.",
                             SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
         }
-        if (!settings.contains(
+        if (!_settings.contains(
                     SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID())) {
             JOYNR_LOG_ERROR(logger(),
                             "Configuration error. Access controller is enabled but "
@@ -459,202 +460,202 @@ const std::string& ClusterControllerSettings::DEFAULT_CLUSTERCONTROLLER_SETTINGS
 
 std::string ClusterControllerSettings::getMulticastReceiverDirectoryPersistenceFilename() const
 {
-    return settings.get<std::string>(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME());
+    return _settings.get<std::string>(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME());
 }
 
 void ClusterControllerSettings::setMulticastReceiverDirectoryPersistenceFilename(
         const std::string& filename)
 {
-    settings.set(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(), filename);
+    _settings.set(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(), filename);
 }
 
 bool ClusterControllerSettings::isMulticastReceiverDirectoryPersistencyEnabled() const
 {
-    return settings.get<bool>(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED());
+    return _settings.get<bool>(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED());
 }
 
 void ClusterControllerSettings::setMulticastReceiverDirectoryPersistencyEnabled(bool enabled)
 {
-    settings.set(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED(), enabled);
+    _settings.set(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED(), enabled);
 }
 
 bool ClusterControllerSettings::isWsTLSPortSet() const
 {
-    return settings.contains(SETTING_WS_TLS_PORT());
+    return _settings.contains(SETTING_WS_TLS_PORT());
 }
 
 std::uint16_t ClusterControllerSettings::getWsTLSPort() const
 {
-    return settings.get<std::uint16_t>(SETTING_WS_TLS_PORT());
+    return _settings.get<std::uint16_t>(SETTING_WS_TLS_PORT());
 }
 
 void ClusterControllerSettings::setWsTLSPort(std::uint16_t port)
 {
-    settings.set(SETTING_WS_TLS_PORT(), port);
+    _settings.set(SETTING_WS_TLS_PORT(), port);
 }
 
 bool ClusterControllerSettings::isWsPortSet() const
 {
-    return settings.contains(SETTING_WS_PORT());
+    return _settings.contains(SETTING_WS_PORT());
 }
 
 std::uint16_t ClusterControllerSettings::getWsPort() const
 {
-    return settings.get<std::uint16_t>(SETTING_WS_PORT());
+    return _settings.get<std::uint16_t>(SETTING_WS_PORT());
 }
 
 void ClusterControllerSettings::setWsPort(std::uint16_t port)
 {
-    settings.set(SETTING_WS_PORT(), port);
+    _settings.set(SETTING_WS_PORT(), port);
 }
 
 bool ClusterControllerSettings::isMqttClientIdPrefixSet() const
 {
-    return settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX());
+    return _settings.contains(SETTING_MQTT_CLIENT_ID_PREFIX());
 }
 
 int ClusterControllerSettings::getPurgeExpiredDiscoveryEntriesIntervalMs() const
 {
-    return settings.get<int>(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
+    return _settings.get<int>(SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS());
 }
 
 void ClusterControllerSettings::setPurgeExpiredDiscoveryEntriesIntervalMs(
         int purgeExpiredEntriesIntervalMs)
 {
-    settings.set(
+    _settings.set(
             SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(), purgeExpiredEntriesIntervalMs);
 }
 
 std::string ClusterControllerSettings::getMqttClientIdPrefix() const
 {
-    return settings.get<std::string>(SETTING_MQTT_CLIENT_ID_PREFIX());
+    return _settings.get<std::string>(SETTING_MQTT_CLIENT_ID_PREFIX());
 }
 
 void ClusterControllerSettings::setMqttClientIdPrefix(const std::string& mqttClientId)
 {
-    settings.set(SETTING_MQTT_CLIENT_ID_PREFIX(), mqttClientId);
+    _settings.set(SETTING_MQTT_CLIENT_ID_PREFIX(), mqttClientId);
 }
 
 std::string ClusterControllerSettings::getMqttMulticastTopicPrefix() const
 {
-    return settings.get<std::string>(SETTING_MQTT_MULTICAST_TOPIC_PREFIX());
+    return _settings.get<std::string>(SETTING_MQTT_MULTICAST_TOPIC_PREFIX());
 }
 
 void ClusterControllerSettings::setMqttMulticastTopicPrefix(
         const std::string& mqttMulticastTopicPrefix)
 {
-    settings.set(SETTING_MQTT_MULTICAST_TOPIC_PREFIX(), mqttMulticastTopicPrefix);
+    _settings.set(SETTING_MQTT_MULTICAST_TOPIC_PREFIX(), mqttMulticastTopicPrefix);
 }
 
 std::string ClusterControllerSettings::getMqttUnicastTopicPrefix() const
 {
-    return settings.get<std::string>(SETTING_MQTT_UNICAST_TOPIC_PREFIX());
+    return _settings.get<std::string>(SETTING_MQTT_UNICAST_TOPIC_PREFIX());
 }
 
 void ClusterControllerSettings::setMqttUnicastTopicPrefix(const std::string& mqttUnicastTopicPrefix)
 {
-    settings.set(SETTING_MQTT_UNICAST_TOPIC_PREFIX(), mqttUnicastTopicPrefix);
+    _settings.set(SETTING_MQTT_UNICAST_TOPIC_PREFIX(), mqttUnicastTopicPrefix);
 }
 
 bool ClusterControllerSettings::isMqttCertificateAuthorityPemFilenameSet() const
 {
-    return settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+    return _settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
 }
 
 std::string ClusterControllerSettings::getMqttCertificateAuthorityPemFilename() const
 {
-    return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
+    return _settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_PEM_FILENAME());
 }
 
 bool ClusterControllerSettings::isMqttCertificateAuthorityCertificateFolderPathSet() const
 {
-    return settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
+    return _settings.contains(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
 }
 
 std::string ClusterControllerSettings::getMqttCertificateAuthorityCertificateFolderPath() const
 {
-    return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
+    return _settings.get<std::string>(SETTING_MQTT_CERTIFICATE_AUTHORITY_CERTIFICATE_FOLDER_PATH());
 }
 
 bool ClusterControllerSettings::isMqttCertificatePemFilenameSet() const
 {
-    return settings.contains(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
+    return _settings.contains(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
 }
 
 std::string ClusterControllerSettings::getMqttCertificatePemFilename() const
 {
-    return settings.get<std::string>(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
+    return _settings.get<std::string>(SETTING_MQTT_CERTIFICATE_PEM_FILENAME());
 }
 
 bool ClusterControllerSettings::isMqttPrivateKeyPemFilenameSet() const
 {
-    return settings.contains(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
+    return _settings.contains(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
 }
 
 std::string ClusterControllerSettings::getMqttPrivateKeyPemFilename() const
 {
-    return settings.get<std::string>(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
+    return _settings.get<std::string>(SETTING_MQTT_PRIVATE_KEY_PEM_FILENAME());
 }
 
 bool ClusterControllerSettings::isMqttUsernameSet() const
 {
-    return settings.contains(SETTING_MQTT_USERNAME());
+    return _settings.contains(SETTING_MQTT_USERNAME());
 }
 
 std::string ClusterControllerSettings::getMqttUsername() const
 {
-    return settings.get<std::string>(SETTING_MQTT_USERNAME());
+    return _settings.get<std::string>(SETTING_MQTT_USERNAME());
 }
 
 bool ClusterControllerSettings::isMqttPasswordSet() const
 {
-    return settings.contains(SETTING_MQTT_PASSWORD());
+    return _settings.contains(SETTING_MQTT_PASSWORD());
 }
 
 std::string ClusterControllerSettings::getMqttPassword() const
 {
-    return settings.get<std::string>(SETTING_MQTT_PASSWORD());
+    return _settings.get<std::string>(SETTING_MQTT_PASSWORD());
 }
 
 void ClusterControllerSettings::setMqttTlsEnabled(bool enabled)
 {
-    settings.set<bool>(SETTING_MQTT_TLS_ENABLED(), enabled);
+    _settings.set<bool>(SETTING_MQTT_TLS_ENABLED(), enabled);
 }
 
 bool ClusterControllerSettings::isMqttTlsEnabled() const
 {
-    return settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
+    return _settings.get<bool>(SETTING_MQTT_TLS_ENABLED());
 }
 
 void ClusterControllerSettings::setMqttTlsVersion(const std::string& tlsVersion)
 {
-    settings.set<std::string>(SETTING_MQTT_TLS_VERSION(), tlsVersion);
+    _settings.set<std::string>(SETTING_MQTT_TLS_VERSION(), tlsVersion);
 }
 
 std::string ClusterControllerSettings::getMqttTlsVersion() const
 {
-    return settings.get<std::string>(SETTING_MQTT_TLS_VERSION());
+    return _settings.get<std::string>(SETTING_MQTT_TLS_VERSION());
 }
 
 void ClusterControllerSettings::setMqttTlsCiphers(const std::string& tlsCiphers)
 {
-    settings.set<std::string>(SETTING_MQTT_TLS_CIPHERS(), tlsCiphers);
+    _settings.set<std::string>(SETTING_MQTT_TLS_CIPHERS(), tlsCiphers);
 }
 
 std::string ClusterControllerSettings::getMqttTlsCiphers() const
 {
-    return settings.get<std::string>(SETTING_MQTT_TLS_CIPHERS());
+    return _settings.get<std::string>(SETTING_MQTT_TLS_CIPHERS());
 }
 
 bool ClusterControllerSettings::isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const
 {
-    return settings.get<bool>(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+    return _settings.get<bool>(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
 }
 
 void ClusterControllerSettings::setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
         bool enabled)
 {
-    return settings.set<bool>(
+    return _settings.set<bool>(
             SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(), enabled);
 }
 
@@ -728,150 +729,150 @@ const std::string& ClusterControllerSettings::
 
 std::string ClusterControllerSettings::getLocalDomainAccessStorePersistenceFilename() const
 {
-    return settings.get<std::string>(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
+    return _settings.get<std::string>(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
 }
 
 void ClusterControllerSettings::setLocalDomainAccessStorePersistenceFilename(
         const std::string& filename)
 {
-    settings.set(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(), filename);
+    _settings.set(SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME(), filename);
 }
 
 std::uint64_t ClusterControllerSettings::getMessageQueueLimit() const
 {
-    return settings.get<std::uint64_t>(SETTING_MESSAGE_QUEUE_LIMIT());
+    return _settings.get<std::uint64_t>(SETTING_MESSAGE_QUEUE_LIMIT());
 }
 
 void ClusterControllerSettings::setMessageQueueLimit(std::uint64_t limit)
 {
-    settings.set(SETTING_MESSAGE_QUEUE_LIMIT(), limit);
+    _settings.set(SETTING_MESSAGE_QUEUE_LIMIT(), limit);
 }
 
 std::uint64_t ClusterControllerSettings::getPerParticipantIdMessageQueueLimit() const
 {
-    return settings.get<std::uint64_t>(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT());
+    return _settings.get<std::uint64_t>(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT());
 }
 
 void ClusterControllerSettings::setPerParticipantIdMessageQueueLimit(std::uint64_t limit)
 {
-    settings.set(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT(), limit);
+    _settings.set(SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT(), limit);
 }
 
 std::uint64_t ClusterControllerSettings::getTransportNotAvailableQueueLimit() const
 {
-    return settings.get<std::uint64_t>(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
+    return _settings.get<std::uint64_t>(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT());
 }
 
 void ClusterControllerSettings::setTransportNotAvailableQueueLimit(std::uint64_t limit)
 {
-    settings.set(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT(), limit);
+    _settings.set(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT(), limit);
 }
 
 std::uint64_t ClusterControllerSettings::getMessageQueueLimitBytes() const
 {
-    return settings.get<std::uint64_t>(SETTING_MESSAGE_QUEUE_LIMIT_BYTES());
+    return _settings.get<std::uint64_t>(SETTING_MESSAGE_QUEUE_LIMIT_BYTES());
 }
 
 void ClusterControllerSettings::setMessageQueueLimitBytes(std::uint64_t limitBytes)
 {
-    settings.set(SETTING_MESSAGE_QUEUE_LIMIT_BYTES(), limitBytes);
+    _settings.set(SETTING_MESSAGE_QUEUE_LIMIT_BYTES(), limitBytes);
 }
 
 std::uint64_t ClusterControllerSettings::getTransportNotAvailableQueueLimitBytes() const
 {
-    return settings.get<std::uint64_t>(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
+    return _settings.get<std::uint64_t>(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES());
 }
 
 void ClusterControllerSettings::setTransportNotAvailableQueueLimitBytes(std::uint64_t limitBytes)
 {
-    settings.set(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES(), limitBytes);
+    _settings.set(SETTING_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES(), limitBytes);
 }
 
 void ClusterControllerSettings::setAclEntriesDirectory(const std::string& directoryPath)
 {
-    settings.set(SETTING_ACL_ENTRIES_DIRECTORY(), directoryPath);
+    _settings.set(SETTING_ACL_ENTRIES_DIRECTORY(), directoryPath);
 }
 
 std::string ClusterControllerSettings::getAclEntriesDirectory() const
 {
-    return settings.get<std::string>(SETTING_ACL_ENTRIES_DIRECTORY());
+    return _settings.get<std::string>(SETTING_ACL_ENTRIES_DIRECTORY());
 }
 
 bool ClusterControllerSettings::enableAccessController() const
 {
-    return settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE());
+    return _settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE());
 }
 
 void ClusterControllerSettings::setEnableAccessController(bool enable)
 {
-    settings.set(SETTING_ACCESS_CONTROL_ENABLE(), enable);
+    _settings.set(SETTING_ACCESS_CONTROL_ENABLE(), enable);
 }
 
 bool ClusterControllerSettings::aclAudit() const
 {
-    return settings.get<bool>(SETTING_ACCESS_CONTROL_AUDIT());
+    return _settings.get<bool>(SETTING_ACCESS_CONTROL_AUDIT());
 }
 
 void ClusterControllerSettings::setAclAudit(bool audit)
 {
-    settings.set(SETTING_ACCESS_CONTROL_AUDIT(), audit);
+    _settings.set(SETTING_ACCESS_CONTROL_AUDIT(), audit);
 }
 
 std::string ClusterControllerSettings::getGlobalDomainAccessControlAddress() const
 {
-    return settings.get<std::string>(
+    return _settings.get<std::string>(
             SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS());
 }
 
 std::string ClusterControllerSettings::getGlobalDomainAccessControlParticipantId() const
 {
-    return settings.get<std::string>(
+    return _settings.get<std::string>(
             SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
 }
 
 bool ClusterControllerSettings::getUseOnlyLDAS() const
 {
-    return settings.get<bool>(SETTING_USE_ONLY_LDAS());
+    return _settings.get<bool>(SETTING_USE_ONLY_LDAS());
 }
 
 void ClusterControllerSettings::setUseOnlyLDAS(bool useOnlyLDAS)
 {
-    settings.set(SETTING_USE_ONLY_LDAS(), useOnlyLDAS);
+    _settings.set(SETTING_USE_ONLY_LDAS(), useOnlyLDAS);
 }
 
 std::string ClusterControllerSettings::getLocalCapabilitiesDirectoryPersistenceFilename() const
 {
-    return settings.get<std::string>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
+    return _settings.get<std::string>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
 }
 
 void ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistenceFilename(
         const std::string& filename)
 {
-    settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(), filename);
+    _settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(), filename);
 }
 
 std::chrono::milliseconds ClusterControllerSettings::getCapabilitiesFreshnessUpdateIntervalMs()
         const
 {
     return std::chrono::milliseconds(
-            settings.get<std::uint64_t>(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()));
+            _settings.get<std::uint64_t>(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()));
 }
 
 bool ClusterControllerSettings::isLocalCapabilitiesDirectoryPersistencyEnabled() const
 {
-    return settings.get<bool>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED());
+    return _settings.get<bool>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED());
 }
 
 void ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistencyEnabled(bool enabled)
 {
-    settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(), enabled);
+    _settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(), enabled);
 }
 
 void ClusterControllerSettings::setCapabilitiesFreshnessUpdateIntervalMs(
         std::chrono::milliseconds capabilitiesFreshnessUpdateIntervalMs)
 {
-    return settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
-                        capabilitiesFreshnessUpdateIntervalMs.count());
+    return _settings.set(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
+                         capabilitiesFreshnessUpdateIntervalMs.count());
 }
 
 void ClusterControllerSettings::printSettings() const
@@ -1004,11 +1005,11 @@ void ClusterControllerSettings::printSettings() const
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {})",
                    SETTING_ACCESS_CONTROL_ENABLE(),
-                   settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
+                   _settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {})",
                    SETTING_ACCESS_CONTROL_AUDIT(),
-                   settings.get<std::string>(SETTING_ACCESS_CONTROL_AUDIT()));
+                   _settings.get<std::string>(SETTING_ACCESS_CONTROL_AUDIT()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {})",
                    SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
@@ -1023,17 +1024,17 @@ void ClusterControllerSettings::printSettings() const
                    SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(),
                    getPurgeExpiredDiscoveryEntriesIntervalMs());
 
-    if (settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
+    if (_settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
         JOYNR_LOG_INFO(logger(),
                        "SETTING: {} = {})",
                        SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS(),
-                       settings.get<std::string>(
+                       _settings.get<std::string>(
                                SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
         JOYNR_LOG_INFO(
                 logger(),
                 "SETTING: {} = {})",
                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID(),
-                settings.get<std::string>(
+                _settings.get<std::string>(
                         SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
     }
 }

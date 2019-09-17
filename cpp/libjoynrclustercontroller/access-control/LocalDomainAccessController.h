@@ -474,94 +474,94 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalDomainAccessController);
 
-    AccessControlAlgorithm accessControlAlgorithm;
-    std::unordered_map<std::string, std::shared_ptr<Future<std::string>>> dreSubscriptions;
+    AccessControlAlgorithm _accessControlAlgorithm;
+    std::unordered_map<std::string, std::shared_ptr<Future<std::string>>> _dreSubscriptions;
 
     struct AceSubscription
     {
-        std::shared_ptr<Future<std::string>> masterAceSubscriptionIdFuture;
-        std::shared_ptr<Future<std::string>> mediatorAceSubscriptionIdFuture;
-        std::shared_ptr<Future<std::string>> ownerAceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> _masterAceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> _mediatorAceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> _ownerAceSubscriptionIdFuture;
 
         const std::string getMasterAceSubscriptionId()
         {
             std::string masterAceSubscriptionId;
-            masterAceSubscriptionIdFuture->get(1000, masterAceSubscriptionId);
+            _masterAceSubscriptionIdFuture->get(1000, masterAceSubscriptionId);
             return masterAceSubscriptionId;
         }
 
         const std::string getMediatorAceSubscriptionId()
         {
             std::string mediatorAceSubscriptionId;
-            mediatorAceSubscriptionIdFuture->get(1000, mediatorAceSubscriptionId);
+            _mediatorAceSubscriptionIdFuture->get(1000, mediatorAceSubscriptionId);
             return mediatorAceSubscriptionId;
         }
 
         const std::string getOwnerAceSubscriptionId()
         {
             std::string ownerAceSubscriptionId;
-            ownerAceSubscriptionIdFuture->get(1000, ownerAceSubscriptionId);
+            _ownerAceSubscriptionIdFuture->get(1000, ownerAceSubscriptionId);
             return ownerAceSubscriptionId;
         }
 
         AceSubscription()
-                : masterAceSubscriptionIdFuture(),
-                  mediatorAceSubscriptionIdFuture(),
-                  ownerAceSubscriptionIdFuture()
+                : _masterAceSubscriptionIdFuture(),
+                  _mediatorAceSubscriptionIdFuture(),
+                  _ownerAceSubscriptionIdFuture()
         {
         }
     };
 
-    std::unordered_map<std::string, AceSubscription> aceSubscriptions;
+    std::unordered_map<std::string, AceSubscription> _aceSubscriptions;
 
     struct RceSubscription
     {
-        std::shared_ptr<Future<std::string>> masterRceSubscriptionIdFuture;
-        std::shared_ptr<Future<std::string>> mediatorRceSubscriptionIdFuture;
-        std::shared_ptr<Future<std::string>> ownerRceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> _masterRceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> _mediatorRceSubscriptionIdFuture;
+        std::shared_ptr<Future<std::string>> _ownerRceSubscriptionIdFuture;
 
         const std::string getMasterRceSubscriptionId()
         {
             std::string masterRceSubscriptionId;
-            masterRceSubscriptionIdFuture->get(1000, masterRceSubscriptionId);
+            _masterRceSubscriptionIdFuture->get(1000, masterRceSubscriptionId);
             return masterRceSubscriptionId;
         }
 
         const std::string getMediatorRceSubscriptionId()
         {
             std::string mediatorRceSubscriptionId;
-            mediatorRceSubscriptionIdFuture->get(1000, mediatorRceSubscriptionId);
+            _mediatorRceSubscriptionIdFuture->get(1000, mediatorRceSubscriptionId);
             return mediatorRceSubscriptionId;
         }
 
         const std::string getOwnerRceSubscriptionId()
         {
             std::string ownerRceSubscriptionId;
-            ownerRceSubscriptionIdFuture->get(1000, ownerRceSubscriptionId);
+            _ownerRceSubscriptionIdFuture->get(1000, ownerRceSubscriptionId);
             return ownerRceSubscriptionId;
         }
 
         RceSubscription()
-                : masterRceSubscriptionIdFuture(),
-                  mediatorRceSubscriptionIdFuture(),
-                  ownerRceSubscriptionIdFuture()
+                : _masterRceSubscriptionIdFuture(),
+                  _mediatorRceSubscriptionIdFuture(),
+                  _ownerRceSubscriptionIdFuture()
         {
         }
     };
 
-    std::unordered_map<std::string, RceSubscription> rceSubscriptions;
+    std::unordered_map<std::string, RceSubscription> _rceSubscriptions;
 
     std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy>
-            globalDomainAccessControllerProxy;
+            _globalDomainAccessControllerProxy;
     std::shared_ptr<infrastructure::GlobalDomainAccessControlListEditorProxy>
-            globalDomainAccessControlListEditorProxy;
+            _globalDomainAccessControlListEditorProxy;
     std::shared_ptr<infrastructure::GlobalDomainRoleControllerProxy>
-            globalDomainRoleControllerProxy;
-    std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore;
-    bool useOnlyLocalDomainAccessStore;
+            _globalDomainRoleControllerProxy;
+    std::shared_ptr<LocalDomainAccessStore> _localDomainAccessStore;
+    bool _useOnlyLocalDomainAccessStore;
 
     ADD_LOGGER(LocalDomainAccessController)
-    static std::chrono::milliseconds broadcastSubscriptionValidity;
+    static std::chrono::milliseconds _broadcastSubscriptionValidity;
 
     // Initialize MasterACE, MediatorACE and OwnerACE for the given data/interface. This function is
     // non-blocking.
@@ -597,11 +597,11 @@ private:
     // Requests waiting to get consumer / provider permission
     struct PermissionRequest
     {
-        std::string userId;
-        std::string domain;
-        std::string interfaceName;
-        infrastructure::DacTypes::TrustLevel::Enum trustLevel;
-        std::shared_ptr<IGetPermissionCallback> callbacks;
+        std::string _userId;
+        std::string _domain;
+        std::string _interfaceName;
+        infrastructure::DacTypes::TrustLevel::Enum _trustLevel;
+        std::shared_ptr<IGetPermissionCallback> _callbacks;
     };
 
     using ConsumerPermissionRequest = PermissionRequest;
@@ -616,7 +616,7 @@ private:
     using ProviderPermissionRequest = PermissionRequest;
 
     std::unordered_map<std::string, std::vector<ProviderPermissionRequest>>
-            providerPermissionRequests;
+            _providerPermissionRequests;
 
     bool queueProviderRequest(const std::string& key, const ProviderPermissionRequest& request);
     void processProviderRequests(const std::vector<ProviderPermissionRequest>& requests);
@@ -628,7 +628,7 @@ private:
     // - aceSubscriptions
     // - consumerPermissionRequests
     // - rceSubscriptions
-    std::mutex initStateMutex;
+    std::mutex _initStateMutex;
 
     // Class that keeps track of initialization for a domain/interface
     class Initializer;
@@ -637,33 +637,33 @@ private:
 
     class DomainRoleEntryChangedBroadcastListener;
     std::shared_ptr<DomainRoleEntryChangedBroadcastListener>
-            domainRoleEntryChangedBroadcastListener;
+            _domainRoleEntryChangedBroadcastListener;
 
     class MasterAccessControlEntryChangedBroadcastListener;
     std::shared_ptr<MasterAccessControlEntryChangedBroadcastListener>
-            masterAccessControlEntryChangedBroadcastListener;
+            _masterAccessControlEntryChangedBroadcastListener;
 
     class MediatorAccessControlEntryChangedBroadcastListener;
     std::shared_ptr<MediatorAccessControlEntryChangedBroadcastListener>
-            mediatorAccessControlEntryChangedBroadcastListener;
+            _mediatorAccessControlEntryChangedBroadcastListener;
 
     class OwnerAccessControlEntryChangedBroadcastListener;
     std::shared_ptr<OwnerAccessControlEntryChangedBroadcastListener>
-            ownerAccessControlEntryChangedBroadcastListener;
+            _ownerAccessControlEntryChangedBroadcastListener;
 
     class MasterRegistrationControlEntryChangedBroadcastListener;
     std::shared_ptr<MasterRegistrationControlEntryChangedBroadcastListener>
-            masterRegistrationControlEntryChangedBroadcastListener;
+            _masterRegistrationControlEntryChangedBroadcastListener;
 
     class MediatorRegistrationControlEntryChangedBroadcastListener;
     std::shared_ptr<MediatorRegistrationControlEntryChangedBroadcastListener>
-            mediatorRegistrationControlEntryChangedBroadcastListener;
+            _mediatorRegistrationControlEntryChangedBroadcastListener;
 
     class OwnerRegistrationControlEntryChangedBroadcastListener;
     std::shared_ptr<OwnerRegistrationControlEntryChangedBroadcastListener>
-            ownerRegistrationControlEntryChangedBroadcastListener;
+            _ownerRegistrationControlEntryChangedBroadcastListener;
 
-    std::shared_ptr<joynr::MulticastSubscriptionQos> multicastSubscriptionQos;
+    std::shared_ptr<joynr::MulticastSubscriptionQos> _multicastSubscriptionQos;
 
     static std::string sanitizeForPartition(const std::string& value);
 };

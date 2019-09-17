@@ -39,7 +39,7 @@ using namespace infrastructure;
 using namespace infrastructure::DacTypes;
 
 // 10 years
-std::chrono::milliseconds LocalDomainAccessController::broadcastSubscriptionValidity =
+std::chrono::milliseconds LocalDomainAccessController::_broadcastSubscriptionValidity =
         std::chrono::hours(24) * 365 * 10;
 
 //--- Declarations of nested classes -------------------------------------------
@@ -53,26 +53,26 @@ public:
                 const std::uint8_t steps,
                 const bool handleAces,
                 const bool handleRces)
-            : counter(steps),
-              aborted(false),
-              parent(parent),
-              domain(domain),
-              interfaceName(interfaceName),
-              handleAces(handleAces),
-              handleRces(handleRces)
+            : _counter(steps),
+              _aborted(false),
+              _parent(parent),
+              _domain(domain),
+              _interfaceName(interfaceName),
+              _handleAces(handleAces),
+              _handleRces(handleRces)
     {
     }
 
     // Called to indicate that some data has been initialized
     void update()
     {
-        std::uint8_t prevValue = counter--;
+        std::uint8_t prevValue = _counter--;
         if (prevValue == 1) {
             // Initialization has finished
-            if (aborted) {
-                parent.abortInitialization(domain, interfaceName, handleAces, handleRces);
+            if (_aborted) {
+                _parent.abortInitialization(_domain, _interfaceName, _handleAces, _handleRces);
             } else {
-                parent.initialized(domain, interfaceName, handleAces, handleRces);
+                _parent.initialized(_domain, _interfaceName, _handleAces, _handleRces);
             }
         }
     }
@@ -80,19 +80,19 @@ public:
     // Called to abort the initialisation
     void abort()
     {
-        aborted = true;
+        _aborted = true;
         update();
     }
 
 private:
-    std::atomic<std::uint8_t> counter;
-    std::atomic<bool> aborted;
-    LocalDomainAccessController& parent;
+    std::atomic<std::uint8_t> _counter;
+    std::atomic<bool> _aborted;
+    LocalDomainAccessController& _parent;
 
-    const std::string domain;
-    const std::string interfaceName;
-    const bool handleAces;
-    const bool handleRces;
+    const std::string _domain;
+    const std::string _interfaceName;
+    const bool _handleAces;
+    const bool _handleRces;
 };
 
 class LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener
@@ -107,7 +107,7 @@ public:
     void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
-    LocalDomainAccessController& parent;
+    LocalDomainAccessController& _parent;
 };
 
 class LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener
@@ -123,7 +123,7 @@ public:
     void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
-    LocalDomainAccessController& parent;
+    LocalDomainAccessController& _parent;
 };
 
 class LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener
@@ -140,7 +140,7 @@ public:
     void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
-    LocalDomainAccessController& parent;
+    LocalDomainAccessController& _parent;
 };
 
 class LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener
@@ -156,7 +156,7 @@ public:
     void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
-    LocalDomainAccessController& parent;
+    LocalDomainAccessController& _parent;
 };
 
 class LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcastListener
@@ -173,7 +173,7 @@ public:
     void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
-    LocalDomainAccessController& parent;
+    LocalDomainAccessController& _parent;
 };
 
 class LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener
@@ -190,7 +190,7 @@ public:
     void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
-    LocalDomainAccessController& parent;
+    LocalDomainAccessController& _parent;
 };
 
 class LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener
@@ -207,7 +207,7 @@ public:
     void onError(const exceptions::JoynrRuntimeException& error) override;
 
 private:
-    LocalDomainAccessController& parent;
+    LocalDomainAccessController& _parent;
 };
 
 //--- LocalDomainAccessController ----------------------------------------------
@@ -215,46 +215,46 @@ private:
 LocalDomainAccessController::LocalDomainAccessController(
         std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
         bool useOnlyLocalDomainAccessStore)
-        : accessControlAlgorithm(),
-          dreSubscriptions(),
-          aceSubscriptions(),
-          rceSubscriptions(),
-          globalDomainAccessControllerProxy(),
-          globalDomainAccessControlListEditorProxy(),
-          globalDomainRoleControllerProxy(),
-          localDomainAccessStore(std::move(localDomainAccessStore)),
-          useOnlyLocalDomainAccessStore(useOnlyLocalDomainAccessStore),
+        : _accessControlAlgorithm(),
+          _dreSubscriptions(),
+          _aceSubscriptions(),
+          _rceSubscriptions(),
+          _globalDomainAccessControllerProxy(),
+          _globalDomainAccessControlListEditorProxy(),
+          _globalDomainRoleControllerProxy(),
+          _localDomainAccessStore(std::move(localDomainAccessStore)),
+          _useOnlyLocalDomainAccessStore(useOnlyLocalDomainAccessStore),
           consumerPermissionRequests(),
-          initStateMutex(),
-          domainRoleEntryChangedBroadcastListener(
+          _initStateMutex(),
+          _domainRoleEntryChangedBroadcastListener(
                   std::make_shared<DomainRoleEntryChangedBroadcastListener>(*this)),
-          masterAccessControlEntryChangedBroadcastListener(
+          _masterAccessControlEntryChangedBroadcastListener(
                   std::make_shared<MasterAccessControlEntryChangedBroadcastListener>(*this)),
-          mediatorAccessControlEntryChangedBroadcastListener(
+          _mediatorAccessControlEntryChangedBroadcastListener(
                   std::make_shared<MediatorAccessControlEntryChangedBroadcastListener>(*this)),
-          ownerAccessControlEntryChangedBroadcastListener(
+          _ownerAccessControlEntryChangedBroadcastListener(
                   std::make_shared<OwnerAccessControlEntryChangedBroadcastListener>(*this)),
-          masterRegistrationControlEntryChangedBroadcastListener(
+          _masterRegistrationControlEntryChangedBroadcastListener(
                   std::make_shared<MasterRegistrationControlEntryChangedBroadcastListener>(*this)),
-          mediatorRegistrationControlEntryChangedBroadcastListener(
+          _mediatorRegistrationControlEntryChangedBroadcastListener(
                   std::make_shared<MediatorRegistrationControlEntryChangedBroadcastListener>(
                           *this)),
-          ownerRegistrationControlEntryChangedBroadcastListener(
+          _ownerRegistrationControlEntryChangedBroadcastListener(
                   std::make_shared<OwnerRegistrationControlEntryChangedBroadcastListener>(*this)),
-          multicastSubscriptionQos(std::make_shared<joynr::MulticastSubscriptionQos>(
-                  broadcastSubscriptionValidity.count()))
+          _multicastSubscriptionQos(std::make_shared<joynr::MulticastSubscriptionQos>(
+                  _broadcastSubscriptionValidity.count()))
 {
 }
 
 void LocalDomainAccessController::setGlobalDomainAccessControllerProxy(
         std::shared_ptr<GlobalDomainAccessControllerProxy> globalDomainAccessControllerProxy)
 {
-    this->globalDomainAccessControllerProxy = std::move(globalDomainAccessControllerProxy);
+    this->_globalDomainAccessControllerProxy = std::move(globalDomainAccessControllerProxy);
 
     // Iterate over all domain/interfaces in LocalDomainAccessStore and create for each a
     // subscription
     auto uniqueDomainInterfaceCombinations =
-            localDomainAccessStore->getUniqueDomainInterfaceCombinations();
+            _localDomainAccessStore->getUniqueDomainInterfaceCombinations();
     const bool restoringFromFile = true;
     const bool handleAces = true;
     const bool handleRces = true;
@@ -270,14 +270,14 @@ void LocalDomainAccessController::setGlobalDomainAccessControllerProxy(
 void LocalDomainAccessController::setGlobalDomainAccessControlListEditorProxy(std::shared_ptr<
         GlobalDomainAccessControlListEditorProxy> globalDomainAccessControlListEditorProxy)
 {
-    this->globalDomainAccessControlListEditorProxy =
+    this->_globalDomainAccessControlListEditorProxy =
             std::move(globalDomainAccessControlListEditorProxy);
 }
 
 void LocalDomainAccessController::setGlobalDomainRoleControllerProxy(
         std::shared_ptr<GlobalDomainRoleControllerProxy> globalDomainRoleControllerProxy)
 {
-    this->globalDomainRoleControllerProxy = std::move(globalDomainRoleControllerProxy);
+    this->_globalDomainRoleControllerProxy = std::move(globalDomainRoleControllerProxy);
 }
 
 bool LocalDomainAccessController::hasRole(const std::string& userId,
@@ -288,7 +288,7 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
 
     // See if the user has the given role
     bool hasRole = false;
-    boost::optional<DomainRoleEntry> dre = localDomainAccessStore->getDomainRole(userId, role);
+    boost::optional<DomainRoleEntry> dre = _localDomainAccessStore->getDomainRole(userId, role);
     if (dre) {
         std::vector<std::string> domains = dre->getDomains();
         const std::string wildcard = "*";
@@ -298,8 +298,8 @@ bool LocalDomainAccessController::hasRole(const std::string& userId,
     }
 
     // Subscribe changes in the users roles
-    if (!useOnlyLocalDomainAccessStore && dreSubscriptions.count(userId) == 0) {
-        dreSubscriptions.insert(std::make_pair(userId, subscribeForDreChange(userId)));
+    if (!_useOnlyLocalDomainAccessStore && _dreSubscriptions.count(userId) == 0) {
+        _dreSubscriptions.insert(std::make_pair(userId, subscribeForDreChange(userId)));
     }
 
     return hasRole;
@@ -316,13 +316,13 @@ void LocalDomainAccessController::getConsumerPermission(
 
     // If we only use the local domain access store, we assume that all required ACEs
     // were already provisioned. Otherwise we need to query them from the backend.
-    if (!useOnlyLocalDomainAccessStore) {
+    if (!_useOnlyLocalDomainAccessStore) {
         // Is the ACL for this domain/interface available?
         std::string compoundKey = createCompoundKey(domain, interfaceName);
         bool needsInit = false;
         {
-            std::lock_guard<std::mutex> lock(initStateMutex);
-            if (aceSubscriptions.count(compoundKey) == 0) {
+            std::lock_guard<std::mutex> lock(_initStateMutex);
+            if (_aceSubscriptions.count(compoundKey) == 0) {
                 // Queue the request
                 ConsumerPermissionRequest request = {
                         userId, domain, interfaceName, trustLevel, callback};
@@ -354,7 +354,7 @@ void LocalDomainAccessController::getConsumerPermission(
 
     // The operations of the ACEs should only contain wildcards, if not
     // getConsumerPermission should be called with an operation
-    if (!localDomainAccessStore->onlyWildcardOperations(userId, domain, interfaceName)) {
+    if (!_localDomainAccessStore->onlyWildcardOperations(userId, domain, interfaceName)) {
         JOYNR_LOG_INFO(logger(), "Operation needed for ACL check.");
         callback->operationNeeded();
     } else {
@@ -379,16 +379,16 @@ Permission::Enum LocalDomainAccessController::getConsumerPermission(
                     interfaceName);
 
     boost::optional<MasterAccessControlEntry> masterAceOptional =
-            localDomainAccessStore->getMasterAccessControlEntry(
+            _localDomainAccessStore->getMasterAccessControlEntry(
                     userId, domain, interfaceName, operation);
     boost::optional<MasterAccessControlEntry> mediatorAceOptional =
-            localDomainAccessStore->getMediatorAccessControlEntry(
+            _localDomainAccessStore->getMediatorAccessControlEntry(
                     userId, domain, interfaceName, operation);
     boost::optional<OwnerAccessControlEntry> ownerAceOptional =
-            localDomainAccessStore->getOwnerAccessControlEntry(
+            _localDomainAccessStore->getOwnerAccessControlEntry(
                     userId, domain, interfaceName, operation);
 
-    return accessControlAlgorithm.getConsumerPermission(
+    return _accessControlAlgorithm.getConsumerPermission(
             masterAceOptional, mediatorAceOptional, ownerAceOptional, trustLevel);
 }
 
@@ -396,7 +396,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMasterAcce
         const std::string& uid)
 {
     std::vector<MasterAccessControlEntry> resultMasterAces;
-    globalDomainAccessControllerProxy->getMasterAccessControlEntries(resultMasterAces, uid);
+    _globalDomainAccessControllerProxy->getMasterAccessControlEntries(resultMasterAces, uid);
     return resultMasterAces;
 }
 
@@ -404,7 +404,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
         getEditableMasterAccessControlEntries(const std::string& uid)
 {
     std::vector<MasterAccessControlEntry> resultMasterAces;
-    globalDomainAccessControlListEditorProxy->getEditableMasterAccessControlEntries(
+    _globalDomainAccessControlListEditorProxy->getEditableMasterAccessControlEntries(
             resultMasterAces, uid);
     return resultMasterAces;
 }
@@ -413,7 +413,7 @@ bool LocalDomainAccessController::updateMasterAccessControlEntry(
         const MasterAccessControlEntry& updatedMasterAce)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->updateMasterAccessControlEntry(
+    _globalDomainAccessControlListEditorProxy->updateMasterAccessControlEntry(
             success, updatedMasterAce);
     return success;
 }
@@ -424,7 +424,7 @@ bool LocalDomainAccessController::removeMasterAccessControlEntry(const std::stri
                                                                  const std::string& operation)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->removeMasterAccessControlEntry(
+    _globalDomainAccessControlListEditorProxy->removeMasterAccessControlEntry(
             success, uid, domain, interfaceName, operation);
     return success;
 }
@@ -433,7 +433,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::getMediatorAc
         const std::string& uid)
 {
     std::vector<MasterAccessControlEntry> resultMediatorAces;
-    globalDomainAccessControllerProxy->getMediatorAccessControlEntries(resultMediatorAces, uid);
+    _globalDomainAccessControllerProxy->getMediatorAccessControlEntries(resultMediatorAces, uid);
     return resultMediatorAces;
 }
 
@@ -441,7 +441,7 @@ std::vector<MasterAccessControlEntry> LocalDomainAccessController::
         getEditableMediatorAccessControlEntries(const std::string& uid)
 {
     std::vector<MasterAccessControlEntry> resultMediatorAces;
-    globalDomainAccessControlListEditorProxy->getEditableMediatorAccessControlEntries(
+    _globalDomainAccessControlListEditorProxy->getEditableMediatorAccessControlEntries(
             resultMediatorAces, uid);
     return resultMediatorAces;
 }
@@ -450,7 +450,7 @@ bool LocalDomainAccessController::updateMediatorAccessControlEntry(
         const MasterAccessControlEntry& updatedMediatorAce)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->updateMediatorAccessControlEntry(
+    _globalDomainAccessControlListEditorProxy->updateMediatorAccessControlEntry(
             success, updatedMediatorAce);
     return success;
 }
@@ -461,7 +461,7 @@ bool LocalDomainAccessController::removeMediatorAccessControlEntry(const std::st
                                                                    const std::string& operation)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->removeMediatorAccessControlEntry(
+    _globalDomainAccessControlListEditorProxy->removeMediatorAccessControlEntry(
             success, uid, domain, interfaceName, operation);
     return success;
 }
@@ -470,7 +470,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::getOwnerAccess
         const std::string& uid)
 {
     std::vector<OwnerAccessControlEntry> resultOwnerAces;
-    globalDomainAccessControllerProxy->getOwnerAccessControlEntries(resultOwnerAces, uid);
+    _globalDomainAccessControllerProxy->getOwnerAccessControlEntries(resultOwnerAces, uid);
     return resultOwnerAces;
 }
 
@@ -478,7 +478,7 @@ std::vector<OwnerAccessControlEntry> LocalDomainAccessController::
         getEditableOwnerAccessControlEntries(const std::string& uid)
 {
     std::vector<OwnerAccessControlEntry> resultOwnerAces;
-    globalDomainAccessControlListEditorProxy->getEditableOwnerAccessControlEntries(
+    _globalDomainAccessControlListEditorProxy->getEditableOwnerAccessControlEntries(
             resultOwnerAces, uid);
     return resultOwnerAces;
 }
@@ -487,7 +487,7 @@ bool LocalDomainAccessController::updateOwnerAccessControlEntry(
         const OwnerAccessControlEntry& updatedOwnerAce)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->updateOwnerAccessControlEntry(
+    _globalDomainAccessControlListEditorProxy->updateOwnerAccessControlEntry(
             success, updatedOwnerAce);
     return success;
 }
@@ -498,7 +498,7 @@ bool LocalDomainAccessController::removeOwnerAccessControlEntry(const std::strin
                                                                 const std::string& operation)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->removeOwnerAccessControlEntry(
+    _globalDomainAccessControlListEditorProxy->removeOwnerAccessControlEntry(
             success, uid, domain, interfaceName, operation);
     return success;
 }
@@ -509,13 +509,13 @@ bool LocalDomainAccessController::queueProviderRequest(const std::string& key,
 {
     // This function assumes that the initStateMutex has already been obtained
 
-    if (providerPermissionRequests.count(key) != 0) {
-        providerPermissionRequests[key].push_back(request);
+    if (_providerPermissionRequests.count(key) != 0) {
+        _providerPermissionRequests[key].push_back(request);
         return true;
     } else {
         std::vector<ProviderPermissionRequest> requestList;
         requestList.push_back(request);
-        providerPermissionRequests.insert(std::make_pair(key, requestList));
+        _providerPermissionRequests.insert(std::make_pair(key, requestList));
         return false;
     }
 }
@@ -531,13 +531,13 @@ void LocalDomainAccessController::getProviderPermission(
 
     // If we only use the local domain access store, we assume that all required RCEs
     // were already provisioned. Otherwise we need to query them from the backend.
-    if (!useOnlyLocalDomainAccessStore) {
+    if (!_useOnlyLocalDomainAccessStore) {
         // Is the RCL for this domain/interface available?
         std::string compoundKey = createCompoundKey(domain, interfaceName);
         bool needsInit = false;
         {
-            std::lock_guard<std::mutex> lock(initStateMutex);
-            if (rceSubscriptions.count(compoundKey) == 0) {
+            std::lock_guard<std::mutex> lock(_initStateMutex);
+            if (_rceSubscriptions.count(compoundKey) == 0) {
                 // Queue the request
                 ProviderPermissionRequest request = {
                         userId, domain, interfaceName, trustLevel, callback};
@@ -584,13 +584,14 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
                     interfaceName);
 
     boost::optional<MasterRegistrationControlEntry> masterRceOptional =
-            localDomainAccessStore->getMasterRegistrationControlEntry(uid, domain, interfaceName);
+            _localDomainAccessStore->getMasterRegistrationControlEntry(uid, domain, interfaceName);
     boost::optional<MasterRegistrationControlEntry> mediatorRceOptional =
-            localDomainAccessStore->getMediatorRegistrationControlEntry(uid, domain, interfaceName);
+            _localDomainAccessStore->getMediatorRegistrationControlEntry(
+                    uid, domain, interfaceName);
     boost::optional<OwnerRegistrationControlEntry> ownerRceOptional =
-            localDomainAccessStore->getOwnerRegistrationControlEntry(uid, domain, interfaceName);
+            _localDomainAccessStore->getOwnerRegistrationControlEntry(uid, domain, interfaceName);
 
-    return accessControlAlgorithm.getProviderPermission(
+    return _accessControlAlgorithm.getProviderPermission(
             masterRceOptional, mediatorRceOptional, ownerRceOptional, trustLevel);
 }
 
@@ -598,7 +599,7 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getMasterRegistrationControlEntries(const std::string& uid)
 {
     std::vector<MasterRegistrationControlEntry> resultMasterRces;
-    globalDomainAccessControllerProxy->getMasterRegistrationControlEntries(resultMasterRces, uid);
+    _globalDomainAccessControllerProxy->getMasterRegistrationControlEntries(resultMasterRces, uid);
     return resultMasterRces;
 }
 
@@ -606,7 +607,7 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMasterRegistrationControlEntries(const std::string& uid)
 {
     std::vector<MasterRegistrationControlEntry> resultMasterRces;
-    globalDomainAccessControlListEditorProxy->getEditableMasterRegistrationControlEntries(
+    _globalDomainAccessControlListEditorProxy->getEditableMasterRegistrationControlEntries(
             resultMasterRces, uid);
     return resultMasterRces;
 }
@@ -615,7 +616,7 @@ bool LocalDomainAccessController::updateMasterRegistrationControlEntry(
         const MasterRegistrationControlEntry& updatedMasterRce)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->updateMasterRegistrationControlEntry(
+    _globalDomainAccessControlListEditorProxy->updateMasterRegistrationControlEntry(
             success, updatedMasterRce);
     return success;
 }
@@ -626,7 +627,7 @@ bool LocalDomainAccessController::removeMasterRegistrationControlEntry(
         const std::string& interfaceName)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->removeMasterRegistrationControlEntry(
+    _globalDomainAccessControlListEditorProxy->removeMasterRegistrationControlEntry(
             success, uid, domain, interfaceName);
     return success;
 }
@@ -635,7 +636,8 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getMediatorRegistrationControlEntries(const std::string& uid)
 {
     std::vector<MasterRegistrationControlEntry> resultMasterRces;
-    globalDomainAccessControllerProxy->getMediatorRegistrationControlEntries(resultMasterRces, uid);
+    _globalDomainAccessControllerProxy->getMediatorRegistrationControlEntries(
+            resultMasterRces, uid);
     return resultMasterRces;
 }
 
@@ -643,7 +645,7 @@ std::vector<MasterRegistrationControlEntry> LocalDomainAccessController::
         getEditableMediatorRegistrationControlEntries(const std::string& uid)
 {
     std::vector<MasterRegistrationControlEntry> resultMasterRces;
-    globalDomainAccessControlListEditorProxy->getEditableMasterRegistrationControlEntries(
+    _globalDomainAccessControlListEditorProxy->getEditableMasterRegistrationControlEntries(
             resultMasterRces, uid);
     return resultMasterRces;
 }
@@ -652,7 +654,7 @@ bool LocalDomainAccessController::updateMediatorRegistrationControlEntry(
         const MasterRegistrationControlEntry& updatedMediatorRce)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->updateMediatorRegistrationControlEntry(
+    _globalDomainAccessControlListEditorProxy->updateMediatorRegistrationControlEntry(
             success, updatedMediatorRce);
     return success;
 }
@@ -663,7 +665,7 @@ bool LocalDomainAccessController::removeMediatorRegistrationControlEntry(
         const std::string& interfaceName)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->removeMediatorRegistrationControlEntry(
+    _globalDomainAccessControlListEditorProxy->removeMediatorRegistrationControlEntry(
             success, uid, domain, interfaceName);
     return success;
 }
@@ -672,7 +674,7 @@ std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
         getOwnerRegistrationControlEntries(const std::string& uid)
 {
     std::vector<OwnerRegistrationControlEntry> resultOwnerRces;
-    globalDomainAccessControllerProxy->getOwnerRegistrationControlEntries(resultOwnerRces, uid);
+    _globalDomainAccessControllerProxy->getOwnerRegistrationControlEntries(resultOwnerRces, uid);
     return resultOwnerRces;
 }
 
@@ -680,7 +682,7 @@ std::vector<OwnerRegistrationControlEntry> LocalDomainAccessController::
         getEditableOwnerRegistrationControlEntries(const std::string& uid)
 {
     std::vector<OwnerRegistrationControlEntry> resultOwnerRces;
-    globalDomainAccessControlListEditorProxy->getEditableOwnerRegistrationControlEntries(
+    _globalDomainAccessControlListEditorProxy->getEditableOwnerRegistrationControlEntries(
             resultOwnerRces, uid);
     return resultOwnerRces;
 }
@@ -689,7 +691,7 @@ bool LocalDomainAccessController::updateOwnerRegistrationControlEntry(
         const OwnerRegistrationControlEntry& updatedOwnerRce)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->updateOwnerRegistrationControlEntry(
+    _globalDomainAccessControlListEditorProxy->updateOwnerRegistrationControlEntry(
             success, updatedOwnerRce);
     return success;
 }
@@ -700,7 +702,7 @@ bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
         const std::string& interfaceName)
 {
     bool success = false;
-    globalDomainAccessControlListEditorProxy->removeOwnerRegistrationControlEntry(
+    _globalDomainAccessControlListEditorProxy->removeOwnerRegistrationControlEntry(
             success, uid, domain, interfaceName);
     return success;
 }
@@ -708,7 +710,7 @@ bool LocalDomainAccessController::removeOwnerRegistrationControlEntry(
 void LocalDomainAccessController::unregisterProvider(const std::string& domain,
                                                      const std::string& interfaceName)
 {
-    if (useOnlyLocalDomainAccessStore) {
+    if (_useOnlyLocalDomainAccessStore) {
         return;
     }
 
@@ -716,11 +718,11 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
     AceSubscription aceSubscriptionIds;
     bool subscriptionsFound = false;
     {
-        std::lock_guard<std::mutex> lock(initStateMutex);
-        if (aceSubscriptions.count(compoundKey) > 0) {
+        std::lock_guard<std::mutex> lock(_initStateMutex);
+        if (_aceSubscriptions.count(compoundKey) > 0) {
             // Get the subscription ids
-            aceSubscriptionIds = aceSubscriptions[compoundKey];
-            aceSubscriptions.erase(compoundKey);
+            aceSubscriptionIds = _aceSubscriptions[compoundKey];
+            _aceSubscriptions.erase(compoundKey);
             subscriptionsFound = true;
         }
     }
@@ -733,7 +735,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         // Unsubscribe from ACE change subscriptions
         try {
             std::string masterAceSubscriptionId = aceSubscriptionIds.getMasterAceSubscriptionId();
-            globalDomainAccessControllerProxy
+            _globalDomainAccessControllerProxy
                     ->unsubscribeFromMasterAccessControlEntryChangedBroadcast(
                             masterAceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
@@ -744,7 +746,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         try {
             std::string mediatorAceSubscriptionId =
                     aceSubscriptionIds.getMediatorAceSubscriptionId();
-            globalDomainAccessControllerProxy
+            _globalDomainAccessControllerProxy
                     ->unsubscribeFromMediatorAccessControlEntryChangedBroadcast(
                             mediatorAceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
@@ -754,7 +756,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         }
         try {
             std::string ownerAceSubscriptionId = aceSubscriptionIds.getOwnerAceSubscriptionId();
-            globalDomainAccessControllerProxy
+            _globalDomainAccessControllerProxy
                     ->unsubscribeFromOwnerAccessControlEntryChangedBroadcast(
                             ownerAceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
@@ -767,11 +769,11 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
     RceSubscription rceSubscriptionIds;
     subscriptionsFound = false;
     {
-        std::lock_guard<std::mutex> lock(initStateMutex);
-        if (rceSubscriptions.count(compoundKey) > 0) {
+        std::lock_guard<std::mutex> lock(_initStateMutex);
+        if (_rceSubscriptions.count(compoundKey) > 0) {
             // Get the subscription ids
-            rceSubscriptionIds = rceSubscriptions[compoundKey];
-            rceSubscriptions.erase(compoundKey);
+            rceSubscriptionIds = _rceSubscriptions[compoundKey];
+            _rceSubscriptions.erase(compoundKey);
             subscriptionsFound = true;
         }
     }
@@ -784,7 +786,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         // Unsubscribe from RCE change subscriptions
         try {
             std::string masterRceSubscriptionId = rceSubscriptionIds.getMasterRceSubscriptionId();
-            globalDomainAccessControllerProxy
+            _globalDomainAccessControllerProxy
                     ->unsubscribeFromMasterRegistrationControlEntryChangedBroadcast(
                             masterRceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
@@ -796,7 +798,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         try {
             std::string mediatorRceSubscriptionId =
                     rceSubscriptionIds.getMediatorRceSubscriptionId();
-            globalDomainAccessControllerProxy
+            _globalDomainAccessControllerProxy
                     ->unsubscribeFromMediatorRegistrationControlEntryChangedBroadcast(
                             mediatorRceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
@@ -807,7 +809,7 @@ void LocalDomainAccessController::unregisterProvider(const std::string& domain,
         }
         try {
             std::string ownerRceSubscriptionId = rceSubscriptionIds.getOwnerRceSubscriptionId();
-            globalDomainAccessControllerProxy
+            _globalDomainAccessControllerProxy
                     ->unsubscribeFromOwnerRegistrationControlEntryChangedBroadcast(
                             ownerRceSubscriptionId);
         } catch (const exceptions::JoynrException& error) {
@@ -826,7 +828,7 @@ void LocalDomainAccessController::initializeDomainRoleTable(const std::string& u
             [this](const std::vector<DomainRoleEntry>& domainRoleEntries) {
         // Add the results
         for (const DomainRoleEntry& dre : domainRoleEntries) {
-            localDomainAccessStore->updateDomainRole(dre);
+            _localDomainAccessStore->updateDomainRole(dre);
         }
     };
 
@@ -837,7 +839,7 @@ void LocalDomainAccessController::initializeDomainRoleTable(const std::string& u
                         error.getMessage());
     };
 
-    globalDomainRoleControllerProxy->getDomainRolesAsync(
+    _globalDomainRoleControllerProxy->getDomainRolesAsync(
             userId, std::move(domainRoleOnSuccess), std::move(domainRoleOnError));
 }
 
@@ -858,7 +860,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
                     [this, initializer](const std::vector<MasterAccessControlEntry>& masterAces) {
         // Add the results
         for (const MasterAccessControlEntry& masterAce : masterAces) {
-            localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
+            _localDomainAccessStore->updateMasterAccessControlEntry(masterAce);
         }
         initializer->update();
     };
@@ -873,7 +875,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
         initializer->abort();
     };
 
-    globalDomainAccessControllerProxy->getMasterAccessControlEntriesAsync(
+    _globalDomainAccessControllerProxy->getMasterAccessControlEntriesAsync(
             domain, interfaceName, std::move(masterAceOnSuccess), std::move(masterAceOnError));
 
     // Initialize mediator access control entries from global data
@@ -882,7 +884,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
                     [this, initializer](const std::vector<MasterAccessControlEntry>& mediatorAces) {
         // Add the results
         for (const MasterAccessControlEntry& mediatorAce : mediatorAces) {
-            localDomainAccessStore->updateMediatorAccessControlEntry(mediatorAce);
+            _localDomainAccessStore->updateMediatorAccessControlEntry(mediatorAce);
         }
         initializer->update();
     };
@@ -897,7 +899,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
         initializer->abort();
     };
 
-    globalDomainAccessControllerProxy->getMediatorAccessControlEntriesAsync(
+    _globalDomainAccessControllerProxy->getMediatorAccessControlEntriesAsync(
             domain, interfaceName, std::move(mediatorAceOnSuccess), std::move(mediatorAceOnError));
 
     // Initialize owner access control entries from global data
@@ -905,7 +907,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
             [this, initializer](const std::vector<OwnerAccessControlEntry>& ownerAces) {
         // Add the results
         for (const OwnerAccessControlEntry& ownerAce : ownerAces) {
-            localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
+            _localDomainAccessStore->updateOwnerAccessControlEntry(ownerAce);
         }
         initializer->update();
     };
@@ -920,7 +922,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
         initializer->abort();
     };
 
-    globalDomainAccessControllerProxy->getOwnerAccessControlEntriesAsync(
+    _globalDomainAccessControllerProxy->getOwnerAccessControlEntriesAsync(
             domain, interfaceName, std::move(ownerAceOnSuccess), std::move(ownerAceOnError));
 }
 
@@ -942,7 +944,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
                     const std::vector<MasterRegistrationControlEntry>& masterRces) {
         // Add the results
         for (const MasterRegistrationControlEntry& masterRce : masterRces) {
-            localDomainAccessStore->updateMasterRegistrationControlEntry(masterRce);
+            _localDomainAccessStore->updateMasterRegistrationControlEntry(masterRce);
         }
         initializer->update();
     };
@@ -957,7 +959,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
         initializer->abort();
     };
 
-    globalDomainAccessControllerProxy->getMasterRegistrationControlEntriesAsync(
+    _globalDomainAccessControllerProxy->getMasterRegistrationControlEntriesAsync(
             userId, std::move(masterRceOnSuccess), std::move(masterRceOnError));
 
     // Initialize mediator access control entries from global data
@@ -966,7 +968,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
                     const std::vector<MasterRegistrationControlEntry>& mediatorRces) {
         // Add the results
         for (const MasterRegistrationControlEntry& mediatorRce : mediatorRces) {
-            localDomainAccessStore->updateMediatorRegistrationControlEntry(mediatorRce);
+            _localDomainAccessStore->updateMediatorRegistrationControlEntry(mediatorRce);
         }
         initializer->update();
     };
@@ -981,7 +983,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
         initializer->abort();
     };
 
-    globalDomainAccessControllerProxy->getMediatorRegistrationControlEntriesAsync(
+    _globalDomainAccessControllerProxy->getMediatorRegistrationControlEntriesAsync(
             userId, std::move(mediatorRceOnSuccess), std::move(mediatorRceOnError));
 
     // Initialize owner registration control entries from global data
@@ -990,7 +992,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
             [this, initializer](const std::vector<OwnerRegistrationControlEntry>& ownerRces) {
         // Add the results
         for (const OwnerRegistrationControlEntry& ownerRce : ownerRces) {
-            localDomainAccessStore->updateOwnerRegistrationControlEntry(ownerRce);
+            _localDomainAccessStore->updateOwnerRegistrationControlEntry(ownerRce);
         }
         initializer->update();
     };
@@ -1005,7 +1007,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
         initializer->abort();
     };
 
-    globalDomainAccessControllerProxy->getOwnerRegistrationControlEntriesAsync(
+    _globalDomainAccessControllerProxy->getOwnerRegistrationControlEntriesAsync(
             userId, std::move(ownerRceOnSuccess), std::move(ownerRceOnError));
 }
 
@@ -1023,11 +1025,11 @@ void LocalDomainAccessController::initialized(const std::string& domain,
         std::vector<ConsumerPermissionRequest> consumerRequests;
 
         {
-            std::lock_guard<std::mutex> lock(initStateMutex);
+            std::lock_guard<std::mutex> lock(_initStateMutex);
 
-            if (!useOnlyLocalDomainAccessStore) {
+            if (!_useOnlyLocalDomainAccessStore) {
                 // Subscribe to ACL broadcasts about this domain/interface
-                aceSubscriptions.insert(
+                _aceSubscriptions.insert(
                         std::make_pair(compoundKey, subscribeForAceChange(domain, interfaceName)));
             }
 
@@ -1048,20 +1050,20 @@ void LocalDomainAccessController::initialized(const std::string& domain,
         std::vector<ProviderPermissionRequest> providerRequests;
 
         {
-            std::lock_guard<std::mutex> lock(initStateMutex);
+            std::lock_guard<std::mutex> lock(_initStateMutex);
 
-            if (!useOnlyLocalDomainAccessStore) {
+            if (!_useOnlyLocalDomainAccessStore) {
                 // Subscribe to RCL broadcasts about this domain/interface
-                rceSubscriptions.insert(
+                _rceSubscriptions.insert(
                         std::make_pair(compoundKey, subscribeForRceChange(domain, interfaceName)));
             }
 
             if (!restoringFromFile) {
                 // Remove requests for processing
-                auto it = providerPermissionRequests.find(compoundKey);
-                if (it != providerPermissionRequests.cend()) {
+                auto it = _providerPermissionRequests.find(compoundKey);
+                if (it != _providerPermissionRequests.cend()) {
                     providerRequests = it->second;
-                    providerPermissionRequests.erase(it);
+                    _providerPermissionRequests.erase(it);
                 }
             }
         }
@@ -1084,7 +1086,7 @@ void LocalDomainAccessController::abortInitialization(const std::string& domain,
 
     if (handleAces) {
         std::vector<ConsumerPermissionRequest> requests;
-        std::lock_guard<std::mutex> lock(initStateMutex);
+        std::lock_guard<std::mutex> lock(_initStateMutex);
 
         // Remove requests that cannot be processed
         auto it = consumerPermissionRequests.find(compoundKey);
@@ -1096,25 +1098,25 @@ void LocalDomainAccessController::abortInitialization(const std::string& domain,
         // Mark all the requests as failed - we have no information from the Global
         // Domain Access Controller
         for (const ConsumerPermissionRequest& request : requests) {
-            request.callbacks->permission(Permission::NO);
+            request._callbacks->permission(Permission::NO);
         }
     }
 
     if (handleRces) {
         std::vector<ProviderPermissionRequest> requests;
-        std::lock_guard<std::mutex> lock(initStateMutex);
+        std::lock_guard<std::mutex> lock(_initStateMutex);
 
         // Remove requests that cannot be processed
-        auto it = providerPermissionRequests.find(compoundKey);
-        if (it != providerPermissionRequests.cend()) {
+        auto it = _providerPermissionRequests.find(compoundKey);
+        if (it != _providerPermissionRequests.cend()) {
             requests = it->second;
-            providerPermissionRequests.erase(it);
+            _providerPermissionRequests.erase(it);
         }
 
         // Mark all the requests as failed - we have no information from the Global
         // Domain Access Controller
         for (const ProviderPermissionRequest& request : requests) {
-            request.callbacks->permission(Permission::NO);
+            request._callbacks->permission(Permission::NO);
         }
     }
 }
@@ -1140,11 +1142,11 @@ void LocalDomainAccessController::processConsumerRequests(
         const std::vector<ConsumerPermissionRequest>& requests)
 {
     for (const ConsumerPermissionRequest& request : requests) {
-        getConsumerPermission(request.userId,
-                              request.domain,
-                              request.interfaceName,
-                              request.trustLevel,
-                              request.callbacks);
+        getConsumerPermission(request._userId,
+                              request._domain,
+                              request._interfaceName,
+                              request._trustLevel,
+                              request._callbacks);
     }
 }
 
@@ -1152,11 +1154,11 @@ void LocalDomainAccessController::processProviderRequests(
         const std::vector<ProviderPermissionRequest>& requests)
 {
     for (const ProviderPermissionRequest& request : requests) {
-        getProviderPermission(request.userId,
-                              request.domain,
-                              request.interfaceName,
-                              request.trustLevel,
-                              request.callbacks);
+        getProviderPermission(request._userId,
+                              request._domain,
+                              request._interfaceName,
+                              request._trustLevel,
+                              request._callbacks);
     }
 }
 
@@ -1171,10 +1173,10 @@ std::shared_ptr<Future<std::string>> LocalDomainAccessController::subscribeForDr
 {
     std::vector<std::string> partitions = {sanitizeForPartition(userId)};
 
-    return globalDomainRoleControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
+    return _globalDomainRoleControllerProxy->subscribeToDomainRoleEntryChangedBroadcast(
             std::static_pointer_cast<ISubscriptionListener<ChangeType::Enum, DomainRoleEntry>>(
-                    domainRoleEntryChangedBroadcastListener),
-            multicastSubscriptionQos,
+                    _domainRoleEntryChangedBroadcastListener),
+            _multicastSubscriptionQos,
             partitions);
 }
 
@@ -1192,30 +1194,30 @@ LocalDomainAccessController::AceSubscription LocalDomainAccessController::subscr
 {
     AceSubscription subscriptionIds;
     std::vector<std::string> partitions = createPartitionsVector(domain, interfaceName);
-    subscriptionIds.masterAceSubscriptionIdFuture =
-            globalDomainAccessControllerProxy->subscribeToMasterAccessControlEntryChangedBroadcast(
+    subscriptionIds._masterAceSubscriptionIdFuture =
+            _globalDomainAccessControllerProxy->subscribeToMasterAccessControlEntryChangedBroadcast(
                     std::static_pointer_cast<
                             ISubscriptionListener<ChangeType::Enum, MasterAccessControlEntry>>(
-                            masterAccessControlEntryChangedBroadcastListener),
-                    multicastSubscriptionQos,
+                            _masterAccessControlEntryChangedBroadcastListener),
+                    _multicastSubscriptionQos,
                     partitions);
 
-    subscriptionIds.mediatorAceSubscriptionIdFuture =
-            globalDomainAccessControllerProxy
+    subscriptionIds._mediatorAceSubscriptionIdFuture =
+            _globalDomainAccessControllerProxy
                     ->subscribeToMediatorAccessControlEntryChangedBroadcast(
                             std::static_pointer_cast<
                                     ISubscriptionListener<ChangeType::Enum,
                                                           MasterAccessControlEntry>>(
-                                    mediatorAccessControlEntryChangedBroadcastListener),
-                            multicastSubscriptionQos,
+                                    _mediatorAccessControlEntryChangedBroadcastListener),
+                            _multicastSubscriptionQos,
                             partitions);
 
-    subscriptionIds.ownerAceSubscriptionIdFuture =
-            globalDomainAccessControllerProxy->subscribeToOwnerAccessControlEntryChangedBroadcast(
+    subscriptionIds._ownerAceSubscriptionIdFuture =
+            _globalDomainAccessControllerProxy->subscribeToOwnerAccessControlEntryChangedBroadcast(
                     std::static_pointer_cast<
                             ISubscriptionListener<ChangeType::Enum, OwnerAccessControlEntry>>(
-                            ownerAccessControlEntryChangedBroadcastListener),
-                    multicastSubscriptionQos,
+                            _ownerAccessControlEntryChangedBroadcastListener),
+                    _multicastSubscriptionQos,
                     partitions);
 
     return subscriptionIds;
@@ -1227,34 +1229,34 @@ LocalDomainAccessController::RceSubscription LocalDomainAccessController::subscr
 {
     RceSubscription subscriptionIds;
     std::vector<std::string> partitions = createPartitionsVector(domain, interfaceName);
-    subscriptionIds.masterRceSubscriptionIdFuture =
-            globalDomainAccessControllerProxy
+    subscriptionIds._masterRceSubscriptionIdFuture =
+            _globalDomainAccessControllerProxy
                     ->subscribeToMasterRegistrationControlEntryChangedBroadcast(
                             std::static_pointer_cast<
                                     ISubscriptionListener<ChangeType::Enum,
                                                           MasterRegistrationControlEntry>>(
-                                    masterRegistrationControlEntryChangedBroadcastListener),
-                            multicastSubscriptionQos,
+                                    _masterRegistrationControlEntryChangedBroadcastListener),
+                            _multicastSubscriptionQos,
                             partitions);
 
-    subscriptionIds.mediatorRceSubscriptionIdFuture =
-            globalDomainAccessControllerProxy
+    subscriptionIds._mediatorRceSubscriptionIdFuture =
+            _globalDomainAccessControllerProxy
                     ->subscribeToMediatorRegistrationControlEntryChangedBroadcast(
                             std::static_pointer_cast<
                                     ISubscriptionListener<ChangeType::Enum,
                                                           MasterRegistrationControlEntry>>(
-                                    mediatorRegistrationControlEntryChangedBroadcastListener),
-                            multicastSubscriptionQos,
+                                    _mediatorRegistrationControlEntryChangedBroadcastListener),
+                            _multicastSubscriptionQos,
                             partitions);
 
-    subscriptionIds.ownerRceSubscriptionIdFuture =
-            globalDomainAccessControllerProxy
+    subscriptionIds._ownerRceSubscriptionIdFuture =
+            _globalDomainAccessControllerProxy
                     ->subscribeToOwnerRegistrationControlEntryChangedBroadcast(
                             std::static_pointer_cast<
                                     ISubscriptionListener<ChangeType::Enum,
                                                           OwnerRegistrationControlEntry>>(
-                                    ownerRegistrationControlEntryChangedBroadcastListener),
-                            multicastSubscriptionQos,
+                                    _ownerRegistrationControlEntryChangedBroadcastListener),
+                            _multicastSubscriptionQos,
                             partitions);
 
     return subscriptionIds;
@@ -1273,7 +1275,7 @@ std::string LocalDomainAccessController::createCompoundKey(const std::string& do
 
 LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::
         DomainRoleEntryChangedBroadcastListener(LocalDomainAccessController& parent)
-        : parent(parent)
+        : _parent(parent)
 {
 }
 
@@ -1288,23 +1290,24 @@ void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onRec
         const DomainRoleEntry& changedDre)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateDomainRole(changedDre);
+        _parent._localDomainAccessStore->updateDomainRole(changedDre);
     } else {
-        parent.localDomainAccessStore->removeDomainRole(changedDre.getUid(), changedDre.getRole());
+        _parent._localDomainAccessStore->removeDomainRole(
+                changedDre.getUid(), changedDre.getRole());
     }
-    JOYNR_LOG_TRACE(parent.logger(), "Changed DRE: {}", changedDre.toString());
+    JOYNR_LOG_TRACE(_parent.logger(), "Changed DRE: {}", changedDre.toString());
 }
 
 void LocalDomainAccessController::DomainRoleEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger(), "Change of DRE failed!");
+    JOYNR_LOG_ERROR(_parent.logger(), "Change of DRE failed!");
 }
 
 LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListener::
         MasterAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
-        : parent(parent)
+        : _parent(parent)
 {
 }
 
@@ -1319,15 +1322,15 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
         const MasterAccessControlEntry& changedMasterAce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateMasterAccessControlEntry(changedMasterAce);
-        JOYNR_LOG_TRACE(parent.logger(), "Changed MasterAce: {}", changedMasterAce.toString());
+        _parent._localDomainAccessStore->updateMasterAccessControlEntry(changedMasterAce);
+        JOYNR_LOG_TRACE(_parent.logger(), "Changed MasterAce: {}", changedMasterAce.toString());
     } else {
-        parent.localDomainAccessStore->removeMasterAccessControlEntry(
+        _parent._localDomainAccessStore->removeMasterAccessControlEntry(
                 changedMasterAce.getUid(),
                 changedMasterAce.getDomain(),
                 changedMasterAce.getInterfaceName(),
                 changedMasterAce.getOperation());
-        JOYNR_LOG_TRACE(parent.logger(), "Removed MasterAce: {}", changedMasterAce.toString());
+        JOYNR_LOG_TRACE(_parent.logger(), "Removed MasterAce: {}", changedMasterAce.toString());
     }
 }
 
@@ -1335,12 +1338,12 @@ void LocalDomainAccessController::MasterAccessControlEntryChangedBroadcastListen
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger(), "Change of MasterAce failed!");
+    JOYNR_LOG_ERROR(_parent.logger(), "Change of MasterAce failed!");
 }
 
 LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::
         MediatorAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
-        : parent(parent)
+        : _parent(parent)
 {
 }
 
@@ -1355,27 +1358,27 @@ void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastList
         const MasterAccessControlEntry& changedMediatorAce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateMediatorAccessControlEntry(changedMediatorAce);
+        _parent._localDomainAccessStore->updateMediatorAccessControlEntry(changedMediatorAce);
     } else {
-        parent.localDomainAccessStore->removeMediatorAccessControlEntry(
+        _parent._localDomainAccessStore->removeMediatorAccessControlEntry(
                 changedMediatorAce.getUid(),
                 changedMediatorAce.getDomain(),
                 changedMediatorAce.getInterfaceName(),
                 changedMediatorAce.getOperation());
     }
-    JOYNR_LOG_TRACE(parent.logger(), "Changed MediatorAce: {}", changedMediatorAce.toString());
+    JOYNR_LOG_TRACE(_parent.logger(), "Changed MediatorAce: {}", changedMediatorAce.toString());
 }
 
 void LocalDomainAccessController::MediatorAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger(), "Change of MediatorAce failed!");
+    JOYNR_LOG_ERROR(_parent.logger(), "Change of MediatorAce failed!");
 }
 
 LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::
         OwnerAccessControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
-        : parent(parent)
+        : _parent(parent)
 {
 }
 
@@ -1390,27 +1393,27 @@ void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListene
         const OwnerAccessControlEntry& changedOwnerAce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateOwnerAccessControlEntry(changedOwnerAce);
+        _parent._localDomainAccessStore->updateOwnerAccessControlEntry(changedOwnerAce);
     } else {
-        parent.localDomainAccessStore->removeOwnerAccessControlEntry(
+        _parent._localDomainAccessStore->removeOwnerAccessControlEntry(
                 changedOwnerAce.getUid(),
                 changedOwnerAce.getDomain(),
                 changedOwnerAce.getInterfaceName(),
                 changedOwnerAce.getOperation());
     }
-    JOYNR_LOG_TRACE(parent.logger(), "Changed OwnerAce: {}", changedOwnerAce.toString());
+    JOYNR_LOG_TRACE(_parent.logger(), "Changed OwnerAce: {}", changedOwnerAce.toString());
 }
 
 void LocalDomainAccessController::OwnerAccessControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger(), "Change of OwnerAce failed!");
+    JOYNR_LOG_ERROR(_parent.logger(), "Change of OwnerAce failed!");
 }
 
 LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcastListener::
         MasterRegistrationControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
-        : parent(parent)
+        : _parent(parent)
 {
 }
 
@@ -1425,14 +1428,14 @@ void LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcast
         const MasterRegistrationControlEntry& changedMasterRce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateMasterRegistrationControlEntry(changedMasterRce);
-        JOYNR_LOG_TRACE(parent.logger(), "Changed MasterAce: {}", changedMasterRce.toString());
+        _parent._localDomainAccessStore->updateMasterRegistrationControlEntry(changedMasterRce);
+        JOYNR_LOG_TRACE(_parent.logger(), "Changed MasterAce: {}", changedMasterRce.toString());
     } else {
-        parent.localDomainAccessStore->removeMasterRegistrationControlEntry(
+        _parent._localDomainAccessStore->removeMasterRegistrationControlEntry(
                 changedMasterRce.getUid(),
                 changedMasterRce.getDomain(),
                 changedMasterRce.getInterfaceName());
-        JOYNR_LOG_TRACE(parent.logger(), "Removed MasterAce: {}", changedMasterRce.toString());
+        JOYNR_LOG_TRACE(_parent.logger(), "Removed MasterAce: {}", changedMasterRce.toString());
     }
 }
 
@@ -1440,13 +1443,13 @@ void LocalDomainAccessController::MasterRegistrationControlEntryChangedBroadcast
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger(), "Change of MasterAce failed!");
+    JOYNR_LOG_ERROR(_parent.logger(), "Change of MasterAce failed!");
 }
 
 LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener::
         MediatorRegistrationControlEntryChangedBroadcastListener(
                 LocalDomainAccessController& parent)
-        : parent(parent)
+        : _parent(parent)
 {
 }
 
@@ -1461,26 +1464,26 @@ void LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadca
                   const MasterRegistrationControlEntry& changedMediatorRce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateMediatorRegistrationControlEntry(changedMediatorRce);
+        _parent._localDomainAccessStore->updateMediatorRegistrationControlEntry(changedMediatorRce);
     } else {
-        parent.localDomainAccessStore->removeMediatorRegistrationControlEntry(
+        _parent._localDomainAccessStore->removeMediatorRegistrationControlEntry(
                 changedMediatorRce.getUid(),
                 changedMediatorRce.getDomain(),
                 changedMediatorRce.getInterfaceName());
     }
-    JOYNR_LOG_TRACE(parent.logger(), "Changed MediatorRce: {}", changedMediatorRce.toString());
+    JOYNR_LOG_TRACE(_parent.logger(), "Changed MediatorRce: {}", changedMediatorRce.toString());
 }
 
 void LocalDomainAccessController::MediatorRegistrationControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger(), "Change of MediatorRce failed!");
+    JOYNR_LOG_ERROR(_parent.logger(), "Change of MediatorRce failed!");
 }
 
 LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener::
         OwnerRegistrationControlEntryChangedBroadcastListener(LocalDomainAccessController& parent)
-        : parent(parent)
+        : _parent(parent)
 {
 }
 
@@ -1495,21 +1498,21 @@ void LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastL
         const OwnerRegistrationControlEntry& changedOwnerRce)
 {
     if (changeType != ChangeType::REMOVE) {
-        parent.localDomainAccessStore->updateOwnerRegistrationControlEntry(changedOwnerRce);
+        _parent._localDomainAccessStore->updateOwnerRegistrationControlEntry(changedOwnerRce);
     } else {
-        parent.localDomainAccessStore->removeOwnerRegistrationControlEntry(
+        _parent._localDomainAccessStore->removeOwnerRegistrationControlEntry(
                 changedOwnerRce.getUid(),
                 changedOwnerRce.getDomain(),
                 changedOwnerRce.getInterfaceName());
     }
-    JOYNR_LOG_TRACE(parent.logger(), "Changed OwnerRce: {}", changedOwnerRce.toString());
+    JOYNR_LOG_TRACE(_parent.logger(), "Changed OwnerRce: {}", changedOwnerRce.toString());
 }
 
 void LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastListener::onError(
         const exceptions::JoynrRuntimeException& error)
 {
     std::ignore = error;
-    JOYNR_LOG_ERROR(parent.logger(), "Change of OwnerRce failed!");
+    JOYNR_LOG_ERROR(_parent.logger(), "Change of OwnerRce failed!");
 }
 
 } // namespace joynr

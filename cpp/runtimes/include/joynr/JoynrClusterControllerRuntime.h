@@ -95,7 +95,7 @@ public:
                     std::uint64_t ttlUplift)>;
     JoynrClusterControllerRuntime(
             std::unique_ptr<Settings> settings,
-            std::shared_ptr<IKeychain> keyChain = nullptr,
+            std::shared_ptr<IKeychain> _keyChain = nullptr,
             MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
             std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
             std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr,
@@ -106,13 +106,13 @@ public:
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::size_t argc,
             char* argv[],
-            std::shared_ptr<IKeychain> keyChain = nullptr,
+            std::shared_ptr<IKeychain> _keyChain = nullptr,
             MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
 
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::unique_ptr<Settings> settings,
             const std::string& discoveryEntriesFile = "",
-            std::shared_ptr<IKeychain> keyChain = nullptr,
+            std::shared_ptr<IKeychain> _keyChain = nullptr,
             MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
 
     ~JoynrClusterControllerRuntime() override;
@@ -146,37 +146,38 @@ protected:
 
     std::shared_ptr<IMessageRouter> getMessageRouter() final;
 
-    std::shared_ptr<IDispatcher> joynrDispatcher;
+    std::shared_ptr<IDispatcher> _joynrDispatcher;
 
-    std::shared_ptr<SubscriptionManager> subscriptionManager;
-    std::shared_ptr<IMessageSender> messageSender;
+    std::shared_ptr<SubscriptionManager> _subscriptionManager;
+    std::shared_ptr<IMessageSender> _messageSender;
 
-    std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory;
+    std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectory;
 
-    std::shared_ptr<InProcessMessagingSkeleton> libJoynrMessagingSkeleton;
+    std::shared_ptr<InProcessMessagingSkeleton> _libJoynrMessagingSkeleton;
 
-    std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver;
-    std::shared_ptr<ITransportMessageSender> httpMessageSender;
-    std::shared_ptr<HttpMessagingSkeleton> httpMessagingSkeleton;
-    MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory;
+    std::shared_ptr<ITransportMessageReceiver> _httpMessageReceiver;
+    std::shared_ptr<ITransportMessageSender> _httpMessageSender;
+    std::shared_ptr<HttpMessagingSkeleton> _httpMessagingSkeleton;
+    MqttMessagingSkeletonFactory _mqttMessagingSkeletonFactory;
 
-    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>> mqttConnectionDataVector;
+    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
+            _mqttConnectionDataVector;
 
-    std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
+    std::vector<std::shared_ptr<IDispatcher>> _dispatcherList;
 
-    std::unique_ptr<Settings> settings;
-    LibjoynrSettings libjoynrSettings;
-    std::shared_ptr<LocalDomainAccessController> localDomainAccessController;
-    ClusterControllerSettings clusterControllerSettings;
+    std::unique_ptr<Settings> _settings;
+    LibjoynrSettings _libjoynrSettings;
+    std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
+    ClusterControllerSettings _clusterControllerSettings;
 
-    WebSocketSettings wsSettings;
-    std::shared_ptr<IWebsocketCcMessagingSkeleton> wsCcMessagingSkeleton;
-    std::shared_ptr<IWebsocketCcMessagingSkeleton> wsTLSCcMessagingSkeleton;
-    bool httpMessagingIsRunning;
-    bool mqttMessagingIsRunning;
-    bool doMqttMessaging;
-    bool doHttpMessaging;
-    std::shared_ptr<WebSocketMessagingStubFactory> wsMessagingStubFactory;
+    WebSocketSettings _wsSettings;
+    std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsCcMessagingSkeleton;
+    std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsTLSCcMessagingSkeleton;
+    bool _httpMessagingIsRunning;
+    bool _mqttMessagingIsRunning;
+    bool _doMqttMessaging;
+    bool _doHttpMessaging;
+    std::shared_ptr<WebSocketMessagingStubFactory> _wsMessagingStubFactory;
 
     ADD_LOGGER(JoynrClusterControllerRuntime)
 
@@ -185,10 +186,10 @@ private:
     std::string registerInternalSystemServiceProvider(std::shared_ptr<T> provider,
                                                       const std::string& participantId)
     {
-        const std::string domain(systemServicesSettings.getDomain());
+        const std::string domain(_systemServicesSettings.getDomain());
         const std::string interfaceName(T::INTERFACE_NAME());
 
-        participantIdStorage->setProviderParticipantId(
+        _participantIdStorage->setProviderParticipantId(
                 domain, interfaceName, T::MAJOR_VERSION, participantId);
 
         joynr::types::ProviderQos systemProviderQos;
@@ -213,28 +214,28 @@ private:
     const system::RoutingTypes::Address& getGlobalClusterControllerAddress() const;
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
-    std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
+    std::shared_ptr<MulticastMessagingSkeletonDirectory> _multicastMessagingSkeletonDirectory;
 
-    std::shared_ptr<CcMessageRouter> ccMessageRouter;
-    std::shared_ptr<AccessControlListEditor> aclEditor;
+    std::shared_ptr<CcMessageRouter> _ccMessageRouter;
+    std::shared_ptr<AccessControlListEditor> _aclEditor;
 
     void enableAccessController(
             const std::map<std::string, types::DiscoveryEntryWithMetaInfo>& provisionedEntries);
     friend class ::JoynrClusterControllerRuntimeTest;
 
-    Semaphore lifetimeSemaphore;
+    Semaphore _lifetimeSemaphore;
 
-    std::shared_ptr<joynr::AccessController> accessController;
+    std::shared_ptr<joynr::AccessController> _accessController;
 
-    std::string routingProviderParticipantId;
-    std::string discoveryProviderParticipantId;
-    std::string providerReregistrationControllerParticipantId;
-    std::string messageNotificationProviderParticipantId;
-    std::string accessControlListEditorProviderParticipantId;
-    bool isShuttingDown;
-    const system::RoutingTypes::Address dummyGlobalAddress;
+    std::string _routingProviderParticipantId;
+    std::string _discoveryProviderParticipantId;
+    std::string _providerReregistrationControllerParticipantId;
+    std::string _messageNotificationProviderParticipantId;
+    std::string _accessControlListEditorProviderParticipantId;
+    bool _isShuttingDown;
+    const system::RoutingTypes::Address _dummyGlobalAddress;
 
-    std::vector<std::string> availableGbids;
+    std::vector<std::string> _availableGbids;
     void fillAvailableGbidsVector();
 };
 

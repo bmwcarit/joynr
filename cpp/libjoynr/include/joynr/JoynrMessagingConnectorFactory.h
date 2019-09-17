@@ -56,8 +56,8 @@ public:
                               const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
         using Connector = typename JoynrMessagingTraits<T>::Connector;
-        return std::make_unique<Connector>(messageSender,
-                                           subscriptionManager,
+        return std::make_unique<Connector>(_messageSender,
+                                           _subscriptionManager,
                                            domain,
                                            proxyParticipantId,
                                            qosSettings,
@@ -65,8 +65,8 @@ public:
     }
 
 private:
-    std::shared_ptr<IMessageSender> messageSender;
-    std::shared_ptr<ISubscriptionManager> subscriptionManager;
+    std::shared_ptr<IMessageSender> _messageSender;
+    std::shared_ptr<ISubscriptionManager> _subscriptionManager;
 };
 
 } // namespace joynr

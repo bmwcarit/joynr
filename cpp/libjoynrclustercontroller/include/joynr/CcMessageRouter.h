@@ -72,21 +72,21 @@ class JOYNR_EXPORT CcMessageRouter : public joynr::AbstractMessageRouter,
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
-    CcMessageRouter(MessagingSettings& messagingSettings,
+    CcMessageRouter(MessagingSettings& _messagingSettings,
                     ClusterControllerSettings& clusterControllerSettings,
-                    std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
+                    std::shared_ptr<IMessagingStubFactory> _messagingStubFactory,
                     std::shared_ptr<MulticastMessagingSkeletonDirectory>
                             multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager> securityManager,
                     boost::asio::io_service& ioService,
-                    std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
+                    std::unique_ptr<IMulticastAddressCalculator> _addressCalculator,
                     const std::string& globalClusterControllerAddress,
                     const std::string& messageNotificationProviderParticipantId,
-                    bool persistRoutingTable,
-                    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
-                    std::unique_ptr<MessageQueue<std::string>> messageQueue,
+                    bool _persistRoutingTable,
+                    std::vector<std::shared_ptr<ITransportStatus>> _transportStatuses,
+                    std::unique_ptr<MessageQueue<std::string>> _messageQueue,
                     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
-                            transportNotAvailableQueue,
+                            _transportNotAvailableQueue,
                     const system::RoutingTypes::Address& ownGlobalAddress);
 
     ~CcMessageRouter() override;
@@ -238,17 +238,17 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
     ADD_LOGGER(CcMessageRouter)
 
-    std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
-    std::unique_ptr<IPlatformSecurityManager> securityManager;
-    std::weak_ptr<IAccessController> accessController;
-    std::string multicastReceiverDirectoryFilename;
-    const std::string globalClusterControllerAddress;
-    std::shared_ptr<CcMessageNotificationProvider> messageNotificationProvider;
-    const std::string messageNotificationProviderParticipantId;
-    ClusterControllerSettings& clusterControllerSettings;
-    const bool multicastReceiverDirectoryPersistencyEnabled;
-    const system::RoutingTypes::Address& ownGlobalAddress;
-    std::weak_ptr<IMessageSender> messageSender;
+    std::shared_ptr<MulticastMessagingSkeletonDirectory> _multicastMessagingSkeletonDirectory;
+    std::unique_ptr<IPlatformSecurityManager> _securityManager;
+    std::weak_ptr<IAccessController> _accessController;
+    std::string _multicastReceiverDirectoryFilename;
+    const std::string _globalClusterControllerAddress;
+    std::shared_ptr<CcMessageNotificationProvider> _messageNotificationProvider;
+    const std::string _messageNotificationProviderParticipantId;
+    ClusterControllerSettings& _clusterControllerSettings;
+    const bool _multicastReceiverDirectoryPersistencyEnabled;
+    const system::RoutingTypes::Address& _ownGlobalAddress;
+    std::weak_ptr<IMessageSender> _messageSender;
 };
 
 } // namespace joynr

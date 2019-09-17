@@ -26,7 +26,7 @@ namespace joynr
 
 HttpMessagingStub::HttpMessagingStub(std::shared_ptr<ITransportMessageSender> messageSender,
                                      const system::RoutingTypes::ChannelAddress& destinationAddress)
-        : messageSender(messageSender), destinationAddress(destinationAddress)
+        : _messageSender(messageSender), _destinationAddress(destinationAddress)
 {
 }
 
@@ -39,7 +39,7 @@ void HttpMessagingStub::transmit(
     } else {
         JOYNR_LOG_TRACE(logger(), ">>> OUTGOING >>> {}", message->toLogMessage());
     }
-    messageSender->sendMessage(destinationAddress, std::move(message), onFailure);
+    _messageSender->sendMessage(_destinationAddress, std::move(message), onFailure);
 }
 
 } // namespace joynr

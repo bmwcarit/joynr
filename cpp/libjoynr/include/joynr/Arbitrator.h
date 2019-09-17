@@ -103,36 +103,36 @@ private:
 
     void assertNoPendingFuture();
 
-    std::mutex pendingFutureMutex;
+    std::mutex _pendingFutureMutex;
     boost::variant<
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>,
             std::shared_ptr<joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>>
-            pendingFuture;
+            _pendingFuture;
 
-    std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    const std::vector<std::string> gbids;
-    const std::string gbidString;
-    const DiscoveryQos discoveryQos;
-    const joynr::types::DiscoveryQos systemDiscoveryQos;
-    const std::vector<std::string> domains;
-    const std::string serializedDomainsList;
-    const std::string interfaceName;
-    const joynr::types::Version interfaceVersion;
-    std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
-    exceptions::DiscoveryException arbitrationError;
-    std::unique_ptr<const ArbitrationStrategyFunction> arbitrationStrategyFunction;
+    std::weak_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
+    const std::vector<std::string> _gbids;
+    const std::string _gbidString;
+    const DiscoveryQos _discoveryQos;
+    const joynr::types::DiscoveryQos _systemDiscoveryQos;
+    const std::vector<std::string> _domains;
+    const std::string _serializedDomainsList;
+    const std::string _interfaceName;
+    const joynr::types::Version _interfaceVersion;
+    std::unordered_set<joynr::types::Version> _discoveredIncompatibleVersions;
+    exceptions::DiscoveryException _arbitrationError;
+    std::unique_ptr<const ArbitrationStrategyFunction> _arbitrationStrategyFunction;
     std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry)>
-            onSuccessCallback;
-    std::function<void(const exceptions::DiscoveryException& exception)> onErrorCallback;
+            _onSuccessCallback;
+    std::function<void(const exceptions::DiscoveryException& exception)> _onErrorCallback;
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
-    Semaphore semaphore;
-    std::atomic<bool> arbitrationFinished;
-    std::atomic<bool> arbitrationFailedForever;
-    std::atomic<bool> arbitrationRunning;
-    std::atomic<bool> arbitrationStopped;
-    std::thread arbitrationThread;
-    std::chrono::steady_clock::time_point startTimePoint;
+    Semaphore _semaphore;
+    std::atomic<bool> _arbitrationFinished;
+    std::atomic<bool> _arbitrationFailedForever;
+    std::atomic<bool> _arbitrationRunning;
+    std::atomic<bool> _arbitrationStopped;
+    std::thread _arbitrationThread;
+    std::chrono::steady_clock::time_point _startTimePoint;
     ADD_LOGGER(Arbitrator)
 };
 

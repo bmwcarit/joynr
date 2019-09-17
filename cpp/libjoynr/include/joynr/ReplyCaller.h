@@ -34,7 +34,7 @@ class BaseReplyCaller : public IReplyCaller
 public:
     BaseReplyCaller(std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)>&&
                             errorFct)
-            : errorFct(std::move(errorFct)), hasTimeOutOccurred(false)
+            : _errorFct(std::move(errorFct)), _hasTimeOutOccurred(false)
     {
     }
 
@@ -42,19 +42,19 @@ public:
 
     void returnError(const std::shared_ptr<exceptions::JoynrException>& error) override
     {
-        errorFct(error);
+        _errorFct(error);
     }
 
     void timeOut() override
     {
-        hasTimeOutOccurred = true;
-        errorFct(std::make_shared<exceptions::JoynrTimeOutException>(
+        _hasTimeOutOccurred = true;
+        _errorFct(std::make_shared<exceptions::JoynrTimeOutException>(
                 "timeout waiting for the response"));
     }
 
 protected:
-    std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> errorFct;
-    bool hasTimeOutOccurred;
+    std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> _errorFct;
+    bool _hasTimeOutOccurred;
 };
 
 template <class... Ts>
@@ -69,7 +69,7 @@ public:
     ReplyCaller(
             std::function<void(const Ts&...)> callbackFct,
             std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> errorFct)
-            : BaseReplyCaller(std::move(errorFct)), callbackFct(std::move(callbackFct))
+            : BaseReplyCaller(std::move(errorFct)), _callbackFct(std::move(callbackFct))
     {
     }
 
@@ -77,8 +77,8 @@ public:
 
     void returnValue(const Ts&... payload)
     {
-        if (!hasTimeOutOccurred && callbackFct) {
-            callbackFct(payload...);
+        if (!_hasTimeOutOccurred && _callbackFct) {
+            _callbackFct(payload...);
         }
     }
 
@@ -88,7 +88,7 @@ public:
     }
 
 private:
-    std::function<void(const Ts&... returnValue)> callbackFct;
+    std::function<void(const Ts&... returnValue)> _callbackFct;
 };
 
 template <>
@@ -102,7 +102,7 @@ public:
     ReplyCaller(
             std::function<void()> callbackFct,
             std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> errorFct)
-            : BaseReplyCaller(std::move(errorFct)), callbackFct(std::move(callbackFct))
+            : BaseReplyCaller(std::move(errorFct)), _callbackFct(std::move(callbackFct))
     {
     }
 
@@ -110,8 +110,8 @@ public:
 
     void returnValue()
     {
-        if (!hasTimeOutOccurred && callbackFct) {
-            callbackFct();
+        if (!_hasTimeOutOccurred && _callbackFct) {
+            _callbackFct();
         }
     }
 
@@ -121,7 +121,7 @@ public:
     }
 
 private:
-    std::function<void()> callbackFct;
+    std::function<void()> _callbackFct;
 };
 
 } // namespace joynr

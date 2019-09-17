@@ -51,15 +51,15 @@ private:
                                  std::shared_ptr<ImmutableMessage> message) final;
     bool preprocessIncomingMessage(std::shared_ptr<ImmutableMessage> message) final;
 
-    std::shared_ptr<SSLContext> createSSLContext(const std::string& caPemFile,
-                                                 const std::string& certPemFile,
-                                                 const std::string& privateKeyPemFile,
+    std::shared_ptr<SSLContext> createSSLContext(const std::string& _caPemFile,
+                                                 const std::string& _certPemFile,
+                                                 const std::string& _privateKeyPemFile,
                                                  ConnectionHandle hdl);
 
-    bool useEncryptedTls;
-    const std::string caPemFile;
-    const std::string certPemFile;
-    const std::string privateKeyPemFile;
+    bool _useEncryptedTls;
+    const std::string _caPemFile;
+    const std::string _certPemFile;
+    const std::string _privateKeyPemFile;
 };
 
 } // namespace joynr

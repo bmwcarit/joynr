@@ -52,30 +52,30 @@ const std::string& BrokerUrl::TIMECHECK_PATH_SUFFIX()
     return value;
 }
 
-BrokerUrl::BrokerUrl(const std::string& brokerBaseUrl)
-        : brokerBaseUrl(brokerBaseUrl), brokerChannelsBaseUrl()
+BrokerUrl::BrokerUrl(const std::string& brokerChannelsBaseUrl)
+        : _brokerBaseUrl(brokerChannelsBaseUrl), _brokerChannelsBaseUrl()
 {
-    std::string channelsBaseUrl = brokerBaseUrl;
+    std::string channelsBaseUrl = brokerChannelsBaseUrl;
     channelsBaseUrl.append(CHANNEL_PATH_SUFFIX());
     channelsBaseUrl.append(URL_PATH_SEPARATOR());
-    this->brokerChannelsBaseUrl = Url(channelsBaseUrl);
+    this->_brokerChannelsBaseUrl = Url(channelsBaseUrl);
 }
 
 BrokerUrl& BrokerUrl::operator=(const BrokerUrl& brokerUrl)
 {
-    brokerBaseUrl = brokerUrl.brokerBaseUrl;
-    brokerChannelsBaseUrl = brokerUrl.brokerChannelsBaseUrl;
+    _brokerBaseUrl = brokerUrl._brokerBaseUrl;
+    _brokerChannelsBaseUrl = brokerUrl._brokerChannelsBaseUrl;
     return *this;
 }
 
 bool BrokerUrl::operator==(const BrokerUrl& brokerUrl) const
 {
-    return brokerChannelsBaseUrl == brokerUrl.getBrokerChannelsBaseUrl();
+    return _brokerChannelsBaseUrl == brokerUrl.getBrokerChannelsBaseUrl();
 }
 
 Url BrokerUrl::getCreateChannelUrl(const std::string& mcid) const
 {
-    Url createChannelUrl(brokerChannelsBaseUrl);
+    Url createChannelUrl(_brokerChannelsBaseUrl);
     UrlQuery query;
     query.addQueryItem(CREATE_CHANNEL_QUERY_ITEM(), mcid);
     createChannelUrl.setQuery(query);
@@ -85,7 +85,7 @@ Url BrokerUrl::getCreateChannelUrl(const std::string& mcid) const
 
 Url BrokerUrl::getSendUrl(const std::string& channelId) const
 {
-    Url sendUrl(brokerChannelsBaseUrl);
+    Url sendUrl(_brokerChannelsBaseUrl);
     std::string path = sendUrl.getPath();
     path.append(channelId);
     path.append(URL_PATH_SEPARATOR());
@@ -97,13 +97,13 @@ Url BrokerUrl::getSendUrl(const std::string& channelId) const
 
 Url BrokerUrl::getBrokerChannelsBaseUrl() const
 {
-    Url sendUrl(brokerChannelsBaseUrl);
+    Url sendUrl(_brokerChannelsBaseUrl);
     return sendUrl;
 }
 
 Url BrokerUrl::getDeleteChannelUrl(const std::string& mcid) const
 {
-    Url sendUrl(brokerChannelsBaseUrl);
+    Url sendUrl(_brokerChannelsBaseUrl);
     std::string path = sendUrl.getPath();
     path.append(mcid);
     path.append(URL_PATH_SEPARATOR());
@@ -113,7 +113,7 @@ Url BrokerUrl::getDeleteChannelUrl(const std::string& mcid) const
 
 Url BrokerUrl::getTimeCheckUrl() const
 {
-    Url timeCheckUrl(brokerBaseUrl);
+    Url timeCheckUrl(_brokerBaseUrl);
     std::string path = timeCheckUrl.getPath();
     path.append(TIMECHECK_PATH_SUFFIX());
     path.append(URL_PATH_SEPARATOR());
@@ -123,7 +123,7 @@ Url BrokerUrl::getTimeCheckUrl() const
 
 std::string BrokerUrl::toString() const
 {
-    return brokerBaseUrl;
+    return _brokerBaseUrl;
 }
 
 } // namespace joynr

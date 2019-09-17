@@ -27,63 +27,63 @@ namespace joynr
 {
 
 ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool verifyInput)
-        : serializedMessage(std::move(serializedMessage)),
-          messageDeserializer(smrf::ByteArrayView(this->serializedMessage), verifyInput),
-          headers(),
-          bodyView(),
-          decompressedBody(),
-          receivedFromGlobal(false),
-          accessControlChecked(false),
-          creator(),
-          requiredHeaders()
+        : _serializedMessage(std::move(serializedMessage)),
+          _messageDeserializer(smrf::ByteArrayView(this->_serializedMessage), verifyInput),
+          _headers(),
+          _bodyView(),
+          _decompressedBody(),
+          _receivedFromGlobal(false),
+          _accessControlChecked(false),
+          _creator(),
+          _requiredHeaders()
 {
     init();
 }
 
 ImmutableMessage::ImmutableMessage(const smrf::ByteVector& serializedMessage, bool verifyInput)
-        : serializedMessage(serializedMessage),
-          messageDeserializer(smrf::ByteArrayView(this->serializedMessage), verifyInput),
-          headers(),
-          bodyView(),
-          decompressedBody(),
-          receivedFromGlobal(false),
-          accessControlChecked(false),
-          creator(),
-          requiredHeaders()
+        : _serializedMessage(serializedMessage),
+          _messageDeserializer(smrf::ByteArrayView(this->_serializedMessage), verifyInput),
+          _headers(),
+          _bodyView(),
+          _decompressedBody(),
+          _receivedFromGlobal(false),
+          _accessControlChecked(false),
+          _creator(),
+          _requiredHeaders()
 {
     init();
 }
 
 std::string ImmutableMessage::getSender() const
 {
-    return messageDeserializer.getSender();
+    return _messageDeserializer.getSender();
 }
 
 std::string ImmutableMessage::getRecipient() const
 {
-    return messageDeserializer.getRecipient();
+    return _messageDeserializer.getRecipient();
 }
 
 bool ImmutableMessage::isTtlAbsolute() const
 {
-    return messageDeserializer.isTtlAbsolute();
+    return _messageDeserializer.isTtlAbsolute();
 }
 
 const std::unordered_map<std::string, std::string>& ImmutableMessage::getHeaders() const
 {
-    return headers;
+    return _headers;
 }
 
 std::unordered_map<std::string, std::string> ImmutableMessage::getCustomHeaders() const
 {
-    if (headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
+    if (_headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
         return std::unordered_map<std::string, std::string>();
     }
 
     static std::size_t CUSTOM_HEADER_PREFIX_LENGTH = Message::CUSTOM_HEADER_PREFIX().length();
     std::unordered_map<std::string, std::string> result;
 
-    for (const auto& headersPair : headers) {
+    for (const auto& headersPair : _headers) {
         const std::string& headerName = headersPair.first;
 
         if (isCustomHeaderKey(headerName)) {
@@ -98,13 +98,13 @@ std::unordered_map<std::string, std::string> ImmutableMessage::getCustomHeaders(
 
 std::unordered_map<std::string, std::string> ImmutableMessage::getPrefixedCustomHeaders() const
 {
-    if (headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
+    if (_headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
         return std::unordered_map<std::string, std::string>();
     }
 
     std::unordered_map<std::string, std::string> result;
 
-    for (const auto& headersPair : headers) {
+    for (const auto& headersPair : _headers) {
         const std::string& headerName = headersPair.first;
 
         if (isCustomHeaderKey(headerName)) {
@@ -117,30 +117,30 @@ std::unordered_map<std::string, std::string> ImmutableMessage::getPrefixedCustom
 
 bool ImmutableMessage::isEncrypted() const
 {
-    return messageDeserializer.isEncrypted();
+    return _messageDeserializer.isEncrypted();
 }
 
 bool ImmutableMessage::isSigned() const
 {
-    return messageDeserializer.isSigned();
+    return _messageDeserializer.isSigned();
 }
 
 bool ImmutableMessage::isCompressed() const
 {
-    return messageDeserializer.isCompressed();
+    return _messageDeserializer.isCompressed();
 }
 
 smrf::ByteArrayView ImmutableMessage::getUnencryptedBody() const
 {
-    if (!bodyView) {
-        if (!messageDeserializer.isCompressed()) {
-            bodyView = messageDeserializer.getBody();
+    if (!_bodyView) {
+        if (!_messageDeserializer.isCompressed()) {
+            _bodyView = _messageDeserializer.getBody();
         } else {
-            decompressedBody = messageDeserializer.decompressBody();
-            bodyView = smrf::ByteArrayView(*decompressedBody);
+            _decompressedBody = _messageDeserializer.decompressBody();
+            _bodyView = smrf::ByteArrayView(*_decompressedBody);
         }
     }
-    return *bodyView;
+    return *_bodyView;
 }
 
 std::string ImmutableMessage::toLogMessage() const
@@ -150,12 +150,12 @@ std::string ImmutableMessage::toLogMessage() const
 
 const std::string& ImmutableMessage::getType() const
 {
-    return requiredHeaders.type;
+    return _requiredHeaders.type;
 }
 
 const std::string& ImmutableMessage::getId() const
 {
-    return requiredHeaders.id;
+    return _requiredHeaders.id;
 }
 
 boost::optional<std::string> ImmutableMessage::getReplyTo() const
@@ -171,55 +171,55 @@ boost::optional<std::string> ImmutableMessage::getEffort() const
 TimePoint ImmutableMessage::getExpiryDate() const
 {
     // for now we only support absolute TTLs
-    assert(messageDeserializer.isTtlAbsolute());
-    return TimePoint::fromAbsoluteMs(messageDeserializer.getTtlMs());
+    assert(_messageDeserializer.isTtlAbsolute());
+    return TimePoint::fromAbsoluteMs(_messageDeserializer.getTtlMs());
 }
 
 const smrf::ByteVector& ImmutableMessage::getSerializedMessage() const
 {
-    return serializedMessage;
+    return _serializedMessage;
 }
 
 std::size_t ImmutableMessage::getMessageSize() const
 {
-    return messageDeserializer.getMessageSize();
+    return _messageDeserializer.getMessageSize();
 }
 
 smrf::ByteArrayView ImmutableMessage::getSignature() const
 {
-    return messageDeserializer.getSignature();
+    return _messageDeserializer.getSignature();
 }
 
 bool ImmutableMessage::isReceivedFromGlobal() const
 {
-    return receivedFromGlobal;
+    return _receivedFromGlobal;
 }
 
 void ImmutableMessage::setReceivedFromGlobal(bool receivedFromGlobal)
 {
-    this->receivedFromGlobal = receivedFromGlobal;
+    this->_receivedFromGlobal = receivedFromGlobal;
 }
 
 void ImmutableMessage::setCreator(const std::string& creator)
 {
-    this->creator = creator;
+    this->_creator = creator;
 }
 
 void ImmutableMessage::setCreator(std::string&& creator)
 {
-    this->creator = std::move(creator);
+    this->_creator = std::move(creator);
 }
 
 const std::string& ImmutableMessage::getCreator() const
 {
-    return creator;
+    return _creator;
 }
 
 boost::optional<std::string> ImmutableMessage::getOptionalHeaderByKey(const std::string& key) const
 {
     boost::optional<std::string> value;
-    auto it = headers.find(key);
-    if (it != headers.cend()) {
+    auto it = _headers.find(key);
+    if (it != _headers.cend()) {
         value = it->second;
     }
     return value;
@@ -227,7 +227,7 @@ boost::optional<std::string> ImmutableMessage::getOptionalHeaderByKey(const std:
 
 void ImmutableMessage::init()
 {
-    headers = messageDeserializer.getHeaders();
+    _headers = _messageDeserializer.getHeaders();
     boost::optional<std::string> optionalId = getOptionalHeaderByKey(Message::HEADER_ID());
     boost::optional<std::string> optionalType = getOptionalHeaderByKey(Message::HEADER_TYPE());
 
@@ -237,8 +237,8 @@ void ImmutableMessage::init()
     if (!optionalId.is_initialized() || !optionalType.is_initialized()) {
         throw std::invalid_argument("missing header");
     } else {
-        requiredHeaders.id = std::move(*optionalId);
-        requiredHeaders.type = std::move(*optionalType);
+        _requiredHeaders.id = std::move(*optionalId);
+        _requiredHeaders.type = std::move(*optionalType);
     }
 }
 
@@ -249,12 +249,12 @@ bool ImmutableMessage::isCustomHeaderKey(const std::string& key) const
 
 bool ImmutableMessage::isAccessControlChecked() const
 {
-    return accessControlChecked;
+    return _accessControlChecked;
 }
 
 void ImmutableMessage::setAccessControlChecked()
 {
-    accessControlChecked = true;
+    _accessControlChecked = true;
 }
 
 std::string ImmutableMessage::getTrackingInfo() const

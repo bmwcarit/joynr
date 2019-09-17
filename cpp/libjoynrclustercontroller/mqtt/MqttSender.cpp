@@ -34,9 +34,9 @@ namespace joynr
 
 MqttSender::MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection,
                        const MessagingSettings& settings)
-        : mosquittoConnection(mosquittoConnection),
-          receiver(),
-          mqttMaxMessageSizeBytes(settings.getMqttMaxMessageSizeBytes())
+        : _mosquittoConnection(mosquittoConnection),
+          _receiver(),
+          _mqttMaxMessageSizeBytes(settings.getMqttMaxMessageSizeBytes())
 {
 }
 
@@ -54,7 +54,7 @@ void MqttSender::sendMessage(
         return;
     }
 
-    if (!mosquittoConnection->isSubscribedToChannelTopic()) {
+    if (!_mosquittoConnection->isSubscribedToChannelTopic()) {
         const std::string msg = "MqttSender is not connected, delaying message";
         JOYNR_LOG_DEBUG(logger(), msg);
         onFailure(exceptions::JoynrDelayMessageException(std::chrono::seconds(2), msg));
@@ -64,11 +64,11 @@ void MqttSender::sendMessage(
     if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
         topic = mqttAddress->getTopic();
     } else {
-        topic = mqttAddress->getTopic() + "/" + mosquittoConnection->getMqttPrio() + "/" +
+        topic = mqttAddress->getTopic() + "/" + _mosquittoConnection->getMqttPrio() + "/" +
                 message->getRecipient();
     }
 
-    int qosLevel = mosquittoConnection->getMqttQos();
+    int qosLevel = _mosquittoConnection->getMqttQos();
 
     boost::optional<std::string> optionalEffort = message->getEffort();
     if (optionalEffort &&
@@ -78,19 +78,19 @@ void MqttSender::sendMessage(
 
     const smrf::ByteVector& rawMessage = message->getSerializedMessage();
 
-    if (mqttMaxMessageSizeBytes != MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES() &&
+    if (_mqttMaxMessageSizeBytes != MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES() &&
         ((rawMessage.size() > static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max())) ||
-         (static_cast<std::int64_t>(rawMessage.size()) > mqttMaxMessageSizeBytes))) {
+         (static_cast<std::int64_t>(rawMessage.size()) > _mqttMaxMessageSizeBytes))) {
         std::stringstream errorMsg;
         errorMsg << "Message size MQTT Publish failed: maximum allowed message size of "
-                 << mqttMaxMessageSizeBytes << " bytes exceeded, actual size is "
+                 << _mqttMaxMessageSizeBytes << " bytes exceeded, actual size is "
                  << rawMessage.size() << " bytes";
         JOYNR_LOG_DEBUG(logger(), errorMsg.str());
         onFailure(exceptions::JoynrMessageNotSentException(errorMsg.str()));
         return;
     }
 
-    mosquittoConnection->publishMessage(
+    _mosquittoConnection->publishMessage(
             topic, qosLevel, onFailure, rawMessage.size(), rawMessage.data());
 }
 

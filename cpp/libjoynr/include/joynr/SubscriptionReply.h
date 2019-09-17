@@ -54,7 +54,7 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(subscriptionId), MUESLI_NVP(error));
+        archive(MUESLI_NVP(_subscriptionId), MUESLI_NVP(_error));
     }
 
 private:
@@ -65,8 +65,8 @@ private:
      */
     friend void PrintTo(const SubscriptionReply& subscriptionReply, ::std::ostream* os);
 
-    std::string subscriptionId;
-    std::shared_ptr<exceptions::SubscriptionException> error;
+    std::string _subscriptionId;
+    std::shared_ptr<exceptions::SubscriptionException> _error;
 };
 
 } // namespace joynr

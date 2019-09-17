@@ -37,6 +37,8 @@
 
 #include "joynr/Logger.h"
 
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
 namespace joynr
 {
 
@@ -92,9 +94,13 @@ std::string loadStringFromFile(const std::string& fileName)
 
     std::string fileContents;
     inStream.seekg(0, std::ios::end);
-    fileContents.resize(inStream.tellg());
+    std::size_t length = 0;
+    if (inStream.tellg() > 0) {
+        length = static_cast<std::size_t>(inStream.tellg());
+    }
+    fileContents.resize(length);
     inStream.seekg(0, std::ios::beg);
-    inStream.read(&fileContents[0], fileContents.size());
+    inStream.read(&fileContents[0], static_cast<std::streamsize>(fileContents.size()));
     inStream.close();
     return fileContents;
 }
@@ -228,9 +234,12 @@ std::string truncateSerializedMessage(const std::string& message)
     return message;
 }
 
-bool isAdditionOnPointerSafe(std::uintptr_t address, int payloadLength)
+bool isAdditionOnPointerCausesOverflow(std::uintptr_t address, int payloadLength)
 {
-    return address + payloadLength < address;
+    if (payloadLength <= 0) {
+        return false;
+    }
+    return address + static_cast<std::size_t>(payloadLength) < address;
 }
 
 std::string getErrorString(int errorNumber)

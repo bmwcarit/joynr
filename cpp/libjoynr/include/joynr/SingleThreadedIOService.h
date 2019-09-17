@@ -34,64 +34,64 @@ class SingleThreadedIOService : public std::enable_shared_from_this<SingleThread
 public:
     SingleThreadedIOService(std::shared_ptr<Semaphore> destructed = nullptr)
             : std::enable_shared_from_this<SingleThreadedIOService>(),
-              ioService(),
-              ioServiceWork(),
-              ioServiceThread(),
-              destructed(destructed)
+              _ioService(),
+              _ioServiceWork(),
+              _ioServiceThread(),
+              _destructed(destructed)
     {
         JOYNR_LOG_TRACE(logger(), "Created.");
     }
 
     ~SingleThreadedIOService()
     {
-        if (destructed) {
-            destructed->notify();
+        if (_destructed) {
+            _destructed->notify();
         }
     }
 
     void start()
     {
-        ioServiceWork = std::make_unique<boost::asio::io_service::work>(ioService);
-        ioServiceThread = std::thread(&runIOService, shared_from_this());
+        _ioServiceWork = std::make_unique<boost::asio::io_service::work>(_ioService);
+        _ioServiceThread = std::thread(&runIOService, shared_from_this());
         JOYNR_LOG_TRACE(logger(), "Started.");
     }
 
     void stop()
     {
         JOYNR_LOG_TRACE(logger(), "Stopping.");
-        ioServiceWork.reset();
-        ioService.stop();
+        _ioServiceWork.reset();
+        _ioService.stop();
 
         // do not join here since we could be joining ourselves
         // the destructor here will not get called until thread has ended due to
         // shared_ptr reference count
 
-        if (std::this_thread::get_id() == ioServiceThread.get_id()) {
-            ioServiceThread.detach();
+        if (std::this_thread::get_id() == _ioServiceThread.get_id()) {
+            _ioServiceThread.detach();
             JOYNR_LOG_TRACE(logger(), "Same thread: detach!");
-        } else if (ioServiceThread.joinable()) {
+        } else if (_ioServiceThread.joinable()) {
             JOYNR_LOG_TRACE(logger(), "Other thread: join!");
-            ioServiceThread.join();
+            _ioServiceThread.join();
         }
     }
 
     boost::asio::io_service& getIOService()
     {
-        return ioService;
+        return _ioService;
     }
 
 private:
     static void runIOService(std::shared_ptr<SingleThreadedIOService> singleThreadedIOService)
     {
-        singleThreadedIOService->ioService.run();
+        singleThreadedIOService->_ioService.run();
     }
 
 private:
     ADD_LOGGER(SingleThreadedIOService)
-    boost::asio::io_service ioService;
-    std::unique_ptr<boost::asio::io_service::work> ioServiceWork;
-    std::thread ioServiceThread;
-    std::shared_ptr<Semaphore> destructed;
+    boost::asio::io_service _ioService;
+    std::unique_ptr<boost::asio::io_service::work> _ioServiceWork;
+    std::thread _ioServiceThread;
+    std::shared_ptr<Semaphore> _destructed;
 };
 
 } // namespace joynr

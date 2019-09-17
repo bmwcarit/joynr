@@ -73,17 +73,17 @@ public:
             std::vector<std::string> gbids = std::vector<std::string>()) noexcept
     {
         const std::string interfaceName = T::INTERFACE_NAME();
-        const std::string participantId = participantIdStorage->getProviderParticipantId(
+        const std::string participantId = _participantIdStorage->getProviderParticipantId(
                 domain, interfaceName, T::MAJOR_VERSION);
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
         provider->registerBroadcastListener(
-                std::make_shared<MulticastBroadcastListener>(participantId, publicationManager));
+                std::make_shared<MulticastBroadcastListener>(participantId, _publicationManager));
 
         const std::int64_t now =
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch()).count();
         const std::int64_t lastSeenDateMs = now;
-        const std::int64_t defaultExpiryDateMs = now + defaultExpiryIntervalMs;
+        const std::int64_t defaultExpiryDateMs = now + _defaultExpiryIntervalMs;
         const std::string defaultPublicKeyId("");
         joynr::types::Version providerVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
         auto customParameters = providerQos.getCustomParameters();
@@ -114,12 +114,12 @@ public:
             domain,
             interfaceName,
             majorVersion = T::MAJOR_VERSION,
-            dispatcherList = this->dispatcherList,
+            dispatcherList = this->_dispatcherList,
             caller,
-            participantIdStorage = util::as_weak_ptr(participantIdStorage),
-            messageRouter = util::as_weak_ptr(messageRouter),
+            participantIdStorage = util::as_weak_ptr(_participantIdStorage),
+            messageRouter = util::as_weak_ptr(_messageRouter),
             participantId,
-            discoveryProxy = util::as_weak_ptr(discoveryProxy),
+            discoveryProxy = util::as_weak_ptr(_discoveryProxy),
             entry = std::move(entry),
             awaitGlobalRegistration,
             onSuccess = std::move(onSuccess),
@@ -247,7 +247,7 @@ public:
             }
         };
 
-        for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
+        for (std::shared_ptr<IDispatcher> currentDispatcher : _dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
             assert(currentDispatcher != nullptr);
@@ -256,13 +256,13 @@ public:
 
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
-        messageRouter->addNextHop(participantId,
-                                  dispatcherAddress,
-                                  isGloballyVisible,
-                                  expiryDateMs,
-                                  isSticky,
-                                  std::move(onSuccessWrapper),
-                                  std::move(onError));
+        _messageRouter->addNextHop(participantId,
+                                   _dispatcherAddress,
+                                   isGloballyVisible,
+                                   expiryDateMs,
+                                   isSticky,
+                                   std::move(onSuccessWrapper),
+                                   std::move(onError));
 
         return participantId;
     }
@@ -282,7 +282,7 @@ public:
     {
         std::string interfaceName = T::INTERFACE_NAME();
         // Get the provider participant Id - the persisted provider Id has priority
-        std::string participantId = participantIdStorage->getProviderParticipantId(
+        std::string participantId = _participantIdStorage->getProviderParticipantId(
                 domain, interfaceName, T::MAJOR_VERSION);
         removeAsync(participantId,
                     [participantId, domain, interfaceName, onSuccess]() {
@@ -304,14 +304,14 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
-    std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-    std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::shared_ptr<ParticipantIdStorage> participantIdStorage;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress;
-    std::shared_ptr<IMessageRouter> messageRouter;
-    std::int64_t defaultExpiryIntervalMs;
-    std::weak_ptr<PublicationManager> publicationManager;
-    const std::string globalAddress;
+    std::vector<std::shared_ptr<IDispatcher>> _dispatcherList;
+    std::shared_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
+    std::shared_ptr<ParticipantIdStorage> _participantIdStorage;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress;
+    std::shared_ptr<IMessageRouter> _messageRouter;
+    std::int64_t _defaultExpiryIntervalMs;
+    std::weak_ptr<PublicationManager> _publicationManager;
+    const std::string _globalAddress;
     ADD_LOGGER(CapabilitiesRegistrar)
 };
 

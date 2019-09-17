@@ -41,7 +41,7 @@ public:
                                                        onMessagingStubClosedCallback) override;
 
 private:
-    std::shared_ptr<ITransportMessageSender> messageSender;
+    std::shared_ptr<ITransportMessageSender> _messageSender;
 };
 
 } // namespace joynr

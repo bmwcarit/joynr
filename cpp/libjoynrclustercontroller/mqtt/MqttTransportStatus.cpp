@@ -26,18 +26,18 @@ namespace joynr
 {
 
 MqttTransportStatus::MqttTransportStatus(std::shared_ptr<MosquittoConnection> mosquittoConnection)
-        : mosquittoConnection(std::move(mosquittoConnection)), availabilityChangedCallback()
+        : _mosquittoConnection(std::move(mosquittoConnection)), _availabilityChangedCallback()
 {
-    this->mosquittoConnection->registerReadyToSendChangedCallback([this](bool readyToSend) {
-        if (availabilityChangedCallback) {
-            availabilityChangedCallback(readyToSend);
+    this->_mosquittoConnection->registerReadyToSendChangedCallback([this](bool readyToSend) {
+        if (_availabilityChangedCallback) {
+            _availabilityChangedCallback(readyToSend);
         }
     });
 }
 
 MqttTransportStatus::~MqttTransportStatus()
 {
-    mosquittoConnection->registerReadyToSendChangedCallback(nullptr);
+    _mosquittoConnection->registerReadyToSendChangedCallback(nullptr);
 }
 
 bool MqttTransportStatus::isReponsibleFor(
@@ -48,13 +48,13 @@ bool MqttTransportStatus::isReponsibleFor(
 
 bool MqttTransportStatus::isAvailable()
 {
-    return mosquittoConnection->isReadyToSend();
+    return _mosquittoConnection->isReadyToSend();
 }
 
 void MqttTransportStatus::setAvailabilityChangedCallback(
         std::function<void(bool)> availabilityChangedCallback)
 {
-    this->availabilityChangedCallback = std::move(availabilityChangedCallback);
+    this->_availabilityChangedCallback = std::move(availabilityChangedCallback);
 }
 
 } // namespace joynr
