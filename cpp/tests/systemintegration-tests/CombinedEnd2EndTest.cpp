@@ -845,6 +845,33 @@ TEST_P(CombinedEnd2EndTest, buildProxyForNonExistentDomain_throwsDiscoveryExcept
     }
 }
 
+TEST_P(CombinedEnd2EndTest, registerAndLookupWithGbids_callMethod)
+{
+    const std::vector<std::string> gbids {"joynrdefaultgbid"};
+    // Provider: runtime1
+    types::ProviderQos providerQos;
+    auto testProvider = std::make_shared<MockTestProvider>();
+    std::string providerParticipantId = runtime1->registerProvider<tests::testProvider>(
+                domainName, testProvider, providerQos, true, true, gbids);
+
+    // Proxy: runtime2
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
+    std::uint64_t qosRoundTripTTL = 40000;
+    std::shared_ptr<tests::testProxy> testProxy(
+            proxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setGbids(gbids)
+                    ->build());
+
+    // Send a message and expect to get a result
+    std::int32_t result;
+    const std::vector<std::int32_t> numbers {1, 2};
+    testProxy->sumInts(result, numbers);
+    EXPECT_EQ(3, result);
+
+    runtime1->unregisterProvider(providerParticipantId);
+}
+
 TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
 {
 
