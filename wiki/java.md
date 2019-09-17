@@ -376,7 +376,7 @@ So, for example, if we change the code above to target two domains, we get:
 		runtime.getProxyBuilder(domains, <Interface>Proxy.class);
 ...
 ```
-By default providers are looked up in all known backends.  
+By default, providers are looked up in all known backends.  
 In case of global discovery, the default backend connection is used (identified by the
 first GBID configured at the cluster controller).  
 The discovery of providers can be restricted to certain backends by specifying one or more

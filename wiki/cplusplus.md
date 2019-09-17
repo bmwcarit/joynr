@@ -274,8 +274,16 @@ The consumer application instance must create one **proxy** per used Franca inte
 * **subscribe** or **unsubscribe** to its **attributes** or **update** a subscription
 * **subscribe** or **unsubscribe** to its **broadcasts** or **update** a subscription
 
-The ProxyBuilder requires the provider's domain. Optionally, **messagingQos** and
-**discoveryQos** settings can be specified if the default settings are not suitable.
+The ProxyBuilder requires the provider's domain. Optionally, **messagingQos**, **discoveryQos** and
+**GBID** settings can be specified if the default settings are not suitable.
+
+By default, providers are looked up in all known backends.  
+In case of global discovery, the default backend connection is used (identified by the
+first GBID configured at the cluster controller).  
+The discovery of providers can be restricted to certain backends by specifying one or more
+global backend ids (GBIDs) using the setGbids(gbids) API.  
+If setGbids(gbids) API is used, then the global discovery will take place over the
+connection to the backend identified by the first GBID in the list of provided GBIDs.
 
 In case no suitable provider can be found during discovery, a ```DiscoveryException``` or
 ```NoCompatibleProviderFoundException``` is thrown.
@@ -283,8 +291,9 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 ```cpp
     DiscoveryQos discoveryQos;
     MessagingQos messagingQos;
+    std::vector<std::string> gbids;
 
-    // setup discoveryQos, messagingQos attributes
+    // setup optional discoveryQos, messagingQos, gbids attributes as required
 
     std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
@@ -293,6 +302,7 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
         std::shared_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder
             ->setMessagingQos(messagingQos) // optional
             ->setDiscoveryQos(discoveryQos) // optional
+            ->setGbids(gbids)               // optional
             ->build();
 
         // call methods, subscribe to broadcasts etc.
@@ -868,12 +878,17 @@ asynchronously:
 The following optional parameters are supported:
 
 1. ```persist``` - specify whether the provider participantId shall be persisted (default true)
-2. ```awaitGlobalRegistration``` - registration only succeeds if global registration succeeds (default false)
-3. ```gbids``` - specify in which GBIDs (global backend IDs) the provider is to be registered (default empty array).
-   In case GBIDs are specified, the order matters since the first specified GBID determines the GBID over which
-   the cluster controller will carry out the registration process for all specified GBIDs.
-   If the parameter is omitted, the cluster controller uses the first GBID of its configured list of available GBIDs
-   for the registation process and registers the provider just for the default backend.
+2. ```awaitGlobalRegistration``` - registration only succeeds if global registration succeeds
+   (default false)
+3. ```gbids``` - specify in which GBIDs (global backend IDs) the provider is to be registered
+   (default empty array).  
+   In case GBIDs are specified, the order matters since the first specified GBID determines the
+   GBID over which the cluster controller will carry out the registration process for all specified
+   GBIDs. The passed GBIDs must be known to the cluster-controller, which means that they also have
+   to be in the cluster-controller's list of available GBIDs.  
+   If the parameter is omitted, the cluster controller uses the first GBID of its configured list
+   of available GBIDs for the registation process and registers the provider just for the default
+   backend.
 
 Note that the optional parameters are ordered, e.g. if providing 3. then 1. and 2. have to be provided as well.
 

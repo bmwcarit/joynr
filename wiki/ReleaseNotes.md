@@ -10,6 +10,7 @@ the versioning scheme [here](JoynrVersioning.md).
   parameter `gbids` for multiple backend support. Additionally the new APIs
   `registerProviderInAllBackends` and `registerProviderInAllBackendsAsync` have been
   introduced.
+* **[C++]** Add setGbids to ProxyBuilder to select non default GBIDs for provider discovery
 
 * **[JS]** The `joynr` npm package was fully converted to typescript. It's now shipped with
   additional `.d.ts` files supporting the usage of typescript and enabling auto-completion for pure
