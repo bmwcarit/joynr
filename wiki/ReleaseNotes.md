@@ -98,7 +98,34 @@ None.
 None. 
 
 ## Configuration property changes
-None.
+* **[Java]** Renamed property `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS` to
+  `PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Renamed property `PROPERTY_ARBITRATION_MINIMUMRETRYDELAY` to
+  `PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS`. The new identifier is
+  `joynr.discovery.minimumretryintervalms`. This change indicates that the property
+  is related to `DiscoveryQos.retryIntervalMs`.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** `DISCOVERYDIRECTORYURL` renamed to `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` and
+  `joynr.messaging.discoverydirectoryurl` changed to `joynr.messaging.gcd.url`.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** `DOMAINACCESSCONTROLLERURL` renamed to `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL`
+  and `joynr.messaging.domainaccesscontrollerurl` changed to `joynr.messaging.gdac.url`.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Added property `PROPERTY_GBIDS`, which is configurable with `joynr.messaging.gbids`.
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** `PROPERTY_KEY_MQTT_BROKER_URI` renamed to `PROPERTY_MQTT_BROKER_URIS` and
+  `joynr.messaging.mqtt.brokeruri` changed to `joynr.messaging.mqtt.brokeruris`.
+  Now, multiple Broker URIs can be configured.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC` renamed to `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC` and
+  `joynr.messaging.mqtt.keepalivetimersec` changed to `joynr.messaging.mqtt.keepalivetimerssec`.
+  Now, multiple keep alive timers can be configured.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC` renamed to `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC` and
+  `joynr.messaging.mqtt.connectiontimeoutssec` changed to `joynr.messaging.mqtt.connectiontimeoutssec`.
+  Now, multiple connection timeouts can be configured.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 1.8.2
 
@@ -129,34 +156,7 @@ None.
   messaging is used.
 
 ## Configuration property changes
-* **[Java]** Renamed property `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS` to
-  `PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`.  
-  See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** Renamed property `PROPERTY_ARBITRATION_MINIMUMRETRYDELAY` to
-  `PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS`. The new identifier is
-  `joynr.discovery.minimumretryintervalms`. This change indicates that the property
-  is related to `DiscoveryQos.retryIntervalMs`.  
-  See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** `DISCOVERYDIRECTORYURL` renamed to `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` and
-  `joynr.messaging.discoverydirectoryurl` changed to `joynr.messaging.gcd.url`.
-  See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** `DOMAINACCESSCONTROLLERURL` renamed to `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL`
-  and `joynr.messaging.domainaccesscontrollerurl` changed to `joynr.messaging.gdac.url`.
-  See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** Added property `PROPERTY_GBIDS`, which is configurable with `joynr.messaging.gbids`.
-  See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** `PROPERTY_KEY_MQTT_BROKER_URI` renamed to `PROPERTY_MQTT_BROKER_URIS` and
-  `joynr.messaging.mqtt.brokeruri` changed to `joynr.messaging.mqtt.brokeruris`.
-  Now, multiple Broker URIs can be configured.  
-  See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC` renamed to `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC` and
-  `joynr.messaging.mqtt.keepalivetimersec` changed to `joynr.messaging.mqtt.keepalivetimerssec`.
-  Now, multiple keep alive timers can be configured.  
-  See [Java Configuration Reference](JavaSettings.md) for more details.
-* **[Java]** `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC` renamed to `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC` and
-  `joynr.messaging.mqtt.connectiontimeoutssec` changed to `joynr.messaging.mqtt.connectiontimeoutssec`.
-  Now, multiple connection timeouts can be configured.  
-  See [Java Configuration Reference](JavaSettings.md) for more details.
+None.
 
 # joynr 1.8.0
 
