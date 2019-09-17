@@ -572,15 +572,137 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${MSVCC_AUTO_INCLUDE} /RTC1 /GS /MP")
 endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set(GNU_C_FLAGS " \
+        -pipe \
+        -fstack-protector-strong \
+        -Wall \
+        -Wextra \
+        -fwrapv \
+        -Wformat=2 \
+        -Wformat-signedness \
+        -Wmissing-include-dirs \
+        -Wmissing-braces \
+        -Wpacked \
+        -Wimplicit-fallthrough=5 \
+        -Wunused-parameter \
+        -Wuninitialized \
+        -Walloca \
+        -Wduplicated-branches \
+        -Wduplicated-cond \
+        -Wfloat-equal \
+        -Wshadow \
+        -Wcast-qual \
+        -Wsign-conversion \
+        -Wlogical-op \
+        -Wformat-security \
+        -Walloc-zero \
+        -Wcast-align \
+        -Wredundant-decls \
+        -Wdeclaration-after-statement \
+        -Wold-style-definition \
+        -Wmissing-prototypes \
+        -Wnested-externs \
+        -Werror=all \
+        -Werror=extra \
+        -Werror=format \
+        -Werror=format-signedness \
+        -Werror=missing-include-dirs \
+        -Werror=implicit-fallthrough \
+        -Werror=unused-parameter \
+        -Werror=uninitialized \
+        -Werror=alloca \
+        -Werror=duplicated-cond \
+        -Werror=float-equal \
+        -Werror=cast-qual \
+        -Werror=sign-conversion \
+        -Werror=logical-op \
+        -Werror=format-security \
+        -Werror=alloc-zero \
+        -Werror=cast-align \
+        -Werror=redundant-decls \
+        ")
+    if(CMAKE_C_COMPILER_VERSION VERSION_GREATER "9.1")
+        set(GNU_C_FLAGS "${GNU_C_FLAGS} -Werror=duplicated-branches")
+    endif(CMAKE_C_COMPILER_VERSION VERSION_GREATER "9.1")
+
+    if(${WIN32})
+        # This setting does not work in linux:
+        set(GNU_C_FLAGS "${GNU_C_FLAGS} ${GNU_C_FLAGS} -enable-auto-import")
+    else()
+        set(GNU_C_FLAGS "${GNU_C_FLAGS} ${GNU_C_FLAGS} -pthread")
+    endif(${WIN32})
+    # check GNU C compiler version
+    if(CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_C_COMPILER_VERSION VERSION_EQUAL "4.9")
+        add_definitions(-D_GLIBC_USE_NANOSLEEP)
+    else()
+        message(FATAL_ERROR "a gcc compiler with a version higher than 4.9 is needed.")
+    endif(CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_C_COMPILER_VERSION VERSION_EQUAL "4.9")
+endif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(GNU_CXX_FLAGS "-pipe")
-    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wall -Wunused-value -Wunused -Wcast-qual -Wpointer-arith")
-    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k")
-    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wno-format-extra-args -Wformat-nonliteral -Wformat=2 -Winit-self")
-    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs")
-    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector")
-    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Wformat-security")
-    set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wfatal-errors")
+    set(GNU_CXX_FLAGS " \
+        -pipe \
+        -Wunused-value \
+        -Wunused \
+        -Wpointer-arith \
+        -Wformat-y2k \
+        -Wno-format-extra-args \
+        -Wformat-nonliteral \
+        -Winit-self \
+        -Winvalid-pch \
+        -Wunsafe-loop-optimizations \
+        -Wstack-protector \
+        -Wswitch-enum \
+        -Wfatal-errors \
+        -D_GLIBCXX_ASSERTIONS \
+        -fstack-protector-strong \
+        -Wall \
+        -Wextra \
+        -fwrapv \
+        -Wformat=2 \
+        -Wformat-signedness \
+        -Wmissing-include-dirs \
+        -Wmissing-braces \
+        -Wpacked \
+        -Wimplicit-fallthrough=5 \
+        -Wunused-parameter \
+        -Wuninitialized \
+        -Walloca \
+        -Wduplicated-branches \
+        -Wduplicated-cond \
+        -Wfloat-equal \
+        -Wshadow \
+        -Wcast-qual \
+        -Wsign-conversion \
+        -Wlogical-op \
+        -Wformat-security \
+        -Walloc-zero \
+        -Wcast-align \
+        -Wredundant-decls \
+        -Werror=all \
+        -Werror=extra \
+        -Werror=format \
+        -Werror=format-signedness \
+        -Werror=missing-include-dirs \
+        -Werror=implicit-fallthrough \
+        -Werror=unused-parameter \
+        -Werror=uninitialized \
+        -Werror=alloca \
+        -Werror=duplicated-cond \
+        -Werror=float-equal \
+        -Werror=cast-qual \
+        -Werror=sign-conversion \
+        -Werror=logical-op \
+        -Werror=format-security \
+        -Werror=alloc-zero \
+        -Werror=cast-align \
+        -Werror=redundant-decls \
+        ")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "9.1")
+        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Werror=duplicated-branches")
+    endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "9.1")
+
     if(${WIN32})
             # This setting does not work in linux:
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -enable-auto-import")
