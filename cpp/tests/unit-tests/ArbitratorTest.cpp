@@ -63,7 +63,7 @@ static const std::string interfaceName("unittest-interface");
 static const std::vector<std::string> gbids {"testGbid1", "testGbid2", "testGbid3"};
 static const std::string exceptionMsgNoEntriesFound =
         "No entries found for domain: " + domain + ", interface: " + interfaceName;
-static std::string getExcpetionMsgUnableToLookup(
+static std::string getExceptionMsgUnableToLookup(
         const exceptions::JoynrException& exception,
         const std::vector<std::string>& gbids,
         const std::string& participantId = "") {
@@ -1403,7 +1403,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
 
     if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
         const std::string participantId = "unittests-participantId";
-        expectedExceptionMsg = getExcpetionMsgUnableToLookup(expectedException, emptyGbidsVector, participantId);
+        expectedExceptionMsg = getExceptionMsgUnableToLookup(expectedException, emptyGbidsVector, participantId);
         discoveryQos.addCustomParameter("fixedParticipantId", participantId);
 
         auto mockFutureFixedPartId1 =
@@ -1419,7 +1419,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
                 .WillOnce(Return(mockFutureFixedPartId1))
                 .WillRepeatedly(Return(mockFutureFixedPartId2));
     } else {
-        expectedExceptionMsg = getExcpetionMsgUnableToLookup(expectedException, emptyGbidsVector);
+        expectedExceptionMsg = getExceptionMsgUnableToLookup(expectedException, emptyGbidsVector);
         if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::KEYWORD) {
             discoveryQos.addCustomParameter("keyword", "keywordValue");
         }
