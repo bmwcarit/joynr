@@ -26,24 +26,22 @@
 #include <string>
 
 #include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/IKeychain.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
-#include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/ParticipantIdStorage.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ProxyBuilder.h"
-#include "joynr/ProxyFactory.h"
-#include "joynr/PublicationManager.h"
 #include "joynr/SystemServicesSettings.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/system/DiscoveryProxy.h"
 #include "joynr/Settings.h"
 
 namespace joynr
 {
 
+class IKeychain;
 class SingleThreadedIOService;
+class LocalDiscoveryAggregator;
+class ProxyFactory;
+class ParticipantIdStorage;
+class PublicationManager;
 
 /**
  * @brief Class representing the central Joynr Api object,

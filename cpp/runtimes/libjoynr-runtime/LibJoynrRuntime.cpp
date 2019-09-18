@@ -29,6 +29,7 @@
 #include "joynr/MessageSender.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/LibJoynrMessageRouter.h"
+#include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/PublicationManager.h"

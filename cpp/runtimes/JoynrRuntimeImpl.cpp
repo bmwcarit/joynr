@@ -20,7 +20,12 @@
 
 #include "joynr/IKeychain.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/ParticipantIdStorage.h"
+#include "joynr/ProxyFactory.h"
+#include "joynr/PublicationManager.h"
 #include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/DiscoveryProxy.h"
 #include "joynr/system/IRouting.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 

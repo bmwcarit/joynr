@@ -33,6 +33,7 @@
 #include "joynr/IMessageRouter.h"
 #include "joynr/IProxyBuilder.h"
 #include "joynr/IRequestCallerDirectory.h"
+#include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
