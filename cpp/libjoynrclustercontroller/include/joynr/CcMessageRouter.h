@@ -26,8 +26,7 @@
 #include <memory>
 #include <string>
 
-#include <boost/asio/io_service.hpp>
-
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"

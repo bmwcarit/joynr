@@ -26,8 +26,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include <boost/asio/io_service.hpp>
-
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/DelayedRunnable.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"

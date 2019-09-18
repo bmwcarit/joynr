@@ -25,7 +25,6 @@
 #include <typeinfo>
 #include <unordered_set>
 
-#include <boost/asio/io_service.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
@@ -33,6 +32,7 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/optional.hpp>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"

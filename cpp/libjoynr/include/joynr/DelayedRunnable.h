@@ -21,8 +21,7 @@
 
 #include <functional>
 
-#include <boost/asio/io_service.hpp>
-
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
 

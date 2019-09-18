@@ -29,8 +29,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/asio/io_service.hpp>
-
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/ISubscriptionManager.h"
 
 #include "joynr/JoynrExport.h"

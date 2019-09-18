@@ -26,9 +26,9 @@
 #include <string>
 #include <vector>
 
-#include <boost/asio/io_service.hpp>
 #include <boost/optional.hpp>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/BroadcastSubscriptionRequestInformation.h"
 #include "joynr/DelayedScheduler.h"

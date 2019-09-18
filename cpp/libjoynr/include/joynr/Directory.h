@@ -27,8 +27,8 @@
 #include <unordered_map>
 
 #include <boost/asio/error.hpp>
-#include <boost/asio/io_service.hpp>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/IReplyCaller.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"

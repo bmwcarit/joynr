@@ -23,7 +23,7 @@
 #include <functional>
 #include <memory>
 
-#include <boost/asio/io_service.hpp>
+#include "joynr/BoostIoserviceForwardDecl.h"
 
 namespace boost
 {

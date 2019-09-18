@@ -28,9 +28,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/CapabilitiesStorage.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
