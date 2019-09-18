@@ -21,16 +21,9 @@
 
 #include <functional>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

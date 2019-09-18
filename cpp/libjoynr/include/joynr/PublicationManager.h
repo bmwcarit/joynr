@@ -28,6 +28,7 @@
 
 #include <boost/optional.hpp>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/BroadcastSubscriptionRequestInformation.h"
 #include "joynr/DelayedScheduler.h"
@@ -42,14 +43,6 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionRequestInformation.h"
 #include "joynr/ThreadSafeMap.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

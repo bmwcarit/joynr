@@ -29,6 +29,7 @@
 
 #include <boost/asio/steady_timer.hpp>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/CapabilitiesStorage.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
@@ -44,14 +45,6 @@
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 #include "libjoynrclustercontroller/capabilities-client/ICapabilitiesClient.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

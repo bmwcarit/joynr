@@ -26,18 +26,11 @@
 #include <memory>
 #include <string>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

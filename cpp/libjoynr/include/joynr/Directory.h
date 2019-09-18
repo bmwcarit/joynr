@@ -28,6 +28,7 @@
 
 #include <boost/asio/error.hpp>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/IReplyCaller.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"
@@ -35,14 +36,6 @@
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/serializer/Serializer.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

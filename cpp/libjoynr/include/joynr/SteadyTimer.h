@@ -23,12 +23,10 @@
 #include <functional>
 #include <memory>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
+
 namespace boost
 {
-namespace asio
-{
-class io_service;
-} // namespace asio
 namespace system
 {
 class error_code;

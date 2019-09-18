@@ -24,7 +24,6 @@
 #include <chrono>
 #include <functional>
 
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <websocketpp/client.hpp>
 #include <websocketpp/config/asio_client.hpp>
@@ -32,6 +31,7 @@
 #include <websocketpp/uri.hpp>
 
 #include "IWebSocketPpClient.h"
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"

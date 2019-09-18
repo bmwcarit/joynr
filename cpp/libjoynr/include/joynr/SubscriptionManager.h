@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/ISubscriptionManager.h"
 
 #include "joynr/JoynrExport.h"
@@ -38,14 +39,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Runnable.h"
 #include "joynr/ThreadSafeMap.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {

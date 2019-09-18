@@ -31,19 +31,12 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/optional.hpp>
 
+#include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
-
-namespace boost
-{
-namespace asio
-{
-class io_service;
-} // namespace asio
-} // namespace boost
 
 namespace joynr
 {
