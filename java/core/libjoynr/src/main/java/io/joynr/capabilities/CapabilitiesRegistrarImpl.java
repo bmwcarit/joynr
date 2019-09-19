@@ -92,7 +92,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                          String[] gbids,
                                          boolean awaitGlobalRegistration) {
         DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
-        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback();
+        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback(discoveryEntry.getParticipantId());
         return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration, gbids);
     }
 
@@ -102,7 +102,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                    ProviderQos providerQos,
                                                    boolean awaitGlobalRegistration) {
         DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
-        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback();
+        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback(discoveryEntry.getParticipantId());
         return localDiscoveryAggregator.addToAll(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
@@ -131,22 +131,26 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         return discoveryEntry;
     }
 
-    private CallbackWithModeledError<Void, DiscoveryError> buildCallback() {
+    private CallbackWithModeledError<Void, DiscoveryError> buildCallback(final String participantId) {
         return new CallbackWithModeledError<Void, DiscoveryError>() {
             @Override
             public void onSuccess(@CheckForNull Void result) {
-
+                logger.trace("Successfully registered provider with participantId={}", participantId);
             }
 
             @Override
             public void onFailure(JoynrRuntimeException runtimeException) {
-                logger.error("Unexpected Error while registering Provider:", runtimeException);
+                logger.error("Error while registering provider with participantId={}:",
+                             participantId,
+                             runtimeException);
 
             }
 
             @Override
             public void onFailure(DiscoveryError errorEnum) {
-                logger.error("Unexpected Error while registering Provider:", errorEnum);
+                logger.error("DiscoveryError while registering provider with participantId={}: {}",
+                             participantId,
+                             errorEnum);
             }
         };
     }
@@ -160,11 +164,12 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         Callback<Void> callback = new Callback<Void>() {
             @Override
             public void onSuccess(@CheckForNull Void result) {
+                logger.trace("Successfully unregistered provider with participantId={}", participantId);
             }
 
             @Override
             public void onFailure(JoynrRuntimeException error) {
-                logger.error("Error while unregistering provider: ", error);
+                logger.error("Error while unregistering provider with participantId={}: ", participantId, error);
             }
         };
         providerDirectory.remove(participantId);
