@@ -407,7 +407,7 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
     joynr::types::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
     auto localCapabilities = searchLocalCache(interfaceAddresses);
-    auto globalCapabilities =
+    auto cachedCapabilities =
             scope == types::DiscoveryScope::LOCAL_ONLY
                     ? std::vector<types::DiscoveryEntry>{}
                     : searchGlobalCache(interfaceAddresses,
@@ -416,7 +416,7 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 
     return callReceiverIfPossible(scope,
                                   std::move(localCapabilities),
-                                  std::move(globalCapabilities),
+                                  std::move(cachedCapabilities),
                                   std::move(callback));
 }
 
@@ -428,9 +428,9 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 {
     joynr::types::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
-    boost::optional<types::DiscoveryEntry> globalCapability = searchCaches(
+    boost::optional<types::DiscoveryEntry> localOrCachedCapability = searchCaches(
             participantId, scope, gbids, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()));
-    auto localCapabilities = optionalToVector(std::move(globalCapability));
+    auto localCapabilities = optionalToVector(std::move(localOrCachedCapability));
     std::vector<types::DiscoveryEntry> globalCapabilities(localCapabilities);
 
     return callReceiverIfPossible(scope,
