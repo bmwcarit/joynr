@@ -197,7 +197,7 @@ void LocalCapabilitiesDirectory::addInternal(
             insertInGlobalLookupCache(discoveryEntry, gbids);
         }
         // register locally
-        insertInLocallyRegisteredCapabilitiesCache(discoveryEntry);
+        insertInLocalCapabilitiesStorage(discoveryEntry);
         // Inform observers
         informObserversOnAdd(discoveryEntry);
 
@@ -283,7 +283,7 @@ void LocalCapabilitiesDirectory::addInternal(
                                thisSharedPtr->countGlobalCapabilities());
                 if (awaitGlobalRegistration) {
                     thisSharedPtr->insertInGlobalLookupCache(globalDiscoveryEntry, gbids);
-                    thisSharedPtr->insertInLocallyRegisteredCapabilitiesCache(globalDiscoveryEntry);
+                    thisSharedPtr->insertInLocalCapabilitiesStorage(globalDiscoveryEntry);
                     if (onSuccess) {
                         onSuccess();
                     }
@@ -1422,7 +1422,7 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
 /**
  * Private convenience methods.
  */
-void LocalCapabilitiesDirectory::insertInLocallyRegisteredCapabilitiesCache(
+void LocalCapabilitiesDirectory::insertInLocalCapabilitiesStorage(
         const types::DiscoveryEntry& entry)
 {
     std::lock_guard<std::recursive_mutex> lock(cacheLock);
