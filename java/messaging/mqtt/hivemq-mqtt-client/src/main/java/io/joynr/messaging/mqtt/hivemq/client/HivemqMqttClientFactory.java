@@ -60,6 +60,7 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.reactivex.schedulers.Schedulers;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -87,6 +88,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap;
     private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
     private final boolean cleanSession;
+    private final MqttStatusReceiver mqttStatusReceiver;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -125,6 +127,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private List<String> cipherSuiteList;
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                    @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap,
@@ -132,7 +135,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                    @Named(MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP) HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap,
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
-                                   MqttClientIdProvider mqttClientIdProvider) {
+                                   MqttClientIdProvider mqttClientIdProvider,
+                                   MqttStatusReceiver mqttStatusReceiver) {
         this.ownAddress = ownAddress;
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
         this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
@@ -143,6 +147,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         sendingMqttClients = new HashMap<>(); // gbid to client
         receivingMqttClients = new HashMap<>(); // gbid to client
         this.cleanSession = cleanSession;
+        this.mqttStatusReceiver = mqttStatusReceiver;
     }
 
     @Override
@@ -217,7 +222,9 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                        cleanSession,
                                                        mqttGbidToConnectionTimeoutSecMap.get(gbid));
         resubscribeHandler.setClient(result);
+        resubscribeHandler.setMqttStatusReceiver(mqttStatusReceiver);
         disconnectedListener.setClient(result);
+        disconnectedListener.setMqttStatusReceiver(mqttStatusReceiver);
         return result;
     }
 
@@ -300,13 +307,20 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         private HivemqMqttClient client;
 
+        private MqttStatusReceiver mqttStatusReceiver;
+
         void setClient(HivemqMqttClient client) {
             this.client = client;
+        }
+
+        void setMqttStatusReceiver(MqttStatusReceiver mqttStatusReceiver) {
+            this.mqttStatusReceiver = mqttStatusReceiver;
         }
 
         @Override
         public void onConnected(MqttClientConnectedContext context) {
             client.resubscribe();
+            mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
         }
 
     }
@@ -315,13 +329,20 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         private HivemqMqttClient client;
 
+        private MqttStatusReceiver mqttStatusReceiver;
+
         void setClient(HivemqMqttClient client) {
             this.client = client;
+        }
+
+        void setMqttStatusReceiver(MqttStatusReceiver mqttStatusReceiver) {
+            this.mqttStatusReceiver = mqttStatusReceiver;
         }
 
         @Override
         public void onDisconnected(MqttClientDisconnectedContext context) {
             logger.info("Hive MQTT Client {} disconnected: {}", client, context);
+            mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
             client.incrementDisconnectCount();
         }
 
