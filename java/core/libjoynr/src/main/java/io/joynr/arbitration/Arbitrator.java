@@ -71,7 +71,7 @@ public class Arbitrator {
     private Version interfaceVersion;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
-    private final Map<String, Set<Version>> discoveredVersions = new HashMap<>();
+    private final Map<String, Set<Version>> discoveredVersionsByDomainMap = new HashMap<>();
     private String[] gbids;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -208,30 +208,34 @@ public class Arbitrator {
                 } else {
                     reason = exception;
                 }
-            } else if (discoveredVersions == null || discoveredVersions.isEmpty()) {
+            } else if (discoveredVersionsByDomainMap == null || discoveredVersionsByDomainMap.isEmpty()) {
                 reason = new DiscoveryException("Unable to find provider in time: interface: " + interfaceName
                         + " domains: " + domains);
             } else {
-                reason = noCompatibleProviderFound(discoveredVersions);
+                reason = noCompatibleProviderFound();
             }
             arbitrationListener.onError(reason);
         }
     }
 
-    private Throwable noCompatibleProviderFound(Map<String, Set<Version>> discoveredVersions) {
+    private Throwable noCompatibleProviderFound() {
         Throwable reason = null;
         if (domains.size() == 1) {
-            if (discoveredVersions.size() != 1) {
+            if (discoveredVersionsByDomainMap.size() != 1) {
                 reason = new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
             } else {
                 reason = new NoCompatibleProviderFoundException(interfaceName,
                                                                 interfaceVersion,
-                                                                discoveredVersions.keySet().iterator().next(),
-                                                                discoveredVersions.values().iterator().next());
+                                                                discoveredVersionsByDomainMap.keySet()
+                                                                                             .iterator()
+                                                                                             .next(),
+                                                                discoveredVersionsByDomainMap.values()
+                                                                                             .iterator()
+                                                                                             .next());
             }
         } else if (domains.size() > 1) {
             Map<String, NoCompatibleProviderFoundException> exceptionsByDomain = new HashMap<>();
-            for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersions.entrySet()) {
+            for (Map.Entry<String, Set<Version>> versionsByDomainEntry : discoveredVersionsByDomainMap.entrySet()) {
                 exceptionsByDomain.put(versionsByDomainEntry.getKey(),
                                        new NoCompatibleProviderFoundException(interfaceName,
                                                                               interfaceVersion,
@@ -250,7 +254,8 @@ public class Arbitrator {
         result = prime * result + (int) (arbitrationDeadline ^ (arbitrationDeadline >>> 32));
         result = prime * result + ((arbitrationResult == null) ? 0 : arbitrationResult.hashCode());
         result = prime * result + ((arbitrationStatus == null) ? 0 : arbitrationStatus.hashCode());
-        result = prime * result + ((discoveredVersions == null) ? 0 : discoveredVersions.hashCode());
+        result = prime * result
+                + ((discoveredVersionsByDomainMap == null) ? 0 : discoveredVersionsByDomainMap.hashCode());
         result = prime * result + ((domains == null) ? 0 : domains.hashCode());
         result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
         result = prime * result + ((interfaceVersion == null) ? 0 : interfaceVersion.hashCode());
@@ -282,11 +287,11 @@ public class Arbitrator {
         if (arbitrationStatus != other.arbitrationStatus) {
             return false;
         }
-        if (discoveredVersions == null) {
-            if (other.discoveredVersions != null) {
+        if (discoveredVersionsByDomainMap == null) {
+            if (other.discoveredVersionsByDomainMap != null) {
                 return false;
             }
-        } else if (!discoveredVersions.equals(other.discoveredVersions)) {
+        } else if (!discoveredVersionsByDomainMap.equals(other.discoveredVersionsByDomainMap)) {
             return false;
         }
         if (domains == null) {
@@ -409,7 +414,7 @@ public class Arbitrator {
             }
             discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion,
                                                                      discoveryEntriesSet,
-                                                                     discoveredVersions);
+                                                                     discoveredVersionsByDomainMap);
             if (discoveryEntriesSet.isEmpty()) {
                 logger.debug(format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
                                     interfaceName,
