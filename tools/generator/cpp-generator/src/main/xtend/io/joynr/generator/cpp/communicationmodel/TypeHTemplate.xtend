@@ -80,12 +80,12 @@ public:
 	 * @brief MAJOR_VERSION The major version of this struct as specified in the
 	 * type collection or interface in the Franca model.
 	 */
-	static const std::uint32_t MAJOR_VERSION;
+	static const std::int32_t MAJOR_VERSION;
 	/**
 	 * @brief MINOR_VERSION The minor version of this struct as specified in the
 	 * type collection or interface in the Franca model.
 	 */
-	static const std::uint32_t MINOR_VERSION;
+	static const std::int32_t MINOR_VERSION;
 
 	// general methods
 
@@ -103,7 +103,7 @@ public:
 	 */
 	explicit «typeName»(
 			«FOR member: getMembersRecursive(type) SEPARATOR","»
-				const «member.typeName» &«member.joynrName»
+				const «member.typeName»& _«member.joynrName»
 			«ENDFOR»
 	);
 	«ENDIF»
@@ -173,7 +173,7 @@ public:
 	 */
 	bool operator==(const «typeName»& other) const
 	{
-	    return this->equals(other, joynr::util::MAX_ULPS);
+		return this->equals(other, joynr::util::MAX_ULPS);
 	}
 
 	/**
@@ -183,7 +183,7 @@ public:
 	 */
 	bool operator!=(const «typeName»& other) const
 	{
-	    return !(*this == other);
+		return !(*this == other);
 	}
 	«ENDIF»
 
@@ -215,7 +215,7 @@ public:
 		 * @brief Sets «joynrName.toFirstUpper»
 		 «appendDoxygenParameter(member, "*")»
 		 */
-		inline void set«joynrName.toFirstUpper»(const «member.typeName»& «joynrName») { this->«joynrName» = «joynrName»; }
+		inline void set«joynrName.toFirstUpper»(const «member.typeName»& _«joynrName») { this->«joynrName» = _«joynrName»; }
 	«ENDFOR»
 
 	/**

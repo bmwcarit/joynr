@@ -64,13 +64,13 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	val Map<FBasicTypeId,String> bMap = new HashMap<FBasicTypeId,String>();
 		bMap.put(FBasicTypeId::BOOLEAN, "false");
 		bMap.put(FBasicTypeId::INT8, "-1");
-		bMap.put(FBasicTypeId::UINT8, "-1");
+		bMap.put(FBasicTypeId::UINT8, "0");
 		bMap.put(FBasicTypeId::INT16, "-1");
-		bMap.put(FBasicTypeId::UINT16, "-1");
+		bMap.put(FBasicTypeId::UINT16, "0");
 		bMap.put(FBasicTypeId::INT32, "-1");
-		bMap.put(FBasicTypeId::UINT32, "-1");
+		bMap.put(FBasicTypeId::UINT32, "0");
 		bMap.put(FBasicTypeId::INT64, "-1");
-		bMap.put(FBasicTypeId::UINT64, "-1");
+		bMap.put(FBasicTypeId::UINT64, "0");
 		bMap.put(FBasicTypeId::FLOAT, "-1");
 		bMap.put(FBasicTypeId::DOUBLE, "-1");
 		bMap.put(FBasicTypeId::STRING, "\"\"");

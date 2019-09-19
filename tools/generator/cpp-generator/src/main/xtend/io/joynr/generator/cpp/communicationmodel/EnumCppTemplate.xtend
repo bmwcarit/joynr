@@ -52,8 +52,8 @@ class EnumCppTemplate extends EnumTemplate {
 
 «getNamespaceStarter(type, true)»
 
-const std::uint32_t «typeName»::MAJOR_VERSION = «majorVersion»;
-const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
+const std::int32_t «typeName»::MAJOR_VERSION = «majorVersion»;
+const std::int32_t «typeName»::MINOR_VERSION = «minorVersion»;
 
 std::string «typeName»::getLiteral(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) {
 	std::string literal;

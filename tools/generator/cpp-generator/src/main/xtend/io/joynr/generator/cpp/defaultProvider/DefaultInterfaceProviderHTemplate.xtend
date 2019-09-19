@@ -88,7 +88,7 @@ public:
 		«ENDIF»
 		«IF attribute.writable»
 			void set«attributeName.toFirstUpper»(
-					const «attribute.typeName»& «attributeName»,
+					const «attribute.typeName»& _«attributeName»,
 					std::function<void()> onSuccess,
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			) override;

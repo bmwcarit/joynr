@@ -76,7 +76,7 @@ public:
 	 * @brief parameterized constructor
 	 * @param provider The provider instance
 	 */
-	explicit «interfaceName»RequestCaller(std::shared_ptr<«interfaceName»Provider> provider);
+	explicit «interfaceName»RequestCaller(std::shared_ptr<«interfaceName»Provider> _provider);
 
 	/** @brief Destructor */
 	~«interfaceName»RequestCaller() override = default;

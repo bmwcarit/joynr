@@ -72,7 +72,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	«IF attribute.readable»
 		«produceSyncGetterSignature(attribute, syncClassName)»
 		{
-			auto runtimeSharedPtr = runtime.lock();
+			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
 				std::string errorMsg;
 				if (!runtimeSharedPtr) {
@@ -95,7 +95,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	«IF attribute.writable»
 		«produceSyncSetterSignature(attribute, syncClassName)»
 		{
-			auto runtimeSharedPtr = runtime.lock();
+			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
 				std::string errorMsg;
 				if (!runtimeSharedPtr) {
@@ -126,7 +126,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	 */
 	«produceSyncMethodSignature(method, syncClassName)»
 	{
-		auto runtimeSharedPtr = runtime.lock();
+		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || (connector==nullptr)) {
 			std::string errorMsg;
 			if (!runtimeSharedPtr) {

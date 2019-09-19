@@ -69,7 +69,7 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 	 */
 	«produceFireAndForgetMethodSignature(method, fireAndForgetClassName)»
 	{
-		auto runtimeSharedPtr = runtime.lock();
+		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || (connector==nullptr)) {
 			std::string errorMsg;
 			if (!runtimeSharedPtr) {

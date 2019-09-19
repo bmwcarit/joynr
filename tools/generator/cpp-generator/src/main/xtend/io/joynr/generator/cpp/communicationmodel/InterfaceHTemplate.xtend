@@ -102,12 +102,12 @@ public:
 	 * @brief MAJOR_VERSION The major version of this provider interface as specified in the
 	 * Franca model.
 	 */
-	static const std::uint32_t MAJOR_VERSION;
+	static const std::int32_t MAJOR_VERSION;
 	/**
 	 * @brief MINOR_VERSION The minor version of this provider interface as specified in the
 	 * Franca model.
 	 */
-	static const std::uint32_t MINOR_VERSION;
+	static const std::int32_t MINOR_VERSION;
 };
 
 «IF hasFireAndForgetMethods(francaIntf)»

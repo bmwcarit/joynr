@@ -67,8 +67,8 @@ const std::string& «interfaceName»Provider::INTERFACE_NAME()
 	return INTERFACE_NAME;
 }
 
-const std::uint32_t «interfaceName»Provider::MAJOR_VERSION = «majorVersion»;
-const std::uint32_t «interfaceName»Provider::MINOR_VERSION = «minorVersion»;
+const std::int32_t «interfaceName»Provider::MAJOR_VERSION = «majorVersion»;
+const std::int32_t «interfaceName»Provider::MINOR_VERSION = «minorVersion»;
 
 «getNamespaceEnder(francaIntf)»
 '''

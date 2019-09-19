@@ -76,7 +76,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 
 		«produceAsyncGetterSignature(attribute, asyncClassName)»
 		{
-			auto runtimeSharedPtr = runtime.lock();
+			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
 				std::string errorText;
 				if (!runtimeSharedPtr) {
@@ -109,7 +109,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 		 */
 		«produceAsyncSetterSignature(attribute, asyncClassName)»
 		{
-			auto runtimeSharedPtr = runtime.lock();
+			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
 				std::string errorText;
 				if (!runtimeSharedPtr) {
@@ -146,7 +146,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 		 */
 		«produceAsyncMethodSignature(francaIntf, method, asyncClassName)»
 		{
-			auto runtimeSharedPtr = runtime.lock();
+			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
 				std::string errorText;
 				if (!runtimeSharedPtr) {

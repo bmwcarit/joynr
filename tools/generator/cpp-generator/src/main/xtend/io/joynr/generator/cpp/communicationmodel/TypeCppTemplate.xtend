@@ -56,8 +56,8 @@ class TypeCppTemplate extends CompoundTypeTemplate {
 
 «getNamespaceStarter(type, true)»
 
-const std::uint32_t «typeName»::MAJOR_VERSION = «majorVersion»;
-const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
+const std::int32_t «typeName»::MAJOR_VERSION = «majorVersion»;
+const std::int32_t «typeName»::MINOR_VERSION = «minorVersion»;
 
 «typeName»::«typeName»()«IF !getMembersRecursive(type).empty»:«ENDIF»
 	«IF hasExtendsDeclaration(type)»
@@ -72,14 +72,14 @@ const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
 «IF !getMembersRecursive(type).empty»
 «typeName»::«typeName»(
 		«FOR member: getMembersRecursive(type) SEPARATOR ','»
-			const «member.typeName» &«member.joynrName»
+			const «member.typeName»& _«member.joynrName»
 		«ENDFOR»
 	):
 		«IF hasExtendsDeclaration(type)»
 			«val extendedType = getExtendedType(type)»
 			«extendedType.typeName»(
 			«FOR member: getMembersRecursive(extendedType) SEPARATOR ','»
-				«member.joynrName»
+				_«member.joynrName»
 			«ENDFOR»
 			)
 			«IF !getMembers(type).isEmpty()»
@@ -87,7 +87,7 @@ const std::uint32_t «typeName»::MINOR_VERSION = «minorVersion»;
 			«ENDIF»
 		«ENDIF»
 		«FOR member: getMembers(type) SEPARATOR ','»
-			«member.joynrName»(«member.joynrName»)
+			«member.joynrName»(_«member.joynrName»)
 		«ENDFOR»
 {
 }

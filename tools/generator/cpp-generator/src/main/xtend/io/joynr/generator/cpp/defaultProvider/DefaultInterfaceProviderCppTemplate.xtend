@@ -82,14 +82,14 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 	«ENDIF»
 	«IF attribute.writable»
 		void Default«interfaceName»Provider::set«attributeName.toFirstUpper»(
-				const «attribute.typeName»& «attributeName»,
+				const «attribute.typeName»& _«attributeName»,
 				std::function<void()> onSuccess,
 				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
 			std::ignore = onError;
-			this->«attributeName» = «attributeName»;
+			this->«attributeName» = _«attributeName»;
 			«IF attribute.notifiable»
-				«attributeName»Changed(«attributeName»);
+				«attributeName»Changed(_«attributeName»);
 			«ENDIF»
 			onSuccess();
 		}

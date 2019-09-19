@@ -61,10 +61,10 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 void «className»::handleArbitrationFinished(
 		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry
 ) {
-	connector = connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
-				domain,
-				proxyParticipantId,
-				qosSettings,
+	connector = _connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
+				_domain,
+				_proxyParticipantId,
+				_qosSettings,
 				providerDiscoveryEntry
 	);
 
@@ -75,7 +75,7 @@ void «className»::handleArbitrationFinished(
 	«var attributeName = attribute.joynrName»
 	«produceUnsubscribeFromAttributeSignature(attribute, className)»
 	{
-		auto runtimeSharedPtr = runtime.lock();
+		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || !connector) {
 			if (!runtimeSharedPtr) {
 				JOYNR_LOG_WARN(logger(), "proxy cannot unsubscribe from «className».«attributeName», "
@@ -91,7 +91,7 @@ void «className»::handleArbitrationFinished(
 	}
 
 	«produceUpdateAttributeSubscriptionSignature(attribute, className)» {
-		auto runtimeSharedPtr = runtime.lock();
+		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || !connector) {
 			std::string errorMsg;
 			if (!runtimeSharedPtr) {
@@ -115,7 +115,7 @@ void «className»::handleArbitrationFinished(
 	}
 
 	«produceSubscribeToAttributeSignature(attribute, className)» {
-		auto runtimeSharedPtr = runtime.lock();
+		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || !connector) {
 			std::string errorMsg;
 			if (!runtimeSharedPtr) {
@@ -143,7 +143,7 @@ void «className»::handleArbitrationFinished(
 	«var broadcastName = broadcast.joynrName»
 	«produceUnsubscribeFromBroadcastSignature(broadcast, className)»
 	{
-		auto runtimeSharedPtr = runtime.lock();
+		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr) {
 			JOYNR_LOG_WARN(logger(), "proxy cannot unsubscribe from «className».«broadcastName» broadcast, "
 					 "because the required runtime has been already destroyed.");
@@ -159,7 +159,7 @@ void «className»::handleArbitrationFinished(
 
 	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
 		std::string errorMsg;
-		auto runtimeSharedPtr = runtime.lock();
+		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr) {
 			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, "
 					 "because the required runtime has been already destroyed.";
@@ -207,7 +207,7 @@ void «className»::handleArbitrationFinished(
 
 	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
 		std::string errorMsg;
-		auto runtimeSharedPtr = runtime.lock();
+		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr) {
 			errorMsg = "proxy cannot subscribe to «className».«broadcastName» broadcast, "
 					 "because the required runtime has been already destroyed.";
