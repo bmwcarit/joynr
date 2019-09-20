@@ -18,6 +18,11 @@ Examples and additional information for GlobalCapabilitiesDirectory.fidl version
 * **LU**: Latency Uncritical (application), *deployed in one BE, connected to multiple Brokers*
 
 
+## Overview
+
+![Overview](images/gcd-in-multiple-be_draw.io.png)
+
+
 ## General
 
 * **All interface changes and their implementation must be backward compatible so that old joynr
