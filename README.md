@@ -53,5 +53,6 @@ Have a peek at our documentation for more information:
 	* [JavaScript Tutorial](wiki/JavaScriptTutorial.md) -- Make your first joynr JavaScript application
 * [Distribution](wiki/Distribution.md) -- How to get joynr
 * [Infrastructure](wiki/infrastructure.md) -- Setting up the joynr infrastucture components for your environment
+* [Multiple backends](wiki/multiple-backends.md) -- joynr with multiple backends (multiple global connections)
 * [Versioning scheme](wiki/JoynrVersioning.md) -- Meaning of joynr version numbers
 * [Release Notes](wiki/ReleaseNotes.md) -- All joynr releases and API changes at a glance
