@@ -32,11 +32,14 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.HashMap;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
@@ -230,12 +233,17 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
     private void setupSslConfig(Mqtt3ClientBuilder clientBuilder) {
         MqttClientSslConfigBuilder.Nested<? extends Mqtt3ClientBuilder> sslConfig = clientBuilder.sslConfig();
-
         if (cipherSuiteList != null && cipherSuiteList.size() > 0) {
             for (String cipherSuite : cipherSuiteList) {
                 logger.debug("Using cipher suite {}.", cipherSuite);
             }
             sslConfig.cipherSuites(cipherSuiteList);
+        } else {
+            List<String> cipherSuites = getEnabledCipherSuites();
+            for (String cipherSuite : cipherSuites) {
+                logger.debug("Using cipher suite {}.", cipherSuite);
+            }
+            sslConfig.cipherSuites(cipherSuites);
         }
 
         if (trustStorePath != null && trustStorePWD != null) {
@@ -265,6 +273,17 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             }
         }
         sslConfig.applySslConfig();
+    }
+
+    private List<String> getEnabledCipherSuites() {
+        try {
+            final SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, null, null);
+            final SSLEngine sslEngine = context.createSSLEngine();
+            return Arrays.asList(sslEngine.getEnabledCipherSuites());
+        } catch (Exception e) {
+            return Arrays.asList(new String[]{ "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" });
+        }
     }
 
     private KeyStore getKeystore(String storePath, String storePassword, String storeType) {
