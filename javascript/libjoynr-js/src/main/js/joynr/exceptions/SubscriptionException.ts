@@ -20,8 +20,8 @@ import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class SubscriptionException extends JoynrRuntimeException {
     public subscriptionId: string;
-    public name = "SubscriptionException";
 
+    public name = "";
     /**
      * Used for serialization.
      */
@@ -40,6 +40,12 @@ class SubscriptionException extends JoynrRuntimeException {
      */
     public constructor(settings: { detailMessage: string; subscriptionId: string }) {
         super(settings);
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "SubscriptionException"
+        });
         this.subscriptionId = settings && settings.subscriptionId;
     }
 

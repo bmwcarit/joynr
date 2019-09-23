@@ -21,8 +21,8 @@ import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class PublicationMissedException extends JoynrRuntimeException {
     public subscriptionId: string;
-    public name = "PublicationMissedException";
 
+    public name = "";
     /**
      * Used for serialization.
      */
@@ -40,10 +40,15 @@ class PublicationMissedException extends JoynrRuntimeException {
      */
     public constructor(settings: { detailMessage: string; subscriptionId: string }) {
         super(settings);
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "PublicationMissedException"
+        });
 
         checkProperty(settings.subscriptionId, "String", "settings.subscriptionId");
 
-        this.name = "PublicationMissedException";
         this.subscriptionId = settings.subscriptionId;
     }
 

@@ -22,11 +22,11 @@ import DiscoveryException from "./DiscoveryException";
 class NoCompatibleProviderFoundException extends DiscoveryException {
     public interfaceName: string;
     public discoveredVersions: Version[];
+    public name = "";
     /**
      * Used for serialization.
      */
     public _typeName = "joynr.exceptions.NoCompatibleProviderFoundException";
-    public name = "NoCompatibleProviderFoundException";
     /**
      * Constructor of NoCompatibleProviderFoundException object used for reporting
      * error conditions during discovery and arbitration when only providers
@@ -41,6 +41,12 @@ class NoCompatibleProviderFoundException extends DiscoveryException {
      */
     public constructor(settings: { detailMessage: string; interfaceName: string; discoveredVersions: Version[] }) {
         super(settings);
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "NoCompatibleProviderFoundException"
+        });
 
         this.discoveredVersions = settings.discoveredVersions;
         this.interfaceName = settings.interfaceName;

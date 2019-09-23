@@ -18,7 +18,7 @@
  */
 import { checkProperty } from "../util/UtilInternal";
 import JoynrException from "./JoynrException";
-const defaultMessage = "This is an application exception.";
+const defaultMessage = "ApplicationException with error: ";
 
 interface ErrorEnum {
     name: string;
@@ -27,7 +27,7 @@ interface ErrorEnum {
 
 class ApplicationException extends JoynrException {
     public error: any;
-    public name: string;
+    public name = "";
 
     /**
      * Used for serialization.
@@ -45,10 +45,18 @@ class ApplicationException extends JoynrException {
      * @param [settings.detailMessage] message containing details about the error
      */
     public constructor(settings: { detailMessage: string; error?: ErrorEnum }) {
-        settings.detailMessage = settings.detailMessage || defaultMessage;
-        super(settings);
+        super({
+            detailMessage: settings.detailMessage
+                ? `${settings.detailMessage} (error: ${JSON.stringify(settings.error)})`
+                : `${defaultMessage}${JSON.stringify(settings.error)}`
+        });
 
-        this.name = "ApplicationException";
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "ApplicationException"
+        });
         this._typeName = "joynr.exceptions.ApplicationException";
         this.error = settings.error;
 

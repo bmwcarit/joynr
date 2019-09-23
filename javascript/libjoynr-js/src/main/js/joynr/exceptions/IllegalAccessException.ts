@@ -20,7 +20,7 @@
 import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class IllegalAccessException extends JoynrRuntimeException {
-    public name = "IllegalAccessException";
+    public name = "";
     /**
      * Used for serialization.
      */
@@ -37,6 +37,12 @@ class IllegalAccessException extends JoynrRuntimeException {
      */
     public constructor(settings: { detailMessage: string }) {
         super(settings);
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "IllegalAccessException"
+        });
     }
 
     public static _typeName = "joynr.exceptions.IllegalAccessException";

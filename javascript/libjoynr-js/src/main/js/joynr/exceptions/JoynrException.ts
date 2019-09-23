@@ -18,8 +18,8 @@
  */
 class JoynrException extends Error {
     public detailMessage: string;
-    public name = "JoynrException";
 
+    public name = "";
     /**
      * Used for serialization.
      */
@@ -37,6 +37,12 @@ class JoynrException extends Error {
         super(settings.detailMessage);
         this.detailMessage = (settings && settings.detailMessage) || "";
         Error.captureStackTrace(this, this.constructor);
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "JoynrException"
+        });
     }
 
     public static _typeName = "joynr.exceptions.JoynrException";

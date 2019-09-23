@@ -19,8 +19,7 @@
 import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class DiscoveryException extends JoynrRuntimeException {
-    public name = "DiscoveryException";
-
+    public name = "";
     /**
      * Used for serialization.
      */
@@ -35,6 +34,12 @@ class DiscoveryException extends JoynrRuntimeException {
      */
     public constructor(settings: { detailMessage: string }) {
         super(settings);
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "DiscoveryException"
+        });
     }
 
     public static _typeName = "joynr.exceptions.DiscoveryException";

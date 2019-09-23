@@ -28,7 +28,7 @@ describe(`libjoynr-js.joynr.exceptions.JoynrException`, () => {
 
     it(`gets serialized without any additional properties`, () => {
         expect(JSON.stringify(exception)).toEqual(
-            `{"name":"JoynrException","_typeName":"joynr.exceptions.JoynrException","detailMessage":"${detailMessage}"}`
+            `{"_typeName":"joynr.exceptions.JoynrException","detailMessage":"${detailMessage}"}`
         );
     });
 

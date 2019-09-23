@@ -21,11 +21,11 @@ import { checkProperty, checkPropertyIfDefined } from "../util/UtilInternal";
 import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class MethodInvocationException extends JoynrRuntimeException {
+    public name = "";
     /**
      * The provider version information
      */
     public providerVersion?: Version;
-    public name = "MethodInvocationException";
     /**
      * Used for serialization.
      */
@@ -44,6 +44,12 @@ class MethodInvocationException extends JoynrRuntimeException {
      */
     public constructor(settings: { providerVersion?: Version; detailMessage: string }) {
         super(settings);
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "MethodInvocationException"
+        });
 
         this.providerVersion = settings.providerVersion;
         if (settings) {

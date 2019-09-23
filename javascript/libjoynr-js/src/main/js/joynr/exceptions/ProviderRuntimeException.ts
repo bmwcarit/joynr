@@ -19,7 +19,7 @@
 import JoynrRuntimeException from "./JoynrRuntimeException";
 
 class ProviderRuntimeException extends JoynrRuntimeException {
-    public name = "ProviderRuntimeException";
+    public name = "";
     /**
      * Used for serialization.
      */
@@ -35,6 +35,12 @@ class ProviderRuntimeException extends JoynrRuntimeException {
      */
     public constructor(settings: { detailMessage: string }) {
         super(settings);
+        Object.defineProperty(this, "name", {
+            enumerable: false,
+            configurable: false,
+            writable: true,
+            value: "ProviderRuntimeException"
+        });
     }
 
     public static _typeName = "joynr.exceptions.ProviderRuntimeException";
