@@ -102,7 +102,15 @@ Please refer to the language specific developer guides for further details on th
 * Javascript: [JavaScript Developer Guide](wiki/javascript.md#building-a-proxy)
 
 
-## Known limitations of multiple backends support in joynr
+## Known limitations and issues of multiple backends support in joynr
+
+
+### Mqtt Status Metrics are broken for multiple backends (Java/JEE)
+
+The joynr status metrics for MQTT (Java, JEE) are broken if multiple backends are configured:  
+The MQTT connection status for every backend is reported to the same status receiver. The different connections are not distinguished in the status receiver. I.e., ConnectionStatus.CONNECTED does not mean that the CC is connected to all configured backends and ConnectionStatus.NOT_CONNECTED does not mean that the CC is disconnected from all backends.
+
+Status metrics will be fixed in an upcoming release.
 
 
 ### Diamond discovery
@@ -126,4 +134,3 @@ If one or multiple consumers connected to the same CC want to create a proxy for
 4. The consumer(s) can use both proxies to communicate with the provider, but the communication for both proxies is performed via `GBID2`
 
 **It is not possible for two consumers at the same CC to communicate with the same provider (participantId) via different backends (GBIDs)**
-
