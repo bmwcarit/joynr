@@ -27,32 +27,36 @@ Have a peek at our documentation for more information:
 		used for modelling
 	* [joynr Code Generator](wiki/generator.md) -- Using the joynr Code Generator to generate code
 		from the Franca model files
+	* [Infrastructure](wiki/infrastructure.md) -- Setting up the joynr infrastructure components for your environment
+	* [Multiple backends](wiki/multiple-backends.md) -- joynr with multiple backends (multiple global connections)
+* Building joynr
 	* [Building joynr Java](wiki/java_building_joynr.md) -- Building joynr Java and common components
 		yourself
 	* [Building joynr C++](wiki/cpp_building_joynr.md) -- Building joynr C++ yourself
 	* [Building joynr JavaScript](wiki/javascript_building_joynr.md) -- Building joynr JavaScript yourself
-* Android
-	* [Android Developer Guide](wiki/Android.md) -- Developing Android application with joynr
-* Java
-	* [Java Developer Guide](wiki/java.md) -- Developing Java applications with joynr
-	* [JEE Developer Guide](wiki/jee.md) -- Developing JEE applications with joynr
-	* [Java Configuration Reference](wiki/JavaSettings.md) -- a reference of the available
-	  configuration options for Java and JEE joynr applications
-	* [Glassfish Settings](wiki/Glassfish-settings.md) -- Settings you need to run joynr backend
-	  services on Glassfish application servers
-* C++
-	* [C++ Developer Guide](wiki/cplusplus.md) -- Developing C++ applications with joynr
-	* [C++ cluster-controller Settings](wiki/ClusterControllerSettings.md) -- C++ cluster-controller settings
-* JavaScript
-	* [JavaScript Developer Guide](wiki/javascript.md) -- Developing JavaScript applications with joynr
+* Developer documentation
+	* Java and JEE
+		* [Java Developer Guide](wiki/java.md) -- Developing Java applications with joynr
+		* [Java Configuration Reference](wiki/JavaSettings.md) -- a reference of the available
+			configuration options for Java and JEE joynr applications
+		* [JEE Developer Guide](wiki/jee.md) -- Developing JEE applications with joynr
+		* [Glassfish Settings](wiki/Glassfish-settings.md) -- Settings you need to run joynr backend
+			services on Glassfish application servers
+	* Android
+		* [Android Developer Guide](wiki/Android.md) -- Developing Android applications with joynr
+	* C++
+		* [C++ Developer Guide](wiki/cplusplus.md) -- Developing C++ applications with joynr
+		* [C++ cluster-controller Settings](wiki/ClusterControllerSettings.md) -- C++ cluster-controller settings
+	* JavaScript / TypeScript
+		* [JavaScript Developer Guide](wiki/javascript.md) -- Developing JavaScript applications with joynr
+        * *For details about running the joynr Javascript tests see [joynr Javascript Testing](javascript_testing.md)*
 * Tutorials
-	* [Radio App Tutorial](wiki/Tutorial.md) -- Make your first joynr app: define a communication
-	interface, implement a provider, and create a consumer
+	* [Radio App Tutorial](wiki/Tutorial.md) -- Create your first joynr app: define a communication
+		interface, implement a provider, and create a consumer
 	* [Broadcast Tutorial](wiki/Broadcast-Tutorial.md) -- Learn about (selective) broadcasts and
-  implement a geocast
-	* [JavaScript Tutorial](wiki/JavaScriptTutorial.md) -- Make your first joynr JavaScript application
+		implement a geocast
+	* [JavaScript Tutorial](wiki/JavaScriptTutorial.md) -- Create your first joynr JavaScript application
 * [Distribution](wiki/Distribution.md) -- How to get joynr
-* [Infrastructure](wiki/infrastructure.md) -- Setting up the joynr infrastucture components for your environment
-* [Multiple backends](wiki/multiple-backends.md) -- joynr with multiple backends (multiple global connections)
 * [Versioning scheme](wiki/JoynrVersioning.md) -- Meaning of joynr version numbers
 * [Release Notes](wiki/ReleaseNotes.md) -- All joynr releases and API changes at a glance
+
