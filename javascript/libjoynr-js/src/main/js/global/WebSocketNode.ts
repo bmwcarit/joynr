@@ -50,7 +50,7 @@ class WebSocketNode extends ws {
         }
 
         if (useUnencryptedTls) {
-            clientOptions.ciphers = "eNULL";
+            clientOptions.ciphers = "eNULL:@SECLEVEL=0";
         }
 
         super(remoteUrl, clientOptions);

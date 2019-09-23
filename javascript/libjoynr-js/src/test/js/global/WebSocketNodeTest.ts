@@ -55,7 +55,7 @@ describe("websocket node", () => {
             key: keychainWithCerts.tlsKey,
             ca: keychainWithCerts.tlsCa,
             rejectUnauthorized: true,
-            ciphers: "eNULL",
+            ciphers: "eNULL:@SECLEVEL=0",
             checkServerIdentity
         });
     });
