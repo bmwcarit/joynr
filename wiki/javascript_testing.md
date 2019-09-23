@@ -3,8 +3,8 @@
 
 ## Testing environment
 
-All tests are run through the [jest](https://jestjs.io/) testing framework. The test runner is configured to be
-``jest-circus``, which is also developed by the ``jest`` team.  
+All tests are run through the [jest](https://jestjs.io/) testing framework. The test runner is
+configured to be ``jest-circus``, which is also developed by the ``jest`` team.  
 Tests are run directly against the typescript files without triggering a manual compilation to js.
 The compilation is embedded into the process by the ``ts-jest`` addon.
 
@@ -48,9 +48,10 @@ cd javascript/libjoynr-js
 mvn clean install -DskipTests=false
 ```
 
-**Note:** Running the maven commands does a lot more than running the tests (e.g. generating files from fidls, run the formatter), which makes it slow.
-Thus it should only be done once to prepare the environment.
-The preferred way to run tests is through npm. The commands are explained in the following sections.
+**Note:** Running the maven commands does a lot more than running the tests (e.g. generating files
+from fidls, run the formatter), which makes it slow. Thus it should only be done once to prepare the
+environment. The preferred way to run tests is through npm. The commands are explained in the
+following sections.
 
 ### Running tests
 **Note:** Here and in all following sections all paths (also in commands) are relative to <JOYNR_REPO>javascript/libjoynr-js.
@@ -135,7 +136,7 @@ The tests and their respective documentation can be found in ``<JOYNR_REPO>/test
 
 #### Test/release package
 
-The test/release package can be build using
+The test/release package can be built using
 ``npm run ts:package``
 
 This package is file referenced by the test package.json files of the multi language tests.
@@ -155,5 +156,6 @@ The joynr-generator npm module is a javascript wrapper script around
 ``joynr-generator-standalone.jar``.  
 It builds into the npm eco system and provides compilation of the generated ``.ts`` files to ``.js``.
 
-The joynr-generator is tested in joynr-generator-test.
+The joynr-generator is tested in <JOYNR_REPO>/javascript/joynr-generator-test.
 Use ``npm test`` to run all related tests.
+
