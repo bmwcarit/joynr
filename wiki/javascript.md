@@ -139,7 +139,7 @@ await joynr.shutdown();
 ## Provisioning
 
 The Typescript interface can be found in `"joynr/joynr/start/interface/Provisioning"`
-Textual explanation of most settings can be found in the [javascript tutorial](JavaScriptTutorial.md)
+Textual explanation of most settings can be found in the [javascript tutorial](JavaScriptSettings.md)
 
 # Building a Javascript consumer application
 
@@ -245,7 +245,7 @@ definition of additional custom message headers.
 The ttl for subscription requests is calculated from the ```expiryDateMs```
 in the [SubscriptionQos](#subscription-quality-of-service) settings.
 The ttl of internal joynr messages (e.g. provider discovery) can be set via the
-internalMessagingQosValue in the [provisioning settings](JavaScriptTutorial.md#provisioning)
+internalMessagingQosValue in the [provisioning settings](JavaScriptSettings.md)
 
 If no specific setting is given, the default roundtrip timeout is 60 seconds.
 The keys of custom message headers may contain ascii alphanumeric or hyphen.

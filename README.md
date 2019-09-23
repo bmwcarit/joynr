@@ -49,6 +49,8 @@ Have a peek at our documentation for more information:
 		* [C++ cluster-controller Settings](wiki/ClusterControllerSettings.md) -- C++ cluster-controller settings
 	* JavaScript / TypeScript
 		* [JavaScript Developer Guide](wiki/javascript.md) -- Developing JavaScript applications with joynr
+		* [JavaScript Configuration Reference](wiki/JavaScriptSettings.md) -- a reference of the available
+			configuration options for JavaScript and TypeScript joynr applications
         * *For details about running the joynr Javascript tests see [joynr Javascript Testing](javascript_testing.md)*
 * Tutorials
 	* [Radio App Tutorial](wiki/Tutorial.md) -- Create your first joynr app: define a communication

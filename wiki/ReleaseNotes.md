@@ -573,11 +573,11 @@ None.
   manipulate those objects freely. This allows joynr the usage of prototypes and thus saving many
   function allocations.
 * **[JS]** Fixed a bug where all joynr Runtimes were required. Added a description how to avoid the
-  same Problem when using browserify. See [Javascript Configuration Reference](JavaScriptTutorial.md)
+  same Problem when using browserify. See [Javascript Configuration Reference](JavaScriptSettings.md)
   for the detailed explanation.
 * **[JS]** Replaced log4javascript with a simplified implementation. The same configuration interface
   is still supported apart from some advanced options.
-  See [Javascript Configuration Reference](JavaScriptTutorial.md) for the detailed explanation.
+  See [Javascript Configuration Reference](JavaScriptSettings.md) for the detailed explanation.
 * **[JS]** Many other internal optimizations which avoid function allocations and thus unnecessary
   GC cycles.
 
@@ -697,7 +697,7 @@ None.
 * **[Java]** Discovery entries returned by the discovery service will update the routing table.
 
 ## Configuration property changes
-* **[JS]** See the [Javascript Configuration Reference](JavaScriptTutorial.md) for
+* **[JS]** See the [Javascript Configuration Reference](JavaScriptSettings.md) for
   details about the newly introduced properties:
   * `persistency`
     * `routingTable`
@@ -760,7 +760,7 @@ None.
   * `PROPERTY_KEY_MQTT_TRUSTSTORE_PATH`
   * `PROPERTY_KEY_MQTT_KEYSTORE_PWD`
   * `PROPERTY_KEY_MQTT_TRUSTSTORE_PWD`
-* **[JS]** See the [Javascript Configuration Reference](JavaScriptTutorial.md) for
+* **[JS]** See the [Javascript Configuration Reference](JavaScriptSettings.md) for
   details about the newly introduced properties:
   * `shutdownSettings`
     * `clearSubscriptionsEnabled`
@@ -938,7 +938,7 @@ None.
   too high, an additional delay will be introduced. Please make sure to set the
   resend intervall of your MQTT broker appropriately.
 * **[JS]** Made default discoveryQos configurable via provisioning. See the
-  [Javascript Configuration Reference](JavaScriptTutorial.md) for more details.
+  [Javascript Configuration Reference](JavaScriptSettings.md) for more details.
 * **[C++]** Made the following properties configurable. See
   default-messaging.settings for more details.
   * `discovery-default-retry-interval-ms`
