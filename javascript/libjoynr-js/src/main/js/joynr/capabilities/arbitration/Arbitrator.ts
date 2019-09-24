@@ -186,7 +186,7 @@ class Arbitrator {
     }): Promise<DiscoveryEntryWithMetaInfo[]> {
         // discover caps from local capabilities directory
         let incompatibleVersionsFound: Version[] = [];
-        const remainingTime = Date.now() + discoveryQos.discoveryTimeoutMs;
+        const arbitrationDeadline = Date.now() + discoveryQos.discoveryTimeoutMs;
         const discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
         let errorMsg: string | null = null;
         let firstLoop = true;
@@ -260,7 +260,7 @@ class Arbitrator {
                     errorMsg = error.message;
                 }
             }
-        } while (remainingTime - (Date.now() + discoveryRetryDelayMs) > 0);
+        } while (arbitrationDeadline - (Date.now() + discoveryRetryDelayMs) > 0);
 
         if (incompatibleVersionsFound.length > 0) {
             const message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
