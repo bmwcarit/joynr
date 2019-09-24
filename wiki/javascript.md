@@ -314,7 +314,7 @@ joynr.proxyBuilder.build<Proxy>(Proxy, {
 
     // call methods or setup event handlers which call methods
 }).catch((error) => {
-    // handle error
+    // handle error (usually DiscoveryException of NoCompatibleProviderFoundException)
 });
 ```
 
@@ -832,6 +832,8 @@ GlobalCapabilitiesDirectory instance in the backend of the first provided **GBID
 import joynr from "joynr";
 import ProviderQos from "joynr/generated/joynr/types/ProviderQos";
 import ProviderScope from "joynr/generated/joynr/types/ProviderScope";
+import ApplicationException = require("joynr/joynr/exceptions/ApplicationException");
+import DiscoveryError = require("joynr/generated/joynr/types/DiscoveryError");
 const providerQos = new ProviderQos({
   customParameters: [],
   priority: Date.now(),
@@ -846,15 +848,43 @@ const awaitGlobalRegistration = true;
 // for any filter of a broadcast with filter
 provider.«broadcast».addBroadcastFilter(new «Filter»BroadcastFilter());
 
-// setup «interface»ProviderQos
-await joynr.registration.register(
-{
-    domain,
-    provider,
-    providerQos,
-    awaitGlobalRegistration,
-    gbids
-});
+try {
+    await joynr.registration.register(
+    {
+        domain,
+        provider,
+        providerQos,
+        awaitGlobalRegistration,
+        gbids
+    });
+} catch (e) {
+    if (e instanceof ApplicationException) {
+        // handle modelled DiscoveryError
+        switch (e.error) {
+            case DiscoveryError.UNKNOWN_GBID:
+                // one of the selected GBIDs is not known
+                // either at the cluster-controller or at the GlobalCapabilitiesDirectory
+                break;
+            case DiscoveryError.INVALID_GBID:
+                // one of the selected GBIDs is invalid, e.g. empty or duplicated
+                break;
+            case DiscoveryError.INTERNAL_ERROR:
+                // other error at the cluster-controller or GlobalCapabilitiesDirectory
+                break;
+            case DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS:
+                // not applicable for provider registration
+                break;
+            case DiscoveryError.NO_ENTRY_FOR_PARTICIPANT:
+                // not applicable for provider registration
+                break;
+            default:
+                // handle default
+                break;
+        }
+    } else {
+        // handle other errors
+    }
+}
 ```
 
 ## Unregister a provider

@@ -323,9 +323,10 @@ Inside the ```run()``` method, the consumer application instance must create one
 * **subscribe** or **unsubscribe** to its **attributes** or **update** a subscription
 * **subscribe** or **unsubscribe** to its **broadcasts** or **update** a subscription
 
-In case no suitable provider can be found during discovery, a ```DiscoveryException``` or
-```NoCompatibleProviderFoundException``` is thrown.
-In case of communication errors, a ```JoynrCommunicationException``` is thrown.
+In case no suitable provider can be found during discovery, a `DiscoveryException` or
+`NoCompatibleProviderFoundException` is thrown.  
+In case of communication errors, a `JoynrRuntimeException` (usually `JoynrTimeoutException) is
+thrown.
 
 ```java
 @Override
@@ -346,10 +347,10 @@ public void run() {
             build();
         // call methods, subscribe to broadcasts etc.
         // enter some event loop
-    } catch (DiscoveryException e) {
+    } catch (DiscoveryException|NoCompatibleProviderFoundException e) {
         // no provider found
-    } catch (JoynrCommunicationException e) {
-        // could not send message
+    } catch (JoynrRuntimeException e) {
+        // handle other JoynrRuntimeException types, e.g. JoynrTimeoutException
     }
 }
 ```
@@ -1310,52 +1311,33 @@ public void run() {
         future.get();
     }
     catch (ApplicationException a) {
+        // handle modelled DiscoveryError
         switch ((DiscoveryError) a.getError()) {
             case DiscoveryError.UNKNOWN_GBID:
-                // handle error
+                // one of the selected GBIDs is not known
+                // either at the cluster-controller or at the GlobalCapabilitiesDirectory
+            case DiscoveryError.INVALID_GBID:
+                // one of the selected GBIDs is invalid, e.g. empty or duplicated
+                break;
             case DiscoveryError.INTERNAL_ERROR:
-                // handle error
-            ...
+                // other error at the cluster-controller or GlobalCapabilitiesDirectory
+            case DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS:
+                // not applicable for provider registration
+                break;
+            case DiscoveryError.NO_ENTRY_FOR_PARTICIPANT:
+                // not applicable for provider registration
+                break;
             default:
                 // handle default
         }
+    }
+    catch (JoynrRuntimeException e) {
+        // handle other errors, e.g. JoynrTimeoutException, ProviderRuntimeException
     }
 
     // loop here
 }
 ```
-
-### Register provider with fixed (custom) participantId
-
-By default, joynr generates a participantID for the provider instance. This participantID is
-persisted (see PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE in [Joynr Java Settings](JavaSettings.md))
-and reused when a provider for the same interface is registered again on the same domain
-(e.g. after a restart).
-
-A provider can also be registered with a fixed (predefined) participantID by adding a property to
-the joynrConfig, see [The main method](#the-main-method), before the runtimeModule is created.
-
-```java
-import io.joynr.capabilities.ParticipantIdKeyUtil;
-...
-public static void main(String[] args) {
-...
-    joynrConfig.setProperty(
-            ParticipantIdKeyUtil.getProviderParticipantIdKey(localDomain, <interface>Provider.class),
-            <customProviderParticipantID>);
-...
-}
-```
-
-The property key is also used as key in the persistence file. It is created as follows:
-`<JOYNR_PARTICIPANT_PREFIX><DOMAIN>.<INTERFACE_NAME>.v<MAJOR_VERSION>`
-It is strongly recommended to use the ParticipantIdKeyUtil to create the key as the key format might
-change again in the future.
-
-> Note:
-> The provided fixed participantId is only used if there is no entry in the persistence file.
-> If the provider has already been registered with a generated (default) participantId before, the
-> persistence file or the entry for the provider has to be deleted to enable the fixed participantId.
 
 ### Register provider in non-default backends
 
@@ -1380,15 +1362,7 @@ public void run() {
         future.get();
     }
     catch (ApplicationException a) {
-        switch ((DiscoveryError) a.getError()) {
-            case DiscoveryError.UNKNOWN_GBID:
-                // handle error
-            case DiscoveryError.INTERNAL_ERROR:
-                // handle error
-            ...
-            default:
-                // handle default
-        }
+        // handle modelled DiscoveryError, see above
     }
     catch (JoynrRuntimeException e) {
         // handle JoynrRuntimeException
@@ -1415,6 +1389,38 @@ public void run() {
 ...
 
 ```
+
+### Register provider with fixed (custom) participantId
+
+By default, joynr generates a participantID for the provider instance. This participantID is
+persisted (see PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE in [Joynr Java Settings](JavaSettings.md))
+and reused when a provider for the same interface is registered again on the same domain
+(e.g. after a restart).
+
+A provider can also be registered with a fixed (predefined) participantID by adding a property to
+the joynrConfig, see [The main method](#the-main-method), before the runtimeModule is created.
+
+```java
+import io.joynr.capabilities.ParticipantIdKeyUtil;
+...
+public static void main(String[] args) {
+...
+    joynrConfig.setProperty(
+            ParticipantIdKeyUtil.getProviderParticipantIdKey(localDomain, <interface>Provider.class),
+            <customProviderParticipantID>);
+...
+}
+```
+
+The property key is also used as key in the persistence file. It is created as follows:
+`<JOYNR_PARTICIPANT_PREFIX><DOMAIN>.<INTERFACE_NAME>.v<MAJOR_VERSION>`
+It is strongly recommended to use ParticipantIdKeyUtil to create the key, as the key format might
+change again in the future.
+
+> Note:
+> The provided fixed participantId is only used if there is no entry in the persistence file.
+> If the provider has already been registered with a generated (default) participantId before, the
+> persistence file or the entry for the provider has to be deleted to enable the fixed participantId.
 
 ### The shutdown method
 The ```shutdown``` method should be called on exit of the application. It should cleanly unregister

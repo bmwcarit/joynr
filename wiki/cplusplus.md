@@ -307,8 +307,10 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 
         // call methods, subscribe to broadcasts etc.
         // enter some event loop
-    } catch(joynr::exceptions::DiscoveryException& e) {
-        // error handling
+    } catch(const joynr::exceptions::NoCompatibleProviderFoundException& e) {
+        // no provider with compatible interface version found
+    } catch(const joynr::exceptions::DiscoveryException& e) {
+        // no provider found
     }
 ```
 
@@ -861,7 +863,7 @@ asynchronously:
     };
 
     auto onError = [](const exceptions::JoynrRuntimeException& exception) {
-        // Process the error here
+        // handle JoynrRuntimeException and subtypes, e.g. JoynrTimeoutException
     };
 
     runtime->registerProviderAsync<<Package>::<Interface>Provider>(
