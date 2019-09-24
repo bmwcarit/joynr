@@ -350,7 +350,7 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
         log("please pass a domain as argument");
         process.exit(1);
     }
-    if (process.env.runtime !== undefined) {
+    if (process.env.runtime === undefined) {
         log("please pass a runtime as argument");
         process.exit(1);
     }
