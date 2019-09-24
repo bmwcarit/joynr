@@ -18,7 +18,7 @@
  */
 
 import * as ArbitrationStrategyCollection from "../../../../../main/js/joynr/types/ArbitrationStrategyCollection";
-import DiscoveryEntry from "../../../../../main/js/generated/joynr/types/DiscoveryEntry";
+import DiscoveryEntryWithMetaInfo from "../../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo";
 import ProviderScope from "../../../../../main/js/generated/joynr/types/ProviderScope";
 import ProviderQos from "../../../../../main/js/generated/joynr/types/ProviderQos";
 import CustomParameter from "../../../../../main/js/generated/joynr/types/CustomParameter";
@@ -45,9 +45,9 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
         expect(typeof ArbitrationStrategyCollection.LastSeen).toBe("function");
     });
 
-    function getDiscoveryEntryList() {
+    function getDiscoveryEntryWithMetaInfoList() {
         return [
-            new DiscoveryEntry({
+            new DiscoveryEntryWithMetaInfo({
                 providerVersion: new Version({
                     majorVersion: 47,
                     minorVersion: 11
@@ -62,10 +62,11 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
                     supportsOnChangeSubscriptions: true
                 }),
                 participantId: "1",
+                isLocal: false,
                 publicKeyId: "",
                 expiryDateMs
             }),
-            new DiscoveryEntry({
+            new DiscoveryEntryWithMetaInfo({
                 providerVersion: new Version({
                     majorVersion: 47,
                     minorVersion: 11
@@ -80,10 +81,11 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
                     supportsOnChangeSubscriptions: true
                 }),
                 participantId: "1",
+                isLocal: false,
                 publicKeyId: "",
                 expiryDateMs
             }),
-            new DiscoveryEntry({
+            new DiscoveryEntryWithMetaInfo({
                 providerVersion: new Version({
                     majorVersion: 47,
                     minorVersion: 11
@@ -107,10 +109,11 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
                     supportsOnChangeSubscriptions: true
                 }),
                 participantId: "1",
+                isLocal: false,
                 publicKeyId: "",
                 expiryDateMs
             }),
-            new DiscoveryEntry({
+            new DiscoveryEntryWithMetaInfo({
                 providerVersion: new Version({
                     majorVersion: 47,
                     minorVersion: 11
@@ -134,10 +137,11 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
                     supportsOnChangeSubscriptions: true
                 }),
                 participantId: "1",
+                isLocal: false,
                 publicKeyId: "",
                 expiryDateMs
             }),
-            new DiscoveryEntry({
+            new DiscoveryEntryWithMetaInfo({
                 providerVersion: new Version({
                     majorVersion: 47,
                     minorVersion: 11
@@ -161,6 +165,7 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
                     supportsOnChangeSubscriptions: true
                 }),
                 participantId: "1",
+                isLocal: false,
                 publicKeyId: "",
                 expiryDateMs
             })
@@ -168,11 +173,13 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
     }
 
     it("Strategy 'Nothing' does nothing", () => {
-        expect(ArbitrationStrategyCollection.Nothing(getDiscoveryEntryList())).toEqual(getDiscoveryEntryList());
+        expect(ArbitrationStrategyCollection.Nothing(getDiscoveryEntryWithMetaInfoList())).toEqual(
+            getDiscoveryEntryWithMetaInfoList()
+        );
     });
 
     it("Strategy 'HighestPriority' includes all capability infos", () => {
-        const discoveryEntryList = getDiscoveryEntryList();
+        const discoveryEntryList = getDiscoveryEntryWithMetaInfoList();
         let discoveryEntryId: any;
         const highestPriority = ArbitrationStrategyCollection.HighestPriority(discoveryEntryList);
         for (discoveryEntryId in discoveryEntryList) {
@@ -183,7 +190,7 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
     });
 
     it("Strategy 'HighestPriority' sorts according to providerQos priority", () => {
-        const highestPriority = ArbitrationStrategyCollection.HighestPriority(getDiscoveryEntryList());
+        const highestPriority = ArbitrationStrategyCollection.HighestPriority(getDiscoveryEntryWithMetaInfoList());
         let i: any;
         for (i = 0; i < highestPriority.length - 1; ++i) {
             expect(highestPriority[i].qos.priority).toBeGreaterThan(highestPriority[i + 1].qos.priority);
@@ -191,7 +198,7 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
     });
 
     it("Strategy 'LastSeen' includes all capability infos", () => {
-        const discoveryEntryList = getDiscoveryEntryList();
+        const discoveryEntryList = getDiscoveryEntryWithMetaInfoList();
         let discoveryEntryId: any;
         const latestSeen = ArbitrationStrategyCollection.LastSeen(discoveryEntryList);
         for (discoveryEntryId in discoveryEntryList) {
@@ -202,7 +209,7 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
     });
 
     it("Strategy 'LastSeen' sorts according to lastSeenDateMs priority", () => {
-        const lastSeen = ArbitrationStrategyCollection.LastSeen(getDiscoveryEntryList());
+        const lastSeen = ArbitrationStrategyCollection.LastSeen(getDiscoveryEntryWithMetaInfoList());
         let i: any;
         for (i = 0; i < lastSeen.length - 1; ++i) {
             expect(lastSeen[i].lastSeenDateMs).toBeGreaterThan(lastSeen[i + 1].lastSeenDateMs);
@@ -215,7 +222,7 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
         let found: any;
         let qosParam: any;
         const keyword = "myKeyword";
-        const discoveryEntryList = getDiscoveryEntryList();
+        const discoveryEntryList = getDiscoveryEntryWithMetaInfoList();
         // The arbitrator only calls the strategy with the list
         // of capabillities, so Keyword should be tested with bind()
         // which however is not supported by PhantomJS 1

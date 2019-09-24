@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-import * as DiscoveryEntry from "../../generated/joynr/types/DiscoveryEntry";
 import * as DiscoveryEntryWithMetaInfo from "../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
 
 /**
@@ -28,7 +27,7 @@ import * as DiscoveryEntryWithMetaInfo from "../../generated/joynr/types/Discove
  * @returns an array of capabilities as it came in through the
  *          capabilities parameter
  */
-export function Nothing<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(capabilities: T[]): T[] {
+export function Nothing(capabilities: DiscoveryEntryWithMetaInfo[]): DiscoveryEntryWithMetaInfo[] {
     return capabilities;
 }
 
@@ -39,7 +38,7 @@ export function Nothing<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(c
  *
  * @returns an array of capabilities sorted by the highest priority
  */
-export function HighestPriority<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(capabilities: T[]): T[] {
+export function HighestPriority(capabilities: DiscoveryEntryWithMetaInfo[]): DiscoveryEntryWithMetaInfo[] {
     if (!Array.isArray(capabilities)) {
         throw new Error("provided argument capabilities is not of type Array");
     }
@@ -60,10 +59,7 @@ export function HighestPriority<T extends DiscoveryEntry = DiscoveryEntryWithMet
  * @param keyword the keyword to search for
  * @returns an array of capabilities sorted by the highest priority
  */
-export function Keyword<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(
-    keyword: string,
-    capabilities: T[]
-): T[] {
+export function Keyword(keyword: string, capabilities: DiscoveryEntryWithMetaInfo[]): DiscoveryEntryWithMetaInfo[] {
     const keywordCaps = [];
 
     if (!Array.isArray(capabilities)) {
@@ -96,7 +92,7 @@ export function Keyword<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(
  *
  * @returns an array of capabilities sorted by the lastSeenDateMs
  */
-export function LastSeen<T extends DiscoveryEntry = DiscoveryEntryWithMetaInfo>(capabilities: T[]): T[] {
+export function LastSeen(capabilities: DiscoveryEntryWithMetaInfo[]): DiscoveryEntryWithMetaInfo[] {
     if (!Array.isArray(capabilities)) {
         throw new Error("provided argument capabilities is not of type Array");
     }

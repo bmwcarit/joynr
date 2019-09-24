@@ -38,7 +38,7 @@ let interfaceName: string,
     discoveryQos: DiscoveryQos,
     capDiscoverySpy: any,
     arbitrator: Arbitrator,
-    discoveryEntries: any,
+    discoveryEntries: DiscoveryEntryWithMetaInfo[],
     nrTimes: any;
 let discoveryEntryWithMajor47AndMinor0: any, discoveryEntryWithMajor47AndMinor1: any;
 let discoveryEntryWithMajor47AndMinor2: any, discoveryEntryWithMajor47AndMinor3: any;
@@ -583,11 +583,9 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
     });
 
     it("uses arbitration strategy and returns its results", async () => {
-        const fakeDiscoveredCaps = [{}, {}, {}, {}, {}];
-
         // just return some object so that arbitration is successful and
         // arbitration strategy is called
-        capDiscoverySpy.lookup.mockReturnValue(Promise.resolve(fakeDiscoveredCaps));
+        capDiscoverySpy.lookup.mockReturnValue(Promise.resolve(discoveryEntries));
         arbitrator = new Arbitrator(capDiscoverySpy);
 
         // spy on and instrument arbitrationStrategy to return discoveryEntries
@@ -600,10 +598,10 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
             proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
         });
 
-        // the arbitrationStrategy was called with the fakeDiscoveredCaps
+        // the arbitrationStrategy was called with the discoveryEntries
         // returned by the discovery spy
         expect(discoveryQos.arbitrationStrategy).toHaveBeenCalled();
-        expect(discoveryQos.arbitrationStrategy).toHaveBeenCalledWith(fakeDiscoveredCaps);
+        expect(discoveryQos.arbitrationStrategy).toHaveBeenCalledWith(discoveryEntries);
         expect(discoveredEntries).toEqual(discoveryEntries);
         // increaseFakeTime: is required for test purpose to ensure the
         // resolve/reject callbacks are called
