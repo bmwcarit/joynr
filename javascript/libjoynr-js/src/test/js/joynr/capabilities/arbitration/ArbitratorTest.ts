@@ -755,4 +755,106 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         await testUtil.multipleSetImmediate();
         expect(onRejectedSpy).toHaveBeenCalled();
     });
+
+    function arbitrationStrategyReturningFirstFoundEntry(
+        capabilities: DiscoveryEntryWithMetaInfo[]
+    ): DiscoveryEntryWithMetaInfo[] {
+        const caps: DiscoveryEntryWithMetaInfo[] = [];
+
+        if (!Array.isArray(capabilities)) {
+            throw new Error("provided argument capabilities is not of type Array");
+        }
+
+        for (const capId in capabilities) {
+            if (capabilities.hasOwnProperty(capId)) {
+                caps.push(capabilities[capId]);
+                return caps;
+            }
+        }
+        return caps;
+    }
+
+    it("filters capabilities properly and in order by version and arbitration strategy", async () => {
+        const qosParam = new CustomParameter({
+            name: "keyword",
+            value: "valid"
+        });
+        const specificProviderQos = new ProviderQos({
+            customParameters: [qosParam],
+            priority: 123,
+            scope:
+                discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY ? ProviderScope.LOCAL : ProviderScope.GLOBAL,
+            supportsOnChangeSubscriptions: false
+        });
+        UtilInternal.extend(discoveryEntryWithMajor47AndMinor3, { qos: specificProviderQos });
+
+        const discoveryEntriesWithDifferentProviderVersions = [
+            discoveryEntryWithMajor47AndMinor0,
+            discoveryEntryWithMajor47AndMinor3,
+            discoveryEntryWithMajor48AndMinor2
+        ];
+
+        const arbitrationStrategy = arbitrationStrategyReturningFirstFoundEntry;
+
+        // return discoveryEntries to check whether these are eventually
+        // returned by the arbitrator
+        capDiscoverySpy.lookup.mockResolvedValue(discoveryEntriesWithDifferentProviderVersions);
+        arbitrator = new Arbitrator(capDiscoverySpy);
+
+        const returnedDiscoveryEntries = await arbitrator.startArbitration({
+            domains: [domain],
+            interfaceName,
+            discoveryQos: new DiscoveryQos(UtilInternal.extend(discoveryQos, { arbitrationStrategy })),
+            proxyVersion: new Version({ majorVersion: 47, minorVersion: 3 })
+        });
+
+        expect(returnedDiscoveryEntries.length).toEqual(1);
+        expect(returnedDiscoveryEntries).not.toContain(discoveryEntryWithMajor47AndMinor0);
+        expect(returnedDiscoveryEntries).toContain(discoveryEntryWithMajor47AndMinor3);
+        expect(returnedDiscoveryEntries).not.toContain(discoveryEntryWithMajor48AndMinor2);
+    });
+
+    it("filters capabilities properly by supportOnChangeSubscriptions and arbitration strategy", async () => {
+        const qosParam = new CustomParameter({
+            name: "keyword",
+            value: "valid"
+        });
+        const specificProviderQos = new ProviderQos({
+            customParameters: [qosParam],
+            priority: 123,
+            scope:
+                discoveryQos.discoveryScope === DiscoveryScope.LOCAL_ONLY ? ProviderScope.LOCAL : ProviderScope.GLOBAL,
+            supportsOnChangeSubscriptions: false
+        });
+
+        UtilInternal.extend(discoveryEntryWithMajor47AndMinor0, { qos: specificProviderQos });
+        UtilInternal.extend(discoveryEntryWithMajor48AndMinor2, { qos: specificProviderQos });
+
+        const discoveryEntries = [
+            discoveryEntryWithMajor47AndMinor0,
+            discoveryEntryWithMajor47AndMinor3,
+            discoveryEntryWithMajor48AndMinor2
+        ];
+
+        const arbitrationStrategy = arbitrationStrategyReturningFirstFoundEntry; //.bind(undefined, "valid");
+
+        // return discoveryEntries to check whether these are eventually
+        // returned by the arbitrator
+        capDiscoverySpy.lookup.mockResolvedValue(discoveryEntries);
+        arbitrator = new Arbitrator(capDiscoverySpy);
+
+        const returnedDiscoveryEntries = await arbitrator.startArbitration({
+            domains: [domain],
+            interfaceName,
+            discoveryQos: new DiscoveryQos(
+                UtilInternal.extend(discoveryQos, { providerMustSupportOnChange: true, arbitrationStrategy })
+            ),
+            proxyVersion: new Version({ majorVersion: 47, minorVersion: 0 })
+        });
+
+        expect(returnedDiscoveryEntries.length).toEqual(1);
+        expect(returnedDiscoveryEntries).not.toContain(discoveryEntryWithMajor47AndMinor0);
+        expect(returnedDiscoveryEntries).toContain(discoveryEntryWithMajor47AndMinor3);
+        expect(returnedDiscoveryEntries).not.toContain(discoveryEntryWithMajor48AndMinor2);
+    });
 });
