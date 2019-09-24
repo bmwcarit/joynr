@@ -265,7 +265,10 @@ class Arbitrator {
         if (incompatibleVersionsFound.length > 0) {
             const message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
                 domains
-            )}", interface "${interfaceName}" with discoveryQos "${JSON.stringify(discoveryQos)}"`;
+            )}", interface "${interfaceName}", gbids "${JSON.stringify(gbids)}" with discoveryQos "${JSON.stringify(
+                discoveryQos
+            )}"`;
+
             return Promise.reject(
                 new NoCompatibleProviderFoundException({
                     detailMessage: message,
@@ -278,7 +281,9 @@ class Arbitrator {
                 new DiscoveryException({
                     detailMessage: `no provider found within discovery timeout for domains "${JSON.stringify(
                         domains
-                    )}", interface "${interfaceName}" with discoveryQos "${JSON.stringify(discoveryQos)}"${
+                    )}", interface "${interfaceName}", gbids "${JSON.stringify(
+                        gbids
+                    )}" with discoveryQos "${JSON.stringify(discoveryQos)}"${
                         errorMsg !== undefined ? `. Error: ${errorMsg}` : ""
                     }`
                 })
