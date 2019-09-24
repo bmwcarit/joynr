@@ -13,17 +13,25 @@ infrastructure components.
 The following components are necessary in order to set up a
 joynr environment:
 
-* Discovery service
+* Global Discovery service (GlobalCapabilitiesDirectory)
    * A joynr based application with which the participants
      register their providers and query to discover other
      participants
-* Domain Access Controller service
+* Global Domain Access Controller service (GlobalDomainAccessController)
    * Used to register Access Control Entries in the system
      in order to allow applications to specify who may
      access the providers and their functionality
 
 Additionally, you have to ensure that any required transport
 layer components, such as MQTT brokers, are set up.
+
+## Java
+
+This section describes configuring and starting the JAVA versions of the Discovery and Domain
+Access Controller services.
+
+GlobalCapabilitiesDirectory: see [GCD Readme](../java/backend-services/capabilities-directory/README.md).
+GlobalDomainAccessController: see [GDAC Readme](../java/backend-services/domain-access-controller/README.md).
 
 ## JEE
 
@@ -38,15 +46,11 @@ layer, all the documentation in the [JEE Developer Guide](jee.md)
 is relevant here, also. Specifically, setting up the managed
 scheduler executor service is mandatory.
 
-You can also find an example for setting up a JEE base joynr
-infrastructure as a Docker image
-[as part of the system integration tests](../tests/system-integration-test/docker/joynr-backend-jee).
-
 The documentation assumes you have already installed Glassfish /
 Payara and will reference the root of the installation as
 `${GF_HOME}`.
 
-### Creating the domain
+### Creating the domain and an executor service
 
 A recommended first step is to copy the the `domain1` directory
 to create a fresh domain for the joynr infrastructure:
@@ -122,9 +126,21 @@ out the source code.
 out and which appears as part of the filename for the WAR files created
 by the build.
 
+#### Single backend (default)
+
     cd ${GF_HOME}
     bin/asadmin deploy ${JOYNR_HOME}/java/backend-services/discovery-directory-jee/target/discovery-directory-jee-${JOYNR_VERSION}.war
     bin/asadmin deploy ${JOYNR_HOME}/java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee-${JOYNR_VERSION}.war
+
+#### Multiple backends
+
+See [multiple backends guide](multiple-backends.md) for details about the multiple backends feature.
+
+You can find an example for setting up a JEE based joynr infrastructure for two backends as Docker
+images as part of the system integration tests:
+* [shared database](../tests/system-integration-test/docker/joynr-backend-jee-db)
+* [GCD in first backend](../tests/system-integration-test/docker/joynr-backend-jee-1)
+* [GCD in second backend](../tests/system-integration-test/docker/joynr-backend-jee-2)
 
 ### Logging
 

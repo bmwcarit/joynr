@@ -25,3 +25,25 @@ telnet etc.). If required, the port can be modified using the additional command
 -Djoynr.capabilitiesdirectorylauncher.shutdownport=<port>
 ```
 
+# Additional configuration for multiple backends
+
+## Configure own GBID of the GCD instance (=GBID of the backend of the GCD instance)
+
+The GCD needs to know the GBID (backend) it is responsible for.
+
+Add `-Djoynr.gcd.gbid="ownGbid"` or set the environment variable `joynr_gcd_gbid` before starting
+the GCD service.
+
+DEFAULT: `joynrdefaultgbid`
+
+## Configure list of known GBIDs that shall be accepted by the GCD instance
+
+Add `-Djoynr.gcd.valid.gbids="gbid1,gbid2" or set the environment variable `joynr_gcd_valid_gbids`
+before starting the GCD service.
+
+DEFAULT: `["joynrdefaultgbid"]`
+
+The GCD will only accept GBIDs that are in its list of valid GBIDs. Add, lookup and remove
+attempts with other GBIDs are rejected with `DiscoveryError.UNKNOWN_GBID` or
+`DiscoveryError.INVALID_GBID`.
+
