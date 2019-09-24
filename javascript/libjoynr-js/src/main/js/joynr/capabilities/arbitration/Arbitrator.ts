@@ -213,28 +213,32 @@ class Arbitrator {
                     }),
                     gbids
                 );
-                // filter caps according to chosen arbitration strategy
-                const arbitratedCaps = discoveryQos.arbitrationStrategy(discoveredCaps);
-                const versionCompatibleArbitratedCaps: DiscoveryEntryWithMetaInfo[] = [];
+                const versionCompatibleCaps: DiscoveryEntryWithMetaInfo[] = [];
 
-                for (let i = 0; i < arbitratedCaps.length; i++) {
-                    const providerVersion = arbitratedCaps[i].providerVersion;
+                for (let i = 0; i < discoveredCaps.length; i++) {
+                    const providerVersion = discoveredCaps[i].providerVersion;
+
                     if (
-                        providerVersion.majorVersion === proxyVersion.majorVersion &&
-                        providerVersion.minorVersion >= proxyVersion.minorVersion &&
                         Arbitrator.checkSupportsOnChangeSubscriptions(
-                            arbitratedCaps[i],
+                            discoveredCaps[i],
                             discoveryQos.providerMustSupportOnChange
                         )
                     ) {
-                        versionCompatibleArbitratedCaps.push(arbitratedCaps[i]);
-                    } else {
-                        addToListIfNotExisting(incompatibleVersionsFound, providerVersion);
+                        if (
+                            providerVersion.majorVersion === proxyVersion.majorVersion &&
+                            providerVersion.minorVersion >= proxyVersion.minorVersion
+                        ) {
+                            versionCompatibleCaps.push(discoveredCaps[i]);
+                        } else {
+                            addToListIfNotExisting(incompatibleVersionsFound, providerVersion);
+                        }
                     }
                 }
-                if (versionCompatibleArbitratedCaps.length > 0) {
+                // filter caps according to chosen arbitration strategy
+                const arbitratedCaps = discoveryQos.arbitrationStrategy(versionCompatibleCaps);
+                if (arbitratedCaps.length > 0) {
                     // report the discovered & arbitrated caps
-                    return versionCompatibleArbitratedCaps;
+                    return arbitratedCaps;
                 }
             } catch (error) {
                 if (error instanceof ApplicationException) {
