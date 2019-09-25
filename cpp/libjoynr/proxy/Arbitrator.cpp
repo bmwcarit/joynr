@@ -54,6 +54,7 @@ Arbitrator::Arbitrator(
                              discoveryQos.getDiscoveryScope(),
                              discoveryQos.getProviderMustSupportOnChange()),
           domains({domain}),
+          serializedDomainsList(boost::algorithm::join(domains, ", ")),
           interfaceName(interfaceName),
           interfaceVersion(interfaceVersion),
           discoveredIncompatibleVersions(),
@@ -78,21 +79,21 @@ void Arbitrator::startArbitration(
         std::function<void(const exceptions::DiscoveryException& exception)> onError)
 {
     if (arbitrationRunning) {
-        JOYNR_LOG_ERROR(
-                logger(),
-                "Arbitration already running for domain = {}, interface = {}, GBIDs = {}. A second "
-                "arbitration will not be started.",
-                domains.at(0),
-                interfaceName,
-                gbidString);
+        JOYNR_LOG_ERROR(logger(),
+                        "Arbitration already running for domain = [{}], interface = {}, GBIDs = "
+                        "{}. A second "
+                        "arbitration will not be started.",
+                        serializedDomainsList,
+                        interfaceName,
+                        gbidString);
         return;
     }
 
     startTimePoint = std::chrono::steady_clock::now();
     JOYNR_LOG_INFO(
             logger(),
-            "Arbitration started for domain = {}, interface = {}, GBIDs = {}, version = {}.{}.",
-            domains.at(0),
+            "Arbitration started for domain = [{}], interface = {}, GBIDs = {}, version = {}.{}.",
+            serializedDomainsList,
             interfaceName,
             gbidString,
             std::to_string(interfaceVersion.getMajorVersion()),
@@ -105,7 +106,6 @@ void Arbitrator::startArbitration(
     onErrorCallback = onError;
 
     arbitrationThread = std::thread([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())]() {
-
         auto thisSharedPtr = thisWeakPtr.lock();
         if (!thisSharedPtr) {
             return;
@@ -114,10 +114,9 @@ void Arbitrator::startArbitration(
         thisSharedPtr->arbitrationFinished = false;
         thisSharedPtr->arbitrationFailedForever = false;
 
-        std::string serializedDomainsList = boost::algorithm::join(thisSharedPtr->domains, ", ");
-        JOYNR_LOG_DEBUG(logger(),
-                        "DISCOVERY lookup for domain: [{}], interface: {}, GBIDs = {}",
-                        serializedDomainsList,
+        JOYNR_LOG_TRACE(logger(),
+                        "Entering arbitration thread for domain: [{}], interface: {}, GBIDs = {}",
+                        thisSharedPtr->serializedDomainsList,
                         thisSharedPtr->interfaceName,
                         thisSharedPtr->gbidString);
 
@@ -152,6 +151,9 @@ void Arbitrator::startArbitration(
                 break;
             } else {
                 // wait for retry interval and attempt a new arbitration
+                JOYNR_LOG_TRACE(logger(),
+                                "Rescheduling arbitration with delay {}ms",
+                                thisSharedPtr->discoveryQos.getRetryIntervalMs());
                 auto waitIntervalMs =
                         std::chrono::milliseconds(thisSharedPtr->discoveryQos.getRetryIntervalMs());
                 thisSharedPtr->semaphore.waitFor(waitIntervalMs);
@@ -175,7 +177,7 @@ void Arbitrator::startArbitration(
         thisSharedPtr->arbitrationRunning = false;
         JOYNR_LOG_DEBUG(logger(),
                         "Exiting arbitration thread for domain: [{}], interface: {}, GBIDs = {}",
-                        serializedDomainsList,
+                        thisSharedPtr->serializedDomainsList,
                         thisSharedPtr->interfaceName,
                         thisSharedPtr->gbidString);
         thisSharedPtr->assertNoPendingFuture();
@@ -186,7 +188,7 @@ void Arbitrator::stopArbitration()
 {
     JOYNR_LOG_DEBUG(logger(),
                     "StopArbitrator for domain: [{}], interface: {}, GBIDs = {}",
-                    domains.at(0),
+                    serializedDomainsList,
                     interfaceName,
                     gbidString);
     {
@@ -242,8 +244,16 @@ void Arbitrator::attemptArbitration()
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT;
     const std::string fixedParticipantId =
             isArbitrationStrateggyFixedParticipant
+                    // custom parameter is present in this case, checked in ArbitratorFactory
                     ? discoveryQos.getCustomParameter("fixedParticipantId").getValue()
                     : "";
+
+    JOYNR_LOG_DEBUG(logger(),
+                    "DISCOVERY lookup for domain: [{}], interface: {}, GBIDs = {}",
+                    serializedDomainsList,
+                    interfaceName,
+                    gbidString);
+
     try {
         auto discoveryProxySharedPtr = discoveryProxy.lock();
         if (!discoveryProxySharedPtr) {
@@ -296,8 +306,9 @@ void Arbitrator::attemptArbitration()
                 "Unable to lookup provider (" +
                 (isArbitrationStrateggyFixedParticipant
                          ? ("participantId: " + fixedParticipantId)
-                         : ("domain: " + (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
-                            ", interface: " + interfaceName)) +
+                         : ("domain: [" +
+                            (domains.empty() ? std::string("EMPTY") : serializedDomainsList) +
+                            "], interface: " + interfaceName)) +
                 (gbids.empty() ? "" : ", GBIDs: " + gbidString) + ") from discovery. ";
         if (exceptions::ApplicationException::TYPE_NAME() == e.getTypeName()) {
             const exceptions::ApplicationException& applicationException =
@@ -344,10 +355,10 @@ void Arbitrator::receiveCapabilitiesLookupResults(
 
     // Check for empty results
     if (discoveryEntries.empty()) {
-        arbitrationError.setMessage("No entries found for domain: " +
-                                    (domains.empty() ? std::string("EMPTY") : domains.at(0)) +
-                                    ", interface: " + interfaceName +
-                                    (gbids.empty() ? "" : ", GBIDs: " + gbidString));
+        arbitrationError.setMessage(
+                "No entries found for domain: [" +
+                (domains.empty() ? std::string("EMPTY") : serializedDomainsList) +
+                "], interface: " + interfaceName + (gbids.empty() ? "" : ", GBIDs: " + gbidString));
         return;
     }
 

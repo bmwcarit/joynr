@@ -62,14 +62,14 @@ static const std::string domain("unittest-domain");
 static const std::string interfaceName("unittest-interface");
 static const std::vector<std::string> gbids {"testGbid1", "testGbid2", "testGbid3"};
 static const std::string exceptionMsgNoEntriesFound =
-        "No entries found for domain: " + domain + ", interface: " + interfaceName;
+        "No entries found for domain: [" + domain + "], interface: " + interfaceName;
 static std::string getExceptionMsgUnableToLookup(
         const exceptions::JoynrException& exception,
         const std::vector<std::string>& gbids,
         const std::string& participantId = "") {
     static const std::string exceptionMsgPart1 = "Unable to lookup provider (";
     static const std::string exceptionMsgPart2 = ") from discovery. JoynrException: ";
-    const std::string params = participantId.empty() ? "domain: " + domain + ", interface: " + interfaceName
+    const std::string params = participantId.empty() ? "domain: [" + domain + "], interface: " + interfaceName
                                                      : "participantId: " + participantId;
     const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + boost::algorithm::join(gbids, ", ");
     return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + exception.getMessage() + ", continuing.";
@@ -80,7 +80,7 @@ static std::string getErrorMsgUnableToLookup(
         const std::string& participantId = "") {
     static const std::string exceptionMsgPart1 = "Unable to lookup provider (";
     static const std::string exceptionMsgPart2 = ") from discovery. DiscoveryError: ";
-    const std::string params = participantId.empty() ? "domain: " + domain + ", interface: " + interfaceName
+    const std::string params = participantId.empty() ? "domain: [" + domain + "], interface: " + interfaceName
                                                      : "participantId: " + participantId;
     const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + boost::algorithm::join(gbids, ", ");
     const std::string errorString = types::DiscoveryError::getLiteral(error);

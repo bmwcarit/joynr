@@ -115,6 +115,7 @@ private:
     const DiscoveryQos discoveryQos;
     const joynr::types::DiscoveryQos systemDiscoveryQos;
     const std::vector<std::string> domains;
+    const std::string serializedDomainsList;
     const std::string interfaceName;
     const joynr::types::Version interfaceVersion;
     std::unordered_set<joynr::types::Version> discoveredIncompatibleVersions;
