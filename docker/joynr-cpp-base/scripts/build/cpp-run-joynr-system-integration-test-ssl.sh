@@ -83,13 +83,13 @@ cd $CC_BINDIR
 
 cd $TEST_BINDIR
 
-./jsit-provider-ws testDomain \
+./jsit-provider-ws -d testDomain -g joynrdefaultgbid \
     --pathtosettings $TEST_BINDIR/resources/systemintegrationtest-provider-ssl.settings \
     --ssl-cert-pem $SSLPATH/provider.cert.pem --ssl-privatekey-pem $SSLPATH/provider.key.pem \
     --ssl-ca-cert-pem $SSLPATH/ca.cert.pem & PROVIDER_PID=$!
 
 # Run the test
-./jsit-consumer-ws testDomain \
+./jsit-consumer-ws -d testDomain -g joynrdefaultgbid \
     --pathtosettings $TEST_BINDIR/resources/systemintegrationtest-consumer-ssl.settings \
     --ssl-cert-pem $SSLPATH/consumer.cert.pem \
     --ssl-privatekey-pem $SSLPATH/consumer.key.pem \

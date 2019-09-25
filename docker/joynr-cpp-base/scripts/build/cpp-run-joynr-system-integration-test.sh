@@ -52,10 +52,10 @@ cd $CC_BINDIR
 
 cd /data/build/tests/bin
 
-./jsit-provider-ws testDomain & PROVIDER_PID=$!
+./jsit-provider-ws -d testDomain -g joynrdefaultgbid & PROVIDER_PID=$!
 
 # Run the test
-./jsit-consumer-ws testDomain
+./jsit-consumer-ws -d testDomain -g joynrdefaultgbid
 TESTRESULT=$?
 
 # Clean up
