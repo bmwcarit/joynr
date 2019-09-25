@@ -94,6 +94,11 @@ class Arbitrator {
 
         this.arbitrationId++;
 
+        log.debug(
+            `Arbitration started for domains ${settings.domains}, interface ${settings.interfaceName}, gbids ${
+                settings.gbids
+            }.`
+        );
         if (settings.staticArbitration && this.staticCapabilities) {
             return this.discoverStaticCapabilities(
                 settings.domains,
@@ -248,30 +253,42 @@ class Arbitrator {
                         error.error !== DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
                     ) {
                         log.error(
-                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to ${
+                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to DiscoveryError: ${
                                 error.error.name
                             }. Attempting no retry`
                         );
                         break;
                     } else {
                         log.info(
-                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to ${
+                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to DiscoveryError: ${
                                 error.error.name
                             }. Attempting retry in ${discoveryQos.discoveryRetryDelayMs} ms`
                         );
                     }
                 } else if (error.message) {
-                    errorMsg = error.message;
+                    log.info(
+                        `Discovery attempt for domains ${domains}, interface ${interfaceName} failed due to DiscoveryError: ${
+                            error.name
+                        }. Attempting retry in ${discoveryQos.discoveryRetryDelayMs} ms`
+                    );
+                    errorMsg = `${error.name} : ${error.message}`;
                 }
             }
         } while (arbitrationDeadline - (Date.now() + discoveryRetryDelayMs) > 0);
 
         if (incompatibleVersionsFound.length > 0) {
-            const message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
-                domains
-            )}", interface "${interfaceName}", gbids "${JSON.stringify(gbids)}" with discoveryQos "${JSON.stringify(
-                discoveryQos
-            )}"`;
+            let message: string;
+            if (gbids && gbids.length > 0) {
+                message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
+                    domains
+                )}", interface "${interfaceName}", gbids "${JSON.stringify(gbids)}" with discoveryQos "${JSON.stringify(
+                    discoveryQos
+                )}"`;
+            } else {
+                message = `no compatible provider found within discovery timeout for domains "${JSON.stringify(
+                    domains
+                )}", interface "${interfaceName}" with discoveryQos "${JSON.stringify(discoveryQos)}"`;
+            }
 
             return Promise.reject(
                 new NoCompatibleProviderFoundException({
@@ -281,15 +298,23 @@ class Arbitrator {
                 })
             );
         } else {
+            let message: string;
+            if (gbids && gbids.length > 0) {
+                message = `no provider found within discovery timeout for domains "${JSON.stringify(
+                    domains
+                )}", interface "${interfaceName}", gbids "${JSON.stringify(gbids)}" with discoveryQos "${JSON.stringify(
+                    discoveryQos
+                )}"${errorMsg !== undefined ? `. Error: ${errorMsg}` : ""}`;
+            } else {
+                message = `no provider found within discovery timeout for domains "${JSON.stringify(
+                    domains
+                )}", interface "${interfaceName}" with discoveryQos "${JSON.stringify(discoveryQos)}"${
+                    errorMsg !== undefined ? `. Error: ${errorMsg}` : ""
+                }`;
+            }
             return Promise.reject(
                 new DiscoveryException({
-                    detailMessage: `no provider found within discovery timeout for domains "${JSON.stringify(
-                        domains
-                    )}", interface "${interfaceName}", gbids "${JSON.stringify(
-                        gbids
-                    )}" with discoveryQos "${JSON.stringify(discoveryQos)}"${
-                        errorMsg !== undefined ? `. Error: ${errorMsg}` : ""
-                    }`
+                    detailMessage: message
                 })
             );
         }
