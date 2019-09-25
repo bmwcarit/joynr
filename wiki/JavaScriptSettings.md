@@ -73,7 +73,6 @@ var messagingValue = {
 var persistencyValue = {
     clearPersistency: <true|false>, // clear persistent data during startup. Default value is false
     location: /path/to/localStorage, // Optional. Only implemented for Node. Default is current dir
-    quota: 10 * 1024 * 1024 // Optional. Max local storage quota, in MB. Defaults to 5 MB.
     routingTable: <true|false>, /* Optional. Default false. Persists RoutingTable entries and thus
                                  * allows the runtime to restart without help from the cc.
                                  */

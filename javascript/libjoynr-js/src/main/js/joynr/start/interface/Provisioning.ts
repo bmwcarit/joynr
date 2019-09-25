@@ -56,8 +56,6 @@ export interface Persistency {
     clearPersistency?: boolean;
     /** Default is current dir */
     location?: string;
-    /** Max local storage quota, in MB. Defaults to 5 MB. */
-    quota?: number;
     /**
      * Default false. Persists RoutingTable entries and thus
      * allows the runtime to restart without help from the cc.
