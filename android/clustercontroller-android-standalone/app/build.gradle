@@ -40,18 +40,13 @@ ext {
 
 dependencies {
 
-    implementation("io.joynr.android:libjoynr-android-websocket-runtime:$joynr_version")
-
-    implementation("io.joynr.java.core:clustercontroller-websocket-runtime:$joynr_version") {
-        exclude(module: 'guice')
-        exclude(group: 'org.slf4j')
-    }
-    implementation("io.joynr.java.messaging.mqtt:joynr-mqtt-client:$joynr_version") {
-        exclude(module: 'guice')
-        exclude(group: 'org.slf4j')
+    if (devEnv.toBoolean()) {
+        implementation project(':moduleLibAndroidBinder')
+    } else {
+        implementation "io.joynr.android:joynr-android-binder-runtime:${joynr_version}"
     }
 
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.google.android.material:material:1.1.0-alpha10'
 }

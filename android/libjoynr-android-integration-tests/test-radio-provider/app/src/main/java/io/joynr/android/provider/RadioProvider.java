@@ -1,7 +1,5 @@
 package io.joynr.android.provider;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
@@ -22,20 +23,20 @@ import joynr.vehicle.RadioStation;
 
 public class RadioProvider extends RadioAbstractProvider {
 
-    public static final String TAG = RadioProvider.class.getSimpleName();
-
-    public static final long DELAY_MS = 2000;
     public static final String MISSING_NAME = "MISSING_NAME";
+    private static final String PRINT_BORDER = "\n####################\n";
+    private static final Logger LOG = LoggerFactory.getLogger(RadioProvider.class);
+    private static final long DELAY_MS = 2000;
 
     private RadioStation currentStation;
     private List<RadioStation> stationsList = new ArrayList<RadioStation>();
-    private Map<Country, GeoPosition> countryGeoPositionMap = new HashMap<>();
+    private Map<Country, GeoPosition> countryGeoPositionMap = new HashMap<Country, GeoPosition>();
 
     private int currentStationIndex = 0;
     private ScheduledExecutorService executorService;
 
     public RadioProvider() {
-        stationsList.add(new RadioStation("JoynrStation", true, Country.AUSTRALIA));
+        stationsList.add(new RadioStation("ABC Trible J", true, Country.AUSTRALIA));
         stationsList.add(new RadioStation("Radio Popolare", false, Country.ITALY));
         stationsList.add(new RadioStation("JAZZ.FM91", false, Country.CANADA));
         stationsList.add(new RadioStation("Bayern 3", true, Country.GERMANY));
@@ -49,26 +50,34 @@ public class RadioProvider extends RadioAbstractProvider {
 
     @Override
     public Promise<Deferred<RadioStation>> getCurrentStation() {
-        Deferred<RadioStation> deferred = new Deferred<>();
-        Log.i(TAG, "getCurrentSation -> " + currentStation);
+        Deferred<RadioStation> deferred = new Deferred<RadioStation>();
+        LOG.info(PRINT_BORDER + "getCurrentSation -> " + currentStation + PRINT_BORDER);
+        // actions that take no time can be returned immediately by resolving the deferred.
         deferred.resolve(currentStation);
-        return new Promise<>(deferred);
+        return new Promise<Deferred<RadioStation>>(deferred);
     }
 
     @Override
     public Promise<DeferredVoid> shuffleStations() {
         final DeferredVoid deferred = new DeferredVoid();
-        executorService.schedule(() -> {
-            RadioStation oldStation = currentStation;
-            currentStationIndex++;
-            currentStationIndex = currentStationIndex % stationsList.size();
-            currentStation = stationsList.get(currentStationIndex);
-            currentStationChanged(currentStation);
-            Log.i(TAG, "shuffleStations: " + oldStation + " -> " + currentStation);
-            deferred.resolve();
+        // actions that take longer must be run in an appliction thread.
+        // DO NOT block joynr threads
+        executorService.schedule(new Runnable() {
+
+            @Override
+            public void run() {
+                RadioStation oldStation = currentStation;
+                currentStationIndex++;
+                currentStationIndex = currentStationIndex % stationsList.size();
+                currentStation = stationsList.get(currentStationIndex);
+                currentStationChanged(currentStation);
+                LOG.info(PRINT_BORDER + "shuffleStations: " + oldStation + " -> " + currentStation + PRINT_BORDER);
+                deferred.resolve();
+            }
         }, DELAY_MS, TimeUnit.MILLISECONDS);
 
-        return new Promise<>(deferred);
+        // Promise is returned immediately. Deferred is resolved later
+        return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
@@ -79,31 +88,56 @@ public class RadioProvider extends RadioAbstractProvider {
             deferred.reject(new ProviderRuntimeException(MISSING_NAME));
         }
 
-        executorService.schedule(() -> {
-            boolean duplicateFound = false;
-            for (RadioStation station : stationsList) {
-                if (!duplicateFound && station.getName().equals(radioStation.getName())) {
-                    duplicateFound = true;
-                    deferred.reject(AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION);
-                    break;
+        executorService.schedule(new Runnable() {
+            @Override
+            public void run() {
+                boolean duplicateFound = false;
+                for (RadioStation station : stationsList) {
+                    if (!duplicateFound && station.getName().equals(radioStation.getName())) {
+                        duplicateFound = true;
+                        deferred.reject(AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION);
+                        break;
+                    }
+                }
+                if (!duplicateFound) {
+                    LOG.info(PRINT_BORDER + "addFavoriteStation(" + radioStation + ")" + PRINT_BORDER);
+                    stationsList.add(radioStation);
+                    deferred.resolve(true);
                 }
             }
-            if (!duplicateFound) {
-                Log.i(TAG, "addFavoriteStation(" + radioStation + ")");
-                stationsList.add(radioStation);
-                deferred.resolve(true);
-            }
         }, DELAY_MS, TimeUnit.MILLISECONDS);
-        return new Promise<>(deferred);
+
+        // Promise is returned immediately. Deferred is resolved later
+        return new Promise<AddFavoriteStationDeferred>(deferred);
+    }
+
+    public void fireWeakSignalEvent() {
+        LOG.info(PRINT_BORDER + "fire weakSignalEvent: " + currentStation + PRINT_BORDER);
+        fireWeakSignal(currentStation);
+    }
+
+    public void fireWeakSignalEventWithPartition() {
+        LOG.info(PRINT_BORDER + "fire weakSignalEvent with partition: " + currentStation + PRINT_BORDER);
+        fireWeakSignal(currentStation, currentStation.getCountry().name());
+    }
+
+    public void fireNewStationDiscoveredEvent() {
+        RadioStation discoveredStation = currentStation;
+        GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());
+        LOG.info(PRINT_BORDER + "fire newStationDiscoveredEvent: " + discoveredStation + " at " + geoPosition
+                + PRINT_BORDER);
+        fireNewStationDiscovered(discoveredStation, geoPosition);
     }
 
     @Override
     public Promise<GetLocationOfCurrentStationDeferred> getLocationOfCurrentStation() {
         Country country = currentStation.getCountry();
         GeoPosition location = countryGeoPositionMap.get(country);
-        Log.i(TAG, "getLocationOfCurrentStation: country: " + country.name() + ", location: " + location);
-        joynr.vehicle.RadioProvider.GetLocationOfCurrentStationDeferred deferred = new GetLocationOfCurrentStationDeferred();
+        LOG.info(PRINT_BORDER + "getLocationOfCurrentStation: country: " + country.name() + ", location: " + location
+                + PRINT_BORDER);
+        RadioProvider.GetLocationOfCurrentStationDeferred deferred = new GetLocationOfCurrentStationDeferred();
+        // actions that take no time can be returned immediately by resolving the deferred.
         deferred.resolve(country, location);
-        return new Promise<>(deferred);
+        return new Promise<RadioProvider.GetLocationOfCurrentStationDeferred>(deferred);
     }
 }

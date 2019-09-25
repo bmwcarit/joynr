@@ -102,9 +102,14 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
 
     @Override
     public String fromParticipantUuid(String statelessParticipantIdUuid) {
-        String statelessCallbackId = Optional.ofNullable(participantIdMap.get(statelessParticipantIdUuid))
-                                             .orElseThrow(() -> new JoynrIllegalStateException("Unknown stateless participant ID UUID: "
-                                                     + statelessParticipantIdUuid));
+        String statelessCallbackId = null;
+        try {
+            statelessCallbackId = Optional.ofNullable(participantIdMap.get(statelessParticipantIdUuid))
+                                          .orElseThrow(() -> new JoynrIllegalStateException("Unknown stateless participant ID UUID: "
+                                                  + statelessParticipantIdUuid));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
         return statelessCallbackId;
     }
 

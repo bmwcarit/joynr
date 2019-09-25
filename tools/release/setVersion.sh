@@ -48,10 +48,6 @@ tests/system-integration-test/sit-cpp-app/CMakeLists.txt \
 tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/package.json \
 examples/radio-app/CMakeLists.txt \
-android/robolectric-integration-tests/src/test/AndroidManifest.xml \
-android/robolectric-unittests/src/main/AndroidManifest.xml \
-examples/android-location-provider/AndroidManifest.xml \
-examples/android-location-consumer/AndroidManifest.xml \
 examples/radio-node/pom.xml \
 examples/radio-node/package.json \
 javascript/libjoynr-js/package.json \
@@ -66,9 +62,8 @@ android/libjoynr-android-integration-tests/test-radio-provider/app/build.gradle 
 android/libjoynr-android-integration-tests/test-radio-consumer/build.gradle \
 android/libjoynr-android-integration-tests/test-radio-consumer/app/build.gradle \
 android/clustercontroller-android-standalone/app/build.gradle \
-tools/android/pom.xml \
-tools/android/slf4j-android-bindings/pom.xml \
-tools/android/slf4j-android-bindings/AndroidManifest.xml
+android/joynr-android-binder-runtime/build.gradle \
+android/slf4j-android-bindings/build.gradle 
 
 _sed 's/clustercontroller-standalone-'${oldVersion}'-jar-with-dependencies.jar/clustercontroller-standalone-'${newVersion}'-jar-with-dependencies.jar/g' \
 java/core/clustercontroller-standalone/README

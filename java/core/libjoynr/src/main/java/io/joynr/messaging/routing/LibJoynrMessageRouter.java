@@ -42,6 +42,7 @@ import joynr.Message;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.BinderAddress;
 import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -165,6 +166,8 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
             parentRouter.addNextHop(participantId, (WebSocketAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof WebSocketClientAddress) {
             parentRouter.addNextHop(participantId, (WebSocketClientAddress) incomingAddress, isGloballyVisible);
+        } else if (incomingAddress instanceof BinderAddress) {
+            parentRouter.addNextHop(participantId, (BinderAddress) incomingAddress, isGloballyVisible);
         } else {
             throw new ProviderRuntimeException("Failed to add next hop to parent: unknown address type"
                     + incomingAddress.getClass().getSimpleName());

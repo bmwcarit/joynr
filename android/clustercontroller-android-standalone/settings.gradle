@@ -1,2 +1,8 @@
 include ':app'
+
+if (devEnv.toBoolean()) {
+    include ':moduleLibAndroidBinder'
+    project(':moduleLibAndroidBinder').projectDir = new File(settingsDir, '../joynr-android-binder-runtime/')
+}
+
 rootProject.name='JoynrClusterController'

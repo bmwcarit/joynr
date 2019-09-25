@@ -1,8 +1,7 @@
 package io.joynr.android.consumer;
 
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.TextView;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,22 +12,34 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RadioConsumerApp radioConsumerApp = new RadioConsumerApp();
-        radioConsumerApp.init(getApplication());
+        findViewById(R.id.subscribeToWeakSignalButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        ((RadioConsumerApp)getApplication()).subscribeToWeakSignal();
+                    }
+                }.start();
+            }
+        });
 
-        Button currentStationButton = findViewById(R.id.currentStationButton);
-        Button shuffleStationButton = findViewById(R.id.shuffleStationButton);
+        findViewById(R.id.unsubscribeWeakSignalButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        ((RadioConsumerApp)getApplication()).unsubscribeFromSubscription();
+                    }
+                }.start();
+            }
+        });
 
-        currentStationButton.setOnClickListener(
-                view -> setCurrentStation(radioConsumerApp.getCurrentStation()));
 
-        shuffleStationButton.setOnClickListener(
-                view -> setCurrentStation(radioConsumerApp.shuffleStations()));
+
     }
 
-    private void setCurrentStation(String text) {
-
-        ((TextView) findViewById(R.id.testText)).setText(text);
-        
-    }
 }

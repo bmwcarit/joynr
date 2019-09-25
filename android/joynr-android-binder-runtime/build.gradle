@@ -1,0 +1,165 @@
+/*
+ * #%L
+ * %%
+ * Copyright (C) 2019 BMW Car IT GmbH
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+apply plugin: 'maven'
+
+group = 'io.joynr.android'
+version = '1.11.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.0'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+    }
+}
+
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "29.0.0"
+
+    defaultConfig {
+        minSdkVersion 28
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    if (devEnv.toBoolean()) {
+
+        sourceSets.main.java {
+
+            srcDirs += [
+
+                    // slf4j-android-bindings
+                    "../slf4j-android-bindings/src/main/java/",
+
+                    // clustercontroller
+                    "../../java/core/clustercontroller/src/main/java/",
+
+                    // javaapi
+                    "../../java/javaapi/src/main/java/",
+                    "../../java/javaapi/src/main/generated/",
+
+                    // libjoynr
+                    "../../java/core/libjoynr/src/main/java/",
+
+                    // common
+                    "../../java/common/status-metrics/src/main/java/",
+                    "../../java/common/infrastructure-common/src/main/java/",
+                    "../../java/common/discovery-common/src/main/java/",
+                    "../../java/common/guice-integration/src/main/java/",
+                    "../../java/common/access-control-common/src/main/java/",
+
+                    // messaging
+                    "../../java/messaging/messaging-common/src/main/java/",
+                    "../../java/messaging/mqtt/joynr-mqtt-client/src/main/java/",
+
+            ]
+        }
+
+        // guice assisted inject properties
+        sourceSets.main.resources.srcDirs = ["../../java/messaging/messaging-common/src/main/resources/"]
+
+    }
+}
+
+
+dependencies {
+
+    implementation('com.google.inject:guice:3.0:no_aop')
+    implementation('com.google.inject.extensions:guice-multibindings:3.0') {
+        exclude(module: 'guice')
+    }
+
+    implementation('com.google.inject.extensions:guice-assistedinject:3.0') {
+        exclude(module: 'guice')
+    }
+
+    if (devEnv.toBoolean()) {
+
+        // JOYNR JAVA JAVAAPI
+        implementation 'commons-lang:commons-lang:2.4'
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.9.2'
+        implementation 'com.github.spotbugs:spotbugs-annotations:3.1.8'
+
+        //JAVA COMMON INFRASTRUCTURE
+        implementation 'net.sf.ehcache:ehcache:2.8.1'
+
+        // JOYNR CLUSTER CONTROLLER
+        implementation 'org.apache.httpcomponents:httpclient:4.3.6'
+
+        implementation 'io.joynr.mqtt:mqtt-client:0.0.6'
+        implementation 'io.joynr.smrf.java:smrf:0.3.3'
+
+        compileOnly 'javax:javaee-api:7.0'
+
+        api 'org.slf4j:slf4j-api:1.7.28'
+        api 'com.fasterxml.jackson.core:jackson-databind:2.9.9.2'
+
+    } else {
+
+        implementation("io.joynr.java.core:libjoynr:${version}") {
+            exclude(module: 'guice')
+        }
+        implementation("io.joynr.java.core:clustercontroller:${version}") {
+            exclude(module: 'guice')
+        }
+        implementation("io.joynr.java.common:guice-integration:${version}") {
+            exclude(module: 'guice')
+        }
+        implementation("io.joynr.java.messaging.mqtt:joynr-mqtt-client:${version}") {
+            exclude(module: 'guice')
+        }
+
+        implementation "io.joynr.android:slf4j-android-bindings:${version}"
+    }
+
+    implementation 'com.android.support:support-annotations:28.0.0'
+}
+

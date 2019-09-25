@@ -12,30 +12,30 @@
         android:layout_height="wrap_content"
         android:text="Hello World!"
         android:id="@+id/testText"
-        app:layout_constraintBottom_toTopOf="@+id/currentStationButton"
+        app:layout_constraintBottom_toTopOf="@+id/subscribeToWeakSignalButton"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/currentStationButton"
+        android:id="@+id/subscribeToWeakSignalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Current station"
+        android:text="Subscribe to Weak Signal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/shuffleStationButton"
+        android:id="@+id/unsubscribeWeakSignalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Shufle Station"
+        android:text="Unsubscribe Weak Signal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/currentStationButton"
+        app:layout_constraintTop_toBottomOf="@+id/subscribeToWeakSignalButton"
         app:layout_constraintVertical_bias="0.163" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

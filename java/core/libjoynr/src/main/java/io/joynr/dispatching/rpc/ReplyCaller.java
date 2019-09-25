@@ -22,7 +22,7 @@ import joynr.Reply;
 
 public interface ReplyCaller {
 
-    public void messageCallBack(Reply payload);
+    public void messageCallBack(Reply payload) throws Throwable;
 
     public void error(Throwable error);
 

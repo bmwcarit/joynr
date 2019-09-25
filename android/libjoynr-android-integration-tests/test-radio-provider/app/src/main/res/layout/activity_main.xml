@@ -20,4 +20,27 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.022" />
 
+
+    <Button
+        android:id="@+id/weakSignalButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fire Weak Signal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/newStationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fire New Station"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weakSignalButton"
+        app:layout_constraintVertical_bias="0.163" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

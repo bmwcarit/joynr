@@ -1,66 +1,57 @@
 package io.joynr.android.provider;
 
-import static io.joynr.runtime.AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL;
+import android.app.Application;
 
-import android.content.Context;
-import android.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.AndroidLogger;
+import org.slf4j.impl.StaticLoggerBinder;
 
-import java.util.Properties;
-
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.android.AndroidBinderRuntime;
 import io.joynr.proxy.Future;
-import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
-public class RadioProviderApp {
-
-    private static final String TAG = RadioProviderApp.class.getSimpleName();
-
-    public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
-    public static final String STATIC_PARTICIPANTS_FILE = "joynr.properties_participants";
-    public static final String STATIC_SUBSCRIPTION_REQUESTS_FILE = "joynr.subscriptionrequests";
+public class RadioProviderApp extends Application {
 
     private static final String RADIO_LOCAL_DOMAIN = "radio.local.domain";
-    private static final String CC_HOST = "localhost";
-    private static final int CC_PORT = 4242;
 
-    public void init(Context context) {
+    private static final Logger logger = LoggerFactory.getLogger(RadioProviderApp.class);
 
-        Properties joynrConfig = new Properties();
-        joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, context.getCacheDir() + "/" + STATIC_PERSISTENCE_FILE);
-        joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,
-                context.getCacheDir() + "/" + STATIC_PARTICIPANTS_FILE);
+    private RadioProvider provider;
+    private JoynrRuntime runtime;
 
-        joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE,
-                context.getCacheDir() + "/" + STATIC_SUBSCRIPTION_REQUESTS_FILE);
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-        joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, RADIO_LOCAL_DOMAIN);
+        //set loglevel to debug
+        StaticLoggerBinder.setLogLevel(AndroidLogger.LogLevel.DEBUG);
 
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, CC_HOST);
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + CC_PORT);
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+        //init runtime
+        runtime = AndroidBinderRuntime.init(this);
 
-        JoynrRuntime runtime = new JoynrInjectorFactory(joynrConfig, new LibjoynrWebSocketRuntimeModule())
-                .createChildInjector().getInstance(JoynrRuntime.class);
+        registerProvider();
+    }
 
-        RadioProvider provider = new RadioProvider();
+    public void registerProvider() {
+
+        logger.debug("Starting...");
+
+        provider = new RadioProvider();
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(System.currentTimeMillis());
         providerQos.setScope(ProviderScope.LOCAL);
-        boolean awaitGlobalRegistration = true;
-        Future<Void> future = runtime.registerProvider(RADIO_LOCAL_DOMAIN, provider, providerQos, awaitGlobalRegistration);
-        try {
-            future.get();
-        } catch (Exception e) {
-            Log.e(TAG, "runtime.registerProvider failed: ", e);
-        }
+
+        Future<Void> future = runtime.getProviderRegistrar(RADIO_LOCAL_DOMAIN, provider)
+                .withProviderQos(providerQos)
+                .register();
 
     }
 
+
+    public RadioProvider getProvider() {
+        return provider;
+    }
 }

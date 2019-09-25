@@ -306,7 +306,11 @@ public class RequestReplyManagerTest {
         Reply reply = new Reply(request1.getRequestReplyId(), payload1);
         requestReplyManager.handleReply(reply);
 
-        verify(replyCaller).messageCallBack(reply);
+        try {
+            verify(replyCaller).messageCallBack(reply);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
     @Test
@@ -347,7 +351,11 @@ public class RequestReplyManagerTest {
         requestReplyManager.handleReply(new Reply(request1.getRequestReplyId(),
                                                   testResponder.getSentPayloadFor(request1)));
 
-        verify(replyCaller, never()).messageCallBack(any(Reply.class));
+        try {
+            verify(replyCaller, never()).messageCallBack(any(Reply.class));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
     @Test
