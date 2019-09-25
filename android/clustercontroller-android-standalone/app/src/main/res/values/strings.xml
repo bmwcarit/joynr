@@ -5,4 +5,9 @@
     <string name="brokeruriexample">tcp://localhost:1883</string>
     <string name="clustercontrollerservice">Cluster Controller Service</string>
     <string name="clustercontrolleruseduri">"Cluster Controller using uri: "</string>
+    <string name="binderpermissionlabel">use joynr communication through binder</string>
+    <string name="binderpermissiondescription">Allows the app to communicate through binder
+    with joynr Cluster Controller. Malicious apps using this permission can freely communicate
+        with the Cluster Controller.
+    </string>
 </resources>
