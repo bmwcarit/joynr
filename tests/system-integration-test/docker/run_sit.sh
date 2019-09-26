@@ -12,8 +12,8 @@ then
   exit 1
 fi
 
-echo "wait 3 minutes, then log the result of the docker containers"
-sleep 180
+echo "wait 10 minutes, then log the result of the docker containers"
+sleep 600
 
 docker-compose logs > sit-apps.log
 
@@ -42,8 +42,7 @@ echo         failing: $failing
 
 rm sit-apps.log
 rm sit-result.log
-#EXPECTED_RESULTS=19
-EXPECTED_RESULTS=5
+EXPECTED_RESULTS=44
 if [ $results -ne $EXPECTED_RESULTS ]
 then
   echo "ERROR: unexpected number of results: $results, expected $EXPECTED_RESULTS"
