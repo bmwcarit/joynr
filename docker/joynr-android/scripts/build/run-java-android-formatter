@@ -7,7 +7,6 @@ cd /data/src
 # print commands before they are executed
 set -e
 
-./joynr-setup-android-sdk.sh
 
 (
   echo "install build-resources"

@@ -1,0 +1,93 @@
+buildscript {
+    ext {
+        joynrVersion = "1.11.0-SNAPSHOT"
+    }
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.2'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+apply plugin: 'maven'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "29.0.0"
+    defaultConfig {
+        minSdkVersion 28
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+
+}
+
+dependencies {
+    implementation 'com.android.support:support-annotations:28.0.0'
+    implementation 'org.slf4j:slf4j-api:1.7.28'
+}
+
+group = 'io.joynr.android'
+version = '1.11.0-SNAPSHOT'
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+task copyJarFilesToBuildDir(type: Copy) {
+    from('build/intermediates/packaged-classes/release/')
+    into('build/libs/')
+    include('classes.jar')
+    rename('classes.jar', "slf4j-android-bindings-${version}.jar")
+}
+
+build.finalizedBy copyJarFilesToBuildDir
+
+publishing {
+    publications {
+        jar(MavenPublication) {
+            groupId = "$group"
+            artifactId = 'slf4j-android-bindings'
+
+            artifact androidSourcesJar
+            artifact("$buildDir/outputs/aar/${rootProject.name}-release.aar")
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.withType(ModuleDependency) { dp ->
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dp.group)
+                    dependencyNode.appendNode('artifactId', dp.name)
+                    dependencyNode.appendNode('version', dp.version)
+                    dependencyNode.appendNode('scope', 'compile')
+                }
+            }
+        }
+    }
+
+}

@@ -7,8 +7,6 @@ cd /data/src
 # print commands before they are executed
 set -e
 
-./joynr-setup-android-sdk.sh
-
 GOAL='install'
 
 while [ "$1" != "" ]; do

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">joynr Android Example</string>
-    <string name="joynr_example">Log output:</string>
-    <string name="create_joynr_proxy_and_request_gps_location">Create joynr proxy</string>
-    <string name="get_gps_location">Get GPS Location</string>
-    <string name="subscribe_gps_location">Subscribe to GPS Location</string>
-</resources>

@@ -1,8 +1,0 @@
-To test the Android Location Provider application there is a consumer application in:
-
-examples/location-tester/src/main/java/io/joynr/examples/android_location_provider/GpsConsumerApplication.java
-
-You can start it from the command line in examples/location-tester using maven:
-
-examples/radio-app
-mvn exec:java -Dexec.classpathScope="test" -Dexec.mainClass="io.joynr.examples.android_example.MyGpsProviderApplication" -Dexec.args="<provider-domain>" -Djoynr.messaging.bounceproxyurl=http://<hostname>:8080/bounceproxy/

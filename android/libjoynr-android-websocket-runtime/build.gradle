@@ -44,6 +44,11 @@ allprojects {
         google()
         jcenter()
         mavenLocal()
+        repositories {
+            maven {
+                url "https://oss.sonatype.org/content/repositories/snapshots/"
+            }
+        }
     }
 }
 
@@ -80,7 +85,7 @@ dependencies {
         exclude(module: 'guice')
         exclude(group: 'org.slf4j')
     }
-    api "io.joynr.tools.android:slf4j-android-bindings:$version"
+    api "io.joynr.android:slf4j-android-bindings:$version"
 }
 
 task androidSourcesJar(type: Jar) {

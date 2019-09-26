@@ -35,15 +35,6 @@
 		<module>license-check</module>
 	</modules>
 
-	<profiles>
-		<profile>
-			<id>android</id>
-			<modules>
-				<module>android</module>
-			</modules>
-		</profile>
-	</profiles>
-
 	<build>
 		<plugins>
 			<plugin>

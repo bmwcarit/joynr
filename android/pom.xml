@@ -31,11 +31,9 @@
 	</parent>
 
 	<modules>
-		<module>joynr-android</module>
+        <module>slf4j-android-bindings</module>
 		<module>joynr-android-runtime</module>
 		<module>libjoynr-android-websocket-runtime</module>
-		<module>robolectric-unittests</module>
-		<module>robolectric-integration-tests</module>
 		<module>libjoynr-android-integration-tests</module>
 	</modules>
 </project>
