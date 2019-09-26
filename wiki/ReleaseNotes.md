@@ -10,6 +10,7 @@ None.
 ## Other changes
 * **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
 * **[Java]** Updated net.sourceforge.htmlunit:htmlunit to 2.36.0
+* **[Java]** Updated jackson.databind to version 2.9.10
 
 ## Configuration property changes
 None.
