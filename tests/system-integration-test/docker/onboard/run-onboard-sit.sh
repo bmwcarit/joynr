@@ -19,6 +19,7 @@
 ###
 
 # Give the JEE Discovery Directory a chance to start ...
+sleep 300
 
 echo "SIT: Onboard RUN END TO END TEST"
 
