@@ -90,7 +90,7 @@ do
         cd $PACKAGE_JSON_DIRECTORY
         npm install
 
-        cat ${JOYNR_SOURCE_DIR}tools/NOTICE-JS-PREFIX.txt > ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
+        cat ${JOYNR_SOURCE_DIR}tools/NOTICE-JS-HEADER.txt > ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
         licensecheck >> ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
 
         removeVersion "joynr" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
