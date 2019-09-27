@@ -45,22 +45,42 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>node_modules</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>jars</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>tsconfig.tsbuildinfo</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/src</directory>
+							<includes>
+								<include>joynrGenerator.js</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
-					<execution>
-						<id>npm:clean</id>
-						<phase>clean</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>node</executable>
-							<arguments>
-								<argument>scripts/clean.js</argument>
-							</arguments>
-						</configuration>
-					</execution>
 					<execution>
 						<id>build</id>
 						<phase>compile</phase>
