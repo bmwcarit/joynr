@@ -15,6 +15,7 @@ None.
 * **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
   are now removed by the Routing Table cleanup background job, provided the related proxy instances
   have already been collected by the Java garbage collector.
+* **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
 
 ## Configuration property changes
 None.
