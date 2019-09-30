@@ -16,7 +16,6 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  android under Apache License, Version 2.0
   Android Support Library Annotations under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   io.joynr.tools.android:slf4j-android-bindings under The Apache Software License, Version 2.0

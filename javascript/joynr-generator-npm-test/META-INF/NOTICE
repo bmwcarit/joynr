@@ -17,6 +17,6 @@ under the License.
 
 This project has dependencies to:
   Hamcrest Core under New BSD License
-  io.joynr.joynr-generator-test:joynr-generator-test under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:joynr-generator-npm-test under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
 

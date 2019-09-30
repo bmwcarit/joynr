@@ -26,7 +26,6 @@ This project has dependencies to:
   Aether SPI under Eclipse Public License, Version 1.0
   Aether Transport Wagon under Eclipse Public License, Version 1.0
   Aether Utilities under Eclipse Public License, Version 1.0
-  android under Apache License, Version 2.0
   Android APK Zip Library under The Apache Software License, Version 2.0
   Android AppCompat Library v7 under The Apache Software License, Version 2.0
   Android Arch-Common under The Apache Software License, Version 2.0
@@ -306,8 +305,6 @@ This project has dependencies to:
   io.joynr.java:jeeintegration under The Apache Software License, Version 2.0
   io.joynr.java:messaging under The Apache Software License, Version 2.0
   io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
-  io.joynr.joynr-generator-test:joynr-generator-test under The Apache Software License, Version 2.0
-  io.joynr.joynr-generator:joynr-generator under The Apache Software License, Version 2.0
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.performance.performance-test-jee:performance-test-jee-api under The Apache Software License, Version 2.0
   io.joynr.performance.performance-test-jee:performance-test-jee-provider under The Apache Software License, Version 2.0
@@ -349,6 +346,8 @@ This project has dependencies to:
   io.joynr.tools.generator:java-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-gradle-plugin under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:joynr-generator-npm under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:joynr-generator-npm-test under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-standalone under The Apache Software License, Version 2.0
   io.joynr.tools.generator:js-generator under The Apache Software License, Version 2.0
   io.joynr.tools:android under The Apache Software License, Version 2.0
