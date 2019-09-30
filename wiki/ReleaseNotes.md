@@ -10,6 +10,7 @@ None.
 ## Other changes
 * **[Java, JEE]** HivemqMqttClient now waits for `PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS`
   milliseconds before trying to reconnect when the initial connect fails.
+* **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
 
 # joynr 1.8.5
 

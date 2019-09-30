@@ -44,7 +44,7 @@ public class ShutdownNotifier {
      */
     private static final String PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT = "joynr.runtime.prepareforshutdowntimeout";
 
-    private List<ShutdownListener> shutdownListeners = new LinkedList<>();
+    private List<ShutdownListener> shutdownListenerList = new LinkedList<>();
 
     @Inject(optional = true)
     @Named(PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT)
@@ -56,8 +56,10 @@ public class ShutdownNotifier {
      * @param shutdownListener
      */
     public void registerForShutdown(ShutdownListener shutdownListener) {
-        shutdownListeners.add(0, shutdownListener);
-        logger.trace("#ShutdownListeners: {}", shutdownListeners.size());
+        synchronized (shutdownListenerList) {
+            shutdownListenerList.add(0, shutdownListener);
+            logger.trace("#ShutdownListeners: {}", shutdownListenerList.size());
+        }
     }
 
     /**
@@ -69,7 +71,9 @@ public class ShutdownNotifier {
      * @param shutdownListener
      */
     public void registerToBeShutdownAsLast(ShutdownListener shutdownListener) {
-        shutdownListeners.add(shutdownListener);
+        synchronized (shutdownListenerList) {
+            shutdownListenerList.add(shutdownListener);
+        }
     }
 
     /**
@@ -77,9 +81,12 @@ public class ShutdownNotifier {
      * asynchronously, and waiting a total of five seconds for all to complete or will then timeout without waiting.
      */
     public void prepareForShutdown() {
-        Collection<CompletableFuture<Void>> prepareShutdownFutures = shutdownListeners.stream()
-                                                                                      .map(shutdownListener -> CompletableFuture.runAsync(() -> shutdownListener.prepareForShutdown()))
-                                                                                      .collect(Collectors.toList());
+        Collection<CompletableFuture<Void>> prepareShutdownFutures;
+        synchronized (shutdownListenerList) {
+            prepareShutdownFutures = shutdownListenerList.stream()
+                                                         .map(shutdownListener -> CompletableFuture.runAsync(() -> shutdownListener.prepareForShutdown()))
+                                                         .collect(Collectors.toList());
+        }
         try {
             CompletableFuture.allOf(prepareShutdownFutures.toArray(new CompletableFuture[prepareShutdownFutures.size()]))
                              .get(prepareForShutdownTimeoutSec, TimeUnit.SECONDS);
@@ -93,18 +100,22 @@ public class ShutdownNotifier {
      * synchronously in turn.
      */
     public void shutdown() {
-        shutdownListeners.forEach(shutdownListener -> {
-            logger.trace("shutting down {}", shutdownListener);
-            try {
-                shutdownListener.shutdown();
-            } catch (Exception e) {
-                logger.error("error shutting down {}: {}", shutdownListener, e.getMessage());
-            }
-        });
+        synchronized (shutdownListenerList) {
+            shutdownListenerList.forEach(shutdownListener -> {
+                logger.trace("shutting down {}", shutdownListener);
+                try {
+                    shutdownListener.shutdown();
+                } catch (Exception e) {
+                    logger.error("error shutting down {}: {}", shutdownListener, e.getMessage());
+                }
+            });
+        }
     }
 
     public void unregister(ShutdownListener shutdownListener) {
-        shutdownListeners.remove(shutdownListener);
-        logger.trace("Removed ShutdownListener, #ShutdownListeners: {}", shutdownListeners.size());
+        synchronized (shutdownListenerList) {
+            shutdownListenerList.remove(shutdownListener);
+            logger.trace("Removed ShutdownListener, #ShutdownListeners: {}", shutdownListenerList.size());
+        }
     }
 }
