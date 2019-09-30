@@ -27,6 +27,7 @@ the versioning scheme [here](JoynrVersioning.md).
   are now removed by the Routing Table cleanup background job, provided the related proxy instances
   have already been collected by the Java garbage collector.
 * **[Java]** Updated jackson.databind to version 2.9.10, net.sourceforge.htmlunit:htmlunit to 2.36.0
+* **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
 
 ## Configuration property changes
 None.
