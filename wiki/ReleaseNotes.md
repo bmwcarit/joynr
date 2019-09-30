@@ -2,6 +2,17 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.7.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
+
+## Configuration property changes
+None.
+
 # joynr 1.7.2
 
 ## API relevant changes
