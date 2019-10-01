@@ -129,6 +129,99 @@ None.
   Now, multiple connection timeouts can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
 
+# joynr 1.8.5
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** HivemqMqttClient now reports its status via JoynrStatusMetrics.
+* **[Java, JEE]** When the HivemqMqttClient is using TLS and the property
+  `PROPERTY_KEY_MQTT_CIPHERSUITES` is not set, all ciphers supported in Java are used
+  by default. Currently these are:
+  * `TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384`
+  * `TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384`
+  * `TLS_RSA_WITH_AES_256_CBC_SHA256`
+  * `TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384`
+  * `TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384`
+  * `TLS_DHE_RSA_WITH_AES_256_CBC_SHA256`
+  * `TLS_DHE_DSS_WITH_AES_256_CBC_SHA256`
+  * `TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA`
+  * `TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA`
+  * `TLS_RSA_WITH_AES_256_CBC_SHA`
+  * `TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA`
+  * `TLS_ECDH_RSA_WITH_AES_256_CBC_SHA`
+  * `TLS_DHE_RSA_WITH_AES_256_CBC_SHA`
+  * `TLS_DHE_DSS_WITH_AES_256_CBC_SHA`
+  * `TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256`
+  * `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256`
+  * `TLS_RSA_WITH_AES_128_CBC_SHA256`
+  * `TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256`
+  * `TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256`
+  * `TLS_DHE_RSA_WITH_AES_128_CBC_SHA256`
+  * `TLS_DHE_DSS_WITH_AES_128_CBC_SHA256`
+  * `TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA`
+  * `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA`
+  * `TLS_RSA_WITH_AES_128_CBC_SHA`
+  * `TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA`
+  * `TLS_ECDH_RSA_WITH_AES_128_CBC_SHA`
+  * `TLS_DHE_RSA_WITH_AES_128_CBC_SHA`
+  * `TLS_DHE_DSS_WITH_AES_128_CBC_SHA`
+  * `TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384`
+  * `TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256`
+  * `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`
+  * `TLS_RSA_WITH_AES_256_GCM_SHA384`
+  * `TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384`
+  * `TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384`
+  * `TLS_DHE_RSA_WITH_AES_256_GCM_SHA384`
+  * `TLS_DHE_DSS_WITH_AES_256_GCM_SHA384`
+  * `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`
+  * `TLS_RSA_WITH_AES_128_GCM_SHA256`
+  * `TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256`
+  * `TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256`
+  * `TLS_DHE_RSA_WITH_AES_128_GCM_SHA256`
+  * `TLS_DHE_DSS_WITH_AES_128_GCM_SHA256`
+  * `TLS_EMPTY_RENEGOTIATION_INFO_SCSV`
+
+# joynr 1.8.4
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
+  are now removed by the Routing Table cleanup background job, provided the related proxy instances
+  have already been collected by the Java garbage collector.
+* **[Java]** Updated jackson to version 2.9.9, jackson.databind to 2.9.9.2
+* **[Java]** Updated net.sourceforge.htmlunit.htmlunit to 2.35.0
+* **[Java]** Updated smrf to 0.3.3
+
+## Configuration property changes
+* **[Java, JEE]** Introduced the `PROPERTY_KEY_MQTT_CIPHERSUITES` property, which can be set via
+  `joynr.messaging.mqtt.ssl.ciphersuites`. This property allows to define the ciphers that are
+  used by the HiveMQ MQTT Client. See [Java Configuration Reference](JavaSettings.md) for more details.
+
+# joynr 1.8.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Integration for HiveMQ MQTT Client. Also, the mqtt module is split up into the
+  base implementation, the Paho implementation and the new HiveMQ MQTT Client integration. The JEE
+  integration now uses the HiveMQ MQTT Client integration. IMPORTANT: JEE 7 based applications need
+  to exclude the HiveMQ MQTT Client library from CDI scanning
+  (see
+  examples/stateless-async/stateless-async-jee-consumer/src/main/webapp/WEB-INF/glassfish-web.xml
+  for an example of how to do this for Payara / Glassfish 5.x)
+* **[Docs]** Added documentation of configuring the [Java MQTT Clients](./java_mqtt_clients.md)
+* **[All]** Franca dependencies were updated and are now fetched from Maven Central. These  
+  dependencies are no longer packaged with joynr and should be fetched from Maven Central. Please  
+  make sure to upgrade any components accordingly to avoid possible version conflicts:
+  * org.franca:org.franca.core updated from version 0.13.0 to 0.13.1
+  * org.franca:org.franca.core.dsl updated from version 0.13.0 to 0.13.1
+  * org.franca:org.franca.deploymodel.dsl updated from version 0.13.0 to 0.13.1
+
 # joynr 1.8.2
 
 ## API relevant changes
@@ -176,6 +269,47 @@ None.
   "DEBUG" to support message tracking.
 * **[FIDL]** Introduce support for multiple backends in GlobalCapabilitiesDirectory FIDL. See
   `docs/gcd-in-multiple-be.md` for additional documentation.
+
+## Configuration property changes
+None.
+
+# joynr 1.7.3
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
+* **[Java]** Updated net.sourceforge.htmlunit:htmlunit to 2.36.0
+* **[Java]** Updated jackson.databind to version 2.9.10
+
+## Configuration property changes
+None.
+
+# joynr 1.7.2
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
+  are now removed by the Routing Table cleanup background job, provided the related proxy instances
+  have already been collected by the Java garbage collector.
+* **[Java]** Updated jackson to version 2.9.9, jackson.databind to 2.9.9.2
+* **[Java]** Updated net.sourceforge.htmlunit.htmlunit to 2.35.0
+* **[Java]** Updated smrf to 0.3.3
+
+## Configuration property changes
+None.
+
+# joynr 1.7.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS]** Fixed typo in `WebSocketLibjoynrRuntime`, by using correct method
+  `terminateAllSubscriptions`.
 
 ## Configuration property changes
 None.
