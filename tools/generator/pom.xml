@@ -36,20 +36,23 @@
 		<module>cpp-generator</module>
 		<module>java-generator</module>
 		<module>js-generator</module>
-		<module>joynr-generator-gradle-plugin</module>
 		<module>joynr-generator-maven-plugin</module>
 		<module>joynr-generator-standalone</module>
 	</modules>
-
-        <profiles>
-                <profile>
-                        <id>javascript</id>
-                        <modules>
-                                <module>joynr-generator-npm</module>
-                        </modules>
-                </profile>
-        </profiles>
-
+	<profiles>
+		<profile>
+			<id>javascript</id>
+			<modules>
+				<module>joynr-generator-npm</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>android</id>
+			<modules>
+				<module>joynr-generator-gradle-plugin</module>
+			</modules>
+		</profile>
+	</profiles>
 	<build>
 		<plugins>
 			<plugin>
