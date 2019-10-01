@@ -137,8 +137,8 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error)
             [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
-                callback->onError(error);
+            [callback](const std::shared_ptr<exceptions::JoynrException>& exceptionError) {
+                callback->onError(exceptionError);
             });
 
     icaller->execute(std::move(reply));
@@ -160,8 +160,8 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error)
     // Create a reply caller
     auto icaller = std::make_shared<ReplyCaller<void>>(
             [callback]() { callback->onSuccess(); },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
-                callback->onError(error);
+            [callback](const std::shared_ptr<exceptions::JoynrException>& exceptionError) {
+                callback->onError(exceptionError);
             });
 
     // Interpret the reply
@@ -184,8 +184,8 @@ TEST_F(ReplyInterpreterTest, execute_empty_reply)
             [callback](const types::Localisation::GpsLocation& location) {
                 callback->onSuccess(location);
             },
-            [callback](const std::shared_ptr<exceptions::JoynrException>& error) {
-                callback->onError(error);
+            [callback](const std::shared_ptr<exceptions::JoynrException>& exceptionError) {
+                callback->onError(exceptionError);
             });
 
     // Create a reply

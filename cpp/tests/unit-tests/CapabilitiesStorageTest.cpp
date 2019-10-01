@@ -78,7 +78,7 @@ TEST_F(LocalCapabilitiesStorageTest, insertWithGbids)
     auto it = storage.cbegin();
     ASSERT_TRUE(it != storage.cend());
     EXPECT_EQ(joynr::capabilities::LocalDiscoveryEntry(entry, gbids), *it);
-    EXPECT_EQ(gbids, (*it).gbids);
+    EXPECT_EQ(gbids, (*it)._gbids);
     EXPECT_TRUE(++it == storage.cend());
 }
 

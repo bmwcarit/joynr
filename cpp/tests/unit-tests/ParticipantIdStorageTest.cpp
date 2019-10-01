@@ -47,7 +47,7 @@ public:
 
     std::string domain;
     std::string interfaceName;
-    std::uint32_t majorVersion;
+    std::int32_t majorVersion;
 };
 
 class ParticipantIdStorageAssertTest : public ParticipantIdStorageTest
@@ -162,7 +162,7 @@ TEST(ParticipantIdStorageTest, writeIniFile)
     }
 
     std::ifstream fileStream(storageFile.c_str());
-    size_t numberOfEntriesInFile = std::count(
+    std::int32_t numberOfEntriesInFile = std::count(
             std::istreambuf_iterator<char>(fileStream), std::istreambuf_iterator<char>(), '\n');
 
     EXPECT_EQ(entriesToWrite, numberOfEntriesInFile);
@@ -297,7 +297,7 @@ protected:
     ParticipantIdStorage store;
     const std::string domain;
     const std::string interfaceName;
-    const std::uint32_t majorVersion;
+    const std::int32_t majorVersion;
     const std::string participantId;
 
     std::condition_variable cv;

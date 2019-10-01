@@ -230,7 +230,7 @@ protected:
         discoveryQos.setDiscoveryTimeoutMs(30000);
         discoveryQos.setRetryIntervalMs(500);
 
-        std::int64_t qosRoundTripTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
 
         std::shared_ptr<tests::testProxy> testProxy(
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))

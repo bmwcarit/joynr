@@ -112,16 +112,16 @@ public:
     {
         std::uint64_t delay = 0;
 
-        while (testProvider->attributeListeners.find(attributeName) ==
-                       testProvider->attributeListeners.cend() &&
+        while (testProvider->_attributeListeners.find(attributeName) ==
+                       testProvider->_attributeListeners.cend() &&
                delay <= subscribeToAttributeWait) {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
             delay += 50;
         }
 
-        EXPECT_FALSE(testProvider->attributeListeners.find(attributeName) ==
-                             testProvider->attributeListeners.cend() ||
-                     testProvider->attributeListeners.find(attributeName)->second.empty());
+        EXPECT_FALSE(testProvider->_attributeListeners.find(attributeName) ==
+                             testProvider->_attributeListeners.cend() ||
+                     testProvider->_attributeListeners.find(attributeName)->second.empty());
     }
 
 private:
@@ -157,7 +157,7 @@ protected:
         discoveryQos.setDiscoveryTimeoutMs(3000);
         discoveryQos.setRetryIntervalMs(250);
 
-        std::int64_t qosRoundTripTTL = 500;
+        std::uint64_t qosRoundTripTTL = 500;
 
         std::shared_ptr<tests::testProxy> testProxy =
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
@@ -315,7 +315,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute)
                 std::shared_ptr<Future<std::string>> subscriptionIdFuture =
                         testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
                 JOYNR_EXPECT_NO_THROW(
-                        subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
+                        subscriptionIdFuture->get(static_cast<std::int64_t>(subscribeToAttributeWait), subscriptionId));
             },
             [](std::shared_ptr<tests::testProxy>& testProxy, std::string& subscriptionId) {
                 testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
@@ -338,7 +338,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute)
                         testProxy->subscribeToByteBufferAttribute(
                                 subscriptionListener, subscriptionQos);
                 JOYNR_EXPECT_NO_THROW(
-                        subscriptionIdFuture->get(subscribeToAttributeWait, subscriptionId));
+                        subscriptionIdFuture->get(static_cast<std::int64_t>(subscribeToAttributeWait), subscriptionId));
             },
             [](std::shared_ptr<tests::testProxy>& testProxy, std::string& subscriptionId) {
                 testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);

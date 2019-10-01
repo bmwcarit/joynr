@@ -154,7 +154,7 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithProviderRun
     };
     EXPECT_CALL(*callback,
                 onError(joynrException(joynr::exceptions::ProviderRuntimeException::TYPE_NAME(),
-                                       mockCaller->providerRuntimeExceptionTestMsg))).Times(1);
+                                       mockCaller->_providerRuntimeExceptionTestMsg))).Times(1);
 
     Request request = initRequest(methodName, {});
     interpreter.execute(mockCaller, request, onSuccess, onError);
@@ -181,7 +181,7 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
     };
     EXPECT_CALL(*callback,
                 onError(joynrException(joynr::exceptions::ProviderRuntimeException::TYPE_NAME(),
-                                       mockCaller->providerRuntimeExceptionTestMsg))).Times(1);
+                                       mockCaller->_providerRuntimeExceptionTestMsg))).Times(1);
 
     Request request = initRequest(methodName, {});
     interpreter.execute(mockCaller, request, onSuccess, onError);

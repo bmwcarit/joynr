@@ -42,33 +42,33 @@ class JoynrMessageFactoryTtlUpliftTest : public ::testing::Test
 {
 public:
     JoynrMessageFactoryTtlUpliftTest()
-            : messageFactory(0),
-              senderID("senderId"),
-              receiverID("receiverID"),
-              ttl(1000),
-              ttlUplift(10000),
-              upliftedTtl(ttl + ttlUplift),
-              isLocalMessage(true),
-              messagingQos(),
-              factoryWithTtlUplift(ttlUplift)
+            : _messageFactory(0),
+              _senderID("senderId"),
+              _receiverID("receiverID"),
+              _ttl(1000),
+              _ttlUplift(10000),
+              _upliftedTtl(_ttl + static_cast<std::int64_t>(_ttlUplift)),
+              _isLocalMessage(true),
+              _messagingQos(),
+              _factoryWithTtlUplift(_ttlUplift)
     {
-        messagingQos.setTtl(ttl);
+        _messagingQos.setTtl(static_cast<std::uint64_t>(_ttl));
     }
 
     void checkMessageExpiryDate(const MutableMessage& message, const std::int64_t expectedTtl);
 
 protected:
     ADD_LOGGER(JoynrMessageFactoryTtlUpliftTest)
-    MutableMessageFactory messageFactory;
-    std::string senderID;
-    std::string receiverID;
+    MutableMessageFactory _messageFactory;
+    std::string _senderID;
+    std::string _receiverID;
 
-    const std::int64_t ttl;
-    const std::uint64_t ttlUplift;
-    const std::int64_t upliftedTtl;
-    const bool isLocalMessage;
-    MessagingQos messagingQos;
-    MutableMessageFactory factoryWithTtlUplift;
+    const std::int64_t _ttl;
+    const std::uint64_t _ttlUplift;
+    const std::int64_t _upliftedTtl;
+    const bool _isLocalMessage;
+    MessagingQos _messagingQos;
+    MutableMessageFactory _factoryWithTtlUplift;
 };
 
 void JoynrMessageFactoryTtlUpliftTest::checkMessageExpiryDate(const MutableMessage& message,
@@ -87,100 +87,100 @@ void JoynrMessageFactoryTtlUpliftTest::checkMessageExpiryDate(const MutableMessa
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testDefaultTtlUplift)
 {
     Request request;
-    MutableMessage message = messageFactory.createRequest(
-            senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = _messageFactory.createRequest(
+            _senderID, _receiverID, _messagingQos, request, _isLocalMessage);
 
-    checkMessageExpiryDate(message, ttl);
+    checkMessageExpiryDate(message, _ttl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Request)
 {
     Request request;
-    MutableMessage message = factoryWithTtlUplift.createRequest(
-            senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = _factoryWithTtlUplift.createRequest(
+            _senderID, _receiverID, _messagingQos, request, _isLocalMessage);
 
-    checkMessageExpiryDate(message, upliftedTtl);
+    checkMessageExpiryDate(message, _upliftedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_Reply_noUplift)
 {
     Reply reply;
     MutableMessage message =
-            factoryWithTtlUplift.createReply(senderID, receiverID, messagingQos, {}, reply);
+            _factoryWithTtlUplift.createReply(_senderID, _receiverID, _messagingQos, {}, reply);
 
-    checkMessageExpiryDate(message, ttl);
+    checkMessageExpiryDate(message, _ttl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_OneWayRequest)
 {
     OneWayRequest oneWayRequest;
-    MutableMessage message = factoryWithTtlUplift.createOneWayRequest(
-            senderID, receiverID, messagingQos, oneWayRequest, isLocalMessage);
+    MutableMessage message = _factoryWithTtlUplift.createOneWayRequest(
+            _senderID, _receiverID, _messagingQos, oneWayRequest, _isLocalMessage);
 
-    checkMessageExpiryDate(message, upliftedTtl);
+    checkMessageExpiryDate(message, _upliftedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_MulticastPublication)
 {
     MulticastPublication publication;
     MutableMessage message =
-            factoryWithTtlUplift.createMulticastPublication(senderID, messagingQos, publication);
+            _factoryWithTtlUplift.createMulticastPublication(_senderID, _messagingQos, publication);
 
-    checkMessageExpiryDate(message, upliftedTtl);
+    checkMessageExpiryDate(message, _upliftedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionPublication)
 {
     SubscriptionPublication subscriptionPublication;
-    MutableMessage message = factoryWithTtlUplift.createSubscriptionPublication(
-            senderID, receiverID, messagingQos, subscriptionPublication);
+    MutableMessage message = _factoryWithTtlUplift.createSubscriptionPublication(
+            _senderID, _receiverID, _messagingQos, subscriptionPublication);
 
-    checkMessageExpiryDate(message, upliftedTtl);
+    checkMessageExpiryDate(message, _upliftedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionRequest)
 {
     SubscriptionRequest request;
-    MutableMessage message = factoryWithTtlUplift.createSubscriptionRequest(
-            senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = _factoryWithTtlUplift.createSubscriptionRequest(
+            _senderID, _receiverID, _messagingQos, request, _isLocalMessage);
 
-    checkMessageExpiryDate(message, upliftedTtl);
+    checkMessageExpiryDate(message, _upliftedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_MulticastSubscriptionRequest)
 {
     MulticastSubscriptionRequest request;
-    MutableMessage message = factoryWithTtlUplift.createMulticastSubscriptionRequest(
-            senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = _factoryWithTtlUplift.createMulticastSubscriptionRequest(
+            _senderID, _receiverID, _messagingQos, request, _isLocalMessage);
 
-    checkMessageExpiryDate(message, upliftedTtl);
+    checkMessageExpiryDate(message, _upliftedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_BroadcastSubscriptionRequest)
 {
     BroadcastSubscriptionRequest request;
-    MutableMessage message = factoryWithTtlUplift.createBroadcastSubscriptionRequest(
-            senderID, receiverID, messagingQos, request, isLocalMessage);
+    MutableMessage message = _factoryWithTtlUplift.createBroadcastSubscriptionRequest(
+            _senderID, _receiverID, _messagingQos, request, _isLocalMessage);
 
-    checkMessageExpiryDate(message, upliftedTtl);
+    checkMessageExpiryDate(message, _upliftedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionReply_noUplift)
 {
     SubscriptionReply reply;
     MutableMessage message =
-            factoryWithTtlUplift.createSubscriptionReply(senderID, receiverID, messagingQos, reply);
+            _factoryWithTtlUplift.createSubscriptionReply(_senderID, _receiverID, _messagingQos, reply);
 
-    checkMessageExpiryDate(message, ttl);
+    checkMessageExpiryDate(message, _ttl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionStop)
 {
     SubscriptionStop subscriptionStop;
-    MutableMessage message = factoryWithTtlUplift.createSubscriptionStop(
-            senderID, receiverID, messagingQos, subscriptionStop);
+    MutableMessage message = _factoryWithTtlUplift.createSubscriptionStop(
+            _senderID, _receiverID, _messagingQos, subscriptionStop);
 
-    checkMessageExpiryDate(message, upliftedTtl);
+    checkMessageExpiryDate(message, _upliftedTtl);
 }
 
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
@@ -188,14 +188,14 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
     const TimePoint expectedTimePoint = TimePoint::max();
     Request request;
 
-    std::int64_t ttl;
-    MessagingQos messagingQos;
+    std::int64_t localTtl;
+    MessagingQos localMessagingQos;
     MutableMessage message;
 
-    ttl = INT64_MAX;
-    messagingQos.setTtl(ttl);
-    message = factoryWithTtlUplift.createRequest(
-            senderID, receiverID, messagingQos, request, isLocalMessage);
+    localTtl = INT64_MAX;
+    localMessagingQos.setTtl(static_cast<std::uint64_t>(localTtl));
+    message = _factoryWithTtlUplift.createRequest(
+            _senderID, _receiverID, localMessagingQos, request, _isLocalMessage);
     TimePoint timePoint = message.getExpiryDate();
     EXPECT_EQ(expectedTimePoint, timePoint)
             << "expected timepoint: " + std::to_string(expectedTimePoint.toMilliseconds()) +
@@ -206,21 +206,21 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
 
     //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count();
     //    messagingQos.setTtl(ttl);
-    //    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos, request);
     //    timePoint = message.getHeaderExpiryDate();
     //    EXPECT_EQ(expectedTimePoint, timePoint);
 
     //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count() - ttlUplift;
     //    messagingQos.setTtl(ttl);
-    //    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos, request);
     //    timePoint = message.getHeaderExpiryDate();
     //    EXPECT_EQ(expectedTimePoint, timePoint);
 
     auto now = TimePoint::now();
-    ttl = (TimePoint::max() - std::chrono::milliseconds(ttlUplift)).relativeFromNow().count();
-    messagingQos.setTtl(ttl);
-    message = factoryWithTtlUplift.createRequest(
-            senderID, receiverID, messagingQos, request, isLocalMessage);
+    localTtl = (TimePoint::max() - std::chrono::milliseconds(_ttlUplift)).relativeFromNow().count();
+    localMessagingQos.setTtl(static_cast<std::uint64_t>(localTtl));
+    message = _factoryWithTtlUplift.createRequest(
+            _senderID, _receiverID, localMessagingQos, request, _isLocalMessage);
     //    timePoint = message.getHeaderExpiryDate();
     //    EXPECT_EQ(expectedTimePoint, timePoint) << "expected timepoint: "
     //                                               +
@@ -235,7 +235,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
     //            - std::chrono::time_point_cast<std::chrono::milliseconds>(
     //                std::chrono::system_clock::now()).time_since_epoch().count() + 1;
     //    messagingQos.setTtl(ttl);
-    //    message = factoryWithTtlUplift.createRequest(senderID, receiverID, messagingQos, request);
+    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos, request);
     //    timePoint = message.getHeaderExpiryDate();
     //    EXPECT_EQ(expectedTimePoint, timePoint);
 }

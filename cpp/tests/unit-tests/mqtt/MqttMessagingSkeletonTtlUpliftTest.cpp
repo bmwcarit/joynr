@@ -88,7 +88,7 @@ protected:
 
 TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift)
 {
-    std::int64_t ttlMs = 1024;
+    std::uint64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
     Request request;
     MutableMessage mutableMessage =
@@ -108,7 +108,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, testDefaultTtlUplift)
 
 TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift)
 {
-    std::int64_t ttlMs = 1024;
+    std::uint64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
     Request request;
     MutableMessage mutableMessage =
@@ -130,7 +130,7 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift)
 TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl)
 {
     const TimePoint maxAbsoluteTime = TimePoint::max();
-    std::int64_t ttlMs = 1024;
+    std::uint64_t ttlMs = 1024;
     MessagingQos qos(ttlMs);
     Request request;
     MutableMessage mutableMessage =

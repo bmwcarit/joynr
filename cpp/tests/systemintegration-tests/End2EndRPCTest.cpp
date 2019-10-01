@@ -106,7 +106,7 @@ TEST_P(End2EndRPCTest, call_rpc_method_and_get_expected_result)
     std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
             runtime->createProxyBuilder<vehicle::GpsProxy>(domain);
 
-    std::int64_t qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
     std::shared_ptr<vehicle::GpsProxy> gpsProxy =
             gpsProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
@@ -140,7 +140,7 @@ TEST_P(End2EndRPCTest, call_void_operation)
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
-    std::int64_t qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
     std::shared_ptr<tests::testProxy> testProxy =
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
@@ -171,7 +171,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
-    std::int64_t qosRoundTripTTL = 40000;
+    std::uint64_t qosRoundTripTTL = 40000;
     std::shared_ptr<tests::testProxy> testProxy =
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)

@@ -254,14 +254,14 @@ class ShortCircuitRuntime : public JoynrRuntimeImpl
 {
 public:
     ShortCircuitRuntime(std::unique_ptr<Settings> settings,
-                        std::shared_ptr<IKeychain> keyChain = nullptr);
+                        std::shared_ptr<IKeychain> _keyChain = nullptr);
 
     template <class TIntfProvider>
     std::string registerProvider(const std::string& domain,
                                  std::shared_ptr<TIntfProvider> provider,
                                  const types::ProviderQos& providerQos)
     {
-        return capabilitiesRegistrar->addAsync<TIntfProvider>(
+        return _capabilitiesRegistrar->addAsync<TIntfProvider>(
                 domain, provider, providerQos, nullptr, nullptr);
     }
 
@@ -275,7 +275,7 @@ public:
             future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
         };
 
-        std::string participantId = capabilitiesRegistrar->removeAsync<TIntfProvider>(
+        std::string participantId = _capabilitiesRegistrar->removeAsync<TIntfProvider>(
                 domain, provider, std::move(onSuccess), std::move(onError));
         future.get();
         return participantId;
@@ -285,42 +285,42 @@ public:
     std::shared_ptr<ProxyBuilder<TIntfProxy>> createProxyBuilder(const std::string& domain)
     {
         return std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
-                                                          *proxyFactory,
-                                                          requestCallerDirectory,
-                                                          discoveryProxy,
+                                                          *_proxyFactory,
+                                                          _requestCallerDirectory,
+                                                          _discoveryProxy,
                                                           domain,
-                                                          dispatcherAddress,
-                                                          messageRouter,
-                                                          messagingSettings);
+                                                          _dispatcherAddress,
+                                                          _messageRouter,
+                                                          _messagingSettings);
     }
 
     std::shared_ptr<IMessageRouter> getMessageRouter()
     {
-        return messageRouter;
+        return _messageRouter;
     }
 
 private:
-    SingleThreadedIOService singleThreadedIOService;
-    std::shared_ptr<IMessageRouter> messageRouter;
-    std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy;
-    std::shared_ptr<IMessageSender> messageSender;
-    std::shared_ptr<IDispatcher> joynrDispatcher;
-    std::shared_ptr<InProcessMessagingSkeleton> dispatcherMessagingSkeleton;
-    std::shared_ptr<joynr::system::RoutingTypes::Address> dispatcherAddress;
-    std::shared_ptr<PublicationManager> publicationManager;
-    std::shared_ptr<SubscriptionManager> subscriptionManager;
-    std::unique_ptr<ProxyFactory> proxyFactory;
-    std::shared_ptr<ParticipantIdStorage> participantIdStorage;
-    std::unique_ptr<CapabilitiesRegistrar> capabilitiesRegistrar;
-    std::uint64_t maximumTtlMs;
-    std::shared_ptr<IKeychain> keyChain;
-    std::shared_ptr<DummyRequestCallerDirectory> requestCallerDirectory;
-    ClusterControllerSettings clusterControllerSettings;
-    const system::RoutingTypes::Address ownAddress;
-    std::vector<std::string> availableGbids;
+    SingleThreadedIOService _singleThreadedIOService;
+    std::shared_ptr<IMessageRouter> _messageRouter;
+    std::shared_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
+    std::shared_ptr<IMessageSender> _messageSender;
+    std::shared_ptr<IDispatcher> _joynrDispatcher;
+    std::shared_ptr<InProcessMessagingSkeleton> _dispatcherMessagingSkeleton;
+    std::shared_ptr<joynr::system::RoutingTypes::Address> _dispatcherAddress;
+    std::shared_ptr<PublicationManager> _publicationManager;
+    std::shared_ptr<SubscriptionManager> _subscriptionManager;
+    std::unique_ptr<ProxyFactory> _proxyFactory;
+    std::shared_ptr<ParticipantIdStorage> _participantIdStorage;
+    std::unique_ptr<CapabilitiesRegistrar> _capabilitiesRegistrar;
+    std::uint64_t _maximumTtlMs;
+    std::shared_ptr<IKeychain> _keyChain;
+    std::shared_ptr<DummyRequestCallerDirectory> _requestCallerDirectory;
+    ClusterControllerSettings _clusterControllerSettings;
+    const system::RoutingTypes::Address _ownAddress;
+    std::vector<std::string> _availableGbids;
     void fillAvailableGbidsVector(const MessagingSettings& messagingSettings);
 
-    const bool enablePersistency;
+    const bool _enablePersistency;
 };
 
 } // namespace joynr

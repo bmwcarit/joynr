@@ -110,7 +110,7 @@ protected:
     std::string providerParticipantId;
     joynr::Semaphore semaphore;
 
-    const std::int64_t MESSAGINGQOS_TTL;
+    const std::uint64_t MESSAGINGQOS_TTL;
 };
 
 TEST_F(PersistencyCreationTest, testPersistencyFilesAreNotWrittenWhenDisabled)

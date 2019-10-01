@@ -112,7 +112,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(3000);
 
-    std::int64_t qosRoundTripTTL = 50000;
+    std::uint64_t qosRoundTripTTL = 50000;
 
     // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy =
@@ -121,9 +121,9 @@ TEST_P(End2EndPerformanceTest, sendManyRequests)
                     ->build();
     TimePoint startTime = TimePoint::now();
     std::vector<std::shared_ptr<Future<int>>> testFutureList;
-    int numberOfRequests = 150;
-    int successfulRequests = 0;
-    for (int i = 0; i < numberOfRequests; i++) {
+    std::size_t numberOfRequests = 150;
+    std::size_t successfulRequests = 0;
+    for (std::size_t i = 0; i < numberOfRequests; i++) {
         std::vector<int> list;
         list.push_back(2);
         list.push_back(4);
@@ -132,7 +132,7 @@ TEST_P(End2EndPerformanceTest, sendManyRequests)
         testFutureList.push_back(testProxy->sumIntsAsync(list));
     }
 
-    for (int i = 0; i < numberOfRequests; i++) {
+    for (std::size_t i = 0; i < numberOfRequests; i++) {
         testFutureList.at(i)->wait();
         int expectedValue = 2 + 4 + 8 + i;
         if (testFutureList.at(i)->isOk()) {

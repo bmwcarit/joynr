@@ -100,14 +100,14 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantId)
             routingTable.lookupRoutingEntryByParticipantId(firstKey);
     boost::optional<routingtable::RoutingEntry> result2 =
             routingTable.lookupRoutingEntryByParticipantId(secondKey);
-    ASSERT_EQ(*(result1->address), *testValue);
-    ASSERT_EQ(result1->isGloballyVisible, firstIsGloballyVisible);
-    ASSERT_EQ(result1->expiryDateMs, expectedExpiryDateMs1);
-    ASSERT_EQ(result1->isSticky, expectedIsSticky1);
-    ASSERT_EQ(*(result2->address), *secondTestValue);
-    ASSERT_EQ(result2->isGloballyVisible, secondIsGloballyVisible);
-    ASSERT_EQ(result2->expiryDateMs, expectedExpiryDateMs2);
-    ASSERT_EQ(result2->isSticky, expectedIsSticky2);
+    ASSERT_EQ(*(result1->_address), *testValue);
+    ASSERT_EQ(result1->_isGloballyVisible, firstIsGloballyVisible);
+    ASSERT_EQ(result1->_expiryDateMs, expectedExpiryDateMs1);
+    ASSERT_EQ(result1->_isSticky, expectedIsSticky1);
+    ASSERT_EQ(*(result2->_address), *secondTestValue);
+    ASSERT_EQ(result2->_isGloballyVisible, secondIsGloballyVisible);
+    ASSERT_EQ(result2->_expiryDateMs, expectedExpiryDateMs2);
+    ASSERT_EQ(result2->_isSticky, expectedIsSticky2);
 }
 
 TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_gcdParticipantId_mqttAddress)
@@ -122,7 +122,7 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_gcdParticipant
     boost::optional<routingtable::RoutingEntry> result1 =
             routingTable.lookupRoutingEntryByParticipantIdAndGbid(gcdParticipantId, otherGbid);
     ASSERT_EQ(expectedGbid,
-              (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result1->address).get()))->getBrokerUri());
+              (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result1->_address).get()))->getBrokerUri());
     routingTable.remove(gcdParticipantId);
 }
 
@@ -135,7 +135,7 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_nonGcdParticip
     boost::optional<routingtable::RoutingEntry> result3 =
             routingTable.lookupRoutingEntryByParticipantIdAndGbid(secondKey, otherGbid);
     ASSERT_EQ(expectedGbid,
-              (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result3->address).get()))->getBrokerUri());
+              (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result3->_address).get()))->getBrokerUri());
     routingTable.remove(secondKey);
 }
 
@@ -149,8 +149,8 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_gcdParticipant
                      isStickyFalse);
     boost::optional<routingtable::RoutingEntry> result2 =
             routingTable.lookupRoutingEntryByParticipantIdAndGbid(gcdParticipantId, otherGbid);
-    ASSERT_FALSE(dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result2->address).get()));
-    ASSERT_EQ(secondTestValue, result2->address);
+    ASSERT_FALSE(dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result2->_address).get()));
+    ASSERT_EQ(secondTestValue, result2->_address);
     routingTable.remove(gcdParticipantId);
 }
 

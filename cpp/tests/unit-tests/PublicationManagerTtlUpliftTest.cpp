@@ -57,7 +57,7 @@ using namespace joynr;
 
 MATCHER_P3(messagingQosWithTtl, expectedTtlMs, toleranceMs, logger, "")
 {
-    std::int64_t actual = arg.getTtl();
+    std::int64_t actual = static_cast<std::int64_t>(arg.getTtl());
     std::int64_t diff = expectedTtlMs - actual;
     if (diff <= toleranceMs) {
         return true;
@@ -548,7 +548,7 @@ TEST_F(PublicationManagerTtlUpliftTest,
 
     // SubscriptionRequest
     std::string attributeName("Location");
-    std::int64_t expiryDateMs = INT64_MAX - ttlUpliftMs + 1;
+    std::int64_t expiryDateMs = INT64_MAX - static_cast<std::int64_t>(ttlUpliftMs) + 1;
     onChangeSubscriptionQos->setExpiryDateMs(expiryDateMs);
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName(attributeName);
@@ -595,7 +595,7 @@ TEST_F(PublicationManagerTtlUpliftTest,
 
     // SubscriptionRequest
     std::string broadcastName("Location");
-    std::int64_t expiryDateMs = INT64_MAX - ttlUpliftMs + 1;
+    std::int64_t expiryDateMs = INT64_MAX - static_cast<std::int64_t>(ttlUpliftMs) + 1;
     onChangeSubscriptionQos->setExpiryDateMs(expiryDateMs);
     BroadcastSubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName(broadcastName);

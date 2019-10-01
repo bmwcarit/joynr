@@ -145,7 +145,7 @@ protected:
     joynr::Semaphore semaphore;
 
     const std::string AC_ENTRIES_FILE;
-    const std::int64_t MESSAGINGQOS_TTL;
+    const std::uint64_t MESSAGINGQOS_TTL;
 };
 
 TEST_F(End2EndAccessControlTest, queuedMsgsForUnavailableProviderAreAcCheckedWhenProviderIsRegisteredAgain_permissionYes)
@@ -187,7 +187,7 @@ TEST_F(End2EndAccessControlTest, queuedMsgsForUnavailableProviderAreAcCheckedWhe
         semaphore.notify();
     };
 
-    joynr::MessagingQos messagingQoS(MESSAGINGQOS_TTL);
+    joynr::MessagingQos messagingQoS(static_cast<std::uint64_t>(MESSAGINGQOS_TTL));
     testProxy->methodWithNoInputParametersAsync(nullptr, onError, messagingQoS);
 
     // Sleep some time to give the proxy call chance to reach the cluster controller and get queued

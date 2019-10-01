@@ -34,7 +34,7 @@ class MockTestProvider : public joynr::tests::DefaulttestProvider
 public:
     MockTestProvider() :
         joynr::tests::DefaulttestProvider(),
-        listOfStrings()
+        _listOfStrings()
     {
         EXPECT_CALL(*this, getLocation(_,_))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
@@ -52,24 +52,24 @@ public:
     void invokeLocationOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
                          std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
-        joynr::types::Localisation::GpsLocation location;
-        onSuccess(location);
+        joynr::types::Localisation::GpsLocation gpsLocation;
+        onSuccess(gpsLocation);
     }
 
     void invokeListOfStringsOnSuccess(std::function<void(const std::vector<std::string>&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
     {
-        onSuccess(listOfStrings);
+        onSuccess(_listOfStrings);
     }
 
     void invokeAttributeWithProviderRuntimeExceptionOnError(std::function<void(const int32_t&)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) {
-        onError(joynr::exceptions::ProviderRuntimeException(providerRuntimeExceptionTestMsg));
+        onError(joynr::exceptions::ProviderRuntimeException(_providerRuntimeExceptionTestMsg));
     }
 
-    void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& location) override
+    void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& gpsLocation) override
     {
-        joynr::tests::testAbstractProvider::fireLocationUpdateSelective(location);
+        joynr::tests::testAbstractProvider::fireLocationUpdateSelective(gpsLocation);
     }
 
     void fireBroadcastWithSingleArrayParameter(
@@ -80,9 +80,9 @@ public:
         joynr::tests::testAbstractProvider::fireBroadcastWithSingleArrayParameter(singleParam);
     }
 
-    void listOfStringsChanged(const std::vector<std::string>& listOfStrings) override
+    void listOfStringsChanged(const std::vector<std::string>& listOfStrs) override
     {
-        joynr::tests::testAbstractProvider::listOfStringsChanged(listOfStrings);
+        joynr::tests::testAbstractProvider::listOfStringsChanged(listOfStrs);
     }
 
     void registerBroadcastListener(std::shared_ptr<joynr::MulticastBroadcastListener> broadcastListener) override
@@ -207,13 +207,13 @@ public:
     }
 
     void setListOfStrings(
-         const std::vector<std::string> & listOfStrings,
+         const std::vector<std::string> & listOfStrs,
          std::function<void()> onSuccess,
          std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
     ) override
     {
-        this->listOfStrings = listOfStrings;
-        listOfStringsChanged(listOfStrings);
+        this->_listOfStrings = listOfStrs;
+        listOfStringsChanged(listOfStrs);
         onSuccess();
     }
 
@@ -280,10 +280,10 @@ public:
                 tStringMapIn
         );
     }
-    const std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
+    const std::string _providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 
 private:
-    std::vector<std::string> listOfStrings;
+    std::vector<std::string> _listOfStrings;
 };
 
 #endif // TESTS_MOCK_MOCKTESTPROVIDER_H

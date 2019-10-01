@@ -91,28 +91,28 @@ class MqttMessagingSkeletonTest : public ::testing::Test
 {
 public:
     MqttMessagingSkeletonTest()
-            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              mockMessageRouter(
-                      std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
-              isLocalMessage(false),
-              settings(),
-              ccSettings(settings),
-              brokerUrl("testBrokerUrl"),
-              mqttKeepAliveTimeSeconds(1),
-              mqttReconnectDelayTimeSeconds(1),
-              mqttReconnectMaxDelayTimeSeconds(1),
-              isMqttExponentialBackoffEnabled(false),
-              receiverId("receiverId"),
-              testGbid("testGbid"),
-              mqttAddress(std::make_shared<joynr::system::RoutingTypes::MqttAddress>("fakegbid","testtopic"))
+            : _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              _mockMessageRouter(
+                      std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
+              _isLocalMessage(false),
+              _settings(),
+              _ccSettings(_settings),
+              _brokerUrl("testBrokerUrl"),
+              _mqttKeepAliveTimeSeconds(1),
+              _mqttReconnectDelayTimeSeconds(1),
+              _mqttReconnectMaxDelayTimeSeconds(1),
+              _isMqttExponentialBackoffEnabled(false),
+              _receiverId("receiverId"),
+              _testGbid("testGbid"),
+              _mqttAddress(std::make_shared<joynr::system::RoutingTypes::MqttAddress>("fakegbid","testtopic"))
 
     {
-        singleThreadedIOService->start();
+        _singleThreadedIOService->start();
     }
 
     ~MqttMessagingSkeletonTest()
     {
-        singleThreadedIOService->stop();
+        _singleThreadedIOService->stop();
     }
 
     void SetUp()
@@ -121,9 +121,9 @@ public:
         std::string postFix;
 
         postFix = "_" + util::createUuid();
-        senderID = "senderId" + postFix;
-        receiverID = "receiverID" + postFix;
-        qosSettings = MessagingQos(456000);
+        _senderID = "senderId" + postFix;
+        _receiverID = "receiverID" + postFix;
+        _qosSettings = MessagingQos(456000);
         Request request;
         request.setMethodName("methodName");
         request.setParams(42, std::string("value"));
@@ -132,35 +132,35 @@ public:
         paramDatatypes.push_back("String");
         request.setParamDatatypes(paramDatatypes);
 
-        mutableMessage = messageFactory.createRequest(
-                senderID, receiverID, qosSettings, request, isLocalMessage);
-        serializedMqttAddress = joynr::serializer::serializeToJson(*mqttAddress);
-        mutableMessage.setReplyTo(serializedMqttAddress);
+        _mutableMessage = _messageFactory.createRequest(
+                _senderID, _receiverID, _qosSettings, request, _isLocalMessage);
+        _serializedMqttAddress = joynr::serializer::serializeToJson(*_mqttAddress);
+        _mutableMessage.setReplyTo(_serializedMqttAddress);
     }
 
 protected:
     void transmitSetsIsReceivedFromGlobal();
-    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
-    std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    MutableMessageFactory messageFactory;
-    MutableMessage mutableMessage;
-    std::string senderID;
-    std::string receiverID;
-    MessagingQos qosSettings;
-    const bool isLocalMessage;
-    Settings settings;
-    ClusterControllerSettings ccSettings;
+    std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
+    std::shared_ptr<MockMessageRouter> _mockMessageRouter;
+    MutableMessageFactory _messageFactory;
+    MutableMessage _mutableMessage;
+    std::string _senderID;
+    std::string _receiverID;
+    MessagingQos _qosSettings;
+    const bool _isLocalMessage;
+    Settings _settings;
+    ClusterControllerSettings _ccSettings;
 
-    joynr::BrokerUrl brokerUrl;
-    std::chrono::seconds mqttKeepAliveTimeSeconds;
-    std::chrono::seconds mqttReconnectDelayTimeSeconds;
-    std::chrono::seconds mqttReconnectMaxDelayTimeSeconds;
-    bool isMqttExponentialBackoffEnabled;
-    std::string receiverId;
-    std::string testGbid;
+    joynr::BrokerUrl _brokerUrl;
+    std::chrono::seconds _mqttKeepAliveTimeSeconds;
+    std::chrono::seconds _mqttReconnectDelayTimeSeconds;
+    std::chrono::seconds _mqttReconnectMaxDelayTimeSeconds;
+    bool _isMqttExponentialBackoffEnabled;
+    std::string _receiverId;
+    std::string _testGbid;
 
-    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> mqttAddress;
-    std::string serializedMqttAddress;
+    std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> _mqttAddress;
+    std::string _serializedMqttAddress;
 
 };
 
@@ -206,9 +206,9 @@ MATCHER(isPointerToChannelAddress, "")
 TEST_F(MqttMessagingSkeletonTest, transmitTest)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
-    EXPECT_CALL(*mockMessageRouter, route(immutableMessage, _)).Times(1);
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
+    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
+    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
 
     auto onFailure =
             [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
@@ -218,15 +218,15 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest)
 TEST_F(MqttMessagingSkeletonTest, transmitTestWithMqttReplyToAddress)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
-    EXPECT_CALL(*mockMessageRouter, route(immutableMessage, _)).Times(1);
-    EXPECT_CALL(*mockMessageRouter, addNextHop(Eq(immutableMessage->getSender()),
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
+    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
+    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(Eq(immutableMessage->getSender()),
                                                AllOf(Property(
                                                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                                                    WhenDynamicCastTo<const joynr::system::RoutingTypes::MqttAddress*>(
-                                                       Pointee(AllOf(Property(&joynr::system::RoutingTypes::MqttAddress::getBrokerUri, Eq(testGbid)),
-                                                                     Property(&joynr::system::RoutingTypes::MqttAddress::getTopic, Eq(mqttAddress->getTopic())))))),
+                                                       Pointee(AllOf(Property(&joynr::system::RoutingTypes::MqttAddress::getBrokerUri, Eq(_testGbid)),
+                                                                     Property(&joynr::system::RoutingTypes::MqttAddress::getTopic, Eq(_mqttAddress->getTopic())))))),
                                                          isPointerToMqttAddress()),
                                                Eq(true),
                                                Eq(TimePoint::max().toMilliseconds()),
@@ -240,14 +240,14 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithMqttReplyToAddress)
 TEST_F(MqttMessagingSkeletonTest, transmitTestWithNonMqttReplyToAddress)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
-    mutableMessage.setReplyTo(joynr::serializer::serializeToJson(
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
+    _mutableMessage.setReplyTo(joynr::serializer::serializeToJson(
                                   joynr::system::RoutingTypes::ChannelAddress("dummyuri.com", "testchannel")));
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
-    EXPECT_CALL(*mockMessageRouter, route(immutableMessage, _)).Times(1);
-    EXPECT_CALL(*mockMessageRouter, addNextHop(_,isPointerToChannelAddress(),
+    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
+    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_,isPointerToChannelAddress(),
                                                _,_,_,_,_)).Times(1);
-    EXPECT_CALL(*mockMessageRouter, addNextHop(_,isPointerToMqttAddress(),
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_,isPointerToMqttAddress(),
                                                _,_,_,_,_)).Times(0);
     auto onFailure =
             [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
@@ -257,14 +257,14 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithNonMqttReplyToAddress)
 TEST_F(MqttMessagingSkeletonTest, transmitTestWithBrokenReplyToAddress)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
-    mutableMessage.setReplyTo("thisisinvalid::==");
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
+    _mutableMessage.setReplyTo("thisisinvalid::==");
+    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     auto semaphore = std::make_shared<joynr::Semaphore>(0);
     auto onFailure =
             [semaphore](const exceptions::JoynrRuntimeException& e) { SUCCEED() << "onFailure called"; semaphore->notify(); };
-    EXPECT_CALL(*mockMessageRouter, route(_, _)).Times(0);
-    EXPECT_CALL(*mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*_mockMessageRouter, route(_, _)).Times(0);
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
 }
@@ -272,8 +272,8 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithBrokenReplyToAddress)
 void MqttMessagingSkeletonTest::transmitSetsIsReceivedFromGlobal()
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
+    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
     auto onFailure =
             [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
@@ -284,55 +284,55 @@ void MqttMessagingSkeletonTest::transmitSetsIsReceivedFromGlobal()
 TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobalForMulticastPublications)
 {
     MulticastPublication publication;
-    mutableMessage = messageFactory.createMulticastPublication(senderID, qosSettings, publication);
+    _mutableMessage = _messageFactory.createMulticastPublication(_senderID, _qosSettings, publication);
     transmitSetsIsReceivedFromGlobal();
 }
 
 TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobalForRequests)
 {
     Request request;
-    mutableMessage = messageFactory.createRequest(
-            senderID, receiverID, qosSettings, request, isLocalMessage);
-    mutableMessage.setReplyTo(serializedMqttAddress);
+    _mutableMessage = _messageFactory.createRequest(
+            _senderID, _receiverID, _qosSettings, request, _isLocalMessage);
+    _mutableMessage.setReplyTo(_serializedMqttAddress);
     transmitSetsIsReceivedFromGlobal();
 }
 
 TEST_F(MqttMessagingSkeletonTest, transmitSetsReceivedFromGlobalForSubscriptionRequests)
 {
     SubscriptionRequest request;
-    mutableMessage = messageFactory.createSubscriptionRequest(
-            senderID, receiverID, qosSettings, request, isLocalMessage);
-    mutableMessage.setReplyTo(serializedMqttAddress);
+    _mutableMessage = _messageFactory.createSubscriptionRequest(
+            _senderID, _receiverID, _qosSettings, request, _isLocalMessage);
+    _mutableMessage.setReplyTo(_serializedMqttAddress);
     transmitSetsIsReceivedFromGlobal();
 }
 
 TEST_F(MqttMessagingSkeletonTest, transmitSetsIsReceivedFromGlobalForBroadcastSubscriptionRequests)
 {
     BroadcastSubscriptionRequest request;
-    mutableMessage = messageFactory.createBroadcastSubscriptionRequest(
-            senderID, receiverID, qosSettings, request, isLocalMessage);
-    mutableMessage.setReplyTo(serializedMqttAddress);
+    _mutableMessage = _messageFactory.createBroadcastSubscriptionRequest(
+            _senderID, _receiverID, _qosSettings, request, _isLocalMessage);
+    _mutableMessage.setReplyTo(_serializedMqttAddress);
     transmitSetsIsReceivedFromGlobal();
 }
 
 TEST_F(MqttMessagingSkeletonTest, transmitSetsIsReceivedFromGlobalForMulticastSubscriptionRequests)
 {
     MulticastSubscriptionRequest request;
-    mutableMessage = messageFactory.createMulticastSubscriptionRequest(
-            senderID, receiverID, qosSettings, request, isLocalMessage);
-    mutableMessage.setReplyTo(serializedMqttAddress);
+    _mutableMessage = _messageFactory.createMulticastSubscriptionRequest(
+            _senderID, _receiverID, _qosSettings, request, _isLocalMessage);
+    _mutableMessage.setReplyTo(_serializedMqttAddress);
     transmitSetsIsReceivedFromGlobal();
 }
 
 TEST_F(MqttMessagingSkeletonTest, onMessageReceivedTest)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
-    std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
+    std::unique_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
 
-    EXPECT_CALL(*mockMessageRouter,
-                route(AllOf(MessageHasType(mutableMessage.getType()),
-                            ImmutableMessageHasPayload(mutableMessage.getPayload())),
+    EXPECT_CALL(*_mockMessageRouter,
+                route(AllOf(MessageHasType(_mutableMessage.getType()),
+                            ImmutableMessageHasPayload(_mutableMessage.getPayload())),
                       _)).Times(1);
 
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
@@ -347,14 +347,14 @@ TEST_F(MqttMessagingSkeletonTest, registerMulticastSubscription_subscribesToMqtt
     MessagingSettings messagingSettings(settings);
     auto mockMqttReceiver = std::make_shared<MockMqttReceiver>(messagingSettings,
                                                                ccSettings,
-                                                               brokerUrl,
-                                                               mqttKeepAliveTimeSeconds,
-                                                               mqttReconnectDelayTimeSeconds,
-                                                               mqttReconnectMaxDelayTimeSeconds,
-                                                               isMqttExponentialBackoffEnabled,
-                                                               testGbid,
-                                                               receiverId);
-    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, mockMqttReceiver, "", testGbid);
+                                                               _brokerUrl,
+                                                               _mqttKeepAliveTimeSeconds,
+                                                               _mqttReconnectDelayTimeSeconds,
+                                                               _mqttReconnectMaxDelayTimeSeconds,
+                                                               _isMqttExponentialBackoffEnabled,
+                                                               _testGbid,
+                                                               _receiverId);
+    MqttMessagingSkeleton mqttMessagingSkeleton(_mockMessageRouter, mockMqttReceiver, "", _testGbid);
     EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId));
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
 }
@@ -362,18 +362,18 @@ TEST_F(MqttMessagingSkeletonTest, registerMulticastSubscription_subscribesToMqtt
 TEST_F(MqttMessagingSkeletonTest, registerMulticastSubscription_subscribesToMqttTopicOnlyOnce)
 {
     std::string multicastId = "multicastId";
-    MessagingSettings messagingSettings(settings);
+    MessagingSettings messagingSettings(_settings);
     auto mockMqttReceiver = std::make_shared<MockMqttReceiver>(messagingSettings,
-                                                               ccSettings,
-                                                               brokerUrl,
-                                                               mqttKeepAliveTimeSeconds,
-                                                               mqttReconnectDelayTimeSeconds,
-                                                               mqttReconnectMaxDelayTimeSeconds,
-                                                               isMqttExponentialBackoffEnabled,
-                                                               testGbid,
-                                                               receiverId);
+                                                               _ccSettings,
+                                                               _brokerUrl,
+                                                               _mqttKeepAliveTimeSeconds,
+                                                               _mqttReconnectDelayTimeSeconds,
+                                                               _mqttReconnectMaxDelayTimeSeconds,
+                                                               _isMqttExponentialBackoffEnabled,
+                                                               _testGbid,
+                                                               _receiverId);
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
+            _mockMessageRouter, mockMqttReceiver, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
     EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
@@ -382,18 +382,18 @@ TEST_F(MqttMessagingSkeletonTest, registerMulticastSubscription_subscribesToMqtt
 TEST_F(MqttMessagingSkeletonTest, unregisterMulticastSubscription_unsubscribesFromMqttTopic)
 {
     std::string multicastId = "multicastId";
-    MessagingSettings messagingSettings(settings);
+    MessagingSettings messagingSettings(_settings);
     auto mockMqttReceiver = std::make_shared<MockMqttReceiver>(messagingSettings,
-                                                               ccSettings,
-                                                               brokerUrl,
-                                                               mqttKeepAliveTimeSeconds,
-                                                               mqttReconnectDelayTimeSeconds,
-                                                               mqttReconnectMaxDelayTimeSeconds,
-                                                               isMqttExponentialBackoffEnabled,
-                                                               testGbid,
-                                                               receiverId);
+                                                               _ccSettings,
+                                                               _brokerUrl,
+                                                               _mqttKeepAliveTimeSeconds,
+                                                               _mqttReconnectDelayTimeSeconds,
+                                                               _mqttReconnectMaxDelayTimeSeconds,
+                                                               _isMqttExponentialBackoffEnabled,
+                                                               _testGbid,
+                                                               _receiverId);
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
+            _mockMessageRouter, mockMqttReceiver, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
     EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
 
@@ -405,18 +405,18 @@ TEST_F(MqttMessagingSkeletonTest,
        unregisterMulticastSubscription_unsubscribesFromMqttTopicOnlyForUnsubscribeOfLastReceiver)
 {
     std::string multicastId = "multicastId";
-    MessagingSettings messagingSettings(settings);
+    MessagingSettings messagingSettings(_settings);
     auto mockMqttReceiver = std::make_shared<MockMqttReceiver>(messagingSettings,
-                                                               ccSettings,
-                                                               brokerUrl,
-                                                               mqttKeepAliveTimeSeconds,
-                                                               mqttReconnectDelayTimeSeconds,
-                                                               mqttReconnectMaxDelayTimeSeconds,
-                                                               isMqttExponentialBackoffEnabled,
-                                                               testGbid,
-                                                               receiverId);
+                                                               _ccSettings,
+                                                               _brokerUrl,
+                                                               _mqttKeepAliveTimeSeconds,
+                                                               _mqttReconnectDelayTimeSeconds,
+                                                               _mqttReconnectMaxDelayTimeSeconds,
+                                                               _isMqttExponentialBackoffEnabled,
+                                                               _testGbid,
+                                                               _receiverId);
     MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, mockMqttReceiver, ccSettings.getMqttMulticastTopicPrefix(), testGbid);
+            _mockMessageRouter, mockMqttReceiver, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
     EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);

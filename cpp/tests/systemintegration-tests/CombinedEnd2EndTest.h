@@ -46,20 +46,20 @@ public:
 
     void SetUp() override;
     void TearDown() override;
-    std::shared_ptr<joynr::JoynrRuntime> runtime1;
-    std::shared_ptr<joynr::JoynrRuntime> runtime2;
-    std::string registeredSubscriptionId;
-    std::string messagingSettingsFile1;
-    std::string messagingSettingsFile2;
-    joynr::Settings settings1;
-    joynr::Settings settings2;
-    joynr::MessagingSettings messagingSettings1;
-    joynr::MessagingSettings messagingSettings2;
-    std::string baseUuid;
-    std::string uuid;
-    std::string domainName;
-    joynr::Semaphore semaphore;
-    joynr::DiscoveryQos discoveryQos;
+    std::shared_ptr<joynr::JoynrRuntime> _runtime1;
+    std::shared_ptr<joynr::JoynrRuntime> _runtime2;
+    std::string _registeredSubscriptionId;
+    std::string _messagingSettingsFile1;
+    std::string _messagingSettingsFile2;
+    joynr::Settings _settings1;
+    joynr::Settings _settings2;
+    joynr::MessagingSettings _messagingSettings1;
+    joynr::MessagingSettings _messagingSettings2;
+    std::string _baseUuid;
+    std::string _uuid;
+    std::string _domainName;
+    joynr::Semaphore _semaphore;
+    joynr::DiscoveryQos _discoveryQos;
 
     ADD_LOGGER(CombinedEnd2EndTest)
 

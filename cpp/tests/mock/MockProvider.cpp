@@ -18,8 +18,8 @@
  */
 #include "tests/mock/MockProvider.h"
 
-const std::uint32_t MockProvider::MAJOR_VERSION = 1337;
-const std::uint32_t MockProvider::MINOR_VERSION = 42;
+const std::int32_t MockProvider::MAJOR_VERSION = 1337;
+const std::int32_t MockProvider::MINOR_VERSION = 42;
 
 const std::string& MockProvider::INTERFACE_NAME()
 {

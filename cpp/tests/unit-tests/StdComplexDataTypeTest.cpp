@@ -70,7 +70,7 @@ public:
                            tInt32,
                            tUInt32,
                            tInt64,
-                           tUInt64,
+                           static_cast<std::uint64_t>(tUInt64),
                            tDouble,
                            tFloat,
                            tString,
@@ -93,7 +93,7 @@ public:
                                    tInt32,
                                    tUInt32,
                                    tInt64,
-                                   tUInt64,
+                                   static_cast<std::uint64_t>(tUInt64),
                                    tDouble,
                                    tFloat,
                                    tString,
@@ -122,7 +122,7 @@ protected:
     std::int32_t tInt32;
     std::uint32_t tUInt32;
     std::int64_t tInt64;
-    std::uint64_t tUInt64;
+    std::int64_t tUInt64;
     double tDouble;
     float tFloat;
     std::string tString;
@@ -381,7 +381,7 @@ TEST_F(StdComplexDataTypeTest, equalsExtendedComplexDataTypeNotEqualBaseType)
             tInt32,
             tUInt32,
             tInt64,
-            tUInt64,
+            static_cast<std::uint64_t>(tUInt64),
             tDouble,
             tFloat,
             tString,

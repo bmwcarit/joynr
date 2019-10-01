@@ -69,7 +69,7 @@ using namespace joynr;
 class CcMessageRouterTest : public MessageRouterTest<CcMessageRouter>
 {
 public:
-    CcMessageRouterTest() : DEFAULT_IS_GLOBALLY_VISIBLE(true)
+    CcMessageRouterTest() : _DEFAULT_IS_GLOBALLY_VISIBLE(true)
     {
     }
 
@@ -83,7 +83,7 @@ protected:
     void testRoutingEntryUpdate(const std::string& participantId,
                                 std::shared_ptr<const system::RoutingTypes::Address> newAddress,
                                 std::shared_ptr<const system::RoutingTypes::Address> expectedAddress);
-    const bool DEFAULT_IS_GLOBALLY_VISIBLE;
+    const bool _DEFAULT_IS_GLOBALLY_VISIBLE;
 
     ADD_LOGGER(CcMessageRouterTest)
 };
@@ -121,14 +121,14 @@ TEST_F(CcMessageRouterTest, routeMessageToHttpAddress)
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
 
-    this->messageRouter->addNextHop(destinationParticipantId,
+    this->_messageRouter->addNextHop(destinationParticipantId,
                                     address,
                                     isGloballyVisible,
                                     expiryDateMs,
                                     isSticky);
-    this->mutableMessage.setRecipient(destinationParticipantId);
+    this->_mutableMessage.setRecipient(destinationParticipantId);
 
-    EXPECT_CALL(*(this->messagingStubFactory),
+    EXPECT_CALL(*(this->_messagingStubFactory),
                 create(addressWithChannelId("http", destinationChannelId))).Times(1);
 
     this->routeMessageToAddress();
@@ -145,14 +145,14 @@ TEST_F(CcMessageRouterTest, routeMessageToMqttAddress)
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
 
-    this->messageRouter->addNextHop(destinationParticipantId,
+    this->_messageRouter->addNextHop(destinationParticipantId,
                                     address,
                                     isGloballyVisible,
                                     expiryDateMs,
                                     isSticky);
-    this->mutableMessage.setRecipient(destinationParticipantId);
+    this->_mutableMessage.setRecipient(destinationParticipantId);
 
-    EXPECT_CALL(*(this->messagingStubFactory),
+    EXPECT_CALL(*(this->_messagingStubFactory),
                 create(addressWithChannelId("mqtt", destinationChannelId))).Times(1);
 
     this->routeMessageToAddress();
@@ -168,28 +168,28 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAva
             std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 providerParticipantId,
                 providerAddress,
-                DEFAULT_IS_GLOBALLY_VISIBLE,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
                 expiryDateMs,
                 isSticky);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
-    multicastMessagingSkeletonDirectory
+    _multicastMessagingSkeletonDirectory
             ->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(skeleton);
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    messageRouter->removeNextHop(providerParticipantId);
+    _messageRouter->removeNextHop(providerParticipantId);
 
     Semaphore errorCallbackCalled;
-    messageRouter->removeMulticastReceiver(
+    _messageRouter->removeMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -214,10 +214,10 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
 
     // create a new pointer representing the multicast address
     std::vector<std::shared_ptr<joynr::system::RoutingTypes::MqttAddress>> multicastAddressesVector;
-    for(std::uint8_t i = 0; i < availableGbids.size(); i++) {
+    for(std::uint8_t i = 0; i < _availableGbids.size(); i++) {
         multicastAddressesVector.push_back(
                 std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
-                        availableGbids[i], multicastId));
+                        _availableGbids[i], multicastId));
     }
 
     auto expectedAddress1 =
@@ -233,25 +233,25 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
 
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 subscriberParticipantId1,
                 expectedAddress1,
-                DEFAULT_IS_GLOBALLY_VISIBLE,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
                 expiryDateMs,
                 isSticky);
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 subscriberParticipantId2,
                 expectedAddress2,
-                DEFAULT_IS_GLOBALLY_VISIBLE,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
                 expiryDateMs,
                 isSticky);
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 subscriberParticipantId3,
                 expectedAddress3,
-                DEFAULT_IS_GLOBALLY_VISIBLE,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
                 expiryDateMs,
                 isSticky);
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 providerParticipantId,
                 providerAddress,
                 isProviderGloballyVisible,
@@ -259,40 +259,40 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
                 isSticky);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
-    multicastMessagingSkeletonDirectory
+    _multicastMessagingSkeletonDirectory
             ->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(skeleton);
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId1,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId2,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId3,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
-    mutableMessage.setSender(providerParticipantId);
-    mutableMessage.setRecipient(multicastId);
+    _mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
+    _mutableMessage.setSender(providerParticipantId);
+    _mutableMessage.setRecipient(multicastId);
 
     // verify that the publication is sent only once to the websocket address used by
     // both subscriberParticipantId1 and subscriberParticipantId3 identified by
     // consumerRuntimeWebSocketClientAddressString
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     EXPECT_CALL(
-            *messagingStubFactory,
+            *_messagingStubFactory,
             create(Property(
                     &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                     WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
@@ -300,25 +300,25 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
                                     &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
                                     Eq(consumerRuntimeWebSocketClientAddressString)))))))
             .WillOnce(Return(mockMessagingStub));
-    EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*expectedAddress2))))
+    EXPECT_CALL(*_messagingStubFactory, create(Pointee(Eq(*expectedAddress2))))
             .WillOnce(Return(mockMessagingStub));
     size_t count = isProviderGloballyVisible ? 1 : 0;
 
-    for(std::uint8_t i = 0; i < availableGbids.size(); i++) {
-        EXPECT_CALL(*messagingStubFactory, create(Pointee(Eq(*multicastAddressesVector[i]))))
+    for(std::uint8_t i = 0; i < _availableGbids.size(); i++) {
+        EXPECT_CALL(*_messagingStubFactory, create(Pointee(Eq(*multicastAddressesVector[i]))))
                 .Times(count)
                 .WillRepeatedly(Return(mockMessagingStub));
     }
 
-    messageRouter->route(mutableMessage.getImmutableMessage());
+    _messageRouter->route(_mutableMessage.getImmutableMessage());
 
-    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
     // cleanup
-    messageRouter->removeNextHop(subscriberParticipantId1);
-    messageRouter->removeNextHop(subscriberParticipantId2);
-    messageRouter->removeNextHop(subscriberParticipantId3);
-    messageRouter->removeNextHop(providerParticipantId);
+    _messageRouter->removeNextHop(subscriberParticipantId1);
+    _messageRouter->removeNextHop(subscriberParticipantId2);
+    _messageRouter->removeNextHop(subscriberParticipantId3);
+    _messageRouter->removeNextHop(providerParticipantId);
 }
 
 TEST_F(CcMessageRouterTest,
@@ -361,25 +361,25 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
     const bool isSticky = false;
     const bool isProviderGloballyVisible = false;
 
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 subscriberParticipantId1,
                 expectedAddress1,
-                DEFAULT_IS_GLOBALLY_VISIBLE,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
                 expiryDateMs,
                 isSticky);
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 subscriberParticipantId2,
                 expectedAddress1,
-                DEFAULT_IS_GLOBALLY_VISIBLE,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
                 expiryDateMs,
                 isSticky);
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 subscriberParticipantId3,
                 expectedAddress3,
-                DEFAULT_IS_GLOBALLY_VISIBLE,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
                 expiryDateMs,
                 isSticky);
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 providerParticipantId,
                 providerAddress,
                 isProviderGloballyVisible,
@@ -387,33 +387,33 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
                 isSticky);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
-    multicastMessagingSkeletonDirectory
+    _multicastMessagingSkeletonDirectory
             ->registerSkeleton<system::RoutingTypes::WebSocketClientAddress>(skeleton);
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId1,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId2,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId3,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
-    mutableMessage.setSender(providerParticipantId);
-    mutableMessage.setRecipient(multicastId);
+    _mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
+    _mutableMessage.setSender(providerParticipantId);
+    _mutableMessage.setRecipient(multicastId);
 
     auto mockMessagingStub1 = std::make_shared<MockMessagingStub>();
     auto mockMessagingStub2 = std::make_shared<MockMessagingStub>();
@@ -425,7 +425,7 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
     // subscriberParticipantId2).
 
     EXPECT_CALL(
-            *messagingStubFactory,
+            *_messagingStubFactory,
             create(Property(
                     &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                     WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
@@ -436,7 +436,7 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
             .WillRepeatedly(Return(mockMessagingStub1));
 
     EXPECT_CALL(
-            *messagingStubFactory,
+            *_messagingStubFactory,
             create(Property(
                     &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                     WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
@@ -446,14 +446,14 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
             .Times(1)
             .WillRepeatedly(Return(mockMessagingStub2));
 
-    messageRouter->route(mutableMessage.getImmutableMessage());
-    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    _messageRouter->route(_mutableMessage.getImmutableMessage());
+    Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
     // now the first runtime becomes unreachable, so the creation of a WebSocketMessagingStub fails;
     // the factory returns an empty IMessagingStub in this case
 
     EXPECT_CALL(
-            *messagingStubFactory,
+            *_messagingStubFactory,
             create(Property(
                     &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                     WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
@@ -464,7 +464,7 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
             .WillRepeatedly(Return(std::shared_ptr<IMessagingStub>()));
 
     EXPECT_CALL(
-            *messagingStubFactory,
+            *_messagingStubFactory,
             create(Property(
                     &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                     WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
@@ -477,16 +477,16 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
     // the CcMessageRouter should then automatically remove the participantIds realated to
     // the unreachable runtime from the multicastReceiverDirectory
 
-    messageRouter->route(mutableMessage.getImmutableMessage());
+    _messageRouter->route(_mutableMessage.getImmutableMessage());
 
-    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
     // when the next publication is routed, the factory is no longer asked to create a
     // WebSocketMessagingStub for the first runtime, since there are no subscribers
     // left related to this runtime
 
     EXPECT_CALL(
-            *messagingStubFactory,
+            *_messagingStubFactory,
             create(Property(
                     &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                     WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
@@ -496,7 +496,7 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
             .Times(0);
 
     EXPECT_CALL(
-            *messagingStubFactory,
+            *_messagingStubFactory,
             create(Property(
                     &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                     WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
@@ -506,25 +506,25 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
             .Times(1)
             .WillRepeatedly(Return(mockMessagingStub2));
 
-    messageRouter->route(mutableMessage.getImmutableMessage());
+    _messageRouter->route(_mutableMessage.getImmutableMessage());
 
-    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
     // cleanup
 
     // remove only subscriberParticipantId3 since the other ones have already been
     // removed automatically by the test
-    messageRouter->removeMulticastReceiver(
+    _messageRouter->removeMulticastReceiver(
             multicastId,
             subscriberParticipantId3,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    messageRouter->removeNextHop(subscriberParticipantId1);
-    messageRouter->removeNextHop(subscriberParticipantId2);
-    messageRouter->removeNextHop(subscriberParticipantId3);
-    messageRouter->removeNextHop(providerParticipantId);
+    _messageRouter->removeNextHop(subscriberParticipantId1);
+    _messageRouter->removeNextHop(subscriberParticipantId2);
+    _messageRouter->removeNextHop(subscriberParticipantId3);
+    _messageRouter->removeNextHop(providerParticipantId);
 }
 
 void invokeConsumerPermissionCallbackWithPermissionYes(
@@ -547,7 +547,7 @@ TEST_F(CcMessageRouterTest,
     auto mockAccessController = std::make_shared<MockAccessController>();
     ON_CALL(*mockAccessController, hasConsumerPermission(_, _))
             .WillByDefault(Invoke(invokeConsumerPermissionCallbackWithPermissionYes));
-    messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
+    _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
     bool isGloballyVisible = true;
     multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
@@ -562,24 +562,24 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiver_NonChildRouter_succeedsIfSke
     const std::string providerParticipantId("providerParticipantId");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    messageRouter->addProvisionedNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    _messageRouter->addProvisionedNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
-    multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
+    _multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
             skeleton);
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
-    multicastMessagingSkeletonDirectory->unregisterSkeletons<system::RoutingTypes::MqttAddress>();
+    _multicastMessagingSkeletonDirectory->unregisterSkeletons<system::RoutingTypes::MqttAddress>();
 
     Semaphore successCallbackCalled;
-    messageRouter->removeMulticastReceiver(
+    _messageRouter->removeMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -597,15 +597,15 @@ TEST_F(CcMessageRouterTest,
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
 
-    messageRouter->addProvisionedNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    _messageRouter->addProvisionedNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
 
-    multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
+    _multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
             skeleton);
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -616,7 +616,7 @@ TEST_F(CcMessageRouterTest,
     EXPECT_CALL(*skeleton, unregisterMulticastSubscription(multicastId)).Times(1);
 
     Semaphore successCallbackCalled;
-    messageRouter->removeMulticastReceiver(
+    _messageRouter->removeMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -633,10 +633,10 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiverOfWebSocketProvider_NonChildR
 
     auto providerAddress =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
-    messageRouter->addProvisionedNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    _messageRouter->addProvisionedNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -644,7 +644,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiverOfWebSocketProvider_NonChildR
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
     Semaphore successCallbackCalled;
-    messageRouter->removeMulticastReceiver(
+    _messageRouter->removeMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -663,10 +663,10 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiverOfInProcessProvider_NonChildR
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
 
     auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
-    messageRouter->addProvisionedNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    _messageRouter->addProvisionedNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -674,7 +674,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiverOfInProcessProvider_NonChildR
             [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
 
     Semaphore successCallbackCalled;
-    messageRouter->removeMulticastReceiver(
+    _messageRouter->removeMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -690,21 +690,21 @@ TEST_F(CcMessageRouterTest, addMulticastReceiverForMqttProvider_NonChildRouter_c
     const std::string multicastId("participantId1/methodName/partition0");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    messageRouter->addProvisionedNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    _messageRouter->addProvisionedNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
     auto mockMqttMessagingMulticastSubscriber =
             std::make_shared<MockMessagingMulticastSubscriber>();
     std::shared_ptr<IMessagingMulticastSubscriber> mqttMessagingMulticastSubscriber =
             mockMqttMessagingMulticastSubscriber;
 
-    multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
+    _multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
             mqttMessagingMulticastSubscriber);
 
     EXPECT_CALL(*mockMqttMessagingMulticastSubscriber, registerMulticastSubscription(multicastId));
 
     Semaphore successCallbackCalled;
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -721,11 +721,11 @@ TEST_F(CcMessageRouterTest, addMulticastReceiverForWebSocketProvider_NonChildRou
 
     auto providerAddress =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
-    messageRouter->addProvisionedNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    _messageRouter->addProvisionedNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
     Semaphore successCallbackCalled;
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -744,11 +744,11 @@ TEST_F(CcMessageRouterTest, addMulticastReceiverForInProcessProvider_NonChildRou
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
 
     auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
-    messageRouter->addProvisionedNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    _messageRouter->addProvisionedNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
     Semaphore successCallbackCalled;
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -764,7 +764,7 @@ TEST_F(CcMessageRouterTest, addMulticastReceiver_NonChildRouter_failsIfProviderA
     const std::string providerParticipantId("providerParticipantId");
 
     Semaphore errorCallbackCalled;
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -782,11 +782,11 @@ TEST_F(CcMessageRouterTest, addMulticastReceiver_NonChildRouter_succeedsIfSkelet
     const std::string providerParticipantId("providerParticipantId");
 
     auto providerAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    messageRouter->addProvisionedNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    _messageRouter->addProvisionedNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
     Semaphore successCallbackCalled;
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId,
             subscriberParticipantId,
             providerParticipantId,
@@ -799,7 +799,7 @@ TEST_F(CcMessageRouterTest, addMulticastReceiver_NonChildRouter_succeedsIfSkelet
 
 TEST_F(CcMessageRouterTest, loadNonExistingMulticastDirectoryPersistenceFile)
 {
-    EXPECT_NO_THROW(messageRouter->loadMulticastReceiverDirectory("not-existing.persist"));
+    EXPECT_NO_THROW(_messageRouter->loadMulticastReceiverDirectory("not-existing.persist"));
 }
 
 TEST_F(CcMessageRouterTest, persistMulticastReceiverDirectory)
@@ -819,22 +819,22 @@ TEST_F(CcMessageRouterTest, persistMulticastReceiverDirectory)
     std::remove(persistencyFilename.c_str());
     // Load method stores the filename which will later be used to save the multicast receiver
     // directory.
-    messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
+    _messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
 
-    multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
+    _multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
             multicastSubscriber);
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
             providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
-    messageRouter->addMulticastReceiver(
+    _messageRouter->addMulticastReceiver(
             multicastId, subscriberParticipantId, providerParticipantId, []() {}, nullptr);
 
-    messageRouter->shutdown();
-    messageRouter = createMessageRouter();
-    messageRouter->addNextHop(
+    _messageRouter->shutdown();
+    _messageRouter = createMessageRouter();
+    _messageRouter->addNextHop(
             providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
 
     EXPECT_CALL(*multicastSubscriber, registerMulticastSubscription(multicastId)).Times(1);
-    messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
+    _messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
 }
 
 TEST_F(CcMessageRouterTest, doNotSaveInProcessMessagingAddressToFile)
@@ -843,21 +843,21 @@ TEST_F(CcMessageRouterTest, doNotSaveInProcessMessagingAddressToFile)
     const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
     std::remove(routingTablePersistenceFilename.c_str());
 
-    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+    _messageRouter->loadRoutingTable(routingTablePersistenceFilename);
     {
         auto dispatcher = std::make_shared<MockDispatcher>();
         auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
         auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
-        messageRouter->addProvisionedNextHop(
-                providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+        _messageRouter->addProvisionedNextHop(
+                providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
     }
 
-    messageRouter->shutdown();
-    messageRouter = createMessageRouter();
-    messageRouter->loadRoutingTable(routingTablePersistenceFilename);
+    _messageRouter->shutdown();
+    _messageRouter = createMessageRouter();
+    _messageRouter->loadRoutingTable(routingTablePersistenceFilename);
 
     Semaphore successCallbackCalled;
-    messageRouter->resolveNextHop(
+    _messageRouter->resolveNextHop(
             providerParticipantId,
             [&successCallbackCalled](const bool& resolved) {
                 if (resolved) {
@@ -888,13 +888,13 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned)
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch()).count() +
             4000;
-    messageRouter->shutdown();
-    messageRouter = createMessageRouter();
-    messageRouter->addNextHop(
+    _messageRouter->shutdown();
+    _messageRouter = createMessageRouter();
+    _messageRouter->addNextHop(
             providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
 
     Semaphore successCallbackCalled;
-    messageRouter->resolveNextHop(
+    _messageRouter->resolveNextHop(
             providerParticipantId,
             [&successCallbackCalled](const bool& resolved) {
                 if (resolved) {
@@ -913,7 +913,7 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned)
     std::this_thread::sleep_for(std::chrono::milliseconds(6000));
     // in the meantime the garbage collector should have removed the entry
 
-    messageRouter->resolveNextHop(
+    _messageRouter->resolveNextHop(
             providerParticipantId,
             [&successCallbackCalled](const bool& resolved) {
                 if (resolved) {
@@ -934,18 +934,18 @@ void CcMessageRouterTest::routeMessageAndCheckQueue(const std::string& msgType,
                                                     bool msgShouldBeQueued)
 {
     // setup the message
-    auto mutableMessage = std::make_shared<MutableMessage>();
-    mutableMessage->setType(msgType);
-    mutableMessage->setSender("sender");
+    auto localMutableMessage = std::make_shared<MutableMessage>();
+    localMutableMessage->setType(msgType);
+    localMutableMessage->setSender("sender");
     std::string recipient = "unknownRecipient";
-    mutableMessage->setRecipient(recipient);
+    localMutableMessage->setRecipient(recipient);
     const TimePoint now = TimePoint::now();
-    mutableMessage->setExpiryDate(now + std::chrono::milliseconds(60000));
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage->getImmutableMessage();
+    localMutableMessage->setExpiryDate(now + std::chrono::milliseconds(60000));
+    std::shared_ptr<ImmutableMessage> immutableMessage = localMutableMessage->getImmutableMessage();
 
     // verify that the recipient is unknown
     Semaphore successCallbackCalled;
-    this->messageRouter->resolveNextHop(
+    this->_messageRouter->resolveNextHop(
             recipient,
             [&successCallbackCalled](const bool& resolved) {
                 if (resolved) {
@@ -960,10 +960,10 @@ void CcMessageRouterTest::routeMessageAndCheckQueue(const std::string& msgType,
                 successCallbackCalled.notify();
             });
 
-    this->messageRouter->route(immutableMessage);
+    this->_messageRouter->route(immutableMessage);
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(2000)));
-    EXPECT_EQ(this->messageQueue->getQueueLength(), msgShouldBeQueued ? 1 : 0);
-    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
+    EXPECT_EQ(this->_messageQueue->getQueueLength(), msgShouldBeQueued ? 1 : 0);
+    EXPECT_EQ(this->_messageRouter->getNumberOfRoutedMessages(), 1);
 }
 
 TEST_F(CcMessageRouterTest, accessControllerIsCalledForQueuedMsgs)
@@ -973,20 +973,20 @@ TEST_F(CcMessageRouterTest, accessControllerIsCalledForQueuedMsgs)
             std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
 
     // setup the message
-    auto mutableMessage = std::make_shared<MutableMessage>();
-    mutableMessage->setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
-    mutableMessage->setSender("sender");
-    mutableMessage->setRecipient(providerParticipantId);
+    auto localMutableMessage = std::make_shared<MutableMessage>();
+    localMutableMessage->setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    localMutableMessage->setSender("sender");
+    localMutableMessage->setRecipient(providerParticipantId);
     const TimePoint nowTime = TimePoint::now();
-    mutableMessage->setExpiryDate(nowTime + std::chrono::milliseconds(16000));
+    localMutableMessage->setExpiryDate(nowTime + std::chrono::milliseconds(16000));
 
     auto mockAccessController = std::make_shared<MockAccessController>();
-    messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
+    _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage->getImmutableMessage();
-    this->messageRouter->route(immutableMessage);
+    std::shared_ptr<ImmutableMessage> immutableMessage = localMutableMessage->getImmutableMessage();
+    this->_messageRouter->route(immutableMessage);
 
-    EXPECT_EQ(1, messageQueue->getQueueLength());
+    EXPECT_EQ(1, _messageQueue->getQueueLength());
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _)).Times(0);
 
     Mock::VerifyAndClearExpectations(mockAccessController.get());
@@ -995,8 +995,8 @@ TEST_F(CcMessageRouterTest, accessControllerIsCalledForQueuedMsgs)
 
     const bool isSticky = false;
     const std::int64_t expiryDate = std::numeric_limits<std::int64_t>::max();
-    messageRouter->addNextHop(
-            providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE,
+    _messageRouter->addNextHop(
+            providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE,
             expiryDate, isSticky);
 }
 
@@ -1004,55 +1004,55 @@ TEST_F(CcMessageRouterTest, testAccessControlRetryWithDelay)
 {
     Semaphore semaphore(0);
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
-    ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
+    ON_CALL(*_messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
 
     const std::string providerParticipantId("providerParticipantId");
     auto providerAddress =
             std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
 
     // setup the message
-    auto mutableMessage = std::make_shared<MutableMessage>();
-    mutableMessage->setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
-    mutableMessage->setSender("sender");
-    mutableMessage->setRecipient(providerParticipantId);
+    auto localMutableMessage = std::make_shared<MutableMessage>();
+    localMutableMessage->setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    localMutableMessage->setSender("sender");
+    localMutableMessage->setRecipient(providerParticipantId);
     const TimePoint nowTime = TimePoint::now();
-    mutableMessage->setExpiryDate(nowTime + std::chrono::milliseconds(16000));
-    messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, DEFAULT_IS_GLOBALLY_VISIBLE);
+    localMutableMessage->setExpiryDate(nowTime + std::chrono::milliseconds(16000));
+    _messageRouter->addProvisionedNextHop(providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
 
     auto mockAccessController = std::make_shared<MockAccessController>();
-    messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
+    _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage->getImmutableMessage();
+    std::shared_ptr<ImmutableMessage> immutableMessage = localMutableMessage->getImmutableMessage();
 
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
             .WillOnce(Invoke(invokeConsumerPermissionCallbackWithPermissionRetry));
 
-    this->messageRouter->route(immutableMessage);
+    this->_messageRouter->route(immutableMessage);
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
     // 1st retry
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _)).Times(0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1 * sendMsgRetryInterval - 200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1 * _sendMsgRetryInterval - 200));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
             .WillOnce(DoAll(ReleaseSemaphore(&semaphore),Invoke(invokeConsumerPermissionCallbackWithPermissionRetry)));
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(sendMsgRetryInterval)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_sendMsgRetryInterval)));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
     // 2nd retry
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _)).Times(0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(2 * sendMsgRetryInterval - 200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2 * _sendMsgRetryInterval - 200));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
             .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Invoke(invokeConsumerPermissionCallbackWithPermissionRetry)));
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(sendMsgRetryInterval)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_sendMsgRetryInterval)));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
     // 3rd retry (stub.transmit has not been called so far)
     EXPECT_CALL(*mockMessagingStub, transmit(immutableMessage, _)).Times(0);
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _)).Times(0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(4 * sendMsgRetryInterval - 200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(4 * _sendMsgRetryInterval - 200));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
     Mock::VerifyAndClearExpectations(mockMessagingStub.get());
     EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
@@ -1060,7 +1060,7 @@ TEST_F(CcMessageRouterTest, testAccessControlRetryWithDelay)
     EXPECT_CALL(*mockMessagingStub, transmit(immutableMessage, _)).WillOnce(ReleaseSemaphore(&semaphore));
 
     // wait for 2 invocations: accessController.hasConsumerPermission and stub.transmit
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(sendMsgRetryInterval)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_sendMsgRetryInterval)));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(std::chrono::seconds(1))));
 }
 
@@ -1131,27 +1131,27 @@ TEST_F(CcMessageRouterTest, checkSubscriptionStopToNonExistingRecipientIsQueued)
 
 TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsDiscardedWhenEnabled)
 {
-    messageRouter->shutdown();
-    messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
-    messageRouter = createMessageRouter();
+    _messageRouter->shutdown();
+    _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
+    _messageRouter = createMessageRouter();
     bool msgShouldBeQueued = false;
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_REPLY(), msgShouldBeQueued);
 }
 
 TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsDiscardedWhenEnabled)
 {
-    messageRouter->shutdown();
-    messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
-    messageRouter = createMessageRouter();
+    _messageRouter->shutdown();
+    _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
+    _messageRouter = createMessageRouter();
     bool msgShouldBeQueued = false;
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(), msgShouldBeQueued);
 }
 
 TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsDiscardedWhenEnabled)
 {
-    messageRouter->shutdown();
-    messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
-    messageRouter = createMessageRouter();
+    _messageRouter->shutdown();
+    _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
+    _messageRouter = createMessageRouter();
     bool msgShouldBeQueued = false;
     routeMessageAndCheckQueue(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), msgShouldBeQueued);
 }
@@ -1166,12 +1166,12 @@ TEST_F(CcMessageRouterTest, setToKnownDoesNotChangeRoutingTable)
         resolveNextHopDone.notify();
     };
 
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    _messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 
-    messageRouter->setToKnown(testParticipantId);
+    _messageRouter->setToKnown(testParticipantId);
 
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    _messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 }
 
@@ -1190,20 +1190,20 @@ void CcMessageRouterTest::addNewRoutingEntry(const std::string& testParticipantI
         resolveNextHopDone.notify();
     };
 
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    _messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 
     const bool isParticipantGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 testParticipantId,
                 address,
                 isParticipantGloballyVisible,
                 expiryDateMs,
                 isSticky);
 
-    messageRouter->resolveNextHop(testParticipantId, expectResolved, nullptr);
+    _messageRouter->resolveNextHop(testParticipantId, expectResolved, nullptr);
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 }
 
@@ -1218,15 +1218,15 @@ void CcMessageRouterTest::addressIsNotAddedToRoutingTable(const std::shared_ptr<
         resolveNextHopDone.notify();
     };
 
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    _messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 
-    messageRouter->addProvisionedNextHop(
+    _messageRouter->addProvisionedNextHop(
                 testParticipantId,
                 address,
                 isParticipantGloballyVisible);
 
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    _messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 }
 
@@ -1243,8 +1243,8 @@ void CcMessageRouterTest::addressIsAddedToRoutingTable(const std::shared_ptr<con
     addNewRoutingEntry(testParticipantId, address);
 
     // cleanup
-    messageRouter->removeNextHop(testParticipantId);
-    messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
+    _messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->resolveNextHop(testParticipantId, expectNotResolved, nullptr);
     ASSERT_TRUE(resolveNextHopDone.waitFor(std::chrono::milliseconds(1000)));
 }
 
@@ -1253,8 +1253,8 @@ TEST_F(CcMessageRouterTest, addressValidation_globalAddressMustNotReferToOurClus
     // see also addressValidation_otherAddressesOfOwnAddressTypeAreAddedToRoutingTable
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
-    messageRouter->shutdown();
-    messageRouter = createMessageRouter();
+    _messageRouter->shutdown();
+    _messageRouter = createMessageRouter();
 
     addressIsNotAddedToRoutingTable(ownAddress);
 
@@ -1275,8 +1275,8 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesOfOwnAddressTypeAreA
     // see also addressValidation_globalAddressMustNotReferToOurClusterController
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
-    messageRouter->shutdown();
-    messageRouter = createMessageRouter();
+    _messageRouter->shutdown();
+    _messageRouter = createMessageRouter();
 
     addressIsNotAddedToRoutingTable(ownAddress);
 
@@ -1299,8 +1299,8 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesTypesAreAddedToRouti
     // see also webSocketAddressIsNotAddedToRoutingTable
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
-    messageRouter->shutdown();
-    messageRouter = createMessageRouter();
+    _messageRouter->shutdown();
+    _messageRouter = createMessageRouter();
     addressIsNotAddedToRoutingTable(ownAddress);
 
     auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>();
@@ -1322,15 +1322,15 @@ void CcMessageRouterTest::testRoutingEntryUpdate(const std::string& participantI
 {
     Semaphore semaphore(0);
     const TimePoint now = TimePoint::now();
-    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(1024));
-    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
-    mutableMessage.setRecipient(participantId);
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+    _mutableMessage.setExpiryDate(now + std::chrono::milliseconds(1024));
+    _mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    _mutableMessage.setRecipient(participantId);
+    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
 
     const bool isParticipantGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 participantId,
                 newAddress,
                 isParticipantGloballyVisible,
@@ -1338,15 +1338,15 @@ void CcMessageRouterTest::testRoutingEntryUpdate(const std::string& participantI
                 isSticky);
 
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
-    EXPECT_CALL(*messagingStubFactory, create(expectedAddress))
+    EXPECT_CALL(*_messagingStubFactory, create(expectedAddress))
             .WillOnce(Return(mockMessagingStub));
     EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
             .WillOnce(ReleaseSemaphore(&semaphore));
 
-    messageRouter->route(immutableMessage);
+    _messageRouter->route(immutableMessage);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
-    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
     Mock::VerifyAndClearExpectations(mockMessagingStub.get());
 }
 
@@ -1377,7 +1377,7 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
     testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
 
     // cleanup
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
 }
 
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddress)
@@ -1405,14 +1405,14 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddres
                 "webSocketId");
     testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
     testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
 
     // cleanup
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
 }
 
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
@@ -1432,26 +1432,26 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
                 "brokerUri", "topic");
     testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
                 "endpointUrl", "channelId");
     testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
-    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    testRoutingEntryUpdate(testParticipantId, _webSocketClientAddress, _webSocketClientAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
     testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
 
     // cleanup
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
 }
 
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfMqttAddress)
@@ -1471,28 +1471,28 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfMqttAddress)
                 "brokerUri", "topic");
     testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
                 "endpointUrl", "channelId");
     testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 "webSocketId");
     testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
     testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
 
     // cleanup
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
 }
 
 TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAddress)
@@ -1511,35 +1511,35 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAdd
                 system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
     testRoutingEntryUpdate(testParticipantId, webSocketAddress, webSocketAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
     testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
                 "endpointUrl", "channelId");
     testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 "webSocketId");
     testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
     // restore oldAddress
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
     auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
     testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
 
     // cleanup
-    messageRouter->removeNextHop(testParticipantId);
+    _messageRouter->removeNextHop(testParticipantId);
 }
 
 TEST_F(CcMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedInRoutingTable)
@@ -1551,24 +1551,24 @@ TEST_F(CcMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedInRoutin
     const bool isGloballyVisible = true;
     const bool isSticky = false;
     const TimePoint now = TimePoint::now();
-    this->mutableMessage.setExpiryDate(now + std::chrono::seconds(500));
-    this->mutableMessage.setRecipient(destinationParticipantId);
+    this->_mutableMessage.setExpiryDate(now + std::chrono::seconds(500));
+    this->_mutableMessage.setRecipient(destinationParticipantId);
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
 
-    std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
-    this->messageRouter->route(immutableMessage);
+    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
+    this->_messageRouter->route(immutableMessage);
 
-    EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
-    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
+    EXPECT_EQ(this->_messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(this->_messageRouter->getNumberOfRoutedMessages(), 1);
 
-    this->messageRouter->addNextHop(destinationParticipantId,
+    this->_messageRouter->addNextHop(destinationParticipantId,
                                     webSocketAddress,
                                     isGloballyVisible,
                                     expiryDateMs,
                                     isSticky);
 
-    EXPECT_EQ(this->messageQueue->getQueueLength(), 1);
-    EXPECT_EQ(this->messageRouter->getNumberOfRoutedMessages(), 1);
+    EXPECT_EQ(this->_messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(this->_messageRouter->getNumberOfRoutedMessages(), 1);
 
 }
 
@@ -1594,15 +1594,15 @@ TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable)
 
     auto mockMessageSender = std::make_shared<MockMessageSender>();
 
-    messageRouter->setMessageSender(mockMessageSender);
+    _messageRouter->setMessageSender(mockMessageSender);
 
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 subscriberParticipantId,
                 subscriberAddress,
-                DEFAULT_IS_GLOBALLY_VISIBLE,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
                 expiryDateMs,
                 isSticky);
-    messageRouter->addNextHop(
+    _messageRouter->addNextHop(
                 providerParticipantId,
                 providerAddress,
                 isProviderGloballyVisible,
@@ -1628,7 +1628,7 @@ TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable)
     // the factory returns an empty IMessagingStub in this case
 
     EXPECT_CALL(
-            *messagingStubFactory,
+            *_messagingStubFactory,
             create(Property(
                     &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
                     WhenDynamicCastTo<const joynr::system::RoutingTypes::WebSocketClientAddress*>(
@@ -1650,10 +1650,10 @@ TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable)
                 Property(&SubscriptionStop::getSubscriptionId, Eq(subscriptionId)) // SubscriptionStop object to send
                 )).Times(1);
 
-    messageRouter->route(subscriptionPublicationMutableMessage.getImmutableMessage());
-    Mock::VerifyAndClearExpectations(messagingStubFactory.get());
+    _messageRouter->route(subscriptionPublicationMutableMessage.getImmutableMessage());
+    Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
     // cleanup
-    messageRouter->removeNextHop(subscriberParticipantId);
-    messageRouter->removeNextHop(providerParticipantId);
+    _messageRouter->removeNextHop(subscriberParticipantId);
+    _messageRouter->removeNextHop(providerParticipantId);
 }

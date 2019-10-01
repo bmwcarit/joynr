@@ -156,7 +156,7 @@ void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(
         semaphore.notify();
     };
 
-    std::int64_t qosRoundTripTTL = 10000;
+    std::uint64_t qosRoundTripTTL = 10000;
     gpsProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
             ->setDiscoveryQos(discoveryQos)
             ->buildAsync(onSuccess, onError);
@@ -169,7 +169,7 @@ void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(
     std::string participantId = providerRuntime->registerProvider<vehicle::GpsProvider>(
             domain, mockProvider, providerQos);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(qosRoundTripTTL + discoveryTimeoutMs)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(static_cast<std::int64_t>(qosRoundTripTTL) + discoveryTimeoutMs)));
 
     // unregister provider
     providerRuntime->unregisterProvider(participantId);

@@ -29,6 +29,8 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 #define JOYNR_TEST_NO_THROW(statement, fail) \
     try { \
         statement; \
@@ -42,6 +44,7 @@
         fail() << "Expected: " #statement " doesn't throw an exception.\n" \
                   "  Actual: it throws."; \
     }
+#pragma GCC diagnostic pop
 
 #define JOYNR_EXPECT_NO_THROW(statement) \
     JOYNR_TEST_NO_THROW(statement, ADD_FAILURE)

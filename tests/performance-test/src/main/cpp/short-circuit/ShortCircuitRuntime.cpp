@@ -45,90 +45,90 @@ class ITransportStatus;
 ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                          std::shared_ptr<IKeychain> keyChain)
         : JoynrRuntimeImpl(*settings),
-          keyChain(std::move(keyChain)),
-          clusterControllerSettings(*settings),
-          ownAddress(),
-          enablePersistency(true)
+          _keyChain(std::move(keyChain)),
+          _clusterControllerSettings(*settings),
+          _ownAddress(),
+          _enablePersistency(true)
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
-    requestCallerDirectory = std::make_shared<DummyRequestCallerDirectory>();
+    _requestCallerDirectory = std::make_shared<DummyRequestCallerDirectory>();
 
     messagingStubFactory->registerStubFactory(std::make_unique<InProcessMessagingStubFactory>());
 
     const std::string multicastTopicPrefix = "";
 
-    fillAvailableGbidsVector(messagingSettings);
+    fillAvailableGbidsVector(_messagingSettings);
 
     std::unique_ptr<IMulticastAddressCalculator> addressCalculator =
-            std::make_unique<MqttMulticastAddressCalculator>(multicastTopicPrefix, availableGbids);
+            std::make_unique<MqttMulticastAddressCalculator>(multicastTopicPrefix, _availableGbids);
 
     const std::string& globalClusterControllerAddress("globalAddress");
     const std::string messageNotificationProviderParticipantId(
             "messageNotificationProviderParticipantId");
 
-    messageRouter = std::make_shared<CcMessageRouter>(
-            messagingSettings,
-            clusterControllerSettings,
+    _messageRouter = std::make_shared<CcMessageRouter>(
+            _messagingSettings,
+            _clusterControllerSettings,
             std::move(messagingStubFactory),
             nullptr,
             nullptr,
-            singleThreadedIOService.getIOService(),
+            _singleThreadedIOService.getIOService(),
             std::move(addressCalculator),
             globalClusterControllerAddress,
             messageNotificationProviderParticipantId,
-            enablePersistency,
+            _enablePersistency,
             std::vector<std::shared_ptr<ITransportStatus>>{},
             std::make_unique<MessageQueue<std::string>>(),
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(),
-            ownAddress);
+            _ownAddress);
 
-    messageSender = std::make_shared<MessageSender>(messageRouter, keyChain);
-    joynrDispatcher =
-            std::make_shared<Dispatcher>(messageSender, singleThreadedIOService.getIOService());
-    messageSender->registerDispatcher(joynrDispatcher);
+    _messageSender = std::make_shared<MessageSender>(_messageRouter, _keyChain);
+    _joynrDispatcher =
+            std::make_shared<Dispatcher>(_messageSender, _singleThreadedIOService.getIOService());
+    _messageSender->registerDispatcher(_joynrDispatcher);
 
-    dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(joynrDispatcher);
-    dispatcherAddress = std::make_shared<InProcessMessagingAddress>(dispatcherMessagingSkeleton);
+    _dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(_joynrDispatcher);
+    _dispatcherAddress = std::make_shared<InProcessMessagingAddress>(_dispatcherMessagingSkeleton);
 
-    publicationManager = std::make_shared<PublicationManager>(
-            singleThreadedIOService.getIOService(), messageSender, enablePersistency);
-    subscriptionManager = std::make_shared<SubscriptionManager>(
-            singleThreadedIOService.getIOService(), messageRouter);
+    _publicationManager = std::make_shared<PublicationManager>(
+            _singleThreadedIOService.getIOService(), _messageSender, _enablePersistency);
+    _subscriptionManager = std::make_shared<SubscriptionManager>(
+            _singleThreadedIOService.getIOService(), _messageRouter);
 
     auto joynrMessagingConnectorFactory =
-            std::make_unique<JoynrMessagingConnectorFactory>(messageSender, subscriptionManager);
-    proxyFactory = std::make_unique<ProxyFactory>(std::move(joynrMessagingConnectorFactory));
+            std::make_unique<JoynrMessagingConnectorFactory>(_messageSender, _subscriptionManager);
+    _proxyFactory = std::make_unique<ProxyFactory>(std::move(joynrMessagingConnectorFactory));
 
     std::string persistenceFilename = "dummy.txt";
-    participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
+    _participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
     std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-    dispatcherList.push_back(joynrDispatcher);
+    dispatcherList.push_back(_joynrDispatcher);
 
-    joynrDispatcher->registerPublicationManager(publicationManager);
-    joynrDispatcher->registerSubscriptionManager(subscriptionManager);
+    _joynrDispatcher->registerPublicationManager(_publicationManager);
+    _joynrDispatcher->registerSubscriptionManager(_subscriptionManager);
 
-    discoveryProxy = std::make_shared<DummyDiscovery>();
-    capabilitiesRegistrar =
+    _discoveryProxy = std::make_shared<DummyDiscovery>();
+    _capabilitiesRegistrar =
             std::make_unique<CapabilitiesRegistrar>(dispatcherList,
-                                                    discoveryProxy,
-                                                    participantIdStorage,
-                                                    dispatcherAddress,
-                                                    messageRouter,
+                                                    _discoveryProxy,
+                                                    _participantIdStorage,
+                                                    _dispatcherAddress,
+                                                    _messageRouter,
                                                     std::numeric_limits<std::int64_t>::max(),
-                                                    publicationManager,
+                                                    _publicationManager,
                                                     globalClusterControllerAddress);
 
-    maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
+    _maximumTtlMs = std::chrono::milliseconds(std::chrono::hours(24) * 30).count();
 }
 
 void ShortCircuitRuntime::fillAvailableGbidsVector(const MessagingSettings& messagingSettings)
 {
-    availableGbids.emplace_back(messagingSettings.getGbid());
+    _availableGbids.emplace_back(messagingSettings.getGbid());
 
     std::uint8_t additionalBackends = messagingSettings.getAdditionalBackendsCount();
     for (std::uint8_t index = 0; index < additionalBackends; index++) {
-        availableGbids.emplace_back(messagingSettings.getAdditionalBackendGbid(index));
+        _availableGbids.emplace_back(messagingSettings.getAdditionalBackendGbid(index));
     }
 }
 

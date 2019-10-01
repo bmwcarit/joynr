@@ -114,7 +114,7 @@ protected:
         std::shared_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
                 consumerRuntime->createProxyBuilder<tests::testProxy>(domain);
 
-        std::int64_t qosRoundTripTTL = 30000;
+        std::uint64_t qosRoundTripTTL = 30000;
         std::shared_ptr<tests::testProxy> testProxy =
                 proxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQos)

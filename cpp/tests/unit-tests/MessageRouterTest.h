@@ -56,44 +56,44 @@ class MessageRouterTest : public ::testing::Test
 {
 public:
     MessageRouterTest()
-            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              settings(),
-              messagingSettings(settings),
-              clusterControllerSettings(settings),
-              messageQueue(nullptr),
-              messagingStubFactory(nullptr),
-              messageRouter(),
-              mutableMessage(),
-              multicastMessagingSkeletonDirectory(
+            : _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              _settings(),
+              _messagingSettings(_settings),
+              _clusterControllerSettings(_settings),
+              _messageQueue(nullptr),
+              _messagingStubFactory(nullptr),
+              _messageRouter(),
+              _mutableMessage(),
+              _multicastMessagingSkeletonDirectory(
                       std::make_shared<MulticastMessagingSkeletonDirectory>()),
-              localTransport(std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(
+              _localTransport(std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(
                       joynr::system::RoutingTypes::WebSocketProtocol::Enum::WS,
                       "host",
                       4242,
                       "path")),
-              webSocketClientAddress(
+              _webSocketClientAddress(
                       std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
                               "testWebSocketClientAddress")),
-              enablePersistency(true),
-              sendMsgRetryInterval(1000),
-              availableGbids{"testGbid1", "testGbid2", "testGbid3"},
-              ownAddress(std::make_shared<const system::RoutingTypes::Address>())
+              _enablePersistency(true),
+              _sendMsgRetryInterval(1000),
+              _availableGbids{"testGbid1", "testGbid2", "testGbid3"},
+              _ownAddress(std::make_shared<const system::RoutingTypes::Address>())
     {
-        singleThreadedIOService->start();
+        _singleThreadedIOService->start();
 
-        messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
-        messageRouter = createMessageRouter();
+        _messagingStubFactory = std::make_shared<MockMessagingStubFactory>();
+        _messageRouter = createMessageRouter();
 
         const TimePoint now = TimePoint::now();
-        mutableMessage.setExpiryDate(now + std::chrono::milliseconds(500));
-        mutableMessage.setType(Message::VALUE_MESSAGE_TYPE_ONE_WAY());
+        _mutableMessage.setExpiryDate(now + std::chrono::milliseconds(500));
+        _mutableMessage.setType(Message::VALUE_MESSAGE_TYPE_ONE_WAY());
     }
 
     ~MessageRouterTest() override
     {
-        messageRouter->shutdown();
-        singleThreadedIOService->stop();
-        std::remove(settingsFileName.c_str());
+        _messageRouter->shutdown();
+        _singleThreadedIOService->stop();
+        std::remove(_settingsFileName.c_str());
     }
 
 protected:
@@ -103,19 +103,19 @@ protected:
             std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
     {
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
-        messageQueue = messageQueueForMessageRouter.get();
+        _messageQueue = messageQueueForMessageRouter.get();
 
         auto transportNotAvailableQueue =
                 std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>();
-        transportNotAvailableQueueRef = transportNotAvailableQueue.get();
+        _transportNotAvailableQueueRef = transportNotAvailableQueue.get();
 
         auto libJoynrMessageRouter = std::make_shared<LibJoynrMessageRouter>(
-                messagingSettings,
-                webSocketClientAddress,
-                messagingStubFactory,
-                singleThreadedIOService->getIOService(),
-                std::make_unique<WebSocketMulticastAddressCalculator>(localTransport),
-                enablePersistency,
+                _messagingSettings,
+                _webSocketClientAddress,
+                _messagingStubFactory,
+                _singleThreadedIOService->getIOService(),
+                std::make_unique<WebSocketMulticastAddressCalculator>(_localTransport),
+                _enablePersistency,
                 std::move(transportStatuses),
                 std::move(messageQueueForMessageRouter),
                 std::move(transportNotAvailableQueue));
@@ -131,74 +131,74 @@ protected:
         const std::string globalCcAddress("globalAddress");
         const std::string messageNotificationProviderParticipantId(
                 "messageNotificationProviderParticipantId");
-        ClusterControllerSettings ccSettings(settings);
+        ClusterControllerSettings ccSettings(_settings);
         ccSettings.setMulticastReceiverDirectoryPersistencyEnabled(true);
 
-        messagingSettings.setRoutingTableCleanupIntervalMs(5000);
-        messagingSettings.setSendMsgRetryInterval(sendMsgRetryInterval);
+        _messagingSettings.setRoutingTableCleanupIntervalMs(5000);
+        _messagingSettings.setSendMsgRetryInterval(_sendMsgRetryInterval);
         auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
-        messageQueue = messageQueueForMessageRouter.get();
+        _messageQueue = messageQueueForMessageRouter.get();
 
         auto transportNotAvailableQueue =
                 std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>();
-        transportNotAvailableQueueRef = transportNotAvailableQueue.get();
+        _transportNotAvailableQueueRef = transportNotAvailableQueue.get();
 
         auto ccMessageRouter = std::make_shared<CcMessageRouter>(
-                messagingSettings,
-                clusterControllerSettings,
-                messagingStubFactory,
-                multicastMessagingSkeletonDirectory,
+                _messagingSettings,
+                _clusterControllerSettings,
+                _messagingStubFactory,
+                _multicastMessagingSkeletonDirectory,
                 std::unique_ptr<IPlatformSecurityManager>(),
-                singleThreadedIOService->getIOService(),
+                _singleThreadedIOService->getIOService(),
                 std::make_unique<MqttMulticastAddressCalculator>(
-                        ccSettings.getMqttMulticastTopicPrefix(), availableGbids),
+                        ccSettings.getMqttMulticastTopicPrefix(), _availableGbids),
                 globalCcAddress,
                 messageNotificationProviderParticipantId,
-                enablePersistency,
+                _enablePersistency,
                 std::move(transportStatuses),
                 std::move(messageQueueForMessageRouter),
                 std::move(transportNotAvailableQueue),
-                *ownAddress);
+                *_ownAddress);
         ccMessageRouter->init();
         return ccMessageRouter;
     }
 
     void setOwnAddress(std::shared_ptr<const system::RoutingTypes::Address> ownAddress)
     {
-        this->ownAddress = ownAddress;
+        this->_ownAddress = ownAddress;
     }
 
-    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
-    std::string settingsFileName;
-    Settings settings;
-    MessagingSettings messagingSettings;
-    ClusterControllerSettings clusterControllerSettings;
-    MessageQueue<std::string>* messageQueue;
-    MessageQueue<std::shared_ptr<ITransportStatus>>* transportNotAvailableQueueRef;
-    std::shared_ptr<MockMessagingStubFactory> messagingStubFactory;
+    std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
+    std::string _settingsFileName;
+    Settings _settings;
+    MessagingSettings _messagingSettings;
+    ClusterControllerSettings _clusterControllerSettings;
+    MessageQueue<std::string>* _messageQueue;
+    MessageQueue<std::shared_ptr<ITransportStatus>>* _transportNotAvailableQueueRef;
+    std::shared_ptr<MockMessagingStubFactory> _messagingStubFactory;
 
-    std::shared_ptr<T> messageRouter;
+    std::shared_ptr<T> _messageRouter;
 
-    MutableMessage mutableMessage;
-    std::shared_ptr<MulticastMessagingSkeletonDirectory> multicastMessagingSkeletonDirectory;
+    MutableMessage _mutableMessage;
+    std::shared_ptr<MulticastMessagingSkeletonDirectory> _multicastMessagingSkeletonDirectory;
 
-    std::shared_ptr<const joynr::system::RoutingTypes::WebSocketAddress> localTransport;
+    std::shared_ptr<const joynr::system::RoutingTypes::WebSocketAddress> _localTransport;
     const std::shared_ptr<const joynr::system::RoutingTypes::WebSocketClientAddress>
-            webSocketClientAddress;
+            _webSocketClientAddress;
 
-    const bool enablePersistency;
-    const std::uint32_t sendMsgRetryInterval;
-    std::vector<std::string> availableGbids;
+    const bool _enablePersistency;
+    const std::uint32_t _sendMsgRetryInterval;
+    std::vector<std::string> _availableGbids;
 
     void routeMessageToAddress()
     {
         joynr::Semaphore semaphore(0);
-        std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
+        std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
         auto mockMessagingStub = std::make_shared<MockMessagingStub>();
         using ::testing::Return;
         using ::testing::_;
         using ::testing::A;
-        ON_CALL(*messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
+        ON_CALL(*_messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
         ON_CALL(*mockMessagingStub,
                 transmit(immutableMessage,
                          A<const std::function<
@@ -208,12 +208,12 @@ protected:
                     transmit(immutableMessage,
                              A<const std::function<
                                      void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
-        messageRouter->route(immutableMessage);
+        _messageRouter->route(immutableMessage);
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
     }
 
 private:
-    std::shared_ptr<const system::RoutingTypes::Address> ownAddress;
+    std::shared_ptr<const system::RoutingTypes::Address> _ownAddress;
 };
 
 typedef ::testing::Types<LibJoynrMessageRouter, CcMessageRouter> MessageRouterTypes;

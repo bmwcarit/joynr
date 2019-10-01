@@ -31,34 +31,34 @@ public:
     MqttMessagingTest() : mqttTopic("receiverChannelId"), testGbid()
     {
         std::string brokerHost =
-                messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost();
+                _messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost();
         std::string brokerPort = std::to_string(
-                messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
+                _messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
         testGbid = "testGbid";
         // provision global capabilities directory
         const bool isGloballyVisible = true;
         const auto addressCapabilitiesDirectory =
                 std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(
-                        testGbid, messagingSettings.getCapabilitiesDirectoryChannelId());
-        messageRouter->addProvisionedNextHop(
-                messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                        testGbid, _messagingSettings.getCapabilitiesDirectoryChannelId());
+        _messageRouter->addProvisionedNextHop(
+                _messagingSettings.getCapabilitiesDirectoryParticipantId(),
                 addressCapabilitiesDirectory,
                 isGloballyVisible);
 
-        messagingStubFactory->registerStubFactory(
-                std::make_shared<MqttMessagingStubFactory>(mockMessageSender, testGbid));
+        _messagingStubFactory->registerStubFactory(
+                std::make_shared<MqttMessagingStubFactory>(_mockMessageSender, testGbid));
     }
 
     void WaitXTimes(std::uint64_t x)
     {
         for (std::uint64_t i = 0; i < x; ++i) {
-            ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+            ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(1)));
         }
     }
 
     ~MqttMessagingTest()
     {
-        std::remove(settingsFileName.c_str());
+        std::remove(_settingsFileName.c_str());
     }
 
     std::shared_ptr<joynr::system::RoutingTypes::MqttAddress> createJoynrMessagingEndpointAddress();

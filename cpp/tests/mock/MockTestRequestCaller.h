@@ -42,12 +42,12 @@ public:
 
     void invokeGetterOnErrorFunctionWithProviderRuntimeException(std::function<void(const std::int32_t&)> onSuccess,
             std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
-        onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(providerRuntimeExceptionTestMsg));
+        onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(_providerRuntimeExceptionTestMsg));
     }
 
     void invokeMethodOnErrorFunctionWithProviderRuntimeException(std::function<void()> onSuccess,
             std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)> onError) {
-        onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(providerRuntimeExceptionTestMsg));
+        onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(_providerRuntimeExceptionTestMsg));
     }
 
     void invokeMapParametersOnSuccessFct(const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
@@ -57,12 +57,12 @@ public:
     }
 
     const joynr::types::Version& getProviderVersion() const {
-        return providerVersion;
+        return _providerVersion;
     }
 
     MockTestRequestCaller() :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>()),
-            providerVersion(47, 11)
+            _providerVersion(47, 11)
     {
         ON_CALL(
                 *this,
@@ -93,7 +93,7 @@ public:
     }
     MockTestRequestCaller(testing::Cardinality getLocationCardinality) :
             joynr::tests::testRequestCaller(std::make_shared<MockTestProvider>()),
-            providerVersion(47, 11)
+            _providerVersion(47, 11)
     {
         EXPECT_CALL(
                 *this,
@@ -176,10 +176,10 @@ public:
     MOCK_METHOD2(unregisterAttributeListener, void(const std::string& attributeName, std::shared_ptr<joynr::SubscriptionAttributeListener> attributeListener));
     MOCK_METHOD2(unregisterBroadcastListener, void(const std::string& broadcastName, std::shared_ptr<joynr::UnicastBroadcastListener> broadcastListener));
 
-    std::string providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
+    std::string _providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 
 private:
-    joynr::types::Version providerVersion;
+    joynr::types::Version _providerVersion;
 };
 
 #endif // TESTS_MOCK_MOCKTESTREQUESTCALLER_H

@@ -124,7 +124,7 @@ public:
     {
     }
 
-    using tests::testProxy::providerDiscoveryEntry;
+    using tests::testProxy::_providerDiscoveryEntry;
 };
 
 TEST_F(LocalDiscoveryTest, testLocalLookup)
@@ -139,7 +139,7 @@ TEST_F(LocalDiscoveryTest, testLocalLookup)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
-    EXPECT_TRUE(testProxy->providerDiscoveryEntry.getIsLocal());
+    EXPECT_TRUE(testProxy->_providerDiscoveryEntry.getIsLocal());
 }
 
 TEST_F(LocalDiscoveryTest, testGloballLookup)
@@ -154,7 +154,7 @@ TEST_F(LocalDiscoveryTest, testGloballLookup)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
-    EXPECT_FALSE(testProxy->providerDiscoveryEntry.getIsLocal());
+    EXPECT_FALSE(testProxy->_providerDiscoveryEntry.getIsLocal());
 }
 
 TEST_F(LocalDiscoveryTest, testAsyncRegistration)

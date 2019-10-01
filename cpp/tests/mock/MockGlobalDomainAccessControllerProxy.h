@@ -75,7 +75,7 @@ public:
     MOCK_METHOD5(
             getMasterAccessControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>(
-                const std::string& domain,
+                const std::string& _domain,
                 const std::string& interfaceName,
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& masterAces
@@ -101,7 +101,7 @@ public:
     MOCK_METHOD5(
             getMediatorAccessControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>>>(
-                const std::string& domain,
+                const std::string& _domain,
                 const std::string& interfaceName,
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::MasterAccessControlEntry>& mediatorAces
@@ -127,7 +127,7 @@ public:
     MOCK_METHOD5(
             getOwnerAccessControlEntriesAsyncMock,
             std::shared_ptr<joynr::Future<std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>>>(
-                const std::string& domain,
+                const std::string& _domain,
                 const std::string& interfaceName,
                 std::function<void(
                     const std::vector<joynr::infrastructure::DacTypes::OwnerAccessControlEntry>& ownerAces

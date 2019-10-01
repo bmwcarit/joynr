@@ -38,19 +38,19 @@ public:
     using MediatorEntry = typename ValidatorType::MediatorEntry;
     using OwnerEntry = typename ValidatorType::OwnerEntry;
 
-    MasterEntry masterEntry;
-    MediatorEntry mediatorEntry;
-    OwnerEntry ownerEntry;
+    MasterEntry _masterEntry;
+    MediatorEntry _mediatorEntry;
+    OwnerEntry _ownerEntry;
 
 public:
     AceRceValidatorTest()
     {
-        possiblePermissions.push_back(Permission::NO);
-        possiblePermissions.push_back(Permission::ASK);
-        possibleRequiredTrustLevels.push_back(TrustLevel::LOW);
-        possibleRequiredTrustLevels.push_back(TrustLevel::MID);
-        possibleRequiredChangeTrustLevels.push_back(TrustLevel::MID);
-        possibleRequiredChangeTrustLevels.push_back(TrustLevel::HIGH);
+        _possiblePermissions.push_back(Permission::NO);
+        _possiblePermissions.push_back(Permission::ASK);
+        _possibleRequiredTrustLevels.push_back(TrustLevel::LOW);
+        _possibleRequiredTrustLevels.push_back(TrustLevel::MID);
+        _possibleRequiredChangeTrustLevels.push_back(TrustLevel::MID);
+        _possibleRequiredChangeTrustLevels.push_back(TrustLevel::HIGH);
 
         init(Tag{});
     }
@@ -84,29 +84,29 @@ public:
     }
     void init(const tags::Access&)
     {
-        masterEntry = MasterEntry(TEST_USER,
+        _masterEntry = MasterEntry(_TEST_USER,
                                   std::string(),
                                   std::string(),
                                   TrustLevel::LOW,
-                                  possibleRequiredTrustLevels,
+                                  _possibleRequiredTrustLevels,
                                   TrustLevel::LOW,
-                                  possibleRequiredChangeTrustLevels,
+                                  _possibleRequiredChangeTrustLevels,
                                   std::string(),
                                   Permission::NO,
-                                  possiblePermissions);
+                                  _possiblePermissions);
 
-        mediatorEntry = MediatorEntry(TEST_USER,
+        _mediatorEntry = MediatorEntry(_TEST_USER,
                                       std::string(),
                                       std::string(),
                                       TrustLevel::LOW,
-                                      possibleRequiredTrustLevels,
+                                      _possibleRequiredTrustLevels,
                                       TrustLevel::LOW,
-                                      possibleRequiredChangeTrustLevels,
+                                      _possibleRequiredChangeTrustLevels,
                                       std::string(),
                                       Permission::NO,
-                                      possiblePermissions);
+                                      _possiblePermissions);
 
-        ownerEntry = OwnerEntry(TEST_USER,
+        _ownerEntry = OwnerEntry(_TEST_USER,
                                 std::string(),
                                 std::string(),
                                 TrustLevel::MID,
@@ -117,27 +117,27 @@ public:
 
     void init(const tags::Registration&)
     {
-        masterEntry = MasterEntry(TEST_USER,
+        _masterEntry = MasterEntry(_TEST_USER,
                                   std::string(),
                                   std::string(),
                                   TrustLevel::LOW,
-                                  possibleRequiredTrustLevels,
+                                  _possibleRequiredTrustLevels,
                                   TrustLevel::LOW,
-                                  possibleRequiredChangeTrustLevels,
+                                  _possibleRequiredChangeTrustLevels,
                                   Permission::NO,
-                                  possiblePermissions);
+                                  _possiblePermissions);
 
-        mediatorEntry = MediatorEntry(TEST_USER,
+        _mediatorEntry = MediatorEntry(_TEST_USER,
                                       std::string(),
                                       std::string(),
                                       TrustLevel::LOW,
-                                      possibleRequiredTrustLevels,
+                                      _possibleRequiredTrustLevels,
                                       TrustLevel::LOW,
-                                      possibleRequiredChangeTrustLevels,
+                                      _possibleRequiredChangeTrustLevels,
                                       Permission::NO,
-                                      possiblePermissions);
+                                      _possiblePermissions);
 
-        ownerEntry = OwnerEntry(TEST_USER,
+        _ownerEntry = OwnerEntry(_TEST_USER,
                                 std::string(),
                                 std::string(),
                                 TrustLevel::MID,
@@ -146,14 +146,14 @@ public:
     }
 
 protected:
-    static const std::string TEST_USER;
-    std::vector<Permission::Enum> possiblePermissions;
-    std::vector<TrustLevel::Enum> possibleRequiredChangeTrustLevels;
-    std::vector<TrustLevel::Enum> possibleRequiredTrustLevels;
+    static const std::string _TEST_USER;
+    std::vector<Permission::Enum> _possiblePermissions;
+    std::vector<TrustLevel::Enum> _possibleRequiredChangeTrustLevels;
+    std::vector<TrustLevel::Enum> _possibleRequiredTrustLevels;
 };
 
 template <typename Tag>
-const std::string AceRceValidatorTest<Tag>::TEST_USER("testUser");
+const std::string AceRceValidatorTest<Tag>::_TEST_USER("testUser");
 
 using TagTypes = ::testing::Types<tags::Access, tags::Registration>;
 TYPED_TEST_CASE(AceRceValidatorTest, TagTypes);
@@ -163,8 +163,8 @@ TYPED_TEST(AceRceValidatorTest, TestMediatorInvalidPossiblePermissions)
     std::vector<Permission::Enum> possiblePermissions;
     possiblePermissions.push_back(Permission::ASK);
     possiblePermissions.push_back(Permission::YES);
-    this->setPossiblePermissions(this->mediatorEntry, possiblePermissions, TypeParam{});
-    Validator<TypeParam> validator(this->masterEntry, this->mediatorEntry, this->ownerEntry);
+    this->setPossiblePermissions(this->_mediatorEntry, possiblePermissions, TypeParam{});
+    Validator<TypeParam> validator(this->_masterEntry, this->_mediatorEntry, this->_ownerEntry);
 
     EXPECT_FALSE(validator.isMediatorValid());
 }
@@ -174,29 +174,29 @@ TYPED_TEST(AceRceValidatorTest, TestMediatorInvalidPossibleTrustLevels)
     std::vector<TrustLevel::Enum> possibleRequiredTrustLevels;
     possibleRequiredTrustLevels.push_back(TrustLevel::HIGH);
     possibleRequiredTrustLevels.push_back(TrustLevel::MID);
-    this->mediatorEntry.setPossibleRequiredTrustLevels(possibleRequiredTrustLevels);
-    Validator<TypeParam> validator(this->masterEntry, this->mediatorEntry, this->ownerEntry);
+    this->_mediatorEntry.setPossibleRequiredTrustLevels(possibleRequiredTrustLevels);
+    Validator<TypeParam> validator(this->_masterEntry, this->_mediatorEntry, this->_ownerEntry);
 
     EXPECT_FALSE(validator.isMediatorValid());
 }
 
 TYPED_TEST(AceRceValidatorTest, TestMediatorValid)
 {
-    Validator<TypeParam> validator(this->masterEntry, this->mediatorEntry, this->ownerEntry);
+    Validator<TypeParam> validator(this->_masterEntry, this->_mediatorEntry, this->_ownerEntry);
 
     EXPECT_TRUE(validator.isMediatorValid());
 }
 
 TYPED_TEST(AceRceValidatorTest, TestOwnerValid)
 {
-    Validator<TypeParam> validator(this->masterEntry, this->mediatorEntry, this->ownerEntry);
+    Validator<TypeParam> validator(this->_masterEntry, this->_mediatorEntry, this->_ownerEntry);
 
     EXPECT_TRUE(validator.isOwnerValid());
 }
 
 TYPED_TEST(AceRceValidatorTest, TestOwnerInvalid)
 {
-    this->setPermission(this->ownerEntry, Permission::YES, TypeParam{});
-    Validator<TypeParam> validator(this->masterEntry, this->mediatorEntry, this->ownerEntry);
+    this->setPermission(this->_ownerEntry, Permission::YES, TypeParam{});
+    Validator<TypeParam> validator(this->_masterEntry, this->_mediatorEntry, this->_ownerEntry);
     EXPECT_FALSE(validator.isOwnerValid());
 }

@@ -91,10 +91,10 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Request",)";
-        expectedPayloadStream << R"("methodName":"methodName",)";
-        expectedPayloadStream << R"("paramDatatypes":["java.lang.Integer","java.lang.String"],)";
-        expectedPayloadStream << R"("params":[42,"value"],)";
-        expectedPayloadStream << R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
+        expectedPayloadStream << R"("_methodName":"methodName",)";
+        expectedPayloadStream << R"("_paramDatatypes":["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("_params":[42,"value"],)";
+        expectedPayloadStream << R"("_requestReplyId":")" << request.getRequestReplyId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
@@ -103,9 +103,9 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.OneWayRequest",)";
-        expectedPayloadStream << R"("methodName":"methodName",)";
-        expectedPayloadStream << R"("paramDatatypes":["java.lang.Integer","java.lang.String"],)";
-        expectedPayloadStream << R"("params":[42,"value"])";
+        expectedPayloadStream << R"("_methodName":"methodName",)";
+        expectedPayloadStream << R"("_paramDatatypes":["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("_params":[42,"value"])";
         expectedPayloadStream << R"(})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
@@ -115,8 +115,8 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Reply",)";
-        expectedPayloadStream << R"("response":["response"],)";
-        expectedPayloadStream << R"("requestReplyId":")" << reply.getRequestReplyId() << R"("})";
+        expectedPayloadStream << R"("_response":["response"],)";
+        expectedPayloadStream << R"("_requestReplyId":")" << reply.getRequestReplyId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
@@ -125,8 +125,8 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.SubscriptionPublication",)";
-        expectedPayloadStream << R"("response":["publication"],)";
-        expectedPayloadStream << R"("subscriptionId":")"
+        expectedPayloadStream << R"("_response":["publication"],)";
+        expectedPayloadStream << R"("_subscriptionId":")"
                               << subscriptionPublication.getSubscriptionId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
@@ -137,8 +137,8 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.MulticastPublication",)";
-        expectedPayloadStream << R"("response":["publication"],)";
-        expectedPayloadStream << R"("multicastId":")" << multicastPublication.getMulticastId()
+        expectedPayloadStream << R"("_response":["publication"],)";
+        expectedPayloadStream << R"("_multicastId":")" << multicastPublication.getMulticastId()
                               << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
@@ -169,7 +169,7 @@ TEST_F(MutableMessageFactoryTest, createRequest)
 {
     MutableMessage mutableMessage =
             messageFactory.createRequest(senderID, receiverID, qos, request, isLocalMessage);
-    const TimePoint expectedExpiryDate = TimePoint::fromRelativeMs(qos.getTtl());
+    const TimePoint expectedExpiryDate = TimePoint::fromRelativeMs(static_cast<std::int64_t>(qos.getTtl()));
     const TimePoint expiryDate = mutableMessage.getExpiryDate();
     EXPECT_NEAR(expectedExpiryDate.toMilliseconds(), expiryDate.toMilliseconds(), 100.);
     JOYNR_LOG_DEBUG(

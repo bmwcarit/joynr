@@ -37,8 +37,8 @@ class MessageQueueTest : public ::testing::Test
 {
 public:
     MessageQueueTest()
-            : messageQueue(),
-              expiryDate(std::chrono::time_point_cast<std::chrono::milliseconds>(
+            : _messageQueue(),
+              _expiryDate(std::chrono::time_point_cast<std::chrono::milliseconds>(
                                  std::chrono::system_clock::now()) +
                          std::chrono::milliseconds(100))
     {
@@ -47,8 +47,8 @@ public:
     ~MessageQueueTest() = default;
 
 protected:
-    MessageQueue<std::string> messageQueue;
-    TimePoint expiryDate;
+    MessageQueue<std::string> _messageQueue;
+    TimePoint _expiryDate;
 
     void createAndQueueMessage(const TimePoint& expiryDate)
     {
@@ -56,7 +56,7 @@ protected:
         mutableMsg.setExpiryDate(expiryDate);
         auto immutableMessage = mutableMsg.getImmutableMessage();
         auto recipient = immutableMessage->getRecipient();
-        messageQueue.queueMessage(recipient, std::move(immutableMessage));
+        _messageQueue.queueMessage(recipient, std::move(immutableMessage));
     }
 
 private:
@@ -65,22 +65,22 @@ private:
 
 TEST_F(MessageQueueTest, initialQueueIsEmpty)
 {
-    EXPECT_EQ(messageQueue.getQueueLength(), 0);
+    EXPECT_EQ(_messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, addMultipleMessages)
 {
-    createAndQueueMessage(expiryDate);
-    EXPECT_EQ(1, messageQueue.getQueueLength());
+    createAndQueueMessage(_expiryDate);
+    EXPECT_EQ(1, _messageQueue.getQueueLength());
 
-    createAndQueueMessage(expiryDate);
-    EXPECT_EQ(2, messageQueue.getQueueLength());
+    createAndQueueMessage(_expiryDate);
+    EXPECT_EQ(2, _messageQueue.getQueueLength());
 
-    createAndQueueMessage(expiryDate);
-    EXPECT_EQ(3, messageQueue.getQueueLength());
+    createAndQueueMessage(_expiryDate);
+    EXPECT_EQ(3, _messageQueue.getQueueLength());
 
-    createAndQueueMessage(expiryDate);
-    EXPECT_EQ(4, messageQueue.getQueueLength());
+    createAndQueueMessage(_expiryDate);
+    EXPECT_EQ(4, _messageQueue.getQueueLength());
 }
 
 TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired)
@@ -89,10 +89,10 @@ TEST_F(MessageQueueTest, removeExpiredMessages_AllMessagesExpired)
 
     createAndQueueMessage(zeroTimepoint);
     createAndQueueMessage(zeroTimepoint);
-    EXPECT_EQ(2, messageQueue.getQueueLength());
+    EXPECT_EQ(2, _messageQueue.getQueueLength());
 
-    messageQueue.removeOutdatedMessages();
-    EXPECT_EQ(0, messageQueue.getQueueLength());
+    _messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(0, _messageQueue.getQueueLength());
 }
 
 TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired)
@@ -101,22 +101,22 @@ TEST_F(MessageQueueTest, removeExpiredMessages_SomeMessagesExpired)
 
     createAndQueueMessage(zeroTimepoint);
     createAndQueueMessage(zeroTimepoint);
-    createAndQueueMessage(expiryDate);
-    createAndQueueMessage(expiryDate);
-    EXPECT_EQ(4, messageQueue.getQueueLength());
+    createAndQueueMessage(_expiryDate);
+    createAndQueueMessage(_expiryDate);
+    EXPECT_EQ(4, _messageQueue.getQueueLength());
 
-    messageQueue.removeOutdatedMessages();
-    EXPECT_EQ(2, messageQueue.getQueueLength());
+    _messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(2, _messageQueue.getQueueLength());
 }
 
 TEST_F(MessageQueueTest, removeExpiredMessages_NoMessageExpired)
 {
-    createAndQueueMessage(expiryDate);
-    createAndQueueMessage(expiryDate);
-    EXPECT_EQ(2, messageQueue.getQueueLength());
+    createAndQueueMessage(_expiryDate);
+    createAndQueueMessage(_expiryDate);
+    EXPECT_EQ(2, _messageQueue.getQueueLength());
 
-    messageQueue.removeOutdatedMessages();
-    EXPECT_EQ(2, messageQueue.getQueueLength());
+    _messageQueue.removeOutdatedMessages();
+    EXPECT_EQ(2, _messageQueue.getQueueLength());
 }
 
 TEST_F(MessageQueueTest, queueDequeueMessages)
@@ -125,26 +125,26 @@ TEST_F(MessageQueueTest, queueDequeueMessages)
     MutableMessage mutableMsg1;
     const std::string recipient1("TEST1");
     mutableMsg1.setRecipient(recipient1);
-    mutableMsg1.setExpiryDate(expiryDate);
+    mutableMsg1.setExpiryDate(_expiryDate);
     auto immutableMsg1 = mutableMsg1.getImmutableMessage();
-    messageQueue.queueMessage(recipient1, std::move(immutableMsg1));
+    _messageQueue.queueMessage(recipient1, std::move(immutableMsg1));
 
     MutableMessage mutableMsg2;
     const std::string recipient2("TEST2");
     mutableMsg2.setRecipient(recipient2);
-    mutableMsg2.setExpiryDate(expiryDate);
+    mutableMsg2.setExpiryDate(_expiryDate);
     auto immutableMsg2 = mutableMsg2.getImmutableMessage();
-    messageQueue.queueMessage(recipient2, std::move(immutableMsg2));
-    EXPECT_EQ(messageQueue.getQueueLength(), 2);
+    _messageQueue.queueMessage(recipient2, std::move(immutableMsg2));
+    EXPECT_EQ(_messageQueue.getQueueLength(), 2);
 
     // get messages from queue
-    auto item = messageQueue.getNextMessageFor(recipient1);
+    auto item = _messageQueue.getNextMessageFor(recipient1);
     compareMutableImmutableMessage(mutableMsg1, item);
-    EXPECT_EQ(messageQueue.getQueueLength(), 1);
+    EXPECT_EQ(_messageQueue.getQueueLength(), 1);
 
-    item = messageQueue.getNextMessageFor(recipient2);
+    item = _messageQueue.getNextMessageFor(recipient2);
     compareMutableImmutableMessage(mutableMsg2, item);
-    EXPECT_EQ(messageQueue.getQueueLength(), 0);
+    EXPECT_EQ(_messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant)
@@ -153,24 +153,24 @@ TEST_F(MessageQueueTest, queueDequeueMultipleMessagesForOneParticipant)
     MutableMessage mutableMessage;
     const std::string participantId("TEST");
     mutableMessage.setRecipient(participantId);
-    mutableMessage.setExpiryDate(expiryDate);
-    messageQueue.queueMessage(participantId, mutableMessage.getImmutableMessage());
-    messageQueue.queueMessage(participantId, mutableMessage.getImmutableMessage());
-    EXPECT_EQ(messageQueue.getQueueLength(), 2);
+    mutableMessage.setExpiryDate(_expiryDate);
+    _messageQueue.queueMessage(participantId, mutableMessage.getImmutableMessage());
+    _messageQueue.queueMessage(participantId, mutableMessage.getImmutableMessage());
+    EXPECT_EQ(_messageQueue.getQueueLength(), 2);
 
     // get messages from queue
-    auto item = messageQueue.getNextMessageFor(participantId);
+    auto item = _messageQueue.getNextMessageFor(participantId);
     compareMutableImmutableMessage(mutableMessage, item);
-    EXPECT_EQ(messageQueue.getQueueLength(), 1);
+    EXPECT_EQ(_messageQueue.getQueueLength(), 1);
 
-    item = messageQueue.getNextMessageFor(participantId);
+    item = _messageQueue.getNextMessageFor(participantId);
     compareMutableImmutableMessage(mutableMessage, item);
-    EXPECT_EQ(messageQueue.getQueueLength(), 0);
+    EXPECT_EQ(_messageQueue.getQueueLength(), 0);
 }
 
 TEST_F(MessageQueueTest, dequeueInvalidParticipantId)
 {
-    EXPECT_EQ(messageQueue.getNextMessageFor("TEST"), nullptr);
+    EXPECT_EQ(_messageQueue.getNextMessageFor("TEST"), nullptr);
 }
 
 class MessageQueueWithLimitTest : public ::testing::Test
@@ -215,7 +215,7 @@ private:
 TEST_F(MessageQueueWithLimitTest, testAddingMessages)
 {
     constexpr std::uint64_t messageQueueLimit = 4;
-    MessageQueue<std::string> messageQueue(messageQueueLimit);
+    MessageQueue<std::string> _messageQueue(messageQueueLimit);
 
     const int messageCount = 5;
     // Keep in mind that message 1 expires later than message 3. This is done in order to check
@@ -227,17 +227,17 @@ TEST_F(MessageQueueWithLimitTest, testAddingMessages)
     const std::string recipient[messageCount] = {"TEST1", "TEST2", "TEST3", "TEST4", "TEST5"};
 
     for (int i = 0; i < messageCount; i++) {
-        this->createAndQueueMessage(messageQueue, expiryDate[i], recipient[i]);
+        this->createAndQueueMessage(_messageQueue, expiryDate[i], recipient[i]);
     }
 
-    EXPECT_EQ(messageQueue.getQueueLength(), messageQueueLimit);
+    EXPECT_EQ(_messageQueue.getQueueLength(), messageQueueLimit);
 
     // Check if the message with the lowest TTL (message3) was removed.
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[0])->getRecipient(), recipient[0]);
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[1])->getRecipient(), recipient[1]);
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[2]), nullptr);
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[3])->getRecipient(), recipient[3]);
-    EXPECT_EQ(messageQueue.getNextMessageFor(recipient[4])->getRecipient(), recipient[4]);
+    EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[0])->getRecipient(), recipient[0]);
+    EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[1])->getRecipient(), recipient[1]);
+    EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[2]), nullptr);
+    EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[3])->getRecipient(), recipient[3]);
+    EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[4])->getRecipient(), recipient[4]);
 }
 
 TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_lowestTtlRemoved)

@@ -89,7 +89,7 @@ TEST_F(SubscriptionManagerTest, registerSubscription_subscriptionRequestIsCorrec
             std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>>(
                     subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
     auto qos = std::make_shared<joynr::OnChangeSubscriptionQos>();
-    std::int64_t now = TimeUtils::getCurrentMillisSinceEpoch();
+    std::int64_t now = static_cast<std::int64_t>(TimeUtils::getCurrentMillisSinceEpoch());
     qos->setExpiryDateMs(now + 10000);
     subscriptionManager->registerSubscription("methodName",
                                               gpslocationCallback,

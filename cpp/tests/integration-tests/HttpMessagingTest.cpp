@@ -27,21 +27,21 @@ class HttpMessagingTest : public AbstractMessagingTest
 {
 public:
     ADD_LOGGER(HttpMessagingTest)
-    HttpMessagingTest() : receiverChannelId("receiverChannelId"), isLocalMessage(true)
+    HttpMessagingTest() : receiverChannelId("receiverChannelId"), _isLocalMessage(true)
     {
         // provision global capabilities directory
         const bool isGloballyVisible = true;
         auto addressCapabilitiesDirectory =
                 std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                        messagingSettings.getCapabilitiesDirectoryUrl() +
-                                messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
-                        messagingSettings.getCapabilitiesDirectoryChannelId());
-        messageRouter->addProvisionedNextHop(
-                messagingSettings.getCapabilitiesDirectoryParticipantId(),
+                        _messagingSettings.getCapabilitiesDirectoryUrl() +
+                                _messagingSettings.getCapabilitiesDirectoryChannelId() + "/",
+                        _messagingSettings.getCapabilitiesDirectoryChannelId());
+        _messageRouter->addProvisionedNextHop(
+                _messagingSettings.getCapabilitiesDirectoryParticipantId(),
                 addressCapabilitiesDirectory,
                 isGloballyVisible);
-        messagingStubFactory->registerStubFactory(
-                std::make_shared<HttpMessagingStubFactory>(mockMessageSender));
+        _messagingStubFactory->registerStubFactory(
+                std::make_shared<HttpMessagingStubFactory>(_mockMessageSender));
     }
 
     ~HttpMessagingTest()
@@ -50,7 +50,7 @@ public:
 
 protected:
     const std::string receiverChannelId;
-    const bool isLocalMessage;
+    const bool _isLocalMessage;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(HttpMessagingTest);

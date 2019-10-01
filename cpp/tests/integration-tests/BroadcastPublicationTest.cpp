@@ -49,8 +49,8 @@ class BroadcastPublicationTest : public ::testing::Test
 {
 public:
     BroadcastPublicationTest()
-            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              gpsLocation1(1.1,
+            : _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              _gpsLocation1(1.1,
                            2.2,
                            3.3,
                            types::Localisation::GpsFixEnum::MODE2D,
@@ -61,39 +61,39 @@ public:
                            444,
                            444,
                            444),
-              speed1(100),
-              providerParticipantId("providerParticipantId"),
-              proxyParticipantId("proxyParticipantId"),
-              subscriptionId("subscriptionId"),
-              persistencyEnabled(true),
-              mockMessageRouter(
-                      std::make_shared<MockMessageRouter>(singleThreadedIOService->getIOService())),
-              messageSender(std::make_shared<MessageSender>(mockMessageRouter, nullptr)),
-              publicationManager(
-                      std::make_shared<PublicationManager>(singleThreadedIOService->getIOService(),
-                                                           messageSender,
-                                                           persistencyEnabled)),
-              publicationSender(std::make_shared<MockPublicationSender>()),
-              request(),
-              subscriptionBroadcastListener(
-                      std::make_shared<UnicastBroadcastListener>(subscriptionId,
-                                                                 publicationManager)),
-              multicastBroadcastListener(
-                      std::make_shared<MulticastBroadcastListener>(providerParticipantId,
-                                                                   publicationManager)),
-              provider(std::make_shared<MockTestProvider>()),
-              requestCaller(std::make_shared<testRequestCaller>(provider)),
-              filterParameters(),
-              filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
-              filter2(std::make_shared<MockLocationUpdatedSelectiveFilter>())
+              _speed1(100),
+              _providerParticipantId("providerParticipantId"),
+              _proxyParticipantId("proxyParticipantId"),
+              _subscriptionId("subscriptionId"),
+              _persistencyEnabled(true),
+              _mockMessageRouter(
+                      std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
+              _messageSender(std::make_shared<MessageSender>(_mockMessageRouter, nullptr)),
+              _publicationManager(
+                      std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
+                                                           _messageSender,
+                                                           _persistencyEnabled)),
+              _publicationSender(std::make_shared<MockPublicationSender>()),
+              _request(),
+              _subscriptionBroadcastListener(
+                      std::make_shared<UnicastBroadcastListener>(_subscriptionId,
+                                                                 _publicationManager)),
+              _multicastBroadcastListener(
+                      std::make_shared<MulticastBroadcastListener>(_providerParticipantId,
+                                                                   _publicationManager)),
+              _provider(std::make_shared<MockTestProvider>()),
+              _requestCaller(std::make_shared<testRequestCaller>(_provider)),
+              _filterParameters(),
+              _filter1(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
+              _filter2(std::make_shared<MockLocationUpdatedSelectiveFilter>())
     {
-        singleThreadedIOService->start();
+        _singleThreadedIOService->start();
     }
 
     ~BroadcastPublicationTest()
     {
-        publicationManager->shutdown();
-        singleThreadedIOService->stop();
+        _publicationManager->shutdown();
+        _singleThreadedIOService->stop();
     }
 
     void SetUp()
@@ -102,59 +102,59 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
                             .c_str());
 
-        request.setSubscribeToName("locationUpdateSelective");
-        request.setSubscriptionId(subscriptionId);
+        _request.setSubscribeToName("locationUpdateSelective");
+        _request.setSubscriptionId(_subscriptionId);
 
         auto qos = std::make_shared<OnChangeSubscriptionQos>(1000, // publication ttl
                                                              80,   // validity_ms
                                                              100   // minInterval_ms
                                                              );
-        request.setQos(qos);
-        request.setFilterParameters(filterParameters);
+        _request.setQos(qos);
+        _request.setFilterParameters(_filterParameters);
 
-        requestCaller->registerBroadcastListener(
-                "locationUpdateSelective", subscriptionBroadcastListener);
+        _requestCaller->registerBroadcastListener(
+                "locationUpdateSelective", _subscriptionBroadcastListener);
 
-        publicationManager->add(proxyParticipantId,
-                                providerParticipantId,
-                                requestCaller,
-                                request,
-                                publicationSender);
+        _publicationManager->add(_proxyParticipantId,
+                                _providerParticipantId,
+                                _requestCaller,
+                                _request,
+                                _publicationSender);
 
-        provider->registerBroadcastListener(multicastBroadcastListener);
-        provider->addBroadcastFilter(filter1);
-        provider->addBroadcastFilter(filter2);
+        _provider->registerBroadcastListener(_multicastBroadcastListener);
+        _provider->addBroadcastFilter(_filter1);
+        _provider->addBroadcastFilter(_filter2);
     }
 
     void TearDown()
     {
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter1.get()));
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(filter2.get()));
-        messageSender.reset();
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(_filter1.get()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(_filter2.get()));
+        _messageSender.reset();
     }
 
 protected:
-    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
-    types::Localisation::GpsLocation gpsLocation1;
-    double speed1;
+    std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
+    types::Localisation::GpsLocation _gpsLocation1;
+    double _speed1;
 
-    std::string providerParticipantId;
-    std::string proxyParticipantId;
-    std::string subscriptionId;
-    const bool persistencyEnabled;
-    std::shared_ptr<MockMessageRouter> mockMessageRouter;
-    std::shared_ptr<IMessageSender> messageSender;
-    std::shared_ptr<PublicationManager> publicationManager;
-    std::shared_ptr<MockPublicationSender> publicationSender;
-    BroadcastSubscriptionRequest request;
-    std::shared_ptr<UnicastBroadcastListener> subscriptionBroadcastListener;
-    std::shared_ptr<MulticastBroadcastListener> multicastBroadcastListener;
+    std::string _providerParticipantId;
+    std::string _proxyParticipantId;
+    std::string _subscriptionId;
+    const bool _persistencyEnabled;
+    std::shared_ptr<MockMessageRouter> _mockMessageRouter;
+    std::shared_ptr<IMessageSender> _messageSender;
+    std::shared_ptr<PublicationManager> _publicationManager;
+    std::shared_ptr<MockPublicationSender> _publicationSender;
+    BroadcastSubscriptionRequest _request;
+    std::shared_ptr<UnicastBroadcastListener> _subscriptionBroadcastListener;
+    std::shared_ptr<MulticastBroadcastListener> _multicastBroadcastListener;
 
-    std::shared_ptr<MockTestProvider> provider;
-    std::shared_ptr<RequestCaller> requestCaller;
-    TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
-    std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter1;
-    std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter2;
+    std::shared_ptr<MockTestProvider> _provider;
+    std::shared_ptr<RequestCaller> _requestCaller;
+    TestLocationUpdateSelectiveBroadcastFilterParameters _filterParameters;
+    std::shared_ptr<MockLocationUpdatedSelectiveFilter> _filter1;
+    std::shared_ptr<MockLocationUpdatedSelectiveFilter> _filter2;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(BroadcastPublicationTest);
@@ -169,13 +169,13 @@ TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered)
 
     // It's only guaranteed that all filters are executed when they return true
     // (When not returning true, filter chain execution is interrupted)
-    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
 
-    EXPECT_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters)));
-    EXPECT_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters)));
+    EXPECT_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters)));
+    EXPECT_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters)));
 
-    provider->fireLocationUpdateSelective(gpsLocation1);
+    _provider->fireLocationUpdateSelective(_gpsLocation1);
 }
 
 /**
@@ -185,19 +185,19 @@ TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered)
 TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess)
 {
 
-    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
 
-    EXPECT_CALL(*publicationSender,
+    EXPECT_CALL(*_publicationSender,
                 sendSubscriptionPublicationMock(
-                        Eq(providerParticipantId),
-                        Eq(proxyParticipantId),
+                        Eq(_providerParticipantId),
+                        Eq(_proxyParticipantId),
                         _,
                         AllOf(A<const SubscriptionPublication&>(),
                               Property(&SubscriptionPublication::getSubscriptionId,
-                                       Eq(subscriptionId)))));
+                                       Eq(_subscriptionId)))));
 
-    provider->fireLocationUpdateSelective(gpsLocation1);
+    _provider->fireLocationUpdateSelective(_gpsLocation1);
 }
 
 TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam)
@@ -208,14 +208,14 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam)
     using ImmutableMessagePtr = std::shared_ptr<ImmutableMessage>;
 
     const std::string expectedRecipient =
-            providerParticipantId + "/broadcastWithSingleArrayParameter";
-    EXPECT_CALL(*mockMessageRouter,
+            _providerParticipantId + "/broadcastWithSingleArrayParameter";
+    EXPECT_CALL(*_mockMessageRouter,
                 route(AllOf(A<ImmutableMessagePtr>(),
-                            MessageHasSender(providerParticipantId),
+                            MessageHasSender(_providerParticipantId),
                             MessageHasRecipient(expectedRecipient)),
                       _));
 
-    provider->fireBroadcastWithSingleArrayParameter(singleParam);
+    _provider->fireBroadcastWithSingleArrayParameter(singleParam);
 }
 
 /**
@@ -225,17 +225,17 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam)
 TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail)
 {
 
-    ON_CALL(*filter1, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*filter2, filter(Eq(gpsLocation1), Eq(filterParameters))).WillByDefault(Return(false));
+    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(false));
 
-    EXPECT_CALL(*publicationSender,
+    EXPECT_CALL(*_publicationSender,
                 sendSubscriptionPublicationMock(
-                        Eq(providerParticipantId),
-                        Eq(proxyParticipantId),
+                        Eq(_providerParticipantId),
+                        Eq(_proxyParticipantId),
                         _,
                         AllOf(A<const SubscriptionPublication&>(),
                               Property(&SubscriptionPublication::getSubscriptionId,
-                                       Eq(subscriptionId))))).Times(Exactly(0));
+                                       Eq(_subscriptionId))))).Times(Exactly(0));
 
-    provider->fireLocationUpdateSelective(gpsLocation1);
+    _provider->fireLocationUpdateSelective(_gpsLocation1);
 }

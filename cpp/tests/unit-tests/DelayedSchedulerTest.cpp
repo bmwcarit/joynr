@@ -64,7 +64,7 @@ public:
                                               std::chrono::milliseconds delay)
     {
         RunnableHandle currentHandle = DelayedScheduler::schedule(runnable, delay);
-        est_ms = TimeUtils::getCurrentMillisSinceEpoch() + delay.count();
+        est_ms = TimeUtils::getCurrentMillisSinceEpoch() + static_cast<std::uint64_t>(delay.count());
         return currentHandle;
     }
 

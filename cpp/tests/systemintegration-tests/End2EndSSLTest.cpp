@@ -128,7 +128,7 @@ protected:
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
         discoveryQos.setDiscoveryTimeoutMs(3000);
 
-        std::int64_t qosRoundTripTTL = 40000;
+        std::uint64_t qosRoundTripTTL = 40000;
         std::shared_ptr<vehicle::GpsProxy> gpsProxy =
                 gpsProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQos)

@@ -49,14 +49,14 @@ public:
     MOCK_CONST_METHOD0(isMqttRetain, bool());
     MOCK_CONST_METHOD0(isReadyToSend, bool());
     MOCK_CONST_METHOD0(isSubscribedToChannelTopic, bool());
-    MOCK_METHOD5(publishMessage, void(const std::string& topic, const int qosLevel, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure, std::uint32_t payloadlen, const void* payload));
-    MOCK_METHOD1(registerChannelId, void(const std::string& channelId));
-    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(smrf::ByteVector&&)> onMessageReceived));
+    MOCK_METHOD5(publishMessage, void(const std::string& _topic, const int qosLevel, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure, std::uint32_t payloadlen, const void* payload));
+    MOCK_METHOD1(registerChannelId, void(const std::string& _channelId));
+    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(smrf::ByteVector&&)> _onMessageReceived));
     MOCK_METHOD1(registerReadyToSendChangedCallback, void(std::function<void(bool)> readyToSendCallback));
     MOCK_METHOD0(start, void());
     MOCK_METHOD0(stop, void());
-    MOCK_METHOD1(subscribeToTopic, void(const std::string& topic));
-    MOCK_METHOD1(unsubscribeFromTopic, void(const std::string& topic));
+    MOCK_METHOD1(subscribeToTopic, void(const std::string& _topic));
+    MOCK_METHOD1(unsubscribeFromTopic, void(const std::string& _topic));
 };
 
 #endif // TESTS_MOCK_MOCKMOSQUITTOCONNECTION_H
