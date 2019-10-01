@@ -123,6 +123,7 @@ This project has dependencies to:
   Mockito under The MIT License
   Neko HTML under The Apache Software License, Version 2.0
   org.apache.tools.ant under Apache License, Version 2.0
+  org.brotli:dec under MIT License
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   robolectric under MIT license
