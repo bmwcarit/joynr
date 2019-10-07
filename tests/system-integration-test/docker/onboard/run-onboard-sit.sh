@@ -19,7 +19,8 @@
 ###
 
 # Give the JEE Discovery Directory a chance to start ...
-sleep 300
+sleep 120
+#sleep 100000000
 
 echo "SIT: Onboard RUN END TO END TEST"
 
@@ -109,10 +110,17 @@ do
 	cp -a sit-java-app sit-java-app-consumer-${BACKEND_PREFIX[$i]}
 done
 
+
+cd ${CPP_HOME}
+rm -rf failure
+cp -a bin failure
 # Start cluster controller
 cd ${CPP_HOME}/bin
 /usr/bin/cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings > cc.log 2>&1 &
 CLUSTER_CONTROLLER_PID=$!
+
+/usr/bin/cluster-controller ${DATA_DIR}/onboard-failure-cc-messaging.settings > failure-cc.log 2>&1 &
+FAILURE_CLUSTER_CONTROLLER_PID=$!
 
 # Start provider
 for i in 0 1 2
@@ -137,6 +145,10 @@ do
 	java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication -d ${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.java -r -g ${GBIDS[$i]} -G > provider_java_${BACKEND_PREFIX[$i]}.log 2>&1 &
 	JAVA_PROVIDER_PID[$i]=$!
 done
+
+echo "SIT: Starting C++ provider registration failure in invalid backend test"
+cd ${CPP_HOME}/failure
+./jsit-provider-ws -d failure.cpp -f -g "invalid" -G
 
 echo "SIT: Sleeping 20 secs to let providers initialize and register at JDS"
 sleep 20
@@ -237,6 +249,29 @@ do
 				echo "SIT RESULT ERROR joynr cpp system integration test against jee provider failed with error code $?"
 			fi
 		done
+
+                # cpp - run failure tests
+                cd ${CPP_HOME}/failure
+                echo "SIT: running cpp joynr system integration test for failure on invalid gbid"
+                ./jsit-consumer-ws -d failure -f -g "invalid" -G
+ 
+                if [ "$?" = "0" ]
+                then
+                        echo "SIT: cpp joynr system integration test for failure on invalid gbid failed"
+                else
+                        echo "SIT RESULT SUCCESS joynr cpp system integration test for failure on invalid gbid failed as expected"
+                fi
+
+                cd ${CPP_HOME}/failure
+                echo "SIT: running cpp joynr system integration test for failure on unknown gbid"
+                ./jsit-consumer-ws -d failure -f -g "othergbid" -G
+ 
+                if [ "$?" = "0" ]
+                then
+                        echo "SIT: cpp joynr system integration test for failure on unknown gbid failed"
+                else
+                        echo "SIT RESULT SUCCESS joynr cpp system integration test for failure on unknown gbid failed as expected"
+                fi 
 	)
 
 

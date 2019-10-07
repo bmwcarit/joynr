@@ -69,6 +69,7 @@ int main(int argc, char* argv[])
     bool globalOnly = false;
     std::vector<std::string> gbids;
     std::uint64_t runs = 0;
+    bool expectFailure = false;
 
     po::options_description cmdLineOptions("Available options");
     cmdLineOptions.add_options()(
@@ -89,7 +90,7 @@ int main(int argc, char* argv[])
                                                    "Specify number of RPC calls to perform.")(
             "gbids,g", po::value(&gbidsParam), "gbids for lookup")(
             "global-only,G", "select only globally visible provider")(
-            "help,h", "Print help message");
+            "help,h", "Print help message")("fail,f", "Expect application to fail.");
     try {
         po::variables_map variablesMap;
         po::store(po::command_line_parser(argc, argv)
@@ -106,6 +107,10 @@ int main(int argc, char* argv[])
             JOYNR_LOG_INFO(logger, "globalOnly set");
             globalOnly = true;
         }
+        if (variablesMap.count("fail")) {
+            JOYNR_LOG_INFO(logger, "application is expected to fail");
+            expectFailure = true;
+        }
 
         po::notify(variablesMap);
 
@@ -121,7 +126,12 @@ int main(int argc, char* argv[])
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
-        pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
+        if (expectFailure) {
+            pathToSettings =
+                    appDirectory + "/resources/systemintegrationtest-failure-provider.settings";
+        } else {
+            pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
+        }
     }
 
     std::shared_ptr<JoynrRuntime> runtime;
@@ -152,20 +162,41 @@ int main(int argc, char* argv[])
     } else {
         discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
     }
-    discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Mins
+    if (expectFailure) {
+        discoveryQos.setDiscoveryTimeoutMs(10000); // 10 Sec
+    } else {
+        discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Mins
+    }
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
     std::shared_ptr<test::SystemIntegrationTestProxy> proxy;
+    try {
+        if (gbids.size() > 0) {
+            proxy = proxyBuilder->setMessagingQos(MessagingQos())
+                            ->setDiscoveryQos(discoveryQos)
+                            ->setGbids(gbids)
+                            ->build();
+        } else {
+            proxy = proxyBuilder->setMessagingQos(MessagingQos())
+                            ->setDiscoveryQos(discoveryQos)
+                            ->build();
+        }
+    } catch (const exceptions::DiscoveryException& e) {
+        if (expectFailure) {
+            JOYNR_LOG_INFO(
+                    logger, "SIT RESULT success: C++ consumer failed to build proxy as expected!");
+            return 0;
+        } else {
+            JOYNR_LOG_ERROR(logger, e.getMessage());
+            return 1;
+        }
+    }
 
-    if (gbids.size() > 0) {
-        proxy = proxyBuilder->setMessagingQos(MessagingQos())
-                        ->setDiscoveryQos(discoveryQos)
-                        ->setGbids(gbids)
-                        ->build();
-    } else {
-        proxy = proxyBuilder->setMessagingQos(MessagingQos())
-                        ->setDiscoveryQos(discoveryQos)
-                        ->build();
+    if (expectFailure) {
+        JOYNR_LOG_INFO(
+                logger,
+                "SIT RESULT failure: C++ consumer did not fail to build proxy when expected to!");
+        return 1;
     }
 
     bool success = true;

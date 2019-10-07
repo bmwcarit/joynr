@@ -1,0 +1,6 @@
+[websocket]
+cluster-controller-messaging-url=ws://localhost:4245
+
+[cluster-controller]
+ws-port=4245
+ws-tls-port=4246

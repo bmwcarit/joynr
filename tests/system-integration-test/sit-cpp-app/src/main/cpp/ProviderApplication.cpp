@@ -29,6 +29,7 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
@@ -69,6 +70,7 @@ int main(int argc, char* argv[])
     std::string gbidsParam;
     bool globalOnly = false;
     std::vector<std::string> gbids;
+    bool expectFailure = false;
 
     po::options_description cmdLineOptions("Available options");
     cmdLineOptions.add_options()(
@@ -88,7 +90,8 @@ int main(int argc, char* argv[])
             po::value(&sslCaCertFilename),
             "Absolute path to certificate of CA.")(
             "gbids,g", po::value(&gbidsParam)->required(), "gbids to register for")(
-            "global-only,G", "register provider globally")("help,h", "Print help message");
+            "global-only,G", "register provider globally")("help,h", "Print help message")(
+            "fail,f", "Expect application to fail.");
     try {
         po::variables_map variablesMap;
         po::store(po::command_line_parser(argc, argv)
@@ -104,6 +107,10 @@ int main(int argc, char* argv[])
         if (variablesMap.count("global-only")) {
             JOYNR_LOG_INFO(logger, "globalOnly set");
             globalOnly = true;
+        }
+        if (variablesMap.count("fail")) {
+            JOYNR_LOG_INFO(logger, "application is expected to fail");
+            expectFailure = true;
         }
 
         if (variablesMap.count("runForever")) {
@@ -123,7 +130,12 @@ int main(int argc, char* argv[])
         boost::filesystem::path appFilename = boost::filesystem::path(argv[0]);
         std::string appDirectory =
                 boost::filesystem::system_complete(appFilename).parent_path().string();
-        pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
+        if (expectFailure) {
+            pathToSettings =
+                    appDirectory + "/resources/systemintegrationtest-failure-provider.settings";
+        } else {
+            pathToSettings = appDirectory + "/resources/systemintegrationtest-provider.settings";
+        }
     }
 
     std::shared_ptr<JoynrRuntime> runtime;
@@ -159,15 +171,46 @@ int main(int argc, char* argv[])
         } else {
             providerQos.setScope(joynr::types::ProviderScope::LOCAL);
         }
+        try {
+            if (gbids.size() > 0) {
+                const bool persist = true;
+                const bool awaitGlobalRegistration = true;
+                runtime->registerProvider<test::SystemIntegrationTestProvider>(
+                        providerDomain,
+                        provider,
+                        providerQos,
+                        persist,
+                        awaitGlobalRegistration,
+                        gbids);
+            } else {
+                runtime->registerProvider<test::SystemIntegrationTestProvider>(
+                        providerDomain, provider, providerQos);
+            }
+            if (expectFailure) {
+                // Wait for registration timeout
+                if (!semaphore.waitFor(std::chrono::milliseconds(30000))) {
+                    JOYNR_LOG_INFO(
+                            logger,
+                            "SIT RESULT success: C++ provider registration failed as expected!");
+                    return EXIT_SUCCESS;
+                }
+            }
+        } catch (exceptions::JoynrRuntimeException e) {
+            if (expectFailure) {
+                JOYNR_LOG_INFO(logger,
+                               "SIT RESULT success: C++ provider registration failed as expected!");
+                return EXIT_SUCCESS;
+            } else {
+                JOYNR_LOG_ERROR(logger, "C++ provider registration failed!");
+                return EXIT_FAILURE;
+            }
+        }
 
-        if (gbids.size() > 0) {
-            const bool persist = true;
-            const bool awaitGlobalRegistration = true;
-            runtime->registerProvider<test::SystemIntegrationTestProvider>(
-                    providerDomain, provider, providerQos, persist, awaitGlobalRegistration, gbids);
-        } else {
-            runtime->registerProvider<test::SystemIntegrationTestProvider>(
-                    providerDomain, provider, providerQos);
+        if (expectFailure) {
+            JOYNR_LOG_ERROR(logger,
+                            "SIT RESULT failure: C++ provider registration did not fail "
+                            "when it was supposed to!");
+            return EXIT_FAILURE;
         }
 
         if (runForever) {
@@ -179,6 +222,9 @@ int main(int argc, char* argv[])
             runtime->unregisterProvider<test::SystemIntegrationTestProvider>(
                     providerDomain, provider);
 
+            if (expectFailure) {
+                return EXIT_FAILURE;
+            }
             return successful ? EXIT_SUCCESS : EXIT_FAILURE;
         }
     } catch (exceptions::JoynrRuntimeException& e) {

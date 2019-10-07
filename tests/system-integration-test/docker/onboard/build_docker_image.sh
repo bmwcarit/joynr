@@ -200,6 +200,8 @@ cp -R $JOYNR_REPODIR/docker/joynr-base/openssl.conf ${DOCKER_BUILDDIR}
 
 CURRENTDATE=`date`
 cp onboard-cc-messaging.settings ${DOCKER_BUILDDIR}
+cp onboard-failure-cc-messaging.settings ${DOCKER_BUILDDIR}
+cp systemintegrationtest-failure-provider.settings ${DOCKER_BUILDDIR}
 cp run-onboard-sit.sh ${DOCKER_BUILDDIR}
 cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     FROM ${DOCKER_REPOSITORY}${BASE_DOCKER_IMAGE}
@@ -292,6 +294,8 @@ cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     # Copy run script
     ###################################################
     COPY onboard-cc-messaging.settings /data/onboard-cc-messaging.settings
+    COPY onboard-failure-cc-messaging.settings /data/onboard-failure-cc-messaging.settings
+    COPY systemintegrationtest-failure-provider.settings /data/sit-cpp-app/resources/systemintegrationtest-failure-provider.settings
     COPY run-onboard-sit.sh /data/run-onboard-sit.sh
 
     ENTRYPOINT ["sh", "-c", "\"/data/run-onboard-sit.sh\""]
