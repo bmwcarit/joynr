@@ -50,6 +50,7 @@ log(`tlsKeyPath: ${process.env.tlsKeyPath}`);
 log(`tlsCaPath: ${process.env.tlsCaPath}`);
 log(`ownerId: ${process.env.ownerId}`);
 log(`gbids: ${process.env.gbids}`);
+log(`expectfailure: ${process.env.expectfailure}`);
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const domain = process.env.domain!;
@@ -57,6 +58,7 @@ provisioning.ccAddress.host = process.env.cchost;
 provisioning.ccAddress.port = process.env.ccport;
 provisioning.ccAddress.protocol = process.env.ccprotocol;
 const gbids = process.env.gbids ? process.env.gbids.split(",") : undefined;
+const expectFailure = process.env.expectfailure ? process.env.expectfailure == "true" : undefined;
 
 if (!provisioning.persistency) {
     provisioning.persistency = {};
@@ -80,6 +82,13 @@ if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath
     provisioning.persistency.location = "./localStorageProvider";
 }
 
+const timeoutPromise = new Promise((reject) => {
+    let timeout = setTimeout(() => {
+        clearTimeout(timeout);
+        reject(new Error("Provider registration timed out"));
+    }, 30000);
+});
+
 joynr
     .load(testbase.provisioning_common)
     .then(() => {
@@ -98,17 +107,29 @@ joynr
         );
 
         if (gbids) {
-            return joynr.registration.register({ domain, providerQos, provider: systemIntegrationTestProvider, gbids });
+            return Promise.race([joynr.registration.register({ domain, providerQos, provider: systemIntegrationTestProvider, gbids }),
+                                 timeoutPromise]);
         }
-        return joynr.registration.registerInAllKnownBackends({
+        return Promise.race([joynr.registration.registerInAllKnownBackends({
             domain,
             providerQos,
             provider: systemIntegrationTestProvider
-        });
+        }), timeoutPromise]);
     })
     .then(() => {
-        log("provider registered successfully");
+        if(expectFailure){
+            log("SIT RESULT FAILURE node provider registration did not fail as expected");
+            process.exit(1);
+        } else {
+            log("provider registered successfully");
+        }
     })
     .catch(error => {
-        log(`error registering provider: ${error.toString()}`);
+        if(expectFailure){
+            log("SIT RESULT success: node provider registration failed as expected");
+            process.exit(0);
+        } else {
+            log(`error registering provider: ${error.toString()}`);
+            process.exit(1);
+        }
     });

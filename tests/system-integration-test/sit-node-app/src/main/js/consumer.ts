@@ -59,6 +59,7 @@ log(`tlsKeyPath: ${process.env.tlsKeyPath}`);
 log(`tlsCaPath: ${process.env.tlsCaPath}`);
 log(`ownerId: ${process.env.ownerId}`);
 log(`gbids: ${process.env.gbids}`);
+log(`expectfailure: ${process.env.expectfailure}`);
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const domain = process.env.domain!;
@@ -66,6 +67,7 @@ const gbids = process.env.gbids ? process.env.gbids.split(",") : undefined;
 provisioning.ccAddress.host = process.env.cchost;
 provisioning.ccAddress.port = process.env.ccport;
 provisioning.ccAddress.protocol = process.env.ccprotocol;
+const expectFailure = process.env.expectfailure ? process.env.expectfailure == "true" : undefined;
 
 if (process.env.tlsCertPath || process.env.tlsKeyPath || process.env.tlsCertPath || process.env.ownerId) {
     provisioning.keychain = {};
@@ -107,27 +109,46 @@ joynr
             ttl: 60000
         });
 
-        const discoveryQos = new joynr.proxy.DiscoveryQos({
-            discoveryTimeoutMs: 120000 // 2 Mins
-        });
-
-        return joynr.proxyBuilder.build(SystemIntegrationTestProxy, {
-            domain,
-            messagingQos,
-            discoveryQos,
-            gbids
-        });
+        if(expectFailure) {
+            return joynr.proxyBuilder.build(SystemIntegrationTestProxy, {
+                domain,
+                messagingQos,
+                discoveryQos: new joynr.proxy.DiscoveryQos({
+                                  discoveryTimeoutMs: 20000 // 20 Seconds
+                              }),
+                gbids
+            });
+        } else {
+            return joynr.proxyBuilder.build(SystemIntegrationTestProxy, {
+                domain,
+                messagingQos,
+                discoveryQos: new joynr.proxy.DiscoveryQos({
+                                  discoveryTimeoutMs: 120000 // 2 Mins
+                              }),
+                gbids
+            });
+        }
     })
     .then(systemIntegrationTestProxy => {
         return runTest(systemIntegrationTestProxy);
     })
     .then(() => {
-        log(`SIT RESULT success: node consumer -> ${domain}`);
-        process.exit(0);
+        if(expectFailure) {
+            log(`SIT RESULT error: node consumer did not fail as expected`);
+            process.exit(1);
+        } else {
+            log(`SIT RESULT success: node consumer -> ${domain}`);
+            process.exit(0);
+        }
     })
     .catch(error => {
-        log(`SIT RESULT error: node consumer -> ${domain} error: ${JSON.stringify(error)}`);
-        process.exit(1);
+        if(expectFailure) {
+            log(`SIT RESULT success: node consumer failed as expected`);
+            process.exit(0);
+        } else {
+            log(`SIT RESULT error: node consumer -> ${domain} error: ${JSON.stringify(error)}`);
+            process.exit(1);
+        }
     })
     .catch(error => {
         throw error;

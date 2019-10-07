@@ -30,11 +30,12 @@
       "caPath": "/data/ssl-data/certs/ca.cert.pem",
       "ownerId": "client"
     },
-    "glob": "src/main/js/**/*.ts"
+    "glob": "src/main/js/**/*.ts",
+    "expectfailure": "false"
   },
   "scripts": {
-    "startconsumer": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port gbids=$npm_package_config_gbids ts-node src/main/js/consumer.ts",
-    "startprovider": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port gbids=$npm_package_config_gbids ts-node src/main/js/provider.ts",
+    "startconsumer": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port gbids=$npm_package_config_gbids expectfailure=$npm_package_config_expectfailure ts-node src/main/js/consumer.ts",
+    "startprovider": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_cc_protocol cchost=$npm_package_config_cc_host ccport=$npm_package_config_cc_port gbids=$npm_package_config_gbids expectfailure=$npm_package_config_expectfailure ts-node src/main/js/provider.ts",
     "startconsumertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port gbids=$npm_package_config_gbids tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId ts-node src/main/js/consumer.ts",
     "startprovidertls": "domain=$npm_package_config_domain ccprotocol=$npm_package_config_ccTls_protocol cchost=$npm_package_config_ccTls_host ccport=$npm_package_config_ccTls_port gbids=$npm_package_config_gbids tlsCertPath=$npm_package_config_tls_certPath tlsKeyPath=$npm_package_config_tls_keyPath tlsCaPath=$npm_package_config_tls_caPath ownerId=$npm_package_config_tls_ownerId ts-node src/main/js/provider.ts"
   }

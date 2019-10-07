@@ -115,6 +115,9 @@ cd ${CPP_HOME}
 rm -rf failure
 cp -a bin failure
 cd ${DATA_DIR}
+rm -rf sit-node-app-failure
+cp -a sit-node-app sit-node-app-failure
+cd ${DATA_DIR}
 rm -rf sit-java-app-provider-failure
 cp -a sit-java-app sit-java-app-provider-failure
 rm -rf sit-java-app-consumer-failure
@@ -159,6 +162,10 @@ cd ${CPP_HOME}/failure
 echo "SIT: Starting Java provider registration failure in invalid backend test"
 cd ${DATA_DIR}/sit-java-app-provider-failure
 java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication -d failure.java -f -g "invalid" -G
+
+echo "SIT: Starting JS provider registration failure in unknown backend test"
+cd ${DATA_DIR}/sit-node-app-failure
+npm run-script startprovider --sit-node-app:domain=failure.node --sit-node-app:gbids="invalid" --sit-node-app:expectfailure="true" --sit-node-app:cc.port=4245
 
 echo "SIT: Sleeping 20 secs to let providers initialize and register at JDS"
 sleep 20
@@ -438,6 +445,24 @@ do
 				--sit-node-app:cc:port=4242 \
 				--sit-node-app:gbids=${GBIDS[$i]}
 		done
+
+                echo "SIT: run node joynr system integration test for failure on invalid gbid"
+                cd ${DATA_DIR}/sit-node-app-failure
+                npm run-script startconsumer \
+                        --sit-node-app:domain=failure \
+                        --sit-node-app:cc:host=127.0.0.1 \
+                        --sit-node-app:cc:port=4245 \
+                        --sit-node-app:gbids="invalid" \
+                        --sit-node-app:expectfailure="true"
+
+                echo "SIT: run node joynr system integration test for failure on unknown gbid"
+                cd ${DATA_DIR}/sit-node-app-failure
+                npm run-script startconsumer \
+                        --sit-node-app:domain=failure \
+                        --sit-node-app:cc:host=127.0.0.1 \
+                        --sit-node-app:cc:port=4245 \
+                        --sit-node-app:gbids="othergbid" \
+                        --sit-node-app:expectfailure="true"
 	)
 done
 
