@@ -114,6 +114,12 @@ done
 cd ${CPP_HOME}
 rm -rf failure
 cp -a bin failure
+cd ${DATA_DIR}
+rm -rf sit-java-app-provider-failure
+cp -a sit-java-app sit-java-app-provider-failure
+rm -rf sit-java-app-consumer-failure
+cp -a sit-java-app sit-java-app-consumer-failure
+
 # Start cluster controller
 cd ${CPP_HOME}/bin
 /usr/bin/cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings > cc.log 2>&1 &
@@ -149,6 +155,10 @@ done
 echo "SIT: Starting C++ provider registration failure in invalid backend test"
 cd ${CPP_HOME}/failure
 ./jsit-provider-ws -d failure.cpp -f -g "invalid" -G
+
+echo "SIT: Starting Java provider registration failure in invalid backend test"
+cd ${DATA_DIR}/sit-java-app-provider-failure
+java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication -d failure.java -f -g "invalid" -G
 
 echo "SIT: Sleeping 20 secs to let providers initialize and register at JDS"
 sleep 20
@@ -340,6 +350,31 @@ do
 				echo "SIT RESULT ERROR joynr java system integration test against jee provider failed with error code $?"
 			fi
 		done
+
+                # java - run failure tests
+                echo "SIT: run java joynr system integration test for failure on invalid gbid"
+                cd ${DATA_DIR}/sit-java-app-consumer-failure
+                rm -f *.persistence_file joynr_participantIds.properties
+                java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d failure -g "invalid" -f -G
+
+                if [ "$?" = "0" ]
+                then
+                        echo "SIT: java joynr system integration test for failure on invalid gbid succeeded"
+                else
+                        echo "SIT RESULT ERROR joynr java system integration test for failure on invalid gbid failed with error code $?"
+                fi
+
+                echo "SIT: run java joynr system integration test for failure on unknown gbid"
+                cd ${DATA_DIR}/sit-java-app-consumer-failure
+                rm -f *.persistence_file joynr_participantIds.properties
+                java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d failure -g "othergbid" -f -G
+
+                if [ "$?" = "0" ] 
+                then
+                        echo "SIT: java joynr system integration test for failure on unknown gbid succeeded"
+                else
+                        echo "SIT RESULT ERROR joynr java system integration test for failure on unknown gbid failed with error code $?"
+                fi
 	)
 
 	echo "run node consumer test"

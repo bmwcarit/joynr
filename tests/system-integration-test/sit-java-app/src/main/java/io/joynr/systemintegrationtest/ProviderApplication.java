@@ -43,6 +43,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.provider.ProviderAnnotations;
+import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
@@ -66,6 +67,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
     private static String gbidsParameter = "";
     private static String[] gbids;
     private static boolean registerGlobally = false;
+    private static boolean expectedFailure = false;
 
     public static void main(String[] args) throws Exception {
         CommandLine line;
@@ -108,6 +110,10 @@ public class ProviderApplication extends AbstractJoynrApplication {
             if (line.hasOption('G')) {
                 registerGlobally = true;
                 LOG.info("registerGlobally = " + registerGlobally);
+            }
+            if (line.hasOption('f')) {
+                expectedFailure = true;
+                LOG.info("expectedFailure = " + expectedFailure);
             }
         } catch (ParseException e) {
             LOG.error("failed to parse command line: " + e);
@@ -180,11 +186,19 @@ public class ProviderApplication extends AbstractJoynrApplication {
                                     .longOpt("global")
                                     .hasArg(false)
                                     .build();
+        Option optionExpectedFailure = Option.builder("f")
+                                             .required(false)
+                                             .argName("expectedFailure")
+                                             .desc("expect failure")
+                                             .longOpt("expected-failure")
+                                             .hasArg(false)
+                                             .build();
         options.addOption(optionDomain);
         options.addOption(optionHelp);
         options.addOption(optionRunforever);
         options.addOption(optionGbids);
         options.addOption(optionGlobal);
+        options.addOption(optionExpectedFailure);
         helpOptions.addOption(optionHelp);
     }
 
@@ -194,10 +208,17 @@ public class ProviderApplication extends AbstractJoynrApplication {
     }
 
     private static void configureWebSocket(Properties joynrConfig) {
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+        if (expectedFailure) {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4245");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+        } else {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+        }
     }
 
     @Override
@@ -239,7 +260,30 @@ public class ProviderApplication extends AbstractJoynrApplication {
             LOG.info("gbids.length > 0, gbids.length = " + gbids.length);
             providerRegistrar.withGbids(gbids);
         }
-        providerRegistrar.register();
+
+        if (expectedFailure) {
+            providerRegistrar.awaitGlobalRegistration();
+        }
+
+        Future<Void> registrationFuture = providerRegistrar.register();
+
+        if (expectedFailure) {
+            try {
+                registrationFuture.get(30000);
+            } catch (Exception e) {
+                LOG.info("SIT RESULT success: Java provider failed as expected!");
+                return;
+            }
+        }
+
+        if (expectedFailure) {
+            if (registrationFuture.getStatus().successful()) {
+                LOG.info("SIT RESULT failure: Java provider did not fail as expected!");
+            } else {
+                LOG.info("SIT RESULT success: Java provider failed as expected!");
+                return;
+            }
+        }
 
         if (!runForever) {
             try {

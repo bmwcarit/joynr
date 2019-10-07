@@ -65,8 +65,10 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     private static String gbidsParameter = "";
     private static String[] gbids;
     private static boolean globalOnly = false;
+    private static boolean expectedFailure = false;
     private SystemIntegrationTestProxy systemIntegrationTestProxy;
     private static Semaphore proxyCreated = new Semaphore(0);
+    private static Semaphore expectedAsyncFailure = new Semaphore(0);
 
     /**
      * Main method.
@@ -110,6 +112,10 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             if (line.hasOption('G')) {
                 globalOnly = true;
                 LOG.info("globalOnly = " + globalOnly);
+            }
+            if (line.hasOption('f')) {
+                expectedFailure = true;
+                LOG.info("expectedFailure = " + expectedFailure);
             }
         } catch (ParseException e) {
             LOG.error("failed to parse command line: " + e);
@@ -174,18 +180,33 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                                         .longOpt("global-only")
                                         .hasArg(false)
                                         .build();
+        Option optionExpectedFailure = Option.builder("f")
+                                             .required(false)
+                                             .argName("expectedFailure")
+                                             .desc("expect failure")
+                                             .longOpt("expected-failure")
+                                             .hasArg(false)
+                                             .build();
         options.addOption(optionDomain);
         options.addOption(optionHelp);
         options.addOption(optionGbids);
         options.addOption(optionGlobalOnly);
+        options.addOption(optionExpectedFailure);
         helpOptions.addOption(optionHelp);
     }
 
     private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+        if (expectedFailure) {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4245");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+        } else {
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+        }
         return new LibjoynrWebSocketRuntimeModule();
     }
 
@@ -236,12 +257,22 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
                 @Override
                 public void onProxyCreationError(JoynrRuntimeException error) {
-                    LOG.error("error creating proxy");
+                    if (expectedFailure) {
+                        expectedAsyncFailure.release();
+                    } else {
+                        LOG.error("error creating proxy");
+                    }
                 }
             });
             try {
                 if (proxyCreated.tryAcquire(11000, TimeUnit.MILLISECONDS) == false) {
-                    throw new DiscoveryException("proxy not created in time");
+                    if (expectedAsyncFailure.tryAcquire(11000, TimeUnit.MILLISECONDS) == false) {
+                        throw new DiscoveryException("proxy not created in time");
+                    } else {
+                        LOG.info("SIT RESULT success: Java consumer failed as expected!");
+                        success = true;
+                        System.exit((success) ? 0 : 1);
+                    }
                 }
             } catch (InterruptedException e) {
                 throw new DiscoveryException("proxy not created in time");
@@ -252,15 +283,23 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 int addendB = 4444444;
                 Integer sum = systemIntegrationTestProxy.add(addendA, addendB);
                 if (sum != null && sum == (addendA + addendB)) {
-                    LOG.info("SIT RESULT success: Java consumer -> " + providerDomain + " (" + addendA + " + " + addendB
-                            + " =  " + sum + ")");
-                    success = true;
+                    if (expectedFailure) {
+                        LOG.info("SIT RESULT failure: Java consumer did not fail as expected!");
+                    } else {
+                        LOG.info("SIT RESULT success: Java consumer -> " + providerDomain + " (" + addendA + " + "
+                                + addendB + " =  " + sum + ")");
+                        success = true;
+                    }
                 }
             } catch (Exception e) {
                 // fallthrough
             }
         } catch (DiscoveryException | JoynrCommunicationException e) {
             // fallthrough
+            if (expectedFailure) {
+                LOG.info("SIT RESULT success: Java consumer failed as expected!");
+                success = true;
+            }
         }
         if (!success) {
             LOG.info("SIT RESULT error: Java consumer -> " + providerDomain);
