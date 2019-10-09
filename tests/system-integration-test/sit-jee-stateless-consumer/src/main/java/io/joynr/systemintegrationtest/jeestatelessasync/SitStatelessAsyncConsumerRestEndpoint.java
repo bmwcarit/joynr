@@ -57,8 +57,9 @@ public class SitStatelessAsyncConsumerRestEndpoint {
 
     @GET
     @Path("/test")
-    public String triggerTests() {
-        return sitControllerProviderBean.triggerTests();
+    public String triggerTests(@QueryParam("domains") String domains,
+                               @QueryParam("expectFailure") Boolean expectFailure) {
+        return sitControllerProviderBean.triggerTests(domains, expectFailure);
     }
 
 }

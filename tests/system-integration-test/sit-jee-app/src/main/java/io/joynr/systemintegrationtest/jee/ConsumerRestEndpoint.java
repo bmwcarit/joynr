@@ -22,6 +22,7 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import joynr.test.SitControllerSync;
@@ -48,8 +49,9 @@ public class ConsumerRestEndpoint {
 
     @GET
     @Path("/test")
-    public String triggerTests() {
-        return sitControllerProviderBean.triggerTests();
+    public String triggerTests(@QueryParam("domains") String domains,
+                               @QueryParam("expectFailure") Boolean expectFailure) {
+        return sitControllerProviderBean.triggerTests(domains, expectFailure);
     }
 
 }

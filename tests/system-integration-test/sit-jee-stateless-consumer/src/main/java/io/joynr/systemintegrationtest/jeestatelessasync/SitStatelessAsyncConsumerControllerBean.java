@@ -69,7 +69,7 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
     }
 
     @Override
-    public String triggerTests() {
+    public String triggerTests(String domains, Boolean expectFailure) {
         logger.info("triggerTests called");
         StringBuffer result = new StringBuffer();
         String configuredDomain = System.getenv("SIT_DOMAIN");

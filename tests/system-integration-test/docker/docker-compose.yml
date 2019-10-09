@@ -109,3 +109,4 @@ services:
       - "joynrbackend-2"
     environment:
       - SIT_DOMAINS=onlyBackend1,onlyBackend2,bothBackends
+      - SIT_DOMAINS_TO_BE_SENT=onlyBackend1|bothBackends,onlyBackend2|bothBackends,onlyBackend1|onlyBackend2|bothBackends

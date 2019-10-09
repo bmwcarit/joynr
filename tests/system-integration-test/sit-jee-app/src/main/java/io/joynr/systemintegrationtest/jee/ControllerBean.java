@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import joynr.test.SitControllerSync;
@@ -45,10 +46,12 @@ public class ControllerBean implements SitControllerSync {
     private static final Logger logger = LoggerFactory.getLogger(ControllerBean.class);
 
     private ServiceLocator serviceLocator;
+    private String configuredDomain;
 
     @Inject
     public ControllerBean(ServiceLocator serviceLocator) {
         this.serviceLocator = serviceLocator;
+        configuredDomain = System.getenv("SIT_DOMAIN");
     }
 
     @Override
@@ -65,22 +68,32 @@ public class ControllerBean implements SitControllerSync {
     }
 
     @Override
-    public String triggerTests() {
-        logger.info("triggerTests called");
+    public String triggerTests(String domains, Boolean expectFailure) {
+        logger.info("triggerTests called \n");
         StringBuffer result = new StringBuffer();
-        //for (String appendValue : new String[]{ ".jee", ".cpp", ".java", ".node" }) {
-        String configuredDomain = System.getenv("SIT_DOMAIN");
-        for (String appendValue : new String[]{ ".jee" }) {
-            callProducer(configuredDomain + "_" + SIT_DOMAIN_PREFIX + appendValue, result);
+        if (expectFailure) {
+            callProducerWithExpectedFailure("failure_" + SIT_DOMAIN_PREFIX, result);
+        } else {
+            logger.info("testDomains: " + domains + " \n");
+            String[] testDomains = domains.split("\\|");
+            for (String domain : testDomains) {
+                logger.info("received domain " + domain + "\n");
+            }
+            for (String appendValue : new String[]{ ".jee", ".java", ".cpp", ".node" }) {
+                for (String testDomain : testDomains) {
+                    callProducer(testDomain + "_" + SIT_DOMAIN_PREFIX + appendValue, result);
+                }
+            }
         }
         return Base64.getEncoder().encodeToString(result.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     private void callProducer(String domain, StringBuffer result) {
         try {
+            logger.info("callProducer with domain " + domain + " called \n");
             String[] configuredGbids = System.getenv("SIT_GBIDS").trim().split(",");
             DiscoveryQos discoveryQos = new DiscoveryQos();
-            discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
+            discoveryQos.setDiscoveryTimeoutMs(90000); // 90 Seconds
             SystemIntegrationTestSync proxy = serviceLocator.builder(SystemIntegrationTestSync.class, domain)
                                                             .withDiscoveryQos(discoveryQos)
                                                             .withGbids(configuredGbids)
@@ -89,9 +102,12 @@ public class ControllerBean implements SitControllerSync {
             if (additionResult != 2) {
                 throw new IllegalArgumentException("1 + 1 should be 2, got: " + additionResult);
             }
-            result.append("SIT RESULT success: JEE consumer -> ").append(domain);
+            result.append("SIT RESULT success: JEE consumer ").append(configuredDomain).append(" -> ").append(domain);
         } catch (Exception e) {
-            result.append("SIT RESULT error: JEE consumer -> ")
+            logger.error("Exception in callProducer: " + e);
+            result.append("SIT RESULT error: JEE consumer ")
+                  .append(configuredDomain)
+                  .append(" -> ")
                   .append(domain)
                   .append("\nException: ")
                   .append(e.toString());
@@ -100,4 +116,31 @@ public class ControllerBean implements SitControllerSync {
         result.append("\n");
     }
 
+    private void callProducerWithExpectedFailure(String domain, StringBuffer result) {
+        try {
+            logger.info("callProducerWithExpectedFailure called \n");
+            DiscoveryQos discoveryQos = new DiscoveryQos();
+            discoveryQos.setDiscoveryTimeoutMs(10000); // 10 Seconds
+            SystemIntegrationTestSync proxy = serviceLocator.builder(SystemIntegrationTestSync.class, domain)
+                                                            .withDiscoveryQos(discoveryQos)
+                                                            .withGbids(new String[]{ "invalid" })
+                                                            .build();
+            Integer additionResult = proxy.add(1, 1);
+            if (additionResult != 2) {
+                throw new IllegalArgumentException("1 + 1 should be 2, got: " + additionResult);
+            }
+            result.append("SIT RESULT error: JEE consumer ").append(configuredDomain).append(" -> ").append(domain);
+        } catch (JoynrRuntimeException e) {
+            result.append("SIT RESULT success: JEE consumer ").append(configuredDomain).append(" -> ").append(domain);
+        } catch (Exception e) {
+            result.append("SIT RESULT error: JEE consumer ")
+                  .append(configuredDomain)
+                  .append(" -> ")
+                  .append(domain)
+                  .append("\nException: ")
+                  .append(e.toString());
+            Util.addStacktraceToResultString(e, result);
+        }
+        result.append("\n");
+    }
 }

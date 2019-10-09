@@ -61,6 +61,7 @@ public class SitControllerConsumerRestEndpoint {
     DiscoveryQos statelessAsyncDiscoveryQos;
     MessagingQos messagingQos;
     String[] configuredDomains;
+    String[] domainsToBeSent;
 
     @Inject
     public SitControllerConsumerRestEndpoint(ServiceLocator serviceLocator) {
@@ -76,7 +77,7 @@ public class SitControllerConsumerRestEndpoint {
         statelessAsyncDiscoveryQos.setCacheMaxAgeMs(DiscoveryQos.NO_MAX_AGE); // use provisioned DiscoveryEntry
         statelessAsyncDiscoveryQos.setArbitrationStrategy(ArbitrationStrategy.FixedChannel);
 
-        messagingQos = new MessagingQos(30000); // 30 seconds
+        messagingQos = new MessagingQos(240000); // 4 Minutes
 
         String configuredDomainString = System.getenv("SIT_DOMAINS");
         if (configuredDomainString != null) {
@@ -86,6 +87,20 @@ public class SitControllerConsumerRestEndpoint {
         }
         for (int i = 0; i < configuredDomains.length; i++) {
             configuredDomains[i] = configuredDomains[i].trim();
+        }
+
+        String domainsToBeSentString = System.getenv("SIT_DOMAINS_TO_BE_SENT");
+        if (domainsToBeSentString != null) {
+            domainsToBeSent = domainsToBeSentString.split(",");
+        } else {
+            throw new JoynrIllegalStateException("No domains have been configured to be sent to the applications!");
+        }
+        for (int i = 0; i < domainsToBeSent.length; i++) {
+            domainsToBeSent[i] = domainsToBeSent[i].trim();
+        }
+
+        if (domainsToBeSent.length != configuredDomains.length) {
+            throw new JoynrIllegalStateException("Amount of testsubject domains and test execution domains has to be equal!");
         }
     }
 
@@ -157,25 +172,44 @@ public class SitControllerConsumerRestEndpoint {
         logger.info("triggerTests called");
         StringBuffer result = new StringBuffer();
 
-        for (String configuredDomain : configuredDomains) {
+        for (int i = 0; i < configuredDomains.length; i++) {
             try {
                 SitControllerSync sitControllerJeeApp = serviceLocator.builder(SitControllerSync.class,
-                                                                               configuredDomain + "_"
+                                                                               configuredDomains[i] + "_"
                                                                                        + SIT_DOMAIN_PREFIX + ".jee")
                                                                       .withDiscoveryQos(discoveryQos)
                                                                       .withMessagingQos(messagingQos)
                                                                       .withGbids(gbids)
                                                                       .build();
                 result.append(new String(Base64.getDecoder()
-                                               .decode(sitControllerJeeApp.triggerTests()
+                                               .decode(sitControllerJeeApp.triggerTests(domainsToBeSent[i], false)
                                                                           .getBytes(StandardCharsets.ISO_8859_1)),
                                          StandardCharsets.UTF_8));
             } catch (Exception e) {
-                String errorMsg = "SIT RESULT error: triggerTests of sit-jee-app with domain " + configuredDomain
+                String errorMsg = "SIT RESULT error: triggerTests of sit-jee-app with domain " + configuredDomains[i]
                         + " failed: " + e;
                 logger.error(errorMsg);
                 result.append("\n").append(errorMsg);
             }
+        }
+
+        try {
+            SitControllerSync sitControllerJeeApp = serviceLocator.builder(SitControllerSync.class,
+                                                                           configuredDomains[0] + "_"
+                                                                                   + SIT_DOMAIN_PREFIX + ".jee")
+                                                                  .withDiscoveryQos(discoveryQos)
+                                                                  .withMessagingQos(messagingQos)
+                                                                  .withGbids(gbids)
+                                                                  .build();
+            result.append(new String(Base64.getDecoder()
+                                           .decode(sitControllerJeeApp.triggerTests(domainsToBeSent[0], true)
+                                                                      .getBytes(StandardCharsets.ISO_8859_1)),
+                                     StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            String errorMsg = "SIT RESULT error: triggerTests of sit-jee-app with domain " + configuredDomains[0]
+                    + " failed: " + e;
+            logger.error(errorMsg);
+            result.append("\n").append(errorMsg);
         }
 
         try {
@@ -199,7 +233,7 @@ public class SitControllerConsumerRestEndpoint {
                                                                                   .withGbids(gbids)
                                                                                   .build();
 
-            result.append(sitControllerJeeStatelessAsyncNode1.triggerTests());
+            result.append(sitControllerJeeStatelessAsyncNode1.triggerTests(configuredDomains[0], false));
 
             result.append(new String(Base64.getDecoder()
                                            .decode(sitControllerJeeStatelessAsyncNode1.waitForStatelessResult(60000)

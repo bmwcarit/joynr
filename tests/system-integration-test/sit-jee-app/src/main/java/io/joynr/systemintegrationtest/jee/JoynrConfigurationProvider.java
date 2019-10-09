@@ -45,7 +45,8 @@ public class JoynrConfigurationProvider {
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
+        String domain = System.getenv("SIT_DOMAIN");
+        joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, domain + "_" + CHANNEL_ID);
         joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, System.getenv("SIT_BROKERURIS"));
         joynrProperties.setProperty(PROPERTY_GBIDS, System.getenv("SIT_GBIDS"));
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC,
@@ -59,10 +60,10 @@ public class JoynrConfigurationProvider {
     @Produces
     @JoynrLocalDomain
     public String joynrLocalDomain() {
-        String domainNumber = System.getenv("SIT_DOMAIN");
+        String domain = System.getenv("SIT_DOMAIN");
         String domainPrefix = SIT_DOMAIN_PREFIX;
         LOG.debug("Using domain prefix: " + domainPrefix);
-        return domainNumber + "_" + domainPrefix + ".jee";
+        return domain + "_" + domainPrefix + ".jee";
     }
 
 }
