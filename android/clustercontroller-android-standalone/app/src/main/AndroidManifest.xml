@@ -21,10 +21,10 @@
 	package="io.joynr.android.clustercontrollerstandalone">
 
 	<permission
-		android:name="io.joynr.android.JOYNR_BINDER_COMMUNICATION"
-		android:label="@string/binderpermissionlabel"
+		android:name="io.joynr.android.permission.JOYNR_BINDER_COMMUNICATION"
 		android:description="@string/binderpermissiondescription"
-		android:protectionLevel="normal"/>
+		android:label="@string/binderpermissionlabel"
+		android:protectionLevel="normal" />
 
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

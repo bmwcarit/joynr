@@ -20,11 +20,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="io.joynr.android.binder">
 
-	<uses-permission android:name="io.joynr.android.JOYNR_BINDER_COMMUNICATION"/>
+	<uses-permission android:name="io.joynr.android.permission.JOYNR_BINDER_COMMUNICATION" />
 
 	<application>
-		<service android:name="io.joynr.android.binder.BinderService"
+		<service
+			android:name="io.joynr.android.binder.BinderService"
 			android:exported="true"
-			android:permission="io.joynr.android.JOYNR_BINDER_COMMUNICATION"/>
+			android:permission="io.joynr.android.permission.JOYNR_BINDER_COMMUNICATION" />
 	</application>
 </manifest>
