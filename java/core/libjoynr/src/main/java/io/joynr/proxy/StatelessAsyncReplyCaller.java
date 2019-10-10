@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.util.AnnotationUtil;
 import joynr.Reply;
@@ -98,6 +99,11 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();
+            // there is an issue for OpenJDK8 where type inference of generic exceptions is not
+            // working correctly, so we maintain previous behavior by throwing JoynrIllegalStateException
+            if (throwable instanceof JoynrIllegalStateException) {
+                throw (JoynrIllegalStateException) throwable;
+            }
         }
     }
 

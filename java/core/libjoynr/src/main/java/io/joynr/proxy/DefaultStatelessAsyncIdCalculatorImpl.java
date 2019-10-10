@@ -103,9 +103,19 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
 
     @Override
     public String fromParticipantUuid(final String statelessParticipantIdUuid) {
-        final String statelessCallbackId = Optional.ofNullable(participantIdMap.get(statelessParticipantIdUuid))
-                                                   .orElseThrow(() -> new JoynrIllegalStateException("Unknown stateless participant ID UUID: "
-                                                     + statelessParticipantIdUuid));
+        String statelessCallbackId = null;
+        try {
+            statelessCallbackId = Optional.ofNullable(participantIdMap.get(statelessParticipantIdUuid))
+                                          .orElseThrow(() -> new JoynrIllegalStateException("Unknown stateless participant ID UUID: "
+                                                  + statelessParticipantIdUuid));
+        } catch (final Throwable throwable) {
+            throwable.printStackTrace();
+            // there is an issue for OpenJDK8 where type inference of generic exceptions is not
+            // working correctly, so we maintain previous behavior by throwing JoynrIllegalStateException
+            if (throwable instanceof JoynrIllegalStateException) {
+                throw (JoynrIllegalStateException) throwable;
+            }
+        }
         return statelessCallbackId;
     }
 
