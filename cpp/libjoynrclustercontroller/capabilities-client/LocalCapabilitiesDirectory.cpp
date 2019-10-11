@@ -615,14 +615,18 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                         discoveryScope);
             }
         };
-        auto onRuntimeError =
-                [callback, participantId](const exceptions::JoynrRuntimeException& exception) {
+
+        auto flag = std::make_shared<std::once_flag>();
+        auto onRuntimeError = [callback, participantId, flag](
+                const exceptions::JoynrRuntimeException& exception) {
             JOYNR_LOG_DEBUG(logger(),
                             "Global lookup for participantId {} failed with exception: {} ({})",
                             participantId,
                             exception.getMessage(),
                             exception.TYPE_NAME());
-            callback->onError(types::DiscoveryError::INTERNAL_ERROR);
+            std::call_once(*flag, [callback]() {
+                callback->onError(types::DiscoveryError::INTERNAL_ERROR);
+            });
         };
 
         globalCapabilitiesDirectoryClient->lookup(participantId,
