@@ -48,13 +48,13 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
     private final Map<String, String> participantIdMap = new ConcurrentHashMap<>();
 
     @Inject
-    public DefaultStatelessAsyncIdCalculatorImpl(@Named(MessagingPropertyKeys.CHANNELID)
-                                                 final String channelId) {
+    public DefaultStatelessAsyncIdCalculatorImpl(@Named(MessagingPropertyKeys.CHANNELID) final String channelId) {
         this.channelId = channelId;
     }
 
     @Override
-    public String calculateParticipantId(final String interfaceName, final StatelessAsyncCallback statelessAsyncCallback) {
+    public String calculateParticipantId(final String interfaceName,
+                                         final StatelessAsyncCallback statelessAsyncCallback) {
         final String statelessCallbackId = calculateStatelessCallbackId(interfaceName, statelessAsyncCallback);
         final String fullParticipantId = channelId + CHANNEL_SEPARATOR + statelessCallbackId;
         try {
@@ -67,7 +67,8 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
     }
 
     @Override
-    public String calculateStatelessCallbackId(final String interfaceName, final StatelessAsyncCallback statelessAsyncCallback) {
+    public String calculateStatelessCallbackId(final String interfaceName,
+                                               final StatelessAsyncCallback statelessAsyncCallback) {
         return interfaceName + USE_CASE_SEPARATOR + statelessAsyncCallback.getUseCase();
     }
 

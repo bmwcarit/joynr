@@ -60,23 +60,22 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
         try {
             callbackMethod = Arrays.stream(statelessAsyncCallback.getClass().getMethods()).filter(method -> {
                 StatelessCallbackCorrelation callbackCorrelation = AnnotationUtil.getAnnotation(method,
-                        StatelessCallbackCorrelation.class);
+                                                                                                StatelessCallbackCorrelation.class);
                 return callbackCorrelation != null && callbackCorrelation.value().equals(methodCorrelationId);
             })
-                    .filter(method -> method.getName().endsWith("Success"))
-                    .findFirst()
-                    .orElseThrow(() -> new JoynrRuntimeException("No suitable callback method found for callback ID "
-                            + payload.getStatelessAsyncCallbackId() + " on " + statelessAsyncCallback));
-
+                                   .filter(method -> method.getName().endsWith("Success"))
+                                   .findFirst()
+                                   .orElseThrow(() -> new JoynrRuntimeException("No suitable callback method found for callback ID "
+                                           + payload.getStatelessAsyncCallbackId() + " on " + statelessAsyncCallback));
 
             if (withException || withApplicationError) {
                 String methodName = callbackMethod.getName().replaceFirst("Success$", "Failed");
                 Class[] parameterTypes;
                 if (withException) {
-                    parameterTypes = new Class[]{JoynrRuntimeException.class, ReplyContext.class};
+                    parameterTypes = new Class[]{ JoynrRuntimeException.class, ReplyContext.class };
                 } else { // withApplicationError
-                    parameterTypes = new Class[]{((ApplicationException) payload.getError()).getError().getClass(),
-                            ReplyContext.class};
+                    parameterTypes = new Class[]{ ((ApplicationException) payload.getError()).getError().getClass(),
+                            ReplyContext.class };
                 }
                 try {
                     callbackMethod = statelessAsyncCallback.getClass().getMethod(methodName, parameterTypes);
@@ -89,10 +88,10 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
             try {
                 if (success) {
                     callbackMethod.invoke(statelessAsyncCallback,
-                            addReplyContext(payload.getResponse(), payload.getRequestReplyId()));
+                                          addReplyContext(payload.getResponse(), payload.getRequestReplyId()));
                 } else { // withException or withApplicationError
                     callbackMethod.invoke(statelessAsyncCallback,
-                            addReplyContext(extractError(payload), payload.getRequestReplyId()));
+                                          addReplyContext(extractError(payload), payload.getRequestReplyId()));
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
                 logger.error("Error calling callback method {} with reply {}", callbackMethod, payload, e);
@@ -110,13 +109,13 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
     private Object[] extractError(Reply payload) {
         JoynrException exception = payload.getError();
         if (exception instanceof ApplicationException) {
-            return new Object[]{((ApplicationException) exception).getError()};
+            return new Object[]{ ((ApplicationException) exception).getError() };
         } else if (exception instanceof JoynrRuntimeException) {
-            return new Object[]{payload.getError()};
+            return new Object[]{ payload.getError() };
         }
         return new Object[]{
                 new JoynrRuntimeException("Unexpected error payload, neither JoynrRuntimeException nor ApplicationException: "
-                        + exception)};
+                        + exception) };
     }
 
     private Object[] addReplyContext(Object[] parameters, String requestReplyId) {
