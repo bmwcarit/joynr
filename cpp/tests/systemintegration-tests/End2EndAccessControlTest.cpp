@@ -54,7 +54,7 @@ public:
               providerParticipantId(),
               semaphore(0),
               AC_ENTRIES_FILE("CCAccessControl.entries"),
-              MESSAGINGQOS_TTL(1000)
+              MESSAGINGQOS_TTL(10000)
     {
     }
 
