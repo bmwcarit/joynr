@@ -1,0 +1,12 @@
+[websocket]
+certificate-authority-pem-filename=/data/build/tests/ssl-data/ca.cert.pem
+certificate-pem-filename=/data/build/tests/ssl-data/cc.cert.pem
+private-key-pem-filename=/data/build/tests/ssl-data/cc.key.pem
+
+[cluster-controller]
+acl-entries-directory=/data/build/tests/bin/resources/acl-lite
+ws-port=4242
+ws-tls-port=4243
+
+[access-control]
+enable=true
