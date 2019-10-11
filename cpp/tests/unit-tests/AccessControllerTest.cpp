@@ -151,7 +151,7 @@ public:
         std::ignore = participantId;
         std::ignore = gbids;
         std::ignore = onError;
-        ASSERT_EQ(types::DiscoveryScope::LOCAL_ONLY, discoveryQos.getDiscoveryScope());
+        ASSERT_EQ(types::DiscoveryScope::LOCAL_THEN_GLOBAL, discoveryQos.getDiscoveryScope());
         onSuccess(discoveryEntry);
     }
 
@@ -165,7 +165,7 @@ public:
         std::ignore = participantId;
         std::ignore = gbids;
         std::ignore = onSuccess;
-        ASSERT_EQ(types::DiscoveryScope::LOCAL_ONLY, discoveryQos.getDiscoveryScope());
+        ASSERT_EQ(types::DiscoveryScope::LOCAL_THEN_GLOBAL, discoveryQos.getDiscoveryScope());
         onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
     }
 

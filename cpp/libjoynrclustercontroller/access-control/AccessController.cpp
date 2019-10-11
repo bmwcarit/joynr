@@ -325,7 +325,7 @@ void AccessController::hasConsumerPermission(
 
     // Lookup participantId in the local Capabilities Directory
     types::DiscoveryQos discoveryQos;
-    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
     localCapabilitiesDirectory->lookup(message->getRecipient(),
                                        discoveryQos,
                                        knownGbids,
