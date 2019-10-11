@@ -143,6 +143,13 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
 
+    void addNextHop(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::BinderAddress& binderAddress,
+            const bool& isGloballyVisible,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) final;
+
     void removeNextHop(const std::string& participantId,
                        std::function<void()> onSuccess = nullptr,
                        std::function<void(const joynr::exceptions::ProviderRuntimeException&)>

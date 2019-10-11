@@ -620,6 +620,27 @@ void CcMessageRouter::addNextHop(
                std::move(onSuccess));
 }
 
+// inherited from joynr::system::RoutingProvider
+void CcMessageRouter::addNextHop(
+    const std::string& participantId,
+    const system::RoutingTypes::BinderAddress& binderAddress,
+    const bool& isGloballyVisible,
+    std::function<void()> onSuccess,
+    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::ignore = onError;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    auto address = std::make_shared<const joynr::system::RoutingTypes::BinderAddress>(
+            binderAddress);
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
+}
+
 void CcMessageRouter::resolveNextHop(
         const std::string& participantId,
         std::function<void(const bool& resolved)> onSuccess,
