@@ -293,7 +293,7 @@ void JoynrClusterControllerRuntime::init()
 
     if (doMqttMessaging) {
         const std::string ccMqttClientIdPrefix = clusterControllerSettings.getMqttClientIdPrefix();
-        const std::string mqttCliendId = ccMqttClientIdPrefix + clusterControllerId;
+        const std::string mqttClientId = ccMqttClientIdPrefix + clusterControllerId;
 
         const std::chrono::seconds mqttReconnectDelayTimeSeconds =
                 messagingSettings.getMqttReconnectDelayTimeSeconds();
@@ -327,7 +327,7 @@ void JoynrClusterControllerRuntime::init()
                                                               mqttReconnectDelayTimeSeconds,
                                                               mqttReconnectMaxDelayTimeSeconds,
                                                               isMqttExponentialBackoffEnabled,
-                                                              mqttCliendId);
+                                                              mqttClientId);
 
                 const auto& connectionData = mqttConnectionDataVector[brokerIndex];
 
