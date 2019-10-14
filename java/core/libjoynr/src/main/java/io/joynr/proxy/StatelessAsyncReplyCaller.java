@@ -18,18 +18,17 @@
  */
 package io.joynr.proxy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.util.AnnotationUtil;
 import joynr.Reply;
@@ -56,53 +55,44 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
         boolean withApplicationError = payload.getError() != null && payload.getError() instanceof ApplicationException;
         boolean withException = payload.getError() != null && !(payload.getError() instanceof ApplicationException);
 
-        Method callbackMethod = null;
-        try {
-            callbackMethod = Arrays.stream(statelessAsyncCallback.getClass().getMethods()).filter(method -> {
-                StatelessCallbackCorrelation callbackCorrelation = AnnotationUtil.getAnnotation(method,
-                                                                                                StatelessCallbackCorrelation.class);
-                return callbackCorrelation != null && callbackCorrelation.value().equals(methodCorrelationId);
-            })
-                                   .filter(method -> method.getName().endsWith("Success"))
-                                   .findFirst()
-                                   .orElseThrow(() -> new JoynrRuntimeException("No suitable callback method found for callback ID "
-                                           + payload.getStatelessAsyncCallbackId() + " on " + statelessAsyncCallback));
+        Method callbackMethod = Arrays.stream(statelessAsyncCallback.getClass().getMethods()).filter(method -> {
+            StatelessCallbackCorrelation callbackCorrelation = AnnotationUtil.getAnnotation(method,
+                                                                                            StatelessCallbackCorrelation.class);
+            return callbackCorrelation != null && callbackCorrelation.value().equals(methodCorrelationId);
+        })
+                                      .filter(method -> method.getName().endsWith("Success"))
+                                      .findFirst()
+                                      .orElseThrow(() -> new JoynrRuntimeException("No suitable callback method found for callback ID "
+                                              + payload.getStatelessAsyncCallbackId() + " on "
+                                              + statelessAsyncCallback));
 
-            if (withException || withApplicationError) {
-                String methodName = callbackMethod.getName().replaceFirst("Success$", "Failed");
-                Class[] parameterTypes;
-                if (withException) {
-                    parameterTypes = new Class[]{ JoynrRuntimeException.class, ReplyContext.class };
-                } else { // withApplicationError
-                    parameterTypes = new Class[]{ ((ApplicationException) payload.getError()).getError().getClass(),
-                            ReplyContext.class };
-                }
-                try {
-                    callbackMethod = statelessAsyncCallback.getClass().getMethod(methodName, parameterTypes);
-                } catch (NoSuchMethodException e) {
-                    throw new JoynrRuntimeException("No suitable failure callback method named " + methodName
-                            + " found for callback ID " + payload.getStatelessAsyncCallbackId() + " on "
-                            + statelessAsyncCallback);
-                }
+        if (withException || withApplicationError) {
+            String methodName = callbackMethod.getName().replaceFirst("Success$", "Failed");
+            Class[] parameterTypes;
+            if (withException) {
+                parameterTypes = new Class[]{ JoynrRuntimeException.class, ReplyContext.class };
+            } else { // withApplicationError
+                parameterTypes = new Class[]{ ((ApplicationException) payload.getError()).getError().getClass(),
+                        ReplyContext.class };
             }
             try {
-                if (success) {
-                    callbackMethod.invoke(statelessAsyncCallback,
-                                          addReplyContext(payload.getResponse(), payload.getRequestReplyId()));
-                } else { // withException or withApplicationError
-                    callbackMethod.invoke(statelessAsyncCallback,
-                                          addReplyContext(extractError(payload), payload.getRequestReplyId()));
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                logger.error("Error calling callback method {} with reply {}", callbackMethod, payload, e);
+                callbackMethod = statelessAsyncCallback.getClass().getMethod(methodName, parameterTypes);
+            } catch (NoSuchMethodException e) {
+                throw new JoynrRuntimeException("No suitable failure callback method named " + methodName
+                        + " found for callback ID " + payload.getStatelessAsyncCallbackId() + " on "
+                        + statelessAsyncCallback);
             }
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-            // there is an issue for OpenJDK8 where type inference of generic exceptions is not
-            // working correctly, so we maintain previous behavior by throwing JoynrIllegalStateException
-            if (throwable instanceof JoynrIllegalStateException) {
-                throw (JoynrIllegalStateException) throwable;
+        }
+        try {
+            if (success) {
+                callbackMethod.invoke(statelessAsyncCallback,
+                                      addReplyContext(payload.getResponse(), payload.getRequestReplyId()));
+            } else { // withException or withApplicationError
+                callbackMethod.invoke(statelessAsyncCallback,
+                                      addReplyContext(extractError(payload), payload.getRequestReplyId()));
             }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.error("Error calling callback method {} with reply {}", callbackMethod, payload, e);
         }
     }
 

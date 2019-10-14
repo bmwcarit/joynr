@@ -555,12 +555,7 @@ public class ProxyTest {
 
                 String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
                 // pass the response to the replyCaller
-                try {
-                    replyCallerCaptor.getValue()
-                                     .messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
+                replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
                 return null;
             }
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
@@ -626,11 +621,7 @@ public class ProxyTest {
 
                 String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
                 // pass the response to the replyCaller
-                try {
-                    replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
+                replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
                 return null;
             }
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),

@@ -294,11 +294,7 @@ public class RequestReplyManagerImpl
             logger.warn("No reply caller found for id: " + callbackId);
             return;
         }
-        try {
-            callBack.messageCallBack(reply);
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
+        callBack.messageCallBack(reply);
     }
 
     @Override

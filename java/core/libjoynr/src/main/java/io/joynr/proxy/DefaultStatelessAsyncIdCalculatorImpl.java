@@ -48,33 +48,31 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
     private final Map<String, String> participantIdMap = new ConcurrentHashMap<>();
 
     @Inject
-    public DefaultStatelessAsyncIdCalculatorImpl(@Named(MessagingPropertyKeys.CHANNELID) final String channelId) {
+    public DefaultStatelessAsyncIdCalculatorImpl(@Named(MessagingPropertyKeys.CHANNELID) String channelId) {
         this.channelId = channelId;
     }
 
     @Override
-    public String calculateParticipantId(final String interfaceName,
-                                         final StatelessAsyncCallback statelessAsyncCallback) {
-        final String statelessCallbackId = calculateStatelessCallbackId(interfaceName, statelessAsyncCallback);
-        final String fullParticipantId = channelId + CHANNEL_SEPARATOR + statelessCallbackId;
+    public String calculateParticipantId(String interfaceName, StatelessAsyncCallback statelessAsyncCallback) {
+        String statelessCallbackId = calculateStatelessCallbackId(interfaceName, statelessAsyncCallback);
+        String fullParticipantId = channelId + CHANNEL_SEPARATOR + statelessCallbackId;
         try {
-            final String uuid = UUID.nameUUIDFromBytes(fullParticipantId.getBytes("UTF-8")).toString();
+            String uuid = UUID.nameUUIDFromBytes(fullParticipantId.getBytes("UTF-8")).toString();
             participantIdMap.putIfAbsent(uuid, statelessCallbackId);
             return uuid;
-        } catch (final UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             throw new JoynrRuntimeException("Platform does not support UTF-8", e);
         }
     }
 
     @Override
-    public String calculateStatelessCallbackId(final String interfaceName,
-                                               final StatelessAsyncCallback statelessAsyncCallback) {
+    public String calculateStatelessCallbackId(String interfaceName, StatelessAsyncCallback statelessAsyncCallback) {
         return interfaceName + USE_CASE_SEPARATOR + statelessAsyncCallback.getUseCase();
     }
 
     @Override
-    public String calculateStatelessCallbackMethodId(final Method method) {
-        final StatelessCallbackCorrelation callbackCorrelation = method.getAnnotation(StatelessCallbackCorrelation.class);
+    public String calculateStatelessCallbackMethodId(Method method) {
+        StatelessCallbackCorrelation callbackCorrelation = method.getAnnotation(StatelessCallbackCorrelation.class);
         if (callbackCorrelation == null) {
             logger.error("Method {} on {} is missing StatelessCallbackCorrelation. Unable to generate callback method ID.",
                          method,
@@ -85,38 +83,28 @@ public class DefaultStatelessAsyncIdCalculatorImpl implements StatelessAsyncIdCa
     }
 
     @Override
-    public String calculateStatelessCallbackRequestReplyId(final Method method) {
-        final String requestReplyId = String.valueOf(random.nextLong());
-        final String methodId = calculateStatelessCallbackMethodId(method);
+    public String calculateStatelessCallbackRequestReplyId(Method method) {
+        String requestReplyId = String.valueOf(random.nextLong());
+        String methodId = calculateStatelessCallbackMethodId(method);
         return requestReplyId + REQUEST_REPLY_ID_SEPARATOR + methodId;
     }
 
     @Override
-    public String extractMethodIdFromRequestReplyId(final String requestReplyId) {
+    public String extractMethodIdFromRequestReplyId(String requestReplyId) {
         if (requestReplyId == null || requestReplyId.trim().isEmpty()
                 || !requestReplyId.contains(REQUEST_REPLY_ID_SEPARATOR)) {
             throw new JoynrIllegalStateException("Unable to extract method ID from invalid request/reply ID: "
                     + requestReplyId);
         }
-        final int index = requestReplyId.indexOf(REQUEST_REPLY_ID_SEPARATOR);
+        int index = requestReplyId.indexOf(REQUEST_REPLY_ID_SEPARATOR);
         return requestReplyId.substring(index + REQUEST_REPLY_ID_SEPARATOR.length());
     }
 
     @Override
-    public String fromParticipantUuid(final String statelessParticipantIdUuid) {
-        String statelessCallbackId = null;
-        try {
-            statelessCallbackId = Optional.ofNullable(participantIdMap.get(statelessParticipantIdUuid))
-                                          .orElseThrow(() -> new JoynrIllegalStateException("Unknown stateless participant ID UUID: "
-                                                  + statelessParticipantIdUuid));
-        } catch (final Throwable throwable) {
-            throwable.printStackTrace();
-            // there is an issue for OpenJDK8 where type inference of generic exceptions is not
-            // working correctly, so we maintain previous behavior by throwing JoynrIllegalStateException
-            if (throwable instanceof JoynrIllegalStateException) {
-                throw (JoynrIllegalStateException) throwable;
-            }
-        }
+    public String fromParticipantUuid(String statelessParticipantIdUuid) {
+        String statelessCallbackId = Optional.ofNullable(participantIdMap.get(statelessParticipantIdUuid))
+                                             .orElseThrow(() -> new JoynrIllegalStateException("Unknown stateless participant ID UUID: "
+                                                     + statelessParticipantIdUuid));
         return statelessCallbackId;
     }
 
