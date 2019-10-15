@@ -55,7 +55,7 @@ RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/gabime/spdlog.git \
     && cd spdlog \
-    && git checkout v1.3.1 \
+    && git checkout v1.4.2 \
     && mkdir build \
     && cd build \
     && cmake -DSPDLOG_BUILD_BENCH=OFF .. \
