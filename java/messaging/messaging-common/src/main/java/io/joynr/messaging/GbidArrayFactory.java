@@ -26,6 +26,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GBIDS;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +40,17 @@ public class GbidArrayFactory {
     public GbidArrayFactory(@Named(PROPERTY_GBIDS) String gbids) {
         gbidArray = Arrays.stream(gbids.split(",")).map(a -> a.trim()).toArray(String[]::new);
         if (gbidArray.length == 0) {
-            logger.error("At least one GBID has to be defined!");
-            throw new JoynrIllegalStateException("At least one GBID has to be defined!");
+            if (gbids.contains(",")) {
+                throw new JoynrIllegalStateException("just comma is not allowed in gbids");
+            }
+            gbidArray = new String[]{ "" };
         }
-        if (Arrays.stream(gbidArray).anyMatch(gbid -> gbid.isEmpty())) {
-            logger.error("GBID must not be empty: {}!", gbids);
-            throw new JoynrIllegalStateException("GBID must not be empty: " + gbids + "!");
+        HashSet<String> gbidsSet = new HashSet<String>();
+        for (String gbid : gbidArray) {
+            if (gbidsSet.contains(gbid)) {
+                throw new JoynrIllegalStateException("duplicate gbid found");
+            }
+            gbidsSet.add(gbid);
         }
     }
 

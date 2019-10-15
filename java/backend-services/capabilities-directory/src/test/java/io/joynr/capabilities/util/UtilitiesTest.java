@@ -39,11 +39,6 @@ public class UtilitiesTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testFailureOnEmptyGcdGbId() {
-        GcdUtilities.validateGbids(new String[]{ gcdGbId }, "", validGbids);
-    }
-
-    @Test(expected = IllegalStateException.class)
     public void testFailureOnNullGcdGbId() {
         GcdUtilities.validateGbids(new String[]{ gcdGbId }, null, validGbids);
     }
@@ -74,5 +69,10 @@ public class UtilitiesTest {
     @Test
     public void testReturnOKOnValidGbid() {
         assertEquals(ValidateGBIDsEnum.OK, GcdUtilities.validateGbids(new String[]{ gcdGbId }, gcdGbId, validGbids));
+    }
+
+    @Test
+    public void testReturnOKOnEmptyGbid() {
+        assertEquals(ValidateGBIDsEnum.OK, GcdUtilities.validateGbids(new String[]{ "" }, gcdGbId, validGbids));
     }
 }
