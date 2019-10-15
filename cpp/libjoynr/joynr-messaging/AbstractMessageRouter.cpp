@@ -182,12 +182,8 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
         auto customHeaderGbidEntry = customHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY());
         if (customHeaderGbidEntry != customHeaders.end()) {
             std::string gbid = customHeaderGbidEntry->second;
-            if (!gbid.empty()) {
-                routingEntry = routingTable.lookupRoutingEntryByParticipantIdAndGbid(
-                        destinationPartId, gbid);
-            } else {
-                routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
-            }
+            routingEntry =
+                    routingTable.lookupRoutingEntryByParticipantIdAndGbid(destinationPartId, gbid);
         } else {
             routingEntry = routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
         }

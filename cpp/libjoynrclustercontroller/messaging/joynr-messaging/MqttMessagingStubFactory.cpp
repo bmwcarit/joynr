@@ -44,8 +44,8 @@ bool MqttMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Addr
     }
 
     if (gbid != (mqttAddress->getBrokerUri())) {
-        JOYNR_LOG_TRACE(logger(),
-                        "GBID {} is unknown in MqttMessagingStubFactory for GBID {}",
+        JOYNR_LOG_ERROR(logger(),
+                        "GBID: {} is unknown in MqttMessagingStubFactory for GBID: {}",
                         mqttAddress->getBrokerUri(),
                         gbid);
         return false;
@@ -66,7 +66,7 @@ std::shared_ptr<IMessagingStub> MqttMessagingStubFactory::create(
 
     if (gbid != (mqttAddress->getBrokerUri())) {
         JOYNR_LOG_FATAL(logger(),
-                        "GBID {} is unknown in MqttMessagingStubFactory for GBID {}",
+                        "GBID: {} is unknown in MqttMessagingStubFactory for GBID: {}",
                         mqttAddress->getBrokerUri(),
                         gbid);
         return nullptr;

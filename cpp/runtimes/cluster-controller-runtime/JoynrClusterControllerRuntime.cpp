@@ -309,7 +309,7 @@ void JoynrClusterControllerRuntime::init()
         for (std::uint8_t brokerIndex = 0; brokerIndex < mqttConnectionDataVector.size();
              brokerIndex++) {
             if (brokerIndex == 0) {
-                // we have only the default broker
+                // default broker settings
                 mqttKeepAliveTimeSeconds = messagingSettings.getMqttKeepAliveTimeSeconds();
                 brokerUrl = defaultBrokerUrl;
             } else {
