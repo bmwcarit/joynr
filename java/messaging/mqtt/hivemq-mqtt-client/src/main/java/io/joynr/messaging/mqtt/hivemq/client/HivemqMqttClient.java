@@ -60,6 +60,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private IMqttMessagingSkeleton messagingSkeleton;
     private int keepAliveTimeSeconds;
     private int connectionTimeoutSec;
+    private int reconnectDelayMs;
     private volatile boolean shuttingDown;
     private AtomicInteger disconnectCount = new AtomicInteger(0);
 
@@ -68,11 +69,13 @@ public class HivemqMqttClient implements JoynrMqttClient {
     public HivemqMqttClient(Mqtt3RxClient client,
                             int keepAliveTimeSeconds,
                             boolean cleanSession,
-                            int connectionTimeoutSec) {
+                            int connectionTimeoutSec,
+                            int reconnectDelayMs) {
         this.client = client;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
         this.cleanSession = cleanSession;
         this.connectionTimeoutSec = connectionTimeoutSec;
+        this.reconnectDelayMs = reconnectDelayMs;
     }
 
     @Override
@@ -94,6 +97,11 @@ public class HivemqMqttClient implements JoynrMqttClient {
                           .blockingGet();
                 } catch (RuntimeException e) {
                     logger.error("Exception while connecting MQTT client.", e);
+                    try {
+                        client.wait(reconnectDelayMs);
+                    } catch (InterruptedException interruptedException) {
+                        logger.error("Exception while waiting to reconnect to MQTT client.", interruptedException);
+                    }
                 }
             }
             logger.info("MQTT client {} connected.", client);
