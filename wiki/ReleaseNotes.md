@@ -2,6 +2,15 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.6
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** HivemqMqttClient now waits for `PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS`
+  milliseconds before trying to reconnect when the initial connect fails.
+
 # joynr 1.8.5
 
 ## API relevant changes
