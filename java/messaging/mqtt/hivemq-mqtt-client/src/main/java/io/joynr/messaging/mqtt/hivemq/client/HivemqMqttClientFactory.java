@@ -131,6 +131,10 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private List<String> cipherSuiteList;
 
     @Inject
+    @Named(MqttModule.PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS)
+    private int reconnectDelayMs;
+
+    @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
@@ -219,7 +223,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         HivemqMqttClient result = new HivemqMqttClient(client,
                                                        keepAliveTimeSeconds,
                                                        cleanSession,
-                                                       connectionTimeoutSec);
+                                                       connectionTimeoutSec,
+                                                       reconnectDelayMs);
         resubscribeHandler.setClient(result);
         resubscribeHandler.setMqttStatusReceiver(mqttStatusReceiver);
         disconnectedListener.setClient(result);
