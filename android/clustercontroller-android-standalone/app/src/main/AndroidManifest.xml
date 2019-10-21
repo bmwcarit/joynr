@@ -36,10 +36,6 @@
 		android:label="JoynrClusterController"
 		tools:ignore="GoogleAppIndexingWarning,MissingApplicationIcon">
 
-		<service
-			android:name=".ClusterControllerService"
-			android:enabled="true"
-			android:exported="false" />
 
 		<activity
 			android:name=".MainActivity"
@@ -52,6 +48,24 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<service
+			android:name=".ClusterControllerService"
+			android:enabled="true"
+			android:exported="false" />
+
+		<!-- this service is merged from joynr binder aar dependency but we want to add new intent filter-->
+		<service
+			android:name="io.joynr.android.binder.BinderService"
+			android:exported="true"
+			android:permission="io.joynr.android.permission.JOYNR_BINDER_COMMUNICATION" >
+
+			<intent-filter>
+				<action android:name="io.joynr.android.action.COMMUNICATE" />
+			</intent-filter>
+
+		</service>
+
 	</application>
 
 </manifest>

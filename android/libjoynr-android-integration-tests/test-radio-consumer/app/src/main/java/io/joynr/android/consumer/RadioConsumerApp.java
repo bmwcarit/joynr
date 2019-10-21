@@ -1,7 +1,6 @@
 package io.joynr.android.consumer;
 
 import android.app.Application;
-import android.util.Log;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,6 @@ public class RadioConsumerApp extends Application {
         //set loglevel to debug
         StaticLoggerBinder.setLogLevel(AndroidLogger.LogLevel.DEBUG);
 
-        //init runtime
         runtime = AndroidBinderRuntime.init(this);
 
         registerProxy();
@@ -121,4 +119,5 @@ public class RadioConsumerApp extends Application {
             }
         }, subscriptionQos);
     }
+
 }

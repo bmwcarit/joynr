@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.impl.AndroidLogger;
 import org.slf4j.impl.StaticLoggerBinder;
 
+import java.util.Properties;
+
 import io.joynr.android.AndroidBinderRuntime;
 import io.joynr.runtime.JoynrRuntime;
 
@@ -37,7 +39,7 @@ public class ClusterController {
         StaticLoggerBinder.setLogLevel(AndroidLogger.LogLevel.DEBUG);
         logger.debug("Starting...");
 
-        return AndroidBinderRuntime.init(context, brokerUri);
+        return AndroidBinderRuntime.initClusterController(context, brokerUri, new Properties());
     }
 
 }

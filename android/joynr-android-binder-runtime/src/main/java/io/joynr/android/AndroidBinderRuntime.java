@@ -19,6 +19,8 @@
 package io.joynr.android;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ResolveInfo;
 
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -27,6 +29,7 @@ import com.google.inject.util.Modules;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Properties;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -59,14 +62,20 @@ public class AndroidBinderRuntime {
 
     /**
      * Static method that creates a cluster controller {@link JoynrRuntime} for Android developers with default configurations.
+     * ATTENTION: This method shouldn't be called by joynr app developers as the cluster controller is usually running in another app/process.
      *
-     * @param context   The Application context
-     * @param brokerUri The mqtt broker uri
+     * @param context    The Application context
+     * @param brokerUri  The mqtt broker uri
+     * @param properties Extra properties that can configure joynr runtime.
      * @return A {@link JoynrRuntime} object
      */
-    public static JoynrRuntime init(Context context, String brokerUri) {
+    public static JoynrRuntime initClusterController(Context context, String brokerUri, Properties properties) {
 
+        // set default joynr properties
         final Properties config = getDefaultJoynrProperties(context);
+
+        // override with possible developer specified properties
+        config.putAll(properties);
 
         config.put("joynr.messaging.mqtt.brokerUris", brokerUri);
 
@@ -82,18 +91,49 @@ public class AndroidBinderRuntime {
         return runtime;
     }
 
+
     /**
      * Static method that creates a {@link JoynrRuntime} for Android developers with default configurations.
      *
-     * @param context The Application context
+     * @param context The application context.
+     * @return A {@link JoynrRuntime} object
+     */
+    public static JoynrRuntime init(Context context) {
+        String clusterControllerPackageName = getClusterControlerServicePackagename(context);
+        return init(context, new Properties(), clusterControllerPackageName);
+    }
+
+    /**
+     * Static method that creates a {@link JoynrRuntime} for Android developers with extra properties.
+     *
+     * @param context    The application context.
+     * @param properties Extra properties that can configure joynr runtime.
+     * @return A {@link JoynrRuntime} object
+     */
+    public static JoynrRuntime init(Context context, Properties properties) {
+        String clusterControllerPackageName = getClusterControlerServicePackagename(context);
+        return init(context, properties, clusterControllerPackageName);
+    }
+
+
+    /**
+     * Static method that creates a {@link JoynrRuntime} for Android developers with default configurations.
+     *
+     * @param context                      The application context.
+     * @param properties                   Extra properties that can configure joynr runtime.
+     * @param clusterControllerPackageName The package name of the joynr cluster controller.
      * @return A {@link JoynrRuntime} object
      */
 
-    public static JoynrRuntime init(Context context) {
+    private static JoynrRuntime init(Context context, Properties properties, String clusterControllerPackageName) {
 
+        // set default joynr properties
         final Properties config = getDefaultJoynrProperties(context);
 
-        BinderAddress ccBinderAddress = new BinderAddress("io.joynr.android.clustercontrollerstandalone");
+        // override with possible developer specified properties
+        config.putAll(properties);
+
+        BinderAddress ccBinderAddress = new BinderAddress(clusterControllerPackageName);
         injector = new JoynrInjectorFactory(config, new LibjoynrBinderRuntimeModule(context, ccBinderAddress))
                 .createChildInjector();
         runtime = injector.getInstance(JoynrRuntime.class);
@@ -101,6 +141,17 @@ public class AndroidBinderRuntime {
         logger.debug("Started Libjoynr runtime...");
 
         return runtime;
+    }
+
+    private static String getClusterControlerServicePackagename(Context context) {
+        Intent intent = new Intent("io.joynr.android.action.COMMUNICATE");
+
+        List<ResolveInfo> services = context.getPackageManager().queryIntentServices(intent, 0);
+        if (services == null || services.isEmpty()) {
+            logger.error("There is no joynr cluster controller app installed!");
+            throw new io.joynr.exceptions.JoynrRuntimeException("There is no joynr cluster controller app installed!");
+        }
+        return services.get(0).serviceInfo.applicationInfo.packageName;
     }
 
     private static Properties getDefaultJoynrProperties(Context context) {

@@ -65,16 +65,30 @@ A specific Runtime was created for Android, which allows developers to initializ
 configuration.
 
 ```
-AndroidBinderRuntime.init(context, brokerUri);
+AndroidBinderRuntime.initClusterController(context, brokerUri, properties);
 ```
 
 for initializing the Cluster Controller Runtime, or
 
 ```
-AndroidBinderRuntime.init(context);
+AndroidBinderRuntime.init(context); or AndroidBinderRuntime.init(context, properties); 
 ```
 
 for initializing the Libjoynr Runtime (for Consumers and Providers)
+
+In order to Libjoynr runtime communicate with Cluster controller runtime it's necessary to have the
+cluster controller app installed. This is necessary because Libjoynr runtime automatically queries 
+the Android system using the PackageManager for an Android service that has an intent-filter with 
+the following action: 
+
+``` 
+io.joynr.android.action.COMMUNICATE
+```
+
+There is one example of this mechanism in Android Cluster Controller Standalone project 
+and joynr developers only need to worry about this mechanism in case they are responsible for 
+joynr cluster controller implementation. In case the Libjoynr runtime is initialized and there is 
+no joynr cluster controller app installed, a JoynrRuntimeException is thrown alerting the developer.
 
 ## BinderAddress
 
