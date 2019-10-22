@@ -20,7 +20,7 @@ index=0
 longpoll-retry-interval=5000
 delete-channel-retry-interval=5000
 
-capabilities-directory-url=" "
+capabilities-directory-url=""
 capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"@JOYNR_DEFAULT_GBID@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 

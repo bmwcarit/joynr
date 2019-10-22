@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,46 +21,46 @@
 #include <string>
 #include <vector>
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/Future.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"
-#include "joynr/types/Localisation/GpsLocation.h"
 
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockJoynrClusterControllerMqttConnectionData.h"
-#include "tests/mock/MockMqttMessagingSkeleton.h"
 #include "tests/mock/MockMosquittoConnection.h"
-#include "tests/mock/MockTransportMessageSender.h"
-#include "tests/mock/MockTransportMessageReceiver.h"
+#include "tests/mock/MockMqttMessagingSkeleton.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
+#include "tests/mock/MockTransportMessageReceiver.h"
+#include "tests/mock/MockTransportMessageSender.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
 
-using testing::Return;
-using testing::ByRef;
-using testing::SetArgReferee;
 using testing::AtLeast;
+using testing::ByRef;
+using testing::Return;
+using testing::SetArgReferee;
 
 class JoynrClusterControllerRuntimeTest : public ::testing::Test
 {
@@ -81,7 +81,8 @@ public:
     std::shared_ptr<MockTransportMessageReceiver> mockMqttMessageReceiver;
     std::shared_ptr<MockTransportMessageSender> mockMqttMessageSender;
     std::shared_ptr<MockMosquittoConnection> mockMosquittoConnection;
-    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>> mockMqttMultipleConnections;
+    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
+            mockMqttMultipleConnections;
     Semaphore semaphore;
     std::string serializedChannelAddress;
     std::string serializedMqttAddress;
@@ -119,14 +120,14 @@ public:
               mockHttpMessageSender(std::make_shared<MockTransportMessageSender>()),
               mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
               mockMqttMessageSender(std::make_shared<MockTransportMessageSender>()),
-              mockMosquittoConnection(std::make_shared<MockMosquittoConnection>(
-                                          ccSettings,
-                                          joynr::BrokerUrl("testBrokerUrl"),
-                                          std::chrono::seconds(1),
-                                          std::chrono::seconds(1),
-                                          std::chrono::seconds(1),
-                                          false,
-                                          "testClientId")),
+              mockMosquittoConnection(
+                      std::make_shared<MockMosquittoConnection>(ccSettings,
+                                                                joynr::BrokerUrl("testBrokerUrl"),
+                                                                std::chrono::seconds(1),
+                                                                std::chrono::seconds(1),
+                                                                std::chrono::seconds(1),
+                                                                false,
+                                                                "testClientId")),
               mockMqttMultipleConnections(),
               semaphore(0),
               globalMqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic"),
@@ -160,9 +161,11 @@ public:
         EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .Times(0);
 
-        mockMqttMultipleConnections.push_back(std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
-        auto connectionData = std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
-                mockMqttMultipleConnections[0]);
+        mockMqttMultipleConnections.push_back(
+                std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
+        auto connectionData =
+                std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
+                        mockMqttMultipleConnections[0]);
 
         EXPECT_CALL(*connectionData, getMqttMessageReceiver())
                 .WillRepeatedly(Return(mockMqttMessageReceiver));
@@ -193,13 +196,15 @@ public:
         EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .Times(0);
 
-        std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>> connectionDataVector;
+        std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>>
+                connectionDataVector;
         for (std::uint8_t i = 0; i < 3; i++) {
             mockMqttMultipleConnections.push_back(
-                        std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
+                    std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
 
-            auto connectionData = std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
-                    mockMqttMultipleConnections[i]);
+            auto connectionData =
+                    std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
+                            mockMqttMultipleConnections[i]);
             connectionDataVector.push_back(connectionData);
 
             EXPECT_CALL(*connectionDataVector[i], getMqttMessageReceiver())
@@ -228,9 +233,11 @@ public:
 
     void createRuntimeHttp()
     {
-        mockMqttMultipleConnections.push_back(std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
-        auto connectionData = std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
-                mockMqttMultipleConnections[0]);
+        mockMqttMultipleConnections.push_back(
+                std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
+        auto connectionData =
+                std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
+                        mockMqttMultipleConnections[0]);
 
         EXPECT_CALL(*connectionData, getMqttMessageReceiver())
                 .WillRepeatedly(Return(mockMqttMessageReceiver));
@@ -327,12 +334,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
 {
     auto mockMqttMessagingSkeleton = std::make_shared<MockMqttMessagingSkeleton>();
 
-    auto mockMqttMessagingSkeletonFactory =
-            [mockMqttMessagingSkeleton](std::weak_ptr<IMessageRouter> messageRouter,
-                                        std::shared_ptr<MqttReceiver> mqttReceiver,
-                                        const std::string& gbid,
-                                        const std::string& multicastTopicPrefix,
-                                        std::uint64_t ttlUplift) {
+    auto mockMqttMessagingSkeletonFactory = [mockMqttMessagingSkeleton](
+                                                    std::weak_ptr<IMessageRouter> messageRouter,
+                                                    std::shared_ptr<MqttReceiver> mqttReceiver,
+                                                    const std::string& gbid,
+                                                    const std::string& multicastTopicPrefix,
+                                                    std::uint64_t ttlUplift) {
         std::ignore = messageRouter;
         std::ignore = mqttReceiver;
         std::ignore = multicastTopicPrefix;
@@ -343,11 +350,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
 
     smrf::ByteVector msg;
     auto registerReceivedCallbackHelper =
-            [msg](std::function<void(smrf::ByteVector && )> onMessageReceived) mutable {
-        onMessageReceived(std::move(msg));
-    };
+            [msg](std::function<void(smrf::ByteVector &&)> onMessageReceived) mutable {
+                onMessageReceived(std::move(msg));
+            };
 
-    mockMqttMultipleConnections.push_back(std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
+    mockMqttMultipleConnections.push_back(
+            std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
     auto connectionData = std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
             mockMqttMultipleConnections[0]);
 
@@ -424,29 +432,27 @@ TEST_F(JoynrClusterControllerRuntimeTest,
             exceptions::JoynrRuntimeException);
 }
 
-TEST_F(JoynrClusterControllerRuntimeTest,
-       runtimeAllowsOnlyOneBackedConnectionDueToEmptyGbid )
+TEST_F(JoynrClusterControllerRuntimeTest, runtimeAllowsEmptyGbid)
 {
-    EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
-            .Times(0);
+    EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress()).Times(0);
 
     std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>> connectionDataVector;
-        mockMqttMultipleConnections.push_back(
-                    std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
+    mockMqttMultipleConnections.push_back(
+            std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
 
     auto connectionData = std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
             mockMqttMultipleConnections[0]);
     connectionDataVector.push_back(connectionData);
 
     EXPECT_CALL(*connectionDataVector[0], getMqttMessageReceiver())
-             .Times(5)
-             .WillRepeatedly(Return(mockMqttMessageReceiver));
+            .Times(5)
+            .WillRepeatedly(Return(mockMqttMessageReceiver));
 
-    EXPECT_CALL(*connectionDataVector[0], getMqttMessageSender())
-             .Times(3);
+    EXPECT_CALL(*connectionDataVector[0], getMqttMessageSender()).Times(3);
 
     EXPECT_CALL(*connectionDataVector[0], getMosquittoConnection())
-            .WillOnce(Return(mockMosquittoConnection));
+            .Times(3)
+            .WillRepeatedly(Return(mockMosquittoConnection));
 
     EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
             .WillOnce(::testing::Return(serializedMqttAddress));
@@ -461,7 +467,53 @@ TEST_F(JoynrClusterControllerRuntimeTest,
             mockHttpMessageSender,
             mockMqttMultipleConnections);
     runtime->init();
+    runtime->startExternalCommunication();
+
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+
+    EXPECT_CALL(
+            *mockTestProvider,
+            getLocation(
+                    A<std::function<void(const types::Localisation::GpsLocation&)>>(),
+                    A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>()))
+            .WillOnce(Invoke(
+                    this, &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation));
+
+    std::string participantId =
+            runtime->registerProvider<tests::testProvider>(domain, mockTestProvider, providerQos);
+
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
+
+    DiscoveryQos discoveryQos(1000);
+    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+    discoveryQos.setDiscoveryTimeoutMs(50);
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+
+    std::shared_ptr<tests::testProxy> testProxy(
+            testProxyBuilder->setMessagingQos(MessagingQos(5000))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
+
+    std::shared_ptr<Future<types::Localisation::GpsLocation>> future(testProxy->getLocationAsync());
+    future->wait(500);
+
+    EXPECT_EQ(tests::testProxy::INTERFACE_NAME(), testProxy->INTERFACE_NAME());
+    ASSERT_EQ(StatusCodeEnum::SUCCESS, future->getStatus());
+    joynr::types::Localisation::GpsLocation actualValue;
+    future->get(actualValue);
+    EXPECT_EQ(gpsLocation, actualValue);
+    runtime->unregisterProvider(participantId);
 }
+
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 {
     createRuntimeMqtt();
@@ -607,7 +659,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
                                                                    200,  // min interval
                                                                    200,  // max interval
                                                                    200   // alert after interval
-                                                                   );
+            );
     auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
@@ -663,7 +715,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
                                                                    100,  // min interval
                                                                    1000, // max interval
                                                                    10000 // alert after interval
-                                                                   );
+            );
     ON_CALL(*mockSubscriptionListener, onReceive(Eq(gpsLocation)))
             .WillByDefault(ReleaseSemaphore(&semaphore));
 
