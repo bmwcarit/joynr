@@ -604,10 +604,14 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
             participantId,
             discoveryScope = discoveryQos.getDiscoveryScope(),
-            callback
-        ](const std::vector<joynr::types::GlobalDiscoveryEntry>& result)
+            callback,
+            replaceGdeGbid = containsOnlyEmptyString(gbids)
+        ](std::vector<joynr::types::GlobalDiscoveryEntry> result)
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                if (replaceGdeGbid) {
+                    thisSharedPtr->replaceGbidWithEmptyString(result);
+                }
                 thisSharedPtr->capabilitiesReceived(
                         result,
                         thisSharedPtr->getCachedLocalCapabilities(participantId),
@@ -640,6 +644,37 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     }
 }
 
+bool LocalCapabilitiesDirectory::containsOnlyEmptyString(const std::vector<std::string> gbids)
+{
+    return gbids.size() == 1 && gbids[0] == "";
+}
+
+void LocalCapabilitiesDirectory::replaceGbidWithEmptyString(
+        std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)
+{
+    JOYNR_LOG_TRACE(logger(), "replacing GBID of GDEs with empty string");
+    for (auto& cap : capabilities) {
+        const auto& serializedAddress = cap.getAddress();
+        std::shared_ptr<system::RoutingTypes::Address> address;
+        try {
+            joynr::serializer::deserializeFromJson(address, serializedAddress);
+        } catch (const std::invalid_argument& e) {
+            JOYNR_LOG_FATAL(
+                    logger(),
+                    "could not deserialize Address for GBID replacement from {} - error: {}",
+                    serializedAddress,
+                    e.what());
+            continue;
+        }
+        if (auto mqttAddress = dynamic_cast<system::RoutingTypes::MqttAddress*>(address.get())) {
+            mqttAddress->setBrokerUri("");
+            cap.setAddress(joynr::serializer::serializeToJson(mqttAddress));
+        }
+        // other address types do not contain a GBID, default GBID will be used then for
+        // globalParticipantIdsToGbidsMap
+    }
+}
+
 void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                         const std::string& interfaceName,
                                         const std::vector<std::string>& gbids,
@@ -663,15 +698,19 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
             interfaceAddresses,
             callback,
-            discoveryQos
-        ](std::vector<joynr::types::GlobalDiscoveryEntry> capabilities)
+            discoveryQos,
+            replaceGdeGbid = containsOnlyEmptyString(gbids)
+        ](std::vector<joynr::types::GlobalDiscoveryEntry> result)
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::mutex> lock(thisSharedPtr->pendingLookupsLock);
                 if (!(thisSharedPtr->isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
+                    if (replaceGdeGbid) {
+                        thisSharedPtr->replaceGbidWithEmptyString(result);
+                    }
                     thisSharedPtr->capabilitiesReceived(
-                            capabilities,
+                            result,
                             thisSharedPtr->getCachedLocalCapabilities(interfaceAddresses),
                             callback,
                             discoveryQos.getDiscoveryScope());

@@ -235,6 +235,9 @@ private:
     static ValidateGBIDsEnum::Enum validateGbids(std::vector<std::string> gbids,
                                                  std::unordered_set<std::string> validGbids);
 
+    bool containsOnlyEmptyString(const std::vector<std::string> gbids);
+    void replaceGbidWithEmptyString(std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities);
+
     types::GlobalDiscoveryEntry toGlobalDiscoveryEntry(
             const types::DiscoveryEntry& discoveryEntry) const;
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
