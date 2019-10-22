@@ -668,7 +668,7 @@ void LocalCapabilitiesDirectory::replaceGbidWithEmptyString(
         }
         if (auto mqttAddress = dynamic_cast<system::RoutingTypes::MqttAddress*>(address.get())) {
             mqttAddress->setBrokerUri("");
-            cap.setAddress(joynr::serializer::serializeToJson(mqttAddress));
+            cap.setAddress(joynr::serializer::serializeToJson(*mqttAddress));
         }
         // other address types do not contain a GBID, default GBID will be used then for
         // globalParticipantIdsToGbidsMap
@@ -1178,10 +1178,7 @@ void LocalCapabilitiesDirectory::lookup(
     discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
     auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
             std::move(onSuccessWrapper), std::move(onErrorWrapper));
-    lookup(participantId,
-           discoveryQos,
-           std::vector<std::string>(),
-           std::move(localCapabilitiesCallback));
+    lookup(participantId, discoveryQos, knownGbids, std::move(localCapabilitiesCallback));
 }
 
 // inherited method from joynr::system::DiscoveryProvider
