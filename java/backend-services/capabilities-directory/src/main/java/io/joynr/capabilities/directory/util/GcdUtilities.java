@@ -86,15 +86,19 @@ public class GcdUtilities {
 
         HashSet<String> gbidSet = new HashSet<String>();
         for (String gbid : gbids) {
-            if (gbid == null || gbid.isEmpty() || gbidSet.contains(gbid)) {
-                logger.error("INVALID_GBID: provided GBID is null or empty or duplicate: {}.", gbid);
+            if (gbid == null || gbidSet.contains(gbid)) {
+                logger.error("INVALID_GBID: provided GBID is null or duplicate: {}.", gbid);
                 return ValidateGBIDsEnum.INVALID;
             }
             gbidSet.add(gbid);
 
             if (!validGbids.contains(gbid)) {
-                logger.error("UNKNOWN_GBID: provided GBID is unknown: {}.", gbid);
-                return ValidateGBIDsEnum.UNKNOWN;
+                if (gbid.isEmpty()) {
+                    logger.warn("Provided GBID is empty.");
+                } else {
+                    logger.error("UNKNOWN_GBID: provided GBID is unknown: {}.", gbid);
+                    return ValidateGBIDsEnum.UNKNOWN;
+                }
             }
         }
 

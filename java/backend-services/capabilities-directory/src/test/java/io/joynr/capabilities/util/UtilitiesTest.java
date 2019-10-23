@@ -66,12 +66,6 @@ public class UtilitiesTest {
     }
 
     @Test
-    public void testReturnInvalidOnEmptyGbid() {
-        final String[] invalidGbids = { "" };
-        assertEquals(ValidateGBIDsEnum.INVALID, GcdUtilities.validateGbids(invalidGbids, gcdGbId, validGbids));
-    }
-
-    @Test
     public void testReturnUnknownOnUnknownGbid() {
         final String[] invalidGbids = { "wrong-gbid" };
         assertEquals(ValidateGBIDsEnum.UNKNOWN, GcdUtilities.validateGbids(invalidGbids, gcdGbId, validGbids));
@@ -80,5 +74,10 @@ public class UtilitiesTest {
     @Test
     public void testReturnOKOnValidGbid() {
         assertEquals(ValidateGBIDsEnum.OK, GcdUtilities.validateGbids(new String[]{ gcdGbId }, gcdGbId, validGbids));
+    }
+
+    @Test
+    public void testReturnOKOnEmptyGbid() {
+        assertEquals(ValidateGBIDsEnum.OK, GcdUtilities.validateGbids(new String[]{ "" }, gcdGbId, validGbids));
     }
 }

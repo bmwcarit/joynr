@@ -234,12 +234,6 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
-    public void addWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
-        final String[] invalidGbidsArray = { "" };
-        testAddWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test
     public void addWithGbids_invalidGbid_nullGbid() throws InterruptedException {
         final String[] invalidGbidsArray = { null };
         testAddWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.INVALID_GBID);
@@ -316,12 +310,6 @@ public class CapabilitiesDirectoryTest {
     public void removeWithGbids_unknownGbid() throws InterruptedException {
         final String[] gbids = new String[]{ "unknown" };
         testRemoveWithGbids_discoveryError(gbids, DiscoveryError.UNKNOWN_GBID);
-    }
-
-    @Test
-    public void removeWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
-        final String[] gbids = new String[]{ "" };
-        testRemoveWithGbids_discoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
     @Test
@@ -548,18 +536,6 @@ public class CapabilitiesDirectoryTest {
     public void lookupByParticipantIdWithGbids_unknownGbid() throws InterruptedException {
         final String[] gbids = new String[]{ "unknown" };
         testLookupByParticipantIdWithGbids_discoveryError(gbids, DiscoveryError.UNKNOWN_GBID);
-    }
-
-    @Test
-    public void lookupByDomainInterfaceWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
-        final String[] gbids = new String[]{ "" };
-        testLookupByDomainInterfaceWithGbids_discoveryError(gbids, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test
-    public void lookupByParticipantIdWithGbids_invalidGbid_emptyGbid() throws InterruptedException {
-        final String[] gbids = new String[]{ "" };
-        testLookupByParticipantIdWithGbids_discoveryError(gbids, DiscoveryError.INVALID_GBID);
     }
 
     @Test

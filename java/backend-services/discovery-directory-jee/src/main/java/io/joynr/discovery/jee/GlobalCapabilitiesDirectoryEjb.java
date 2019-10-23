@@ -123,11 +123,20 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId AND gdep.gbid = :gbid";
         try {
             for (String gbid : gbids) {
+                String toAddGbid;
+                if (gbid.isEmpty()) {
+                    logger.warn("Received add with empty gbid for participantId: " + participantId
+                            + " treating as ownGbid.");
+                    toAddGbid = gcdGbid;
+                } else {
+                    toAddGbid = gbid;
+                }
+
                 List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
                                                                                             GlobalDiscoveryEntryPersisted.class)
                                                                                .setParameter("participantId",
                                                                                              participantId)
-                                                                               .setParameter("gbid", gbid)
+                                                                               .setParameter("gbid", toAddGbid)
                                                                                .getResultList();
 
                 if (queryResult.size() > 1) {
@@ -139,12 +148,12 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                 }
 
                 if (address instanceof MqttAddress) {
-                    ((MqttAddress) address).setBrokerUri(gbid);
+                    ((MqttAddress) address).setBrokerUri(toAddGbid);
                     globalDiscoveryEntry.setAddress(RoutingTypesUtil.toAddressString(address));
                 }
                 GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
                                                                                          clusterControllerId,
-                                                                                         gbid);
+                                                                                         toAddGbid);
                 if (queryResult.isEmpty()) {
                     logger.trace("adding new discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
                     entityManager.persist(entity);
@@ -228,6 +237,17 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
             break;
         }
 
+        String[] addaptedGbidArray = gbids.clone();
+        for (int i = 0; i < addaptedGbidArray.length; i++) {
+            if (addaptedGbidArray[i].isEmpty()) {
+                logger.warn("Received lookup with empty gbid for domains {} and interfaceName {}, treating as ownGbid.",
+                            Arrays.toString(domains),
+                            interfaceName);
+
+                addaptedGbidArray[i] = gcdGbid;
+            }
+        }
+
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep "
                 + "WHERE gdep.domain IN :domains AND gdep.interfaceName = :interfaceName AND gdep.gbid IN :gbids "
                 + "ORDER BY gdep.participantId";
@@ -237,7 +257,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                                                            .setParameter("domains",
                                                                                          new HashSet<String>(Arrays.asList(domains)))
                                                                            .setParameter("interfaceName", interfaceName)
-                                                                           .setParameter("gbids", Arrays.asList(gbids))
+                                                                           .setParameter("gbids",
+                                                                                         Arrays.asList(addaptedGbidArray))
                                                                            .getResultList();
 
             if (queryResult.isEmpty()) {
@@ -299,6 +320,18 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         default:
             break;
         }
+
+        String[] addaptedGbidArray = gbids.clone();
+        for (int i = 0; i < addaptedGbidArray.length; i++) {
+            if (addaptedGbidArray[i].isEmpty()) {
+                logger.warn("Received lookup with empty gbid for for participantId {} and Gbids {}",
+                            participantId,
+                            Arrays.toString(gbids));
+
+                addaptedGbidArray[i] = gcdGbid;
+            }
+        }
+
         try {
             String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE "
                     + "gdep.participantId = :participantId AND " + "gdep.gbid IN :gbids";
@@ -306,7 +339,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
             List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
                                                                                         GlobalDiscoveryEntryPersisted.class)
                                                                            .setParameter("participantId", participantId)
-                                                                           .setParameter("gbids", Arrays.asList(gbids))
+                                                                           .setParameter("gbids",
+                                                                                         Arrays.asList(addaptedGbidArray))
                                                                            .getResultList();
 
             if (queryResult.isEmpty()) {
@@ -342,16 +376,28 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     private int removeInternal(String[] participantIds, String... gbids) {
         int deletedCount = 0;
+
+        String[] addaptedGbidArray = gbids.clone();
+        for (int i = 0; i < addaptedGbidArray.length; i++) {
+            if (addaptedGbidArray[i].isEmpty()) {
+                logger.warn("Remove participantIds {} with empty gbid among Gbids {}, defaulting to ownGbid",
+                            participantIds,
+                            Arrays.toString(gbids));
+
+                addaptedGbidArray[i] = gcdGbid;
+            }
+        }
+
         if (gbids.length > 0) {
             logger.debug("Removing global discovery entries with participantIds {} from gbids {}",
                          Arrays.toString(participantIds),
-                         Arrays.toString(gbids));
+                         Arrays.toString(addaptedGbidArray));
             String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE "
                     + "gdep.participantId IN :participantIds AND gdep.gbid IN :gbids";
             deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
                                         .setParameter("participantIds",
                                                       new HashSet<String>(Arrays.asList(participantIds)))
-                                        .setParameter("gbids", new HashSet<String>(Arrays.asList(gbids)))
+                                        .setParameter("gbids", new HashSet<String>(Arrays.asList(addaptedGbidArray)))
                                         .executeUpdate();
         } else {
             logger.debug("Removing global discovery entries with participantIds {} from own Gbid {}",

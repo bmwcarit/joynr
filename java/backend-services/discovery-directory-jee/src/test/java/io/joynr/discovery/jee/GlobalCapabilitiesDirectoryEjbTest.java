@@ -300,6 +300,19 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
+    public void addWithGbids_singleDiscoveryEntry_singleEmptyGbid() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        String[] gbidsForAdd = new String[]{ "" };
+
+        addEntry(testGlobalDiscoveryEntry1, gbidsForAdd);
+        List<GlobalDiscoveryEntryPersisted> result = queryEntityManagerByParticipantId(testParticipantId1);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry1, result.get(0), validGbidsArray[0]);
+    }
+
+    @Test
     public void addWithGbids_singleDiscoveryEntry_multipleGbids() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
         String[] gbidsForAdd = new String[]{ validGbidsArray[2], validGbidsArray[1] };
@@ -422,12 +435,6 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void addWithGbids_invalidGbid_emptyGbid() {
-        final String[] invalidGbidsArray = { "" };
-        testAddWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test
     public void addWithGbids_invalidGbid_nullGbid() {
         final String[] invalidGbidsArray = { null };
         testAddWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.INVALID_GBID);
@@ -472,11 +479,47 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
+    public void lookupParticipantId_singleMatchingEntryEmptyGbidOnAdd() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        checkEntryIsNotInEntityManager(testParticipantId2);
+
+        addEntry(testGlobalDiscoveryEntry1, new String[]{ "", validGbidsArray[2] });
+        addEntry(testGlobalDiscoveryEntry2, new String[]{ "" });
+
+        GlobalDiscoveryEntry result1 = subject.lookup(testParticipantId1);
+        assertNotNull(result1);
+        assertFalse(result1 instanceof GlobalDiscoveryEntryPersisted);
+        checkDiscoveryEntry(expectedGlobalDiscoveryEntry1, result1, JOYNR_DEFAULT_GCD_GBID);
+
+        GlobalDiscoveryEntry result2 = subject.lookup(testParticipantId2);
+        assertNotNull(result2);
+        assertFalse(result2 instanceof GlobalDiscoveryEntryPersisted);
+        checkDiscoveryEntry(expectedGlobalDiscoveryEntry2, result2, JOYNR_DEFAULT_GCD_GBID);
+    }
+
+    @Test
     public void lookupParticipantIdWithGbids_defaultGbid_singleMatchingEntry() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
         checkEntryIsNotInEntityManager(testParticipantId2);
 
         String[] selectedGbids = new String[]{ JOYNR_DEFAULT_GCD_GBID };
+        String expectedGbid = JOYNR_DEFAULT_GCD_GBID;
+
+        addEntry(testGlobalDiscoveryEntry1, new String[]{ validGbidsArray[2], JOYNR_DEFAULT_GCD_GBID });
+        addEntry(testGlobalDiscoveryEntry2, validGbidsArray);
+
+        GlobalDiscoveryEntry result = subject.lookup(testParticipantId1, selectedGbids);
+        assertNotNull(result);
+        assertFalse(result instanceof GlobalDiscoveryEntryPersisted);
+        checkDiscoveryEntry(expectedGlobalDiscoveryEntry1, result, expectedGbid);
+    }
+
+    @Test
+    public void lookupParticipantIdWithEmptyGbids_defaultGbid_singleMatchingEntry() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        checkEntryIsNotInEntityManager(testParticipantId2);
+
+        String[] selectedGbids = new String[]{ "" };
         String expectedGbid = JOYNR_DEFAULT_GCD_GBID;
 
         addEntry(testGlobalDiscoveryEntry1, new String[]{ validGbidsArray[2], JOYNR_DEFAULT_GCD_GBID });
@@ -601,12 +644,6 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     public void lookupParticipantWithGbids_unknownGbid() {
         final String[] invalidGbidsArray = { JOYNR_DEFAULT_GCD_GBID, validGbidsArray[1], "unknowngbid" };
         testLookupByParticipantIdWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.UNKNOWN_GBID);
-    }
-
-    @Test
-    public void lookupParticipantIdWithGbids_invalidGbid_emptyGbid() throws ApplicationException {
-        final String[] invalidGbidsArray = { "", validGbidsArray[1] };
-        testLookupByParticipantIdWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.INVALID_GBID);
     }
 
     @Test
@@ -850,12 +887,6 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void lookupDomainInterfaceWithGbids_invalidGbid_emptyGbid() throws ApplicationException {
-        final String[] invalidGbidsArray = { "" };
-        testLookupDomainInterfaceWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.INVALID_GBID);
-    }
-
-    @Test
     public void lookupDomainInterfaceWithGbids_invalidGbid_nullGbid() throws ApplicationException {
         final String[] invalidGbidsArray = { null };
         testLookupDomainInterfaceWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.INVALID_GBID);
@@ -977,6 +1008,24 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
+    public void testRemoveWithGbids_entryForSelectedGbidsWithEmptyGbid() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        String[] gbidArrayWithEmptyDefault = validGbidsArray.clone();
+        gbidArrayWithEmptyDefault[0] = "";
+
+        addEntry(testGlobalDiscoveryEntry1, validGbidsArray);
+
+        List<GlobalDiscoveryEntryPersisted> entriesBeforeRemove = queryEntityManagerByParticipantId(testParticipantId1);
+        assertEquals(3, entriesBeforeRemove.size());
+
+        subject.remove(testParticipantId1, gbidArrayWithEmptyDefault);
+        entityManager.flush();
+        entityManager.clear();
+
+        checkEntryIsNotInEntityManager(testParticipantId1);
+    }
+
+    @Test
     public void testRemoveWithGbids_entryForSelectedAndOtherGbids() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
 
@@ -1007,12 +1056,6 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     public void removeWithGbids_unknownGbid() {
         final String[] invalidGbidsArray = { JOYNR_DEFAULT_GCD_GBID, "unknownGBID" };
         testRemoveWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.UNKNOWN_GBID);
-    }
-
-    @Test
-    public void removeWithGbids_invalidGbid_emptyGbid() {
-        final String[] invalidGbidsArray = { "" };
-        testRemoveWithGbids_discoveryError(invalidGbidsArray, DiscoveryError.INVALID_GBID);
     }
 
     @Test
