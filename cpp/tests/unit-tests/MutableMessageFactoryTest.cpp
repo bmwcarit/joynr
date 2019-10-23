@@ -91,10 +91,10 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Request",)";
-        expectedPayloadStream << R"("_methodName":"methodName",)";
-        expectedPayloadStream << R"("_paramDatatypes":["java.lang.Integer","java.lang.String"],)";
-        expectedPayloadStream << R"("_params":[42,"value"],)";
-        expectedPayloadStream << R"("_requestReplyId":")" << request.getRequestReplyId() << R"("})";
+        expectedPayloadStream << R"("methodName":"methodName",)";
+        expectedPayloadStream << R"("paramDatatypes":["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("params":[42,"value"],)";
+        expectedPayloadStream << R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
@@ -103,9 +103,9 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.OneWayRequest",)";
-        expectedPayloadStream << R"("_methodName":"methodName",)";
-        expectedPayloadStream << R"("_paramDatatypes":["java.lang.Integer","java.lang.String"],)";
-        expectedPayloadStream << R"("_params":[42,"value"])";
+        expectedPayloadStream << R"("methodName":"methodName",)";
+        expectedPayloadStream << R"("paramDatatypes":["java.lang.Integer","java.lang.String"],)";
+        expectedPayloadStream << R"("params":[42,"value"])";
         expectedPayloadStream << R"(})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
@@ -115,8 +115,8 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.Reply",)";
-        expectedPayloadStream << R"("_response":["response"],)";
-        expectedPayloadStream << R"("_requestReplyId":")" << reply.getRequestReplyId() << R"("})";
+        expectedPayloadStream << R"("response":["response"],)";
+        expectedPayloadStream << R"("requestReplyId":")" << reply.getRequestReplyId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
     }
@@ -125,8 +125,8 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.SubscriptionPublication",)";
-        expectedPayloadStream << R"("_response":["publication"],)";
-        expectedPayloadStream << R"("_subscriptionId":")"
+        expectedPayloadStream << R"("response":["publication"],)";
+        expectedPayloadStream << R"("subscriptionId":")"
                               << subscriptionPublication.getSubscriptionId() << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());
@@ -137,8 +137,8 @@ public:
     {
         std::stringstream expectedPayloadStream;
         expectedPayloadStream << R"({"_typeName":"joynr.MulticastPublication",)";
-        expectedPayloadStream << R"("_response":["publication"],)";
-        expectedPayloadStream << R"("_multicastId":")" << multicastPublication.getMulticastId()
+        expectedPayloadStream << R"("response":["publication"],)";
+        expectedPayloadStream << R"("multicastId":")" << multicastPublication.getMulticastId()
                               << R"("})";
         std::string expectedPayload = expectedPayloadStream.str();
         EXPECT_EQ(expectedPayload, mutableMessage.getPayload());

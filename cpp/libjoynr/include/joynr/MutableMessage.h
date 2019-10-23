@@ -66,8 +66,8 @@ public:
      * @brief Sets the sender of this message.
      * @param sender the participant ID of this message's sender
      */
-    void setSender(const std::string& sender);
-    void setSender(std::string&& sender);
+    void setSender(const std::string& senderLocal);
+    void setSender(std::string&& senderLocal);
 
     /**
      * @brief Gets the sender participant ID of the message.
@@ -79,8 +79,8 @@ public:
      * @brief Sets the recipient of this message.
      * @param recipient the participant ID of this message's recipient
      */
-    void setRecipient(const std::string& recipient);
-    void setRecipient(std::string&& recipient);
+    void setRecipient(const std::string& recipientLocal);
+    void setRecipient(std::string&& recipientLocal);
 
     /**
      * @brief Gets the recipient participant ID of the message.
@@ -107,8 +107,8 @@ public:
      * already set, its value is replaced with the new one.
      * @param type the type of this message
      */
-    void setType(const std::string& type);
-    void setType(std::string&& type);
+    void setType(const std::string& typeLocal);
+    void setType(std::string&& typeLocal);
 
     /**
      * @brief Gets the type of this message
@@ -194,8 +194,8 @@ public:
      * If the payload is already set, its value is replaced with the new one.
      * @param payload payload of this message.
      */
-    void setPayload(const std::string& payload);
-    void setPayload(std::string&& payload);
+    void setPayload(const std::string& payloadLocal);
+    void setPayload(std::string&& payloadLocal);
 
     /**
      * @brief Gets the payload of this message
@@ -254,28 +254,28 @@ public:
         const auto expiryDate = this->_expiryDate.toMilliseconds();
         const std::string effort = this->_effort.get_value_or(std::string());
         const std::string replyTo = this->_replyTo.get_value_or(std::string());
-        archive(MUESLI_NVP(_sender),
-                MUESLI_NVP(_recipient),
+        archive(MUESLI_NVP(sender),
+                MUESLI_NVP(recipient),
                 MUESLI_NVP(expiryDate),
-                MUESLI_NVP(_type),
-                MUESLI_NVP(_id),
+                MUESLI_NVP(type),
+                MUESLI_NVP(id),
                 MUESLI_NVP(replyTo),
                 MUESLI_NVP(effort),
-                MUESLI_NVP(_customHeaders),
-                MUESLI_NVP(_payload));
+                MUESLI_NVP(customHeaders),
+                MUESLI_NVP(payload));
     }
 
 private:
-    std::string _sender;
-    std::string _recipient;
+    std::string sender;
+    std::string recipient;
     std::shared_ptr<IKeychain> _keyChain;
     TimePoint _expiryDate;
-    std::string _type;
-    std::string _id;
+    std::string type;
+    std::string id;
     boost::optional<std::string> _replyTo;
     boost::optional<std::string> _effort;
-    std::unordered_map<std::string, std::string> _customHeaders;
-    std::string _payload;
+    std::unordered_map<std::string, std::string> customHeaders;
+    std::string payload;
     bool _ttlAbsolute;
 
     // Transient flag which marks message that are send to a provider which is registered

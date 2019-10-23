@@ -39,11 +39,11 @@ public:
     SubscriptionReply();
 
     const std::string& getSubscriptionId() const;
-    void setSubscriptionId(const std::string& subscriptionId);
-    void setSubscriptionId(std::string&& subscriptionId);
+    void setSubscriptionId(const std::string& subscriptionIdLocal);
+    void setSubscriptionId(std::string&& subscriptionIdLocal);
 
     std::shared_ptr<exceptions::SubscriptionException> getError() const;
-    void setError(std::shared_ptr<exceptions::SubscriptionException> error);
+    void setError(std::shared_ptr<exceptions::SubscriptionException> errorLocal);
 
     /**
      * @brief Stringifies the class
@@ -54,7 +54,7 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(_subscriptionId), MUESLI_NVP(_error));
+        archive(MUESLI_NVP(subscriptionId), MUESLI_NVP(error));
     }
 
 private:
@@ -65,8 +65,8 @@ private:
      */
     friend void PrintTo(const SubscriptionReply& subscriptionReply, ::std::ostream* os);
 
-    std::string _subscriptionId;
-    std::shared_ptr<exceptions::SubscriptionException> _error;
+    std::string subscriptionId;
+    std::shared_ptr<exceptions::SubscriptionException> error;
 };
 
 } // namespace joynr

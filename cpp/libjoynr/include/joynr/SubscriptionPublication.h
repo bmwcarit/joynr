@@ -43,19 +43,19 @@ public:
     bool operator!=(const SubscriptionPublication& other) const;
 
     const std::string& getSubscriptionId() const;
-    void setSubscriptionId(const std::string& subscriptionId);
-    void setSubscriptionId(std::string&& subscriptionId);
+    void setSubscriptionId(const std::string& subscriptionIdLocal);
+    void setSubscriptionId(std::string&& subscriptionIdLocal);
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<BasePublication>(this), MUESLI_NVP(_subscriptionId));
+        archive(muesli::BaseClass<BasePublication>(this), MUESLI_NVP(subscriptionId));
     }
 
 private:
     // printing SubscriptionPublication with google-test and google-mock
     friend void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostream* os);
-    std::string _subscriptionId;
+    std::string subscriptionId;
 };
 
 } // namespace joynr

@@ -145,7 +145,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresse
     for (const auto& participantId : participantIds) {
         const auto routingEntry = _routingTable.lookupRoutingEntryByParticipantId(participantId);
         if (routingEntry) {
-            destAddress = routingEntry->_address;
+            destAddress = routingEntry->address;
             addresses.insert(destAddress);
         }
     }
@@ -188,7 +188,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
             routingEntry = _routingTable.lookupRoutingEntryByParticipantId(destinationPartId);
         }
         if (routingEntry) {
-            addresses.insert(routingEntry->_address);
+            addresses.insert(routingEntry->address);
         }
     }
     return addresses;
@@ -481,8 +481,8 @@ bool AbstractMessageRouter::addToRoutingTable(
         auto oldRoutingEntry = _routingTable.lookupRoutingEntryByParticipantId(participantId);
         if (oldRoutingEntry) {
             const bool addressOrVisibilityOfRoutingEntryChanged =
-                    (!oldRoutingEntry->_address->equals(*address, joynr::util::MAX_ULPS)) ||
-                    (oldRoutingEntry->_isGloballyVisible != isGloballyVisible);
+                    (!oldRoutingEntry->address->equals(*address, joynr::util::MAX_ULPS)) ||
+                    (oldRoutingEntry->isGloballyVisible != isGloballyVisible);
             if (addressOrVisibilityOfRoutingEntryChanged) {
                 if (oldRoutingEntry->_isSticky) {
                     JOYNR_LOG_ERROR(

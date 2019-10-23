@@ -1412,7 +1412,7 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
     // insert all global capability entries into global cache
     for (const auto& entry : _locallyRegisteredCapabilities) {
         if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
-            insertInGlobalLookupCache(entry, entry._gbids);
+            insertInGlobalLookupCache(entry, entry.gbids);
         }
     }
 }

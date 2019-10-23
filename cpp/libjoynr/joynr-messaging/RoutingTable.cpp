@@ -50,14 +50,14 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
 {
     auto found = lookupRoutingEntryByParticipantId(participantId);
     if (found && (participantId == this->_gcdParticipantId)) {
-        auto address = found->_address;
+        auto address = found->address;
         if (auto mqttAddress =
                     dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get())) {
             const auto newMqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
                     gbid, mqttAddress->getTopic());
             return routingtable::RoutingEntry(participantId,
                                               newMqttAddress,
-                                              found->_isGloballyVisible,
+                                              found->isGloballyVisible,
                                               found->_expiryDateMs,
                                               found->_isSticky);
         }
@@ -73,7 +73,7 @@ std::unordered_set<std::string> RoutingTable::lookupParticipantIdsByAddress(
             boost::multi_index::get<routingtable::tags::Address>(_multiIndexContainer);
     auto found = addressIndex.equal_range(searchValue);
     for (auto it = found.first; it != found.second; ++it) {
-        result.insert(it->_participantId);
+        result.insert(it->participantId);
     }
     return result;
 }
@@ -120,8 +120,8 @@ void RoutingTable::remove(const std::string& participantId)
                        "Cannot remove sticky routing entry (participantId={}, address={}, "
                        "isGloballyVisible={}, expiryDateMs={}) from routing table",
                        participantId,
-                       routingEntry->_address->toString(),
-                       routingEntry->_isGloballyVisible,
+                       routingEntry->address->toString(),
+                       routingEntry->isGloballyVisible,
                        routingEntry->_expiryDateMs);
         return;
     }
@@ -143,7 +143,7 @@ void RoutingTable::purge()
     for (auto routingEntryIterator = index.lower_bound(0); routingEntryIterator != last;
          ++routingEntryIterator) {
         if (!routingEntryIterator->_isSticky) {
-            expiredParticipantIds.push_back(routingEntryIterator->_participantId);
+            expiredParticipantIds.push_back(routingEntryIterator->participantId);
             expiredEntriesFound = true;
         }
     }

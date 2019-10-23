@@ -57,17 +57,17 @@ public:
      * @param subscriptionId the subscriptionId of the subscription which could not be created
      */
     explicit SubscriptionException(const std::string& message,
-                                   const std::string& subscriptionId) noexcept;
+                                   const std::string& subscriptionIdLocal) noexcept;
     /**
      * @brief Constructor for a SubscriptionException with subscriptionId.
      *
      * @param subscriptionId the subscriptionId of the subscription which could not be created
      */
-    explicit SubscriptionException(const std::string& subscriptionId) noexcept;
+    explicit SubscriptionException(const std::string& subscriptionIdLocal) noexcept;
     const std::string& getTypeName() const override;
     SubscriptionException* clone() const override;
 
-    void setSubscriptionId(const std::string& subscriptionId);
+    void setSubscriptionId(const std::string& subscriptionIdLocal);
     const std::string& getSubscriptionId() const;
 
     /**
@@ -83,11 +83,11 @@ public:
     template <typename Archive>
     void serialize(Archive& ar)
     {
-        ar(muesli::BaseClass<JoynrRuntimeException>(this), MUESLI_NVP(_subscriptionId));
+        ar(muesli::BaseClass<JoynrRuntimeException>(this), MUESLI_NVP(subscriptionId));
     }
 
 private:
-    std::string _subscriptionId;
+    std::string subscriptionId;
 };
 
 } // namespace exceptions

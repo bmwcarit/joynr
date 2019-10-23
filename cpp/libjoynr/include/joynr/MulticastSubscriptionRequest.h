@@ -53,7 +53,7 @@ public:
 
     std::string toString() const;
 
-    void setQos(std::shared_ptr<SubscriptionQos> _qos) override;
+    void setQos(std::shared_ptr<SubscriptionQos> qosLocal) override;
 
     const std::string& getMulticastId() const;
     void setMulticastId(const std::string& id);

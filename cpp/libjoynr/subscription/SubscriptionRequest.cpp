@@ -24,46 +24,46 @@
 namespace joynr
 {
 
-SubscriptionRequest::SubscriptionRequest() : _subscriptionId(), _subscribedToName(), _qos()
+SubscriptionRequest::SubscriptionRequest() : subscriptionId(), subscribedToName(), qos()
 {
-    _subscriptionId = util::createUuid();
+    subscriptionId = util::createUuid();
 }
 
 const std::string& SubscriptionRequest::getSubscriptionId() const
 {
-    return _subscriptionId;
+    return subscriptionId;
 }
 
 const std::string& SubscriptionRequest::getSubscribeToName() const
 {
-    return _subscribedToName;
+    return subscribedToName;
 }
 
 bool SubscriptionRequest::operator==(const SubscriptionRequest& subscriptionRequest) const
 {
-    bool equal = *_qos == *(subscriptionRequest._qos);
-    return _subscriptionId == subscriptionRequest.getSubscriptionId() &&
-           _subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
+    bool equal = *qos == *(subscriptionRequest.qos);
+    return subscriptionId == subscriptionRequest.getSubscriptionId() &&
+           subscribedToName == subscriptionRequest.getSubscribeToName() && equal;
 }
 
-void SubscriptionRequest::setSubscriptionId(const std::string& id)
+void SubscriptionRequest::setSubscriptionId(const std::string& idLocal)
 {
-    this->_subscriptionId = id;
+    this->subscriptionId = idLocal;
 }
 
-void SubscriptionRequest::setSubscriptionId(std::string&& id)
+void SubscriptionRequest::setSubscriptionId(std::string&& idLocal)
 {
-    this->_subscriptionId = std::move(id);
+    this->subscriptionId = std::move(idLocal);
 }
 
-void SubscriptionRequest::setSubscribeToName(const std::string& subscribedToName)
+void SubscriptionRequest::setSubscribeToName(const std::string& subscribedToNameLocal)
 {
-    this->_subscribedToName = subscribedToName;
+    this->subscribedToName = subscribedToNameLocal;
 }
 
-void SubscriptionRequest::setSubscribeToName(std::string&& subscribedToName)
+void SubscriptionRequest::setSubscribeToName(std::string&& subscribedToNameLocal)
 {
-    this->_subscribedToName = std::move(subscribedToName);
+    this->subscribedToName = std::move(subscribedToNameLocal);
 }
 
 std::string SubscriptionRequest::toString() const
@@ -73,12 +73,12 @@ std::string SubscriptionRequest::toString() const
 
 std::shared_ptr<SubscriptionQos> SubscriptionRequest::getQos() const
 {
-    return _qos;
+    return qos;
 }
 
-void SubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
+void SubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qosLocal)
 {
-    this->_qos = std::move(qos);
+    this->qos = std::move(qosLocal);
 }
 
 } // namespace joynr

@@ -48,23 +48,23 @@ public:
     bool operator==(const SubscriptionRequest& subscriptionRequest) const;
 
     const std::string& getSubscriptionId() const;
-    void setSubscriptionId(const std::string& id);
-    void setSubscriptionId(std::string&& id);
+    void setSubscriptionId(const std::string& idLocal);
+    void setSubscriptionId(std::string&& idLocal);
 
     const std::string& getSubscribeToName() const;
-    void setSubscribeToName(const std::string& subscribedToName);
-    void setSubscribeToName(std::string&& subscribedToName);
+    void setSubscribeToName(const std::string& subscribedToNameLocal);
+    void setSubscribeToName(std::string&& subscribedToNameLocal);
 
     std::string toString() const;
 
     std::shared_ptr<SubscriptionQos> getQos() const;
 
-    virtual void setQos(std::shared_ptr<SubscriptionQos> qos);
+    virtual void setQos(std::shared_ptr<SubscriptionQos> qosLocal);
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(_subscriptionId), MUESLI_NVP(_subscribedToName), MUESLI_NVP(_qos));
+        archive(MUESLI_NVP(subscriptionId), MUESLI_NVP(subscribedToName), MUESLI_NVP(qos));
     }
 
 protected:
@@ -75,10 +75,10 @@ protected:
       be determined when registering
       the subscription, and thus must be stored while waiting for arbitrations.
       */
-    std::string _subscriptionId;
-    std::string _subscribedToName;
+    std::string subscriptionId;
+    std::string subscribedToName;
 
-    std::shared_ptr<SubscriptionQos> _qos;
+    std::shared_ptr<SubscriptionQos> qos;
 };
 
 } // namespace joynr

@@ -22,33 +22,33 @@
 namespace joynr
 {
 
-SubscriptionPublication::SubscriptionPublication() : BasePublication(), _subscriptionId()
+SubscriptionPublication::SubscriptionPublication() : BasePublication(), subscriptionId()
 {
 }
 
 SubscriptionPublication::SubscriptionPublication(BaseReply&& baseReply)
-        : BasePublication(std::move(baseReply)), _subscriptionId()
+        : BasePublication(std::move(baseReply)), subscriptionId()
 {
 }
 
 const std::string& SubscriptionPublication::getSubscriptionId() const
 {
-    return _subscriptionId;
+    return subscriptionId;
 }
 
-void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionId)
+void SubscriptionPublication::setSubscriptionId(const std::string& subscriptionIdLocal)
 {
-    this->_subscriptionId = subscriptionId;
+    this->subscriptionId = subscriptionIdLocal;
 }
 
-void SubscriptionPublication::setSubscriptionId(std::string&& subscriptionId)
+void SubscriptionPublication::setSubscriptionId(std::string&& subscriptionIdLocal)
 {
-    this->_subscriptionId = std::move(subscriptionId);
+    this->subscriptionId = std::move(subscriptionIdLocal);
 }
 
 bool SubscriptionPublication::operator==(const SubscriptionPublication& other) const
 {
-    return _subscriptionId == other.getSubscriptionId() && BasePublication::operator==(other);
+    return subscriptionId == other.getSubscriptionId() && BasePublication::operator==(other);
 }
 
 bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) const
@@ -60,7 +60,7 @@ bool SubscriptionPublication::operator!=(const SubscriptionPublication& other) c
 void PrintTo(const SubscriptionPublication& subscriptionPublication, ::std::ostream* os)
 {
     *os << "SubscriptionPublication{";
-    *os << "subscriptionId:" << subscriptionPublication._subscriptionId;
+    *os << "subscriptionId:" << subscriptionPublication.subscriptionId;
     *os << ", ";
     *os << "error:" << subscriptionPublication.getError()
             ? "null"

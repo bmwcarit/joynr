@@ -41,14 +41,14 @@ public:
 
     SubscriptionRequestInformation(const std::string& proxyParticipantId,
                                    const std::string& providerParticipantId,
-                                   const CallContext& callContext,
-                                   const SubscriptionRequest& subscriptionRequest);
+                                   const CallContext& callContextLocal,
+                                   const SubscriptionRequest& subscriptionRequestLocal);
 
     SubscriptionRequestInformation& operator=(const SubscriptionRequestInformation&) = default;
     SubscriptionRequestInformation& operator=(SubscriptionRequestInformation&&) = default;
 
     const CallContext& getCallContext() const;
-    void setCallContext(const CallContext& callContext);
+    void setCallContext(const CallContext& callContextLocal);
 
     bool operator==(const SubscriptionRequestInformation& subscriptionRequestInformation) const;
 
@@ -59,11 +59,11 @@ public:
     {
         archive(muesli::BaseClass<SubscriptionRequest>(this),
                 muesli::BaseClass<SubscriptionInformation>(this),
-                MUESLI_NVP(_callContext));
+                MUESLI_NVP(callContext));
     }
 
 private:
-    CallContext _callContext;
+    CallContext callContext;
 };
 
 } // namespace joynr

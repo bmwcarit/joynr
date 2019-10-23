@@ -277,7 +277,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
-        const auto providerAddress = routingEntry->_address;
+        const auto providerAddress = routingEntry->address;
         std::shared_ptr<IMessagingMulticastSubscriber> multicastSubscriber =
                 _multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
 
@@ -401,7 +401,7 @@ bool CcMessageRouter::publishToGlobal(const ImmutableMessage& message)
     // method gets called from AbstractMessageRouter
     const std::string& participantId = message.getSender();
     const auto routingEntry = _routingTable.lookupRoutingEntryByParticipantId(participantId);
-    if (routingEntry && routingEntry->_isGloballyVisible) {
+    if (routingEntry && routingEntry->isGloballyVisible) {
         return true;
     }
     return false;
@@ -443,17 +443,17 @@ bool CcMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingEntry& 
     if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
         return true;
     }
-    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry._address.get()) == nullptr) {
+    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) == nullptr) {
         if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
             return true;
         } else if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(
-                           oldEntry._address.get()) == nullptr) {
+                           oldEntry.address.get()) == nullptr) {
             // old address is MqttAddress/ChannelAddress or WebSocketAddress
             if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
                 typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
                 return true;
             } else if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(
-                               oldEntry._address.get()) != nullptr) {
+                               oldEntry.address.get()) != nullptr) {
                 // old address is WebSocketAddress
                 if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
                     return true;
@@ -747,7 +747,7 @@ void CcMessageRouter::addMulticastReceiver(
         onErrorWrapper(exception);
         return;
     }
-    providerAddress = routingEntry->_address;
+    providerAddress = routingEntry->address;
 
     if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(providerAddress.get()) != nullptr) {
         registerMulticastReceiver(multicastId,
@@ -822,7 +822,7 @@ void CcMessageRouter::removeMulticastReceiver(
             _multicastReceiverDirectory.getReceivers(multicastId);
     for (const auto& participantId : multicastReceivers) {
         const auto routingEntry = _routingTable.lookupRoutingEntryByParticipantId(participantId);
-        if (routingEntry && destAddress == routingEntry->_address) {
+        if (routingEntry && destAddress == routingEntry->address) {
             // for the time being, just do it async
             JOYNR_LOG_INFO(logger(),
                            "removeMulticastReceiver: calling removeMulticastReceiver "
@@ -863,7 +863,7 @@ void CcMessageRouter::removeMulticastReceiver(
         }
         return;
     }
-    const auto providerAddress = routingEntry->_address;
+    const auto providerAddress = routingEntry->address;
     if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(providerAddress.get()) != nullptr) {
         std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
                 _multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);

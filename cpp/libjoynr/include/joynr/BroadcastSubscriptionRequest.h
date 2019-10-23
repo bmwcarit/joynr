@@ -56,18 +56,18 @@ public:
     std::string toString() const;
 
     const boost::optional<BroadcastFilterParameters>& getFilterParameters() const;
-    void setFilterParameters(const BroadcastFilterParameters& filterParameters);
+    void setFilterParameters(const BroadcastFilterParameters& filterParametersLocal);
 
-    void setQos(std::shared_ptr<SubscriptionQos> _qos) override;
+    void setQos(std::shared_ptr<SubscriptionQos> qosLocal) override;
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(_filterParameters));
+        archive(muesli::BaseClass<SubscriptionRequest>(this), MUESLI_NVP(filterParameters));
     }
 
 private:
-    boost::optional<BroadcastFilterParameters> _filterParameters;
+    boost::optional<BroadcastFilterParameters> filterParameters;
 
     ADD_LOGGER(BroadcastSubscriptionRequest)
 };

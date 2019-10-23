@@ -22,43 +22,43 @@
 namespace joynr
 {
 
-OneWayRequest::OneWayRequest() : _methodName(), _paramDatatypes(), _params()
+OneWayRequest::OneWayRequest() : methodName(), paramDatatypes(), params()
 {
 }
 
 bool OneWayRequest::operator==(const OneWayRequest& other) const
 {
-    return _methodName == other.getMethodName() && _paramDatatypes == other._paramDatatypes;
+    return methodName == other.getMethodName() && paramDatatypes == other.paramDatatypes;
 }
 
 const std::string& OneWayRequest::getMethodName() const
 {
-    return _methodName;
+    return methodName;
 }
 
-void OneWayRequest::setMethodName(const std::string& methodName)
+void OneWayRequest::setMethodName(const std::string& methodNameLocal)
 {
-    this->_methodName = methodName;
+    this->methodName = methodNameLocal;
 }
 
-void OneWayRequest::setMethodName(std::string&& methodName)
+void OneWayRequest::setMethodName(std::string&& methodNameLocal)
 {
-    this->_methodName = std::move(methodName);
+    this->methodName = std::move(methodNameLocal);
 }
 
 const std::vector<std::string>& OneWayRequest::getParamDatatypes() const
 {
-    return _paramDatatypes;
+    return paramDatatypes;
 }
 
-void OneWayRequest::setParamDatatypes(const std::vector<std::string>& paramDatatypes)
+void OneWayRequest::setParamDatatypes(const std::vector<std::string>& paramDatatypesLocal)
 {
-    this->_paramDatatypes = paramDatatypes;
+    this->paramDatatypes = paramDatatypesLocal;
 }
 
-void OneWayRequest::setParamDatatypes(std::vector<std::string>&& paramDatatypes)
+void OneWayRequest::setParamDatatypes(std::vector<std::string>&& paramDatatypesLocal)
 {
-    this->_paramDatatypes = std::move(paramDatatypes);
+    this->paramDatatypes = std::move(paramDatatypesLocal);
 }
 
 } // namespace joynr

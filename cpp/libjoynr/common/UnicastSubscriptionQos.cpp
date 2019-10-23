@@ -38,50 +38,50 @@ std::int64_t UnicastSubscriptionQos::MAX_PUBLICATION_TTL_MS()
 }
 
 UnicastSubscriptionQos::UnicastSubscriptionQos()
-        : SubscriptionQos(), _publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
+        : SubscriptionQos(), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
 {
 }
 
 UnicastSubscriptionQos::UnicastSubscriptionQos(const UnicastSubscriptionQos& other)
-        : SubscriptionQos::SubscriptionQos(other), _publicationTtlMs(other._publicationTtlMs)
+        : SubscriptionQos::SubscriptionQos(other), publicationTtlMs(other.publicationTtlMs)
 {
 }
 
 UnicastSubscriptionQos::UnicastSubscriptionQos(std::int64_t validityMs,
-                                               std::int64_t publicationTtlMs)
-        : SubscriptionQos(validityMs), _publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
+                                               std::int64_t publicationTtlMsLocal)
+        : SubscriptionQos(validityMs), publicationTtlMs(DEFAULT_PUBLICATION_TTL_MS())
 {
-    setPublicationTtlMs(publicationTtlMs);
+    setPublicationTtlMs(publicationTtlMsLocal);
 }
 
 std::int64_t UnicastSubscriptionQos::getPublicationTtlMs() const
 {
-    return _publicationTtlMs;
+    return publicationTtlMs;
 }
 
-void UnicastSubscriptionQos::setPublicationTtlMs(std::int64_t publicationTtlMs)
+void UnicastSubscriptionQos::setPublicationTtlMs(std::int64_t publicationTtlMsLocal)
 {
-    this->_publicationTtlMs = publicationTtlMs;
-    if (this->_publicationTtlMs > MAX_PUBLICATION_TTL_MS()) {
-        this->_publicationTtlMs = MAX_PUBLICATION_TTL_MS();
+    this->publicationTtlMs = publicationTtlMsLocal;
+    if (this->publicationTtlMs > MAX_PUBLICATION_TTL_MS()) {
+        this->publicationTtlMs = MAX_PUBLICATION_TTL_MS();
     }
-    if (this->_publicationTtlMs < MIN_PUBLICATION_TTL_MS()) {
-        this->_publicationTtlMs = MIN_PUBLICATION_TTL_MS();
+    if (this->publicationTtlMs < MIN_PUBLICATION_TTL_MS()) {
+        this->publicationTtlMs = MIN_PUBLICATION_TTL_MS();
     }
 }
 
 UnicastSubscriptionQos& UnicastSubscriptionQos::operator=(
         const UnicastSubscriptionQos& subscriptionQos)
 {
-    _expiryDateMs = subscriptionQos.getExpiryDateMs();
-    _publicationTtlMs = subscriptionQos.getPublicationTtlMs();
+    expiryDateMs = subscriptionQos.getExpiryDateMs();
+    publicationTtlMs = subscriptionQos.getPublicationTtlMs();
     return *this;
 }
 
 bool UnicastSubscriptionQos::operator==(const UnicastSubscriptionQos& subscriptionQos) const
 {
-    return _expiryDateMs == subscriptionQos.getExpiryDateMs() &&
-           _publicationTtlMs == subscriptionQos.getPublicationTtlMs();
+    return expiryDateMs == subscriptionQos.getExpiryDateMs() &&
+           publicationTtlMs == subscriptionQos.getPublicationTtlMs();
 }
 
 } // namespace joynr

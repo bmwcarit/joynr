@@ -66,9 +66,9 @@ public:
      * @see PeriodicSubscriptionQos#setAlertAfterIntervalMs
      */
     PeriodicSubscriptionQos(std::int64_t validityMs,
-                            std::int64_t publicationTtlMs,
-                            std::int64_t periodMs,
-                            std::int64_t alertAfterIntervalMs);
+                            std::int64_t publicationTtlMsLocal,
+                            std::int64_t periodMsLocal,
+                            std::int64_t alertAfterIntervalMsLocal);
 
     /**
      * @brief Gets the period in milliseconds
@@ -98,7 +98,7 @@ public:
      * @param period
      *            The publisher will send a notification every period ms.
      */
-    virtual void setPeriodMs(std::int64_t _periodMs);
+    virtual void setPeriodMs(std::int64_t periodMsLocal);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -130,7 +130,7 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      */
-    virtual void setAlertAfterIntervalMs(std::int64_t _alertAfterIntervalMs);
+    virtual void setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMsLocal);
 
     /**
      * @brief Resets alert after interval
@@ -183,8 +183,8 @@ public:
     void serialize(Archive& archive)
     {
         archive(muesli::BaseClass<UnicastSubscriptionQos>(this),
-                MUESLI_NVP(_periodMs),
-                MUESLI_NVP(_alertAfterIntervalMs));
+                MUESLI_NVP(periodMs),
+                MUESLI_NVP(alertAfterIntervalMs));
     }
 
 protected:
@@ -193,13 +193,13 @@ protected:
      *
      * The provider will send notifications every period milliseconds,
      */
-    std::int64_t _periodMs;
+    std::int64_t periodMs;
 
     /**
      * @brief Time span in milliseconds after which a publicationMissed
      * will be called if no publications were received.
      */
-    std::int64_t _alertAfterIntervalMs;
+    std::int64_t alertAfterIntervalMs;
 
 private:
     ADD_LOGGER(PeriodicSubscriptionQos)

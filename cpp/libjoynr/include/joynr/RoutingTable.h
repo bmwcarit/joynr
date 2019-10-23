@@ -56,22 +56,22 @@ struct ExpiryDate;
 struct RoutingEntry
 {
     RoutingEntry()
-            : _participantId(),
-              _address(),
-              _isGloballyVisible(true),
+            : participantId(),
+              address(),
+              isGloballyVisible(true),
               _expiryDateMs(std::numeric_limits<std::int64_t>::max()),
               _isSticky(false)
     {
     }
 
-    explicit RoutingEntry(std::string participantId,
-                          std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-                          bool isGloballyVisible,
+    explicit RoutingEntry(std::string participantIdLocal,
+                          std::shared_ptr<const joynr::system::RoutingTypes::Address> addressLocal,
+                          bool isGloballyVisibleLocal,
                           std::int64_t expiryDateMs,
                           bool isSticky)
-            : _participantId(std::move(participantId)),
-              _address(std::move(address)),
-              _isGloballyVisible(isGloballyVisible),
+            : participantId(std::move(participantIdLocal)),
+              address(std::move(addressLocal)),
+              isGloballyVisible(isGloballyVisibleLocal),
               _expiryDateMs(std::move(expiryDateMs)),
               _isSticky(std::move(isSticky))
     {
@@ -89,10 +89,10 @@ struct RoutingEntry
      */
     bool operator==(const RoutingEntry& other) const
     {
-        if (this->_participantId != other._participantId) {
+        if (this->participantId != other.participantId) {
             return false;
         }
-        if (this->_isGloballyVisible != other._isGloballyVisible) {
+        if (this->isGloballyVisible != other.isGloballyVisible) {
             return false;
         }
         if (this->_expiryDateMs != other._expiryDateMs) {
@@ -101,7 +101,7 @@ struct RoutingEntry
         if (this->_isSticky != other._isSticky) {
             return false;
         }
-        if (*(this->_address) != *(other._address)) {
+        if (*(this->address) != *(other.address)) {
             return false;
         }
         return true;
@@ -110,12 +110,12 @@ struct RoutingEntry
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(_participantId), MUESLI_NVP(_address), MUESLI_NVP(_isGloballyVisible));
+        archive(MUESLI_NVP(participantId), MUESLI_NVP(address), MUESLI_NVP(isGloballyVisible));
     }
 
     std::size_t hashCode() const
     {
-        return _address->hashCode();
+        return address->hashCode();
     }
 
     std::string toString() const
@@ -123,9 +123,9 @@ struct RoutingEntry
         return joynr::serializer::serializeToJson(*this);
     }
 
-    std::string _participantId;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> _address;
-    bool _isGloballyVisible;
+    std::string participantId;
+    std::shared_ptr<const joynr::system::RoutingTypes::Address> address;
+    bool isGloballyVisible;
     std::int64_t _expiryDateMs;
     bool _isSticky; // true if entry should be protected from being purged
 };
@@ -189,7 +189,7 @@ public:
         auto last = index.cend();
         for (; entry != last; ++entry) {
             const joynr::InProcessMessagingAddress* inprocessAddress =
-                    dynamic_cast<const joynr::InProcessMessagingAddress*>(entry->_address.get());
+                    dynamic_cast<const joynr::InProcessMessagingAddress*>(entry->address.get());
             if (inprocessAddress == nullptr) {
                 tempMultiIndexContainer.insert(*entry);
             }
@@ -230,13 +230,13 @@ private:
                             boost::multi_index::tag<routingtable::tags::ParticipantId>,
                             BOOST_MULTI_INDEX_MEMBER(routingtable::RoutingEntry,
                                                      std::string,
-                                                     _participantId)>,
+                                                     participantId)>,
                     boost::multi_index::hashed_non_unique<
                             boost::multi_index::tag<routingtable::tags::Address>,
                             BOOST_MULTI_INDEX_MEMBER(
                                     routingtable::RoutingEntry,
                                     std::shared_ptr<const joynr::system::RoutingTypes::Address>,
-                                    _address),
+                                    address),
                             AddressHash,
                             AddressEqual>,
                     boost::multi_index::ordered_non_unique<

@@ -46,29 +46,29 @@ public:
     template <typename... Ts>
     void setResponse(Ts&&... values)
     {
-        _response.setData(std::forward<Ts>(values)...);
+        response.setData(std::forward<Ts>(values)...);
     }
 
     template <typename... Ts>
     void getResponse(Ts&... values)
     {
         assert(hasResponse());
-        _response.getData(values...);
+        response.getData(values...);
     }
 
     bool hasResponse() const
     {
-        return _response.containsInboundData() || _response.containsOutboundData();
+        return response.containsInboundData() || response.containsOutboundData();
     }
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(_response));
+        archive(MUESLI_NVP(response));
     }
 
 protected:
-    joynr::serializer::SerializationPlaceholder _response;
+    joynr::serializer::SerializationPlaceholder response;
 };
 
 } // namespace joynr

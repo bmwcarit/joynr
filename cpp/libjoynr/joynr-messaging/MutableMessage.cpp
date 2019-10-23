@@ -28,16 +28,16 @@ namespace joynr
 {
 
 MutableMessage::MutableMessage()
-        : _sender(),
-          _recipient(),
+        : sender(),
+          recipient(),
           _keyChain(nullptr),
           _expiryDate(),
-          _type(),
-          _id(util::createUuid()),
+          type(),
+          id(util::createUuid()),
           _replyTo(),
           _effort(),
-          _customHeaders(),
-          _payload(),
+          customHeaders(),
+          payload(),
           _ttlAbsolute(true),
           _localMessage(false),
           _encrypt(false),
@@ -53,14 +53,14 @@ std::unique_ptr<ImmutableMessage> MutableMessage::getImmutableMessage() const
     messageSerializer.setCompressed(_compress);
 
     // explicit headers
-    messageSerializer.setSender(_sender);
-    messageSerializer.setRecipient(_recipient);
+    messageSerializer.setSender(sender);
+    messageSerializer.setRecipient(recipient);
     messageSerializer.setTtlMs(_expiryDate.toMilliseconds());
 
     // key-value pair headers
     std::unordered_map<std::string, std::string> keyValuePairHeaders;
-    keyValuePairHeaders.insert({Message::HEADER_TYPE(), _type});
-    keyValuePairHeaders.insert({Message::HEADER_ID(), _id});
+    keyValuePairHeaders.insert({Message::HEADER_TYPE(), type});
+    keyValuePairHeaders.insert({Message::HEADER_ID(), id});
 
     if (_replyTo) {
         keyValuePairHeaders.insert({Message::HEADER_REPLY_TO(), *_replyTo});
@@ -68,11 +68,11 @@ std::unique_ptr<ImmutableMessage> MutableMessage::getImmutableMessage() const
     if (_effort) {
         keyValuePairHeaders.insert({Message::HEADER_EFFORT(), *_effort});
     }
-    keyValuePairHeaders.insert(_customHeaders.cbegin(), _customHeaders.cend());
+    keyValuePairHeaders.insert(customHeaders.cbegin(), customHeaders.cend());
     messageSerializer.setHeaders(keyValuePairHeaders);
 
     smrf::ByteArrayView payloadView(
-            reinterpret_cast<smrf::Byte*>(const_cast<char*>(_payload.data())), _payload.size());
+            reinterpret_cast<smrf::Byte*>(const_cast<char*>(payload.data())), payload.size());
     messageSerializer.setBody(payloadView);
 
     if (_keyChain) {
@@ -89,38 +89,38 @@ std::unique_ptr<ImmutableMessage> MutableMessage::getImmutableMessage() const
 
 const std::string& MutableMessage::getRecipient() const
 {
-    return _recipient;
+    return recipient;
 }
 
 const std::unordered_map<std::string, std::string>& MutableMessage::getCustomHeaders() const
 {
-    return _customHeaders;
+    return customHeaders;
 }
 
 boost::optional<std::string> MutableMessage::getCustomHeader(const std::string& key) const
 {
     const std::string lookupKey = Message::CUSTOM_HEADER_PREFIX() + key;
     boost::optional<std::string> value;
-    auto it = _customHeaders.find(lookupKey);
-    if (it != _customHeaders.cend()) {
+    auto it = customHeaders.find(lookupKey);
+    if (it != customHeaders.cend()) {
         value = it->second;
     }
     return value;
 }
 
-void MutableMessage::setType(std::string&& type)
+void MutableMessage::setType(std::string&& typeLocal)
 {
-    this->_type = std::move(type);
+    this->type = std::move(typeLocal);
 }
 
 const std::string& MutableMessage::getType() const
 {
-    return _type;
+    return type;
 }
 
 const std::string& MutableMessage::getId() const
 {
-    return _id;
+    return id;
 }
 
 void MutableMessage::setReplyTo(const std::string& replyTo)
@@ -135,25 +135,25 @@ const boost::optional<std::string>& MutableMessage::getReplyTo() const
 
 void MutableMessage::setCustomHeader(const std::string& key, const std::string& value)
 {
-    _customHeaders.insert({Message::CUSTOM_HEADER_PREFIX() + key, value});
+    customHeaders.insert({Message::CUSTOM_HEADER_PREFIX() + key, value});
 }
 
 void MutableMessage::setCustomHeader(std::string&& key, std::string&& value)
 {
-    _customHeaders.insert({Message::CUSTOM_HEADER_PREFIX() + std::move(key), std::move(value)});
+    customHeaders.insert({Message::CUSTOM_HEADER_PREFIX() + std::move(key), std::move(value)});
 }
 
 void MutableMessage::setPrefixedCustomHeaders(
         const std::unordered_map<std::string, std::string>& prefixedCustomHeaders)
 {
-    _customHeaders.insert(prefixedCustomHeaders.cbegin(), prefixedCustomHeaders.cend());
+    customHeaders.insert(prefixedCustomHeaders.cbegin(), prefixedCustomHeaders.cend());
 }
 
 void MutableMessage::setPrefixedCustomHeaders(
         std::unordered_map<std::string, std::string>&& prefixedCustomHeaders)
 {
-    _customHeaders.insert(std::make_move_iterator(prefixedCustomHeaders.begin()),
-                          std::make_move_iterator(prefixedCustomHeaders.end()));
+    customHeaders.insert(std::make_move_iterator(prefixedCustomHeaders.begin()),
+                         std::make_move_iterator(prefixedCustomHeaders.end()));
 }
 
 void MutableMessage::setEffort(const std::string& effort)
@@ -166,19 +166,19 @@ const boost::optional<std::string>& MutableMessage::getEffort() const
     return _effort;
 }
 
-void MutableMessage::setPayload(const std::string& payload)
+void MutableMessage::setPayload(const std::string& payloadLocal)
 {
-    this->_payload = payload;
+    this->payload = payloadLocal;
 }
 
-void MutableMessage::setPayload(std::string&& payload)
+void MutableMessage::setPayload(std::string&& payloadLocal)
 {
-    this->_payload = std::move(payload);
+    this->payload = std::move(payloadLocal);
 }
 
 const std::string& MutableMessage::getPayload() const
 {
-    return _payload;
+    return payload;
 }
 
 bool MutableMessage::isLocalMessage() const
@@ -221,9 +221,9 @@ std::string MutableMessage::toLogMessage() const
     return serializer::serializeToJson(*this);
 }
 
-void MutableMessage::setType(const std::string& type)
+void MutableMessage::setType(const std::string& typeLocal)
 {
-    this->_type = type;
+    this->type = typeLocal;
 }
 
 TimePoint MutableMessage::getExpiryDate() const
@@ -236,29 +236,29 @@ void MutableMessage::setExpiryDate(const TimePoint& expiryDate)
     this->_expiryDate = expiryDate;
 }
 
-void MutableMessage::setRecipient(std::string&& recipient)
+void MutableMessage::setRecipient(std::string&& recipientLocal)
 {
-    this->_recipient = std::move(recipient);
+    this->recipient = std::move(recipientLocal);
 }
 
 const std::string& MutableMessage::getSender() const
 {
-    return _sender;
+    return sender;
 }
 
-void MutableMessage::setRecipient(const std::string& recipient)
+void MutableMessage::setRecipient(const std::string& recipientLocal)
 {
-    this->_recipient = recipient;
+    this->recipient = recipientLocal;
 }
 
-void MutableMessage::setSender(std::string&& sender)
+void MutableMessage::setSender(std::string&& senderLocal)
 {
-    this->_sender = std::move(sender);
+    this->sender = std::move(senderLocal);
 }
 
-void MutableMessage::setSender(const std::string& sender)
+void MutableMessage::setSender(const std::string& senderLocal)
 {
-    this->_sender = sender;
+    this->sender = senderLocal;
 }
 
 void MutableMessage::setKeychain(std::shared_ptr<IKeychain> keyChain)

@@ -29,28 +29,28 @@ std::int64_t SubscriptionQos::NO_EXPIRY_DATE()
     return 0;
 }
 
-SubscriptionQos::SubscriptionQos() : _expiryDateMs(NO_EXPIRY_DATE())
+SubscriptionQos::SubscriptionQos() : expiryDateMs(NO_EXPIRY_DATE())
 {
 }
 
-SubscriptionQos::SubscriptionQos(std::int64_t validityMs) : _expiryDateMs(NO_EXPIRY_DATE())
+SubscriptionQos::SubscriptionQos(std::int64_t validityMs) : expiryDateMs(NO_EXPIRY_DATE())
 {
     setValidityMs(validityMs);
 }
 
 std::int64_t SubscriptionQos::getExpiryDateMs() const
 {
-    return _expiryDateMs;
+    return expiryDateMs;
 }
 
-void SubscriptionQos::setExpiryDateMs(std::int64_t expiryDateMs)
+void SubscriptionQos::setExpiryDateMs(std::int64_t expiryDateMsLocal)
 {
-    this->_expiryDateMs = expiryDateMs;
+    this->expiryDateMs = expiryDateMsLocal;
 }
 
 void SubscriptionQos::clearExpiryDate()
 {
-    this->_expiryDateMs = NO_EXPIRY_DATE();
+    this->expiryDateMs = NO_EXPIRY_DATE();
 }
 
 void SubscriptionQos::setValidityMs(std::int64_t validityMs)
@@ -66,7 +66,7 @@ void SubscriptionQos::setValidityMs(std::int64_t validityMs)
 
 SubscriptionQos& SubscriptionQos::operator=(const SubscriptionQos& subscriptionQos)
 {
-    _expiryDateMs = subscriptionQos.getExpiryDateMs();
+    expiryDateMs = subscriptionQos.getExpiryDateMs();
     return *this;
 }
 

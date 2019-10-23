@@ -79,10 +79,10 @@ public:
      * @see OnChangeWithKeepAliveSubscriptionQos#setAlertAfterIntervalMs
      */
     OnChangeWithKeepAliveSubscriptionQos(std::int64_t validityMs,
-                                         std::int64_t _publicationTtlMs,
-                                         std::int64_t minIntervalMs,
-                                         std::int64_t maxIntervalMs,
-                                         std::int64_t alertAfterIntervalMs);
+                                         std::int64_t publicationTtlMsLocal,
+                                         std::int64_t minIntervalMsLocal,
+                                         std::int64_t maxIntervalMsLocal,
+                                         std::int64_t alertAfterIntervalMsLocal);
 
     /**
      * @brief Sets minimum interval in milliseconds
@@ -95,7 +95,7 @@ public:
      * @see OnChangeSubscriptionQos#setMinIntervalMs
      * @see OnChangeWithKeepAliveSubscriptionQos#setMaxIntervalMs
      */
-    void setMinIntervalMs(std::int64_t minIntervalMs) override;
+    void setMinIntervalMs(std::int64_t minIntervalMsLocal) override;
 
     /**
      * @brief Gets the maximum interval in milliseconds
@@ -131,7 +131,7 @@ public:
      * @param maxIntervalMs
      *            The publisher will send a notification at least every maxInterval_ms.
      */
-    virtual void setMaxIntervalMs(std::int64_t maxIntervalMs);
+    virtual void setMaxIntervalMs(std::int64_t maxIntervalMsLocal);
 
     /**
      * @brief Gets the alertAfter interval in milliseconds
@@ -163,7 +163,7 @@ public:
      * @param alertAfterInterval Time span in milliseconds after which a
      * publicationMissed will be called if no publications were received.
      */
-    virtual void setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMs);
+    virtual void setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMsLocal);
 
     /**
      * @brief Resets alert after interval
@@ -219,8 +219,8 @@ public:
     void serialize(Archive& archive)
     {
         archive(muesli::BaseClass<OnChangeSubscriptionQos>(this),
-                MUESLI_NVP(_maxIntervalMs),
-                MUESLI_NVP(_alertAfterIntervalMs));
+                MUESLI_NVP(maxIntervalMs),
+                MUESLI_NVP(alertAfterIntervalMs));
     }
 
 protected:
@@ -230,13 +230,13 @@ protected:
      * The provider will send notifications every maximum interval in milliseconds,
      * even if the value didn't change.
      */
-    std::int64_t _maxIntervalMs;
+    std::int64_t maxIntervalMs;
 
     /**
      * @brief time span in milliseconds after which a publicationMissed
      * will be called if no publications were received
      */
-    std::int64_t _alertAfterIntervalMs;
+    std::int64_t alertAfterIntervalMs;
 
 private:
     ADD_LOGGER(OnChangeWithKeepAliveSubscriptionQos)

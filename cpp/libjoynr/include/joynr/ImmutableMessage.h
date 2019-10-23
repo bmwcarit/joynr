@@ -104,11 +104,11 @@ public:
      * @param receivedFromGlobal the new value of receivedFromGlobal
      * @see isReceivedFromGlobal()
      */
-    void setReceivedFromGlobal(bool _receivedFromGlobal);
+    void setReceivedFromGlobal(bool recFromGlobal);
 
-    void setCreator(const std::string& _creator);
+    void setCreator(const std::string& creatorLocal);
 
-    void setCreator(std::string&& _creator);
+    void setCreator(std::string&& creatorLocal);
 
     const std::string& getCreator() const;
 
@@ -125,9 +125,9 @@ public:
         archive(MUESLI_NVP(sender),
                 MUESLI_NVP(recipient),
                 MUESLI_NVP(expiryDate),
-                MUESLI_NVP(_headers),
-                MUESLI_NVP(_receivedFromGlobal),
-                MUESLI_NVP(_creator),
+                MUESLI_NVP(headers),
+                MUESLI_NVP(receivedFromGlobal),
+                MUESLI_NVP(creator),
                 MUESLI_NVP(payload));
     }
 
@@ -142,16 +142,16 @@ private:
 
     smrf::ByteVector _serializedMessage;
     smrf::MessageDeserializer _messageDeserializer;
-    std::unordered_map<std::string, std::string> _headers;
+    std::unordered_map<std::string, std::string> headers;
     mutable boost::optional<smrf::ByteArrayView> _bodyView;
     mutable boost::optional<smrf::ByteVector> _decompressedBody;
 
     // receivedFromGlobal is a transient attribute which will not be serialized.
     // It is only used locally for routing decisions.
-    bool _receivedFromGlobal;
+    bool receivedFromGlobal;
     bool _accessControlChecked;
 
-    std::string _creator;
+    std::string creator;
     RequiredHeaders _requiredHeaders;
     ADD_LOGGER(ImmutableMessage)
 };

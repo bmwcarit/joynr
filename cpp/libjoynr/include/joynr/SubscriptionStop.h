@@ -42,17 +42,17 @@ public:
     bool operator!=(const SubscriptionStop& other) const;
 
     const std::string& getSubscriptionId() const;
-    void setSubscriptionId(const std::string& subscriptionId);
-    void setSubscriptionId(std::string&& subscriptionId);
+    void setSubscriptionId(const std::string& subscriptionIdLocal);
+    void setSubscriptionId(std::string&& subscriptionIdLocal);
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(_subscriptionId));
+        archive(MUESLI_NVP(subscriptionId));
     }
 
 private:
-    std::string _subscriptionId;
+    std::string subscriptionId;
 };
 
 } // namespace joynr

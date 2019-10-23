@@ -53,117 +53,117 @@ std::int64_t PeriodicSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 
 PeriodicSubscriptionQos::PeriodicSubscriptionQos()
         : UnicastSubscriptionQos(),
-          _periodMs(DEFAULT_PERIOD_MS()),
-          _alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
+          periodMs(DEFAULT_PERIOD_MS()),
+          alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
 }
 
 PeriodicSubscriptionQos::PeriodicSubscriptionQos(std::int64_t validityMs,
-                                                 std::int64_t publicationTtlMs,
-                                                 std::int64_t periodMs,
-                                                 std::int64_t alertAfterIntervalMs)
-        : UnicastSubscriptionQos(validityMs, publicationTtlMs),
-          _periodMs(DEFAULT_PERIOD_MS()),
-          _alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
+                                                 std::int64_t publicationTtlMsLocal,
+                                                 std::int64_t periodMsLocal,
+                                                 std::int64_t alertAfterIntervalMsLocal)
+        : UnicastSubscriptionQos(validityMs, publicationTtlMsLocal),
+          periodMs(DEFAULT_PERIOD_MS()),
+          alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
-    setPeriodMs(periodMs);
-    setAlertAfterIntervalMs(alertAfterIntervalMs);
+    setPeriodMs(periodMsLocal);
+    setAlertAfterIntervalMs(alertAfterIntervalMsLocal);
 }
 
 PeriodicSubscriptionQos::PeriodicSubscriptionQos(const PeriodicSubscriptionQos& other)
         : UnicastSubscriptionQos(other),
-          _periodMs(other.getPeriodMs()),
-          _alertAfterIntervalMs(other.getAlertAfterIntervalMs())
+          periodMs(other.getPeriodMs()),
+          alertAfterIntervalMs(other.getAlertAfterIntervalMs())
 {
 }
 
-void PeriodicSubscriptionQos::setPeriodMs(std::int64_t periodMs)
+void PeriodicSubscriptionQos::setPeriodMs(std::int64_t periodMsLocal)
 {
-    if (periodMs > MAX_PERIOD_MS()) {
+    if (periodMsLocal > MAX_PERIOD_MS()) {
         JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid periodMs ({} ms), which is bigger than MAX_PERIOD_MS "
                        "({} ms). MAX_PERIOD_MS will be used instead.",
-                       periodMs,
+                       periodMsLocal,
                        MAX_PERIOD_MS());
-        this->_periodMs = MAX_PERIOD_MS();
+        this->periodMs = MAX_PERIOD_MS();
         // note: don't return here as we need to check dependent values at the end of this method
-    } else if (periodMs < MIN_PERIOD_MS()) {
+    } else if (periodMsLocal < MIN_PERIOD_MS()) {
         JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid periodMs ({} ms), which is smaller than "
                        "MIN_PERIOD_MS ({} ms). MIN_PERIOD_MS will be used instead.",
-                       periodMs,
+                       periodMsLocal,
                        MIN_PERIOD_MS());
-        this->_periodMs = MIN_PERIOD_MS();
+        this->periodMs = MIN_PERIOD_MS();
         // note: don't return here as we need to check dependent values at the end of this method
     } else {
         // default case
-        this->_periodMs = periodMs;
+        this->periodMs = periodMsLocal;
     }
     // check dependencies: alertAfterIntervalMs is not smaller than periodMs
-    if (_alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() &&
-        _alertAfterIntervalMs < getPeriodMs()) {
-        JOYNR_LOG_WARN(logger(),
-                       "alertAfterIntervalMs ({} ms) is smaller than periodMs ({} ms). Setting "
-                       "alertAfterIntervalMs to periodMs.",
-                       _alertAfterIntervalMs,
-                       getPeriodMs());
-        _alertAfterIntervalMs = getPeriodMs();
-    }
-}
-
-std::int64_t PeriodicSubscriptionQos::getPeriodMs() const
-{
-    return this->_periodMs;
-}
-
-void PeriodicSubscriptionQos::setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMs)
-{
-    if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS()) {
-        JOYNR_LOG_WARN(logger(),
-                       "Trying to set invalid alertAfterIntervalMs ({} ms), which is bigger than "
-                       "MAX_ALERT_AFTER_INTERVAL_MS ({} ms). MAX_ALERT_AFTER_INTERVAL_MS will be "
-                       "used instead.",
-                       alertAfterIntervalMs,
-                       MAX_ALERT_AFTER_INTERVAL_MS());
-        this->_alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS();
-        return;
-    }
     if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() && alertAfterIntervalMs < getPeriodMs()) {
         JOYNR_LOG_WARN(logger(),
                        "alertAfterIntervalMs ({} ms) is smaller than periodMs ({} ms). Setting "
                        "alertAfterIntervalMs to periodMs.",
                        alertAfterIntervalMs,
                        getPeriodMs());
-        this->_alertAfterIntervalMs = _periodMs;
+        alertAfterIntervalMs = getPeriodMs();
+    }
+}
+
+std::int64_t PeriodicSubscriptionQos::getPeriodMs() const
+{
+    return this->periodMs;
+}
+
+void PeriodicSubscriptionQos::setAlertAfterIntervalMs(std::int64_t alertAfterIntervalMsLocal)
+{
+    if (alertAfterIntervalMsLocal > MAX_ALERT_AFTER_INTERVAL_MS()) {
+        JOYNR_LOG_WARN(logger(),
+                       "Trying to set invalid alertAfterIntervalMs ({} ms), which is bigger than "
+                       "MAX_ALERT_AFTER_INTERVAL_MS ({} ms). MAX_ALERT_AFTER_INTERVAL_MS will be "
+                       "used instead.",
+                       alertAfterIntervalMsLocal,
+                       MAX_ALERT_AFTER_INTERVAL_MS());
+        this->alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS();
         return;
     }
-    this->_alertAfterIntervalMs = alertAfterIntervalMs;
+    if (alertAfterIntervalMsLocal != NO_ALERT_AFTER_INTERVAL() &&
+        alertAfterIntervalMsLocal < getPeriodMs()) {
+        JOYNR_LOG_WARN(logger(),
+                       "alertAfterIntervalMs ({} ms) is smaller than periodMs ({} ms). Setting "
+                       "alertAfterIntervalMs to periodMs.",
+                       alertAfterIntervalMsLocal,
+                       getPeriodMs());
+        this->alertAfterIntervalMs = periodMs;
+        return;
+    }
+    this->alertAfterIntervalMs = alertAfterIntervalMsLocal;
 }
 
 std::int64_t PeriodicSubscriptionQos::getAlertAfterIntervalMs() const
 {
-    return _alertAfterIntervalMs;
+    return alertAfterIntervalMs;
 }
 
 void PeriodicSubscriptionQos::clearAlertAfterInterval()
 {
-    this->_alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL();
+    this->alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL();
 }
 
 PeriodicSubscriptionQos& PeriodicSubscriptionQos::operator=(const PeriodicSubscriptionQos& other)
 {
-    _expiryDateMs = other.getExpiryDateMs();
-    _publicationTtlMs = other.getPublicationTtlMs();
-    _periodMs = other.getPeriodMs();
-    _alertAfterIntervalMs = other.getAlertAfterIntervalMs();
+    expiryDateMs = other.getExpiryDateMs();
+    publicationTtlMs = other.getPublicationTtlMs();
+    periodMs = other.getPeriodMs();
+    alertAfterIntervalMs = other.getAlertAfterIntervalMs();
     return *this;
 }
 
 bool PeriodicSubscriptionQos::operator==(const PeriodicSubscriptionQos& other) const
 {
-    return _expiryDateMs == other.getExpiryDateMs() &&
-           _publicationTtlMs == other.getPublicationTtlMs() && _periodMs == other.getPeriodMs() &&
-           _alertAfterIntervalMs == other.getAlertAfterIntervalMs();
+    return expiryDateMs == other.getExpiryDateMs() &&
+           publicationTtlMs == other.getPublicationTtlMs() && periodMs == other.getPeriodMs() &&
+           alertAfterIntervalMs == other.getAlertAfterIntervalMs();
 }
 
 } // namespace joynr

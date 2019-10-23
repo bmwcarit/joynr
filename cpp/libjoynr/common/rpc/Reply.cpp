@@ -22,55 +22,55 @@
 namespace joynr
 {
 
-Reply::Reply() : _requestReplyId(), _error()
+Reply::Reply() : requestReplyId(), error()
 {
 }
 
 Reply::Reply(BaseReply&& baseReply)
-        : BaseReply::BaseReply(std::move(baseReply)), _requestReplyId(), _error()
+        : BaseReply::BaseReply(std::move(baseReply)), requestReplyId(), error()
 {
 }
 
 const std::string& Reply::getRequestReplyId() const
 {
-    return _requestReplyId;
+    return requestReplyId;
 }
 
-void Reply::setRequestReplyId(const std::string& requestReplyId)
+void Reply::setRequestReplyId(const std::string& requestReplyIdLocal)
 {
-    this->_requestReplyId = requestReplyId;
+    this->requestReplyId = requestReplyIdLocal;
 }
 
-void Reply::setRequestReplyId(std::string&& requestReplyId)
+void Reply::setRequestReplyId(std::string&& requestReplyIdLocal)
 {
-    this->_requestReplyId = std::move(requestReplyId);
+    this->requestReplyId = std::move(requestReplyIdLocal);
 }
 
 std::shared_ptr<exceptions::JoynrException> Reply::getError() const
 {
-    return _error;
+    return error;
 }
 
-void Reply::setError(std::shared_ptr<exceptions::JoynrException> error)
+void Reply::setError(std::shared_ptr<exceptions::JoynrException> errorLocal)
 {
-    this->_error = std::move(error);
+    this->error = std::move(errorLocal);
 }
 
 bool Reply::operator==(const Reply& other) const
 {
     // if error ptr do not point to the same object
-    if (_error != other.getError()) {
+    if (error != other.getError()) {
         // if exactly one of error and other.getError() is a nullptr
-        if (_error == nullptr || other.getError() == nullptr) {
+        if (error == nullptr || other.getError() == nullptr) {
             return false;
         }
         // compare actual objects
-        if (!(*_error.get() == *other.getError().get())) {
+        if (!(*error.get() == *other.getError().get())) {
             return false;
         }
     }
 
-    return _requestReplyId == other.getRequestReplyId() && BaseReply::operator==(other);
+    return requestReplyId == other.getRequestReplyId() && BaseReply::operator==(other);
 }
 
 bool Reply::operator!=(const Reply& other) const

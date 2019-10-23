@@ -41,13 +41,13 @@ std::string MulticastSubscriptionRequest::toString() const
     return joynr::serializer::serializeToJson(*this);
 }
 
-void MulticastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qos)
+void MulticastSubscriptionRequest::setQos(std::shared_ptr<SubscriptionQos> qosLocal)
 {
     std::shared_ptr<MulticastSubscriptionQos> onChangeQos =
-            std::dynamic_pointer_cast<MulticastSubscriptionQos>(qos);
+            std::dynamic_pointer_cast<MulticastSubscriptionQos>(qosLocal);
     assert(onChangeQos);
     // force object slicing
-    this->_qos = std::make_shared<MulticastSubscriptionQos>(*onChangeQos);
+    this->qos = std::make_shared<MulticastSubscriptionQos>(*onChangeQos);
 }
 
 const std::string& MulticastSubscriptionRequest::getMulticastId() const

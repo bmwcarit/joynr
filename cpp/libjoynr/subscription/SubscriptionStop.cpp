@@ -22,28 +22,28 @@
 namespace joynr
 {
 
-SubscriptionStop::SubscriptionStop() : _subscriptionId()
+SubscriptionStop::SubscriptionStop() : subscriptionId()
 {
 }
 
 const std::string& SubscriptionStop::getSubscriptionId() const
 {
-    return _subscriptionId;
+    return subscriptionId;
 }
 
-void SubscriptionStop::setSubscriptionId(const std::string& subscriptionId)
+void SubscriptionStop::setSubscriptionId(const std::string& subscriptionIdLocal)
 {
-    this->_subscriptionId = subscriptionId;
+    this->subscriptionId = subscriptionIdLocal;
 }
 
-void SubscriptionStop::setSubscriptionId(std::string&& subscriptionId)
+void SubscriptionStop::setSubscriptionId(std::string&& subscriptionIdLocal)
 {
-    this->_subscriptionId = std::move(subscriptionId);
+    this->subscriptionId = std::move(subscriptionIdLocal);
 }
 
 bool SubscriptionStop::operator==(const SubscriptionStop& other) const
 {
-    return _subscriptionId == other.getSubscriptionId();
+    return subscriptionId == other.getSubscriptionId();
 }
 
 bool SubscriptionStop::operator!=(const SubscriptionStop& other) const

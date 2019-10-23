@@ -64,7 +64,7 @@ public:
     Directory(const std::string& directoryName,
               boost::asio::io_service& ioService,
               SaveFilterFunction fun)
-            : _callbackMap(),
+            : callbackMap(),
               _timeoutTimerMap(),
               _mutex(),
               _ioService(ioService),
@@ -75,7 +75,7 @@ public:
     }
 
     Directory(const std::string& directoryName, boost::asio::io_service& ioService)
-            : _callbackMap(),
+            : callbackMap(),
               _timeoutTimerMap(),
               _mutex(),
               _ioService(ioService),
@@ -87,7 +87,7 @@ public:
 
     ~Directory()
     {
-        JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", _callbackMap.size());
+        JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", callbackMap.size());
     }
 
     /*
@@ -97,8 +97,8 @@ public:
     std::shared_ptr<T> lookup(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(_mutex);
-        auto found = _callbackMap.find(keyId);
-        if (found == _callbackMap.cend()) {
+        auto found = callbackMap.find(keyId);
+        if (found == callbackMap.cend()) {
             return nullptr;
         }
         return found->second;
@@ -112,10 +112,10 @@ public:
     {
         std::shared_ptr<T> value;
         std::lock_guard<std::mutex> lock(_mutex);
-        auto found = _callbackMap.find(keyId);
-        if (found != _callbackMap.cend()) {
+        auto found = callbackMap.find(keyId);
+        if (found != callbackMap.cend()) {
             value = found->second;
-            _callbackMap.erase(keyId);
+            callbackMap.erase(keyId);
         }
         return value;
     }
@@ -126,7 +126,7 @@ public:
     bool contains(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(_mutex);
-        return _callbackMap.find(keyId) != _callbackMap.cend();
+        return callbackMap.find(keyId) != callbackMap.cend();
     }
 
     /*
@@ -135,7 +135,7 @@ public:
     void add(const Key& keyId, std::shared_ptr<T> value)
     {
         std::lock_guard<std::mutex> lock(_mutex);
-        _callbackMap[keyId] = std::move(value);
+        callbackMap[keyId] = std::move(value);
     }
 
     /*
@@ -178,7 +178,7 @@ public:
                 }
             });
 
-            _callbackMap[keyId] = std::move(value);
+            callbackMap[keyId] = std::move(value);
         }
     }
 
@@ -189,7 +189,7 @@ public:
     {
         std::lock_guard<std::mutex> lock(_mutex);
 
-        _callbackMap.erase(keyId);
+        callbackMap.erase(keyId);
         _timeoutTimerMap.erase(keyId);
     }
 
@@ -213,22 +213,22 @@ public:
     template <typename Archive>
     void load(Archive& archive)
     {
-        archive(MUESLI_NVP(_callbackMap));
+        archive(MUESLI_NVP(callbackMap));
     }
 
 private:
     template <typename Archive>
     void saveImplNonFiltered(Archive& archive)
     {
-        archive(MUESLI_NVP(_callbackMap));
+        archive(MUESLI_NVP(callbackMap));
     }
 
     template <typename Archive>
     void saveImplFiltered(Archive& archive)
     {
         std::unordered_map<Key, std::shared_ptr<T>> tempCallbackMap;
-        std::copy_if(_callbackMap.cbegin(),
-                     _callbackMap.cend(),
+        std::copy_if(callbackMap.cbegin(),
+                     callbackMap.cend(),
                      std::inserter(tempCallbackMap, tempCallbackMap.begin()),
                      [this](auto entry) { return _saveFilterFunction(entry.second); });
         archive(muesli::make_nvp("callbackMap", tempCallbackMap));
@@ -252,7 +252,7 @@ private:
     }
 
 protected:
-    std::unordered_map<Key, std::shared_ptr<T>> _callbackMap;
+    std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
     std::unordered_map<Key, SteadyTimer> _timeoutTimerMap;
     ADD_LOGGER(Directory)
 

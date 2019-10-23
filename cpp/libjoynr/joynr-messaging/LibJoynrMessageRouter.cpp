@@ -366,16 +366,16 @@ bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingE
     if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
         return true;
     }
-    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry._address.get()) == nullptr) {
+    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) == nullptr) {
         if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
             return true;
         } else if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(
-                           oldEntry._address.get()) == nullptr) {
+                           oldEntry.address.get()) == nullptr) {
             // old address is WebSocketClientAddress or MqttAddress/ChannelAddress
             if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
                 return true;
             } else if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(
-                               oldEntry._address.get()) == nullptr) {
+                               oldEntry.address.get()) == nullptr) {
                 // old address is MqttAddress or ChannelAddress
                 if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
                     typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
@@ -486,7 +486,7 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         const auto routingEntry =
                 _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (routingEntry) {
-            providerAddress = routingEntry->_address;
+            providerAddress = routingEntry->address;
         }
     }
 
@@ -623,7 +623,7 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
         const auto routingEntry =
                 _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
         if (routingEntry) {
-            providerAddress = routingEntry->_address;
+            providerAddress = routingEntry->address;
         }
     }
 

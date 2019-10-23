@@ -24,36 +24,36 @@ namespace joynr
 namespace exceptions
 {
 
-SubscriptionException::SubscriptionException() noexcept : JoynrRuntimeException(), _subscriptionId()
+SubscriptionException::SubscriptionException() noexcept : JoynrRuntimeException(), subscriptionId()
 {
 }
 
 SubscriptionException::SubscriptionException(const std::string& message,
-                                             const std::string& subscriptionId) noexcept
+                                             const std::string& subscriptionIdLocal) noexcept
         : JoynrRuntimeException(message),
-          _subscriptionId(subscriptionId)
+          subscriptionId(subscriptionIdLocal)
 {
 }
 
-SubscriptionException::SubscriptionException(const std::string& subscriptionId) noexcept
-        : JoynrRuntimeException(subscriptionId),
-          _subscriptionId(subscriptionId)
+SubscriptionException::SubscriptionException(const std::string& subscriptionIdLocal) noexcept
+        : JoynrRuntimeException(subscriptionIdLocal),
+          subscriptionId(subscriptionIdLocal)
 {
 }
 
 SubscriptionException::SubscriptionException(const SubscriptionException& other)
-        : JoynrRuntimeException(other), _subscriptionId(other._subscriptionId)
+        : JoynrRuntimeException(other), subscriptionId(other.subscriptionId)
 {
 }
 
 const std::string& SubscriptionException::getSubscriptionId() const
 {
-    return _subscriptionId;
+    return subscriptionId;
 }
 
-void SubscriptionException::setSubscriptionId(const std::string& subscriptionId)
+void SubscriptionException::setSubscriptionId(const std::string& subscriptionIdLocal)
 {
-    this->_subscriptionId = subscriptionId;
+    this->subscriptionId = subscriptionIdLocal;
 }
 
 const std::string& SubscriptionException::getTypeName() const
@@ -74,7 +74,7 @@ const std::string& SubscriptionException::TYPE_NAME()
 
 bool SubscriptionException::operator==(const SubscriptionException& other) const
 {
-    return _message == other.getMessage() && _subscriptionId == other.getSubscriptionId();
+    return _message == other.getMessage() && subscriptionId == other.getSubscriptionId();
 }
 
 } // namespace exceptions

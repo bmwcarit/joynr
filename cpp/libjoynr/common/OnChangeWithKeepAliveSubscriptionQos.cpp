@@ -58,145 +58,144 @@ std::int64_t OnChangeWithKeepAliveSubscriptionQos::NO_ALERT_AFTER_INTERVAL()
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos()
         : OnChangeSubscriptionQos(),
-          _maxIntervalMs(DEFAULT_MAX_INTERVAL_MS()),
-          _alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
+          maxIntervalMs(DEFAULT_MAX_INTERVAL_MS()),
+          alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
 }
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
         std::int64_t validityMs,
-        std::int64_t publicationTtlMs,
-        std::int64_t minIntervalMs,
-        std::int64_t maxIntervalMs,
-        std::int64_t alertAfterIntervalMs)
-        : OnChangeSubscriptionQos(validityMs, publicationTtlMs, minIntervalMs),
-          _maxIntervalMs(DEFAULT_MAX_INTERVAL_MS()),
-          _alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
+        std::int64_t publicationTtlMsLocal,
+        std::int64_t minIntervalMsLocal,
+        std::int64_t maxIntervalMsLocal,
+        std::int64_t alertAfterIntervalMsLocal)
+        : OnChangeSubscriptionQos(validityMs, publicationTtlMsLocal, minIntervalMsLocal),
+          maxIntervalMs(DEFAULT_MAX_INTERVAL_MS()),
+          alertAfterIntervalMs(DEFAULT_ALERT_AFTER_INTERVAL_MS())
 {
-    setMaxIntervalMs(maxIntervalMs);
-    setAlertAfterIntervalMs(alertAfterIntervalMs);
+    setMaxIntervalMs(maxIntervalMsLocal);
+    setAlertAfterIntervalMs(alertAfterIntervalMsLocal);
 }
 
 OnChangeWithKeepAliveSubscriptionQos::OnChangeWithKeepAliveSubscriptionQos(
         const OnChangeWithKeepAliveSubscriptionQos& other)
         : OnChangeSubscriptionQos(other),
-          _maxIntervalMs(other.getMaxIntervalMs()),
-          _alertAfterIntervalMs(other.getAlertAfterIntervalMs())
+          maxIntervalMs(other.getMaxIntervalMs()),
+          alertAfterIntervalMs(other.getAlertAfterIntervalMs())
 {
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(std::int64_t maxIntervalMs)
+void OnChangeWithKeepAliveSubscriptionQos::setMaxIntervalMs(std::int64_t maxIntervalMsLocal)
 {
-    if (maxIntervalMs < MIN_MAX_INTERVAL_MS()) {
+    if (maxIntervalMsLocal < MIN_MAX_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid maxIntervalMs ({} ms), which is smaller than "
                        "MIN_MAX_INTERVAL_MS ({} ms). MIN_MAX_INTERVAL_MS will be used instead.",
-                       maxIntervalMs,
+                       maxIntervalMsLocal,
                        MIN_MAX_INTERVAL_MS());
-        this->_maxIntervalMs = MIN_MAX_INTERVAL_MS();
+        this->maxIntervalMs = MIN_MAX_INTERVAL_MS();
         // note: don't return here as we nned to check dependend values at the end of this method
-    } else if (maxIntervalMs > MAX_MAX_INTERVAL_MS()) {
+    } else if (maxIntervalMsLocal > MAX_MAX_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid maxIntervalMs ({} ms), which is bigger than "
                        "MAX_MAX_INTERVAL_MS "
                        "({} ms). MAX_MAX_INTERVAL_MS will be used instead.",
-                       maxIntervalMs,
+                       maxIntervalMsLocal,
                        MAX_MAX_INTERVAL_MS());
-        this->_maxIntervalMs = MAX_MAX_INTERVAL_MS();
+        this->maxIntervalMs = MAX_MAX_INTERVAL_MS();
         // note: don't return here as we nned to check dependend values at the end of this method
     } else {
         // default case
-        this->_maxIntervalMs = maxIntervalMs;
+        this->maxIntervalMs = maxIntervalMsLocal;
     }
     // check dependendencies: maxIntervalMs is not smaller than minIntervalMs
-    if (this->_maxIntervalMs < getMinIntervalMs()) {
+    if (this->maxIntervalMs < getMinIntervalMs()) {
         JOYNR_LOG_WARN(logger(),
                        "maxIntervalMs ({} ms) is smaller than minIntervalMs ({} ms). Setting "
                        "maxIntervalMs to minIntervalMs.",
-                       maxIntervalMs,
+                       maxIntervalMsLocal,
                        getMinIntervalMs());
-        this->_maxIntervalMs = getMinIntervalMs();
+        this->maxIntervalMs = getMinIntervalMs();
     }
     // check dependendencies: allertAfterIntervalMs is not smaller than maxIntervalMs
-    if (_alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() &&
-        _alertAfterIntervalMs < getMaxIntervalMs()) {
+    if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() &&
+        alertAfterIntervalMs < getMaxIntervalMs()) {
         JOYNR_LOG_WARN(
                 logger(),
                 "alertAfterIntervalMs ({} ms) is smaller than maxIntervalMs ({} ms). Setting "
                 "alertAfterIntervalMs to maxIntervalMs.",
-                _alertAfterIntervalMs,
+                alertAfterIntervalMs,
                 getMaxIntervalMs());
-        _alertAfterIntervalMs = getMaxIntervalMs();
+        alertAfterIntervalMs = getMaxIntervalMs();
     }
 }
 
 std::int64_t OnChangeWithKeepAliveSubscriptionQos::getMaxIntervalMs() const
 {
-    return this->_maxIntervalMs;
+    return this->maxIntervalMs;
 }
 
-void OnChangeWithKeepAliveSubscriptionQos::setMinIntervalMs(std::int64_t minIntervalMs)
+void OnChangeWithKeepAliveSubscriptionQos::setMinIntervalMs(std::int64_t minIntervalMsLocal)
 {
-    OnChangeSubscriptionQos::setMinIntervalMs(minIntervalMs);
+    OnChangeSubscriptionQos::setMinIntervalMs(minIntervalMsLocal);
     // corrects the maxinterval if minIntervalMs changes
-    setMaxIntervalMs(this->_maxIntervalMs);
+    setMaxIntervalMs(this->maxIntervalMs);
 }
 
 void OnChangeWithKeepAliveSubscriptionQos::setAlertAfterIntervalMs(
-        std::int64_t alertAfterIntervalMs)
+        std::int64_t alertAfterIntervalMsLocal)
 {
-    if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS()) {
+    if (alertAfterIntervalMsLocal > MAX_ALERT_AFTER_INTERVAL_MS()) {
         JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid alertAfterIntervalMs ({} ms), which is bigger than "
                        "MAX_ALERT_AFTER_INTERVAL_MS ({} ms). MAX_ALERT_AFTER_INTERVAL_MS will be "
                        "used instead.",
-                       alertAfterIntervalMs,
+                       alertAfterIntervalMsLocal,
                        MAX_ALERT_AFTER_INTERVAL_MS());
-        this->_alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS();
+        this->alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS();
         return;
     }
-    if (alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL() &&
-        alertAfterIntervalMs < getMaxIntervalMs()) {
+    if (alertAfterIntervalMsLocal != NO_ALERT_AFTER_INTERVAL() &&
+        alertAfterIntervalMsLocal < getMaxIntervalMs()) {
         JOYNR_LOG_WARN(logger(),
                        "Trying to set invalid alertAfterIntervalMs ({} ms), which is smaller than "
                        "maxIntervalMs ({} ms). maxIntervalMs will be used instead.",
-                       alertAfterIntervalMs,
+                       alertAfterIntervalMsLocal,
                        getMaxIntervalMs());
-        this->_alertAfterIntervalMs = getMaxIntervalMs();
+        this->alertAfterIntervalMs = getMaxIntervalMs();
         return;
     }
-    this->_alertAfterIntervalMs = alertAfterIntervalMs;
+    this->alertAfterIntervalMs = alertAfterIntervalMsLocal;
 }
 
 std::int64_t OnChangeWithKeepAliveSubscriptionQos::getAlertAfterIntervalMs() const
 {
-    return _alertAfterIntervalMs;
+    return alertAfterIntervalMs;
 }
 
 void OnChangeWithKeepAliveSubscriptionQos::clearAlertAfterInterval()
 {
-    _alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL();
+    alertAfterIntervalMs = NO_ALERT_AFTER_INTERVAL();
 }
 
 OnChangeWithKeepAliveSubscriptionQos& OnChangeWithKeepAliveSubscriptionQos::operator=(
         const OnChangeWithKeepAliveSubscriptionQos& other)
 {
-    _expiryDateMs = other.getExpiryDateMs();
-    _publicationTtlMs = other.getPublicationTtlMs();
-    _minIntervalMs = other.getMinIntervalMs();
-    _maxIntervalMs = other.getMaxIntervalMs();
-    _alertAfterIntervalMs = other.getAlertAfterIntervalMs();
+    expiryDateMs = other.getExpiryDateMs();
+    publicationTtlMs = other.getPublicationTtlMs();
+    minIntervalMs = other.getMinIntervalMs();
+    maxIntervalMs = other.getMaxIntervalMs();
+    alertAfterIntervalMs = other.getAlertAfterIntervalMs();
     return *this;
 }
 
 bool OnChangeWithKeepAliveSubscriptionQos::operator==(
         const OnChangeWithKeepAliveSubscriptionQos& other) const
 {
-    return _expiryDateMs == other.getExpiryDateMs() &&
-           _publicationTtlMs == other.getPublicationTtlMs() &&
-           _minIntervalMs == other.getMinIntervalMs() &&
-           _maxIntervalMs == other.getMaxIntervalMs() &&
-           _alertAfterIntervalMs == other.getAlertAfterIntervalMs();
+    return expiryDateMs == other.getExpiryDateMs() &&
+           publicationTtlMs == other.getPublicationTtlMs() &&
+           minIntervalMs == other.getMinIntervalMs() && maxIntervalMs == other.getMaxIntervalMs() &&
+           alertAfterIntervalMs == other.getAlertAfterIntervalMs();
 }
 
 } // namespace joynr

@@ -41,18 +41,18 @@ public:
 
     const std::string& getRequestReplyId() const;
 
-    void setRequestReplyId(std::string&& requestReplyId);
-    void setRequestReplyId(const std::string& requestReplyId);
+    void setRequestReplyId(std::string&& requestReplyIdLocal);
+    void setRequestReplyId(const std::string& requestReplyIdLocal);
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<OneWayRequest>(this), MUESLI_NVP(_requestReplyId));
+        archive(muesli::BaseClass<OneWayRequest>(this), MUESLI_NVP(requestReplyId));
     }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Request);
-    std::string _requestReplyId;
+    std::string requestReplyId;
 };
 
 } // namespace joynr

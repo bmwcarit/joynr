@@ -71,8 +71,8 @@ public:
      * @see OnChangeSubscriptionQos#setMinIntervalMs
      */
     OnChangeSubscriptionQos(std::int64_t validityMs,
-                            std::int64_t _publicationTtlMs,
-                            std::int64_t minIntervalMs);
+                            std::int64_t publicationTtlMsLocal,
+                            std::int64_t minIntervalMsLocal);
 
     /**
      * @brief Gets the minimum interval in milliseconds
@@ -105,7 +105,7 @@ public:
      *
      * @param minIntervalMs Minimum interval in milliseconds
      */
-    virtual void setMinIntervalMs(std::int64_t minIntervalMs);
+    virtual void setMinIntervalMs(std::int64_t minIntervalMsLocal);
 
     /** @brief Assignment operator */
     OnChangeSubscriptionQos& operator=(const OnChangeSubscriptionQos& other);
@@ -134,7 +134,7 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<UnicastSubscriptionQos>(this), MUESLI_NVP(_minIntervalMs));
+        archive(muesli::BaseClass<UnicastSubscriptionQos>(this), MUESLI_NVP(minIntervalMs));
     }
 
 protected:
@@ -147,7 +147,7 @@ protected:
      * The filtering happens on the provider's side, thus also preventing
      * excessive network traffic.
      */
-    std::int64_t _minIntervalMs;
+    std::int64_t minIntervalMs;
 };
 
 } // namespace joynr

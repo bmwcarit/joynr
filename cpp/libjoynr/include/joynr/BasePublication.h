@@ -44,18 +44,18 @@ public:
     bool operator!=(const BasePublication& other) const;
 
     std::shared_ptr<exceptions::JoynrRuntimeException> getError() const;
-    void setError(std::shared_ptr<exceptions::JoynrRuntimeException> error);
+    void setError(std::shared_ptr<exceptions::JoynrRuntimeException> errorLocal);
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(_error));
+        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(error));
     }
 
 private:
     // printing BasePublication with google-test and google-mock
     friend void PrintTo(const BasePublication& basePublication, ::std::ostream* os);
-    std::shared_ptr<exceptions::JoynrRuntimeException> _error;
+    std::shared_ptr<exceptions::JoynrRuntimeException> error;
 };
 
 } // namespace joynr

@@ -44,23 +44,21 @@ public:
     bool operator!=(const Reply&) const;
 
     const std::string& getRequestReplyId() const;
-    void setRequestReplyId(const std::string& requestReplyId);
-    void setRequestReplyId(std::string&& requestReplyId);
+    void setRequestReplyId(const std::string& requestReplyIdLocal);
+    void setRequestReplyId(std::string&& requestReplyIdLocal);
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<BaseReply>(this),
-                MUESLI_NVP(_requestReplyId),
-                MUESLI_NVP(_error));
+        archive(muesli::BaseClass<BaseReply>(this), MUESLI_NVP(requestReplyId), MUESLI_NVP(error));
     }
 
     std::shared_ptr<exceptions::JoynrException> getError() const;
-    void setError(std::shared_ptr<exceptions::JoynrException> error);
+    void setError(std::shared_ptr<exceptions::JoynrException> errorLocal);
 
 private:
-    std::string _requestReplyId;
-    std::shared_ptr<exceptions::JoynrException> _error;
+    std::string requestReplyId;
+    std::shared_ptr<exceptions::JoynrException> error;
 };
 
 } // namespace joynr

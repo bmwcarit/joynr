@@ -40,35 +40,35 @@ public:
     bool operator==(const OneWayRequest& other) const;
 
     const std::string& getMethodName() const;
-    void setMethodName(const std::string& methodName);
-    void setMethodName(std::string&& methodName);
+    void setMethodName(const std::string& methodNameLocal);
+    void setMethodName(std::string&& methodNameLocal);
 
     const std::vector<std::string>& getParamDatatypes() const;
-    void setParamDatatypes(const std::vector<std::string>& paramDatatypes);
-    void setParamDatatypes(std::vector<std::string>&& paramDatatypes);
+    void setParamDatatypes(const std::vector<std::string>& paramDatatypesLocal);
+    void setParamDatatypes(std::vector<std::string>&& paramDatatypesLocal);
 
     template <typename... Ts>
     void setParams(Ts&&... values)
     {
-        _params.setData(std::forward<Ts>(values)...);
+        params.setData(std::forward<Ts>(values)...);
     }
 
     template <typename... Ts>
     void getParams(Ts&... values)
     {
-        _params.getData(values...);
+        params.getData(values...);
     }
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(_methodName), MUESLI_NVP(_paramDatatypes), MUESLI_NVP(_params));
+        archive(MUESLI_NVP(methodName), MUESLI_NVP(paramDatatypes), MUESLI_NVP(params));
     }
 
 private:
-    std::string _methodName;
-    std::vector<std::string> _paramDatatypes;
-    joynr::serializer::SerializationPlaceholder _params;
+    std::string methodName;
+    std::vector<std::string> paramDatatypes;
+    joynr::serializer::SerializationPlaceholder params;
 };
 
 } // namespace joynr

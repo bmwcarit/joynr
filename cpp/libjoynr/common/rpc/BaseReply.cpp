@@ -24,7 +24,7 @@
 namespace joynr
 {
 
-BaseReply::BaseReply() : _response()
+BaseReply::BaseReply() : response()
 {
 }
 

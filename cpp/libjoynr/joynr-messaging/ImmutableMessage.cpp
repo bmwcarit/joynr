@@ -29,12 +29,12 @@ namespace joynr
 ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool verifyInput)
         : _serializedMessage(std::move(serializedMessage)),
           _messageDeserializer(smrf::ByteArrayView(this->_serializedMessage), verifyInput),
-          _headers(),
+          headers(),
           _bodyView(),
           _decompressedBody(),
-          _receivedFromGlobal(false),
+          receivedFromGlobal(false),
           _accessControlChecked(false),
-          _creator(),
+          creator(),
           _requiredHeaders()
 {
     init();
@@ -43,12 +43,12 @@ ImmutableMessage::ImmutableMessage(smrf::ByteVector&& serializedMessage, bool ve
 ImmutableMessage::ImmutableMessage(const smrf::ByteVector& serializedMessage, bool verifyInput)
         : _serializedMessage(serializedMessage),
           _messageDeserializer(smrf::ByteArrayView(this->_serializedMessage), verifyInput),
-          _headers(),
+          headers(),
           _bodyView(),
           _decompressedBody(),
-          _receivedFromGlobal(false),
+          receivedFromGlobal(false),
           _accessControlChecked(false),
-          _creator(),
+          creator(),
           _requiredHeaders()
 {
     init();
@@ -71,19 +71,19 @@ bool ImmutableMessage::isTtlAbsolute() const
 
 const std::unordered_map<std::string, std::string>& ImmutableMessage::getHeaders() const
 {
-    return _headers;
+    return headers;
 }
 
 std::unordered_map<std::string, std::string> ImmutableMessage::getCustomHeaders() const
 {
-    if (_headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
+    if (headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
         return std::unordered_map<std::string, std::string>();
     }
 
     static std::size_t CUSTOM_HEADER_PREFIX_LENGTH = Message::CUSTOM_HEADER_PREFIX().length();
     std::unordered_map<std::string, std::string> result;
 
-    for (const auto& headersPair : _headers) {
+    for (const auto& headersPair : headers) {
         const std::string& headerName = headersPair.first;
 
         if (isCustomHeaderKey(headerName)) {
@@ -98,13 +98,13 @@ std::unordered_map<std::string, std::string> ImmutableMessage::getCustomHeaders(
 
 std::unordered_map<std::string, std::string> ImmutableMessage::getPrefixedCustomHeaders() const
 {
-    if (_headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
+    if (headers.size() <= RequiredHeaders::NUM_REQUIRED_HEADERS) {
         return std::unordered_map<std::string, std::string>();
     }
 
     std::unordered_map<std::string, std::string> result;
 
-    for (const auto& headersPair : _headers) {
+    for (const auto& headersPair : headers) {
         const std::string& headerName = headersPair.first;
 
         if (isCustomHeaderKey(headerName)) {
@@ -192,34 +192,34 @@ smrf::ByteArrayView ImmutableMessage::getSignature() const
 
 bool ImmutableMessage::isReceivedFromGlobal() const
 {
-    return _receivedFromGlobal;
+    return receivedFromGlobal;
 }
 
-void ImmutableMessage::setReceivedFromGlobal(bool receivedFromGlobal)
+void ImmutableMessage::setReceivedFromGlobal(bool recFromGlobal)
 {
-    this->_receivedFromGlobal = receivedFromGlobal;
+    this->receivedFromGlobal = recFromGlobal;
 }
 
-void ImmutableMessage::setCreator(const std::string& creator)
+void ImmutableMessage::setCreator(const std::string& creatorLocal)
 {
-    this->_creator = creator;
+    this->creator = creatorLocal;
 }
 
-void ImmutableMessage::setCreator(std::string&& creator)
+void ImmutableMessage::setCreator(std::string&& creatorLocal)
 {
-    this->_creator = std::move(creator);
+    this->creator = std::move(creatorLocal);
 }
 
 const std::string& ImmutableMessage::getCreator() const
 {
-    return _creator;
+    return creator;
 }
 
 boost::optional<std::string> ImmutableMessage::getOptionalHeaderByKey(const std::string& key) const
 {
     boost::optional<std::string> value;
-    auto it = _headers.find(key);
-    if (it != _headers.cend()) {
+    auto it = headers.find(key);
+    if (it != headers.cend()) {
         value = it->second;
     }
     return value;
@@ -227,7 +227,7 @@ boost::optional<std::string> ImmutableMessage::getOptionalHeaderByKey(const std:
 
 void ImmutableMessage::init()
 {
-    _headers = _messageDeserializer.getHeaders();
+    headers = _messageDeserializer.getHeaders();
     boost::optional<std::string> optionalId = getOptionalHeaderByKey(Message::HEADER_ID());
     boost::optional<std::string> optionalType = getOptionalHeaderByKey(Message::HEADER_TYPE());
 

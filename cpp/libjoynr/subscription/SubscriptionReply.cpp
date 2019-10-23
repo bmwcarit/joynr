@@ -22,18 +22,18 @@
 namespace joynr
 {
 
-SubscriptionReply::SubscriptionReply() : _subscriptionId(), _error(nullptr)
+SubscriptionReply::SubscriptionReply() : subscriptionId(), error(nullptr)
 {
 }
 
 SubscriptionReply::SubscriptionReply(const SubscriptionReply& other)
-        : _subscriptionId(other.getSubscriptionId()), _error(other.getError())
+        : subscriptionId(other.getSubscriptionId()), error(other.getError())
 {
 }
 
 SubscriptionReply& SubscriptionReply::operator=(const SubscriptionReply& other)
 {
-    this->_subscriptionId = other.getSubscriptionId();
+    this->subscriptionId = other.getSubscriptionId();
     return *this;
 }
 
@@ -41,10 +41,10 @@ std::string SubscriptionReply::toString() const
 {
     std::ostringstream typeAsString;
     typeAsString << "SubscriptionReply{";
-    typeAsString << "subscriptionId:" + _subscriptionId;
-    if (_error) {
+    typeAsString << "subscriptionId:" + subscriptionId;
+    if (error) {
         typeAsString << ", ";
-        typeAsString << "error: SubscriptionException: " + _error->getMessage();
+        typeAsString << "error: SubscriptionException: " + error->getMessage();
     }
     typeAsString << "}";
     return typeAsString.str();
@@ -58,44 +58,44 @@ void PrintTo(const SubscriptionReply& subscriptionReply, ::std::ostream* os)
 
 const std::string& SubscriptionReply::getSubscriptionId() const
 {
-    return _subscriptionId;
+    return subscriptionId;
 }
 
-void SubscriptionReply::setSubscriptionId(const std::string& subscriptionId)
+void SubscriptionReply::setSubscriptionId(const std::string& subscriptionIdLocal)
 {
-    this->_subscriptionId = subscriptionId;
+    this->subscriptionId = subscriptionIdLocal;
 }
 
-void SubscriptionReply::setSubscriptionId(std::string&& subscriptionId)
+void SubscriptionReply::setSubscriptionId(std::string&& subscriptionIdLocal)
 {
-    this->_subscriptionId = std::move(subscriptionId);
+    this->subscriptionId = std::move(subscriptionIdLocal);
 }
 
 std::shared_ptr<exceptions::SubscriptionException> SubscriptionReply::getError() const
 {
-    return _error;
+    return error;
 }
 
-void SubscriptionReply::setError(std::shared_ptr<exceptions::SubscriptionException> error)
+void SubscriptionReply::setError(std::shared_ptr<exceptions::SubscriptionException> errorLocal)
 {
-    this->_error = std::move(error);
+    this->error = std::move(errorLocal);
 }
 
 bool SubscriptionReply::operator==(const SubscriptionReply& other) const
 {
     // if error ptr do not point to the same object
-    if (_error != other.getError()) {
+    if (error != other.getError()) {
         // if exactly one of error and other.getError() is a nullptr
-        if (_error == nullptr || other.getError() == nullptr) {
+        if (error == nullptr || other.getError() == nullptr) {
             return false;
         }
         // compare actual objects
-        if (!(*_error.get() == *other.getError().get())) {
+        if (!(*error.get() == *other.getError().get())) {
             return false;
         }
     }
 
-    return _subscriptionId == other.getSubscriptionId();
+    return subscriptionId == other.getSubscriptionId();
 }
 
 bool SubscriptionReply::operator!=(const SubscriptionReply& other) const

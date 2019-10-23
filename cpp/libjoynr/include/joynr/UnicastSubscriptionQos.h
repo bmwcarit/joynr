@@ -48,7 +48,7 @@ public:
      * @param publicationTtlMs The publication TTL in ms.
      * @param validityMs Time span in milliseconds during which publications will be sent
      */
-    UnicastSubscriptionQos(std::int64_t validityMs, std::int64_t publicationTtlMs);
+    UnicastSubscriptionQos(std::int64_t validityMs, std::int64_t publicationTtlMsLocal);
 
     /**
      * @brief Copy constructor
@@ -92,7 +92,7 @@ public:
      *
      * @see SubscriptionQos#setExpiryDateMs
      */
-    virtual void setPublicationTtlMs(std::int64_t publicationTtlMs);
+    virtual void setPublicationTtlMs(std::int64_t publicationTtlMsLocal);
 
     /** @brief Assignment operator */
     UnicastSubscriptionQos& operator=(const UnicastSubscriptionQos& subscriptionQos);
@@ -121,12 +121,12 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<SubscriptionQos>(this), MUESLI_NVP(_publicationTtlMs));
+        archive(muesli::BaseClass<SubscriptionQos>(this), MUESLI_NVP(publicationTtlMs));
     }
 
 protected:
     /** @brief The publication time to live in milliseconds */
-    std::int64_t _publicationTtlMs;
+    std::int64_t publicationTtlMs;
 };
 
 } // namespace joynr

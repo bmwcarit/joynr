@@ -69,19 +69,20 @@ namespace bmi = boost::multi_index;
 
 struct LocalDiscoveryEntry : public DiscoveryEntry
 {
-    LocalDiscoveryEntry() : DiscoveryEntry(), _gbids()
+    LocalDiscoveryEntry() : DiscoveryEntry(), gbids()
     {
     }
-    LocalDiscoveryEntry(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {})
-            : DiscoveryEntry(entry), _gbids(gbids)
+    LocalDiscoveryEntry(const DiscoveryEntry& entry,
+                        const std::vector<std::string>& gbidsLocal = {})
+            : DiscoveryEntry(entry), gbids(gbidsLocal)
     {
     }
-    std::vector<std::string> _gbids;
+    std::vector<std::string> gbids;
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<joynr::types::DiscoveryEntry>(this), MUESLI_NVP(_gbids));
+        archive(muesli::BaseClass<joynr::types::DiscoveryEntry>(this), MUESLI_NVP(gbids));
     }
 };
 

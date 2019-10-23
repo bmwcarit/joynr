@@ -93,7 +93,7 @@ public:
      *
      * @see SubscriptionQos#setValidityMs
      */
-    virtual void setExpiryDateMs(std::int64_t expiryDateMs);
+    virtual void setExpiryDateMs(std::int64_t expiryDateMsLocal);
 
     /**
      * @brief Sets the validity of the subscription in milliseconds.
@@ -122,12 +122,12 @@ public:
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(MUESLI_NVP(_expiryDateMs));
+        archive(MUESLI_NVP(expiryDateMs));
     }
 
 protected:
     /** @brief The expiry date in milliseconds */
-    std::int64_t _expiryDateMs;
+    std::int64_t expiryDateMs;
 };
 
 } // namespace joynr

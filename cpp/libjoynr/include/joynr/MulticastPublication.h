@@ -41,19 +41,19 @@ public:
     bool operator!=(const MulticastPublication& other) const;
 
     const std::string& getMulticastId() const;
-    void setMulticastId(const std::string& multicastId);
-    void setMulticastId(std::string&& multicastId);
+    void setMulticastId(const std::string& multicastIdPararm);
+    void setMulticastId(std::string&& multicastIdPararm);
 
     template <typename Archive>
     void serialize(Archive& archive)
     {
-        archive(muesli::BaseClass<BasePublication>(this), MUESLI_NVP(_multicastId));
+        archive(muesli::BaseClass<BasePublication>(this), MUESLI_NVP(multicastId));
     }
 
 private:
     // printing MulticastPublication with google-test and google-mock
     friend void PrintTo(const MulticastPublication& MulticastPublication, ::std::ostream* os);
-    std::string _multicastId;
+    std::string multicastId;
 };
 
 } // namespace joynr
