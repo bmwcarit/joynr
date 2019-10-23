@@ -235,7 +235,7 @@ private:
     const system::RoutingTypes::Address dummyGlobalAddress;
 
     std::vector<std::string> availableGbids;
-    void fillAvailableGbidsVector(const MessagingSettings& messagingSettings);
+    void fillAvailableGbidsVector();
 };
 
 } // namespace joynr

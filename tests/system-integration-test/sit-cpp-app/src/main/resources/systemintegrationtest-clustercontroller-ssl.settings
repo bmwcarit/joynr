@@ -1,3 +1,6 @@
+[messaging]
+gbid=joynrdefaultgbid
+
 [websocket]
 certificate-authority-pem-filename=/data/build/tests/ssl-data/ca.cert.pem
 certificate-pem-filename=/data/build/tests/ssl-data/cc.cert.pem

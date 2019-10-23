@@ -60,6 +60,7 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "MqttJoynrClusterControllerRuntimeTest.settings"
         "MqttJoynrClusterControllerRuntimeTlsOnNoCertificatesTest.settings"
         "MqttMB_JoynrClusterControllerRuntimeTest.settings"
+        "MqttMB_JoynrClusterControllerRuntimeEmptyGbid.settings"
         "MqttMB_JoynrClusterControllerRuntimeMisconfiguredTest.settings"
         "HttpMessagingSettingsTest.settings"
         "MqttMessagingSettingsTest.settings"

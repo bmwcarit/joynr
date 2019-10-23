@@ -13,6 +13,7 @@ max-ttl-ms=2592000000
 discovery-entry-expiry-interval-ms=86400000
 
 broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
+gbid=joynrdefaultgbid
 
 discovery-directories-domain=io.joynr
 # TTL in msecs of messages used in communication between local discovery service and backend

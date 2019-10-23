@@ -1,5 +1,6 @@
 [messaging]
 broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@
+gbid=joynrdefaultgbid
 
 discovery-directories-domain=io.joynr
 

@@ -5,3 +5,4 @@ global-domain-access-controller-participantid=domainaccesscontroller_participant
 
 [messaging]
 persistence-file=joynr-access-control-end2end-test-1.persist
+gbid=joynrdefaultgbid

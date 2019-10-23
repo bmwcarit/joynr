@@ -47,8 +47,10 @@ log "CC_BINDIR" $CC_BINDIR
 # add debugging output
 set -x
 
+TEST_BINDIR="/data/build/tests/bin"
+
 cd $CC_BINDIR
-./cluster-controller & CLUSTER_CONTROLLER_PID=$!
+./cluster-controller $TEST_BINDIR/resources/systemintegrationtest-clustercontroller.settings & CLUSTER_CONTROLLER_PID=$!
 
 cd /data/build/tests/bin
 

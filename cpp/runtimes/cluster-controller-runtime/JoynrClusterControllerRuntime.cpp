@@ -212,7 +212,7 @@ void JoynrClusterControllerRuntime::init()
     libjoynrSettings.printSettings();
     wsSettings.printSettings();
 
-    fillAvailableGbidsVector(messagingSettings);
+    fillAvailableGbidsVector();
 
     if (mqttConnectionDataVector.empty()) {
         // Create entries for MqttConnection(s)
@@ -1078,12 +1078,19 @@ std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerA
     return "global-transport-not-available";
 }
 
-void JoynrClusterControllerRuntime::fillAvailableGbidsVector(
-        const MessagingSettings& messagingSettings)
+void JoynrClusterControllerRuntime::fillAvailableGbidsVector()
 {
-    availableGbids.emplace_back(messagingSettings.getGbid());
+    const std::string defaultBackendGbid = messagingSettings.getGbid();
+    availableGbids.emplace_back(defaultBackendGbid);
 
     std::uint8_t additionalBackends = messagingSettings.getAdditionalBackendsCount();
+
+    if (defaultBackendGbid.empty() && additionalBackends) {
+        JOYNR_LOG_ERROR(
+                logger(), "defaultBackendGbid is empty, MultipleBackend functionality disabled");
+        return;
+    }
+
     for (std::uint8_t index = 0; index < additionalBackends; index++) {
         availableGbids.emplace_back(messagingSettings.getAdditionalBackendGbid(index));
     }

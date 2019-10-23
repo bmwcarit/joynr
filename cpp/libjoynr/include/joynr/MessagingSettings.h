@@ -56,7 +56,6 @@ public:
     static const std::string& SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED();
     static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
     static const std::string& SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES();
-    static const std::string& SETTING_MQTT_VERSION();
     static const std::string& SETTING_INDEX();
     static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
@@ -105,7 +104,6 @@ public:
     static const std::string& SETTING_TTL_UPLIFT_MS();
 
     static const std::string& DEFAULT_GBID();
-    static const std::string& DEFAULT_MQTT_VERSION();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
@@ -165,8 +163,6 @@ public:
     void setMqttReconnectMaxDelayTimeSeconds(std::chrono::seconds mqttReconnectMaxDelayTimeSeconds);
     bool getMqttExponentialBackoffEnabled() const;
     void setMqttExponentialBackoffEnabled(const bool& enable);
-    std::string getMqttVersion() const;
-    void setMqttVersion(const std::string& version);
     std::chrono::milliseconds getMqttConnectionTimeoutMs() const;
     std::int64_t getMqttMaxMessageSizeBytes() const;
     void setMqttMaxMessageSizeBytes(std::int64_t mqttMaxMessageSizeBytes);

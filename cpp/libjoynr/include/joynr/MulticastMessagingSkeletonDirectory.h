@@ -53,15 +53,10 @@ public:
                         typeIndex.name(),
                         gbid);
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        if (gbid.empty()) {
-            JOYNR_LOG_DEBUG(
-                    logger(), "register messaging skeleton for address type {}", typeIndex.name());
-        } else {
-            JOYNR_LOG_DEBUG(logger(),
-                            "register messaging skeleton for address type {}, gbid: {}",
-                            typeIndex.name(),
-                            gbid);
-        }
+        JOYNR_LOG_DEBUG(logger(),
+                        "register messaging skeleton for address type {}, gbid: {}",
+                        typeIndex.name(),
+                        gbid);
         multicastSkeletons[std::make_pair(typeIndex, gbid)] = std::move(skeleton);
     }
 

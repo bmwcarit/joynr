@@ -206,6 +206,7 @@ install(
     FILES
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-consumer.settings
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-provider.settings
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-clustercontroller.settings
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-consumer-ssl.settings
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-provider-ssl.settings
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/systemintegrationtest-clustercontroller-ssl.settings
