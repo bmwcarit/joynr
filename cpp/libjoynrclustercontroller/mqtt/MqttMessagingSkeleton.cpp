@@ -119,12 +119,14 @@ void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
 
     if (logger().getLogLevel() == LogLevel::Debug) {
         JOYNR_LOG_DEBUG(logger(),
-                        "<<< INCOMING FROM {} <<< {}",
+                        "<<< INCOMING FROM >{}< <<< {}",
                         ownGbid,
                         immutableMessage->getTrackingInfo());
     } else {
-        JOYNR_LOG_TRACE(
-                logger(), "<<< INCOMING FROM {} <<< {}", ownGbid, immutableMessage->toLogMessage());
+        JOYNR_LOG_TRACE(logger(),
+                        "<<< INCOMING FROM >{}< <<< {}",
+                        ownGbid,
+                        immutableMessage->toLogMessage());
     }
 
     auto onFailure = [ messageId = immutableMessage->getId(), ownGbid = ownGbid ](

@@ -37,12 +37,12 @@ void MqttMessagingStub::transmit(
 {
     if (logger().getLogLevel() == LogLevel::Debug) {
         JOYNR_LOG_DEBUG(logger(),
-                        ">>> OUTGOING TO {} >>> {}",
+                        ">>> OUTGOING TO >{}< >>> {}",
                         destinationAddress.getBrokerUri(),
                         message->getTrackingInfo());
     } else {
         JOYNR_LOG_TRACE(logger(),
-                        ">>> OUTGOING TO {} >>> {}",
+                        ">>> OUTGOING TO >{}< >>> {}",
                         destinationAddress.getBrokerUri(),
                         message->toLogMessage());
     }
