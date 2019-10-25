@@ -22,8 +22,10 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_ROUTING_
 import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -46,7 +48,7 @@ public class RoutingTableImpl implements RoutingTable {
 
     private ConcurrentMap<String, RoutingEntry> hashMap = new ConcurrentHashMap<>();
     private final long routingTableGracePeriodMs;
-    private final String[] gbidsArray;
+    private final Set<String> knownGbidsSet;
     private String gcdParticipantId;
     private final RoutingTableAddressValidator addressValidator;
 
@@ -55,7 +57,8 @@ public class RoutingTableImpl implements RoutingTable {
                             @Named(GBID_ARRAY) String[] gbidsArray,
                             final RoutingTableAddressValidator addressValidator) {
         this.routingTableGracePeriodMs = routingTableGracePeriodMs;
-        this.gbidsArray = gbidsArray.clone();
+        knownGbidsSet = new HashSet<>();
+        knownGbidsSet.addAll(Arrays.asList(gbidsArray));
         // GcdParticipantId will be set to the correct value via setGcdParticipantId(String) during
         // joynr startup, before the GCD address is added to the routing table
         // (in the constructor of StaticCapabilitiesProvisioning).
@@ -80,11 +83,11 @@ public class RoutingTableImpl implements RoutingTable {
     @Override
     public Address get(String participantId, String gbid) {
         Address address = getInternal(participantId);
-        if (address != null && gcdParticipantId.equals(participantId)) {
-            if (!(Arrays.asList(gbidsArray).contains(gbid))) {
+        if (address != null && gcdParticipantId.equals(participantId) && address instanceof MqttAddress) {
+            if (!knownGbidsSet.contains(gbid)) {
                 logger.error("The provided gbid {} for the participantId {} is unknown", gbid, participantId);
                 address = null;
-            } else if (address instanceof MqttAddress) {
+            } else {
                 MqttAddress mqttAddress = new MqttAddress((MqttAddress) address);
                 mqttAddress.setBrokerUri(gbid);
                 address = mqttAddress;

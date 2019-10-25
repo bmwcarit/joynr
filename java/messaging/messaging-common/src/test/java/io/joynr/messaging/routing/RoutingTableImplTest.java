@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -41,6 +42,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -67,7 +69,7 @@ public class RoutingTableImplTest {
     @Before
     public void setup() {
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
-        subject = getRoutingTable();
+        subject = getRoutingTable(gbidsArray);
         subject.setGcdParticipantId(gcdParticipantId);
     }
 
@@ -79,7 +81,7 @@ public class RoutingTableImplTest {
     @Test
     public void testSetGcdParticipantIdMethod() throws NoSuchFieldException, SecurityException,
                                                 IllegalArgumentException, IllegalAccessException {
-        RoutingTableImpl routingTable1 = getRoutingTable();
+        RoutingTableImpl routingTable1 = getRoutingTable(gbidsArray);
 
         Class<?> reflectClass = routingTable1.getClass();
         Field field = reflectClass.getDeclaredField("gcdParticipantId");
@@ -90,7 +92,7 @@ public class RoutingTableImplTest {
         assertEquals(gcdParticipantId, field.get(routingTable1));
     }
 
-    private RoutingTableImpl getRoutingTable() {
+    private RoutingTableImpl getRoutingTable(String[] gbidsArray) {
         return new RoutingTableImpl(routingTableGracePeriod, gbidsArray, addressValidatorMock);
     }
 
@@ -149,107 +151,215 @@ public class RoutingTableImplTest {
 
     }
 
-    @Test
-    public void testPutAndGetWithGBIDForGcdParticipantId_mqttAddress() {
-        MqttAddress gcdAddress = new MqttAddress();
-        MqttAddress expectedGcdAddress = new MqttAddress(gcdAddress);
-        final boolean isGloballyVisible = false;
-        final long expiryDateMs = Long.MAX_VALUE;
-        subject.put(gcdParticipantId, gcdAddress, isGloballyVisible, expiryDateMs);
-
-        Address result = subject.get(gcdParticipantId, "");
-        assertNull(result);
-
-        result = subject.get(gcdParticipantId, "wrongGbid");
-        assertNull(result);
-
-        result = subject.get(gcdParticipantId, gbidsArray[0]);
-        expectedGcdAddress.setBrokerUri(gbidsArray[0]);
-        assertEquals(expectedGcdAddress, result);
-        assertEquals(gbidsArray[0], ((MqttAddress) result).getBrokerUri());
-        assertNotEquals(gcdAddress, result);
-
-        result = subject.get(gcdParticipantId, gbidsArray[1]);
-        expectedGcdAddress.setBrokerUri(gbidsArray[1]);
-        assertEquals(expectedGcdAddress, result);
-        assertEquals(gbidsArray[1], ((MqttAddress) result).getBrokerUri());
-        assertNotEquals(gcdAddress, result);
-    }
-
-    @Test
-    public void testPutAndGetWithGBIDForParticipantId_mqttAddress() {
-        MqttAddress address = new MqttAddress();
-        MqttAddress expectedAddress = new MqttAddress(address);
+    private void testPutAndGetWithGbid(String participantId, String gbid, Address address, Address expectedAddress) {
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
         subject.put(participantId, address, isGloballyVisible, expiryDateMs);
 
-        Address result = subject.get(participantId, "");
+        Address result = subject.get(participantId, gbid);
         assertEquals(expectedAddress, result);
-        assertEquals(expectedAddress, address);
+        if (!address.equals(expectedAddress)) {
+            assertNotEquals(address, result);
+        }
+        if (gcdParticipantId.equals(participantId) && expectedAddress instanceof MqttAddress) {
+            assertEquals(gbid, ((MqttAddress) result).getBrokerUri());
+        } else if (expectedAddress != null) {
+            assertEquals(expectedAddress, address);
+        }
+    }
 
-        result = subject.get(participantId, gbidsArray[0]);
-        assertEquals(expectedAddress, result);
-        assertEquals(expectedAddress, address);
+    @Test
+    public void putAndGetWithGBID_emptyGbidNotKnown_gcdParticipantId_mqttAddress() {
+        MqttAddress address = new MqttAddress();
+        MqttAddress unmodifiedAddress = new MqttAddress(address);
+        MqttAddress expectedAddress = new MqttAddress(address);
 
-        result = subject.get(participantId, "wrongGbid");
-        assertEquals(expectedAddress, result);
-        assertEquals(expectedAddress, address);
+        testPutAndGetWithGbid(gcdParticipantId, "", address, null);
 
-        // calling the old get API
-        result = subject.get(participantId);
+        testPutAndGetWithGbid(gcdParticipantId, "unknownGbid", address, null);
+
+        expectedAddress.setBrokerUri(gbidsArray[0]);
+        testPutAndGetWithGbid(gcdParticipantId, gbidsArray[0], address, expectedAddress);
+
+        expectedAddress.setBrokerUri(gbidsArray[1]);
+        testPutAndGetWithGbid(gcdParticipantId, gbidsArray[1], address, expectedAddress);
+
+        // calling the old get API should return the unmodified address
+        Address result = subject.get(gcdParticipantId);
+        assertEquals(unmodifiedAddress, result);
+        assertNotEquals(expectedAddress, unmodifiedAddress);
+        assertEquals(unmodifiedAddress, address);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidKnown_gcdParticipantId_mqttAddress() {
+        String[] gbidsArray = new String[]{ "" };
+        subject = getRoutingTable(gbidsArray);
+        subject.setGcdParticipantId(gcdParticipantId);
+        MqttAddress address = new MqttAddress();
+        MqttAddress unmodifiedAddress = new MqttAddress(address);
+        MqttAddress expectedAddress = new MqttAddress(address);
+
+        testPutAndGetWithGbid(gcdParticipantId, "unknownGbid", address, null);
+
+        expectedAddress.setBrokerUri(gbidsArray[0]);
+        testPutAndGetWithGbid(gcdParticipantId, "", address, expectedAddress);
+
+        // calling the old get API should return the unmodified address
+        Address result = subject.get(gcdParticipantId);
+        assertEquals(unmodifiedAddress, result);
+        assertEquals(unmodifiedAddress, address);
+        assertEquals(unmodifiedAddress, expectedAddress);
+    }
+
+    private void testPutAndGetWithGbid_noGbidReplacement(String participantId,
+                                                         Address address,
+                                                         Address expectedAddress) {
+        testPutAndGetWithGbid(participantId, "", address, expectedAddress);
+
+        testPutAndGetWithGbid(participantId, "unknownGbid", address, expectedAddress);
+
+        testPutAndGetWithGbid(participantId, gbidsArray[0], address, expectedAddress);
+
+        testPutAndGetWithGbid(participantId, gbidsArray[1], address, expectedAddress);
+
+        // calling the old get API should return the unmodified address
+        Address result = subject.get(participantId);
         assertEquals(expectedAddress, result);
         assertEquals(expectedAddress, address);
     }
 
     @Test
-    public void testPutAndGetWithGBIDForGcdParticipantId_ChannelAddress() {
-        ChannelAddress channelAddress = new ChannelAddress();
-        ChannelAddress expectedChannelAddress = new ChannelAddress(channelAddress);
+    public void putAndGetWithGBID_emptyGbidNotKnown_otherParticipantId_mqttAddress() {
+        MqttAddress address = new MqttAddress();
+        MqttAddress expectedAddress = new MqttAddress(address);
 
-        final boolean isGloballyVisible = false;
-        final long expiryDateMs = Long.MAX_VALUE;
-        subject.put(gcdParticipantId, channelAddress, isGloballyVisible, expiryDateMs);
-
-        ChannelAddress actualChannelAddress = (ChannelAddress) subject.get(gcdParticipantId, gbidsArray[0]);
-        assertEquals(expectedChannelAddress, actualChannelAddress);
-
-        // different gbid
-        actualChannelAddress = (ChannelAddress) subject.get(gcdParticipantId, gbidsArray[1]);
-        assertEquals(expectedChannelAddress, actualChannelAddress);
-
-        // unknown gbid
-        actualChannelAddress = (ChannelAddress) subject.get(gcdParticipantId, "UnknownGbId");
-        assertNull(actualChannelAddress);
-
-        // empty gbid
-        ChannelAddress actualChannelAddressForEmptyGbId = (ChannelAddress) subject.get(gcdParticipantId, "");
-        assertNull(actualChannelAddressForEmptyGbId);
+        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
     }
 
     @Test
-    public void testPutAndGetWithGBIDForGcdParticipantId_WebSocketAddress() {
-        WebSocketAddress gcdWebSocketAddress = new WebSocketAddress();
-        WebSocketAddress expectedGcdWebSocketAddress = new WebSocketAddress(gcdWebSocketAddress);
+    public void putAndGetWithGBID_emptyGbidKnown_otherParticipantId_mqttAddress() {
+        String[] gbidsArray = new String[]{ "" };
+        subject = getRoutingTable(gbidsArray);
+        subject.setGcdParticipantId(gcdParticipantId);
+        MqttAddress address = new MqttAddress();
+        MqttAddress expectedAddress = new MqttAddress(address);
 
-        final boolean isGloballyVisible = false;
-        final long expiryDateMs = Long.MAX_VALUE;
-        subject.put(gcdParticipantId, gcdWebSocketAddress, isGloballyVisible, expiryDateMs);
+        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
+    }
 
-        WebSocketAddress actualgcdWebSocketAddress = (WebSocketAddress) subject.get(gcdParticipantId, gbidsArray[0]);
-        assertEquals(expectedGcdWebSocketAddress, actualgcdWebSocketAddress);
+    @Test
+    public void putAndGetWithGBID_emptyGbidNotKnown_gcdParticipantId_channelAddress() {
+        ChannelAddress address = new ChannelAddress();
+        ChannelAddress expectedAddress = new ChannelAddress(address);
 
-        // different gbid
-        actualgcdWebSocketAddress = (WebSocketAddress) subject.get(gcdParticipantId, gbidsArray[1]);
-        assertEquals(expectedGcdWebSocketAddress, actualgcdWebSocketAddress);
+        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
+    }
 
-        // unknown gbid
-        actualgcdWebSocketAddress = (WebSocketAddress) subject.get(gcdParticipantId, "UnknownGbId");
-        assertNull(actualgcdWebSocketAddress);
+    @Test
+    public void putAndGetWithGBID_emptyGbidKnown_gcdParticipantId_channelAddress() {
+        String[] gbidsArray = new String[]{ "" };
+        subject = getRoutingTable(gbidsArray);
+        subject.setGcdParticipantId(gcdParticipantId);
+        ChannelAddress address = new ChannelAddress();
+        ChannelAddress expectedAddress = new ChannelAddress(address);
 
-        // empty gbid
-        actualgcdWebSocketAddress = (WebSocketAddress) subject.get(gcdParticipantId, "");
-        assertNull(actualgcdWebSocketAddress);
+        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidNotKnown_otherParticipantId_channelAddress() {
+        ChannelAddress address = new ChannelAddress();
+        ChannelAddress expectedAddress = new ChannelAddress(address);
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidKnown_otherParticipantId_channelAddress() {
+        String[] gbidsArray = new String[]{ "" };
+        subject = getRoutingTable(gbidsArray);
+        subject.setGcdParticipantId(gcdParticipantId);
+        ChannelAddress address = new ChannelAddress();
+        ChannelAddress expectedAddress = new ChannelAddress(address);
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidNotKnown_gcdParticipantId_WebSocketAddress() {
+        WebSocketAddress address = new WebSocketAddress();
+        WebSocketAddress expectedAddress = new WebSocketAddress(address);
+
+        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidKnown_gcdParticipantId_WebSocketAddress() {
+        String[] gbidsArray = new String[]{ "" };
+        subject = getRoutingTable(gbidsArray);
+        subject.setGcdParticipantId(gcdParticipantId);
+        WebSocketAddress address = new WebSocketAddress();
+        WebSocketAddress expectedAddress = new WebSocketAddress(address);
+
+        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidNotKnown_otherParticipantId_WebSocketAddress() {
+        WebSocketAddress address = new WebSocketAddress();
+        WebSocketAddress expectedAddress = new WebSocketAddress(address);
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidKnown_otherParticipantId_WebSocketAddress() {
+        String[] gbidsArray = new String[]{ "" };
+        subject = getRoutingTable(gbidsArray);
+        subject.setGcdParticipantId(gcdParticipantId);
+        WebSocketAddress address = new WebSocketAddress();
+        WebSocketAddress expectedAddress = new WebSocketAddress(address);
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidNotKnown_gcdParticipantId_InProcessAddress() {
+        InProcessAddress address = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
+        InProcessAddress expectedAddress = new InProcessAddress(address.getSkeleton());
+
+        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidKnown_gcdParticipantId_InProcessAddress() {
+        String[] gbidsArray = new String[]{ "" };
+        subject = getRoutingTable(gbidsArray);
+        subject.setGcdParticipantId(gcdParticipantId);
+        InProcessAddress address = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
+        InProcessAddress expectedAddress = new InProcessAddress(address.getSkeleton());
+
+        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidNotKnown_otherParticipantId_InProcessAddress() {
+        InProcessAddress address = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
+        InProcessAddress expectedAddress = new InProcessAddress(address.getSkeleton());
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidKnown_otherParticipantId_InProcessAddress() {
+        String[] gbidsArray = new String[]{ "" };
+        subject = getRoutingTable(gbidsArray);
+        subject.setGcdParticipantId(gcdParticipantId);
+        InProcessAddress address = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
+        InProcessAddress expectedAddress = new InProcessAddress(address.getSkeleton());
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
     }
 
     @Test
