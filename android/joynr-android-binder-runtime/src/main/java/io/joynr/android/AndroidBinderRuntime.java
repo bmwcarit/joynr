@@ -67,9 +67,10 @@ public class AndroidBinderRuntime {
      * @param context    The Application context
      * @param brokerUri  The mqtt broker uri
      * @param properties Extra properties that can configure joynr runtime.
+     * @param modules    Extra modules that can configure joynr runtime.
      * @return A {@link JoynrRuntime} object
      */
-    public static JoynrRuntime initClusterController(Context context, String brokerUri, Properties properties) {
+    public static JoynrRuntime initClusterController(Context context, String brokerUri, Properties properties, Module... modules) {
 
         // set default joynr properties
         final Properties config = getDefaultJoynrProperties(context);
@@ -82,6 +83,9 @@ public class AndroidBinderRuntime {
         Module runtimeModule = new CCBinderRuntimeModule(context);
         final Module backendTransportModules = new MqttPahoModule();
         runtimeModule = Modules.override(runtimeModule).with(backendTransportModules);
+        for (Module module : modules) {
+            runtimeModule = Modules.override(runtimeModule).with(module);
+        }
 
         injector = new JoynrInjectorFactory(config, runtimeModule).getInjector();
         runtime = injector.getInstance(JoynrRuntime.class);
