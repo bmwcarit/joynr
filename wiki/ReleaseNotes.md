@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.9.2
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Fixed a bug that requests for GlobalCapabilitiesDirectory from a joynr runtime that
+  uses the empty GBID could not be answered.
+
+## Configuration property changes
+None.
+
 # joynr 1.9.1
 
 ## API relevant changes
@@ -21,6 +33,9 @@ the versioning scheme [here](JoynrVersioning.md).
 
 ## Other changes
 * **[Java,C++,JS]** Underscore is now allowed inside custom header values in MessagingQos
+
+## Configuration property changes
+None.
 
 # joynr 1.9.0
 
