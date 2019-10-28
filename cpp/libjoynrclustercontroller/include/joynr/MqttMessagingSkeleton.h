@@ -68,6 +68,9 @@ public:
 
     void onMessageReceived(smrf::ByteVector&& rawMessage) override;
 
+protected:
+    const std::string ownGbid;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MqttMessagingSkeleton);
     ADD_LOGGER(MqttMessagingSkeleton)
@@ -80,7 +83,6 @@ private:
     std::unordered_map<std::string, std::uint64_t> multicastSubscriptionCount;
     std::mutex multicastSubscriptionCountMutex;
     std::string multicastTopicPrefix;
-    const std::string ownGbid;
 };
 
 } // namespace joynr

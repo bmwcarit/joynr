@@ -45,13 +45,13 @@ MqttMessagingSkeleton::MqttMessagingSkeleton(std::weak_ptr<IMessageRouter> messa
                                              const std::string& multicastTopicPrefix,
                                              const std::string& ownGbid,
                                              uint64_t ttlUplift)
-        : messageRouter(std::move(messageRouter)),
+        : ownGbid(ownGbid),
+          messageRouter(std::move(messageRouter)),
           mqttReceiver(std::move(mqttReceiver)),
           ttlUplift(ttlUplift),
           multicastSubscriptionCount(),
           multicastSubscriptionCountMutex(),
-          multicastTopicPrefix(multicastTopicPrefix),
-          ownGbid(ownGbid)
+          multicastTopicPrefix(multicastTopicPrefix)
 {
 }
 
