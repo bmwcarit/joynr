@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/JoynrExport.h"
@@ -72,22 +73,23 @@ class JOYNR_EXPORT CcMessageRouter : public joynr::AbstractMessageRouter,
 {
 public:
     // TODO: change shared_ptr to unique_ptr once JoynrClusterControllerRuntime is refactored
-    CcMessageRouter(MessagingSettings& _messagingSettings,
+    CcMessageRouter(MessagingSettings& messagingSettings,
                     ClusterControllerSettings& clusterControllerSettings,
-                    std::shared_ptr<IMessagingStubFactory> _messagingStubFactory,
+                    std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                     std::shared_ptr<MulticastMessagingSkeletonDirectory>
                             multicastMessagingSkeletonDirectory,
                     std::unique_ptr<IPlatformSecurityManager> securityManager,
                     boost::asio::io_service& ioService,
-                    std::unique_ptr<IMulticastAddressCalculator> _addressCalculator,
+                    std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                     const std::string& globalClusterControllerAddress,
                     const std::string& messageNotificationProviderParticipantId,
-                    bool _persistRoutingTable,
-                    std::vector<std::shared_ptr<ITransportStatus>> _transportStatuses,
-                    std::unique_ptr<MessageQueue<std::string>> _messageQueue,
+                    bool persistRoutingTable,
+                    std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
+                    std::unique_ptr<MessageQueue<std::string>> messageQueue,
                     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
-                            _transportNotAvailableQueue,
-                    const system::RoutingTypes::Address& ownGlobalAddress);
+                            transportNotAvailableQueue,
+                    const system::RoutingTypes::Address& ownGlobalAddress,
+                    const std::vector<std::string>& knownGbids);
 
     ~CcMessageRouter() override;
 

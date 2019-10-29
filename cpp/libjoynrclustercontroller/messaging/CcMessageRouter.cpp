@@ -133,7 +133,8 @@ CcMessageRouter::CcMessageRouter(
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue,
-        const system::RoutingTypes::Address& ownGlobalAddress)
+        const system::RoutingTypes::Address& ownGlobalAddress,
+        const std::vector<std::string>& knownGbids)
         : AbstractMessageRouter(messagingSettings,
                                 std::move(messagingStubFactory),
                                 ioService,
@@ -141,7 +142,8 @@ CcMessageRouter::CcMessageRouter(
                                 persistRoutingTable,
                                 std::move(transportStatuses),
                                 std::move(messageQueue),
-                                std::move(transportNotAvailableQueue)),
+                                std::move(transportNotAvailableQueue),
+                                knownGbids),
           joynr::system::RoutingAbstractProvider(),
           _multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           _securityManager(std::move(securityManager)),

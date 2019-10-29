@@ -26,6 +26,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/IMessageRouter.h"
@@ -129,7 +130,8 @@ protected:
                           std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
                           std::unique_ptr<MessageQueue<std::string>> messageQueue,
                           std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
-                                  transportNotAvailableQueue);
+                                  transportNotAvailableQueue,
+                          const std::vector<std::string>& knownGbids = {});
 
     virtual bool publishToGlobal(const ImmutableMessage& message) = 0;
     AddressUnorderedSet getDestinationAddresses(const ImmutableMessage& message,

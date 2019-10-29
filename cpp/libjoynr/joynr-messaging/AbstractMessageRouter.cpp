@@ -25,6 +25,7 @@
 #include <functional>
 #include <limits>
 #include <sstream>
+#include <vector>
 
 #include <boost/asio/io_service.hpp>
 #include <spdlog/fmt/fmt.h>
@@ -61,10 +62,11 @@ AbstractMessageRouter::AbstractMessageRouter(
         bool persistRoutingTable,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
-        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue)
+        std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue,
+        const std::vector<std::string>& knownGbids)
         : IMessageRouter(),
           enable_shared_from_this<AbstractMessageRouter>(),
-          _routingTable(messagingSettings.getCapabilitiesDirectoryParticipantId()),
+          _routingTable(messagingSettings.getCapabilitiesDirectoryParticipantId(), knownGbids),
           _routingTableLock(),
           _multicastReceiverDirectory(),
           _messagingSettings(messagingSettings),

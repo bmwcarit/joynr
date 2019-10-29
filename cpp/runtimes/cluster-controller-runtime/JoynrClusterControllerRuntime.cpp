@@ -399,7 +399,8 @@ void JoynrClusterControllerRuntime::init()
             std::move(transportStatuses),
             std::move(messageQueue),
             std::move(transportStatusQueue),
-            getGlobalClusterControllerAddress());
+            getGlobalClusterControllerAddress(),
+            _availableGbids);
 
     _ccMessageRouter->init();
     if (_libjoynrSettings.isMessageRouterPersistencyEnabled()) {

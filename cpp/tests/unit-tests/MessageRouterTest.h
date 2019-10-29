@@ -158,7 +158,8 @@ protected:
                 std::move(transportStatuses),
                 std::move(messageQueueForMessageRouter),
                 std::move(transportNotAvailableQueue),
-                *_ownAddress);
+                *_ownAddress,
+                _availableGbids);
         ccMessageRouter->init();
         return ccMessageRouter;
     }

@@ -24,6 +24,7 @@
 #include <string>
 #include <typeinfo>
 #include <unordered_set>
+#include <vector>
 
 #include <boost/system/error_code.hpp>
 #include <boost/multi_index_container.hpp>
@@ -135,7 +136,7 @@ class RoutingTable
 {
 
 public:
-    RoutingTable(const std::string& gcdParticipantId);
+    RoutingTable(const std::string& gcdParticipantId, const std::vector<std::string>& knownGbids);
     ~RoutingTable();
 
     /*
@@ -249,6 +250,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(RoutingTable);
     MultiIndexContainer _multiIndexContainer;
     std::string _gcdParticipantId;
+    std::unordered_set<std::string> _knownGbidsSet;
     ADD_LOGGER(RoutingTable)
 };
 

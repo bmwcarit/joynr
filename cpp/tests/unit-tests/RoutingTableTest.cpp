@@ -36,7 +36,8 @@ class RoutingTableTest : public ::testing::Test
 public:
     RoutingTableTest()
             : gcdParticipantId("testGcdParticipantId"),
-              routingTable(gcdParticipantId),
+              knownGbids(std::vector<std::string>{"gbid1", "gbid2"}),
+              routingTable(gcdParticipantId, knownGbids),
               testValue(std::make_shared<WebSocketClientAddress>("testValue")),
               secondTestValue(std::make_shared<WebSocketClientAddress>("secondTestValue")),
               testGbid("testGbid"),
@@ -50,6 +51,7 @@ public:
 
 protected:
     const std::string gcdParticipantId;
+    const std::vector<std::string> knownGbids;
     RoutingTable routingTable;
     const std::shared_ptr<Address> testValue;
     const std::shared_ptr<Address> secondTestValue;

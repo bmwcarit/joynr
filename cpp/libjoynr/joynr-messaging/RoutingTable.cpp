@@ -18,13 +18,21 @@
  */
 
 #include "joynr/RoutingTable.h"
+
+#include <string>
+#include <unordered_set>
+#include <vector>
+
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr
 {
 
-RoutingTable::RoutingTable(const std::string& gcdParticipantId)
-        : _multiIndexContainer(), _gcdParticipantId(gcdParticipantId)
+RoutingTable::RoutingTable(const std::string& gcdParticipantId,
+                           const std::vector<std::string>& knownGbids)
+        : _multiIndexContainer(),
+          _gcdParticipantId(gcdParticipantId),
+          _knownGbidsSet(knownGbids.cbegin(), knownGbids.cend())
 {
 }
 

@@ -19,6 +19,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include <string>
+#include <vector>
+
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Dispatcher.h"
@@ -96,7 +99,8 @@ public:
               _messagingStubFactory(std::make_shared<MessagingStubFactory>()),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _messageRouter(),
-              _ownAddress()
+              _ownAddress(),
+              _knownGbids(std::vector<std::string>{})
     {
         const std::string globalCCAddress("globalAddress");
         const std::string messageNotificationProviderParticipantId(
@@ -118,7 +122,8 @@ public:
                 std::vector<std::shared_ptr<ITransportStatus>>{},
                 std::make_unique<MessageQueue<std::string>>(),
                 std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(),
-                _ownAddress);
+                _ownAddress,
+                _knownGbids);
         _messageRouter->init();
         _qos.setTtl(10000);
     }
@@ -302,4 +307,5 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessagingTest);
     const system::RoutingTypes::Address _ownAddress;
+    const std::vector<std::string> _knownGbids;
 };

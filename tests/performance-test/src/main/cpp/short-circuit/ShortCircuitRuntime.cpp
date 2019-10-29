@@ -80,7 +80,8 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
             std::vector<std::shared_ptr<ITransportStatus>>{},
             std::make_unique<MessageQueue<std::string>>(),
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(),
-            _ownAddress);
+            _ownAddress,
+            _availableGbids);
 
     _messageSender = std::make_shared<MessageSender>(_messageRouter, _keyChain);
     _joynrDispatcher =
