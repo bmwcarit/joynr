@@ -21,7 +21,11 @@
 
 #include <gmock/gmock.h>
 
+#include <memory>
+#include <string>
+
 #include "joynr/IDispatcher.h"
+#include "joynr/MessagingQos.h"
 
 class MockDispatcher : public joynr::IDispatcher {
 public:

@@ -18,14 +18,26 @@
  */
 
 #include <atomic>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 #include "joynr/RoutingTable.h"
+
+#include "joynr/InProcessMessagingAddress.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketProtocol.h"
+
+#include "tests/mock/MockDispatcher.h"
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
 
 using namespace joynr;
 using Address = joynr::system::RoutingTypes::Address;
@@ -40,9 +52,7 @@ public:
               routingTable(gcdParticipantId, knownGbids),
               testValue(std::make_shared<WebSocketClientAddress>("testValue")),
               secondTestValue(std::make_shared<WebSocketClientAddress>("secondTestValue")),
-              testGbid("testGbid"),
-              otherGbid("otherGbid"),
-              mqttTestValue(std::make_shared<joynr::system::RoutingTypes::MqttAddress>(testGbid, "mqttTestValue")),
+              mqttTestValue(std::make_shared<joynr::system::RoutingTypes::MqttAddress>(knownGbids[0], "mqttTestValue")),
               firstKey("firstKey"),
               secondKey("secondKey"),
               thirdKey("thirdKey")
@@ -50,13 +60,97 @@ public:
     }
 
 protected:
+    void testLookupByParticipantIdAndGbid(
+            const std::string& participantId,
+            const std::string& gbid,
+            RoutingTable& subject,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> expectedAddress)
+    {
+        subject.add(participantId,
+                         isGloballyVisibleTrue,
+                         address,
+                         expiryDateMaxMs,
+                         isStickyFalse);
+
+        boost::optional<routingtable::RoutingEntry> result =
+                subject.lookupRoutingEntryByParticipantIdAndGbid(participantId, gbid);
+        if (expectedAddress == nullptr) {
+            EXPECT_EQ(boost::none, result);
+        } else {
+            auto foundAddress = result->address;
+            EXPECT_EQ(*expectedAddress, *foundAddress);
+            if (participantId == gcdParticipantId) {
+                if (auto mqttAddress = dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(foundAddress.get())) {
+                    EXPECT_EQ(gbid, mqttAddress->getBrokerUri());
+                    EXPECT_NE(*expectedAddress, *address);
+                } else {
+                    EXPECT_EQ(*expectedAddress, *address);
+                }
+            } else {
+                EXPECT_EQ(*expectedAddress, *address);
+            }
+        }
+    }
+
+    void testLookupByParticipantIdAndGbid_noGbidReplacement(
+            const std::string& participantId,
+            RoutingTable& subject,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> expectedAddress)
+    {
+        //auto originalAddress = std::make_shared<const joynr::system::RoutingTypes::Address>(*address);
+
+        testLookupByParticipantIdAndGbid(participantId, "", subject, address, expectedAddress);
+
+        testLookupByParticipantIdAndGbid(participantId, "unknownGbid", subject, address, expectedAddress);
+
+        testLookupByParticipantIdAndGbid(participantId, "", subject, address, expectedAddress);
+
+        testLookupByParticipantIdAndGbid(participantId, "", subject, address, expectedAddress);
+
+        // calling the old get API should return the unmodified address
+        boost::optional<routingtable::RoutingEntry> result =
+                subject.lookupRoutingEntryByParticipantId(participantId);
+        EXPECT_TRUE(result);
+        EXPECT_EQ(*expectedAddress, *(result->address));
+        EXPECT_EQ(*expectedAddress, *address);
+
+        // cleanup
+        subject.remove(participantId);
+    }
+
+    void testLookupByParticipantIdAndGbid_nonMqttAddress_noGbidReplacement(
+            const std::string& participantId,
+            RoutingTable& subject)
+    {
+        auto channelAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>("testMessagingEndpointUrl", "testChannelId");
+        auto expectedChannelAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(*channelAddress);
+        testLookupByParticipantIdAndGbid_noGbidReplacement(participantId, subject, channelAddress, expectedChannelAddress);
+
+        auto webSocketAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(system::RoutingTypes::WebSocketProtocol::WS,
+                                                                                                      "host",
+                                                                                                      42,
+                                                                                                      "path");
+        auto expectedWebSocketAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(*webSocketAddress);
+        testLookupByParticipantIdAndGbid_noGbidReplacement(participantId, subject, webSocketAddress, expectedWebSocketAddress);
+
+        auto webSocketClientAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("testId");
+        auto expectedWebSocketClientAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(*webSocketClientAddress);
+        testLookupByParticipantIdAndGbid_noGbidReplacement(participantId, subject, webSocketClientAddress, expectedWebSocketClientAddress);
+
+        auto dispatcher = std::make_shared<MockDispatcher>();
+        auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(util::as_weak_ptr(dispatcher));
+        auto inProcessAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
+        auto expectedInProcessAddress = std::make_shared<const joynr::InProcessMessagingAddress>(*inProcessAddress);
+        testLookupByParticipantIdAndGbid_noGbidReplacement(participantId, subject, inProcessAddress, expectedInProcessAddress);
+    }
+
     const std::string gcdParticipantId;
     const std::vector<std::string> knownGbids;
     RoutingTable routingTable;
     const std::shared_ptr<Address> testValue;
     const std::shared_ptr<Address> secondTestValue;
-    const std::string testGbid;
-    const std::string otherGbid;
     const std::shared_ptr<Address> mqttTestValue;
     const std::string firstKey;
     const std::string secondKey;
@@ -112,48 +206,99 @@ TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantId)
     ASSERT_EQ(result2->_isSticky, expectedIsSticky2);
 }
 
-TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_gcdParticipantId_mqttAddress)
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_emptyGbidNotKnown_gcdParticipantId_mqttAddress)
 {
-    const std::string expectedGbid = otherGbid;
-    //Positive test case: gbid of the existing entry gets replaced with the one from the custom header
-    routingTable.add(gcdParticipantId,
-                     isGloballyVisibleTrue,
-                     mqttTestValue,
-                     expiryDateMaxMs,
-                     isStickyFalse);
-    boost::optional<routingtable::RoutingEntry> result1 =
-            routingTable.lookupRoutingEntryByParticipantIdAndGbid(gcdParticipantId, otherGbid);
-    ASSERT_EQ(expectedGbid,
-              (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result1->address).get()))->getBrokerUri());
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>("testGbid", "testTopic");
+    auto originalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(*address);
+
+    testLookupByParticipantIdAndGbid(gcdParticipantId, "", routingTable, address, nullptr);
+
+    testLookupByParticipantIdAndGbid(gcdParticipantId, "unknownGbid", routingTable, address, nullptr);
+
+    auto expectedAddress0 = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(knownGbids[0], originalAddress->getTopic());;
+    testLookupByParticipantIdAndGbid(gcdParticipantId, knownGbids[0], routingTable, address, expectedAddress0);
+
+    auto expectedAddress1 = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(knownGbids[1], originalAddress->getTopic());;
+    testLookupByParticipantIdAndGbid(gcdParticipantId, knownGbids[1], routingTable, address, expectedAddress1);
+
+    // calling the old get API should return the unmodified address
+    boost::optional<routingtable::RoutingEntry> result =
+            routingTable.lookupRoutingEntryByParticipantId(gcdParticipantId);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(*originalAddress, *(result->address));
+    EXPECT_NE(*expectedAddress0, *(result->address));
+
+    // cleanup
     routingTable.remove(gcdParticipantId);
 }
 
-TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_nonGcdParticipantId_mqttAddress)
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_emptyGbidKnown_gcdParticipantId_mqttAddress)
 {
-    const std::string expectedGbid = testGbid;
-    //Negative test case: requested participantId does not match gcdParticipantId -> no replacement happens
-    routingTable.add(
-            secondKey, isGloballyVisibleTrue, mqttTestValue, expiryDateMaxMs, isStickyFalse);
-    boost::optional<routingtable::RoutingEntry> result3 =
-            routingTable.lookupRoutingEntryByParticipantIdAndGbid(secondKey, otherGbid);
-    ASSERT_EQ(expectedGbid,
-              (dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result3->address).get()))->getBrokerUri());
-    routingTable.remove(secondKey);
+    const std::vector<std::string> gbidsArray {""};
+    RoutingTable subject(gcdParticipantId, gbidsArray);
+
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>("testGbid", "testTopic");
+    auto originalAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(*address);
+
+    testLookupByParticipantIdAndGbid(gcdParticipantId, "unknownGbid", subject, address, nullptr);
+
+    auto expectedAddress0 = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(gbidsArray[0], originalAddress->getTopic());;
+    testLookupByParticipantIdAndGbid(gcdParticipantId, "", subject, address, expectedAddress0);
+
+    // calling the old get API should return the unmodified address
+    boost::optional<routingtable::RoutingEntry> result =
+            subject.lookupRoutingEntryByParticipantId(gcdParticipantId);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(*originalAddress, *(result->address));
+    EXPECT_NE(*expectedAddress0, *(result->address));
+
+    // cleanup
+    subject.remove(gcdParticipantId);
 }
 
-TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_gcdParticipantId_nonMqttAddress)
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_emptyGbidNotKnown_otherParticipantId_mqttAddress)
 {
-    //Negative test case: address Type of the gcdParticipant is not MqttAddress
-    routingTable.add(gcdParticipantId,
-                     isGloballyVisibleTrue,
-                     secondTestValue,
-                     expiryDateMaxMs,
-                     isStickyFalse);
-    boost::optional<routingtable::RoutingEntry> result2 =
-            routingTable.lookupRoutingEntryByParticipantIdAndGbid(gcdParticipantId, otherGbid);
-    ASSERT_FALSE(dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*> ((result2->address).get()));
-    ASSERT_EQ(secondTestValue, result2->address);
-    routingTable.remove(gcdParticipantId);
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>("testGbid", "testTopic");
+    auto expectedAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(*address);
+
+    testLookupByParticipantIdAndGbid_noGbidReplacement(secondKey, routingTable, address, expectedAddress);
+}
+
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_emptyGbidKnown_otherParticipantId_mqttAddress)
+{
+    const std::vector<std::string> gbidsArray {""};
+    RoutingTable subject(gcdParticipantId, gbidsArray);
+
+    auto address = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>("testGbid", "testTopic");
+    auto expectedAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>(*address);
+
+    testLookupByParticipantIdAndGbid_noGbidReplacement(secondKey, subject, address, expectedAddress);
+}
+
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_emptyGbidNotKnown_gcdParticipantId_nonMqttAddress)
+{
+    testLookupByParticipantIdAndGbid_nonMqttAddress_noGbidReplacement(gcdParticipantId, routingTable);
+}
+
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_emptyGbidKnown_gcdParticipantId_nonMqttAddress)
+{
+    const std::vector<std::string> gbidsArray {""};
+    RoutingTable subject(gcdParticipantId, gbidsArray);
+
+    testLookupByParticipantIdAndGbid_nonMqttAddress_noGbidReplacement(gcdParticipantId, subject);
+}
+
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_emptyGbidNotKnown_otherParticipantId_nonMqttAddress)
+{
+    testLookupByParticipantIdAndGbid_nonMqttAddress_noGbidReplacement(secondKey, routingTable);
+}
+
+TEST_F(RoutingTableTest, lookupRoutingEntryByParticipantIdAndGbid_emptyGbidKnown_otherParticipantId_nonMqttAddress)
+{
+    const std::vector<std::string> gbidsArray {""};
+    RoutingTable subject(gcdParticipantId, gbidsArray);
+
+    testLookupByParticipantIdAndGbid_nonMqttAddress_noGbidReplacement(secondKey, subject);
 }
 
 TEST_F(RoutingTableTest, lookupParticipantIdsByAddress)

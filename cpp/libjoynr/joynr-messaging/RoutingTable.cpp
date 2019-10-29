@@ -57,18 +57,26 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
         const std::string& gbid) const
 {
     auto found = lookupRoutingEntryByParticipantId(participantId);
-    if (found && (participantId == this->_gcdParticipantId)) {
-        auto address = found->address;
-        if (auto mqttAddress =
-                    dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get())) {
-            const auto newMqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
-                    gbid, mqttAddress->getTopic());
-            return routingtable::RoutingEntry(participantId,
-                                              newMqttAddress,
-                                              found->isGloballyVisible,
-                                              found->_expiryDateMs,
-                                              found->_isSticky);
+    if (!found || participantId != this->_gcdParticipantId) {
+        return found;
+    }
+    auto address = found->address;
+    if (auto mqttAddress =
+                dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get())) {
+        if (_knownGbidsSet.find(gbid) == _knownGbidsSet.cend()) {
+            JOYNR_LOG_ERROR(logger(),
+                            "The provided GBID {} for the participantId {} is unknown.",
+                            gbid,
+                            participantId);
+            return boost::none;
         }
+        const auto newMqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
+                gbid, mqttAddress->getTopic());
+        return routingtable::RoutingEntry(participantId,
+                                          newMqttAddress,
+                                          found->isGloballyVisible,
+                                          found->_expiryDateMs,
+                                          found->_isSticky);
     }
     return found;
 }
