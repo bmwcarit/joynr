@@ -181,7 +181,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // JoynInjectorFactory. E.g. uncomment the following lines to set a certain joynr server
         // instance.
         // joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, "joynrdefaultgbid");
-        // joynrConfig.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883/");
+        // joynrConfig.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883");
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "radioapp_consumer_local_domain");
 
         // 2) Or set them in the static persistence file (default: joynr.properties in working dir) at
@@ -192,11 +192,11 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         // Copy the following lines to the custom persistence file to set a certain joynr server
         // instance.
         // joynr.messaging.gbids=joynrdefaultgbid
-        // joynr.messaging.mqtt.brokeruris=tcp://localhost:1883/
+        // joynr.messaging.mqtt.brokeruris=tcp://localhost:1883
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.gbids=joynrdefaultgbid
-        // -Djoynr.messaging.mqtt.brokeruris=tcp://localhost:1883/
+        // -Djoynr.messaging.mqtt.brokeruris=tcp://localhost:1883
 
         // NOTE:
         // Programmatically set configuration properties override properties set in the static persistence file.

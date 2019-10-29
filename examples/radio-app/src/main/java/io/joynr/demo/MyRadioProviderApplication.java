@@ -163,7 +163,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // certain joynr server
         // instance.
         // joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, "joynrdefaultgbid");
-        // joynrConfig.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883/");
+        // joynrConfig.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883");
 
         // Each joynr instance has a local domain. It identifies the execution
         // device/platform, e.g. the
@@ -184,11 +184,11 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // certain joynr server
         // instance.
         // joynr.messaging.gbids=joynrdefaultgbid
-        // joynr.messaging.mqtt.brokeruris=tcp://localhost:1883/
+        // joynr.messaging.mqtt.brokeruris=tcp://localhost:1883
 
         // 3) Or set them in Java System properties.
         // -Djoynr.messaging.gbids=joynrdefaultgbid
-        // -Djoynr.messaging.mqtt.brokeruris=tcp://localhost:1883/
+        // -Djoynr.messaging.mqtt.brokeruris=tcp://localhost:1883
 
         // NOTE:
         // Programmatically set configuration properties override properties set
