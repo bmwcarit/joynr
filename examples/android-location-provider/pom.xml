@@ -21,7 +21,7 @@
 	<parent>
 		<artifactId>examples</artifactId>
 		<groupId>io.joynr</groupId>
-		<version>1.9.1</version>
+		<version>1.9.2</version>
 	</parent>
 	<groupId>io.joynr.examples</groupId>
 	<artifactId>android-location-provider</artifactId>

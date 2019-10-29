@@ -12,11 +12,11 @@ dependencies {
 
     api ('com.google.inject:guice:3.0:no_aop')
 
-    api (group: 'io.joynr.java.core', name: 'clustercontroller-websocket-runtime', version:'1.9.1'){
+    api (group: 'io.joynr.java.core', name: 'clustercontroller-websocket-runtime', version:'1.9.2'){
         exclude(module: 'guice')
     }
 
-    api (group: 'io.joynr.java.core', name: 'libjoynr-websocket-runtime', version:'1.9.1'){
+    api (group: 'io.joynr.java.core', name: 'libjoynr-websocket-runtime', version:'1.9.2'){
         exclude(module: 'guice')
     }
 }
