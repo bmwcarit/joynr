@@ -227,6 +227,9 @@ public class RoutingTableImplTest {
         Address result = subject.get(participantId);
         assertEquals(expectedAddress, result);
         assertEquals(expectedAddress, address);
+
+        // cleanup
+        subject.remove(participantId);
     }
 
     @Test
@@ -248,118 +251,53 @@ public class RoutingTableImplTest {
         testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
     }
 
-    @Test
-    public void putAndGetWithGBID_emptyGbidNotKnown_gcdParticipantId_channelAddress() {
-        ChannelAddress address = new ChannelAddress();
-        ChannelAddress expectedAddress = new ChannelAddress(address);
+    private void testPutAndGetWithGbid_nonMqttAddress_noGbidReplacement(String participantId) {
+        ChannelAddress channelAddress = new ChannelAddress();
+        ChannelAddress expectedChannelAddress = new ChannelAddress(channelAddress);
 
-        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
+        testPutAndGetWithGbid_noGbidReplacement(participantId, channelAddress, expectedChannelAddress);
+
+        WebSocketAddress webSocketAddress = new WebSocketAddress();
+        WebSocketAddress expectedWebSocketAddress = new WebSocketAddress(webSocketAddress);
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, webSocketAddress, expectedWebSocketAddress);
+
+        WebSocketClientAddress webSocketClientAddress = new WebSocketClientAddress();
+        WebSocketClientAddress expectedWebSocketClientAddress = new WebSocketClientAddress(webSocketClientAddress);
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, webSocketClientAddress, expectedWebSocketClientAddress);
+
+        InProcessAddress inProcessAddress = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
+        InProcessAddress expectedInProcessAddress = new InProcessAddress(inProcessAddress.getSkeleton());
+
+        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, inProcessAddress, expectedInProcessAddress);
     }
 
     @Test
-    public void putAndGetWithGBID_emptyGbidKnown_gcdParticipantId_channelAddress() {
+    public void putAndGetWithGBID_emptyGbidNotKnown_gcdParticipantId() {
+        testPutAndGetWithGbid_nonMqttAddress_noGbidReplacement(gcdParticipantId);
+    }
+
+    @Test
+    public void putAndGetWithGBID_emptyGbidKnown_gcdParticipantId() {
         String[] gbidsArray = new String[]{ "" };
         subject = getRoutingTable(gbidsArray);
         subject.setGcdParticipantId(gcdParticipantId);
-        ChannelAddress address = new ChannelAddress();
-        ChannelAddress expectedAddress = new ChannelAddress(address);
 
-        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
+        testPutAndGetWithGbid_nonMqttAddress_noGbidReplacement(gcdParticipantId);
     }
 
     @Test
-    public void putAndGetWithGBID_emptyGbidNotKnown_otherParticipantId_channelAddress() {
-        ChannelAddress address = new ChannelAddress();
-        ChannelAddress expectedAddress = new ChannelAddress(address);
-
-        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
+    public void putAndGetWithGBID_emptyGbidNotKnown_otherParticipantId() {
+        testPutAndGetWithGbid_nonMqttAddress_noGbidReplacement(participantId);
     }
 
     @Test
-    public void putAndGetWithGBID_emptyGbidKnown_otherParticipantId_channelAddress() {
+    public void putAndGetWithGBID_emptyGbidKnown_otherParticipantId() {
         String[] gbidsArray = new String[]{ "" };
         subject = getRoutingTable(gbidsArray);
         subject.setGcdParticipantId(gcdParticipantId);
-        ChannelAddress address = new ChannelAddress();
-        ChannelAddress expectedAddress = new ChannelAddress(address);
-
-        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
-    }
-
-    @Test
-    public void putAndGetWithGBID_emptyGbidNotKnown_gcdParticipantId_WebSocketAddress() {
-        WebSocketAddress address = new WebSocketAddress();
-        WebSocketAddress expectedAddress = new WebSocketAddress(address);
-
-        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
-    }
-
-    @Test
-    public void putAndGetWithGBID_emptyGbidKnown_gcdParticipantId_WebSocketAddress() {
-        String[] gbidsArray = new String[]{ "" };
-        subject = getRoutingTable(gbidsArray);
-        subject.setGcdParticipantId(gcdParticipantId);
-        WebSocketAddress address = new WebSocketAddress();
-        WebSocketAddress expectedAddress = new WebSocketAddress(address);
-
-        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
-    }
-
-    @Test
-    public void putAndGetWithGBID_emptyGbidNotKnown_otherParticipantId_WebSocketAddress() {
-        WebSocketAddress address = new WebSocketAddress();
-        WebSocketAddress expectedAddress = new WebSocketAddress(address);
-
-        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
-    }
-
-    @Test
-    public void putAndGetWithGBID_emptyGbidKnown_otherParticipantId_WebSocketAddress() {
-        String[] gbidsArray = new String[]{ "" };
-        subject = getRoutingTable(gbidsArray);
-        subject.setGcdParticipantId(gcdParticipantId);
-        WebSocketAddress address = new WebSocketAddress();
-        WebSocketAddress expectedAddress = new WebSocketAddress(address);
-
-        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
-    }
-
-    @Test
-    public void putAndGetWithGBID_emptyGbidNotKnown_gcdParticipantId_InProcessAddress() {
-        InProcessAddress address = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
-        InProcessAddress expectedAddress = new InProcessAddress(address.getSkeleton());
-
-        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
-    }
-
-    @Test
-    public void putAndGetWithGBID_emptyGbidKnown_gcdParticipantId_InProcessAddress() {
-        String[] gbidsArray = new String[]{ "" };
-        subject = getRoutingTable(gbidsArray);
-        subject.setGcdParticipantId(gcdParticipantId);
-        InProcessAddress address = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
-        InProcessAddress expectedAddress = new InProcessAddress(address.getSkeleton());
-
-        testPutAndGetWithGbid_noGbidReplacement(gcdParticipantId, address, expectedAddress);
-    }
-
-    @Test
-    public void putAndGetWithGBID_emptyGbidNotKnown_otherParticipantId_InProcessAddress() {
-        InProcessAddress address = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
-        InProcessAddress expectedAddress = new InProcessAddress(address.getSkeleton());
-
-        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
-    }
-
-    @Test
-    public void putAndGetWithGBID_emptyGbidKnown_otherParticipantId_InProcessAddress() {
-        String[] gbidsArray = new String[]{ "" };
-        subject = getRoutingTable(gbidsArray);
-        subject.setGcdParticipantId(gcdParticipantId);
-        InProcessAddress address = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
-        InProcessAddress expectedAddress = new InProcessAddress(address.getSkeleton());
-
-        testPutAndGetWithGbid_noGbidReplacement(participantId, address, expectedAddress);
+        testPutAndGetWithGbid_nonMqttAddress_noGbidReplacement(participantId);
     }
 
     @Test
