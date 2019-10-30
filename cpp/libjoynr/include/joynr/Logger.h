@@ -20,7 +20,9 @@
 #define LOGGER_H
 
 #pragma GCC diagnostic push
+#if defined(__GNUC__) && (__GNUC___ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ > 4))
 #pragma GCC diagnostic ignored "-Wduplicated-branches"
+#endif
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
 
 #include <map>
