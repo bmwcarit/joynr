@@ -488,8 +488,8 @@ void PublicationManager::removeAllSubscriptions(const std::string& providerId)
     // Build lists of subscriptionIds to remove
     std::vector<std::string> publicationsToRemove;
     {
-        auto callback = [&publicationsToRemove, &providerId](auto&& map) {
-            for (auto&& requestInfo : map) {
+        auto callback = [&publicationsToRemove, &providerId](auto&& mapParam) {
+            for (auto&& requestInfo : mapParam) {
                 std::string subscriptionId = requestInfo.second->getSubscriptionId();
 
                 if ((requestInfo.second)->getProviderId() == providerId) {
@@ -502,8 +502,8 @@ void PublicationManager::removeAllSubscriptions(const std::string& providerId)
 
     std::vector<std::string> broadcastsToRemove;
     {
-        auto callback = [&broadcastsToRemove, &providerId](auto&& map) {
-            for (auto& requestInfo : map) {
+        auto callback = [&broadcastsToRemove, &providerId](auto&& mapParam) {
+            for (auto& requestInfo : mapParam) {
                 std::string subscriptionId = requestInfo.second->getSubscriptionId();
 
                 if ((requestInfo.second)->getProviderId() == providerId) {

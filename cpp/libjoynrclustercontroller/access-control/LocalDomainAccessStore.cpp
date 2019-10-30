@@ -54,7 +54,7 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
     }
 
     // insert all entries into wildcard storage
-    applyForAllTables([this](auto& entry) { addToWildcardStorage(entry); });
+    applyForAllTables([this](auto& entryParam) { addToWildcardStorage(entryParam); });
 }
 
 void LocalDomainAccessStore::logContent()

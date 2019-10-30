@@ -45,11 +45,11 @@ class RuntimeArchiveSelectionTestMustSucceed : public ::testing::Test
 {
 protected:
     template <typename Id, template <typename> class ArchiveTraits, typename Stream, typename Fun>
-    void run(Stream& stream, Fun&& getter)
+    void run(Stream& streamParam, Fun&& getter)
     {
         using Tag = typename Id::Tag;
         using ExpectedArchiveImpl = typename ArchiveTraits<Tag>::template type<Stream>;
-        EXPECT_NO_THROW(auto archive = getter(Id::id(), stream); DemoType<ExpectedArchiveImpl> demo;
+        EXPECT_NO_THROW(auto archive = getter(Id::id(), streamParam); DemoType<ExpectedArchiveImpl> demo;
                         EXPECT_CALL(demo, expectedCalled()).Times(1);
                         EXPECT_CALL(demo, unexpectedCalled()).Times(0);
                         archive(demo););
