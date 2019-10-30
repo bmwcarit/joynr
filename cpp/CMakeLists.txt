@@ -584,19 +584,13 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         -Wmissing-include-dirs \
         -Wmissing-braces \
         -Wpacked \
-        -Wimplicit-fallthrough=5 \
         -Wunused-parameter \
         -Wuninitialized \
-        -Walloca \
-        -Wduplicated-branches \
-        -Wduplicated-cond \
         -Wfloat-equal \
         -Wshadow \
         -Wcast-qual \
-        -Wsign-conversion \
         -Wlogical-op \
         -Wformat-security \
-        -Walloc-zero \
         -Wcast-align \
         -Wredundant-decls \
         -Wdeclaration-after-statement \
@@ -608,20 +602,32 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         -Werror=format \
         -Werror=format-signedness \
         -Werror=missing-include-dirs \
-        -Werror=implicit-fallthrough \
         -Werror=unused-parameter \
         -Werror=uninitialized \
-        -Werror=alloca \
-        -Werror=duplicated-cond \
         -Werror=float-equal \
         -Werror=cast-qual \
-        -Werror=sign-conversion \
         -Werror=logical-op \
         -Werror=format-security \
-        -Werror=alloc-zero \
         -Werror=cast-align \
         -Werror=redundant-decls \
         ")
+    if(CMAKE_C_COMPILER_VERSION VERSION_GREATER "5.4")
+        # deactivate sign conversion since it causes trouble in gtest/gmock
+        set(GNU_C_FLAGS " \
+            ${GNU_C_FLAGS} \
+            -Wimplicit-fallthrough=5 \
+            -Walloca \
+            -Wduplicated-branches \
+            -Wduplicated-cond \
+            -Walloc-zero \
+            -Wsign-conversion \
+            -Werror=implicit-fallthrough \
+            -Werror=alloca \
+            -Werror=duplicated-cond \
+            -Werror=alloc-zero \
+            -Werror=sign-conversion\
+            ")
+    endif(CMAKE_C_COMPILER_VERSION VERSION_GREATER "5.4")
     if(CMAKE_C_COMPILER_VERSION VERSION_GREATER "9.1")
         set(GNU_C_FLAGS "${GNU_C_FLAGS} -Werror=duplicated-branches")
     endif(CMAKE_C_COMPILER_VERSION VERSION_GREATER "9.1")
@@ -665,19 +671,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         -Wmissing-include-dirs \
         -Wmissing-braces \
         -Wpacked \
-        -Wimplicit-fallthrough=5 \
         -Wunused-parameter \
         -Wuninitialized \
-        -Walloca \
-        -Wduplicated-branches \
-        -Wduplicated-cond \
         -Wfloat-equal \
         -Wshadow \
         -Wcast-qual \
-        -Wsign-conversion \
         -Wlogical-op \
         -Wformat-security \
-        -Walloc-zero \
         -Wcast-align \
         -Wredundant-decls \
         -Werror=all \
@@ -685,20 +685,31 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         -Werror=format \
         -Werror=format-signedness \
         -Werror=missing-include-dirs \
-        -Werror=implicit-fallthrough \
         -Werror=unused-parameter \
         -Werror=uninitialized \
-        -Werror=alloca \
-        -Werror=duplicated-cond \
         -Werror=float-equal \
         -Werror=cast-qual \
-        -Werror=sign-conversion \
         -Werror=logical-op \
         -Werror=format-security \
-        -Werror=alloc-zero \
         -Werror=cast-align \
         -Werror=redundant-decls \
         ")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.4")
+        set(GNU_CXX_FLAGS " \
+            ${GNU_C_FLAGS} \
+            -Wimplicit-fallthrough=5 \
+            -Walloca \
+            -Wduplicated-branches \
+            -Wduplicated-cond \
+            -Walloc-zero \
+            -Wsign-conversion \
+            -Werror=implicit-fallthrough \
+            -Werror=alloca \
+            -Werror=duplicated-cond \
+            -Werror=alloc-zero \
+            -Werror=sign-conversion\
+            ")
+    endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.4")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "9.1")
         set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Werror=duplicated-branches")
     endif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "9.1")
