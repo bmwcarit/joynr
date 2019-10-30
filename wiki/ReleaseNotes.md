@@ -22,6 +22,9 @@ the versioning scheme [here](JoynrVersioning.md).
   supports `.json` files listing `.fidl` files and the generation of `joynr-includes` facilitating
   the import of generated code.
 
+* **[Android]** Added Android binder transport option to take full advantage of the Android framework, 
+and use its native way of performing inter-process communication (IPC).
+
 ## Other changes
 * **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
   are now removed by the Routing Table cleanup background job, provided the related proxy instances

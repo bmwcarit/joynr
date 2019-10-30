@@ -153,7 +153,7 @@ public class AndroidBinderRuntime {
         List<ResolveInfo> services = context.getPackageManager().queryIntentServices(intent, 0);
         if (services == null || services.isEmpty()) {
             logger.error("There is no joynr cluster controller app installed!");
-            throw new io.joynr.exceptions.JoynrRuntimeException("There is no joynr cluster controller app installed!");
+            return null;
         }
         return services.get(0).serviceInfo.applicationInfo.packageName;
     }
