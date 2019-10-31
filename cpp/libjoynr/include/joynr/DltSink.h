@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +19,13 @@
 #ifndef DLTSINK_H
 #define DLTSINK_H
 
+#include <memory>
+#include <mutex>
+#include <string>
+
 #include <dlt/dlt.h>
 #include <spdlog/details/log_msg.h>
+#include <spdlog/formatter.h>
 #include <spdlog/sinks/sink.h>
 
 namespace joynr
@@ -52,8 +57,11 @@ private:
         return instance;
     }
 
+    std::mutex _mutex;
+    std::unique_ptr<spdlog::formatter> _formatter;
+
 public:
-    DltSink() = default;
+    DltSink() : _mutex(), _formatter(spdlog::details::make_unique<spdlog::pattern_formatter>()){};
 
     ~DltSink() override = default;
 
@@ -93,17 +101,31 @@ protected:
         }
         DltContext& dltContext = getInstance().dltContext;
         constexpr std::size_t maxLength = 2048;
-        const std::size_t length = msg.formatted.size();
+        spdlog::memory_buf_t formatted;
+        _formatter->format(msg, formatted);
+        const std::size_t length = formatted.size();
+        const std::string fullLog = std::string(formatted.data(), formatted.size());
         if (length < maxLength) {
-            DLT_LOG_STRING(dltContext, dltLogLevel, msg.formatted.c_str());
+            DLT_LOG_STRING(dltContext, dltLogLevel, fullLog.c_str());
         } else {
-            const std::string fullLog = msg.formatted.str();
             DLT_LOG_STRING(dltContext, dltLogLevel, "----START OF SPLITTED LOG");
             for (std::size_t i = 0; i < length; i += maxLength) {
                 DLT_LOG_STRING(dltContext, dltLogLevel, fullLog.substr(i, maxLength).c_str());
             }
             DLT_LOG_STRING(dltContext, dltLogLevel, "----END OF SPLITTED LOG");
         }
+    }
+
+    void set_formatter(std::unique_ptr<spdlog::formatter> sink_formatter)
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _formatter = std::move(sink_formatter);
+    }
+
+    void set_pattern(const std::string& pattern)
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _formatter = std::unique_ptr<spdlog::formatter>(new spdlog::pattern_formatter(pattern));
     }
 };
 
