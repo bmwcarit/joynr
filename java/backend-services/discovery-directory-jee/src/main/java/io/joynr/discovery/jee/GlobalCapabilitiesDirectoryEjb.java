@@ -237,14 +237,14 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
             break;
         }
 
-        String[] addaptedGbidArray = gbids.clone();
-        for (int i = 0; i < addaptedGbidArray.length; i++) {
-            if (addaptedGbidArray[i].isEmpty()) {
+        String[] adaptedGbidArray = gbids.clone();
+        for (int i = 0; i < adaptedGbidArray.length; i++) {
+            if (adaptedGbidArray[i].isEmpty()) {
                 logger.warn("Received lookup with empty gbid for domains {} and interfaceName {}, treating as ownGbid.",
                             Arrays.toString(domains),
                             interfaceName);
 
-                addaptedGbidArray[i] = gcdGbid;
+                adaptedGbidArray[i] = gcdGbid;
             }
         }
 
@@ -258,7 +258,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                                                                          new HashSet<String>(Arrays.asList(domains)))
                                                                            .setParameter("interfaceName", interfaceName)
                                                                            .setParameter("gbids",
-                                                                                         Arrays.asList(addaptedGbidArray))
+                                                                                         Arrays.asList(adaptedGbidArray))
                                                                            .getResultList();
 
             if (queryResult.isEmpty()) {
