@@ -26,28 +26,28 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.GbidArrayFactory;
 
 public class GbidArrayFactoryTest {
-    @Test
-    public void testEmptyAtBeginningGbid() {
-        String gbids = ",gbid3";
-        GbidArrayFactory subject = new GbidArrayFactory(gbids);
-        String[] result = subject.create();
-        assertEquals(result[0], "");
-        assertEquals(result[1], "gbid3");
-    }
 
     @Test
-    public void testEmptyInTheMiddleGbid() {
-        String gbids = "gbid1,,gbid3";
-        new GbidArrayFactory(gbids);
-        GbidArrayFactory subject = new GbidArrayFactory(gbids);
+    public void testEmptyGbid() {
+        GbidArrayFactory subject = new GbidArrayFactory("");
         String[] result = subject.create();
-        assertEquals(result[0], "gbid1");
-        assertEquals(result[1], "");
-        assertEquals(result[2], "gbid3");
+        assertEquals(1, result.length);
+        assertEquals(result[0], "");
     }
 
     @Test(expected = JoynrIllegalStateException.class)
-    public void testOnlyCommaInGbid() {
+    public void testEmptyAtBeginningGbid() {
+        String gbids = ",gbid3";
+        new GbidArrayFactory(gbids);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testEmptyGbidInTheMiddle() {
+        new GbidArrayFactory("gbid1,,gbid3");
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testOnlyCommaInGbidString() {
         new GbidArrayFactory(",");
     }
 
@@ -57,6 +57,7 @@ public class GbidArrayFactoryTest {
         String[] gbidArray = gbids.replaceAll("\\s", "").split(",");
         GbidArrayFactory subject = new GbidArrayFactory(gbids);
         String[] result = subject.create();
+        assertEquals(3, result.length);
         for (int i = 0; i < gbidArray.length; i++) {
             assertEquals(result[i], gbidArray[i]);
         }

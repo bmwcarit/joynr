@@ -43,7 +43,12 @@ public class GbidArrayFactory {
             if (gbids.contains(",")) {
                 throw new JoynrIllegalStateException("just comma is not allowed in gbids");
             }
+            logger.warn("Using empty GBID.");
             gbidArray = new String[]{ "" };
+        } else if (gbidArray.length != 1 && Arrays.stream(gbidArray).anyMatch(gbid -> gbid.isEmpty())) {
+            // empty string is only allowed for single GBID
+            logger.error("GBID must not be empty: {}!", gbids);
+            throw new JoynrIllegalStateException("GBID must not be empty: " + gbids + "!");
         }
         HashSet<String> gbidsSet = new HashSet<String>();
         for (String gbid : gbidArray) {
