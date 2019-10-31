@@ -634,9 +634,9 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 
     if(${WIN32})
         # This setting does not work in linux:
-        set(GNU_C_FLAGS "${GNU_C_FLAGS} ${GNU_C_FLAGS} -enable-auto-import")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GNU_C_FLAGS} -enable-auto-import")
     else()
-        set(GNU_C_FLAGS "${GNU_C_FLAGS} ${GNU_C_FLAGS} -pthread")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GNU_C_FLAGS} -pthread")
     endif(${WIN32})
     # check GNU C compiler version
     if(CMAKE_C_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_C_COMPILER_VERSION VERSION_EQUAL "4.9")
@@ -696,7 +696,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         ")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.4")
         set(GNU_CXX_FLAGS " \
-            ${GNU_C_FLAGS} \
+            ${GNU_CXX_FLAGS} \
             -Wimplicit-fallthrough=5 \
             -Walloca \
             -Wduplicated-branches \
