@@ -299,6 +299,7 @@ void CcMessageRouter::sendQueuedMessages(
         const WriteLocker& messageQueueRetryWriteLock)
 {
     assert(messageQueueRetryWriteLock.owns_lock());
+    std::ignore = messageQueueRetryWriteLock;
     JOYNR_LOG_TRACE(logger(),
                     "sendMessages: sending messages for destinationPartId {} and {}",
                     destinationPartId,
@@ -885,6 +886,7 @@ void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
                                    const ReadLocker& messageQueueRetryReadLock)
 {
     assert(messageQueueRetryReadLock.owns_lock());
+    std::ignore = messageQueueRetryReadLock;
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
     // do not fire a broadcast for an undeliverable message sent by
     // messageNotificationProvider (e.g. messageQueueForDelivery publication)

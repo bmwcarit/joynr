@@ -24,6 +24,7 @@
 #pragma GCC diagnostic ignored "-Wduplicated-branches"
 #endif
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
 
 #include <map>
 #include <memory>

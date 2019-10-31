@@ -247,12 +247,15 @@ public:
             }
         };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
         for (std::shared_ptr<IDispatcher> currentDispatcher : _dispatcherList) {
             // TODO will the provider be registered at all dispatchers or
             //     should it be configurable which ones are used to contact it.
             assert(currentDispatcher != nullptr);
             currentDispatcher->addRequestCaller(participantId, caller);
         }
+#pragma GCC diagnostic pop
 
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;

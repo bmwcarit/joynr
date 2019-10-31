@@ -158,6 +158,7 @@ AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::getDestination
         const ReadLocker& messageQueueRetryReadLock)
 {
     assert(messageQueueRetryReadLock.owns_lock());
+    std::ignore = messageQueueRetryReadLock;
     ReadLocker lock(_routingTableLock);
     AbstractMessageRouter::AddressUnorderedSet addresses;
     if (message.getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
@@ -417,6 +418,7 @@ void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> messa
                                          const ReadLocker& messageQueueRetryReadLock)
 {
     assert(messageQueueRetryReadLock.owns_lock());
+    std::ignore = messageQueueRetryReadLock;
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->getTrackingInfo());
     std::string recipient = message->getRecipient();
     _messageQueue->queueMessage(std::move(recipient), std::move(message));

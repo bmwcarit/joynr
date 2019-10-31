@@ -260,6 +260,7 @@ public:
             // replace
             bool replaceResult = index.replace(existingIt, entryWithGbids);
             assert(replaceResult);
+            std::ignore = replaceResult;
         }
     }
 };
@@ -298,6 +299,7 @@ public:
             // replace
             bool replaceResult = index.replace(existingIt, cachedEntry);
             assert(replaceResult);
+            std::ignore = replaceResult;
 
             // rank to top
             auto sequencedIt = _container.project<0>(existingIt);

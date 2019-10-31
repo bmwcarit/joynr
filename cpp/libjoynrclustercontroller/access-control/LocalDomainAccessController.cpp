@@ -32,6 +32,9 @@
 
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 namespace joynr
 {
 
@@ -1516,3 +1519,5 @@ void LocalDomainAccessController::OwnerRegistrationControlEntryChangedBroadcastL
 }
 
 } // namespace joynr
+
+#pragma GCC diagnostic pop

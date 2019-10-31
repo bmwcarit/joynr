@@ -239,6 +239,7 @@ void LibJoynrMessageRouter::sendQueuedMessages(
         const WriteLocker& messageQueueRetryWriteLock)
 {
     assert(messageQueueRetryWriteLock.owns_lock());
+    std::ignore = messageQueueRetryWriteLock;
     JOYNR_LOG_TRACE(logger(),
                     "sendMessages: sending messages for destinationPartId {} and {}",
                     destinationPartId,

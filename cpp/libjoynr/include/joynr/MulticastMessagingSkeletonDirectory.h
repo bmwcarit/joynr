@@ -75,9 +75,12 @@ public:
                 removalList.push_back(std::make_pair(typeIndex, pairKey.second));
             }
         }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
         for (const auto& entry : removalList) {
             _multicastSkeletons.erase(entry);
         }
+#pragma GCC diagnostic pop
     }
 
     std::shared_ptr<IMessagingMulticastSubscriber> getSkeleton(

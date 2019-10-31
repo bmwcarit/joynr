@@ -48,6 +48,9 @@
 
 #include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 namespace joynr
 {
 
@@ -445,6 +448,7 @@ bool LocalCapabilitiesDirectory::isEntryForGbid(const std::unique_lock<std::recu
                                                 const std::unordered_set<std::string> gbids)
 {
     assert(lock.owns_lock());
+    std::ignore = lock;
 
     const auto foundMapping = _globalParticipantIdsToGbidsMap.find(entry.getParticipantId());
     if (foundMapping != _globalParticipantIdsToGbidsMap.cend() && !foundMapping->second.empty()) {
@@ -1712,3 +1716,5 @@ void LocalCapabilitiesCallback::capabilitiesReceived(
 }
 
 } // namespace joynr
+
+#pragma GCC diagnostic pop

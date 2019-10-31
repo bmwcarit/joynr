@@ -233,7 +233,11 @@ void Arbitrator::validatePendingFuture()
 void Arbitrator::assertNoPendingFuture()
 {
     std::unique_lock<std::mutex> lock(_pendingFutureMutex);
-    boost::apply_visitor([](auto& future) { assert(!future); }, _pendingFuture);
+    boost::apply_visitor([](auto& future) {
+                             assert(!future);
+                             std::ignore = future;
+                         },
+                         _pendingFuture);
 }
 
 void Arbitrator::attemptArbitration()

@@ -106,6 +106,8 @@ public:
         assert(sizeNew != 0);
         assert(sizeNew <= _cacheCapacity);
         assert(_cacheMap.find(key) != _cacheMap.end());
+        std::ignore = sizeOld;
+        std::ignore = sizeNew;
     }
     /**
      * @brief clear removes and destroys all values

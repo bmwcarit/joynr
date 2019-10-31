@@ -17,6 +17,8 @@
  * #L%
  */
 
+#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+
 #include <algorithm>
 #include <condition_variable>
 #include <cstdio>
@@ -29,6 +31,7 @@
 
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/Util.h"
+
 
 using namespace joynr;
 
