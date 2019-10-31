@@ -108,12 +108,15 @@ protected:
                         std::chrono::system_clock::now().time_since_epoch());
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
-        const std::string participantId = providerRuntime->registerProvider<tests::testProvider>(
+        const std::string providerParticipantId = providerRuntime->registerProvider<tests::testProvider>(
                     domain, mockProvider, providerQos, true, true);
 
         std::shared_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
                 consumerRuntime->createProxyBuilder<tests::testProxy>(domain);
 
+        if (discoveryQos.getArbitrationStrategy() == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+            discoveryQos.addCustomParameter("fixedParticipantId", providerParticipantId);
+        }
         std::uint64_t qosRoundTripTTL = 30000;
         std::shared_ptr<tests::testProxy> testProxy =
                 proxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
@@ -128,7 +131,7 @@ protected:
         future->get(actualValue);
         EXPECT_EQ(expectedValue, actualValue);
 
-        providerRuntime->unregisterProvider(participantId);
+        providerRuntime->unregisterProvider(providerParticipantId);
     }
 
     std::string domain;
@@ -140,12 +143,24 @@ private:
     DISALLOW_COPY_AND_ASSIGN(End2End2CcWithEmptyGbidTest);
 };
 
-TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithEmptyGbid_providerCcWithNonEmptyGbid_rpcCallSuccessful)
+TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithEmptyGbid_providerCcWithNonEmptyGbid_rpcCallSuccessfulAfterLookupByDomainInterface)
 {
     callRpcMethodAndGetExpectedResult(runtime1WithEmptyGbid, runtimeWithNonEmptyGbid);
 }
 
-TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithNonEmptyGbid_providerCcWithEmptyGbid_rpcCallSuccessful)
+TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithNonEmptyGbid_providerCcWithEmptyGbid_rpcCallSuccessfulAfterLookupByDomainInterface)
 {
+    callRpcMethodAndGetExpectedResult(runtimeWithNonEmptyGbid, runtime1WithEmptyGbid);
+}
+
+TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithEmptyGbid_providerCcWithNonEmptyGbid_rpcCallSuccessfulAfterLookupByParticipantId)
+{
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    callRpcMethodAndGetExpectedResult(runtime1WithEmptyGbid, runtimeWithNonEmptyGbid);
+}
+
+TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithNonEmptyGbid_providerCcWithEmptyGbid_rpcCallSuccessfulAfterLookupByParticipantId)
+{
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     callRpcMethodAndGetExpectedResult(runtimeWithNonEmptyGbid, runtime1WithEmptyGbid);
 }
