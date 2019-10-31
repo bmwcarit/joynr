@@ -85,7 +85,7 @@ public class JsonMessageSerializerModule extends AbstractModule {
 
     @Provides
     @Singleton
-    ObjectMapper provideObjectMapper() {
+    public ObjectMapper provideObjectMapper() {
         return objectMapper;
     }
 
