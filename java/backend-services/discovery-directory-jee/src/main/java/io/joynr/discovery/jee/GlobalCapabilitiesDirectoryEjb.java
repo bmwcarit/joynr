@@ -324,9 +324,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         String[] addaptedGbidArray = gbids.clone();
         for (int i = 0; i < addaptedGbidArray.length; i++) {
             if (addaptedGbidArray[i].isEmpty()) {
-                logger.warn("Received lookup with empty gbid for for participantId {} and Gbids {}",
-                            participantId,
-                            Arrays.toString(gbids));
+                logger.warn("Received lookup with empty gbid for for participantId {}, treating as ownGbid",
+                            participantId);
 
                 addaptedGbidArray[i] = gcdGbid;
             }

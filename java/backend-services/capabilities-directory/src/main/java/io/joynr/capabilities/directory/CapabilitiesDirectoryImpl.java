@@ -111,6 +111,15 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     }
 
     private void addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) throws ApplicationException {
+        gbids = Arrays.asList(gbids).stream().map(gbid -> {
+            if (gbid.isEmpty()) {
+                logger.warn("Received add with empty gbid for participantId: {}, treating as ownGbid.",
+                            globalDiscoveryEntry.getParticipantId());
+                return gcdGbid;
+            } else {
+                return gbid;
+            }
+        }).toArray(String[]::new);
         if (globalDiscoveryEntry.getDomain() == null || globalDiscoveryEntry.getInterfaceName() == null
                 || globalDiscoveryEntry.getParticipantId() == null || globalDiscoveryEntry.getAddress() == null) {
             String message = "DiscoveryEntry being registered is not complete: " + globalDiscoveryEntry;
@@ -227,6 +236,15 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             deferred.reject(DiscoveryError.UNKNOWN_GBID);
             break;
         case OK:
+            gbids = Arrays.asList(gbids).stream().map(gbid -> {
+                if (gbid.isEmpty()) {
+                    logger.warn("Received remove with empty gbid for participantId {}, defaulting to ownGbid.",
+                                participantId);
+                    return gcdGbid;
+                } else {
+                    return gbid;
+                }
+            }).toArray(String[]::new);
             try {
                 int deletedCount = removeInternal(participantId, gbids);
                 switch (deletedCount) {
@@ -311,6 +329,16 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             deferred.reject(DiscoveryError.UNKNOWN_GBID);
             break;
         case OK:
+            gbids = Arrays.asList(gbids).stream().map(gbid -> {
+                if (gbid.isEmpty()) {
+                    logger.warn("Received lookup with empty gbid for domains {} and interfaceName {}, treating as ownGbid.",
+                                Arrays.toString(domains),
+                                interfaceName);
+                    return gcdGbid;
+                } else {
+                    return gbid;
+                }
+            }).toArray(String[]::new);
             try {
                 Collection<GlobalDiscoveryEntryPersisted> lookupResult = discoveryEntryStore.lookup(domains,
                                                                                                     interfaceName);
@@ -395,6 +423,15 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             deferred.reject(DiscoveryError.UNKNOWN_GBID);
             break;
         case OK:
+            gbids = Arrays.asList(gbids).stream().map(gbid -> {
+                if (gbid.isEmpty()) {
+                    logger.warn("Received lookup with empty gbid for participantId {}, treating as ownGbid.",
+                                participantId);
+                    return gcdGbid;
+                } else {
+                    return gbid;
+                }
+            }).toArray(String[]::new);
             try {
                 Collection<GlobalDiscoveryEntryPersisted> lookupResult = discoveryEntryStore.lookup(participantId);
                 if (lookupResult.isEmpty()) {

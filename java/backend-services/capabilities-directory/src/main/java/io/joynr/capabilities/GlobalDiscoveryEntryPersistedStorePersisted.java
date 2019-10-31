@@ -98,10 +98,10 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
 
                 if (queryResult.isEmpty()) {
                     logger.trace("adding new discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
-                    entityManager.persist(globalDiscoveryEntry);
+                    entityManager.persist(entity);
                 } else {
                     logger.trace("merging discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
-                    entityManager.merge(globalDiscoveryEntry);
+                    entityManager.merge(entity);
                 }
             }
             transaction.commit();
