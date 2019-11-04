@@ -170,9 +170,9 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
         }
 
 #if (defined(MQTT_OCSP_ENABLED) && (LIBMOSQUITTO_VERSION_NUMBER >= 1006000))
-        rc = mosquitto_int_option(mosq, MOSQ_OPT_TLS_OCSP_REQUIRED, true);
+        rc = mosquitto_int_option(_mosq, MOSQ_OPT_TLS_OCSP_REQUIRED, true);
         if (rc != MOSQ_ERR_SUCCESS) {
-            mosquitto_destroy(mosq);
+            mosquitto_destroy(_mosq);
             cleanupLibrary();
             const std::string message =
                     "Connection to " + brokerUrl.toString() +
