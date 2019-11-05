@@ -84,6 +84,7 @@ typeCollection DacTypes {
 		Control Entries (Owner ACEs).
 		The Owner ACL stores permissions and Trust Levels (TLs) of users for a
 		domain/interface/operations combination (cf. OwnerAccessControlEntry).
+		#noVersionGeneration
 **>
 interface GlobalDomainRoleController {
 	version {major 0 minor 1}

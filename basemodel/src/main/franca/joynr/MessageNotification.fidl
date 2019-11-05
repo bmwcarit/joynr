@@ -18,6 +18,9 @@
  */
 package system
 
+<**
+	@description: #noVersionGeneration
+**>
 interface MessageNotification {
 
 	version {major 0 minor 1}

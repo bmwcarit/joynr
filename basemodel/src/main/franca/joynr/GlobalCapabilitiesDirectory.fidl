@@ -41,6 +41,7 @@ import types.* from "DiscoveryTypes.fidl"
 		of interface version 0.1 compatible with the new ones in version 0.2, each Global
 		Capabilities Directory instance must be available in only one global backend and it has to
 		know its own GBID.
+		#noVersionGeneration
 	@see: GlobalDiscoveryEntry
 **>
 interface GlobalCapabilitiesDirectory{

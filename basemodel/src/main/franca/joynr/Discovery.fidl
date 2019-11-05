@@ -27,6 +27,7 @@ import types.* from "DiscoveryTypes.fidl"
 		consists of a centralized discovery directory
 		(<code>GlobalCapabilitiesDirectory</code>) that is distributed to
 		all cluster controller (<code>LocalCapabilitiesDirectory</code>).
+		#noVersionGeneration
 **>
 interface Discovery {
 
