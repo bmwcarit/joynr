@@ -25,6 +25,7 @@ import infrastructure.* from "AccessControlTypes.fidl"
 	@description: This joynr internal interface provides write access to the
 		access and registration control entries of the Global Domain
 		Access Controller (GDAC).
+		#noVersionGeneration
 **>
 interface GlobalDomainAccessControlListEditor {
 	version {major 0 minor 1}
@@ -283,6 +284,7 @@ interface GlobalDomainAccessControlListEditor {
 	@description: This joynr internal interface provides write access to the
 		access and registration control entries of the Local
 		Access Controller (LDAC).
+		#noVersionGeneration
 	@details: This interface is the same as GlobalDomainAccessControlListEditor
 		without the getEditable methods.
 **>

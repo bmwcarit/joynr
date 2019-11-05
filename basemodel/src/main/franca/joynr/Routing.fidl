@@ -93,6 +93,7 @@ typeCollection RoutingTypes {
 		route messages from source to destination. The <code>Routing</code>
 		interface is used to update routing information between parent and
 		child <code>MessageRouter</code>s.
+		#noVersionGeneration
 **>
 interface Routing {
 

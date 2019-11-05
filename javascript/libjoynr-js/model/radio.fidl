@@ -41,7 +41,9 @@ typeCollection radiotypes {
 	typedef TypeDefForStruct is RadioStation
 }
 
-<** @description : "This is a description about the radio interface" **>
+<**
+	@description : "This is a description about the radio interface"
+ **>
 interface Radio {
 	version { major 47 minor 11 }
 
