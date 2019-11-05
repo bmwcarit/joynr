@@ -30,6 +30,7 @@ import java.util.Arrays
 import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
 import org.eclipse.xtext.generator.IFileSystemAccess
+import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
@@ -309,5 +310,48 @@ class JoynrGeneratorExtensions {
 			packagepath += separator + datatype.typeCollectionName;
 		}
 		return packagepath;
+	}
+
+	def boolean commentContainsNoVersionGeneration(FModelElement element){
+		if (element.comment === null) {
+			return false
+		}
+		for (comment : element.comment.elements) {
+			if (comment.type == FAnnotationType::DESCRIPTION && comment.rawText.contains("#noVersionGeneration")) {
+				return true
+			}
+		}
+		return false
+	}
+
+	def printVersionWarnings(FInterface fInterface, boolean packageWithVersion, boolean namewithVersion) {
+		if(commentContainsNoVersionGeneration(fInterface) && (packageWithVersion || nameWithVersion)) {
+			var versionGeneration = "";
+			if(packageWithVersion) {
+				versionGeneration = "package";
+			}
+			else {
+				versionGeneration = "name";
+			}
+			println(
+				"WARNING: --addVersionTo option is set to "
+				+ versionGeneration +
+				" despite #noVersionGeneration being set for interface "
+				+ fInterface.name + ". This will disable versioning in future versions of the generator."
+			)
+		}
+		if(!commentContainsNoVersionGeneration(fInterface) && !(packageWithVersion || nameWithVersion)) {
+			println(
+				"WARNING: --addVersionTo option is not set or none despite" +
+				"#noVersionGeneration not being set for interface " + fInterface.name +
+				". This will enable package versioning in future versions of the generator."
+			)
+		}
+		if (nameWithVersion){
+			println(
+				"WARNING: --addVersionTo=name is DEPRECATED." +
+				" Only package versioning will be supported in future versions of the generator."
+			)
+		}
 	}
 }

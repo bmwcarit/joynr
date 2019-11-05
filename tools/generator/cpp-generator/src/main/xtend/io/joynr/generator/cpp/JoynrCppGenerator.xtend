@@ -19,6 +19,7 @@ package io.joynr.generator.cpp
  */
 import com.google.inject.AbstractModule
 import com.google.inject.assistedinject.FactoryModuleBuilder
+import com.google.inject.name.Named
 import io.joynr.generator.IJoynrGenerator
 import io.joynr.generator.cpp.communicationmodel.CommunicationModelGenerator
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderGenerator
@@ -27,7 +28,9 @@ import io.joynr.generator.cpp.joynrmessaging.JoynrMessagingGenerator
 import io.joynr.generator.cpp.provider.ProviderGenerator
 import io.joynr.generator.cpp.proxy.ProxyGenerator
 import io.joynr.generator.cpp.util.CppStdTypeUtil
+import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.templates.util.TypeUtil
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import io.joynr.generator.util.FileSystemAccessUtil
 import io.joynr.generator.util.InvocationArguments
 import java.io.File
@@ -54,6 +57,17 @@ class JoynrCppGenerator implements IJoynrGenerator{
 
 	@Inject IFileSystemAccess outputHeaderFileSystem;
 
+	@Inject
+	protected extension JoynrGeneratorExtensions;
+
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)
+	public boolean nameWithVersion;
+
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
+	public boolean packageWithVersion;
+
 	public static final String OUTPUT_HEADER_PATH = "outputHeaderPath";
 	Map<String, String> parameters;
 
@@ -79,6 +93,10 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	 */
 	def doGenerate(Resource input, IFileSystemAccess sourceFileSystem, IFileSystemAccess headerFileSystem) {
 		val fModel = getModel(input);
+
+		for (fInterface : fModel.interfaces) {
+			printVersionWarnings(fInterface, packageWithVersion, nameWithVersion)
+		}
 
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 

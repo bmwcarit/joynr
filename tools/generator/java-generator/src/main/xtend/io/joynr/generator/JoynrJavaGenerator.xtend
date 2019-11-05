@@ -19,6 +19,7 @@ package io.joynr.generator
  */
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
+import com.google.inject.name.Named
 import com.google.inject.Singleton
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import io.joynr.generator.communicationmodel.CommunicationModelGenerator
@@ -26,6 +27,7 @@ import io.joynr.generator.filter.FilterGenerator
 import io.joynr.generator.interfaces.InterfaceGenerator
 import io.joynr.generator.provider.ProviderGenerator
 import io.joynr.generator.proxy.ProxyGenerator
+import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
 import java.util.Arrays
@@ -59,6 +61,14 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 
 	@Inject extension JoynrJavaGeneratorExtensions
 
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)
+	public boolean nameWithVersion;
+
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
+	public boolean packageWithVersion;
+
 	override getLanguageId() {
 		"java"
 	}
@@ -84,6 +94,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
 		for (fInterface : fModel.interfaces) {
+			printVersionWarnings(fInterface, packageWithVersion, nameWithVersion)
 			interfacesGenerator.doGenerate(fInterface, fsa)
 			proxyGenerator.doGenerate(fInterface, fsa)
 			providerGenerator.doGenerate(fInterface, fsa)
