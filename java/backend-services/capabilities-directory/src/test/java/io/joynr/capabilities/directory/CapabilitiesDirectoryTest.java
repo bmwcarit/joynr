@@ -220,6 +220,36 @@ public class CapabilitiesDirectoryTest {
         checkPromiseSuccess(promise);
     }
 
+    @Test
+    public void addWithGbids_singleEmptyGbid_callsStoreWithGcdGbid() throws InterruptedException {
+        String[] selectedGbids = new String[]{ "" };
+        String[] expectedGbids = new String[]{ GCD_GBID };
+        Promise<Add1Deferred> promise = subject.add(testGlobalDiscoveryEntry, selectedGbids);
+        verify(discoveryEntryStoreMock).add(gdepCaptor.capture(), eq(expectedGbids));
+        checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry, gdepCaptor.getValue());
+        checkPromiseSuccess(promise);
+    }
+
+    @Test
+    public void addWithGbids_multipleGbidsWithEmptyGbid_callsStoreWithEmptyGbidReplaced() throws InterruptedException {
+        String[] selectedGbids = new String[]{ validGbids[1], "" };
+        String[] expectedGbids = new String[]{ validGbids[1], GCD_GBID };
+        Promise<Add1Deferred> promise = subject.add(testGlobalDiscoveryEntry, selectedGbids);
+        verify(discoveryEntryStoreMock).add(gdepCaptor.capture(), eq(expectedGbids));
+        checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry, gdepCaptor.getValue());
+        checkPromiseSuccess(promise);
+    }
+
+    @Test
+    public void addWithGbids_emptyAndGcdGbid_callsStoreWithEmptyGbidReplaced() throws InterruptedException {
+        String[] selectedGbids = new String[]{ "", GCD_GBID };
+        String[] expectedGbids = new String[]{ GCD_GBID, GCD_GBID };
+        Promise<Add1Deferred> promise = subject.add(testGlobalDiscoveryEntry, selectedGbids);
+        verify(discoveryEntryStoreMock).add(gdepCaptor.capture(), eq(expectedGbids));
+        checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry, gdepCaptor.getValue());
+        checkPromiseSuccess(promise);
+    }
+
     private void testAddWithGbids_discoveryError(String[] gbids,
                                                  DiscoveryError expectedError) throws InterruptedException {
         Promise<Add1Deferred> promise = subject.add(testGlobalDiscoveryEntry, gbids);
@@ -290,9 +320,29 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
-    public void removeWithGbids_callsStore() throws InterruptedException {
+    public void removeWithGbids_multipleGbids_callsStore() throws InterruptedException {
         String[] selectedGbids = new String[]{ validGbids[2], validGbids[1] };
         String[] expectedGbids = selectedGbids.clone();
+        doReturn(1).when(discoveryEntryStoreMock).remove(anyString(), any(String[].class));
+        Promise<Remove1Deferred> promise = subject.remove(PARTICIPANT_ID, selectedGbids);
+        verify(discoveryEntryStoreMock).remove(eq(PARTICIPANT_ID), eq(expectedGbids));
+        checkPromiseSuccess(promise);
+    }
+
+    @Test
+    public void removeWithGbids_emptyGbid_callsStoreWithGcdGbid() throws InterruptedException {
+        String[] selectedGbids = new String[]{ "" };
+        String[] expectedGbids = new String[]{ GCD_GBID };
+        doReturn(1).when(discoveryEntryStoreMock).remove(anyString(), any(String[].class));
+        Promise<Remove1Deferred> promise = subject.remove(PARTICIPANT_ID, selectedGbids);
+        verify(discoveryEntryStoreMock).remove(eq(PARTICIPANT_ID), eq(expectedGbids));
+        checkPromiseSuccess(promise);
+    }
+
+    @Test
+    public void removeWithGbids_multipleGbidsWithEmptyGbid_callsStoreWithEmptyGbidReplaced() throws InterruptedException {
+        String[] selectedGbids = new String[]{ validGbids[2], "" };
+        String[] expectedGbids = new String[]{ validGbids[2], GCD_GBID };
         doReturn(1).when(discoveryEntryStoreMock).remove(anyString(), any(String[].class));
         Promise<Remove1Deferred> promise = subject.remove(PARTICIPANT_ID, selectedGbids);
         verify(discoveryEntryStoreMock).remove(eq(PARTICIPANT_ID), eq(expectedGbids));
@@ -463,6 +513,98 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
+    public void lookupByDomainInterfaceWithGbids_singleEmptyGbid_filtersByGcdGbid() throws InterruptedException {
+        GlobalDiscoveryEntryPersisted gdep1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[0]);
+        gdep1.setParticipantId(gdep1.getGbid());
+        GlobalDiscoveryEntryPersisted gdep2 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[1]);
+        gdep2.setParticipantId(gdep2.getGbid());
+        GlobalDiscoveryEntryPersisted gdep3 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[2]);
+        gdep3.setParticipantId(gdep3.getGbid());
+        GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(gdep3);
+        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock).lookup(any(String[].class),
+                                                                                          anyString());
+
+        Promise<Lookup2Deferred> promise = subject.lookup(DOMAINS.clone(), INTERFACE_NAME, new String[]{ "" });
+
+        verify(discoveryEntryStoreMock).lookup(eq(DOMAINS), eq(INTERFACE_NAME));
+        Object[] values = checkPromiseSuccess(promise);
+        GlobalDiscoveryEntry[] result = (GlobalDiscoveryEntry[]) values[0];
+        assertEquals(1, result.length);
+        checkDiscoveryEntry(expectedEntry, (GlobalDiscoveryEntry) result[0]);
+    }
+
+    @Test
+    public void lookupByDomainInterfaceWithGbids_multipleGbidsWithEmptyGbid_filtersWithEmptyGbidReplaced() throws InterruptedException {
+        GlobalDiscoveryEntryPersisted gdep1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[0]);
+        gdep1.setParticipantId(gdep1.getGbid());
+        GlobalDiscoveryEntryPersisted gdep2 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[1]);
+        gdep2.setParticipantId(gdep2.getGbid());
+        GlobalDiscoveryEntryPersisted gdep3 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[2]);
+        gdep3.setParticipantId(gdep3.getGbid());
+        GlobalDiscoveryEntry expectedEntry2 = new GlobalDiscoveryEntry(gdep2);
+        GlobalDiscoveryEntry expectedEntry3 = new GlobalDiscoveryEntry(gdep3);
+        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock).lookup(any(String[].class),
+                                                                                          anyString());
+
+        Promise<Lookup2Deferred> promise = subject.lookup(DOMAINS.clone(),
+                                                          INTERFACE_NAME,
+                                                          new String[]{ "", validGbids[1] });
+
+        verify(discoveryEntryStoreMock).lookup(eq(DOMAINS), eq(INTERFACE_NAME));
+        Object[] values = checkPromiseSuccess(promise);
+        GlobalDiscoveryEntry[] result = (GlobalDiscoveryEntry[]) values[0];
+        assertEquals(2, result.length);
+        if (validGbids[1].equals(result[0].getParticipantId())) {
+            checkDiscoveryEntry(expectedEntry2, (GlobalDiscoveryEntry) result[0]);
+            checkDiscoveryEntry(expectedEntry3, (GlobalDiscoveryEntry) result[1]);
+        } else {
+            checkDiscoveryEntry(expectedEntry2, (GlobalDiscoveryEntry) result[1]);
+            checkDiscoveryEntry(expectedEntry3, (GlobalDiscoveryEntry) result[0]);
+        }
+    }
+
+    @Test
+    public void lookupByDomainInterfaceWithGbids_emptyAndGcdGbid_filtersWithEmptyGbidReplaced() throws InterruptedException {
+        GlobalDiscoveryEntryPersisted gdep1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[0]);
+        gdep1.setParticipantId(gdep1.getGbid());
+        GlobalDiscoveryEntryPersisted gdep2 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[1]);
+        gdep2.setParticipantId(gdep2.getGbid());
+        GlobalDiscoveryEntryPersisted gdep3 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                TOPIC_NAME,
+                                                                                validGbids[2]);
+        gdep3.setParticipantId(gdep3.getGbid());
+        GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(gdep3);
+        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock).lookup(any(String[].class),
+                                                                                          anyString());
+
+        Promise<Lookup2Deferred> promise = subject.lookup(DOMAINS.clone(),
+                                                          INTERFACE_NAME,
+                                                          new String[]{ GCD_GBID, "" });
+
+        verify(discoveryEntryStoreMock).lookup(eq(DOMAINS), eq(INTERFACE_NAME));
+        Object[] values = checkPromiseSuccess(promise);
+        GlobalDiscoveryEntry[] result = (GlobalDiscoveryEntry[]) values[0];
+        assertEquals(1, result.length);
+        checkDiscoveryEntry(expectedEntry, (GlobalDiscoveryEntry) result[0]);
+    }
+
+    @Test
     public void lookupByParticipantId_callsStoreAndFiltersByOwnGbid() throws InterruptedException {
         GlobalDiscoveryEntryPersisted gdep1_1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
                                                                                   TOPIC_NAME,
@@ -510,6 +652,84 @@ public class CapabilitiesDirectoryTest {
         GlobalDiscoveryEntry result = (GlobalDiscoveryEntry) values[0];
         MqttAddress address = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(result);
         assertTrue(validGbids[0].equals(address.getBrokerUri()) ^ validGbids[1].equals(address.getBrokerUri()));
+    }
+
+    @Test
+    public void lookupByParticipantIdWithGbids_singleEmptyGbid_filtersByGcdGbid() throws InterruptedException {
+        GlobalDiscoveryEntryPersisted gdep1_1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[0]);
+        gdep1_1.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_1.getGbid(), TOPIC_NAME)));
+        GlobalDiscoveryEntryPersisted gdep1_2 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[1]);
+        gdep1_2.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_2.getGbid(), TOPIC_NAME)));
+        GlobalDiscoveryEntryPersisted gdep1_3 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[2]);
+        gdep1_3.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_3.getGbid(), TOPIC_NAME)));
+
+        GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(gdep1_3);
+        expectedEntry.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(GCD_GBID, TOPIC_NAME)));
+
+        doReturn(Arrays.asList(gdep1_1, gdep1_2, gdep1_3)).when(discoveryEntryStoreMock).lookup(anyString());
+
+        Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ "" });
+
+        verify(discoveryEntryStoreMock).lookup(eq(PARTICIPANT_ID));
+        Object[] values = checkPromiseSuccess(promise);
+        GlobalDiscoveryEntry result = (GlobalDiscoveryEntry) values[0];
+        assertEquals(expectedEntry, result);
+    }
+
+    @Test
+    public void lookupByParticipantIdWithGbids_multipleGbidsWithEmptyGbid_filtersWithEmptyGbidReplaced() throws InterruptedException {
+        GlobalDiscoveryEntryPersisted gdep1_1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[0]);
+        gdep1_1.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_1.getGbid(), TOPIC_NAME)));
+        GlobalDiscoveryEntryPersisted gdep1_2 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[1]);
+        gdep1_2.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_2.getGbid(), TOPIC_NAME)));
+        GlobalDiscoveryEntryPersisted gdep1_3 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[2]);
+        gdep1_3.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_3.getGbid(), TOPIC_NAME)));
+        doReturn(Arrays.asList(gdep1_1, gdep1_2, gdep1_3)).when(discoveryEntryStoreMock).lookup(anyString());
+
+        Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ "", validGbids[1] });
+
+        verify(discoveryEntryStoreMock).lookup(eq(PARTICIPANT_ID));
+        Object[] values = checkPromiseSuccess(promise);
+        GlobalDiscoveryEntry result = (GlobalDiscoveryEntry) values[0];
+        MqttAddress address = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(result);
+        assertTrue(GCD_GBID.equals(address.getBrokerUri()) ^ validGbids[1].equals(address.getBrokerUri()));
+    }
+
+    @Test
+    public void lookupByParticipantIdWithGbids_emptyAndGcdGbid_filtersWithEmptyGbidReplaced() throws InterruptedException {
+        GlobalDiscoveryEntryPersisted gdep1_1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[0]);
+        gdep1_1.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_1.getGbid(), TOPIC_NAME)));
+        GlobalDiscoveryEntryPersisted gdep1_2 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[1]);
+        gdep1_2.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_2.getGbid(), TOPIC_NAME)));
+        GlobalDiscoveryEntryPersisted gdep1_3 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry,
+                                                                                  TOPIC_NAME,
+                                                                                  validGbids[2]);
+        gdep1_3.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_3.getGbid(), TOPIC_NAME)));
+        doReturn(Arrays.asList(gdep1_1, gdep1_2, gdep1_3)).when(discoveryEntryStoreMock).lookup(anyString());
+
+        Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ "", GCD_GBID });
+
+        verify(discoveryEntryStoreMock).lookup(eq(PARTICIPANT_ID));
+        Object[] values = checkPromiseSuccess(promise);
+        GlobalDiscoveryEntry result = (GlobalDiscoveryEntry) values[0];
+        MqttAddress address = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(result);
+        assertEquals(GCD_GBID, address.getBrokerUri());
     }
 
     private void testLookupByDomainInterfaceWithGbids_discoveryError(String[] gbids,

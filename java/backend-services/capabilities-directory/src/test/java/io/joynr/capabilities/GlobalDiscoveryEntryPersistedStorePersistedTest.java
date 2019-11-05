@@ -22,11 +22,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -46,11 +49,11 @@ import com.google.inject.persist.jpa.JpaPersistModule;
 
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
-@Ignore
 public class GlobalDiscoveryEntryPersistedStorePersistedTest {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalDiscoveryEntryPersistedStorePersistedTest.class);
@@ -58,8 +61,8 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     private PersistService service;
     private GlobalDiscoveryEntryPersistedStorePersisted store;
     private EntityManager entityManager;
-    private String gbid = "joynrdefaultgbid";
-    private String[] gbids = { gbid, "joynrtestgbid2" };
+    private String defaultGbid = "joynrdefaultgbid";
+    private String[] gbids = { defaultGbid, "joynrtestgbid2" };
 
     @Before
     public void setUp() throws Exception {
@@ -68,6 +71,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
             @Override
             protected void configure() {
                 bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
+                requestStaticInjection(CapabilityUtils.class, RoutingTypesUtil.class);
             }
         });
         service = injector.getInstance(PersistService.class);
@@ -81,58 +85,129 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     }
 
     @Test
-    public void testAddDiscoveryEntry() throws Exception {
+    public void add_singleGbid() throws Exception {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
+        GlobalDiscoveryEntryPersisted expectedEntry = new GlobalDiscoveryEntryPersisted(discoveryEntry,
+                                                                                        discoveryEntry.getClusterControllerId(),
+                                                                                        discoveryEntry.getGbid());
+
+        store.add(discoveryEntry, new String[]{ gbids[1] });
+        entityManager.clear();
+
+        assertContains(expectedEntry, new String[]{ gbids[1] });
+        assertNotContainsDomainInterface(discoveryEntry); // invalid address, replaced in store.add
+    }
+
+    @Test
+    public void add_multipleGbids() throws Exception {
+        GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
+        GlobalDiscoveryEntryPersisted expectedEntry = new GlobalDiscoveryEntryPersisted(discoveryEntry,
+                                                                                        discoveryEntry.getClusterControllerId(),
+                                                                                        discoveryEntry.getGbid());
+        String[] expectedGbids = gbids.clone();
 
         store.add(discoveryEntry, gbids);
         entityManager.clear();
-        assertContains(discoveryEntry);
+
+        assertContains(expectedEntry, expectedGbids);
+        assertNotContainsDomainInterface(discoveryEntry); // invalid address, replaced in store.add
+    }
+
+    @Test
+    public void add_duplicateGbid_addsOnlyOnce() throws Exception {
+        // due to empty string replacement, the default/own GBID of GCD might be duplicated
+        GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
+        GlobalDiscoveryEntryPersisted expectedEntry = new GlobalDiscoveryEntryPersisted(discoveryEntry,
+                                                                                        discoveryEntry.getClusterControllerId(),
+                                                                                        discoveryEntry.getGbid());
+        String[] selectedGbids = new String[]{ defaultGbid, gbids[1], defaultGbid };
+        String[] expectedGbids = new String[]{ defaultGbid, gbids[1] };
+
+        store.add(discoveryEntry, selectedGbids);
+        entityManager.clear();
+
+        assertContains(expectedEntry, expectedGbids);
+        assertNotContainsDomainInterface(discoveryEntry); // invalid address, replaced in store.add
     }
 
     @Test
     public void testVersionPersistedAndRetrieved() throws Exception {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
         logger.info("Discovery entry: " + discoveryEntry);
+        GlobalDiscoveryEntryPersisted expectedDiscoveryEntry = new GlobalDiscoveryEntryPersisted(discoveryEntry,
+                                                                                                 discoveryEntry.getClusterControllerId(),
+                                                                                                 discoveryEntry.getGbid());
 
-        store.add(discoveryEntry, gbids);
+        store.add(discoveryEntry, new String[]{ defaultGbid });
         entityManager.clear();
 
         Collection<GlobalDiscoveryEntryPersisted> lookupResult = store.lookup(new String[]{
-                discoveryEntry.getDomain() }, discoveryEntry.getInterfaceName());
+                expectedDiscoveryEntry.getDomain() }, expectedDiscoveryEntry.getInterfaceName());
         assertNotNull(lookupResult);
         assertEquals(1, lookupResult.size());
         DiscoveryEntry persistedEntry = lookupResult.iterator().next();
         logger.info("Persisted entry: " + persistedEntry);
         assertNotEquals(System.identityHashCode(discoveryEntry), System.identityHashCode(persistedEntry));
+        assertNotEquals(System.identityHashCode(expectedDiscoveryEntry), System.identityHashCode(persistedEntry));
         assertNotNull(persistedEntry);
         assertNotNull(persistedEntry.getProviderVersion());
-        assertEquals(discoveryEntry.getProviderVersion().getMajorVersion(),
+        assertEquals(expectedDiscoveryEntry.getProviderVersion().getMajorVersion(),
                      persistedEntry.getProviderVersion().getMajorVersion());
-        assertEquals(discoveryEntry.getProviderVersion().getMinorVersion(),
+        assertEquals(expectedDiscoveryEntry.getProviderVersion().getMinorVersion(),
                      persistedEntry.getProviderVersion().getMinorVersion());
     }
 
-    @Test
-    public void testRemoveByParticipantId() throws Exception {
+    private void testRemove(String[] selectedGbids, String[] removedGbids) throws Exception {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
+        String[] remainingGbids = Arrays.stream(gbids)
+                                        .filter(gbid -> !Arrays.asList(selectedGbids).contains(gbid))
+                                        .toArray(String[]::new);
+
         store.add(discoveryEntry, gbids);
         entityManager.clear();
-        assertContains(discoveryEntry);
+        assertContains(discoveryEntry, gbids);
 
-        store.remove(discoveryEntry.getParticipantId(), gbids);
+        store.remove(discoveryEntry.getParticipantId(), selectedGbids);
         entityManager.clear();
-        assertNotContains(discoveryEntry);
+        assertContains(discoveryEntry, remainingGbids);
+        assertNotContains(discoveryEntry, removedGbids);
     }
 
     @Test
-    public void testLookupDomainInterface() throws Exception {
+    public void remove_singleGbid() throws Exception {
+        String[] selectedGbids = new String[]{ gbids[1] };
+        String[] removedGbids = selectedGbids.clone();
+
+        testRemove(selectedGbids, removedGbids);
+    }
+
+    @Test
+    public void remove_multipleGbids() throws Exception {
+        String[] selectedGbids = gbids.clone();
+        String[] removedGbids = selectedGbids.clone();
+
+        testRemove(selectedGbids, removedGbids);
+    }
+
+    @Test
+    public void remove_duplicateGbid() throws Exception {
+        // due to empty string replacement, the default/own GBID of GCD might be duplicated
+        String[] selectedGbids = new String[]{ defaultGbid, defaultGbid };
+        String[] removedGbids = new String[]{ defaultGbid };
+
+        testRemove(selectedGbids, removedGbids);
+    }
+
+    @Test
+    public void lookupDomainInterface() throws Exception {
         String domain = "domain";
         String interfaceName = "interfaceName";
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry(domain, interfaceName, "participantId");
+
         store.add(discoveryEntry, gbids);
         entityManager.clear();
-        Collection<GlobalDiscoveryEntryPersisted> lookup = store.lookup(new String[]{ domain }, interfaceName);
-        assertTrue(lookup.contains(discoveryEntry));
+
+        assertContainsDomainInterface(discoveryEntry, gbids);
     }
 
     @Test
@@ -164,16 +239,34 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         String domain = "testTouchDomain";
         String interfaceName = "testTouchInterfaceName";
         String clusterControllerId = "testTouchClusterControllerId";
+
         GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry(domain + "1",
                                                                              interfaceName + "1",
                                                                              "testTouchParticipantId1");
         discoveryEntry1.setClusterControllerId(clusterControllerId);
-        store.add(discoveryEntry1, gbids);
+
+        GlobalDiscoveryEntryPersisted expectedEntry1 = new GlobalDiscoveryEntryPersisted(discoveryEntry1,
+                                                                                         discoveryEntry1.getClusterControllerId(),
+                                                                                         defaultGbid);
+        Address expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntry1);
+        ((MqttAddress) expectedAddress).setBrokerUri(defaultGbid);
+        expectedEntry1.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        store.add(discoveryEntry1, new String[]{ defaultGbid });
+
         GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry(domain + "2",
                                                                              interfaceName + "2",
                                                                              "testTouchParticipantId2");
         discoveryEntry2.setClusterControllerId(clusterControllerId);
-        store.add(discoveryEntry2, gbids);
+
+        GlobalDiscoveryEntryPersisted expectedEntry2 = new GlobalDiscoveryEntryPersisted(discoveryEntry2,
+                                                                                         discoveryEntry2.getClusterControllerId(),
+                                                                                         gbids[1]);
+        expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntry2);
+        ((MqttAddress) expectedAddress).setBrokerUri(gbids[1]);
+        expectedEntry2.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        store.add(discoveryEntry2, new String[]{ gbids[1] });
 
         entityManager.clear();
 
@@ -182,14 +275,14 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         long currentTimeMillisBefore = System.currentTimeMillis();
 
         List<GlobalDiscoveryEntryPersisted> returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
-                discoveryEntry1.getDomain() }, discoveryEntry1.getInterfaceName());
-        assertTrue(returnedEntries.contains(discoveryEntry1));
+                expectedEntry1.getDomain() }, expectedEntry1.getInterfaceName());
+        assertTrue(returnedEntries.contains(expectedEntry1));
         assertTrue(returnedEntries.size() == 1);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
 
-        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
-                discoveryEntry2.getDomain() }, discoveryEntry2.getInterfaceName());
-        assertTrue(returnedEntries.contains(discoveryEntry2));
+        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ expectedEntry2.getDomain() },
+                                                                             expectedEntry2.getInterfaceName());
+        assertTrue(returnedEntries.contains(expectedEntry2));
         assertTrue(returnedEntries.size() == 1);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
 
@@ -201,17 +294,19 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         Thread.sleep(1);
         long currentTimeMillisAfter = System.currentTimeMillis();
 
-        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
-                discoveryEntry1.getDomain() }, discoveryEntry1.getInterfaceName());
+        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ expectedEntry1.getDomain() },
+                                                                             expectedEntry1.getInterfaceName());
         assertFalse(returnedEntries.contains(discoveryEntry1));
+        assertFalse(returnedEntries.contains(expectedEntry1));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 1);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() > currentTimeMillisBefore);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisAfter);
 
-        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
-                discoveryEntry2.getDomain() }, discoveryEntry2.getInterfaceName());
+        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ expectedEntry2.getDomain() },
+                                                                             expectedEntry2.getInterfaceName());
         assertFalse(returnedEntries.contains(discoveryEntry2));
+        assertFalse(returnedEntries.contains(expectedEntry2));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 1);
         assertTrue(returnedEntries.get(0).getLastSeenDateMs() > currentTimeMillisBefore);
@@ -227,11 +322,28 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
                                                                                    interfaceName,
                                                                                    "testTouchParticipantId1");
         touchedDiscoveryEntry.setClusterControllerId(clusterControllerId);
-        store.add(touchedDiscoveryEntry, gbids);
+
+        GlobalDiscoveryEntryPersisted expectedTouchedEntry = new GlobalDiscoveryEntryPersisted(touchedDiscoveryEntry,
+                                                                                               touchedDiscoveryEntry.getClusterControllerId(),
+                                                                                               defaultGbid);
+        Address expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedTouchedEntry);
+        ((MqttAddress) expectedAddress).setBrokerUri(defaultGbid);
+        expectedTouchedEntry.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        store.add(touchedDiscoveryEntry, new String[]{ defaultGbid });
+
         GlobalDiscoveryEntryPersisted discoveryEntryFromDefaultClusterController = createDiscoveryEntry(domain,
                                                                                                         interfaceName,
                                                                                                         "testTouchParticipantIdFromDefaultClusterController");
-        store.add(discoveryEntryFromDefaultClusterController, gbids);
+
+        GlobalDiscoveryEntryPersisted expectedEntryFromOtherCc = new GlobalDiscoveryEntryPersisted(discoveryEntryFromDefaultClusterController,
+                                                                                                   discoveryEntryFromDefaultClusterController.getClusterControllerId(),
+                                                                                                   defaultGbid);
+        expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntryFromOtherCc);
+        ((MqttAddress) expectedAddress).setBrokerUri(defaultGbid);
+        expectedEntryFromOtherCc.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        store.add(discoveryEntryFromDefaultClusterController, new String[]{ defaultGbid });
         entityManager.clear();
 
         // wait some time to ensure new lastSeenDateMs
@@ -239,8 +351,8 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
 
         List<GlobalDiscoveryEntryPersisted> returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
                 domain }, interfaceName);
-        assertTrue(returnedEntries.contains(touchedDiscoveryEntry));
-        assertTrue(returnedEntries.contains(discoveryEntryFromDefaultClusterController));
+        assertTrue(returnedEntries.contains(expectedTouchedEntry));
+        assertTrue(returnedEntries.contains(expectedEntryFromOtherCc));
         assertTrue(returnedEntries.size() == 2);
 
         // call touch for clusterControllerId and check discoveryEntries
@@ -248,8 +360,8 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         Thread.sleep(1);
 
         returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ domain }, interfaceName);
-        assertFalse(returnedEntries.contains(touchedDiscoveryEntry));
-        assertTrue(returnedEntries.contains(discoveryEntryFromDefaultClusterController));
+        assertFalse(returnedEntries.contains(expectedTouchedEntry));
+        assertTrue(returnedEntries.contains(expectedEntryFromOtherCc));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 2);
     }
@@ -273,19 +385,51 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
                                                                                          publicKeyId,
                                                                                          addressSerialized,
                                                                                          "clusterControllerId",
-                                                                                         gbid);
+                                                                                         defaultGbid);
         return discoveryEntry;
     }
 
-    private void assertContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
-        for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
-            Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(new String[]{
-                    discoveryEntry.getDomain() }, discoveryEntry.getInterfaceName());
-            assertTrue(returnedEntries.contains(discoveryEntry));
+    private void assertContains(GlobalDiscoveryEntryPersisted discoveryEntry, String[] gbids) {
+        Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(discoveryEntry.getParticipantId());
+        assertEquals(gbids.length, returnedEntries.size());
+
+        for (String gbid : gbids) {
+            GlobalDiscoveryEntryPersisted expectedEntry = new GlobalDiscoveryEntryPersisted(discoveryEntry,
+                                                                                            discoveryEntry.getClusterControllerId(),
+                                                                                            gbid);
+            Address expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntry);
+            ((MqttAddress) expectedAddress).setBrokerUri(gbid);
+            expectedEntry.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+            assertTrue(returnedEntries.contains(expectedEntry));
         }
     }
 
-    private void assertNotContains(GlobalDiscoveryEntryPersisted... discoveryEntries) {
+    private void assertContainsDomainInterface(GlobalDiscoveryEntryPersisted discoveryEntry, String[] gbids) {
+        Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(new String[]{
+                discoveryEntry.getDomain() }, discoveryEntry.getInterfaceName());
+        assertEquals(gbids.length, returnedEntries.size());
+
+        for (String gbid : gbids) {
+            GlobalDiscoveryEntryPersisted expectedEntry = new GlobalDiscoveryEntryPersisted(discoveryEntry,
+                                                                                            discoveryEntry.getClusterControllerId(),
+                                                                                            gbid);
+            Address expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntry);
+            ((MqttAddress) expectedAddress).setBrokerUri(gbid);
+            expectedEntry.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+            assertTrue(returnedEntries.contains(expectedEntry));
+        }
+    }
+
+    private void assertNotContains(GlobalDiscoveryEntryPersisted discoveryEntry, String[] gbids) {
+        Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(discoveryEntry.getParticipantId());
+        Collection<GlobalDiscoveryEntryPersisted> filteredEntries = returnedEntries.stream()
+                                                                                   .filter(e -> Arrays.asList(gbids)
+                                                                                                      .contains(e.getGbid()))
+                                                                                   .collect(Collectors.toList());
+        assertEquals(0, filteredEntries.size());
+    }
+
+    private void assertNotContainsDomainInterface(GlobalDiscoveryEntryPersisted... discoveryEntries) {
         for (GlobalDiscoveryEntryPersisted discoveryEntry : discoveryEntries) {
             Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(new String[]{
                     discoveryEntry.getDomain() }, discoveryEntry.getInterfaceName());

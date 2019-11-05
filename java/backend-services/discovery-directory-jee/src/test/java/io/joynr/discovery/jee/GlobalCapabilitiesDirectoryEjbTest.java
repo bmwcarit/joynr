@@ -300,9 +300,41 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void addWithGbids_singleDiscoveryEntry_singleEmptyGbid() throws ApplicationException {
+    public void addWithGbids_singleDiscoveryEntry_singleEmptyGbid_replacedByGcdGbid() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
         String[] gbidsForAdd = new String[]{ "" };
+
+        addEntry(testGlobalDiscoveryEntry1, gbidsForAdd);
+        List<GlobalDiscoveryEntryPersisted> result = queryEntityManagerByParticipantId(testParticipantId1);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry1, result.get(0), validGbidsArray[0]);
+    }
+
+    @Test
+    public void addWithGbids_singleDiscoveryEntry_multipleGbidsWithEmptyGbid_emptyGbidReplaced() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        String[] gbidsForAdd = new String[]{ validGbidsArray[1], "" };
+
+        addEntry(testGlobalDiscoveryEntry1, gbidsForAdd);
+        List<GlobalDiscoveryEntryPersisted> result = queryEntityManagerByParticipantId(testParticipantId1);
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        if (validGbidsArray[1].equals(result.get(0).getGbid())) {
+            checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry1, result.get(0), validGbidsArray[1]);
+            checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry1, result.get(1), validGbidsArray[0]);
+        } else {
+            checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry1, result.get(0), validGbidsArray[0]);
+            checkDiscoveryEntryPersisted(expectedGlobalDiscoveryEntry1, result.get(1), validGbidsArray[1]);
+        }
+    }
+
+    @Test
+    public void addWithGbids_singleDiscoveryEntry_emptyAndGcdGbid_emptyGbidReplaced() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        String[] gbidsForAdd = new String[]{ validGbidsArray[0], "" };
 
         addEntry(testGlobalDiscoveryEntry1, gbidsForAdd);
         List<GlobalDiscoveryEntryPersisted> result = queryEntityManagerByParticipantId(testParticipantId1);
@@ -515,11 +547,45 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void lookupParticipantIdWithEmptyGbids_defaultGbid_singleMatchingEntry() throws ApplicationException {
+    public void lookupParticipantIdWithGbids_singleEmptyGbid_replacedByGcdGbid() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
         checkEntryIsNotInEntityManager(testParticipantId2);
 
         String[] selectedGbids = new String[]{ "" };
+        String expectedGbid = JOYNR_DEFAULT_GCD_GBID;
+
+        addEntry(testGlobalDiscoveryEntry1, new String[]{ validGbidsArray[2], JOYNR_DEFAULT_GCD_GBID });
+        addEntry(testGlobalDiscoveryEntry2, validGbidsArray);
+
+        GlobalDiscoveryEntry result = subject.lookup(testParticipantId1, selectedGbids);
+        assertNotNull(result);
+        assertFalse(result instanceof GlobalDiscoveryEntryPersisted);
+        checkDiscoveryEntry(expectedGlobalDiscoveryEntry1, result, expectedGbid);
+    }
+
+    @Test
+    public void lookupParticipantIdWithGbids_multipleGbidsWithEmptyGbid_emptyGbidReplaced() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        checkEntryIsNotInEntityManager(testParticipantId2);
+
+        String[] selectedGbids = new String[]{ validGbidsArray[2], "", validGbidsArray[1] };
+        String expectedGbid = JOYNR_DEFAULT_GCD_GBID;
+
+        addEntry(testGlobalDiscoveryEntry1, new String[]{ validGbidsArray[2], JOYNR_DEFAULT_GCD_GBID });
+        addEntry(testGlobalDiscoveryEntry2, validGbidsArray);
+
+        GlobalDiscoveryEntry result = subject.lookup(testParticipantId1, selectedGbids);
+        assertNotNull(result);
+        assertFalse(result instanceof GlobalDiscoveryEntryPersisted);
+        checkDiscoveryEntry(expectedGlobalDiscoveryEntry1, result, expectedGbid);
+    }
+
+    @Test
+    public void lookupParticipantIdWithGbids_emptyAndGcdGbid_emptyGbidReplaced() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        checkEntryIsNotInEntityManager(testParticipantId2);
+
+        String[] selectedGbids = new String[]{ "", JOYNR_DEFAULT_GCD_GBID };
         String expectedGbid = JOYNR_DEFAULT_GCD_GBID;
 
         addEntry(testGlobalDiscoveryEntry1, new String[]{ validGbidsArray[2], JOYNR_DEFAULT_GCD_GBID });
@@ -762,6 +828,70 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
+    public void lookupDomainInterfaceWithGbids_singleEmptyGbid_replacedByGcdGbid() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        checkEntryIsNotInEntityManager(testParticipantId1_a);
+        checkEntryIsNotInEntityManager(testParticipantId2);
+
+        String[] selectedGbids = new String[]{ "" };
+        String expectedGbid = validGbidsArray[0];
+
+        addEntry(testGlobalDiscoveryEntry1, new String[]{ validGbidsArray[1], validGbidsArray[2] });
+        addEntry(testGlobalDiscoveryEntry1_a, new String[]{ validGbidsArray[0], validGbidsArray[2] });
+        addEntry(testGlobalDiscoveryEntry2, new String[]{ validGbidsArray[0], validGbidsArray[1] });
+
+        GlobalDiscoveryEntry[] result = subject.lookup(domains, interfaceName1, selectedGbids);
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        checkDiscoveryEntry(expectedGlobalDiscoveryEntry1_a, result[0], expectedGbid);
+    }
+
+    @Test
+    public void lookupDomainInterfaceWithGbids_multipleGbidsWithEmptyGbid_emptyGbidReplaced() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        checkEntryIsNotInEntityManager(testParticipantId1_a);
+        checkEntryIsNotInEntityManager(testParticipantId2);
+
+        String[] selectedGbids = new String[]{ validGbidsArray[2], validGbidsArray[1], "" };
+        String expectedGbid1 = validGbidsArray[1];
+        String expectedGbid2 = validGbidsArray[0];
+
+        addEntry(testGlobalDiscoveryEntry1, new String[]{ validGbidsArray[1] });
+        addEntry(testGlobalDiscoveryEntry1_a, new String[]{ validGbidsArray[0] });
+        addEntry(testGlobalDiscoveryEntry2, validGbidsArray);
+
+        GlobalDiscoveryEntry[] result = subject.lookup(domains, interfaceName1, selectedGbids.clone());
+        assertNotNull(result);
+        assertEquals(2, result.length);
+        if (expectedGlobalDiscoveryEntry1.getParticipantId().equals(result[0].getParticipantId())) {
+            checkDiscoveryEntry(expectedGlobalDiscoveryEntry1, result[0], expectedGbid1);
+            checkDiscoveryEntry(expectedGlobalDiscoveryEntry1_a, result[1], expectedGbid2);
+        } else {
+            checkDiscoveryEntry(expectedGlobalDiscoveryEntry1, result[1], expectedGbid1);
+            checkDiscoveryEntry(expectedGlobalDiscoveryEntry1_a, result[0], expectedGbid2);
+        }
+    }
+
+    @Test
+    public void lookupDomainInterfaceWithGbids_emptyAndGcdGbid_emptyGbidReplaced() throws ApplicationException {
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        checkEntryIsNotInEntityManager(testParticipantId1_a);
+        checkEntryIsNotInEntityManager(testParticipantId2);
+
+        String[] selectedGbids = new String[]{ "", validGbidsArray[0] };
+        String expectedGbid = validGbidsArray[0];
+
+        addEntry(testGlobalDiscoveryEntry1, new String[]{ validGbidsArray[1] });
+        addEntry(testGlobalDiscoveryEntry1_a, new String[]{ validGbidsArray[0] });
+        addEntry(testGlobalDiscoveryEntry2, validGbidsArray);
+
+        GlobalDiscoveryEntry[] result = subject.lookup(domains, interfaceName1, selectedGbids.clone());
+        assertNotNull(result);
+        assertEquals(1, result.length);
+        checkDiscoveryEntry(expectedGlobalDiscoveryEntry1_a, result[0], expectedGbid);
+    }
+
+    @Test
     public void lookupDomainInterfaceWithGbids_multipleGbids_singleMatchingEntry() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
         checkEntryIsNotInEntityManager(testParticipantId1_a);
@@ -992,7 +1122,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void testRemoveWithGbids_entryForSelectedGbids() throws ApplicationException {
+    public void testRemoveWithGbids_multipleGbids_entryForSelectedGbids() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
 
         addEntry(testGlobalDiscoveryEntry1, validGbidsArray);
@@ -1008,7 +1138,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void testRemoveWithGbids_entryForSelectedGbidsWithEmptyGbid() throws ApplicationException {
+    public void testRemoveWithGbids_multipleGbidsWithEmptyGbid_entryForSelectedGbids() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
         String[] gbidArrayWithEmptyDefault = validGbidsArray.clone();
         gbidArrayWithEmptyDefault[0] = "";
@@ -1026,7 +1156,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
-    public void testRemoveWithGbids_entryForSelectedAndOtherGbids() throws ApplicationException {
+    public void testRemoveWithGbids_multipleGbids_entryForSelectedAndOtherGbids() throws ApplicationException {
         checkEntryIsNotInEntityManager(testParticipantId1);
 
         addEntry(testGlobalDiscoveryEntry1, validGbidsArray);
