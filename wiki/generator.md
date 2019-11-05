@@ -261,6 +261,16 @@ e.g. simple data types, that are then imported in the local Franca files.
 It is recommended to place any local model files into the project's subdirectory
 ```src/main/model``` like in the Demo application.
 
+By default, the generator generates package version information for interfaces and their
+methods. To disable version generation, add a line containing #noVersionGeneration to
+the description of the interface:
+
+```
+<**
+    @description: This is my Interface.
+        #noVersionGeneration
+**>
+```
 
 ## joynr Generator Standalone
 The joynr Code Generator also exists as standalone version which can be used to manually
