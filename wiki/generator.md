@@ -44,7 +44,8 @@ have to be provided in the Maven configuration:
                           versioning scheme to be able to communicate with each other!
                         - The feature has been fully tested to work in Java, in C++ and JS only the
                           versioning of interfaces has been tested so far but the versioning of types
-                          is expected to work as well. -->
+                          is expected to work as well.
+                        - DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead.-->
                 <addVersionTo>name|package|none</addVersionTo>
                 <parameter>
                     <!-- for Jee code generation use generation language "java"
@@ -119,22 +120,30 @@ apply plugin: 'java'
 apply plugin: 'io.joynr.tools.generator.joynr-generator-gradle-plugin'
 ```
 
-Note: The Joynr Generator Plugin has to be applied after the *Java* or *Kotlin* plugin,
-as it attaches itself to the corresponding *clean* task.
+Note: The joynr Generator Plugin has to be applied after the *Java* or *Kotlin*
+plugin, as it attaches itself to the corresponding *clean* task.
 
-The following parameters can be configured (see section [Maven configuration](#maven-configuration)
-for details):
+The following parameters can be configured (see section [Maven
+configuration](#maven-configuration) for details):
 
-* **modelPath**
-* **outputPath**
-* **generationLanguage**
-* rootGenerator
-* generationId
-* skip
-* addVersionTo
-* extraParameters
-
-**Highlighted parameters are required**, the rest is optional.
+* `modelPath`: Defines the path where the `.fidl` files are created and located.
+  You must place the models in this location. The path must always be specified
+  from the project's root onwards, typically `app/src/...`. If not supplied in
+  the script, default value is `src/main/fidl/` or `app/src/main/fidl/` depending on where this 
+  is found first (if nowhere, default is `app/src/main/fidl/`). Note that in a multi-project 
+  setup, paths must always be given from the root project onwards, i.e. 
+  root-project/{sub-project1/...}; the path enclosed in {} is the path to specify.
+* `outputPath`: The output path where the generated files are created. The
+  default value is `build/generated/source/fidl/` or `app/build/generated/source/fidl/` depending
+   on whether you have a multi-project setup (if the script can't find a suitable place, it will 
+   fall back to `app/build/generated/source/fidl/`).
+* `generationLanguage`: The language to be used for generator tool selection.
+  The default value is `java`.
+* `rootGenerator`
+* `generationId`
+* `skip`
+* `addVersionTo` / DEPRECATED. Set the #noVersionGeneration comment in the .fidl file instead.
+* `extraParameters`
 
 Example configuration:
 
@@ -248,6 +257,7 @@ to *gen*.
             - The feature has been fully tested to work in Java, in C++ and JS only the versioning
               of interfaces has been tested so far but the versioning of types is expected to work
               as well.
+            - DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead.
     Optional, C++ only:
       -outputHeaderPath <path to directory containing header files>
       -includePrefix <prefix to use in include statements>
