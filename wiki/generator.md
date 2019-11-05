@@ -44,7 +44,8 @@ have to be provided in the Maven configuration:
                           versioning scheme to be able to communicate with each other!
                         - The feature has been fully tested to work in Java, in C++ and JS only the
                           versioning of interfaces has been tested so far but the versioning of types
-                          is expected to work as well. -->
+                          is expected to work as well.
+                        - DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead.-->
                 <addVersionTo>name|package|none</addVersionTo>
                 <parameter>
                     <!-- for Jee code generation use generation language "java"
@@ -135,7 +136,7 @@ configuration](#maven-configuration) for details):
 * `rootGenerator`
 * `generationId`
 * `skip`
-* `addVersionTo`
+* `addVersionTo` / DEPRECATED. Set the #noVersionGeneration comment in the .fidl file instead.
 * `extraParameters`
 
 Example configuration:
@@ -319,6 +320,7 @@ to *gen*.
             - The feature has been fully tested to work in Java, in C++ and JS only the versioning
               of interfaces has been tested so far but the versioning of types is expected to work
               as well.
+            - DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead.
     Optional, C++ only:
       -outputHeaderPath <path to directory containing header files>
       -includePrefix <prefix to use in include statements>
