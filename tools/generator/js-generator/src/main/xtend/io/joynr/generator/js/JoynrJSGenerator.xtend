@@ -19,11 +19,14 @@ package io.joynr.generator.js
  */
 import com.google.inject.AbstractModule
 import com.google.inject.assistedinject.FactoryModuleBuilder
+import com.google.inject.name.Named
 import io.joynr.generator.IJoynrGenerator
 import io.joynr.generator.js.communicationmodel.ErrorEnumTypesGenerator
 import io.joynr.generator.js.communicationmodel.TypesGenerator
 import io.joynr.generator.js.util.GeneratorParameter
+import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.js.util.JsTemplateFactory
+import io.joynr.generator.templates.util.NamingUtil
 import java.util.HashSet
 import java.util.Map
 import javax.inject.Inject
@@ -44,6 +47,15 @@ class JoynrJSGenerator implements IJoynrGenerator {
 	@Inject JsTemplateFactory templateFactory
 	@Inject extension TypesGenerator
 	@Inject extension ErrorEnumTypesGenerator
+	@Inject extension JoynrJSGeneratorExtensions
+
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)
+	public boolean nameWithVersion;
+
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
+	public boolean packageWithVersion;
 
 	override getLanguageId() {
 		"javascript"
@@ -67,6 +79,7 @@ class JoynrJSGenerator implements IJoynrGenerator {
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
 		for (francaIntf : fModel.interfaces) {
+			printVersionWarnings(francaIntf, packageWithVersion, nameWithVersion)
 			var proxyGenerator = templateFactory.createProxyGenerator(francaIntf)
 			proxyGenerator.generateProxy(fsa)
 			var providerGenerator = templateFactory.createProviderGenerator(francaIntf)
