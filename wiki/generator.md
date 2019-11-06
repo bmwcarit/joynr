@@ -33,6 +33,8 @@ have to be provided in the Maven configuration:
                 <!-- optional parameters -->
                 <!-- specify how the major version of Franca interfaces and typecollections shall
                         affect the generated name and package of interfaces and types:
+                    DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead,
+                    see section "Disable versioning of generated files" below.
                     package: interface/typecollection major versions (if existing) are added as an
                         additional package segment
                     name: interface/typecollection major versions (if existing) are appended to the
@@ -44,8 +46,7 @@ have to be provided in the Maven configuration:
                           versioning scheme to be able to communicate with each other!
                         - The feature has been fully tested to work in Java, in C++ and JS only the
                           versioning of interfaces has been tested so far but the versioning of types
-                          is expected to work as well.
-                        - DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead.-->
+                          is expected to work as well. -->
                 <addVersionTo>name|package|none</addVersionTo>
                 <parameter>
                     <!-- for Jee code generation use generation language "java"
@@ -142,7 +143,9 @@ configuration](#maven-configuration) for details):
 * `rootGenerator`
 * `generationId`
 * `skip`
-* `addVersionTo` / DEPRECATED. Set the #noVersionGeneration comment in the .fidl file instead.
+* `addVersionTo` / DEPRECATED. The addVersionTo option will be removed
+  in a future version of the generator. Set the #noVersionGeneration comment
+  in the .fidl file instead, see [Disable versioning of generated files](#disable-versioning-of-generated-files).
 * `extraParameters`
 
 Example configuration:
@@ -199,9 +202,13 @@ e.g. simple data types, that are then imported in the local Franca files.
 It is recommended to place any local model files into the project's subdirectory
 ```src/main/model``` like in the Demo application.
 
-By default, the generator generates package version information for interfaces and their
-methods. To disable version generation, add a line containing #noVersionGeneration to
-the description of the interface:
+
+## Disable versioning of generated files
+In the future, the generator generates package version information for interfaces and the
+types used by an interface by default. Interface/typecollection major versions (defaults to
+0 if not defined in the Franca file) are added as an additional package/namespace segment. 
+To disable version generation, add a line containing #noVersionGeneration to the description
+(Franca @description comment) of the interface:
 
 ```
 <**
@@ -210,7 +217,12 @@ the description of the interface:
 **>
 ```
 
-## Joynr Generator Standalone
+NOTE:
+> The evaluation of #noVersionGeneration comment is not yet activated. A warning is printed if
+> the comment and the addVersionTo setting do not match. The interface comment should be
+> updated in this case to get the same generator output with future versions of the generator.
+
+## joynr Generator Standalone
 The joynr Code Generator also exists as standalone version which can be used to manually
 generate the code from Franca models.
 
@@ -244,6 +256,8 @@ to *gen*.
       -templatesEncoding <encoding of templates>
       -generationId <name of what is being generated>
       -addVersionTo <name, package, none>
+        DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead,
+        see section "Disable versioning of generated files" above.
         package: interface/typecollection major versions (if existing) are added as an additional
             package segment
         name: interface/typecollection major versions (if existing) are appended to the
@@ -257,7 +271,6 @@ to *gen*.
             - The feature has been fully tested to work in Java, in C++ and JS only the versioning
               of interfaces has been tested so far but the versioning of types is expected to work
               as well.
-            - DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead.
     Optional, C++ only:
       -outputHeaderPath <path to directory containing header files>
       -includePrefix <prefix to use in include statements>

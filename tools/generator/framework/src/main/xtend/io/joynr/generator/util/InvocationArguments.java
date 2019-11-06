@@ -113,6 +113,7 @@ public class InvocationArguments {
         usageString.append("       -templatesEncoding <encoding of templates>\n");
         usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("       " + dumpVersionDefinition() + "\n");
+        usageString.append("         DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead. See generator documentation for more information.\n");
         usageString.append("         package: interface/typecollection major versions (if existing) are added as an additional package \"v<version>\"\n");
         usageString.append("         name: interface/typecollection major versions (if existing) are appended to the interface/type name\n");
         usageString.append("         none: interface/typecollection versions do not affect the generated name and package of interfaces and types\n");
