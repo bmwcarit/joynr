@@ -41,6 +41,15 @@
 		<module>joynr-generator-standalone</module>
 	</modules>
 
+        <profiles>
+                <profile>
+                        <id>javascript</id>
+                        <modules>
+                                <module>joynr-generator-npm</module>
+                        </modules>
+                </profile>
+        </profiles>
+
 	<build>
 		<plugins>
 			<plugin>

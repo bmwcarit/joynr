@@ -6,12 +6,11 @@
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "dependencies": {
-    "joynr": "file:../libjoynr-js/.output/src/main/js",
-    "joynr-generator": "file:../joynr-generator-npm"
+    "joynr-generator": "file:.."
   },
   "scripts": {
     "clean": "rm -rf node_modules generated",
-    "build": "cd ../joynr-generator-npm && npm run build && cd - && npm i",
+    "build": "cd .. && npm run build && cd - && npm i",
     "test": "npm run test:model && npm run test:json",
     "test:model": "generate-joynr-sources -o generated -m model/hello-world.fidl -m model/joynr-campaign.fidl -m ../../basemodel/src/test/ -i -js",
     "test:json": "generate-joynr-sources -o generated -f fidlfiles.json -js"

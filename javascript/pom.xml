@@ -15,8 +15,6 @@
 
 	<modules>
 		<module>libjoynr-js</module>
-		<module>joynr-generator-npm</module>
-		<module>joynr-generator-npm-test</module>
 	</modules>
 
 	<build>

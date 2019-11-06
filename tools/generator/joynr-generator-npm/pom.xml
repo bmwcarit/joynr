@@ -21,38 +21,70 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>joynr-generator-npm-test</artifactId>
+	<artifactId>joynr-generator-npm</artifactId>
 	<groupId>io.joynr.tools.generator</groupId>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>JOYnr JavaScript npm generator test</description>
+	<description>JOYnr JavaScript npm generator</description>
 
 	<parent>
-		<groupId>io.joynr</groupId>
-		<artifactId>javascript</artifactId>
+		<groupId>io.joynr.tools</groupId>
+		<artifactId>generator</artifactId>
 		<version>1.11.0-SNAPSHOT</version>
 	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>io.joynr.tools.generator</groupId>
+			<artifactId>joynr-generator-standalone</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+
+	<modules>
+		<module>joynr-generator-npm-test</module>
+	</modules>
 
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>node_modules</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>jars</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>tsconfig.tsbuildinfo</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/src</directory>
+							<includes>
+								<include>joynrGenerator.js</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
-					<execution>
-						<id>npm:clean</id>
-						<phase>clean</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>run</argument>
-								<argument>clean</argument>
-							</arguments>
-						</configuration>
-					</execution>
 					<execution>
 						<id>build</id>
 						<phase>compile</phase>
@@ -62,8 +94,7 @@
 						<configuration>
 							<executable>npm</executable>
 							<arguments>
-								<argument>run</argument>
-								<argument>build</argument>
+								<argument>install</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -77,7 +108,7 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>run</argument>
-								<argument>test</argument>
+								<argument>build</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -99,9 +130,29 @@
 					</roots>
 					<excludes>
 						<exclude>package.json</exclude>
-						<exclude>fidlfiles.json</exclude>
+						<exclude>tsconfig.json</exclude>
+						<exclude>joynr-generator-npm-test/package.json</exclude>
+						<exclude>joynr-generator-npm-test/fidlfiles.json</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.basedir}/jars</outputDirectory>
+							<excludeTransitive>true</excludeTransitive>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
