@@ -55,6 +55,10 @@ fi
   -Dskip.copy-notice-file=true \
   -Dskip.unpack-license-info=true \
   -DskipTests=$SKIPTESTS
+
+  echo "building joynr npm generator"
+  cd ../tools/generator/joynr-generator-npm
+  mvn clean install
 )
 
 if [ "$SKIPTESTS" == "false" ]
