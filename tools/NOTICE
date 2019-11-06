@@ -108,6 +108,8 @@ This project has dependencies to:
   io.joynr.tools.generator:java-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-gradle-plugin under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-maven-plugin under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:joynr-generator-npm under The Apache Software License, Version 2.0
+  io.joynr.tools.generator:joynr-generator-npm-test under The Apache Software License, Version 2.0
   io.joynr.tools.generator:joynr-generator-standalone under The Apache Software License, Version 2.0
   io.joynr.tools.generator:js-generator under The Apache Software License, Version 2.0
   io.joynr.tools:build-resources under The Apache Software License, Version 2.0
