@@ -19,12 +19,13 @@
 
 package io.joynr.tools.generator.gradle
 
-
 import io.joynr.generator.Executor
 import org.gradle.api.logging.Logger
 
-open class JoynrGeneratorHandler(private val logger: Logger,
-                                 private val joynrGeneratorArgumentHandler: JoynrGeneratorArgumentHandler) {
+open class JoynrGeneratorHandler(
+    private val logger: Logger,
+    private val joynrGeneratorArgumentHandler: JoynrGeneratorArgumentHandler
+) {
 
     /**
      * Invoke the Joynr Generator with the arguments configured in the corresponding build.gradle file.
@@ -33,10 +34,10 @@ open class JoynrGeneratorHandler(private val logger: Logger,
         val generatorArguments = joynrGeneratorArgumentHandler.getGeneratorInvocationArguments()
         if (!joynrGeneratorArgumentHandler.shouldGeneratorBeExecuted())
             return
-        logger.quiet("Executing Joynr generator with argument hash " +
-                "<${generatorArguments.hashCodeForParameterCombination}>")
+        logger.quiet("---> Executing joynr generator plugin...")
+        logger.quiet("---> joynr generator FIDL model path: ${generatorArguments.modelPath}")
         val executor = Executor(generatorArguments)
         executor.generate()
-        logger.info("Joynr generator gradle plugin executed successfully!")
+        logger.info("joynr generator gradle plugin executed successfully!")
     }
 }

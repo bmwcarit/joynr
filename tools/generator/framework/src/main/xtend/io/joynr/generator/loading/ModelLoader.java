@@ -38,9 +38,7 @@ public class ModelLoader {
     public ModelLoader(final String modelpath) {
         File modelFile = new File(modelpath);
         if (modelFile.exists()) {
-
             File file = modelFile;
-
             if (file.isDirectory()) {
                 uriProvider = new FolderUriProvider(new HashSet<String>(Arrays.asList("fidl")), file);
             } else {

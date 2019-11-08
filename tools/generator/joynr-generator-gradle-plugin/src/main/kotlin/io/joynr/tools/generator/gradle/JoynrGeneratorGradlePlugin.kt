@@ -31,7 +31,9 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         const val CLEAN_TASK_NAME = "clean"
         private const val COMPILE_TASK = "compile"
         const val TASK_NAME_MATCHER_STRING = "^$COMPILE_TASK\\w*"
-        private const val DEFAULT_OUTPUT_PATH = "app/build/generated/source/fidl/"
+        private const val ANDROID_DEFAULT_OUTPUT_PATH_APP = "app/build"
+        private const val ANDROID_DEFAULT_OUTPUT_PATH_DIRECT = "build"
+        private const val ANDROID_DEFAULT_OUTPUT_PATH_GEN = "generated/source/fidl/"
     }
 
     override fun apply(project: Project) {
@@ -42,14 +44,26 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         )
 
         if (extension.outputPath.orNull == null) {
-            extension.outputPath.set(DEFAULT_OUTPUT_PATH)
+            val outputDir =
+                File("${project.projectDir.absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_DIRECT")
+            if (!outputDir.exists() || !outputDir.isDirectory) {
+                extension.outputPath.set(
+                    "${project.projectDir
+                        .absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_APP/$ANDROID_DEFAULT_OUTPUT_PATH_GEN"
+                )
+            } else {
+                extension.outputPath.set(
+                    "${project.projectDir
+                        .absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_DIRECT/$ANDROID_DEFAULT_OUTPUT_PATH_GEN"
+                )
+            }
         }
 
         val joynrGeneratorArgumentHandler = JoynrGeneratorArgumentHandler(
             project.logger,
             extension.modelPath, extension.outputPath, extension.generationLanguage,
             extension.rootGenerator, extension.generationId, extension.skip,
-            extension.addVersionTo, extension.extraParameters
+            extension.addVersionTo, extension.extraParameters, project
         )
 
         val task = project.tasks.create(
@@ -85,17 +99,27 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
                     }
                 }
             }
+
         }
 
         // Register our task with the variant's sources
-        val outputDir = File("${project.rootDir}/${extension.outputPath.get()}")
-        project.logger.info("----> ${outputDir.path}")
+        val outputDir: File?
+        outputDir = if (extension.outputPath.orNull == null) {
+            File("${project.rootDir}/${extension.outputPath.get()}")
+        } else {
+            File(extension.outputPath.get())
+        }
 
         project.extensions.findByName("android")?.let {
-            val android : BaseAppModuleExtension? = it as? BaseAppModuleExtension
-            android?.applicationVariants?.all {variant ->
+            val android: BaseAppModuleExtension? = it as? BaseAppModuleExtension
+            val baseAppModuleExtension = project.properties["android"] as BaseAppModuleExtension
+            baseAppModuleExtension.sourceSets.getByName("main").java.srcDirs(outputDir)
+
+            android?.applicationVariants?.all { variant ->
                 variant.registerJavaGeneratingTask(task, outputDir)
             }
+
+            project.logger.quiet("---> joynr generator output path: ${outputDir.absolutePath}")
         }
 
     }

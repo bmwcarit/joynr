@@ -113,7 +113,7 @@ apply plugin: 'java'
 apply plugin: 'io.joynr.tools.generator.joynr-generator-gradle-plugin'
 ```
 
-Note: The Joynr Generator Plugin has to be applied after the *Java* or *Kotlin*
+Note: The joynr Generator Plugin has to be applied after the *Java* or *Kotlin*
 plugin, as it attaches itself to the corresponding *clean* task.
 
 The following parameters can be configured (see section [Maven
@@ -122,9 +122,14 @@ configuration](#maven-configuration) for details):
 * `modelPath`: Defines the path where the `.fidl` files are created and located.
   You must place the models in this location. The path must always be specified
   from the project's root onwards, typically `app/src/...`. If not supplied in
-  the script, default value is `app/src/main/fidl/`.
-* `outputPath`: The output path where the generated files are created. the
-  default value is `app/build/generated/source/fidl/`.
+  the script, default value is `src/main/fidl/` or `app/src/main/fidl/` depending on where this 
+  is found first (if nowhere, default is `app/src/main/fidl/`). Note that in a multi-project 
+  setup, paths must always be given from the root project onwards, i.e. 
+  root-project/{sub-project1/...}; the path enclosed in {} is the path to specify.
+* `outputPath`: The output path where the generated files are created. The
+  default value is `build/generated/source/fidl/` or `app/build/generated/source/fidl/` depending
+   on whether you have a multi-project setup (if the script can't find a suitable place, it will 
+   fall back to `app/build/generated/source/fidl/`).
 * `generationLanguage`: The language to be used for generator tool selection.
   The default value is `java`.
 * `rootGenerator`
@@ -212,14 +217,17 @@ android {
 
 Gradle plugin already has defaults for the required properties, `modelPath`,
 `outputPath` and `generationLanguage`. In Android we don't recommend changing
-the `outputPath` property. This differs from the Java version as the plugin will
-automatically detect if the Android plugin is applied &ndash; if it is, the
-`outputPath` will automatically be added as a source folder. For Java, nothing
-happens. You can read about further properties in the first section of this
-document.
+the `outputPath` property as it's not fully supported. This differs from the Java version as the 
+plugin will automatically detect if the Android plugin is applied &ndash; if it is, the
+`outputPath` will automatically be added as a source folder. For Java, nothing happens. You can 
+read about further properties in the first section of this document.
 
 > **Note**: You can use the Gradle generator script and develop Android apps as
 > normal, using Java or Kotlin.
+
+If you are using Android Studio, it's possible that when generating files the first time or 
+after a Gradle clean, the build and assemble don't report any errors but the used classes in code 
+aren't being found. To solve this, press the "Sync project with Gradle files" button.
 
 ## Choosing the generation language
 The value **&lt;GENERATION_LANGUAGE&gt;** of the setting `generationLanguage` can be either
@@ -254,7 +262,7 @@ It is recommended to place any local model files into the project's subdirectory
 ```src/main/model``` like in the Demo application.
 
 
-## Joynr Generator Standalone
+## joynr Generator Standalone
 The joynr Code Generator also exists as standalone version which can be used to manually
 generate the code from Franca models.
 

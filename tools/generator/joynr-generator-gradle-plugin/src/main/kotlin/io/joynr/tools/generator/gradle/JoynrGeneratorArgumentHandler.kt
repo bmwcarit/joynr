@@ -18,10 +18,11 @@
  */
 package io.joynr.tools.generator.gradle
 
-
 import io.joynr.generator.util.InvocationArguments
+import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
+import java.io.File
 
 fun InvocationArguments.areInvocationArgumentsValid(logger: Logger): Boolean {
     try {
@@ -33,24 +34,28 @@ fun InvocationArguments.areInvocationArgumentsValid(logger: Logger): Boolean {
     return true
 }
 
-class JoynrGeneratorArgumentHandler(private val logger: Logger,
-                                    private var modelPath: Property<String>,
-                                    private var outputPath: Property<String>,
-                                    private var generationLanguage: Property<String>,
-                                    private var rootGenerator: Property<String>,
-                                    private var generationId: Property<String>,
-                                    /**
-                                     * kotlin.Boolean can not be used as property type here,
-                                     * as this value is set by gradle during runtime to a value of type java.lang.Boolean
-                                     */
-                                    var skip: Property<java.lang.Boolean>,
-                                    var addVersionTo: Property<String>,
-                                    var extraParameters: Property<Map<*, *>>) {
+class JoynrGeneratorArgumentHandler(
+    private val logger: Logger,
+    private var modelPath: Property<String>,
+    private var outputPath: Property<String>,
+    private var generationLanguage: Property<String>,
+    private var rootGenerator: Property<String>,
+    private var generationId: Property<String>,
+    /**
+     * kotlin.Boolean can not be used as property type here,
+     * as this value is set by gradle during runtime to a value of type java.lang.Boolean
+     */
+    var skip: Property<java.lang.Boolean>,
+    var addVersionTo: Property<String>,
+    var extraParameters: Property<Map<*, *>>,
+    private val project: Project
+) {
 
     companion object {
         // default values for code generation
         private const val DEFAULT_LANGUAGE = "java"
-        private const val DEFAULT_MODEL_PATH = "app/src/main/fidl/"
+        private const val ANDROID_DEFAULT_MODEL_PATH_APP = "app/src/main/fidl/"
+        private const val ANDROID_DEFAULT_MODEL_PATH_SRC = "src/main/fidl/"
     }
 
     private var doClean: Boolean = false
@@ -64,8 +69,20 @@ class JoynrGeneratorArgumentHandler(private val logger: Logger,
         if (extraParameters.isPresent) {
             extraParametersStringMap = extractStringEntriesFromMap(extraParameters.get())
         }
-        val defaultLanguage = if (generationLanguage.orNull == null) DEFAULT_LANGUAGE else generationLanguage.get()
-        val defaultModelPath = if (modelPath.orNull == null) DEFAULT_MODEL_PATH else modelPath.get()
+        val defaultLanguage =
+            if (generationLanguage.orNull == null) DEFAULT_LANGUAGE else generationLanguage.get()
+
+        var defaultModelPath: String?
+        if (!modelPath.isPresent) {
+            defaultModelPath = "${project.projectDir.absolutePath}/$ANDROID_DEFAULT_MODEL_PATH_SRC"
+            val modelDir = File(defaultModelPath)
+            if (!modelDir.exists() || !modelDir.isDirectory) {
+                defaultModelPath =
+                    "${project.projectDir.absolutePath}/$ANDROID_DEFAULT_MODEL_PATH_APP"
+            }
+        } else {
+            defaultModelPath = modelPath.get()
+        }
 
         invocationArguments.let {
             it.setClean(doClean)
@@ -80,7 +97,7 @@ class JoynrGeneratorArgumentHandler(private val logger: Logger,
                 e.printStackTrace()
             }
             it.generationId = generationId.orNull
-            if(addVersionTo.isPresent) {
+            if (addVersionTo.isPresent) {
                 it.setAddVersionTo(addVersionTo.get())
             }
             extraParametersStringMap.forEach { key, value ->
@@ -102,7 +119,7 @@ class JoynrGeneratorArgumentHandler(private val logger: Logger,
      */
     fun shouldGeneratorBeExecuted(): Boolean {
         if (isSkipFlagSet) {
-            logger.info("Skipping execution of Joynr Generator as skip flag is set!")
+            logger.info("Skipping execution of joynr Generator as skip flag is set!")
             return false
         }
         if (!getGeneratorInvocationArguments().areInvocationArgumentsValid(logger)) return false
