@@ -137,6 +137,7 @@ protected:
     {
         const std::string localAddress =
                 serializer::serializeToJson(system::RoutingTypes::MqttAddress(knownGbids[0], "localTopic"));
+        const std::int64_t defaultExpiryDateMs = 60 * 60 * 1000;
         localCapabilitiesDirectory.reset();
         localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
                 clusterControllerSettings,
@@ -145,7 +146,8 @@ protected:
                 messageRouterMock,
                 singleThreadedIOService->getIOService(),
                 clusterControllerId,
-                knownGbids);
+                knownGbids,
+                defaultExpiryDateMs);
         localCapabilitiesDirectory->init();
         return localCapabilitiesDirectory;
     }

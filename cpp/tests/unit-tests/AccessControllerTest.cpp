@@ -126,7 +126,7 @@ public:
               _localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(
                       _clusterControllerSettings,
                       _messageRouter,
-                      _singleThreadedIOService->getIOService())),
+                      _singleThreadedIOService->getIOService(), _defaultExpiryDateMs)),
               _accessController(std::make_shared<AccessController>(_localCapabilitiesDirectoryMock, _localDomainAccessControllerMock)),
               _messagingQos(MessagingQos(5000))
     {
@@ -258,6 +258,7 @@ protected:
     MutableMessage _mutableMessage;
     MessagingQos _messagingQos;
     const bool _isLocalMessage = true;
+    const std::int64_t _defaultExpiryDateMs = 60 * 60 * 1000;
     DiscoveryEntryWithMetaInfo _discoveryEntry;
     static const std::string _fromParticipantId;
     static const std::string _toParticipantId;

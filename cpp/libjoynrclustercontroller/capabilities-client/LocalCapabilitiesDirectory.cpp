@@ -80,7 +80,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         std::weak_ptr<IMessageRouter> messageRouter,
         boost::asio::io_service& ioService,
         const std::string clusterControllerId,
-        std::vector<std::string> knownGbids)
+        std::vector<std::string> knownGbids,
+        std::int64_t defaultExpiryIntervalMs)
         : joynr::system::DiscoveryAbstractProvider(),
           joynr::system::ProviderReregistrationControllerProvider(),
           std::enable_shared_from_this<LocalCapabilitiesDirectory>(),
@@ -99,7 +100,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           _freshnessUpdateTimer(ioService),
           _clusterControllerId(clusterControllerId),
           _knownGbids(knownGbids),
-          _knownGbidsSet(knownGbids.cbegin(), knownGbids.cend())
+          _knownGbidsSet(knownGbids.cbegin(), knownGbids.cend()),
+          _defaultExpiryIntervalMs(defaultExpiryIntervalMs)
 {
 }
 
@@ -339,6 +341,32 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
 
     {
         std::lock_guard<std::recursive_mutex> lock3(_cacheLock);
+        std::vector<types::DiscoveryEntry> entries;
+        const std::int64_t now =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count();
+        const std::int64_t defaultExpiryIntervalMs = now + _defaultExpiryIntervalMs;
+        const std::int64_t lastSeenDateMs = now;
+
+        // copy existing global entries and update lastSeenDateMs and
+        // increase expiryDateMs unless it already references a time
+        // which is beyond newExpiryDate/updatedExpiryDate
+        for (auto capability : _locallyRegisteredCapabilities) {
+            if (capability.getExpiryDateMs() < defaultExpiryIntervalMs) {
+                capability.setExpiryDateMs(defaultExpiryIntervalMs);
+            }
+            capability.setLastSeenDateMs(lastSeenDateMs);
+            entries.push_back(capability);
+        }
+        // update changed entries
+        for (auto capability : entries) {
+            JOYNR_LOG_DEBUG(logger(),
+                            "triggerGlobalProviderReregistration: updating locally registered "
+                            "global capability {}",
+                            capability.toString());
+            _locallyRegisteredCapabilities.insert(capability);
+        }
+        // send globally registered entries to JDS again
         for (const auto& capability : _locallyRegisteredCapabilities) {
             if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
                 const std::string& participantId = capability.getParticipantId();

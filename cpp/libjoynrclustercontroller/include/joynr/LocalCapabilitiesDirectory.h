@@ -79,7 +79,8 @@ public:
             std::weak_ptr<IMessageRouter> messageRouter,
             boost::asio::io_service& ioService,
             const std::string clusterControllerId,
-            std::vector<std::string> knownGbids);
+            std::vector<std::string> knownGbids,
+            std::int64_t defaultExpiryIntervalMs);
 
     ~LocalCapabilitiesDirectory() override;
 
@@ -320,6 +321,7 @@ private:
     std::string _clusterControllerId;
     const std::vector<std::string> _knownGbids;
     std::unordered_set<std::string> _knownGbidsSet;
+    const std::int64_t _defaultExpiryIntervalMs;
     std::unordered_map<std::string, std::vector<std::string>> _globalParticipantIdsToGbidsMap;
     void scheduleFreshnessUpdate();
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);

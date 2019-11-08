@@ -132,6 +132,7 @@ public:
         _settings.set(ClusterControllerSettings::
                              SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),
                      true);
+        const std::int64_t defaultExpiryDateMs = 60 * 60 * 1000;
         _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
                 _clusterControllerSettings,
                 _globalCapabilitiesDirectoryClient,
@@ -139,7 +140,8 @@ public:
                 _mockMessageRouter,
                 _singleThreadedIOService->getIOService(),
                 _clusterControllerId,
-                _KNOWN_GBIDS);
+                _KNOWN_GBIDS,
+                defaultExpiryDateMs);
         _localCapabilitiesDirectory->init();
         _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         _discoveryQos.setCacheMaxAge(10000);
@@ -3330,6 +3332,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                     _unexpectedOnDiscoveryErrorFunction);
 
     // create a new object
+    const std::int64_t defaultExpiryDateMs = 600000;
     auto localCapabilitiesDirectory2 =
             std::make_shared<LocalCapabilitiesDirectory>(_clusterControllerSettings,
                                                          _globalCapabilitiesDirectoryClient,
@@ -3337,7 +3340,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                                          _mockMessageRouter,
                                                          _singleThreadedIOService->getIOService(),
                                                          "clusterControllerId",
-                                                         _KNOWN_GBIDS);
+                                                         _KNOWN_GBIDS,
+                                                         defaultExpiryDateMs);
     localCapabilitiesDirectory2->init();
 
     // load persistency

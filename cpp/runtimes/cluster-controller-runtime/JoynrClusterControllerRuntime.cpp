@@ -579,14 +579,15 @@ void JoynrClusterControllerRuntime::init()
 
     auto globalCapabilitiesDirectoryClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(_clusterControllerSettings);
-    _localCapabilitiesDirectory =
-            std::make_shared<LocalCapabilitiesDirectory>(_clusterControllerSettings,
-                                                         globalCapabilitiesDirectoryClient,
-                                                         globalClusterControllerAddress,
-                                                         _ccMessageRouter,
-                                                         _singleThreadIOService->getIOService(),
-                                                         clusterControllerId,
-                                                         _availableGbids);
+    _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
+            _clusterControllerSettings,
+            globalCapabilitiesDirectoryClient,
+            globalClusterControllerAddress,
+            _ccMessageRouter,
+            _singleThreadIOService->getIOService(),
+            clusterControllerId,
+            _availableGbids,
+            _messagingSettings.getDiscoveryEntryExpiryIntervalMs());
     _localCapabilitiesDirectory->init();
     _localCapabilitiesDirectory->loadPersistedFile();
     // importPersistedLocalCapabilitiesDirectory();
