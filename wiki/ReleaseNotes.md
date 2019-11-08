@@ -35,6 +35,18 @@ and use its native way of performing inter-process communication (IPC).
 ## Configuration property changes
 None.
 
+# joynr 1.10.1 **[Android only version]**
+
+## API relevant changes
+* **[Android]** Added Android binder transport option to take full advantage of the Android framework, 
+and use its native way of performing inter-process communication (IPC).
+
+## Other changes
+* **[Android]** Updated the Android examples to demonstrate how to use the binder version of joynr 
+
+## Configuration property changes
+None.
+
 # joynr 1.10.0
 
 ## API relevant changes
