@@ -341,38 +341,36 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
 
     {
         std::lock_guard<std::recursive_mutex> lock3(_cacheLock);
+        JOYNR_LOG_DEBUG(logger(), "triggerGlobalProviderReregistration");
         std::vector<types::DiscoveryEntry> entries;
         const std::int64_t now =
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch()).count();
-        const std::int64_t defaultExpiryIntervalMs = now + _defaultExpiryIntervalMs;
-        const std::int64_t lastSeenDateMs = now;
+        const std::int64_t newExpiryDateMs = now + _defaultExpiryIntervalMs;
 
-        // copy existing global entries and update lastSeenDateMs and
+        // copy existing global entries, update lastSeenDateMs and
         // increase expiryDateMs unless it already references a time
         // which is beyond newExpiryDate/updatedExpiryDate
         for (auto capability : _locallyRegisteredCapabilities) {
-            if (capability.getExpiryDateMs() < defaultExpiryIntervalMs) {
-                capability.setExpiryDateMs(defaultExpiryIntervalMs);
+            if (capability.getExpiryDateMs() < newExpiryDateMs) {
+                capability.setExpiryDateMs(newExpiryDateMs);
             }
-            capability.setLastSeenDateMs(lastSeenDateMs);
+            if (capability.getLastSeenDateMs() < now) {
+                capability.setLastSeenDateMs(now);
+            }
             entries.push_back(capability);
         }
-        // update changed entries
-        for (auto capability : entries) {
-            JOYNR_LOG_DEBUG(logger(),
-                            "triggerGlobalProviderReregistration: updating locally registered "
-                            "global capability {}",
-                            capability.toString());
-            _locallyRegisteredCapabilities.insert(capability);
-        }
-        // send globally registered entries to JDS again
-        for (const auto& capability : _locallyRegisteredCapabilities) {
+        for (const auto& capability : entries) {
             if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
                 const std::string& participantId = capability.getParticipantId();
                 auto foundGbids = _globalParticipantIdsToGbidsMap.find(participantId);
                 if (foundGbids != _globalParticipantIdsToGbidsMap.cend()) {
+                    // update local store
                     auto gbids = foundGbids->second;
+                    _locallyRegisteredCapabilities.insert(capability, gbids);
+                    // update global cache
+                    _globalLookupCache.insert(capability);
+                    // send entries to JDS again
                     auto onApplicationError =
                             [participantId, gbids](const types::DiscoveryError::Enum& error) {
                         JOYNR_LOG_WARN(logger(),
@@ -403,6 +401,9 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                                     "to GBIDs mapping is missing for participantId {}",
                                     participantId);
                 }
+            } else {
+                // update local cache
+                _locallyRegisteredCapabilities.insert(capability);
             }
         }
     }
