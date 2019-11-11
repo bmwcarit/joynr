@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(inter-language-test-1.11.0-SNAPSHOT)
+project(inter-language-test-1.10.1)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -23,7 +23,7 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.11.0 REQUIRED)
+find_package(Joynr 1.10.1 REQUIRED)
 
 message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
 message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
