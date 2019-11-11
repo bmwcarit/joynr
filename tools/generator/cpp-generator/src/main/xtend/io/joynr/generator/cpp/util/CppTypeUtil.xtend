@@ -206,7 +206,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		} else if (isArray(element)){
 			return "";
 		} else if (isEnum(element.type)){
-			return " /* should have enum default value here */";
+			return element.type.enumType.joynrName + "::" + element.type.enumType.enumerators.get(0).joynrName;
 		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
  			return "NaN";
  		} else {
