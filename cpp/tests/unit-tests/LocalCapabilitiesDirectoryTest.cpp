@@ -18,9 +18,11 @@
  */
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
@@ -95,6 +97,26 @@ MATCHER_P(AnConvertedGlobalDiscoveryEntry, other, "")
            other.getExpiryDateMs() == arg.getExpiryDateMs() &&
            other.getPublicKeyId() == arg.getPublicKeyId();
 }
+bool compareConvertedGlobalDiscoveryEntryWithExtendedDates(const types::DiscoveryEntry& arg,
+                                                           const types::DiscoveryEntry& expected,
+                                                           const std::int64_t toleranceMs)
+{
+    return expected.getDomain() == arg.getDomain() &&
+           expected.getInterfaceName() == arg.getInterfaceName() &&
+           expected.getParticipantId() == arg.getParticipantId() &&
+           expected.getQos() == arg.getQos() &&
+           expected.getLastSeenDateMs() <= arg.getLastSeenDateMs() &&
+           arg.getLastSeenDateMs() <= (expected.getLastSeenDateMs() + toleranceMs) &&
+           expected.getProviderVersion() == arg.getProviderVersion() &&
+           expected.getExpiryDateMs() <= arg.getExpiryDateMs() &&
+           arg.getExpiryDateMs() <= (expected.getExpiryDateMs() + toleranceMs) &&
+           expected.getPublicKeyId() == arg.getPublicKeyId();
+}
+
+MATCHER_P2(AnConvertedGlobalDiscoveryEntryWithExtendedDates, expected, toleranceMs, "")
+{
+    return compareConvertedGlobalDiscoveryEntryWithExtendedDates(arg, expected, toleranceMs);
+}
 
 class LocalCapabilitiesDirectoryTest : public ::testing::Test
 {
@@ -112,6 +134,7 @@ public:
               _lastSeenDateMs(std::chrono::duration_cast<std::chrono::milliseconds>(
                                      std::chrono::system_clock::now().time_since_epoch()).count()),
               _defaultExpiryDateMs(60 * 60 * 1000),
+              _toleranceMs(50),
               _dummyParticipantIdsVector{util::createUuid(), util::createUuid(), util::createUuid()},
               _defaultOnSuccess([]() {}),
               _defaultProviderRuntimeExceptionError([](const exceptions::ProviderRuntimeException&) {}),
@@ -644,6 +667,7 @@ protected:
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectory;
     std::int64_t _lastSeenDateMs;
     std::int64_t _defaultExpiryDateMs;
+    const std::int64_t _toleranceMs;
     std::vector<std::string> _dummyParticipantIdsVector;
     types::DiscoveryQos _discoveryQos;
     std::unordered_multimap<std::string, types::DiscoveryEntry> _globalCapEntryMap;
@@ -1762,23 +1786,28 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveUsesSameGbidOrderAsAdd)
 
 TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
 {
+    const std::int64_t now =
+                     std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::system_clock::now().time_since_epoch()).count();
     types::DiscoveryEntry entry1(_defaultProviderVersion,
-                                        _DOMAIN_1_NAME,
-                                        _INTERFACE_1_NAME,
-                                        _dummyParticipantIdsVector[0],
-                                        types::ProviderQos(),
-                                        _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
-                                        _PUBLIC_KEY_ID);
+                                 _DOMAIN_1_NAME,
+                                 _INTERFACE_1_NAME,
+                                 _dummyParticipantIdsVector[0],
+                                 types::ProviderQos(),
+                                 _lastSeenDateMs,
+                                 now + _defaultExpiryDateMs,
+                                 _PUBLIC_KEY_ID);
+    types::DiscoveryEntry expectedEntry1(entry1);
 
     types::DiscoveryEntry entry2(_defaultProviderVersion,
-                                        _DOMAIN_2_NAME,
-                                        _INTERFACE_2_NAME,
-                                        _dummyParticipantIdsVector[1],
-                                        types::ProviderQos(),
-                                        _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
-                                        _PUBLIC_KEY_ID);
+                                 _DOMAIN_2_NAME,
+                                 _INTERFACE_2_NAME,
+                                 _dummyParticipantIdsVector[1],
+                                 types::ProviderQos(),
+                                 _lastSeenDateMs,
+                                 now + _defaultExpiryDateMs,
+                                 _PUBLIC_KEY_ID);
+    types::DiscoveryEntry expectedEntry2(entry2);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
@@ -1801,16 +1830,29 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
 
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 
+    // sleep to get new values of lastSeenDateMs and expiryDateMs in triggerGlobalProviderReregistration
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    const std::int64_t newLastSeenDateMs =
+                 std::chrono::duration_cast<std::chrono::milliseconds>(
+                         std::chrono::system_clock::now().time_since_epoch()).count();
+    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryDateMs;
+
+    expectedEntry1.setLastSeenDateMs(newLastSeenDateMs);
+    expectedEntry1.setExpiryDateMs(newExpiryDateMs);
+    expectedEntry2.setLastSeenDateMs(newLastSeenDateMs);
+    expectedEntry2.setExpiryDateMs(newExpiryDateMs);
+
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(entry1)),
+                            AnConvertedGlobalDiscoveryEntryWithExtendedDates(expectedEntry1, _toleranceMs)),
                     _,
                     _,
                     _,
                     _)).Times(1);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(entry2)),
+                            AnConvertedGlobalDiscoveryEntryWithExtendedDates(expectedEntry2, _toleranceMs)),
                     _,
                     _,
                     _,
@@ -1823,19 +1865,47 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
 
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
     EXPECT_TRUE(onSuccessCalled);
+
+    // check that the dates are also updated in local store and global cache
+    auto onSuccess = [this, expectedEntry1] (const types::DiscoveryEntryWithMetaInfo& result) {
+        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(result, expectedEntry1, _toleranceMs));
+        _semaphore.notify();
+    };
+
+    _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
+    _localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[0],
+            _discoveryQos,
+            std::vector<std::string> {},
+            onSuccess,
+            nullptr);
+
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+
+    _discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
+    _localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[0],
+            _discoveryQos,
+            std::vector<std::string> {},
+            onSuccess,
+            nullptr);
+
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest,
        doNotReregisterDiscoveryEntriesFromGlobalCapabilitiesDirectory)
 {
+    const std::int64_t now =
+                     std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::system_clock::now().time_since_epoch()).count();
     types::DiscoveryEntry entry1(_defaultProviderVersion,
-                                        _DOMAIN_1_NAME,
-                                        _INTERFACE_1_NAME,
-                                        _dummyParticipantIdsVector[0],
-                                        types::ProviderQos(),
-                                        _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
-                                        _PUBLIC_KEY_ID);
+                                 _DOMAIN_1_NAME,
+                                 _INTERFACE_1_NAME,
+                                 _dummyParticipantIdsVector[0],
+                                 types::ProviderQos(),
+                                 _lastSeenDateMs,
+                                 now + _defaultExpiryDateMs,
+                                 _PUBLIC_KEY_ID);
+    types::DiscoveryEntry expectedEntry1(entry1);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
@@ -1848,32 +1918,45 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     _localCapabilitiesDirectory->add(entry1, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
     types::DiscoveryEntry entry2(_defaultProviderVersion,
-                                        _DOMAIN_2_NAME,
-                                        _INTERFACE_2_NAME,
-                                        _dummyParticipantIdsVector[1],
-                                        types::ProviderQos(),
-                                        _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
-                                        _PUBLIC_KEY_ID);
+                                 _DOMAIN_2_NAME,
+                                 _INTERFACE_2_NAME,
+                                 _dummyParticipantIdsVector[1],
+                                 types::ProviderQos(),
+                                 _lastSeenDateMs,
+                                 _defaultExpiryDateMs,
+                                 _PUBLIC_KEY_ID);
 
     _localCapabilitiesDirectory->registerReceivedCapabilities({{_EXTERNAL_ADDRESSES_VECTOR[0], entry2}});
 
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 
+    // sleep to get new values of lastSeenDateMs and expiryDateMs in triggerGlobalProviderReregistration
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    const std::int64_t newLastSeenDateMs =
+                 std::chrono::duration_cast<std::chrono::milliseconds>(
+                         std::chrono::system_clock::now().time_since_epoch()).count();
+    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryDateMs;
+
+    expectedEntry1.setLastSeenDateMs(newLastSeenDateMs);
+    expectedEntry1.setExpiryDateMs(newExpiryDateMs);
+
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(entry1)),
-                    _,
-                    _,
-                    _,
-                    _)).Times(1);
+                add(AllOf(Property(&joynr::types::GlobalDiscoveryEntry::getParticipantId,
+                                   Eq(entry1.getParticipantId())),
+                          Matcher<const types::GlobalDiscoveryEntry&>(
+                              AnConvertedGlobalDiscoveryEntryWithExtendedDates(expectedEntry1, _toleranceMs))),
+                _,
+                _,
+                _,
+                _)).Times(1);
+
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(entry2)),
-                    _,
-                    _,
-                    _,
-                    _)).Times(0);
+                add(Property(&joynr::types::GlobalDiscoveryEntry::getParticipantId, Eq(entry2.getParticipantId())),
+                _,
+                _,
+                _,
+                _)).Times(0);
 
     bool onSuccessCalled = false;
     _localCapabilitiesDirectory->triggerGlobalProviderReregistration(
@@ -1888,13 +1971,13 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 {
     types::ProviderQos localProviderQos({}, 1, types::ProviderScope::LOCAL, false);
     types::DiscoveryEntry entry(_defaultProviderVersion,
-                                       _DOMAIN_1_NAME,
-                                       _INTERFACE_1_NAME,
-                                       _dummyParticipantIdsVector[0],
-                                       localProviderQos,
-                                       _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
-                                       _PUBLIC_KEY_ID);
+                                _DOMAIN_1_NAME,
+                                _INTERFACE_1_NAME,
+                                _dummyParticipantIdsVector[0],
+                                localProviderQos,
+                                _lastSeenDateMs,
+                                _defaultExpiryDateMs,
+                                _PUBLIC_KEY_ID);
 
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -1902,12 +1985,67 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _))
             .Times(0);
 
+    // sleep to get new values of lastSeenDateMs and expiryDateMs in triggerGlobalProviderReregistration
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
     bool onSuccessCalled = false;
     _localCapabilitiesDirectory->triggerGlobalProviderReregistration(
             [&onSuccessCalled]() { onSuccessCalled = true; },
             [](const exceptions::ProviderRuntimeException&) { FAIL(); });
 
     EXPECT_TRUE(onSuccessCalled);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest,
+       reregisterGlobalCapabilities_updatesExpiryDateAndLastSeenDateOfLocalEntries)
+{
+    types::ProviderQos localProviderQos({}, 1, types::ProviderScope::LOCAL, false);
+    types::DiscoveryEntry entry(_defaultProviderVersion,
+                                _DOMAIN_1_NAME,
+                                _INTERFACE_1_NAME,
+                                _dummyParticipantIdsVector[0],
+                                localProviderQos,
+                                _lastSeenDateMs,
+                                _defaultExpiryDateMs,
+                                _PUBLIC_KEY_ID);
+    types::DiscoveryEntry expectedEntry(entry);
+
+    _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _))
+            .Times(0);
+
+    // sleep to get new values of lastSeenDateMs and expiryDateMs in triggerGlobalProviderReregistration
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    const std::int64_t newLastSeenDateMs =
+                 std::chrono::duration_cast<std::chrono::milliseconds>(
+                         std::chrono::system_clock::now().time_since_epoch()).count();
+    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryDateMs;
+    expectedEntry.setLastSeenDateMs(newLastSeenDateMs);
+    expectedEntry.setExpiryDateMs(newExpiryDateMs);
+
+    bool onSuccessCalled = false;
+    _localCapabilitiesDirectory->triggerGlobalProviderReregistration(
+            [&onSuccessCalled]() { onSuccessCalled = true; },
+            [](const exceptions::ProviderRuntimeException&) { FAIL(); });
+
+    EXPECT_TRUE(onSuccessCalled);
+
+    auto onSuccess = [this, expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
+        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(result, expectedEntry, _toleranceMs));
+        _semaphore.notify();
+    };
+
+    _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
+    _localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[0],
+            _discoveryQos,
+            std::vector<std::string> {},
+            onSuccess,
+            nullptr);
+
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
