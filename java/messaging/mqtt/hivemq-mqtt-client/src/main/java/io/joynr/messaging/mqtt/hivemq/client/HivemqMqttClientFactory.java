@@ -66,7 +66,6 @@ import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.reactivex.schedulers.Schedulers;
-import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * This factory class is responsible for producing joynr MQTT clients using the HiveMQ MQTT Client library.
@@ -83,7 +82,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
     private HashMap<String, JoynrMqttClient> receivingMqttClients; // gbid to client
     private HashMap<String, JoynrMqttClient> sendingMqttClients; // gbid to client
-    private final MqttAddress ownAddress;
     private final boolean separateConnections;
     private final MqttClientIdProvider mqttClientIdProvider;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -135,8 +133,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                   @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
+    public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                    @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap,
                                    @Named(MqttModule.MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP) HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap,
                                    @Named(MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP) HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap,
@@ -144,7 +141,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider,
                                    MqttStatusReceiver mqttStatusReceiver) {
-        this.ownAddress = ownAddress;
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
         this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
         this.mqttGbidToConnectionTimeoutSecMap = mqttGbidToConnectionTimeoutSecMap;
@@ -193,9 +189,9 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private JoynrMqttClient createClient(String gbid, String clientId) {
         URI serverUri;
         try {
-            serverUri = new URI(ownAddress.getBrokerUri());
+            serverUri = new URI(mqttGbidToBrokerUriMap.get(gbid));
         } catch (URISyntaxException e) {
-            throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + ownAddress.getBrokerUri(), e);
+            throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + mqttGbidToBrokerUriMap.get(gbid), e);
         }
         logger.info("Connecting to {}:{}", serverUri.getHost(), serverUri.getPort());
         MqttClientExecutorConfig executorConfig = MqttClientExecutorConfig.builder()
