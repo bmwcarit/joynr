@@ -34,7 +34,7 @@ import java.util.Properties;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.runtime.CCBinderRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -81,7 +81,7 @@ public class AndroidBinderRuntime {
         config.put("joynr.messaging.mqtt.brokerUris", brokerUri);
 
         Module runtimeModule = new CCBinderRuntimeModule(context);
-        final Module backendTransportModules = new MqttPahoModule();
+        final Module backendTransportModules = new HivemqMqttClientModule();
         runtimeModule = Modules.override(runtimeModule).with(backendTransportModules);
         for (Module module : modules) {
             runtimeModule = Modules.override(runtimeModule).with(module);

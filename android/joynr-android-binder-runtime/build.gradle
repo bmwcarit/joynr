@@ -103,6 +103,8 @@ android {
 
                     // messaging
                     "../../java/messaging/messaging-common/src/main/java/",
+                    "../../java/messaging/mqtt/hivemq-mqtt-client/src/main/java",
+                    "../../java/messaging/mqtt/paho-mqtt-client/src/main/java",
                     "../../java/messaging/mqtt/joynr-mqtt-client/src/main/java/",
 
             ]
@@ -138,6 +140,7 @@ dependencies {
         // JOYNR CLUSTER CONTROLLER
         implementation 'org.apache.httpcomponents:httpclient:4.3.6'
 
+        implementation 'com.hivemq:hivemq-mqtt-client:1.1.2'
         implementation 'io.joynr.mqtt:mqtt-client:0.0.6'
         implementation 'io.joynr.smrf.java:smrf:0.3.3'
 
@@ -158,6 +161,12 @@ dependencies {
             exclude(module: 'guice')
         }
         implementation("io.joynr.java.messaging.mqtt:joynr-mqtt-client:${version}") {
+            exclude(module: 'guice')
+        }
+        implementation("io.joynr.java.messaging.mqtt:paho-mqtt-client:${version}") {
+            exclude(module: 'guice')
+        }
+        implementation("io.joynr.java.messaging.mqtt:hivemq-mqtt-client:${version}") {
             exclude(module: 'guice')
         }
 
