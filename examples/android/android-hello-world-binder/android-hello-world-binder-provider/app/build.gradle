@@ -1,0 +1,121 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+
+apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'io.joynr.tools.generator.joynr-generator-gradle-plugin'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "29.0.0"
+    defaultConfig {
+        applicationId "io.joynr.androidhelloworldbinderprovider"
+        minSdkVersion 28
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+    }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core-ktx:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+
+    implementation "io.joynr.android:joynr-android-binder-runtime:${joynr_version}"
+}
+
+apply plugin: 'com.github.jk1.dependency-license-report'
+import com.github.jk1.license.render.*
+import com.github.jk1.license.LicenseReportExtension
+import com.github.jk1.license.ManifestData
+import com.github.jk1.license.ModuleData
+import com.github.jk1.license.PomData
+import com.github.jk1.license.ProjectData
+
+class JoynrReportRenderer implements ReportRenderer {
+    private Project project
+    private LicenseReportExtension config
+    private File output
+    private String fileName
+
+    JoynrReportRenderer(String filename = 'NOTICES-ANDROID') {
+        this.fileName = filename
+    }
+
+    @Input
+    private String getFileNameCache() { return this.fileName }
+
+    void render(ProjectData data) {
+        project = data.project
+        config = project.licenseReport
+        output = new File(config.outputDir, fileName)
+        output.text = "This project has dependencies to:\n"
+        printDependencies(data)
+    }
+
+    private void printDependencies(ProjectData data) {
+        data.allDependencies.unique().sort().each {
+            printDependency(it)
+        }
+    }
+
+    private String printDependency(ModuleData data) {
+        if (data.poms.isEmpty() && data.manifests.isEmpty()) {
+            output << "No license information found\n"
+            return
+        }
+        if (!data.manifests.isEmpty()) {
+            ManifestData manifest = data.manifests.first()
+            if (manifest.name && !manifest.name.isEmpty() && !(manifest.name.equalsIgnoreCase("%bundle.name"))) {
+                output << " $manifest.name"
+            } else {
+                output << " $data.group $data.name"
+            }
+        } else {
+            output << " $data.group $data.name"
+        }
+
+        if (!data.poms.isEmpty()) {
+            PomData pomData = data.poms.first()
+            if (pomData.licenses) {
+                output << " under " + pomData.licenses.first().name
+            }
+        }
+        // special edge cases
+        if (data.manifests && data.manifests.first().name &&
+                data.manifests.first().name.equalsIgnoreCase("asm")) {
+            output << " under BSD"
+        }
+        output << "\n"
+    }
+}
+
+licenseReport {
+    configurations = ['debugRuntimeClasspath']
+    renderers = [new JoynrReportRenderer("NOTICE-ANDROID")]
+}
+task copyNoticeToRoot(type: Copy) {
+    from file("$buildDir/reports/dependency-license/NOTICE-ANDROID")
+    into file("../")
+}
+task generateNotices(type: GradleBuild) {
+    tasks = ['clean', 'generateLicenseReport', 'copyNoticeToRoot']
+}

@@ -63,7 +63,9 @@ android/libjoynr-android-integration-tests/test-radio-consumer/build.gradle \
 android/libjoynr-android-integration-tests/test-radio-consumer/app/build.gradle \
 android/clustercontroller-android-standalone/app/build.gradle \
 android/joynr-android-binder-runtime/build.gradle \
-android/slf4j-android-bindings/build.gradle 
+android/slf4j-android-bindings/build.gradle \
+examples/android/android-hello-world-binder/android-hello-world-binder-provider/build.gradle \
+examples/android/android-hello-world-binder/android-hello-world-binder-consumer/build.gradle \
 
 _sed 's/clustercontroller-standalone-'${oldVersion}'-jar-with-dependencies.jar/clustercontroller-standalone-'${newVersion}'-jar-with-dependencies.jar/g' \
 java/core/clustercontroller-standalone/README

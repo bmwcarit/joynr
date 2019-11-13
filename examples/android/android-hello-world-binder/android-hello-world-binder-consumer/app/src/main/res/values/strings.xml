@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AndroidHelloWorldBinderConsumer</string>
+    <string name="button_click_to_talk">Click to Talk!</string>
+    <string name="label_text_placeholder"><![CDATA[<< Text here >>]]></string>
+</resources>

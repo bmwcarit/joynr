@@ -50,25 +50,25 @@
 				</configuration>
 			</plugin>
 
-				<!-- NOTE the license to be added to the source header files must be
+			<!-- NOTE the license to be added to the source header files must be
 					specifically (redundantly) defined below -->
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>license-maven-plugin</artifactId>
-					<configuration>
-						<verbose>false</verbose>
-						<addSvnKeyWords>true</addSvnKeyWords>
-						<licenseName>apache_v2</licenseName>
-						<roots>
-							<root>./src/</root>
-						</roots>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<verbose>false</verbose>
+					<addSvnKeyWords>true</addSvnKeyWords>
+					<licenseName>apache_v2</licenseName>
+					<roots>
+						<root>./src/</root>
+					</roots>
 					<excludes>
 						<exclude>main/java/javax/transaction/xa/XAException.java</exclude>
 						<exclude>main/java/javax/transaction/xa/XAResource.java</exclude>
 						<exclude>main/java/javax/transaction/xa/Xid.java</exclude>
 					</excludes>
-					</configuration>
-				</plugin>
+				</configuration>
+			</plugin>
 
 
 			<!-- Tie the maven phases with the gradle equivalent tasks -->
@@ -174,8 +174,8 @@
 									<contains string="${env.MAVEN_CMD_LINE_ARGS}"
 										substring="install" />
 									<then>
-										<exec dir="${basedir}" executable="bash"
-											failonerror="true" newenvironment="false">
+										<exec dir="${basedir}" executable="bash" failonerror="true"
+											newenvironment="false">
 											<arg value="-c" />
 											<arg value="sed -i '0,/aar/s/aar/jar/' pom.xml" />
 										</exec>

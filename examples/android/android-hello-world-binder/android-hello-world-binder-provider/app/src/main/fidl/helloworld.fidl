@@ -1,0 +1,23 @@
+// This example fidl file should be equal to the consumer fidl file
+
+package helloworld
+
+<**
+	@description: Contains the user-defined dataTypes used in the interface.
+**>
+typeCollection {
+	const String hello = "Hello World!"
+}
+
+<**
+	@description: This is an example interface to demonstrate features
+		and usage of the joynr communication framework.
+**>
+interface HelloWorld {
+
+	<**
+		@description: Attribute that creates a getter and a setter in
+		the generated class. It represents the string that was last sent
+	**>
+	attribute String hello
+}

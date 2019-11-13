@@ -16,39 +16,6 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  Android AppCompat Library v7 under The Apache Software License, Version 2.0
-  Android Arch-Common under The Apache Software License, Version 2.0
-  Android Arch-Runtime under The Apache Software License, Version 2.0
-  Android ConstraintLayout under The Apache Software License, Version 2.0
-  Android ConstraintLayout Solver under The Apache Software License, Version 2.0
-  Android Lifecycle Extensions under The Apache Software License, Version 2.0
-  Android Lifecycle LiveData under The Apache Software License, Version 2.0
-  Android Lifecycle LiveData Core under The Apache Software License, Version 2.0
-  Android Lifecycle Process under The Apache Software License, Version 2.0
-  Android Lifecycle Runtime under The Apache Software License, Version 2.0
-  Android Lifecycle Service under The Apache Software License, Version 2.0
-  Android Lifecycle ViewModel under The Apache Software License, Version 2.0
-  Android Lifecycle-Common under The Apache Software License, Version 2.0
-  Android Support AnimatedVectorDrawable under The Apache Software License, Version 2.0
-  Android Support Library Annotations under The Apache Software License, Version 2.0
-  Android Support Library Async Layout Inflater under The Apache Software License, Version 2.0
-  Android Support Library collections under The Apache Software License, Version 2.0
-  Android Support Library compat under The Apache Software License, Version 2.0
-  Android Support Library Coordinator Layout under The Apache Software License, Version 2.0
-  Android Support Library core UI under The Apache Software License, Version 2.0
-  Android Support Library core utils under The Apache Software License, Version 2.0
-  Android Support Library Cursor Adapter under The Apache Software License, Version 2.0
-  Android Support Library Custom View under The Apache Software License, Version 2.0
-  Android Support Library Document File under The Apache Software License, Version 2.0
-  Android Support Library Drawer Layout under The Apache Software License, Version 2.0
-  Android Support Library fragment under The Apache Software License, Version 2.0
-  Android Support Library Interpolators under The Apache Software License, Version 2.0
-  Android Support Library loader under The Apache Software License, Version 2.0
-  Android Support Library Local Broadcast Manager under The Apache Software License, Version 2.0
-  Android Support Library Print under The Apache Software License, Version 2.0
-  Android Support Library Sliding Pane Layout under The Apache Software License, Version 2.0
-  Android Support Library View Pager under The Apache Software License, Version 2.0
-  Android Support VectorDrawable under The Apache Software License, Version 2.0
   AOP alliance under Public Domain
   Commons Lang under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -83,5 +50,4 @@ This project has dependencies to:
   libjoynr-websocket-runtime under The Apache Software License, Version 2.0
   SLF4J API Module under MIT License
   SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
-  VersionedParcelable and friends under The Apache Software License, Version 2.0
 

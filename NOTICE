@@ -26,45 +26,13 @@ This project has dependencies to:
   Aether Transport Wagon under Eclipse Public License, Version 1.0
   Aether Utilities under Eclipse Public License, Version 1.0
   Android APK Zip Library under The Apache Software License, Version 2.0
-  Android AppCompat Library v7 under The Apache Software License, Version 2.0
-  Android Arch-Common under The Apache Software License, Version 2.0
-  Android Arch-Runtime under The Apache Software License, Version 2.0
   Android Builder library under The Apache Software License, Version 2.0
   Android Builder Model library under The Apache Software License, Version 2.0
   Android Builder Test API library under The Apache Software License, Version 2.0
-  Android ConstraintLayout under The Apache Software License, Version 2.0
-  Android ConstraintLayout Solver under The Apache Software License, Version 2.0
   Android Gradle API under The Apache Software License, Version 2.0
   Android Jetifier Core under The Apache Software License, Version 2.0
   Android Jetifier Processor under The Apache Software License, Version 2.0
-  Android Lifecycle Extensions under The Apache Software License, Version 2.0
-  Android Lifecycle LiveData under The Apache Software License, Version 2.0
-  Android Lifecycle LiveData Core under The Apache Software License, Version 2.0
-  Android Lifecycle Process under The Apache Software License, Version 2.0
-  Android Lifecycle Runtime under The Apache Software License, Version 2.0
-  Android Lifecycle Service under The Apache Software License, Version 2.0
-  Android Lifecycle ViewModel under The Apache Software License, Version 2.0
-  Android Lifecycle-Common under The Apache Software License, Version 2.0
-  Android Support AnimatedVectorDrawable under The Apache Software License, Version 2.0
   Android Support Library Annotations under The Apache Software License, Version 2.0
-  Android Support Library Async Layout Inflater under The Apache Software License, Version 2.0
-  Android Support Library collections under The Apache Software License, Version 2.0
-  Android Support Library compat under The Apache Software License, Version 2.0
-  Android Support Library Coordinator Layout under The Apache Software License, Version 2.0
-  Android Support Library core UI under The Apache Software License, Version 2.0
-  Android Support Library core utils under The Apache Software License, Version 2.0
-  Android Support Library Cursor Adapter under The Apache Software License, Version 2.0
-  Android Support Library Custom View under The Apache Software License, Version 2.0
-  Android Support Library Document File under The Apache Software License, Version 2.0
-  Android Support Library Drawer Layout under The Apache Software License, Version 2.0
-  Android Support Library fragment under The Apache Software License, Version 2.0
-  Android Support Library Interpolators under The Apache Software License, Version 2.0
-  Android Support Library loader under The Apache Software License, Version 2.0
-  Android Support Library Local Broadcast Manager under The Apache Software License, Version 2.0
-  Android Support Library Print under The Apache Software License, Version 2.0
-  Android Support Library Sliding Pane Layout under The Apache Software License, Version 2.0
-  Android Support Library View Pager under The Apache Software License, Version 2.0
-  Android Support VectorDrawable under The Apache Software License, Version 2.0
   Android Tools Analytics Crash Library under The Apache Software License, Version 2.0
   Android Tools Analytics Protobufs under The Apache Software License, Version 2.0
   Android Tools Analytics Shared Library under The Apache Software License, Version 2.0
@@ -235,8 +203,11 @@ This project has dependencies to:
   io.joynr.examples.radio-jee:radio-jee-provider under The Apache Software License, Version 2.0
   io.joynr.examples:android under The Apache Software License, Version 2.0
   io.joynr.examples:android-hello-world under The Apache Software License, Version 2.0
+  io.joynr.examples:android-hello-world-binder under The Apache Software License, Version 2.0
   io.joynr.examples:android-hello-world-consumer under The Apache Software License, Version 2.0
+  io.joynr.examples:android-hello-world-consumer-binder under The Apache Software License, Version 2.0
   io.joynr.examples:android-hello-world-provider under The Apache Software License, Version 2.0
+  io.joynr.examples:android-hello-world-provider-binder under The Apache Software License, Version 2.0
   io.joynr.examples:custom-headers under The Apache Software License, Version 2.0
   io.joynr.examples:custom-headers-api under The Apache Software License, Version 2.0
   io.joynr.examples:custom-headers-jee-consumer under The Apache Software License, Version 2.0
@@ -513,7 +484,6 @@ This project has dependencies to:
   Text under Eclipse Public License - v 2.0
   Transaction 1.1 API under lgpl
   TXW2 Runtime under CDDL+GPL License
-  VersionedParcelable and friends under The Apache Software License, Version 2.0
   Xalan Java under The Apache Software License, Version 2.0
   Xalan Java Serializer under The Apache Software License, Version 2.0
   Xbase Runtime Library under Eclipse Public License, Version 1.0
