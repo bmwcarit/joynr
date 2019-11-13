@@ -33,7 +33,6 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryError.h"
-#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/DiscoveryScope.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContext.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
@@ -223,15 +222,15 @@ private:
 
 AccessController::AccessController(
         std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
-        std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
-        std::vector<std::string> knownGbids)
+        std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
         : _localCapabilitiesDirectory(localCapabilitiesDirectory),
           _localDomainAccessController(localDomainAccessController),
           _providerRegistrationObserver(
                   std::make_shared<ProviderRegistrationObserver>(localDomainAccessController)),
           _whitelistParticipantIds(),
-          _knownGbids(knownGbids)
+          _discoveryQos()
 {
+    _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
     localCapabilitiesDirectory->addProviderRegistrationObserver(_providerRegistrationObserver);
 }
 
@@ -324,11 +323,9 @@ void AccessController::hasConsumerPermission(
     };
 
     // Lookup participantId in the local Capabilities Directory
-    types::DiscoveryQos discoveryQos;
-    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
     _localCapabilitiesDirectory->lookup(message->getRecipient(),
-                                        discoveryQos,
-                                        _knownGbids,
+                                        _discoveryQos,
+                                        std::vector<std::string>(),
                                         std::move(lookupSuccessCallback),
                                         std::move(lookupErrorCallback));
 }

@@ -3695,7 +3695,7 @@ public:
         auto localDomainAccessController =
                 std::make_shared<LocalDomainAccessController>(localDomainAccessStore, true);
         _accessController = std::make_shared<AccessController>(
-                _localCapabilitiesDirectory, localDomainAccessController, _KNOWN_GBIDS);
+                _localCapabilitiesDirectory, localDomainAccessController);
         _localCapabilitiesDirectory->setAccessController(util::as_weak_ptr(_accessController));
 
         localDomainAccessStore->logContent();

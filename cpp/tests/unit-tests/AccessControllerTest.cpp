@@ -116,7 +116,6 @@ public:
     AccessControllerTest()
             : _emptySettings(),
               _clusterControllerSettings(_emptySettings),
-              _knownGbids({"testGbid1", "testGbid2", "testGbid3"}),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _localDomainAccessControllerMock(std::make_shared<MockLocalDomainAccessController>(
                       std::make_unique<LocalDomainAccessStore>(),
@@ -128,7 +127,7 @@ public:
                       _clusterControllerSettings,
                       _messageRouter,
                       _singleThreadedIOService->getIOService())),
-              _accessController(std::make_shared<AccessController>(_localCapabilitiesDirectoryMock, _localDomainAccessControllerMock, _knownGbids)),
+              _accessController(std::make_shared<AccessController>(_localCapabilitiesDirectoryMock, _localDomainAccessControllerMock)),
               _messagingQos(MessagingQos(5000))
     {
         _singleThreadedIOService->start();
@@ -204,7 +203,7 @@ public:
                 *_localCapabilitiesDirectoryMock,
                 lookup(_toParticipantId,
                        A<const types::DiscoveryQos&>(),
-                       _knownGbids,
+                       std::vector<std::string> {},
                        A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
                        A<std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>>()
                 ))
@@ -218,7 +217,7 @@ public:
                 *_localCapabilitiesDirectoryMock,
                 lookup(_toParticipantId,
                        A<const types::DiscoveryQos&>(),
-                       _knownGbids,
+                       std::vector<std::string> {},
                        A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
                        A<std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>>()
                 ))
@@ -249,7 +248,6 @@ public:
 protected:
     Settings _emptySettings;
     ClusterControllerSettings _clusterControllerSettings;
-    std::vector<std::string> _knownGbids;
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
     std::shared_ptr<MockLocalDomainAccessController> _localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> _accessControllerCallback;

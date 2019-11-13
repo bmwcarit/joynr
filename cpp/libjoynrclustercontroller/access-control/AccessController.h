@@ -28,6 +28,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
+#include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
 {
@@ -42,8 +43,7 @@ class AccessController : public IAccessController,
 {
 public:
     AccessController(std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
-                     std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
-                     std::vector<std::string> knownGbids);
+                     std::shared_ptr<LocalDomainAccessController> localDomainAccessController);
 
     ~AccessController() override;
 
@@ -71,7 +71,7 @@ private:
     std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
     std::shared_ptr<ProviderRegistrationObserver> _providerRegistrationObserver;
     std::vector<std::string> _whitelistParticipantIds;
-    std::vector<std::string> _knownGbids;
+    types::DiscoveryQos _discoveryQos;
 
     ADD_LOGGER(AccessController)
 };
