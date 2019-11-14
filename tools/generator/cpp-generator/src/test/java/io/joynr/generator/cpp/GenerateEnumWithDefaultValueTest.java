@@ -16,29 +16,22 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.generator.interfaces;
+package io.joynr.generator.cpp;
 
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.joynr.generator.AbstractJoynrCppGeneratorTest;
 
 public class GenerateEnumWithDefaultValueTest extends AbstractJoynrCppGeneratorTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenerateEnumWithDefaultValueTest.class);
-
     @Test
     public void testGeneratesEnumwithDefaultValue() throws Exception {
         Map<String, String> result = generate("test-struct-with-default-enum-value.fidl");
         TestResult testResult = new TestResult();
-        Pattern noOutMethodPattern = Pattern.compile("void noOutMethodSuccess\\(");
         result.forEach((filename, fileContent) -> {
             if (filename.equals("TestStruct")) {
                 testResult.setDefaultEnumInitializationFound(fileContent.contains("testEnumerationType(TestEnumerationType::VALUE1)"));
