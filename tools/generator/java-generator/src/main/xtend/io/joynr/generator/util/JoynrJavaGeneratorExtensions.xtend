@@ -18,8 +18,11 @@ package io.joynr.generator.util
  */
 
 import com.google.inject.Inject
+import com.google.inject.Singleton
 import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
+import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
+import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import java.util.Iterator
 import java.util.TreeSet
 import org.franca.core.franca.FAnnotation
@@ -29,10 +32,7 @@ import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModelElement
 import org.franca.core.franca.FType
-import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import org.franca.core.franca.FTypedElement
-import io.joynr.generator.templates.util.JoynrGeneratorExtensions
-import com.google.inject.Singleton
 
 @Singleton
 class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {

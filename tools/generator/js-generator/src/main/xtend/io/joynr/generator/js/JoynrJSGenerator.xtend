@@ -17,6 +17,7 @@ package io.joynr.generator.js
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import com.google.inject.AbstractModule
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import com.google.inject.name.Named
@@ -27,6 +28,7 @@ import io.joynr.generator.js.util.GeneratorParameter
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.js.util.JsTemplateFactory
 import io.joynr.generator.templates.util.NamingUtil
+import io.joynr.generator.templates.util.SupportedFrancaFeatureChecker
 import java.util.HashSet
 import java.util.Map
 import javax.inject.Inject
@@ -38,7 +40,6 @@ import org.franca.core.franca.FModel
 import org.franca.core.franca.FType
 
 import static com.google.common.base.Preconditions.*
-import io.joynr.generator.templates.util.SupportedFrancaFeatureChecker
 
 class JoynrJSGenerator implements IJoynrGenerator {
 
@@ -74,6 +75,8 @@ class JoynrJSGenerator implements IJoynrGenerator {
 		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
 
 		val fModel = input.contents.get(0) as FModel // francaPersistenceManager.loadModel(input.URI, input.URI)
+		checkForNamedArrays(fModel, input.URI.path);
+
 		val types = findAllFTypes(input)
 
 		SupportedFrancaFeatureChecker.checkModel(fModel)

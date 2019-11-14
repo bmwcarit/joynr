@@ -31,6 +31,7 @@ import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FAnnotationType
+import org.franca.core.franca.FArrayType
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
@@ -310,6 +311,17 @@ class JoynrGeneratorExtensions {
 			packagepath += separator + datatype.typeCollectionName;
 		}
 		return packagepath;
+	}
+
+	def checkForNamedArrays(FModel fModel, String path) {
+		val allTypes = fModel.dataTypes
+		for (fType : allTypes) {
+			if (fType instanceof FArrayType) {
+				throw new IllegalArgumentException(
+					"Explicitly named arrays (\"array NAME of TYPE\") are not supported by the generator: found array \""
+					 + fType.name + "\" in " + path)
+			}
+		}
 	}
 
 	def boolean commentContainsNoVersionGeneration(FModelElement element){
