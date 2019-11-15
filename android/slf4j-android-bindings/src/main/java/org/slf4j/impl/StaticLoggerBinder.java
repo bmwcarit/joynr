@@ -109,6 +109,7 @@ public class StaticLoggerBinder implements LoggerFactoryBinder {
      */
     public static void setLogLevel(@AndroidLogger.LogLevel final int logLevel) {
         ((AndroidLoggerFactory) getSingleton().getLoggerFactory()).loggerMap.forEach((k, v) -> v.setLogLevel(logLevel));
+        ((AndroidLoggerFactory) getSingleton().getLoggerFactory()).setLogLevel(logLevel);
     }
 
     /**

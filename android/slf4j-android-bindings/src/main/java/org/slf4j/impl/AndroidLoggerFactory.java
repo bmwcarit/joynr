@@ -67,6 +67,9 @@ public class AndroidLoggerFactory implements ILoggerFactory {
     // see also android/system/core/include/cutils/property.h
     // and android/frameworks/base/core/jni/android_util_Log.cpp
 
+    @AndroidLogger.LogLevel
+    public int mLogLevel = AndroidLogger.LogLevel.WARN;
+
     AndroidLoggerFactory() {
         loggerMap = new ConcurrentHashMap<String, AndroidLogger>();
     }
@@ -82,18 +85,8 @@ public class AndroidLoggerFactory implements ILoggerFactory {
         }
 
         logger = new AndroidLogger(tag);
-        // make sure new logger uses same log level as defined in all others; here we use first
-        // logger because all loggers should be using the same log level
-        final Collection<AndroidLogger> values = loggerMap.values();
-        if (!values.isEmpty()) {
-            final Object[] array = values.toArray();
-            if (array != null && array.length > 0) {
-                final Object firstLogger = array[0];
-                if (firstLogger instanceof AndroidLogger) {
-                    logger.setLogLevel(((AndroidLogger) firstLogger).getLogLevel());
-                }
-            }
-        }
+        // make sure new logger uses same log level as defined in all others;
+        logger.setLogLevel(mLogLevel);
 
         final AndroidLogger loggerPutBefore = loggerMap.putIfAbsent(tag, logger);
         if (null == loggerPutBefore) {
@@ -143,5 +136,13 @@ public class AndroidLoggerFactory implements ILoggerFactory {
             }
         }
         return name;
+    }
+
+    public int getLogLevel() {
+        return mLogLevel;
+    }
+
+    public void setLogLevel(int logLevel) {
+        mLogLevel = logLevel;
     }
 }
