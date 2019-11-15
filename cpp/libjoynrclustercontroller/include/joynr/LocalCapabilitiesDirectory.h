@@ -350,11 +350,11 @@ private:
     std::vector<types::DiscoveryEntryWithMetaInfo> filterDuplicates(
             std::vector<types::DiscoveryEntryWithMetaInfo>&& globalCapabilitiesWithMetaInfo,
             std::vector<types::DiscoveryEntryWithMetaInfo>&& localCapabilitiesWithMetaInfo);
-    bool isEntryForGbid(const std::unique_lock<std::recursive_mutex>& lock,
+    bool isEntryForGbid(const std::unique_lock<std::recursive_mutex>& cacheLock,
                         const types::DiscoveryEntry& entry,
                         const std::unordered_set<std::string> gbids);
     std::vector<types::DiscoveryEntry> filterDiscoveryEntriesByGbids(
-            const std::unique_lock<std::recursive_mutex>& lock,
+            const std::unique_lock<std::recursive_mutex>& cacheLock,
             const std::vector<types::DiscoveryEntry>& entries,
             const std::unordered_set<std::string>& gbids);
 };

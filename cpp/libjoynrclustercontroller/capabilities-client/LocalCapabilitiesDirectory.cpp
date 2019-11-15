@@ -423,6 +423,7 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDi
 std::size_t LocalCapabilitiesDirectory::countGlobalCapabilities() const
 {
     std::size_t counter = 0;
+    std::lock_guard<std::recursive_mutex> lock4(_cacheLock);
     for (const auto& capability : _locallyRegisteredCapabilities) {
         if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
             counter++;
@@ -472,12 +473,13 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
                                   std::move(callback));
 }
 
-bool LocalCapabilitiesDirectory::isEntryForGbid(const std::unique_lock<std::recursive_mutex>& lock,
-                                                const types::DiscoveryEntry& entry,
-                                                const std::unordered_set<std::string> gbids)
+bool LocalCapabilitiesDirectory::isEntryForGbid(
+        const std::unique_lock<std::recursive_mutex>& cacheLock,
+        const types::DiscoveryEntry& entry,
+        const std::unordered_set<std::string> gbids)
 {
-    assert(lock.owns_lock());
-    std::ignore = lock;
+    assert(cacheLock.owns_lock());
+    std::ignore = cacheLock;
 
     const auto foundMapping = _globalParticipantIdsToGbidsMap.find(entry.getParticipantId());
     if (foundMapping != _globalParticipantIdsToGbidsMap.cend() && !foundMapping->second.empty()) {
@@ -493,15 +495,15 @@ bool LocalCapabilitiesDirectory::isEntryForGbid(const std::unique_lock<std::recu
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::filterDiscoveryEntriesByGbids(
-        const std::unique_lock<std::recursive_mutex>& lock,
+        const std::unique_lock<std::recursive_mutex>& cacheLock,
         const std::vector<types::DiscoveryEntry>& entries,
         const std::unordered_set<std::string>& gbids)
 {
-    assert(lock.owns_lock());
+    assert(cacheLock.owns_lock());
     std::vector<types::DiscoveryEntry> result;
 
     for (const auto& entry : entries) {
-        if (isEntryForGbid(lock, entry, gbids)) {
+        if (isEntryForGbid(cacheLock, entry, gbids)) {
             result.push_back(entry);
         }
     }
