@@ -44,7 +44,7 @@ RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/bmwcarit/muesli.git \
     && cd muesli \
-    && git checkout 1.0.1 \
+    && git checkout 1.0.2 \
     && mkdir build \
     && cd build \
     && cmake -DBUILD_MUESLI_TESTS=Off -DUSE_PLATFORM_RAPIDJSON=On .. \
@@ -72,7 +72,7 @@ RUN cd /opt \
 # install smrf
 ###################################################
 
-RUN export SMRF_VERSION=0.3.3 \
+RUN export SMRF_VERSION=0.3.4 \
     && . /etc/profile \
     && cd /opt \
     && git clone https://github.com/bmwcarit/smrf.git \
