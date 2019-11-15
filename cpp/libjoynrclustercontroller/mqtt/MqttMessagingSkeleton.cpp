@@ -133,7 +133,7 @@ void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
             const exceptions::JoynrRuntimeException& e)
     {
         JOYNR_LOG_ERROR(logger(),
-                        "Incoming Message from {} with ID {} could not be sent! reason: {}",
+                        "Incoming Message from >{}< with ID {} could not be sent! reason: {}",
                         _ownGbid,
                         messageId,
                         e.getMessage());

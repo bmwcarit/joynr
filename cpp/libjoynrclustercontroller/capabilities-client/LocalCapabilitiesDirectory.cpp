@@ -175,12 +175,12 @@ LocalCapabilitiesDirectory::ValidateGBIDsEnum::Enum LocalCapabilitiesDirectory::
     for (auto gbid : gbids) {
         if (gbid.empty() || (gbidSet.find(gbid) != gbidSet.cend())) {
             JOYNR_LOG_ERROR(
-                    logger(), "INVALID_GBID: provided GBID is empty or duplicate: {}.", gbid);
+                    logger(), "INVALID_GBID: provided GBID is empty or duplicate: >{}<.", gbid);
             return ValidateGBIDsEnum::INVALID;
         }
         gbidSet.insert(gbid);
         if (validGbids.find(gbid) == validGbids.cend()) {
-            JOYNR_LOG_ERROR(logger(), "UNKNOWN_GBID: provided GBID is unknown: {}.", gbid);
+            JOYNR_LOG_ERROR(logger(), "UNKNOWN_GBID: provided GBID is unknown: >{}<.", gbid);
             return ValidateGBIDsEnum::UNKNOWN;
         }
     }
@@ -228,7 +228,7 @@ void LocalCapabilitiesDirectory::addInternal(
         {
             JOYNR_LOG_ERROR(logger(),
                             "Exception occurred during the execution of capabilitiesProxy->add for "
-                            "'{}' for GBIDs ({}). Error: {} ({})",
+                            "'{}' for GBIDs >{}<. Error: {} ({})",
                             globalDiscoveryEntry.toString(),
                             boost::algorithm::join(gbids, ", "),
                             error.getMessage(),
@@ -255,7 +255,7 @@ void LocalCapabilitiesDirectory::addInternal(
             JOYNR_LOG_ERROR(
                     logger(),
                     "DiscoveryError occurred during the execution of capabilitiesProxy->add for "
-                    "'{}' for GBIDs ({}). Error: {}",
+                    "'{}' for GBIDs >{}<. Error: {}",
                     globalDiscoveryEntry.toString(),
                     boost::algorithm::join(gbids, ", "),
                     types::DiscoveryError::getLiteral(error));
@@ -281,7 +281,7 @@ void LocalCapabilitiesDirectory::addInternal(
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::recursive_mutex> lock2(thisSharedPtr->_cacheLock);
                 JOYNR_LOG_INFO(logger(),
-                               "Global capability '{}' added successfully for GBIDs ({}), "
+                               "Global capability '{}' added successfully for GBIDs >{}<, "
                                "#registeredGlobalCapabilities {}",
                                globalDiscoveryEntry.toString(),
                                boost::algorithm::join(gbids, ", "),
@@ -375,7 +375,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                             [participantId, gbids](const types::DiscoveryError::Enum& error) {
                         JOYNR_LOG_WARN(logger(),
                                        "Global provider reregistration for participantId {} and "
-                                       "gbids ({}) failed: {} (DiscoveryError)",
+                                       "gbids >{}< failed: {} (DiscoveryError)",
                                        participantId,
                                        boost::algorithm::join(gbids, ", "),
                                        types::DiscoveryError::getLiteral(error));
@@ -384,7 +384,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                             const exceptions::JoynrRuntimeException& exception) {
                         JOYNR_LOG_WARN(logger(),
                                        "Global provider reregistration for participantId {} and "
-                                       "gbids ({}) failed: {} ({})",
+                                       "gbids >{}< failed: {} ({})",
                                        participantId,
                                        boost::algorithm::join(gbids, ", "),
                                        exception.getMessage(),
@@ -1255,7 +1255,7 @@ void LocalCapabilitiesDirectory::lookup(
                 const std::string gbidString = boost::algorithm::join(gbidsForLookup, ", ");
                 JOYNR_LOG_DEBUG(logger(),
                                 "participantId {} has no capability entry "
-                                "(DiscoveryError::NO_ENTRY_FOR_PARTICIPANT) for GBIDs: ({})",
+                                "(DiscoveryError::NO_ENTRY_FOR_PARTICIPANT) for GBIDs: >{}<",
                                 participantId,
                                 gbidString);
                 onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
@@ -1316,7 +1316,7 @@ void LocalCapabilitiesDirectory::remove(
                 gbids = foundGbids->second;
                 const std::string gbidString = boost::algorithm::join(gbids, ", ");
                 JOYNR_LOG_INFO(logger(),
-                               "Removing globally registered participantId: {} from GBIDs: {}",
+                               "Removing globally registered participantId: {} from GBIDs: >{}<",
                                participantId,
                                gbidString);
 
@@ -1325,7 +1325,7 @@ void LocalCapabilitiesDirectory::remove(
                 auto onApplicationError =
                         [participantId, gbids](const types::DiscoveryError::Enum& error) {
                     JOYNR_LOG_WARN(logger(),
-                                   "Error removing participantId {} globally for GBIDs ({}): {}",
+                                   "Error removing participantId {} globally for GBIDs >{}<: {}",
                                    participantId,
                                    boost::algorithm::join(gbids, ", "),
                                    types::DiscoveryError::getLiteral(error));
@@ -1334,7 +1334,7 @@ void LocalCapabilitiesDirectory::remove(
                         [participantId, gbids](const exceptions::JoynrRuntimeException& exception) {
                     JOYNR_LOG_WARN(
                             logger(),
-                            "Failed to remove participantId {} globally for GBIDs ({}): {} ({})",
+                            "Failed to remove participantId {} globally for GBIDs >{}<: {} ({})",
                             participantId,
                             boost::algorithm::join(gbids, ", "),
                             exception.getMessage(),
@@ -1540,7 +1540,7 @@ void LocalCapabilitiesDirectory::insertInGlobalLookupCache(const types::Discover
 
     JOYNR_LOG_INFO(
             logger(),
-            "Added global capability to cache {}, registered GBIDs: {}, #globalLookupCache: {}",
+            "Added global capability to cache {}, registered GBIDs: >{}<, #globalLookupCache: {}",
             entry.toString(),
             boost::algorithm::join(allGbids, ", "),
             _globalLookupCache.size());

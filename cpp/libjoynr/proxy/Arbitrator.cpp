@@ -81,7 +81,7 @@ void Arbitrator::startArbitration(
     if (_arbitrationRunning) {
         JOYNR_LOG_ERROR(logger(),
                         "Arbitration already running for domain = [{}], interface = {}, GBIDs = "
-                        "{}. A second "
+                        ">{}<. A second "
                         "arbitration will not be started.",
                         _serializedDomainsList,
                         _interfaceName,
@@ -92,7 +92,7 @@ void Arbitrator::startArbitration(
     _startTimePoint = std::chrono::steady_clock::now();
     JOYNR_LOG_INFO(
             logger(),
-            "Arbitration started for domain = [{}], interface = {}, GBIDs = {}, version = {}.{}.",
+            "Arbitration started for domain = [{}], interface = {}, GBIDs = >{}<, version = {}.{}.",
             _serializedDomainsList,
             _interfaceName,
             _gbidString,
@@ -116,7 +116,7 @@ void Arbitrator::startArbitration(
         thisSharedPtr->_arbitrationFailedForever = false;
 
         JOYNR_LOG_TRACE(logger(),
-                        "Entering arbitration thread for domain: [{}], interface: {}, GBIDs = {}",
+                        "Entering arbitration thread for domain: [{}], interface: {}, GBIDs = >{}<",
                         thisSharedPtr->_serializedDomainsList,
                         thisSharedPtr->_interfaceName,
                         thisSharedPtr->_gbidString);
@@ -177,7 +177,7 @@ void Arbitrator::startArbitration(
 
         thisSharedPtr->_arbitrationRunning = false;
         JOYNR_LOG_DEBUG(logger(),
-                        "Exiting arbitration thread for domain: [{}], interface: {}, GBIDs = {}",
+                        "Exiting arbitration thread for domain: [{}], interface: {}, GBIDs = >{}<",
                         thisSharedPtr->_serializedDomainsList,
                         thisSharedPtr->_interfaceName,
                         thisSharedPtr->_gbidString);
@@ -188,7 +188,7 @@ void Arbitrator::startArbitration(
 void Arbitrator::stopArbitration()
 {
     JOYNR_LOG_DEBUG(logger(),
-                    "StopArbitrator for domain: [{}], interface: {}, GBIDs = {}",
+                    "StopArbitrator for domain: [{}], interface: {}, GBIDs = >{}<",
                     _serializedDomainsList,
                     _interfaceName,
                     _gbidString);
@@ -254,7 +254,7 @@ void Arbitrator::attemptArbitration()
                     : "";
 
     JOYNR_LOG_DEBUG(logger(),
-                    "DISCOVERY lookup for domain: [{}], interface: {}, GBIDs = {}",
+                    "DISCOVERY lookup for domain: [{}], interface: {}, GBIDs = >{}<",
                     _serializedDomainsList,
                     _interfaceName,
                     _gbidString);

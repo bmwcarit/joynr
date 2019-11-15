@@ -65,7 +65,7 @@ boost::optional<routingtable::RoutingEntry> RoutingTable::lookupRoutingEntryByPa
                 dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get())) {
         if (_knownGbidsSet.find(gbid) == _knownGbidsSet.cend()) {
             JOYNR_LOG_ERROR(logger(),
-                            "The provided GBID {} for the participantId {} is unknown.",
+                            "The provided GBID >{}< for the participantId {} is unknown.",
                             gbid,
                             participantId);
             return boost::none;

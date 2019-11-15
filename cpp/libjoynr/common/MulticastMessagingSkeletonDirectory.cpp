@@ -39,7 +39,7 @@ std::shared_ptr<IMessagingMulticastSubscriber> MulticastMessagingSkeletonDirecto
             localGbid = mqttAddress->getBrokerUri();
         }
         JOYNR_LOG_TRACE(logger(),
-                        "get messaging skeleton for address {}, gbid: {}",
+                        "get messaging skeleton for address {}, gbid: >{}<",
                         address->toString(),
                         localGbid);
         return _multicastSkeletons[std::make_pair(typeIndex, localGbid)];
