@@ -749,8 +749,10 @@ endif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 ### Add spdlog ###########################################################
 find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
 
+set(JOYNR_SPDLOG_REQUIRED_VERSION 1.4.2)
+string(CONCAT JOYNR_SPDLOG_GIT_TAG "v" ${JOYNR_SPDLOG_REQUIRED_VERSION})
 if (USE_PLATFORM_SPDLOG)
-    find_package(spdlog REQUIRED)
+    find_package(spdlog ${JOYNR_SPDLOG_REQUIRED_VERSION} REQUIRED)
     get_target_property(spdlog_INCLUDE_DIRS spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
 else(USE_PLATFORM_SPDLOG)
     message(STATUS "############ Download: spdlog ############")
@@ -758,7 +760,7 @@ else(USE_PLATFORM_SPDLOG)
     AddExternalProject(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog
-        GIT_TAG v1.3.1
+        GIT_TAG ${JOYNR_SPDLOG_GIT_TAG}
         TIMEOUT 10
         # Disable configure step
         CONFIGURE_COMMAND ""
@@ -812,7 +814,7 @@ if(JOYNR_ENABLE_DLT_LOGGING)
 endif(JOYNR_ENABLE_DLT_LOGGING)
 
 ### Add muesli ############################################################
-set(JOYNR_MUESLI_REQUIRED_VERSION 1.0.1)
+set(JOYNR_MUESLI_REQUIRED_VERSION 1.0.2)
 if (USE_PLATFORM_MUESLI)
     find_package(muesli ${JOYNR_MUESLI_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_MUESLI)
@@ -892,7 +894,7 @@ endif(USE_PLATFORM_MOCOCRW)
 include(CheckMOCOCRWImportTargets)
 
 ### Add smrf ############################################################
-set(JOYNR_SMRF_REQUIRED_VERSION 0.3.3)
+set(JOYNR_SMRF_REQUIRED_VERSION 0.3.4)
 if (USE_PLATFORM_SMRF)
     find_package(smrf ${JOYNR_SMRF_REQUIRED_VERSION} REQUIRED CONFIG)
 else(USE_PLATFORM_SMRF)
