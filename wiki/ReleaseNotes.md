@@ -2,6 +2,16 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.7
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Generator]** `addVersionTo` / DEPRECATED. The addVersionTo option will be removed
+  in a future version of the generator. Set the #noVersionGeneration comment
+  in the .fidl file instead, see [Disable versioning of generated files](#disable-versioning-of-generated-files).
+
 # joynr 1.8.6
 
 ## API relevant changes
