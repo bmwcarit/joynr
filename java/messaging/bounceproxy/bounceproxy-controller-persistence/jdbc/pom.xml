@@ -30,7 +30,7 @@ limitations under the License.
 	<parent>
 		<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 		<artifactId>bounceproxy-controller-persistence</artifactId>
-		<version>1.8.6</version>
+		<version>1.8.7</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
