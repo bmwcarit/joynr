@@ -19,6 +19,7 @@
  */
 /*eslint no-use-before-define: "off"*/
 import util from "util";
+import * as MessageSerializer from "../MessageSerializer";
 import * as WebSocketAddress from "../../../generated/joynr/system/RoutingTypes/WebSocketAddress";
 import * as WebSocketClientAddress from "../../../generated/joynr/system/RoutingTypes/WebSocketClientAddress";
 
@@ -106,12 +107,19 @@ class SharedWebSocket {
     public set onmessage(newCallback: Function) {
         this.onmessageCallback = (data: any) => {
             try {
-                this.websocket!.unmarshalJoynrMessage(data, newCallback);
+                const joynrMessage = MessageSerializer.parse(data.data as Buffer);
+                if (joynrMessage) {
+                    newCallback(joynrMessage);
+                }
             } catch (e) {
                 log.error(`could not unmarshal joynrMessage: ${e}`);
             }
         };
         this.websocket!.onmessage = this.onmessageCallback;
+    }
+
+    public get numberOfQueuedMessages(): number {
+        return this.queuedMessages.length;
     }
 
     private sendQueuedMessages(): void {
@@ -186,7 +194,7 @@ class SharedWebSocket {
     private onOpen(): void {
         try {
             log.debug("connection opened.");
-            this.websocket!.send(this.websocket!.encodeString(JSON.stringify(this.localAddress)), this.sendConfig);
+            this.websocket!.send(Buffer.from(JSON.stringify(this.localAddress)), this.sendConfig);
             this.sendQueuedMessages();
         } catch (e) {
             this.resetConnection();
@@ -200,12 +208,12 @@ class SharedWebSocket {
     public async sendMessage(joynrMessage: JoynrMessage): Promise<void> {
         let marshaledMessage;
         try {
-            marshaledMessage = this.websocket!.marshalJoynrMessage(joynrMessage);
+            marshaledMessage = MessageSerializer.stringify(joynrMessage);
         } catch (e) {
             log.error(`could not marshal joynrMessage: ${joynrMessage.msgId} ${e}`);
             return Promise.resolve();
         }
-        if (this.websocket!.readyState === WebSocketNode.OPEN) {
+        if (this.websocket !== null && this.websocket!.readyState === WebSocketNode.OPEN) {
             try {
                 await this.sendInternal(marshaledMessage);
                 // Error is thrown if the socket is no longer open, so requeue to the front

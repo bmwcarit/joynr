@@ -17,6 +17,7 @@
  * #L%
  */
 
+import * as MessageSerializer from "../../../../../main/js/joynr/messaging/MessageSerializer";
 import WebSocketProtocol from "../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketProtocol";
 import WebSocketAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress";
 import WebSocketClientAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress";
@@ -33,8 +34,7 @@ const webSocketMock = {
     send: jest.fn().mockImplementation((_value, _settings, cb) => {
         if (cb && typeof cb === "function") cb();
     }),
-    readyState: WebSocket.CONNECTING,
-    marshalJoynrMessage: jest.fn().mockImplementation((joynrMessage: any) => JSON.stringify(joynrMessage))
+    readyState: WebSocket.CONNECTING
 };
 const webSocketConstructor: any = jest.fn().mockImplementation(() => webSocketMock);
 webSocketConstructor.CONNECTING = WebSocket.CONNECTING;
@@ -46,22 +46,25 @@ jest.doMock("../../../../../main/js/global/WebSocketNode", () => webSocketConstr
 
 import SharedWebSocket from "../../../../../main/js/joynr/messaging/websocket/SharedWebSocket";
 
-describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
-    let localAddress: any;
-    let ccAddress: any;
-    let sharedWebSocket: SharedWebSocket;
-    const joynrMessage = new JoynrMessage({ payload: "hi", type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST });
+let sharedWebSocket: SharedWebSocket;
+const joynrMessage = new JoynrMessage({ payload: "hi", type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST });
+joynrMessage.from = "sender";
+joynrMessage.to = "recipient";
+joynrMessage.expiryDate = 1;
+joynrMessage.compress = false;
+const localAddress = new WebSocketClientAddress({
+    id: "1234"
+});
+const ccAddress = new WebSocketAddress({
+    protocol: WebSocketProtocol.WS,
+    host: "host",
+    port: 1234,
+    path: "/test"
+});
 
+describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket-1", () => {
     beforeEach(done => {
-        localAddress = new WebSocketClientAddress({
-            id: "1234"
-        });
-        ccAddress = new WebSocketAddress({
-            protocol: WebSocketProtocol.WS,
-            host: "host",
-            port: 1234,
-            path: "/test"
-        });
+        webSocketConstructor.mockImplementation(() => webSocketMock);
 
         sharedWebSocket = new SharedWebSocket({
             localAddress,
@@ -84,8 +87,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
     it("calls websocket.send correctly", async () => {
         webSocketMock.readyState = WebSocket.OPEN;
         await sharedWebSocket.send(joynrMessage);
-        expect(webSocketMock.marshalJoynrMessage).toHaveBeenCalled();
-        expect(webSocketMock.send).toHaveBeenCalledWith(webSocketMock.marshalJoynrMessage(joynrMessage), {
+        expect(webSocketMock.send).toHaveBeenCalledWith(MessageSerializer.stringify(joynrMessage), {
             binary: true
         });
 
@@ -99,9 +101,8 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
         webSocketMock.readyState = WebSocket.OPEN;
         sharedWebSocket.enableShutdownMode();
         await sharedWebSocket.send(joynrMessage);
-        expect(webSocketMock.marshalJoynrMessage).toHaveBeenCalled();
         expect(webSocketMock.send).toHaveBeenCalledWith(
-            webSocketMock.marshalJoynrMessage(joynrMessage),
+            MessageSerializer.stringify(joynrMessage),
             {
                 binary: true
             },
@@ -112,5 +113,24 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
         webSocketMock.readyState = WebSocket.CLOSING;
         await sharedWebSocket.send(joynrMessage);
         expect(webSocketMock.send).not.toHaveBeenCalled();
+    });
+});
+
+describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket-2", () => {
+    beforeEach(done => {
+        webSocketConstructor.mockImplementation(() => null);
+
+        sharedWebSocket = new SharedWebSocket({
+            localAddress,
+            remoteAddress: ccAddress,
+            keychain: undefined,
+            provisioning: {}
+        });
+        done();
+    });
+
+    it("queues messages when websocket connection is not available", async () => {
+        await sharedWebSocket.send(joynrMessage);
+        expect(sharedWebSocket.numberOfQueuedMessages).toBe(1);
     });
 });

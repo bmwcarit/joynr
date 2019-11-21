@@ -28,7 +28,7 @@ function serializeSmrfMessage(smrfMsg: JoynrMessage): Buffer {
     try {
         return smrf.serialize(smrfMsg);
     } catch (e) {
-        throw new Error(`ws.marshalJoynrMessage: got exception ${e}`);
+        throw new Error(`smrf.serialize: got exception ${e}`);
     }
 }
 
@@ -36,7 +36,7 @@ function deserializeSmrfMessage(data: Buffer): JoynrMessage {
     try {
         return smrf.deserialize(data);
     } catch (e) {
-        throw new Error(`ws.marshalJoynrMessage: got exception ${e}`);
+        throw new Error(`smrf.deserialize: got exception ${e}`);
     }
 }
 

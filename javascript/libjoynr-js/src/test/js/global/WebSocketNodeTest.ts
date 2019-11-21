@@ -40,16 +40,11 @@ describe("websocket node", () => {
         jest.clearAllMocks();
     });
 
-    it(`has the required members`, () => {
-        websocketNode = new WebSocketNode(remoteUrl, keychainWithCerts, false);
-        expect(websocketNode.marshalJoynrMessage).toBeDefined();
-        expect(websocketNode.unmarshalJoynrMessage).toBeDefined();
-    });
-
     it("calls the wscpp constructor with certs for unencrypted Tls communication", () => {
         const useUnencryptedTls = true;
         websocketNode = new WebSocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
 
+        expect(websocketNode).toBeDefined();
         expect(websocketConstructor).toHaveBeenCalledWith(remoteUrl, {
             cert: keychainWithCerts.tlsCert,
             key: keychainWithCerts.tlsKey,
@@ -60,10 +55,11 @@ describe("websocket node", () => {
         });
     });
 
-    it("calls the wscpp constructor with certs  for encrypted Tls communication", () => {
+    it("calls the wscpp constructor with certs for encrypted Tls communication", () => {
         const useUnencryptedTls = false;
         websocketNode = new WebSocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
 
+        expect(websocketNode).toBeDefined();
         expect(websocketConstructor).toHaveBeenCalledWith(remoteUrl, {
             cert: keychainWithCerts.tlsCert,
             key: keychainWithCerts.tlsKey,

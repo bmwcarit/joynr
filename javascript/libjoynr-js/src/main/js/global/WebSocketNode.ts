@@ -22,9 +22,7 @@
  * See: http://dev.w3.org/html5/websockets/#the-websocket-interface
  *
  */
-import * as MessageSerializer from "../joynr/messaging/MessageSerializer";
 import ws from "ws";
-import JoynrMessage = require("../joynr/messaging/JoynrMessage");
 
 interface KeyChain {
     tlsCert: any;
@@ -54,21 +52,6 @@ class WebSocketNode extends ws {
         }
 
         super(remoteUrl, clientOptions);
-    }
-
-    public encodeString(string: string): Buffer {
-        return Buffer.from(string);
-    }
-
-    public marshalJoynrMessage(data: JoynrMessage): Buffer {
-        return MessageSerializer.stringify(data);
-    }
-
-    public unmarshalJoynrMessage(event: { data: Buffer }, callback: Function): void {
-        const joynrMessage = MessageSerializer.parse(event.data);
-        if (joynrMessage) {
-            callback(joynrMessage);
-        }
     }
 }
 
