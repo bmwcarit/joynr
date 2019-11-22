@@ -68,12 +68,17 @@ public:
 
     ~MessageNotificationTest() override
     {
-        const bool deleteChannel = true;
-        clusterControllerRuntime->stop(deleteChannel);
-        clusterControllerRuntime->shutdown();
-        libjoynrProxyRuntime->shutdown();
+        if (clusterControllerRuntime) {
+            const bool deleteChannel = true;
+            clusterControllerRuntime->stop(deleteChannel);
+            clusterControllerRuntime->shutdown();
+        }
 
-        libjoynrProxyRuntime.reset();
+        if (libjoynrProxyRuntime) {
+            libjoynrProxyRuntime->shutdown();
+            libjoynrProxyRuntime.reset();
+        }
+
         if (libjoynrProviderRuntime) {
             libjoynrProviderRuntime->shutdown();
             libjoynrProviderRuntime.reset();

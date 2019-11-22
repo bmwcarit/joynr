@@ -373,6 +373,7 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesCallback);
+    std::once_flag _onceFlag;
     std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> _onSuccess;
     std::function<void(const types::DiscoveryError::Enum&)> _onErrorCallback;
 };

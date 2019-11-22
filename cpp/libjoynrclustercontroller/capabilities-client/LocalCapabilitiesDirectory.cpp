@@ -660,17 +660,14 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
             }
         };
 
-        auto flag = std::make_shared<std::once_flag>();
-        auto onRuntimeError = [callback, participantId, flag](
-                const exceptions::JoynrRuntimeException& exception) {
+        auto onRuntimeError =
+                [callback, participantId](const exceptions::JoynrRuntimeException& exception) {
             JOYNR_LOG_DEBUG(logger(),
                             "Global lookup for participantId {} failed with exception: {} ({})",
                             participantId,
                             exception.getMessage(),
                             exception.TYPE_NAME());
-            std::call_once(*flag, [callback]() {
-                callback->onError(types::DiscoveryError::INTERNAL_ERROR);
-            });
+            callback->onError(types::DiscoveryError::INTERNAL_ERROR);
         };
 
         _globalCapabilitiesDirectoryClient->lookup(participantId,
@@ -1740,7 +1737,7 @@ LocalCapabilitiesCallback::LocalCapabilitiesCallback(
 
 void LocalCapabilitiesCallback::onError(const types::DiscoveryError::Enum& error)
 {
-    _onErrorCallback(error);
+    std::call_once(_onceFlag, _onErrorCallback, error);
     //"Unable to collect capabilities from global capabilities directory. Error: " +
     // error.getMessage()));
 }
@@ -1748,7 +1745,7 @@ void LocalCapabilitiesCallback::onError(const types::DiscoveryError::Enum& error
 void LocalCapabilitiesCallback::capabilitiesReceived(
         const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
 {
-    _onSuccess(capabilities);
+    std::call_once(_onceFlag, _onSuccess, capabilities);
 }
 
 } // namespace joynr

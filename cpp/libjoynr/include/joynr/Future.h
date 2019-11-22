@@ -20,13 +20,16 @@
 #define FUTURE_H
 
 #include <cstdint>
+#include <exception>
 #include <functional>
+#include <future>
 #include <memory>
+#include <mutex>
 #include <tuple>
 #include <utility>
 
 #include "joynr/Logger.h"
-#include "joynr/Semaphore.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/StatusCode.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -38,6 +41,13 @@ namespace joynr
 class FutureBase
 {
 public:
+    virtual ~FutureBase()
+    {
+        JOYNR_LOG_TRACE(logger(), "destructor has been invoked");
+        // Ensure onSuccess/onError can finish before deleting this object.
+        const std::lock_guard<std::mutex> lock{_statusMutex};
+    }
+
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
      * occurs/or times out.
@@ -49,11 +59,14 @@ public:
      */
     void wait(std::int64_t timeOut)
     {
-        if (_resultReceived.waitFor(std::chrono::milliseconds(timeOut))) {
-            _resultReceived.notify();
-        } else {
-            _status = StatusCodeEnum::WAIT_TIMED_OUT;
-            throw exceptions::JoynrTimeOutException("Request did not finish in time");
+        JOYNR_LOG_TRACE(logger(), "wait for future {}ms...", timeOut);
+        if (waitForFuture(timeOut) != std::future_status::ready) {
+            const std::lock_guard<std::mutex> lock{_statusMutex};
+            // Now we have the lock, recheck the status. Avoid owning the lock too long.
+            if (waitForFuture(0) != std::future_status::ready) {
+                _status = StatusCodeEnum::WAIT_TIMED_OUT;
+                throw exceptions::JoynrTimeOutException("Request did not finish in time");
+            }
         }
     }
 
@@ -63,9 +76,8 @@ public:
      */
     void wait()
     {
-        JOYNR_LOG_TRACE(logger(), "resultReceived.getStatus():{}", _resultReceived.getStatus());
-        _resultReceived.wait();
-        _resultReceived.notify();
+        JOYNR_LOG_TRACE(logger(), "wait for future...");
+        waitForFuture();
     }
 
     /**
@@ -74,6 +86,8 @@ public:
      */
     StatusCodeEnum getStatus() const
     {
+        JOYNR_LOG_TRACE(logger(), "getStatus has been invoked");
+        const std::lock_guard<std::mutex> lock{_statusMutex};
         return _status;
     }
 
@@ -83,7 +97,7 @@ public:
      */
     bool isOk() const
     {
-        return _status == StatusCodeEnum::SUCCESS;
+        return getStatus() == StatusCodeEnum::SUCCESS;
     }
 
     /**
@@ -93,28 +107,44 @@ public:
     void onError(std::shared_ptr<exceptions::JoynrException> error)
     {
         JOYNR_LOG_TRACE(logger(), "onError has been invoked");
-        this->_error = std::move(error);
-        _status = StatusCodeEnum::ERROR;
-        _resultReceived.notify();
-    }
-
-protected:
-    FutureBase() : _error(nullptr), _status(StatusCodeEnum::IN_PROGRESS), _resultReceived(0)
-    {
-    }
-
-    void checkOk() const
-    {
-        if (!isOk()) {
-            exceptions::JoynrExceptionUtil::throwJoynrException(*_error);
+        const std::lock_guard<std::mutex> lock{_statusMutex};
+        try {
+            exceptions::JoynrExceptionUtil::throwJoynrException(*error);
+            JOYNR_LOG_WARN(logger(), "onError: no exception was thrown");
+        } catch (const exceptions::JoynrException&) {
+            try {
+                storeException(std::current_exception());
+                _status = StatusCodeEnum::ERROR;
+            } catch (const std::future_error& e) {
+                JOYNR_LOG_ERROR(logger(),
+                                "While calling onError: future_error caught: {}"
+                                " [_status = {}]",
+                                e.what(),
+                                _status);
+            }
         }
     }
 
-    std::shared_ptr<exceptions::JoynrException> _error;
-    StatusCodeEnum _status;
-    Semaphore _resultReceived;
+protected:
+    FutureBase() : _status(StatusCodeEnum::IN_PROGRESS)
+    {
+    }
+
+    virtual void storeException(std::exception_ptr eptr) = 0;
+
+    virtual std::future_status waitForFuture(std::int64_t timeOut) = 0;
+
+    virtual void waitForFuture() = 0;
+
     ADD_LOGGER(FutureBase)
+    mutable std::mutex _statusMutex;
+    StatusCodeEnum _status;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(FutureBase);
 };
+
+// -------------------------------------------------------------------------------------------------
 
 template <class... Ts>
 /**
@@ -129,28 +159,11 @@ template <class... Ts>
  */
 class Future : public FutureBase
 {
-
 public:
     /**
      * @brief Constructor
      */
     Future() = default;
-
-    template <typename T>
-    void copyResultsImpl(T& dest, const T& value) const
-    {
-        dest = value;
-    }
-
-    template <std::size_t... Indices>
-    void copyResults(const std::tuple<Ts&...>& destination, std::index_sequence<Indices...>) const
-    {
-        auto l = {
-                0,
-                (void(copyResultsImpl(std::get<Indices>(destination), std::get<Indices>(_results))),
-                 0)...};
-        std::ignore = l;
-    }
 
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
@@ -162,10 +175,8 @@ public:
      */
     void get(Ts&... values)
     {
-        this->wait();
-        this->checkOk();
-
-        copyResults(std::tie(values...), std::index_sequence_for<Ts...>{});
+        JOYNR_LOG_TRACE(logger(), "get has been invoked");
+        std::tie(values...) = _resultFuture.get();
     }
 
     /**
@@ -179,10 +190,8 @@ public:
      */
     void get(std::int64_t timeOut, Ts&... values)
     {
-        this->wait(timeOut);
-        this->checkOk();
-
-        copyResults(std::tie(values...), std::index_sequence_for<Ts...>{});
+        wait(timeOut);
+        get(values...);
     }
 
     /**
@@ -191,16 +200,42 @@ public:
      */
     void onSuccess(Ts... results)
     {
-        JOYNR_LOG_TRACE(this->logger(), "onSuccess has been invoked");
-        this->_status = StatusCodeEnum::SUCCESS;
-        // transform variadic templates into a std::tuple
-        this->_results = std::make_tuple(std::move(results)...);
-        this->_resultReceived.notify();
+        JOYNR_LOG_TRACE(logger(), "onSuccess has been invoked");
+        const std::lock_guard<std::mutex> lock{_statusMutex};
+        try {
+            _resultPromise.set_value(std::make_tuple(std::move(results)...));
+            _status = StatusCodeEnum::SUCCESS;
+        } catch (const std::future_error& e) {
+            JOYNR_LOG_ERROR(logger(),
+                            "While calling onError: future_error caught: {} [_status = {}]",
+                            e.what(),
+                            _status);
+        }
     }
 
 private:
-    std::tuple<Ts...> _results;
+    void storeException(std::exception_ptr eptr) override
+    {
+        _resultPromise.set_exception(std::move(eptr));
+    }
+
+    std::future_status waitForFuture(std::int64_t timeOut) override
+    {
+        return _resultFuture.wait_for(std::chrono::milliseconds(timeOut));
+    }
+
+    void waitForFuture() override
+    {
+        _resultFuture.wait();
+    }
+
+    using ResultTuple = std::tuple<Ts...>;
+
+    std::promise<ResultTuple> _resultPromise;
+    std::shared_future<ResultTuple> _resultFuture{_resultPromise.get_future()};
 };
+
+// -------------------------------------------------------------------------------------------------
 
 template <>
 /**
@@ -208,7 +243,6 @@ template <>
  */
 class Future<void> : public FutureBase
 {
-
 public:
     Future() = default;
 
@@ -220,8 +254,8 @@ public:
      */
     void get()
     {
-        this->wait();
-        this->checkOk();
+        JOYNR_LOG_TRACE(logger(), "get has been invoked");
+        _resultFuture.get();
     }
 
     /**
@@ -234,8 +268,8 @@ public:
      */
     void get(std::int64_t timeOut)
     {
-        this->wait(timeOut);
-        this->checkOk();
+        wait(timeOut);
+        get();
     }
 
     /**
@@ -243,41 +277,39 @@ public:
      */
     void onSuccess()
     {
-        this->_status = StatusCodeEnum::SUCCESS;
-        this->_resultReceived.notify();
-    }
-};
-
-template <typename T>
-class Future<std::unique_ptr<T>> : public FutureBase
-{
-public:
-    void get(std::unique_ptr<T>& value)
-    {
-        this->wait();
-        this->checkOk();
-
-        value = std::move(_result);
-    }
-
-    void get(std::int64_t timeOut, std::unique_ptr<T>& value)
-    {
-        this->wait(timeOut);
-        this->checkOk();
-
-        value = std::move(_result);
-    }
-
-    void onSuccess(std::unique_ptr<T> value)
-    {
-        _result = std::move(value);
-        this->_status = StatusCodeEnum::SUCCESS;
-        this->_resultReceived.notify();
+        JOYNR_LOG_TRACE(logger(), "onSuccess has been invoked");
+        const std::lock_guard<std::mutex> lock{_statusMutex};
+        try {
+            _resultPromise.set_value();
+            _status = StatusCodeEnum::SUCCESS;
+        } catch (const std::future_error& e) {
+            JOYNR_LOG_ERROR(logger(),
+                            "While calling onError: future_error caught: {} [_status = {}]",
+                            e.what(),
+                            _status);
+        }
     }
 
 private:
-    std::unique_ptr<T> _result;
+    void storeException(std::exception_ptr eptr) override
+    {
+        _resultPromise.set_exception(std::move(eptr));
+    }
+
+    std::future_status waitForFuture(std::int64_t timeOut) override
+    {
+        return _resultFuture.wait_for(std::chrono::milliseconds(timeOut));
+    }
+
+    void waitForFuture() override
+    {
+        _resultFuture.wait();
+    }
+
+    std::promise<void> _resultPromise;
+    std::shared_future<void> _resultFuture{_resultPromise.get_future()};
 };
 
 } // namespace joynr
+
 #endif // FUTURE_H
