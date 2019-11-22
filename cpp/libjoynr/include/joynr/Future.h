@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@
 namespace joynr
 {
 
-template <typename Derived>
 class FutureBase
 {
 public:
@@ -128,16 +127,14 @@ template <class... Ts>
  * Applications get an instance of this class as return value asynchronous
  * proxy method calls and attribute getters/setters.
  */
-class Future : public FutureBase<Future<Ts...>>
+class Future : public FutureBase
 {
 
 public:
     /**
      * @brief Constructor
      */
-    Future<Ts...>() : FutureBase<Future<Ts...>>(), _results()
-    {
-    }
+    Future() = default;
 
     template <typename T>
     void copyResultsImpl(T& dest, const T& value) const
@@ -209,11 +206,11 @@ template <>
 /**
  * @brief Class specialization of the void Future class.
  */
-class Future<void> : public FutureBase<Future<void>>
+class Future<void> : public FutureBase
 {
 
 public:
-    Future<void>() = default;
+    Future() = default;
 
     /**
      * @brief This is a blocking call which waits until the request finishes/an error
@@ -252,7 +249,7 @@ public:
 };
 
 template <typename T>
-class Future<std::unique_ptr<T>> : public FutureBase<std::unique_ptr<T>>
+class Future<std::unique_ptr<T>> : public FutureBase
 {
 public:
     void get(std::unique_ptr<T>& value)
