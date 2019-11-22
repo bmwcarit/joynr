@@ -27,6 +27,7 @@
 #include <map>
 
 #include "joynr/IClusterControllerSignalHandler.h"
+#include "joynr/CapabilitiesStorage.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/IKeychain.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
@@ -226,6 +227,8 @@ private:
     Semaphore _lifetimeSemaphore;
 
     std::shared_ptr<joynr::AccessController> _accessController;
+    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
+    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
 
     std::string _routingProviderParticipantId;
     std::string _discoveryProviderParticipantId;

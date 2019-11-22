@@ -26,16 +26,32 @@
 
 #include <gmock/gmock.h>
 
+#include "joynr/CapabilitiesStorage.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/types/DiscoveryError.h"
 #include "joynr/types/DiscoveryQos.h"
 
+
 class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory {
 public:
-    MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings, std::shared_ptr<joynr::IMessageRouter> mockMessageRouter, boost::asio::io_service& ioService, std::int64_t defaultExpiryDateMs):
-        LocalCapabilitiesDirectory(ccSettings, nullptr, "localAddress", mockMessageRouter, ioService, "clusterControllerId", {"testGbid"}, defaultExpiryDateMs)
+    MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings,
+                                   std::shared_ptr<joynr::IMessageRouter> mockMessageRouter,
+                                   std::shared_ptr<joynr::capabilities::Storage> locallyRegisteredCapabilities,
+                                   std::shared_ptr<joynr::capabilities::CachingStorage> globalLookupCache,
+                                   boost::asio::io_service& ioService,
+                                   std::int64_t defaultExpiryDateMs)
+        : LocalCapabilitiesDirectory(ccSettings,
+                                   nullptr,
+                                   locallyRegisteredCapabilities,
+                                   globalLookupCache,
+                                   "localAddress",
+                                   mockMessageRouter,
+                                   ioService,
+                                   "clusterControllerId",
+                                   {"testGbid"},
+                                   defaultExpiryDateMs)
    {}
 
     MOCK_METHOD5(

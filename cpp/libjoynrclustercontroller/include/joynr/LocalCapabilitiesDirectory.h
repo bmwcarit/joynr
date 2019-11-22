@@ -75,6 +75,8 @@ public:
     LocalCapabilitiesDirectory(
             ClusterControllerSettings& messagingSettings,
             std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient,
+            std::shared_ptr<joynr::capabilities::Storage> locallyRegisteredCapabilities,
+            std::shared_ptr<joynr::capabilities::CachingStorage> globalLookupCache,
             const std::string& localAddress,
             std::weak_ptr<IMessageRouter> messageRouter,
             boost::asio::io_service& ioService,
@@ -295,12 +297,11 @@ private:
 
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<IGlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
+    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
+    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
     std::string _localAddress;
     mutable std::recursive_mutex _cacheLock;
     std::mutex _pendingLookupsLock;
-
-    capabilities::Storage _locallyRegisteredCapabilities;
-    capabilities::CachingStorage _globalLookupCache;
 
     std::weak_ptr<IMessageRouter> _messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> _observers;

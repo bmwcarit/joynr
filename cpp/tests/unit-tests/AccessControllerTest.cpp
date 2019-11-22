@@ -23,6 +23,7 @@
 
 #include <gtest/gtest.h>
 
+#include "joynr/CapabilitiesStorage.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MutableMessage.h"
@@ -123,10 +124,15 @@ public:
               _accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
               _messageRouter(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
+              _locallyRegisteredCapabilities(std::make_shared<capabilities::Storage>()),
+              _globalLookupCache(std::make_shared<capabilities::CachingStorage>()),
               _localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(
                       _clusterControllerSettings,
                       _messageRouter,
-                      _singleThreadedIOService->getIOService(), _defaultExpiryDateMs)),
+                      _locallyRegisteredCapabilities,
+                      _globalLookupCache,
+                      _singleThreadedIOService->getIOService(),
+                      _defaultExpiryDateMs)),
               _accessController(std::make_shared<AccessController>(_localCapabilitiesDirectoryMock, _localDomainAccessControllerMock)),
               _messagingQos(MessagingQos(5000))
     {
@@ -252,6 +258,8 @@ protected:
     std::shared_ptr<MockLocalDomainAccessController> _localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> _accessControllerCallback;
     std::shared_ptr<MockMessageRouter> _messageRouter;
+    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
+    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
     std::shared_ptr<MockLocalCapabilitiesDirectory> _localCapabilitiesDirectoryMock;
     std::shared_ptr<AccessController> _accessController;
     MutableMessageFactory _messageFactory;

@@ -140,6 +140,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _aclEditor(nullptr),
           _lifetimeSemaphore(0),
           _accessController(nullptr),
+          _locallyRegisteredCapabilities(std::make_shared<capabilities::Storage>()),
+          _globalLookupCache(std::make_shared<capabilities::CachingStorage>()),
           _routingProviderParticipantId(),
           _discoveryProviderParticipantId(),
           _providerReregistrationControllerParticipantId(
@@ -582,6 +584,8 @@ void JoynrClusterControllerRuntime::init()
     _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
             _clusterControllerSettings,
             globalCapabilitiesDirectoryClient,
+            _locallyRegisteredCapabilities,
+            _globalLookupCache,
             globalClusterControllerAddress,
             _ccMessageRouter,
             _singleThreadIOService->getIOService(),

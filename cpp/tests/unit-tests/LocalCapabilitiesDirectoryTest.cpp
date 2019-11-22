@@ -36,6 +36,7 @@
 
 #include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"
+#include "joynr/CapabilitiesStorage.h"
 #include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ClusterControllerSettings.h"
@@ -126,6 +127,8 @@ public:
               _clusterControllerSettings(_settings),
               _purgeExpiredDiscoveryEntriesIntervalMs(100),
               _globalCapabilitiesDirectoryClient(std::make_shared<MockGlobalCapabilitiesDirectoryClient>()),
+              _locallyRegisteredCapabilities(std::make_shared<capabilities::Storage>()),
+              _globalLookupCache(std::make_shared<capabilities::CachingStorage>()),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _mockMessageRouter(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
@@ -158,6 +161,8 @@ public:
         _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
                 _clusterControllerSettings,
                 _globalCapabilitiesDirectoryClient,
+                _locallyRegisteredCapabilities,
+                _globalLookupCache,
                 _LOCAL_ADDRESS,
                 _mockMessageRouter,
                 _singleThreadedIOService->getIOService(),
@@ -661,6 +666,8 @@ protected:
     ClusterControllerSettings _clusterControllerSettings;
     const int _purgeExpiredDiscoveryEntriesIntervalMs;
     std::shared_ptr<MockGlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
+    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
+    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> _mockMessageRouter;
     std::string _clusterControllerId;
@@ -3473,6 +3480,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     auto localCapabilitiesDirectory2 =
             std::make_shared<LocalCapabilitiesDirectory>(_clusterControllerSettings,
                                                          _globalCapabilitiesDirectoryClient,
+                                                         _locallyRegisteredCapabilities,
+                                                         _globalLookupCache,
                                                          _LOCAL_ADDRESS,
                                                          _mockMessageRouter,
                                                          _singleThreadedIOService->getIOService(),
