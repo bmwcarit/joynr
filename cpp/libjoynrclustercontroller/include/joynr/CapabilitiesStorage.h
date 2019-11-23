@@ -73,8 +73,8 @@ struct LocalDiscoveryEntry : public DiscoveryEntry
     {
     }
     LocalDiscoveryEntry(const DiscoveryEntry& entry,
-                        const std::vector<std::string>& gbidsLocal = {})
-            : DiscoveryEntry(entry), gbids(gbidsLocal)
+                        const std::vector<std::string>& gbidsParam = {})
+            : DiscoveryEntry(entry), gbids(gbidsParam)
     {
     }
     std::vector<std::string> gbids;
