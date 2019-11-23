@@ -180,7 +180,7 @@ public:
         return _container.cend();
     }
 
-    auto size() const
+    std::size_t size() const
     {
         return _container.size();
     }
