@@ -37,7 +37,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.capabilities.CapabilitiesProvisioning;
-import io.joynr.capabilities.CapabilityCallback;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.provider.Promise;
 import joynr.ImmutableMessage;
@@ -58,7 +57,6 @@ import joynr.types.Version;
 public class AccessControllerTest {
 
     private static final int ONE_MINUTE_IN_MS = 60 * 1000;
-    private static final String[] gbids = new String[]{ "testGbid1", "testGbid2" };
 
     @Mock
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
@@ -92,8 +90,7 @@ public class AccessControllerTest {
                                                         }
                                                     },
                                                     discoveryProviderParticipantId,
-                                                    routingProviderParticipantId,
-                                                    gbids);
+                                                    routingProviderParticipantId);
 
         when(messageMock.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
         when(messageMock.getRecipient()).thenReturn(toParticipantId);
@@ -119,7 +116,7 @@ public class AccessControllerTest {
                 deferred.resolve(discoveryEntry);
                 return new Promise<>(deferred);
             }
-        }).when(localCapabilitiesDirectory).lookup(eq(toParticipantId), any(DiscoveryQos.class), eq(gbids));
+        }).when(localCapabilitiesDirectory).lookup(eq(toParticipantId), any(DiscoveryQos.class), eq(new String[]{}));
 
     }
 
