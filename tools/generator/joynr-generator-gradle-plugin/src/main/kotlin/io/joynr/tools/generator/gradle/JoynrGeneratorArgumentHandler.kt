@@ -100,7 +100,7 @@ class JoynrGeneratorArgumentHandler(
             if (addVersionTo.isPresent) {
                 it.setAddVersionTo(addVersionTo.get())
             }
-            extraParametersStringMap.forEach { key, value ->
+            extraParametersStringMap.forEach { (key, value) ->
                 run {
                     it.parameter[key] = value
                 }

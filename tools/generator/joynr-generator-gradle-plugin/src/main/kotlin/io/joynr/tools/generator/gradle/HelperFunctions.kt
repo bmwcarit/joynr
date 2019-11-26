@@ -25,7 +25,7 @@ package io.joynr.tools.generator.gradle
  */
 fun extractStringEntriesFromMap(uncastedMap: Map<*, *>): Map<String, String> {
     val stringMap = HashMap<String, String>()
-    uncastedMap.forEach { key, value ->
+    uncastedMap.forEach { (key, value) ->
         if (key is String && value is String)
             stringMap[key] = value
     }

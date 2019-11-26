@@ -18,7 +18,10 @@
  */
 package io.joynr.tools.generator.gradle
 
+import com.android.build.gradle.BaseExtension
+import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import java.io.File
@@ -34,6 +37,7 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         private const val ANDROID_DEFAULT_OUTPUT_PATH_APP = "app/build"
         private const val ANDROID_DEFAULT_OUTPUT_PATH_DIRECT = "build"
         private const val ANDROID_DEFAULT_OUTPUT_PATH_GEN = "generated/source/fidl/"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN = "/META-INF/DEPENDENCIES"
     }
 
     override fun apply(project: Project) {
@@ -45,16 +49,16 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
 
         if (extension.outputPath.orNull == null) {
             val outputDir =
-                File("${project.projectDir.absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_DIRECT")
+                File("${project.projectDir.absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_APP")
             if (!outputDir.exists() || !outputDir.isDirectory) {
                 extension.outputPath.set(
                     "${project.projectDir
-                        .absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_APP/$ANDROID_DEFAULT_OUTPUT_PATH_GEN"
+                        .absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_DIRECT/$ANDROID_DEFAULT_OUTPUT_PATH_GEN"
                 )
             } else {
                 extension.outputPath.set(
                     "${project.projectDir
-                        .absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_DIRECT/$ANDROID_DEFAULT_OUTPUT_PATH_GEN"
+                        .absolutePath}/$ANDROID_DEFAULT_OUTPUT_PATH_APP/$ANDROID_DEFAULT_OUTPUT_PATH_GEN"
                 )
             }
         }
@@ -110,16 +114,32 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
             File(extension.outputPath.get())
         }
 
-        project.extensions.findByName("android")?.let {
-            val android: BaseAppModuleExtension? = it as? BaseAppModuleExtension
-            val baseAppModuleExtension = project.properties["android"] as BaseAppModuleExtension
-            baseAppModuleExtension.sourceSets.getByName("main").java.srcDirs(outputDir)
+        project.extensions.findByName("android")?.run {
+            val androidComponentExtension = project.properties["android"]
 
-            android?.applicationVariants?.all { variant ->
-                variant.registerJavaGeneratingTask(task, outputDir)
+            if (androidComponentExtension is BaseExtension) {
+                androidComponentExtension.sourceSets.getByName("main").java.srcDirs(outputDir)
+
+                // merge /META-INF/DEPENDENCIES to avoid conflicts during assemble
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN
+                )
+
+                androidComponentExtension.compileOptions.sourceCompatibility =
+                    JavaVersion.VERSION_1_8
+                androidComponentExtension.compileOptions.targetCompatibility =
+                    JavaVersion.VERSION_1_8
             }
 
-            project.logger.quiet("---> joynr generator output path: ${outputDir.absolutePath}")
+            if (androidComponentExtension is BaseAppModuleExtension) {
+                androidComponentExtension.applicationVariants.all { variant ->
+                    variant.registerJavaGeneratingTask(task, outputDir)
+                }
+            } else if (androidComponentExtension is LibraryExtension) {
+                androidComponentExtension.libraryVariants.all { variant ->
+                    variant.registerJavaGeneratingTask(task, outputDir)
+                }
+            }
         }
 
     }

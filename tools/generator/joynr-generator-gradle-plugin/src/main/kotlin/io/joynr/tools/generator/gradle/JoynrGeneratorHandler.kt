@@ -28,7 +28,8 @@ open class JoynrGeneratorHandler(
 ) {
 
     /**
-     * Invoke the Joynr Generator with the arguments configured in the corresponding build.gradle file.
+     * Invoke the joynr Generator with the arguments configured in the corresponding build.gradle
+     * file.
      */
     fun execute() {
         val generatorArguments = joynrGeneratorArgumentHandler.getGeneratorInvocationArguments()
@@ -36,6 +37,10 @@ open class JoynrGeneratorHandler(
             return
         logger.quiet("---> Executing joynr generator plugin...")
         logger.quiet("---> joynr generator FIDL model path: ${generatorArguments.modelPath}")
+        logger.quiet(
+            "---> joynr generator FIDL generated output path: ${generatorArguments
+                .outputPath}"
+        )
         val executor = Executor(generatorArguments)
         executor.generate()
         logger.info("joynr generator gradle plugin executed successfully!")

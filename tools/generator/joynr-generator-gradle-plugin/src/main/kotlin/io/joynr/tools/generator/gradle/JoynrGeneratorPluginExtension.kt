@@ -18,9 +18,7 @@
  */
 package io.joynr.tools.generator.gradle
 
-
 import org.gradle.api.Project
-
 
 /**
  * All variables defined in this class can be configured
@@ -68,5 +66,5 @@ open class JoynrGeneratorPluginExtension(project: Project) {
      * Sets extra parameters that may be required by custom generators (optional).
      * In the gradle build file, this has to be set using a Map<String, String> structure.
      */
-    val extraParameters = project.objects.property(Map::class.java)
+    val extraParameters = project.objects.property(Map::class.java)!!
 }
