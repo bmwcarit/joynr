@@ -9,6 +9,9 @@ buildscript {
         google()
         jcenter()
         mavenLocal()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
         
     }
     dependencies {
@@ -19,6 +22,8 @@ buildscript {
         
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+
+        classpath 'com.github.jk1:gradle-license-report:1.11'
     }
 }
 

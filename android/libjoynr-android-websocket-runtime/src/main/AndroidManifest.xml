@@ -20,6 +20,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="io.joynr.android.libjoynrandroidwebsocketruntime">
 
+	<uses-sdk android:minSdkVersion="19" />
+
 	<application>
 		<receiver
 			android:name=".receivers.PropertyChangeReceiver"

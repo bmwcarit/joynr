@@ -29,10 +29,16 @@ buildscript {
         google()
         jcenter()
         mavenLocal()
+
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.0'
+
+        classpath 'com.github.jk1:gradle-license-report:1.11'
     }
 }
 
@@ -163,3 +169,74 @@ dependencies {
     implementation 'com.android.support:support-annotations:28.0.0'
 }
 
+apply plugin: 'com.github.jk1.dependency-license-report'
+import com.github.jk1.license.render.*
+import com.github.jk1.license.LicenseReportExtension
+import com.github.jk1.license.ManifestData
+import com.github.jk1.license.ModuleData
+import com.github.jk1.license.PomData
+import com.github.jk1.license.ProjectData
+class JoynrReportRenderer implements ReportRenderer{
+    private Project project
+    private LicenseReportExtension config
+    private File output
+    private String fileName
+    JoynrReportRenderer(String filename = 'NOTICES-ANDROID') {
+        this.fileName = filename
+    }
+    @Input
+    private String getFileNameCache() { return this.fileName }
+    void render(ProjectData data) {
+        project = data.project
+        config = project.licenseReport
+        output = new File(config.outputDir, fileName)
+        output.text = "This project has dependencies to:\n"
+        printDependencies(data)
+    }
+    private void printDependencies(ProjectData data) {
+        data.allDependencies.unique().sort().each {
+            printDependency(it)
+        }
+    }
+    private String printDependency(ModuleData data) {
+        if (data.poms.isEmpty() && data.manifests.isEmpty()) {
+            output << "No license information found\n"
+            return
+        }
+        if (!data.manifests.isEmpty()) {
+            ManifestData manifest = data.manifests.first()
+            if (manifest.name && !manifest.name.isEmpty() && !(manifest.name.equalsIgnoreCase("%bundle.name"))) {
+                output << " $manifest.name"
+            }else {
+                output << " $data.group $data.name"
+            }
+        }else{
+            output << " $data.group $data.name"
+        }
+
+        if (!data.poms.isEmpty()) {
+            PomData pomData = data.poms.first()
+            if (pomData.licenses) {
+                output << " under " + pomData.licenses.first().name
+            }
+        }
+        // special edge cases
+        if (data.manifests && data.manifests.first().name &&
+                data.manifests.first().name.equalsIgnoreCase("asm")){
+            output << " under BSD"
+        }
+        output << "\n"
+    }
+}
+
+licenseReport {
+    configurations = ['debugRuntimeClasspath']
+    renderers = [new JoynrReportRenderer("NOTICE-ANDROID")]
+}
+task copyNoticeToRoot(type: Copy) {
+    from file("$buildDir/reports/dependency-license/NOTICE-ANDROID")
+    into file("./")
+}
+task generateNotices(type: GradleBuild) {
+    tasks = ['clean', 'generateLicenseReport', 'copyNoticeToRoot']
+}

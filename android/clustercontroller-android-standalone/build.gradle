@@ -3,11 +3,17 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.0'
+
+        classpath 'com.github.jk1:gradle-license-report:1.11'
     }
 
     repositories {
         google()
         jcenter()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+
     }
 
 }

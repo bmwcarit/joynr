@@ -3,10 +3,16 @@ buildscript {
         google()
         jcenter()
         mavenLocal()
+
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.0'
         classpath 'io.joynr.tools.generator:joynr-generator-gradle-plugin:1.11.0-SNAPSHOT'
+
+        classpath 'com.github.jk1:gradle-license-report:1.11'
     }
 }
 
