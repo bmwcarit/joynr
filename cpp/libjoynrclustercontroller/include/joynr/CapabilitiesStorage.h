@@ -119,18 +119,21 @@ template <typename C>
 class BaseStorage
 {
 public:
-    std::vector<DiscoveryEntry> lookupByDomainAndInterface(const std::string& domain,
-                                                           const std::string& interface) const
+    virtual ~BaseStorage() = default;
+    virtual std::vector<DiscoveryEntry> lookupByDomainAndInterface(
+            const std::string& domain,
+            const std::string& interface) const
     {
         return lookupByDomainAndInterfaceFiltered(domain, interface, NoFilter());
     }
 
-    boost::optional<DiscoveryEntry> lookupByParticipantId(const std::string& participantId) const
+    virtual boost::optional<DiscoveryEntry> lookupByParticipantId(
+            const std::string& participantId) const
     {
         return lookupByParticipantIdFiltered(participantId, NoFilter());
     }
 
-    void removeByParticipantId(const std::string& participantId)
+    virtual void removeByParticipantId(const std::string& participantId)
     {
         auto& index = _container.template get<tags::ParticipantId>();
         auto it = index.find(participantId);
@@ -139,7 +142,7 @@ public:
         }
     }
 
-    void clear()
+    virtual void clear()
     {
         _container.clear();
     }
@@ -180,7 +183,7 @@ public:
         return _container.cend();
     }
 
-    std::size_t size() const
+    virtual std::size_t size() const
     {
         return _container.size();
     }
@@ -189,7 +192,7 @@ public:
      * @brief removes expired entries based on expiryDate
      * @return expired/removed entries
      */
-    std::vector<DiscoveryEntry> removeExpired()
+    virtual std::vector<DiscoveryEntry> removeExpired()
     {
         auto& index = _container.template get<tags::ExpiryDate>();
         auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -246,7 +249,8 @@ protected:
 class Storage : public BaseStorage<Container>
 {
 public:
-    void insert(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {})
+    virtual ~Storage() = default;
+    virtual void insert(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {})
     {
         auto& index = _container.get<tags::ParticipantId>();
         LocalDiscoveryEntry entryWithGbids(entry, gbids);
@@ -283,7 +287,8 @@ public:
     {
     }
 
-    void insert(const DiscoveryEntry& entry)
+    virtual ~CachingStorage() = default;
+    virtual void insert(const DiscoveryEntry& entry)
     {
         auto& index = _container.get<tags::ParticipantId>();
 
@@ -309,14 +314,14 @@ public:
         }
     }
 
-    boost::optional<DiscoveryEntry> lookupCacheByParticipantId(
+    virtual boost::optional<DiscoveryEntry> lookupCacheByParticipantId(
             const std::string& participantId,
             std::chrono::milliseconds maxAge) const
     {
         return lookupByParticipantIdFiltered(participantId, filterByAge(maxAge));
     }
 
-    std::vector<DiscoveryEntry> lookupCacheByDomainAndInterface(
+    virtual std::vector<DiscoveryEntry> lookupCacheByDomainAndInterface(
             const std::string& domain,
             const std::string& interface,
             std::chrono::milliseconds maxAge) const
@@ -331,6 +336,12 @@ private:
 } // namespace capabilities
 
 } // namespace joynr
+
+MUESLI_REGISTER_TYPE(joynr::capabilities::BaseStorage<joynr::capabilities::Container>,
+                     "joynr.capabilities.BaseStorage")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::capabilities::Storage,
+                                 joynr::capabilities::BaseStorage<joynr::capabilities::Container>,
+                                 "joynr::capabilities::Storage")
 
 namespace muesli
 {
