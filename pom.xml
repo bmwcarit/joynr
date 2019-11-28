@@ -169,6 +169,10 @@
 						</executions>
 						<configuration>
 							<keyname>joynr@bmw-carit.de</keyname>
+							<gpgArguments>
+								<arg>--pinentry-mode</arg>
+								<arg>loopback</arg>
+							</gpgArguments>
 						</configuration>
 					</plugin>
 					<plugin>
