@@ -25,6 +25,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Messenger;
@@ -33,6 +35,7 @@ import android.util.Log;
 import com.google.inject.Module;
 
 import io.joynr.proxy.Future;
+import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.runtime.JoynrRuntime;
@@ -152,6 +155,11 @@ public class JoynrAndroidRuntime implements JoynrRuntime {
     public void prepareForShutdown() {
         JoynrRuntime runtime = getJoynrRuntime();
         runtime.prepareForShutdown();
+    }
+
+    @Override
+    public GuidedProxyBuilder getGuidedProxyBuilder(Set<String> domains, Class<?> interfaceClass) {
+        throw new NotImplementedException();
     }
 
 }

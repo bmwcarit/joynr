@@ -63,7 +63,6 @@ import joynr.jeeintegration.servicelocator.MyServiceProxy;
 import joynr.jeeintegration.servicelocator.MyServiceStatelessAsync;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
 
-import test.io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 import test.io.joynr.jeeintegration.servicelocator.MyServiceCallbackHandler;
 
 /**

@@ -23,6 +23,7 @@ import java.util.Set;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.GuidedProxyBuilder;
 import joynr.types.ProviderQos;
 
 /**
@@ -165,6 +166,14 @@ public interface JoynrRuntime {
      *         build the proxy instance.
      */
     <T> ProxyBuilder<T> getProxyBuilder(final Set<String> domains, final Class<T> interfaceClass);
+
+    /**
+     *
+     * @param domains
+     * @param interfaceClass
+     * @return
+     */
+    GuidedProxyBuilder getGuidedProxyBuilder(final Set<String> domains, final Class<?> interfaceClass);
 
     /**
      * Shutdown the joynr instance:

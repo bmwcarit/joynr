@@ -22,6 +22,7 @@ import java.util.Set;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.GuidedProxyBuilder;
 
 /**
  * The container runtime will provide an instance of this which can be injected and then used in order to obtain client
@@ -225,4 +226,6 @@ public interface ServiceLocator {
      * @return the {@link ServiceProxyBuilder} which can be used to setup the configuration with which to build the service proxy.
      */
     <I> ServiceProxyBuilder<I> builder(Class<I> serviceInterface, String... domains);
+
+    GuidedProxyBuilder getGuidedProxyBuilder(Class<?> interfaceClass, Set<String> domains);
 }

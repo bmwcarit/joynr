@@ -23,9 +23,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import android.os.AsyncTask;
 import android.util.Log;
-
+import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -143,5 +145,10 @@ public class AndroidProxyBuilder<T> extends AsyncTask<Object, String, T> impleme
         this.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         return null;
 
+    }
+
+    @Override
+    public T build(ArbitrationResult arbitrationResult) {
+        throw new NotImplementedException();
     }
 }

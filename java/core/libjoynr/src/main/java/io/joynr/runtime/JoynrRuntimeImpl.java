@@ -45,11 +45,13 @@ import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.AddressOperation;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.JoynrInterface;
+import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
+import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.util.AnnotationUtil;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
@@ -78,12 +80,14 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     ShutdownNotifier shutdownNotifier;
 
+    private DiscoverySettingsStorage discoverySettingsStorage;
+
     private final ProxyBuilderFactory proxyBuilderFactory;
 
     private Queue<Future<Void>> unregisterProviderQueue = new ConcurrentLinkedQueue<Future<Void>>();
 
-    // CHECKSTYLE:OFF
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
                             ProxyBuilderFactory proxyBuilderFactory,
                             Dispatcher dispatcher,
@@ -91,6 +95,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             RoutingTable routingTable,
                             StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
+                            DiscoverySettingsStorage discoverySettingsStorage,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
@@ -98,6 +103,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
+        this.discoverySettingsStorage = discoverySettingsStorage;
 
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
@@ -220,6 +226,13 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
         registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
         return capabilitiesRegistrar.registerProvider(domain, provider, providerQos, awaitGlobalRegistration);
+    }
+
+    public GuidedProxyBuilder getGuidedProxyBuilder(final Set<String> domains, final Class<?> interfaceClass) {
+        GuidedProxyBuilder guidedProxyBuilder = new GuidedProxyBuilder(discoverySettingsStorage,
+                                                                       domains,
+                                                                       interfaceClass);
+        return guidedProxyBuilder;
     }
 
     @Override

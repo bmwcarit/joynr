@@ -33,6 +33,7 @@ import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
+import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
@@ -52,6 +53,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            LocalDiscoveryAggregator localDiscoveryAggregator,
                            RoutingTable routingTable,
                            StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
+                           DiscoverySettingsStorage discoverySettingsStorage,
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
@@ -66,6 +68,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
               localDiscoveryAggregator,
               routingTable,
               statelessAsyncCallbackDirectory,
+              discoverySettingsStorage,
               systemServicesDomain,
               dispatcherAddress,
               discoveryProviderAddress);

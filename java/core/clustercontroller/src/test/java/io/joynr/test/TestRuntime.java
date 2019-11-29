@@ -23,6 +23,7 @@ import java.util.Set;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.types.ProviderQos;
 
@@ -74,6 +75,11 @@ public class TestRuntime implements JoynrRuntime {
 
     @Override
     public <T> ProxyBuilder<T> getProxyBuilder(Set<String> domains, Class<T> interfaceClass) {
+        return null;
+    }
+
+    @Override
+    public GuidedProxyBuilder getGuidedProxyBuilder(Set<String> domains, Class<?> interfaceClass) {
         return null;
     }
 
