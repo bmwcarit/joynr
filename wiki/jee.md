@@ -444,6 +444,57 @@ __IMPORTANT__: if you intend to have your logic make multiple calls to the same
 provider, then you should locally cache the proxy instance returned by the
 ServiceLocator, as the operation of creating a proxy is expensive.
 
+#### The guided proxy builder
+For enhanced control over the proxy creation process, the GuidedProxyBuilder can be used.
+It separates the provider lookup / discovery (`guidedProxyBuilder.discover()` or
+`guidedProxyBuilder.discoverAsync()`) from the actual proxy creation
+`guidedProxyBuilder.buildProxy()`. This adds more flexibility to the provider
+selection than the [arbitration strategies from DiscoveryQos](#the-discovery-quality-of-service).
+In particular, a proxy can be easily built for an unknown provider version.
+See also [Generator documentation](generator.md) for versioning of the generated
+interface code.  
+The `buildProxy` and the corresponding `discover` methods must be called on the
+same instance of GuidedProxyBuilder.
+
+Note: The GuidedProxyBuilder can be be configured with DiscoveryQos except for the
+arbitration strategy settings. Arbitation strategy from DiscoveryQos will be ignored as
+the provider selection is a manual step in GuidedProxyBuilder between `discover()` and
+`buildProxy()`.
+
+Example for the usage of a GuidedProxyBuilder:
+
+```java
+...
+        Set<String> domains = new HashSet<>();
+        domains.add(providerDomainOne);
+        GuidedProxyBuilder guidedProxyBuilder = serviceLocator.getGuidedProxyBuilder(domains, <Interface>Proxy.class);
+        DiscoveryResult discoveryResult;
+        try {
+            discoveryResult = guidedProxyBuilder
+                .setMessagingQos(...) //optional
+                .setDiscoveryQos(...) //optional
+                // same optional setters as in ProxyBuilder
+                .discover();
+                // GuidedProxyBuilder also offers a discoverAsync() method which returns a CompletableFuture
+        } catch (DiscoveryException e) {
+            //handle errors
+        }
+        DiscoveryEntry lastSeenEntry = discoveryResult.getLastSeen();
+        /* Other possibilities to retrieve DiscoveryEntries from DiscoveryResult:
+            DiscoveryEntry highestPriorityEntry = discoveryResult.getHighestPriority();
+            DiscoveryEntry latestVersionEntry = discoveryResult.getLastestVersion();
+            DiscoveryEntry entry = discoveryResult.getParticipantId(participantId);
+            Collection<DiscoveryEntry> allDiscoveryEntries = discoveryResult.getAllDiscoveryEntries();
+            Collection<DiscoveryEntry> discoveryEntriesWithKey = discoveryResult.getWithKeyword(keyword);
+        */
+        if (lastSeenEntry.getVersion().getMajorVersion() == 4) {
+                joynr.<Package>.v4.<Interface>Proxy proxy = guidedProxyBuilder.buildProxy(joynr.<Package>.v4.<Interface>Proxy.class, lastSeenEntry.getParticipantId());
+        } else {
+                ...
+        }
+...
+```
+
 #### Stateless Async
 
 If you want to call a service in a stateless fashion, i.e. any node in a cluster

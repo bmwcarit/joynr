@@ -5,7 +5,13 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.8.7
 
 ## API relevant changes
-None.
+* **[Java/JEE]** Introduced the `GuidedProxyBuilder`, which allows extended control
+  over how proxies are built after executing a lookup. In particular, the provider
+  version can be determined before actually building the proxy. The `GuidedProxyBuilder`
+  can be retrieved via the `getGuidedProxyBuilder` method through the `JoynrRuntime` (Java) or
+  the `ServiceLocator`(JEE).
+  See the [Java documentation](java.md#the-guided-proxy-builder) and [JEE documentation](jee.md)
+  for details.
 
 ## Other changes
 * **[Generator]** `addVersionTo` / DEPRECATED. The addVersionTo option will be removed
