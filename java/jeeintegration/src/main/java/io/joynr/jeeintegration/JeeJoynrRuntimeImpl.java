@@ -29,6 +29,7 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
@@ -50,6 +51,7 @@ class JeeJoynrRuntimeImpl extends ClusterControllerRuntime implements JeeJoynrRu
                                LocalDiscoveryAggregator localDiscoveryAggregator,
                                RoutingTable routingTable,
                                StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
+                               DiscoverySettingsStorage discoverySettingsStorage,
                                @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                                @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
@@ -64,6 +66,7 @@ class JeeJoynrRuntimeImpl extends ClusterControllerRuntime implements JeeJoynrRu
               localDiscoveryAggregator,
               routingTable,
               statelessAsyncCallbackDirectory,
+              discoverySettingsStorage,
               systemServicesDomain,
               dispatcherAddress,
               discoveryProviderAddress,

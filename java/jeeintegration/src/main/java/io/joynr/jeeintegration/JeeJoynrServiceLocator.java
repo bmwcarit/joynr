@@ -31,6 +31,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.proxy.ProxyBuilder;
 
 /**
@@ -297,6 +298,11 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
                 });
             return future;
         }
+    }
+
+    @Override
+    public GuidedProxyBuilder getGuidedProxyBuilder(Class<?> interfaceClass, Set<String> domains) {
+        return joynrIntegrationBean.getRuntime().getGuidedProxyBuilder(domains, interfaceClass);
     }
 
 }

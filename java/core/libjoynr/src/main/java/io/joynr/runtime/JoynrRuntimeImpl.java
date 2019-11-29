@@ -46,11 +46,13 @@ import io.joynr.messaging.routing.AddressOperation;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
+import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.util.AnnotationUtil;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
@@ -79,6 +81,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     ShutdownNotifier shutdownNotifier;
 
+    private DiscoverySettingsStorage discoverySettingsStorage;
+
     private final ProxyBuilderFactory proxyBuilderFactory;
 
     private Queue<Future<Void>> unregisterProviderQueue = new ConcurrentLinkedQueue<Future<Void>>();
@@ -92,6 +96,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             RoutingTable routingTable,
                             StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
+                            DiscoverySettingsStorage discoverySettingsStorage,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
@@ -99,6 +104,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
+        this.discoverySettingsStorage = discoverySettingsStorage;
 
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
@@ -259,6 +265,13 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         Class<?> interfaceClass = joynrInterfaceAnnotatation.provides();
         registerInterfaceClassTypes(interfaceClass, "Cannot registerProvider");
         return new ProviderRegistrar(capabilitiesRegistrar, domain, provider);
+    }
+
+    public GuidedProxyBuilder getGuidedProxyBuilder(final Set<String> domains, final Class<?> interfaceClass) {
+        GuidedProxyBuilder guidedProxyBuilder = new GuidedProxyBuilder(discoverySettingsStorage,
+                                                                       domains,
+                                                                       interfaceClass);
+        return guidedProxyBuilder;
     }
 
     @Override

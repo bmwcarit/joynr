@@ -267,7 +267,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testBuildWithFuture() throws Exception {
-        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback> any())).thenReturn(myJoynrProxy);
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
         CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local").useFuture().build();
@@ -290,7 +290,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testBuildWithFutureAndFails() throws Exception {
-        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback> any())).thenReturn(myJoynrProxy);
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
         CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local").useFuture().build();
@@ -318,7 +318,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testBuildWithCallback() throws Exception {
-        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback> any())).thenReturn(myJoynrProxy);
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
         ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
@@ -345,7 +345,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testBuildWithCallbackFails() throws Exception {
-        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback> any())).thenReturn(myJoynrProxy);
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
         ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
@@ -372,7 +372,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testBuildWithFutureAndCallback() throws Exception {
-        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback> any())).thenReturn(myJoynrProxy);
 
         CountDownLatch countDownLatch = new CountDownLatch(2);
         ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
@@ -408,7 +408,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testBuildWithFutureAndCallbackFails() throws Exception {
-        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback> any())).thenReturn(myJoynrProxy);
 
         CountDownLatch countDownLatch = new CountDownLatch(2);
         ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
@@ -444,7 +444,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testBuildWithGbids() {
-        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback> any())).thenReturn(myJoynrProxy);
 
         String[] gbids = new String[]{ "gbid1", "gbid2" };
         subject.builder(MyServiceSync.class, "local").withGbids(gbids).build();
@@ -453,7 +453,7 @@ public class JeeJoynrServiceLocatorTest {
 
     @Test
     public void testBuildWithFutureAndWithGbids() {
-        when(proxyBuilderSync.build(any())).thenReturn(myJoynrProxy);
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback> any())).thenReturn(myJoynrProxy);
 
         String[] gbids = new String[]{ "gbid1", "gbid2" };
         CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local")

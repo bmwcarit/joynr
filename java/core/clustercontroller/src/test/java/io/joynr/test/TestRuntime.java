@@ -24,6 +24,7 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.StatelessAsyncCallback;
+import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ProviderRegistrar;
 import joynr.types.ProviderQos;
@@ -84,6 +85,11 @@ public class TestRuntime implements JoynrRuntime {
 
     @Override
     public ProviderRegistrar getProviderRegistrar(String domain, JoynrProvider provider) {
+        return null;
+    }
+
+    @Override
+    public GuidedProxyBuilder getGuidedProxyBuilder(Set<String> domains, Class<?> interfaceClass) {
         return null;
     }
 
