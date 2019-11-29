@@ -245,6 +245,31 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         }
     }
 
+    @Override
+    public T build(ArbitrationResult result) {
+        StatelessAsyncCallback statelessAsyncCallback = null;
+        if (statelessAsyncCallbackUseCase != null) {
+            statelessAsyncCallback = statelessAsyncCallbackDirectory.get(statelessAsyncCallbackUseCase);
+            if (statelessAsyncCallback == null) {
+                throw new JoynrIllegalStateException("No stateless async callback found registered for use case "
+                        + statelessAsyncCallbackUseCase);
+            }
+        }
+
+        final ProxyInvocationHandler proxyInvocationHandler = proxyInvocationHandlerFactory.create(domains,
+                                                                                                   interfaceName,
+                                                                                                   proxyParticipantId,
+                                                                                                   discoveryQos,
+                                                                                                   messagingQos,
+                                                                                                   shutdownNotifier,
+                                                                                                   statelessAsyncCallback);
+        proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
+        proxyInvocationHandler.registerProxy(proxy);
+        proxyInvocationHandler.createConnector(result);
+        logger.trace("proxy created: interface: {} domains: {}", interfaceName, domains);
+        return proxy;
+    }
+
     // Method called by both synchronous and asynchronous build() to create a ProxyInvocationHandler
     private ProxyInvocationHandler createProxyInvocationHandler(final ProxyCreatedCallback<T> callback) {
         if (buildCalled) {

@@ -138,6 +138,22 @@ public class Arbitrator {
                                         gbids);
     }
 
+    public void lookup() {
+        logger.debug("DISCOVERY lookup for domains: {}, interface: {}, gbids: {}",
+                     domains,
+                     interfaceName,
+                     Arrays.toString(gbids));
+        localDiscoveryAggregator.lookup(new DiscoveryCallback(false),
+                                        domains.toArray(new String[domains.size()]),
+                                        interfaceName,
+                                        new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
+                                                                     arbitrationDeadline - System.currentTimeMillis(),
+                                                                     joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
+                                                                                                                    .name()),
+                                                                     discoveryQos.getProviderMustSupportOnChange()),
+                                        gbids);
+    }
+
     /**
      * Called by the proxy builder to register the listener for arbitration results (DiscoveryAgent Instance).
      * If the arbitration is already running or even finished the current state and in case of a successful arbitration
@@ -320,6 +336,15 @@ public class Arbitrator {
 
     private class DiscoveryCallback extends CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> {
 
+        private boolean filterByVersionAndArbitrationStrategy = true;
+
+        public DiscoveryCallback() {
+        };
+
+        public DiscoveryCallback(boolean filterByVersionAndArbitrationStrategy) {
+            this.filterByVersionAndArbitrationStrategy = filterByVersionAndArbitrationStrategy;
+        }
+
         @Override
         public void onFailure(JoynrRuntimeException error) {
             Arbitrator.this.onError(error);
@@ -362,8 +387,13 @@ public class Arbitrator {
                 logger.trace("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
                 Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
-                Set<DiscoveryEntryWithMetaInfo> selectedCapabilities = arbitrationStrategyFunction.select(discoveryQos.getCustomParameters(),
-                                                                                                          discoveryEntriesSet);
+                Set<DiscoveryEntryWithMetaInfo> selectedCapabilities;
+                if (filterByVersionAndArbitrationStrategy) {
+                    selectedCapabilities = arbitrationStrategyFunction.select(discoveryQos.getCustomParameters(),
+                                                                              discoveryEntriesSet);
+                } else {
+                    selectedCapabilities = discoveryEntriesSet;
+                }
 
                 logger.trace("Selected capabilities: {}", selectedCapabilities);
                 if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
@@ -412,14 +442,16 @@ public class Arbitrator {
             } else {
                 discoveryEntriesSet = new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntries));
             }
-            discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion,
-                                                                     discoveryEntriesSet,
-                                                                     discoveredVersionsByDomainMap);
-            if (discoveryEntriesSet.isEmpty()) {
-                logger.debug(format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
-                                    interfaceName,
-                                    interfaceVersion,
-                                    Arrays.toString(discoveryEntries)));
+            if (filterByVersionAndArbitrationStrategy) {
+                discoveryEntriesSet = discoveryEntryVersionFilter.filter(interfaceVersion,
+                                                                         discoveryEntriesSet,
+                                                                         discoveredVersionsByDomainMap);
+                if (discoveryEntriesSet.isEmpty()) {
+                    logger.debug(format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
+                                        interfaceName,
+                                        interfaceVersion,
+                                        Arrays.toString(discoveryEntries)));
+                }
             }
             return discoveryEntriesSet;
         }

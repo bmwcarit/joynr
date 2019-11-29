@@ -18,6 +18,7 @@
  */
 package io.joynr.proxy;
 
+import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -123,5 +124,10 @@ public interface ProxyBuilder<T> {
      *         proxyBuilder was created.
      */
     T build(ProxyCreatedCallback<T> callback);
+
+    /**
+     * For internal use only!
+     */
+    T build(ArbitrationResult arbitrationResult);
 
 }
