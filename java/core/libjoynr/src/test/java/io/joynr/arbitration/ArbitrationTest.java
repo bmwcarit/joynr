@@ -1140,6 +1140,24 @@ public class ArbitrationTest {
         testErrorFromLocalDiscoveryAggregatorToArbitrationCallbackReported(gbids, expectedError, true, false);
     }
 
+    @Test
+    public void testLookupForGuidedProxyBuilder() {
+        Set<String> domainsSet = new HashSet<String>(Arrays.asList(domain));
+        Arbitrator arbitrator = ArbitratorFactory.create(domainsSet,
+                                                         interfaceName,
+                                                         interfaceVersion,
+                                                         new DiscoveryQos(),
+                                                         localDiscoveryAggregator,
+                                                         new String[]{});
+        arbitrator.setArbitrationListener(arbitrationCallback);
+        arbitrator.lookup();
+        verify(localDiscoveryAggregator).lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                                                any(String[].class),
+                                                any(String.class),
+                                                any(joynr.types.DiscoveryQos.class),
+                                                any(String[].class));
+    }
+
     private void testErrorFromLocalDiscoveryAggregatorToArbitrationCallbackReported(String[] gbids,
                                                                                     DiscoveryError expectedError,
                                                                                     boolean withRetry,

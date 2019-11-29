@@ -27,6 +27,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -51,6 +52,7 @@ import org.mockito.stubbing.Answer;
 
 import io.joynr.JoynrVersion;
 import io.joynr.arbitration.ArbitrationCallback;
+import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -61,6 +63,7 @@ import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.ShutdownNotifier;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
 
 /**
@@ -304,6 +307,32 @@ public class ProxyBuilderDefaultImplTest {
         String[] newGbids = (String[]) dGbidsField.get(subject);
 
         assertArrayEquals(gbids, newGbids);
+    }
+
+    @Test
+    public void setMessagingQosSetsCorrectValue() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        MessagingQos messagingQos = new MessagingQos();
+        subject.setMessagingQos(messagingQos);
+
+        Field dMessagingQosField = subject.getClass().getDeclaredField("messagingQos");
+        dMessagingQosField.setAccessible(true);
+        MessagingQos newMessagingQos = (MessagingQos) dMessagingQosField.get(subject);
+
+        assertEquals(messagingQos, newMessagingQos);
+    }
+
+    @Test
+    public void buildMethodForGuidedBuilder() throws Exception {
+        setup(new HashSet<String>(Arrays.asList("domain")));
+        String testParticipantId = "test";
+        DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        mockedDiscoveryEntry.setParticipantId(testParticipantId);
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
+        subject.build(mockedArbitrationResult);
+        verify(proxyInvocationHandlerFactory).create(any(), any(), any(), any(), any(), any(), any());
+        verify(proxyInvocationHandler).registerProxy(any());
+        verify(proxyInvocationHandler).createConnector(any());
     }
 
 }
