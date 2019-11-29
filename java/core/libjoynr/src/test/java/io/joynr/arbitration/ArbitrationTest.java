@@ -774,4 +774,21 @@ public class ArbitrationTest {
                      noCompatibleProviderFoundExceptionCaptor.getValue().getDiscoveredVersionsForDomain(domain1));
 
     }
+
+    @Test
+    public void testLookupForGuidedProxyBuilder() {
+        Set<String> domainsSet = new HashSet<String>(Arrays.asList(domain));
+        Arbitrator arbitrator = ArbitratorFactory.create(domainsSet,
+                                                         interfaceName,
+                                                         interfaceVersion,
+                                                         new DiscoveryQos(),
+                                                         localDiscoveryAggregator);
+        arbitrator.setArbitrationListener(arbitrationCallback);
+        arbitrator.lookup();
+        verify(localDiscoveryAggregator).lookup(Mockito.<Callback<DiscoveryEntryWithMetaInfo[]>> any(),
+                                                any(String[].class),
+                                                any(String.class),
+                                                any(joynr.types.DiscoveryQos.class));
+    }
+
 }
