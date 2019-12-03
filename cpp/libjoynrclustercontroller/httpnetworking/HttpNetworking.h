@@ -184,8 +184,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT HttpNetworking
 public:
     ~HttpNetworking() = default;
 
-    static HttpNetworking* getInstance();
-
+    static std::shared_ptr<HttpNetworking> getInstance();
     IHttpGetBuilder* createHttpGetBuilder(const std::string& url);
     IHttpDeleteBuilder* createHttpDeleteBuilder(const std::string& url);
     IHttpPostBuilder* createHttpPostBuilder(const std::string& url);
@@ -234,7 +233,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HttpNetworking);
     HttpNetworking();
     HttpRequestBuilder* createRequestBuilder(const std::string& url);
-    static HttpNetworking* _httpNetworking;
     std::shared_ptr<ICurlHandlePool> _curlHandlePool;
 
     std::string _proxy;

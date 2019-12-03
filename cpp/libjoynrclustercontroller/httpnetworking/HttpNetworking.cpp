@@ -25,8 +25,6 @@
 namespace joynr
 {
 
-HttpNetworking* HttpNetworking::_httpNetworking = new HttpNetworking();
-
 HttpNetworking::HttpNetworking()
         : _curlHandlePool(std::make_shared<PerThreadCurlHandlePool>()),
           _proxy(),
@@ -39,9 +37,10 @@ HttpNetworking::HttpNetworking()
     curl_global_init(CURL_GLOBAL_ALL);
 }
 
-HttpNetworking* HttpNetworking::getInstance()
+std::shared_ptr<HttpNetworking> HttpNetworking::getInstance()
 {
-    return _httpNetworking;
+    static std::shared_ptr<HttpNetworking> instance(new HttpNetworking());
+    return instance;
 }
 
 HttpRequestBuilder* HttpNetworking::createRequestBuilder(const std::string& url)
