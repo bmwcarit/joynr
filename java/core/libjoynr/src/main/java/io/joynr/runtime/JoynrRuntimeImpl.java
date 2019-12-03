@@ -71,7 +71,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     private final StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
 
     @Inject
-    protected CapabilitiesRegistrar capabilitiesRegistrar;
+    private CapabilitiesRegistrar capabilitiesRegistrar;
 
     private Dispatcher dispatcher;
 

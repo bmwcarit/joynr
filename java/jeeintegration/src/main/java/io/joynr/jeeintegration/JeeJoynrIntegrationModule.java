@@ -40,7 +40,9 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessagingStubFactory;
+import io.joynr.runtime.ClusterControllerRuntime;
 import io.joynr.runtime.JoynrInjectionConstants;
+import io.joynr.runtime.JoynrRuntime;
 import joynr.system.RoutingTypes.Address;
 
 /**
@@ -65,7 +67,7 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(JeeJoynrRuntime.class).to(JeeJoynrRuntimeImpl.class).in(Singleton.class);
+        bind(JoynrRuntime.class).to(ClusterControllerRuntime.class).in(Singleton.class);
         bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS))
                         .toInstance(jeeGlobalAddAndRemoveTtlMs);
 

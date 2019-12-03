@@ -39,14 +39,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 
-import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
-import io.joynr.util.AnnotationUtil;
 import joynr.types.ProviderQos;
 
 /**
@@ -70,7 +68,7 @@ public class JoynrIntegrationBean {
 
     private Set<Object> registeredProviders = new HashSet<>();
 
-    private JeeJoynrRuntime joynrRuntime;
+    private JoynrRuntime joynrRuntime;
 
     private boolean deregisterOnShutdown = false;
 
@@ -103,7 +101,7 @@ public class JoynrIntegrationBean {
         });
     }
 
-    private void registerProviders(Set<Bean<?>> serviceProviderBeans, JeeJoynrRuntime runtime) {
+    private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
         Set<ProviderRegistrationSettingsFactory> providerSettingsFactories = getProviderRegistrationSettingsFactories();
 
         for (Bean<?> bean : serviceProviderBeans) {
@@ -122,9 +120,6 @@ public class JoynrIntegrationBean {
                                                                             new ProviderWrapper(bean,
                                                                                                 beanManager,
                                                                                                 joynrRuntimeFactory.getInjector()));
-
-            ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(serviceInterface,
-                                                                                                   ProvidesJoynrTypesInfo.class);
 
             // try to find customized settings for the registration
             ProviderQos providerQos = null;
@@ -147,12 +142,10 @@ public class JoynrIntegrationBean {
                 gbids = new String[0];
             }
 
-            runtime.registerProvider(getDomainForProvider(beanClass),
-                                     provider,
-                                     providerQos,
-                                     gbids,
-                                     false,
-                                     providesJoynrTypesInfoAnnotation.interfaceClass());
+            runtime.getProviderRegistrar(getDomainForProvider(beanClass), provider)
+                   .withProviderQos(providerQos)
+                   .withGbids(gbids)
+                   .register();
 
             registeredProviders.add(provider);
         }

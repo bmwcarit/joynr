@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,6 +45,8 @@ import com.google.inject.Guice;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ProviderRegistrar;
 import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
@@ -112,7 +115,10 @@ public class JoynrIntegrationBeanTest {
     private JoynrRuntimeFactory joynrRuntimeFactory;
 
     @Mock
-    private JeeJoynrRuntime joynrRuntime;
+    private JoynrRuntime joynrRuntime;
+
+    @Mock
+    private ProviderRegistrar providerRegistrar;
 
     @Mock
     private ServiceProviderDiscovery serviceProviderDiscovery;
@@ -127,6 +133,10 @@ public class JoynrIntegrationBeanTest {
         when(joynrRuntimeFactory.getInjector()).thenReturn(Guice.createInjector());
         when(joynrRuntimeFactory.create(any())).thenReturn(joynrRuntime);
         when(joynrRuntimeFactory.getLocalDomain()).thenReturn(LOCAL_DOMAIN);
+        when(joynrRuntime.getProviderRegistrar(any(), any())).thenReturn(providerRegistrar);
+        when(providerRegistrar.withProviderQos(any())).thenReturn(providerRegistrar);
+        when(providerRegistrar.withGbids(any())).thenReturn(providerRegistrar);
+        when(providerRegistrar.awaitGlobalRegistration()).thenReturn(providerRegistrar);
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -160,7 +170,9 @@ public class JoynrIntegrationBeanTest {
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
         subject.initialise();
-        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN), any(), any(), any(), eq(false), any());
+        verify(joynrRuntime).getProviderRegistrar(eq(LOCAL_DOMAIN), any());
+        verify(providerRegistrar, never()).awaitGlobalRegistration();
+        verify(providerRegistrar).register();
     }
 
     @Test
@@ -172,7 +184,9 @@ public class JoynrIntegrationBeanTest {
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
         subject.initialise();
-        verify(joynrRuntime).registerProvider(eq(MY_CUSTOM_DOMAIN), any(), any(), any(), eq(false), any());
+        verify(joynrRuntime).getProviderRegistrar(eq(MY_CUSTOM_DOMAIN), any());
+        verify(providerRegistrar, never()).awaitGlobalRegistration();
+        verify(providerRegistrar).register();
     }
 
     @Test
@@ -208,11 +222,10 @@ public class JoynrIntegrationBeanTest {
         ProviderQos expectedProviderQos = new ProviderQos();
         expectedProviderQos.setPriority(100L);
         String[] expcectedGbids = new String[]{ "gbid1", "gbid2" };
-        verify(joynrRuntime).registerProvider(eq(LOCAL_DOMAIN),
-                                              any(),
-                                              eq(expectedProviderQos),
-                                              eq(expcectedGbids),
-                                              eq(false),
-                                              any());
+        verify(joynrRuntime).getProviderRegistrar(eq(LOCAL_DOMAIN), any());
+        verify(providerRegistrar).withProviderQos(expectedProviderQos);
+        verify(providerRegistrar).withGbids(expcectedGbids);
+        verify(providerRegistrar, never()).awaitGlobalRegistration();
+        verify(providerRegistrar).register();
     }
 }

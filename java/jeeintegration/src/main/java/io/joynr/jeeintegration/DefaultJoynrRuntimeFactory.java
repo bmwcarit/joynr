@@ -75,6 +75,7 @@ import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.JoynrRuntime;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -207,13 +208,13 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     }
 
     @Override
-    public JeeJoynrRuntime create(Set<Class<?>> providerInterfaceClasses) {
+    public JoynrRuntime create(Set<Class<?>> providerInterfaceClasses) {
         LOG.info("Creating clusterable participant IDs for discovered providers.");
         createClusterableParticipantIds(providerInterfaceClasses);
         LOG.info("Provisioning access control for {}", providerInterfaceClasses);
         provisionAccessControl(joynrProperties, joynrLocalDomain, getProviderInterfaceNames(providerInterfaceClasses));
         LOG.info(format("Creating application with joynr properties:%n%s", joynrProperties));
-        JeeJoynrRuntime runtime = getInjector().getInstance(JeeJoynrRuntime.class);
+        JoynrRuntime runtime = getInjector().getInstance(JoynrRuntime.class);
         LOG.info("Created runtime: {}", runtime);
         return runtime;
     }
