@@ -18,7 +18,7 @@
  */
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.3.31'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.21'
 //    id 'org.jetbrains.dokka' version '0.9.17'
 }
 
@@ -41,7 +41,7 @@ repositories {
 // The dependencies on the pom.xml are needed for the Maven deployment process
 dependencies {
     implementation gradleApi()
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.31"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.21"
     implementation "io.joynr.tools.generator:generator-framework:$joynrVersion"
     implementation "io.joynr.tools.generator:java-generator:$joynrVersion"
     implementation 'com.android.tools.build:gradle:3.4.2'
