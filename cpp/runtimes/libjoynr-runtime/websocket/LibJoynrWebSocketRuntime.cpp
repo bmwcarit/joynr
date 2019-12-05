@@ -56,8 +56,15 @@ LibJoynrWebSocketRuntime::~LibJoynrWebSocketRuntime()
 
 void LibJoynrWebSocketRuntime::shutdown()
 {
-    assert(!_isShuttingDown);
-    _isShuttingDown = true;
+    // protect against parallel and multiple calls of shutdown()
+    bool previousValue =
+            std::atomic_exchange_explicit(&_isShuttingDown, true, std::memory_order_acquire);
+    assert(!previousValue);
+    // bail out in case assert is disabled
+    if (previousValue) {
+        return;
+    }
+
     assert(_websocket);
     _websocket->stop();
 

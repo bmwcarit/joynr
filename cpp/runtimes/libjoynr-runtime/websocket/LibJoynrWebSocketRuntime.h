@@ -60,7 +60,7 @@ private:
     WebSocketSettings _wsSettings;
     std::shared_ptr<IWebSocketPpClient> _websocket;
     std::string _initializationMsg;
-    bool _isShuttingDown;
+    std::atomic<bool> _isShuttingDown;
     ADD_LOGGER(LibJoynrWebSocketRuntime)
 
     friend class JoynrRuntime;
