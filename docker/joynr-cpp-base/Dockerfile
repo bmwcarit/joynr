@@ -117,7 +117,7 @@ RUN export FLATBUFFERS_VERSION=v1.10.0 \
 # install valgrind
 ###################################################
 
-RUN export VALGRIND_VERSION=3.13.0 \
+RUN export VALGRIND_VERSION=3.15.0 \
         && cd /tmp \
         && wget https://sourceware.org/pub/valgrind/valgrind-$VALGRIND_VERSION.tar.bz2 \
         && tar xf valgrind-$VALGRIND_VERSION.tar.bz2 \

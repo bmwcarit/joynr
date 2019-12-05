@@ -1,7 +1,7 @@
 FROM fedora:30
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2019-11-15-08-30
+ENV REFRESHED_AT 2019-12-05-11-20
 
 ###################################################
 # create data directories and volumes

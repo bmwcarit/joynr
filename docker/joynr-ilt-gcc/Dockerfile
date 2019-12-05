@@ -149,7 +149,7 @@ RUN export MoCOCrW_VERSION=c5609ccc1f3da552b4354b747bdc445e4ecfc7de \
 # install valgrind
 ###################################################
 
-RUN export VALGRIND_VERSION=3.13.0 \
+RUN export VALGRIND_VERSION=3.15.0 \
         && . /etc/profile \
         && cd /tmp \
         && wget https://sourceware.org/pub/valgrind/valgrind-$VALGRIND_VERSION.tar.bz2 \
