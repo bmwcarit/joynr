@@ -21,7 +21,6 @@ This project has dependencies to:
   atmosphere-annotations under CDDL or Apache License 2.0
   atmosphere-jersey under CDDL or Apache License 2.0
   atmosphere-runtime under CDDL or Apache License 2.0
-  Commons Lang under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0

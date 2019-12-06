@@ -28,7 +28,6 @@ This project has dependencies to:
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   clustercontroller-websocket-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
-  Commons Lang under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0

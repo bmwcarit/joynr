@@ -23,7 +23,6 @@ This project has dependencies to:
   Apache Log4j under The Apache Software License, Version 2.0
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
-  Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
