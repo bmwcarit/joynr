@@ -19,16 +19,16 @@
 package io.joynr.test.interlanguage.jee;
 
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
@@ -50,8 +50,6 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedStructOfPrimitives;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Sample implementation of the {@link TestInterfaceSyncSync} interface.
@@ -503,7 +501,7 @@ public class IltProviderBean
         logger.info("***********************************************************");
 
         //calculate result
-        Byte[] result = (Byte[]) ArrayUtils.addAll(byteBufferArg1, byteBufferArg2);
+        Byte[] result = IltUtil.concatenateByteArrays(byteBufferArg1, byteBufferArg2);
 
         return result;
     }

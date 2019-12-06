@@ -23,7 +23,7 @@ import java.util.Set;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import org.apache.commons.lang.math.RandomUtils;
+import java.util.concurrent.ThreadLocalRandom;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
@@ -62,7 +62,7 @@ public class RadioProviderBean implements RadioService {
     @Override
     public void shuffleStations() {
         Set<RadioStation> radioStations = radioStationDatabase.getRadioStations();
-        int randomIndex = RandomUtils.nextInt(radioStations.size());
+        int randomIndex = ThreadLocalRandom.current().nextInt(radioStations.size());
         radioStationDatabase.setCurrentStation(radioStations.toArray(new RadioStation[0])[randomIndex]);
     }
 

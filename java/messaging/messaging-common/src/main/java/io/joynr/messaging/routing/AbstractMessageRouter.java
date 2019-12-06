@@ -22,6 +22,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,8 +62,7 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 abstract public class AbstractMessageRouter implements MessageRouter, MulticastReceiverRegistrar, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
-    private static final FastDateFormat dateFormatter = FastDateFormat.getInstance("dd/MM/yyyy HH:mm:ss:sss z",
-                                                                                   TimeZone.getTimeZone("UTC"));
+    private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss z");
     protected final RoutingTable routingTable;
     private ScheduledExecutorService scheduler;
     private long sendMsgRetryIntervalMs;
@@ -114,6 +113,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                  MessageQueue messageQueue,
                                  ShutdownNotifier shutdownNotifier) {
         // CHECKSTYLE:ON
+        dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.routingTable = routingTable;
         this.scheduler = scheduler;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;

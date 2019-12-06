@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,25 +59,25 @@ public class AbstractGlobalMessagingSkeletonTest {
 
         @Override
         public void init() {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
 
         }
 
         @Override
         public void shutdown() {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
 
         }
 
         @Override
         public void registerMulticastSubscription(String multicastId) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
 
         }
 
         @Override
         public void unregisterMulticastSubscription(String multicastId) {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException();
 
         }
     }

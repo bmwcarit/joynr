@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.junit.Test;
 
 import io.joynr.smrf.EncodingException;
@@ -52,14 +51,22 @@ public class SplitSMRFTest {
 
         byte[] message1Serialized = message1.getSerializedMessage();
         byte[] message2Serialized = message2.getSerializedMessage();
+        int message1SerializedLength = message1Serialized.length;
+        int message2SerializedLength = message2Serialized.length;
 
-        byte[] concatenatedMessages = ArrayUtils.addAll(message2Serialized, message1Serialized);
+        byte[] concatenatedMessages = new byte[message1SerializedLength + message2SerializedLength];
+        System.arraycopy(message1Serialized, 0, concatenatedMessages, 0, message2SerializedLength);
+        System.arraycopy(message2Serialized,
+                         0,
+                         concatenatedMessages,
+                         message1SerializedLength,
+                         message2SerializedLength);
 
         List<ImmutableMessage> splitMessages = Utilities.splitSMRF(concatenatedMessages);
         assertEquals(2, splitMessages.size());
 
-        ImmutableMessage retrievedMessage1 = splitMessages.get(1);
-        ImmutableMessage retrievedMessage2 = splitMessages.get(0);
+        ImmutableMessage retrievedMessage1 = splitMessages.get(0);
+        ImmutableMessage retrievedMessage2 = splitMessages.get(1);
 
         assertEquals(message1.getSender(), retrievedMessage1.getSender());
         assertEquals(message1.getRecipient(), retrievedMessage1.getRecipient());

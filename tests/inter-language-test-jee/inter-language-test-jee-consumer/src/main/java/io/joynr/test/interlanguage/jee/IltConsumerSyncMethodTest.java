@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.function.BiPredicate;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -249,11 +248,13 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             Byte[] byteBufferArg1 = { -5, 125 };
             Byte[] byteBufferArg2 = { 78, 0 };
 
+            Byte[] concatenatedBuffer = IltUtil.concatenateByteArrays(byteBufferArg1, byteBufferArg2);
+
             Byte[] result = testInterfaceProxy.methodWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2);
 
             Assert.assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
             Assert.assertArrayEquals(name.getMethodName() + " - FAILED - got invalid result",
-                                     ArrayUtils.addAll(byteBufferArg1, byteBufferArg2),
+                                     concatenatedBuffer,
                                      result);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());

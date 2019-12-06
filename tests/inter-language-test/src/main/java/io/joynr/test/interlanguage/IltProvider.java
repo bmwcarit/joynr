@@ -20,23 +20,21 @@ package io.joynr.test.interlanguage;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
+import joynr.interlanguagetest.TestInterfaceAbstractProvider;
 import joynr.interlanguagetest.TestInterface.MethodWithAnonymousErrorEnumErrorEnum;
 import joynr.interlanguagetest.TestInterface.MethodWithExtendedErrorEnumErrorEnum;
-import joynr.interlanguagetest.TestInterfaceAbstractProvider;
 import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements;
@@ -576,7 +574,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         MethodWithMultipleByteBufferParametersDeferred deferred = new MethodWithMultipleByteBufferParametersDeferred();
 
         //calculate result
-        Byte[] result = (Byte[]) ArrayUtils.addAll(byteBufferArg1, byteBufferArg2);
+        Byte[] result = IltUtil.concatenateByteArrays(byteBufferArg1, byteBufferArg2);
 
         //prepare output parameter
         deferred.resolve(result);

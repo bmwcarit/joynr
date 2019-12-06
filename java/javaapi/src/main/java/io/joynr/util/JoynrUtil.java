@@ -19,10 +19,8 @@
 package io.joynr.util;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,11 +40,8 @@ import java.util.jar.JarInputStream;
 
 import javax.annotation.CheckForNull;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.joynr.exceptions.JoynrRuntimeException;
 
 public class JoynrUtil {
     private static final Logger logger = LoggerFactory.getLogger(JoynrUtil.class);
@@ -251,87 +246,6 @@ public class JoynrUtil {
             }
         }
         throw new UnknownHostException("Connectivity check to the host \"" + host + "\" has failed");
-    }
-
-    public static Byte[] getResourceAsByteArray(InputStream inputStream) {
-        return (Byte[]) getResource(inputStream, true);
-    }
-
-    public static String getResourceAsString(InputStream inputStream) {
-        return (String) getResource(inputStream, false);
-    }
-
-    public static Byte[] getResourceAsByteArray(String fileName) {
-        return (Byte[]) getResource(JoynrUtil.class.getResourceAsStream(fileName), true);
-    }
-
-    public static String getResourceAsString(String fileName) {
-        return (String) getResource(JoynrUtil.class.getResourceAsStream(fileName), false);
-    }
-
-    public static void writeResource(String stringResource, String fileName) throws IOException {
-        writeResource(stringResource.getBytes("UTF-8"), fileName);
-    }
-
-    public static void writeResource(Byte[] byteResource, String fileName) throws IOException {
-        writeResource(ArrayUtils.toPrimitive(byteResource), fileName);
-    }
-
-    public static void writeResource(byte[] byteResource, String fileName) throws IOException {
-        File file = new File(fileName);
-        if (!file.exists()) {
-            createDir(file.getParentFile().getAbsolutePath());
-        }
-
-        if (!file.createNewFile()) {
-            logger.debug("Creating file " + fileName + " failed.");
-        }
-
-        FileOutputStream outputStream = null;
-        try {
-            outputStream = new FileOutputStream(fileName);
-            outputStream.write(byteResource);
-
-        } catch (FileNotFoundException e) {
-            logger.error("Writing file " + fileName + " failed.", e);
-        } finally {
-            if (outputStream != null) {
-                outputStream.close();
-            }
-
-        }
-
-    }
-
-    private static Object getResource(InputStream inputStream, boolean asByteArray) throws JoynrRuntimeException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024);
-        byte[] bytes = new byte[512];
-
-        // Read bytes from the input stream in bytes.length-sized chunks and
-        // write
-        // them into the output stream
-        int readBytes;
-        try {
-            while ((readBytes = inputStream.read(bytes)) > 0) {
-                outputStream.write(bytes, 0, readBytes);
-            }
-            Object result = null;
-
-            if (asByteArray) {
-                result = ArrayUtils.toObject(outputStream.toByteArray());
-            } else {
-                result = outputStream.toString("UTF-8");
-
-            }
-            // Close the streams
-            inputStream.close();
-            outputStream.close();
-            return result;
-        } catch (IOException e) {
-            throw new JoynrRuntimeException(e.getMessage(), e) {
-                private static final long serialVersionUID = 1L;
-            };
-        }
     }
 
     public static String createUuidString() {

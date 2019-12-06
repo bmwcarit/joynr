@@ -786,4 +786,15 @@ public class IltUtil {
     public static boolean cmpDouble(double a, double b) {
         return Math.abs(a - b) < 0.001;
     }
+
+    public static Byte[] concatenateByteArrays(Byte[] array1, Byte[] array2) {
+        int array1length = array1.length;
+        int array2length = array2.length;
+
+        Byte[] concatenatedArray = new Byte[array1length + array2length];
+        System.arraycopy(array1, 0, concatenatedArray, 0, array1length);
+        System.arraycopy(array2, 0, concatenatedArray, array1length, array2length);
+        return concatenatedArray;
+    }
+
 }

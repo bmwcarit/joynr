@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.function.BiPredicate;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -37,14 +36,14 @@ import org.slf4j.LoggerFactory;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
-import joynr.interlanguagetest.TestInterface.MethodWithAnonymousErrorEnumErrorEnum;
-import joynr.interlanguagetest.TestInterface.MethodWithExtendedErrorEnumErrorEnum;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultipleArrayParametersReturned;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultipleEnumParametersReturned;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultiplePrimitiveParametersReturned;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultipleStructParametersReturned;
 import joynr.interlanguagetest.TestInterfaceSync.OverloadedMethodOverloadedMethod1Returned;
 import joynr.interlanguagetest.TestInterfaceSync.OverloadedMethodWithSelectorOverloadedMethodWithSelector1Returned;
+import joynr.interlanguagetest.TestInterface.MethodWithAnonymousErrorEnumErrorEnum;
+import joynr.interlanguagetest.TestInterface.MethodWithExtendedErrorEnumErrorEnum;
 import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedBaseStruct;
@@ -265,11 +264,13 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             Byte[] byteBufferArg1 = { -5, 125 };
             Byte[] byteBufferArg2 = { 78, 0 };
 
+            Byte[] concatenatedBuffer = IltUtil.concatenateByteArrays(byteBufferArg1, byteBufferArg2);
+
             Byte[] result = testInterfaceProxy.methodWithMultipleByteBufferParameters(byteBufferArg1, byteBufferArg2);
 
             Assert.assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
             Assert.assertArrayEquals(name.getMethodName() + " - FAILED - got invalid result",
-                                     ArrayUtils.addAll(byteBufferArg1, byteBufferArg2),
+                                     concatenatedBuffer,
                                      result);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
