@@ -19,6 +19,36 @@
 package joynr;
 
 public abstract class Message {
+
+    public enum MessageType {
+        VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST("brq"), VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST(
+                "mrq"), VALUE_MESSAGE_TYPE_MULTICAST("m"), VALUE_MESSAGE_TYPE_ONE_WAY(
+                        "o"), VALUE_MESSAGE_TYPE_PUBLICATION("p"), VALUE_MESSAGE_TYPE_REPLY(
+                                "rp"), VALUE_MESSAGE_TYPE_REQUEST("rq"), VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(
+                                        "srp"), VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST(
+                                                "arq"), VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP("sst");
+
+        private final String text;
+
+        private MessageType(String s) {
+            text = s;
+        }
+
+        @Override
+        public String toString() {
+            return this.text;
+        }
+
+        public static MessageType fromString(String text) {
+            for (MessageType type : MessageType.values()) {
+                if (type.text.equalsIgnoreCase(text)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+    }
+
     public static final String CUSTOM_HEADER_PREFIX = "c-";
     public static final String HEADER_EFFORT = "ef";
     public static final String HEADER_ID = "id";
