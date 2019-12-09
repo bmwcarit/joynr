@@ -406,33 +406,36 @@ Example for the usage of a GuidedProxyBuilder:
 
 ```java
 ...
-	Set<String> domains = new HashSet<>();
-	domains.add(providerDomainOne);
-	GuidedProxyBuilder guidedProxyBuilder = runtime.getGuidedProxyBuilder(domains, <Interface>Proxy.class);
-	DiscoveryResult discoveryResult;
-        try {
-            discoveryResult = guidedProxyBuilder
-                .setMessagingQos(...) //optional
-                .setDiscoveryQos(...) //optional
-                .setGbids(...) //optional
-                    // same optional setters as in ProxyBuilder
-                .discover();
-        } catch (DiscoveryException e) {
-            //handle errors
-        }
-	DiscoveryEntry lastSeenEntry = discoveryResult.getLastSeen();
-        /* Other possibilities to retrieve DiscoveryEntries from DiscoveryResult:
-            DiscoveryEntry highestPriorityEntry = discoveryResult.getHighestPriority();
-            DiscoveryEntry latestVersionEntry = discoveryResult.getLastestVersion();
-            DiscoveryEntry entry = discoveryResult.getParticipantId(participantId);
-            Collection<DiscoveryEntry> allDiscoveryEntries = discoveryResult.getAllDiscoveryEntries();
-            Collection<DiscoveryEntry> discoveryEntriesWithKey = discoveryResult.getWithKeyword(keyword);
-        */
-	if (lastSeenEntry.getVersion().getMajorVersion() == 4) {
-		joynr.<Package>.v4.<Interface>Proxy proxy = guidedProxyBuilder.buildProxy(joynr.<Package>.v4.<Interface>Proxy.class, lastSeenEntry.getParticipantId());
-	} else {
-		...
-	}
+Set<String> domains = new HashSet<>();
+domains.add(providerDomainOne);
+GuidedProxyBuilder guidedProxyBuilder = runtime.getGuidedProxyBuilder(domains, <Interface>Proxy.class);
+DiscoveryResult discoveryResult;
+try {
+    discoveryResult = guidedProxyBuilder
+        .setMessagingQos(...) //optional
+        .setDiscoveryQos(...) //optional
+        .setGbids(...) //optional
+            // same optional setters as in ProxyBuilder
+        .discover();
+        // GuidedProxyBuilder also offers a discoverAsync() method which returns a CompletableFuture
+} catch (DiscoveryException e) {
+    //handle errors
+}
+DiscoveryEntry lastSeenEntry = discoveryResult.getLastSeen();
+/* Other possibilities to retrieve DiscoveryEntries from DiscoveryResult:
+    DiscoveryEntry highestPriorityEntry = discoveryResult.getHighestPriority();
+    DiscoveryEntry latestVersionEntry = discoveryResult.getLastestVersion();
+    DiscoveryEntry entry = discoveryResult.getParticipantId(participantId);
+    Collection<DiscoveryEntry> allDiscoveryEntries = discoveryResult.getAllDiscoveryEntries();
+    Collection<DiscoveryEntry> discoveryEntriesWithKey = discoveryResult.getWithKeyword(keyword);
+*/
+if (lastSeenEntry.getVersion().getMajorVersion() == 4) {
+    // use the generated proxy interface for version 4.x
+    joynr.<Package>.v4.<Interface>Proxy proxy = guidedProxyBuilder
+        .buildProxy(joynr.<Package>.v4.<Interface>Proxy.class, lastSeenEntry.getParticipantId());
+} else {
+    ...
+}
 ...
 ```
 
