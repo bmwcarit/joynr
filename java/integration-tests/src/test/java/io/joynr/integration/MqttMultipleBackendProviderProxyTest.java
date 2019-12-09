@@ -260,7 +260,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
     private void checkReplyMessage(byte[] serializedMessage,
                                    String senderParticipantId,
                                    String recipientParticipantId,
-                                   String replyMessageType,
+                                   Message.MessageType replyMessageType,
                                    String requestReplyId) throws EncodingException, UnsuppportedVersionException {
         assertNotNull(serializedMessage);
 
@@ -273,7 +273,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
 
     private void testCorrectMqttConnectionIsUsedForProviderReply(String targetGbid,
                                                                  MessageCreator messageCreator,
-                                                                 String replyMessageType,
+                                                                 Message.MessageType replyMessageType,
                                                                  JoynrMqttClient expectedClient,
                                                                  JoynrMqttClient otherClient) throws InterruptedException,
                                                                                               EncodingException,
@@ -327,7 +327,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                 return requestMessage;
             }
         };
-        String replyType = Message.VALUE_MESSAGE_TYPE_REPLY;
+        Message.MessageType replyType = Message.MessageType.VALUE_MESSAGE_TYPE_REPLY;
         testCorrectMqttConnectionIsUsedForProviderReply(targetGbid,
                                                         messageCreator,
                                                         replyType,
@@ -370,8 +370,8 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
             }
         };
 
-        String replyType1 = Message.VALUE_MESSAGE_TYPE_PUBLICATION;
-        String replyType2 = Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY;
+        Message.MessageType replyType1 = Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION;
+        Message.MessageType replyType2 = Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY;
 
         final String proxyParticipantId = "senderParticipantId";
         final String requestReplyId = UUID.randomUUID().toString();
@@ -446,7 +446,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                 return subscriptionRequestMessage;
             }
         };
-        String replyType = Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY;
+        Message.MessageType replyType = Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY;
         testCorrectMqttConnectionIsUsedForProviderReply(targetGbid,
                                                         messageCreator,
                                                         replyType,
@@ -499,12 +499,12 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         checkReplyMessage(messageCaptor1.getValue(),
                           multicastId,
                           providerParticipantId,
-                          Message.VALUE_MESSAGE_TYPE_MULTICAST,
+                          Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST,
                           null);
         checkReplyMessage(messageCaptor2.getValue(),
                           multicastId,
                           providerParticipantId,
-                          Message.VALUE_MESSAGE_TYPE_MULTICAST,
+                          Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST,
                           null);
 
         unregisterProvider(testProvider);

@@ -95,12 +95,12 @@ public class AccessControllerImpl implements AccessController {
             return false;
         }
 
-        String messageType = message.getType();
+        Message.MessageType messageType = message.getType();
 
-        if (messageType.equals(Message.VALUE_MESSAGE_TYPE_REPLY)
-                || messageType.equals(Message.VALUE_MESSAGE_TYPE_PUBLICATION)
-                || messageType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST)
-                || messageType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)) {
+        if (messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY)
+                || messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION)
+                || messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST)
+                || messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)) {
             return false;
         }
 

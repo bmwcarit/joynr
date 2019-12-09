@@ -61,12 +61,12 @@ public abstract class AbstractMessageSender implements MessageSender {
     }
 
     private boolean needsReplyToAddress(MutableMessage message) {
-        final String msgType = message.getType();
+        final Message.MessageType msgType = message.getType();
         boolean noReplyTo = message.getReplyTo() == null;
-        boolean msgTypeNeedsReplyTo = msgType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
-                || msgType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
-                || msgType.equals(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
-                || msgType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+        boolean msgTypeNeedsReplyTo = msgType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)
+                || msgType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                || msgType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
+                || msgType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
 
         return noReplyTo && msgTypeNeedsReplyTo && !message.isLocalMessage();
     }

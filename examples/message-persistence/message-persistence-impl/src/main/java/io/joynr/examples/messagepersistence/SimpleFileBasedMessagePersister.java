@@ -60,9 +60,9 @@ public class SimpleFileBasedMessagePersister implements MessagePersister {
 
     @Override
     public boolean persist(String messageQueueId, DelayableImmutableMessage message) {
-        if (!Message.VALUE_MESSAGE_TYPE_REQUEST.equals(message.getMessage()
-                                                              .getHeaders()
-                                                              .get(Message.HEADER_MSG_TYPE))) {
+        if (!Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST.equals(Message.MessageType.fromString(message.getMessage()
+                                                                                                         .getHeaders()
+                                                                                                         .get(Message.HEADER_MSG_TYPE)))) {
             // persisting criteria, e.g. in this example
             // only persist messages that are requests
             return false;

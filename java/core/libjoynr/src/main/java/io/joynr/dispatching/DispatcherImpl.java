@@ -240,20 +240,20 @@ public class DispatcherImpl implements Dispatcher {
             return;
         }
 
-        String type = message.getType();
+        Message.MessageType type = message.getType();
         try {
-            if (Message.VALUE_MESSAGE_TYPE_REPLY.equals(type)) {
+            if (Message.MessageType.VALUE_MESSAGE_TYPE_REPLY.equals(type)) {
                 Reply reply = objectMapper.readValue(payload, Reply.class);
                 if (reply.getRequestReplyId().contains(StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR)) {
                     addStatelessCallback(message, reply);
                 }
                 logger.trace("Parsed reply from message payload :" + payload);
                 handle(reply);
-            } else if (Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
+            } else if (Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
                 SubscriptionReply subscriptionReply = objectMapper.readValue(payload, SubscriptionReply.class);
                 logger.trace("Parsed subscription reply from message payload :" + payload);
                 handle(subscriptionReply);
-            } else if (Message.VALUE_MESSAGE_TYPE_REQUEST.equals(type)) {
+            } else if (Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST.equals(type)) {
                 MessagingQosEffort effort = getEffort(message);
                 final Request request = objectMapper.readValue(payload, Request.class);
                 request.setCreatorUserId(message.getCreatorUserId());
@@ -266,27 +266,27 @@ public class DispatcherImpl implements Dispatcher {
                        customHeaders,
                        effort,
                        message.isCompressed());
-            } else if (Message.VALUE_MESSAGE_TYPE_ONE_WAY.equals(type)) {
+            } else if (Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY.equals(type)) {
                 OneWayRequest oneWayRequest = objectMapper.readValue(payload, OneWayRequest.class);
                 oneWayRequest.setCreatorUserId(message.getCreatorUserId());
                 oneWayRequest.setContext(createMessageContext(message));
                 logger.trace("Parsed one way request from message payload :" + payload);
                 handle(oneWayRequest, message.getRecipient(), expiryDate);
-            } else if (Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
-                    || Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)
-                    || Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST.equals(type)) {
+            } else if (Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
+                    || Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)
+                    || Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST.equals(type)) {
                 SubscriptionRequest subscriptionRequest = objectMapper.readValue(payload, SubscriptionRequest.class);
                 logger.trace("Parsed subscription request from message payload :" + payload);
                 handle(subscriptionRequest, message.getSender(), message.getRecipient());
-            } else if (Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
+            } else if (Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
                 SubscriptionStop subscriptionStop = objectMapper.readValue(payload, SubscriptionStop.class);
                 logger.trace("Parsed subscription stop from message payload :" + payload);
                 handle(subscriptionStop);
-            } else if (Message.VALUE_MESSAGE_TYPE_PUBLICATION.equals(type)) {
+            } else if (Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION.equals(type)) {
                 SubscriptionPublication publication = objectMapper.readValue(payload, SubscriptionPublication.class);
                 logger.trace("Parsed publication from message payload :" + payload);
                 handle(publication);
-            } else if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(type)) {
+            } else if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(type)) {
                 MulticastPublication multicastPublication = objectMapper.readValue(payload, MulticastPublication.class);
                 logger.trace("Parsed multicast publication from message payload: {}", payload);
                 handle(multicastPublication);
@@ -385,7 +385,7 @@ public class DispatcherImpl implements Dispatcher {
             return;
         }
 
-        String type = message.getType();
+        Message.MessageType type = message.getType();
         String payload;
 
         try {
@@ -397,7 +397,7 @@ public class DispatcherImpl implements Dispatcher {
         }
 
         try {
-            if (type.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)) {
+            if (type.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
                 Request request = objectMapper.readValue(payload, Request.class);
                 requestReplyManager.handleError(request, error);
             }

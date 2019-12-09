@@ -265,11 +265,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
 
     private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
         if (foundAddresses.isEmpty()) {
-            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 // discard msg
                 throw new JoynrMessageNotSentException("Failed to route multicast publication: No address found for given message: "
                         + message);
-            } else if (Message.VALUE_MESSAGE_TYPE_PUBLICATION.equals(message.getType())) {
+            } else if (Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION.equals(message.getType())) {
                 // discard msg
                 throw new JoynrMessageNotSentException("Failed to route publication: No address found for given message: "
                         + message);
@@ -387,7 +387,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                                                 delayableMessage.getRetriesCount());
                 }
 
-                if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(delayableMessage.getMessage().getType())
+                if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(delayableMessage.getMessage().getType())
                         || delayableMessage.getDestinationAddresses()
                                            .removeIf(address -> address instanceof WebSocketClientAddress)) {
                     // WebSocketClientAddresses have to be determined again in every retry because they change when a

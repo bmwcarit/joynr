@@ -30,7 +30,7 @@ public class MessageSenderTestBase {
 
     protected MutableMessage createTestRequestMessage() {
         MutableMessage message = new MutableMessage();
-        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setType(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         message.setLocalMessage(false);
         message.setSender("");
         message.setRecipient("");

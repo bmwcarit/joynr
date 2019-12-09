@@ -49,11 +49,11 @@ final class MqttMessagingSkeletonTestUtil {
     }
 
     static List<String> feedMqttSkeletonWithRequests(MqttMessagingSkeleton skeleton, int numRequests) throws Exception {
-        return feedMqttSkeletonWithMessages(skeleton, Message.VALUE_MESSAGE_TYPE_REQUEST, numRequests);
+        return feedMqttSkeletonWithMessages(skeleton, Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, numRequests);
     }
 
     static List<String> feedMqttSkeletonWithMessages(MqttMessagingSkeleton skeleton,
-                                                     String messageType,
+                                                     Message.MessageType messageType,
                                                      int numMessages) throws Exception {
         List<String> messageIds = new LinkedList<>();
 
@@ -66,10 +66,10 @@ final class MqttMessagingSkeletonTestUtil {
     }
 
     static ImmutableMessage createTestRequestMessage() throws Exception {
-        return createTestMessage(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        return createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
     }
 
-    static ImmutableMessage createTestMessage(String messageType) throws Exception {
+    static ImmutableMessage createTestMessage(Message.MessageType messageType) throws Exception {
         MutableMessage message = new MutableMessage();
 
         MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");

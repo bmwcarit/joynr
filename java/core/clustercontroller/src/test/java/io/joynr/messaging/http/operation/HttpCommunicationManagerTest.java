@@ -150,7 +150,7 @@ public class HttpCommunicationManagerTest {
     public void testCreateOpenAndDeleteChannel() throws Exception {
 
         MutableMessage mutableMessage = new MutableMessage();
-        mutableMessage.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        mutableMessage.setType(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         mutableMessage.setSender("testSender");
         mutableMessage.setRecipient("testRecipient");
         mutableMessage.setPayload(new byte[]{ 0, 1, 2 });

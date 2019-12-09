@@ -53,15 +53,15 @@ public class AddressManagerNonMulticastTest {
 
     @Parameters(name = "{index}: MessageType={0}")
     public static Iterable<? extends Object> getNonMulticastMessageTypes() {
-        return Arrays.asList(Message.VALUE_MESSAGE_TYPE_REQUEST,
-                             Message.VALUE_MESSAGE_TYPE_REPLY,
-                             Message.VALUE_MESSAGE_TYPE_PUBLICATION,
-                             Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                             Message.VALUE_MESSAGE_TYPE_ONE_WAY);
+        return Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
+                             Message.MessageType.VALUE_MESSAGE_TYPE_REPLY,
+                             Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION,
+                             Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
+                             Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY);
     }
 
     @Parameter
-    public String messageTypeParameter;
+    public Message.MessageType messageTypeParameter;
 
     @Mock
     private RoutingTable routingTable;

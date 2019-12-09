@@ -92,7 +92,7 @@ public class AccessControllerTest {
                                                     discoveryProviderParticipantId,
                                                     routingProviderParticipantId);
 
-        when(messageMock.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        when(messageMock.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         when(messageMock.getRecipient()).thenReturn(toParticipantId);
         when(messageMock.getSender()).thenReturn(fromParticipantId);
         when(messageMock.getCreatorUserId()).thenReturn(DUMMY_USERID);

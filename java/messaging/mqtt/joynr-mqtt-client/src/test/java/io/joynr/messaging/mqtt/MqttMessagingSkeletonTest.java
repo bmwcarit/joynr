@@ -291,7 +291,7 @@ public class MqttMessagingSkeletonTest {
 
         // As the limit is reached, further requests should be dropped
         subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_ONE_WAY).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY).getSerializedMessage(),
                          failIfCalledAction);
         assertEquals(2, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
@@ -312,21 +312,21 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
 
         // Further non-request messages should still be accepted
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_PUBLICATION).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION).getSerializedMessage(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY).getSerializedMessage(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST).getSerializedMessage(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getSerializedMessage(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getSerializedMessage(),
                          failIfCalledAction);
         assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests + 8)).route(any(ImmutableMessage.class));
@@ -371,8 +371,12 @@ public class MqttMessagingSkeletonTest {
 
         // number of incoming messages is arbitrarily selected
         feedMqttSkeletonWithRequests(subject, 2 * maxIncomingMqttRequests);
-        feedMqttSkeletonWithMessages(subject, Message.VALUE_MESSAGE_TYPE_REPLY, 2 * maxIncomingMqttRequests);
-        feedMqttSkeletonWithMessages(subject, Message.VALUE_MESSAGE_TYPE_MULTICAST, 2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithMessages(subject,
+                                     Message.MessageType.VALUE_MESSAGE_TYPE_REPLY,
+                                     2 * maxIncomingMqttRequests);
+        feedMqttSkeletonWithMessages(subject,
+                                     Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST,
+                                     2 * maxIncomingMqttRequests);
 
         verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
         assertEquals(0, subject.getDroppedMessagesCount());

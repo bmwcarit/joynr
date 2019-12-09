@@ -74,7 +74,7 @@ public class AddressManagerTest {
         multicastAddresses = new HashSet<>();
         multicastAddresses.add(multicastAddress);
         subject = null;
-        when(joynrMessage.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        when(joynrMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
     }
 
     @Test

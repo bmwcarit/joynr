@@ -72,7 +72,7 @@ public class MqttMultipleBackendDiscoveryLookupTest extends MqttMultipleBackendD
         verify(expectedClient).publishMessage(eq(gcdTopic), messageCaptor.capture(), anyInt());
         byte[] serializedMessage = messageCaptor.getValue();
         ImmutableMessage capturedMessage = new ImmutableMessage(serializedMessage);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());
         assertEquals(getGcdParticipantId(), capturedMessage.getRecipient());
     }
 

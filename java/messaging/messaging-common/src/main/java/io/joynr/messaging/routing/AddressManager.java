@@ -100,7 +100,7 @@ public class AddressManager {
     public Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result = new HashSet<>();
         String toParticipantId = message.getRecipient();
-        if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+        if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             handleMulticastMessage(message, result);
         } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
             Map<String, String> customHeader = message.getCustomHeaders();

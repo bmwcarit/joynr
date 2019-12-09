@@ -105,7 +105,7 @@ public class LibJoynrMessageRouterTest {
         when(message.isTtlAbsolute()).thenReturn(true);
         when(message.getRecipient()).thenReturn(unknownParticipantId);
         when(message.isLocalMessage()).thenReturn(false);
-        when(message.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        when(message.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
 
         when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);

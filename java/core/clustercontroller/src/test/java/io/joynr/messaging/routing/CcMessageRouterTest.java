@@ -338,7 +338,7 @@ public class CcMessageRouterTest {
         routingTable.put(receiverParticipantId2, receiverAddress2, isGloballyVisible, expiryDateMs);
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
-        joynrMessage.setType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        joynrMessage.setType(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
         joynrMessage.setRecipient(multicastId);
     }
 

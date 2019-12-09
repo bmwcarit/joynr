@@ -81,12 +81,12 @@ public class MessageQueue {
 
     private void registerReplyToAddress(DelayableImmutableMessage delayableImmutableMessage) {
         ImmutableMessage message = delayableImmutableMessage.getMessage();
-        String messageType = message.getType();
+        Message.MessageType messageType = message.getType();
 
-        if (!messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+        if (!messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)
+                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
             return;
         }
 
@@ -103,7 +103,7 @@ public class MessageQueue {
     }
 
     private void restoreMessage(DelayableImmutableMessage delayableImmutableMessage) {
-        if (delayableImmutableMessage.getMessage().getType() == Message.VALUE_MESSAGE_TYPE_MULTICAST) {
+        if (delayableImmutableMessage.getMessage().getType() == Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST) {
             // remove all addresses to trigger new address resolution to get also InProcessAddresses which are not persisted
             delayableImmutableMessage.getDestinationAddresses().clear();
         }

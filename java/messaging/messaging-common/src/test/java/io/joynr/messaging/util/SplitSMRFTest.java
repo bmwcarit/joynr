@@ -43,10 +43,10 @@ public class SplitSMRFTest {
         String expectedSender2 = "expectedSender2";
         String expectedRecipient2 = "expectedRecipient2";
 
-        ImmutableMessage message1 = createImmutableMessage(Message.VALUE_MESSAGE_TYPE_REQUEST,
+        ImmutableMessage message1 = createImmutableMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
                                                            expectedSender1,
                                                            expectedRecipient1);
-        ImmutableMessage message2 = createImmutableMessage(Message.VALUE_MESSAGE_TYPE_REQUEST,
+        ImmutableMessage message2 = createImmutableMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
                                                            expectedSender2,
                                                            expectedRecipient2);
 
@@ -70,7 +70,7 @@ public class SplitSMRFTest {
         assertTrue(Arrays.equals(message2.getUnencryptedBody(), retrievedMessage2.getUnencryptedBody()));
     }
 
-    private ImmutableMessage createImmutableMessage(String type,
+    private ImmutableMessage createImmutableMessage(Message.MessageType type,
                                                     String sender,
                                                     String recipient) throws SecurityException, EncodingException,
                                                                       UnsuppportedVersionException {

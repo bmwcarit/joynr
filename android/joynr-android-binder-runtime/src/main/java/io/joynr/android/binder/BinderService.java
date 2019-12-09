@@ -62,7 +62,7 @@ public class BinderService extends Service {
                     }
                 }
 
-                if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+                if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                     message.setReceivedFromGlobal(true);
                 }
 

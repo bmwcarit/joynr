@@ -51,7 +51,7 @@ public class MqttMessagingStub implements IMessagingStub {
     public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
         LOG.debug(">>> OUTGOING TO {} >>> {}", address.getBrokerUri(), message);
         String topic = address.getTopic();
-        if (!Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+        if (!Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             topic += PRIORITY_LOW + message.getRecipient();
         }
 

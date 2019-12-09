@@ -111,7 +111,8 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     protected Set<Address> getAddresses(ImmutableMessage message) {
         Set<Address> result = super.getAddresses(message);
 
-        if (result.isEmpty() && parentRouter != null && message.getType() != Message.VALUE_MESSAGE_TYPE_MULTICAST) {
+        if (result.isEmpty() && parentRouter != null
+                && message.getType() != Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST) {
             String toParticipantId = message.getRecipient();
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {

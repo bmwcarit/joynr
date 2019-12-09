@@ -130,19 +130,21 @@ public class AbstractGlobalMessagingSkeletonTest {
 
     private void testRegisteringGlobalRoutingEntryForRequestTypes(final Address address,
                                                                   final Address expectedAddress) throws Exception {
-        testRegisteringGlobalRoutingEntry(address, expectedAddress, Message.VALUE_MESSAGE_TYPE_REQUEST);
+        testRegisteringGlobalRoutingEntry(address, expectedAddress, Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         testRegisteringGlobalRoutingEntry(address,
                                           expectedAddress,
-                                          Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
+                                          Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST);
         testRegisteringGlobalRoutingEntry(address,
                                           expectedAddress,
-                                          Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
-        testRegisteringGlobalRoutingEntry(address, expectedAddress, Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
+                                          Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
+        testRegisteringGlobalRoutingEntry(address,
+                                          expectedAddress,
+                                          Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST);
     }
 
     private void testRegisteringGlobalRoutingEntry(final Address address,
                                                    final Address expectedAddress,
-                                                   String messageType) throws Exception {
+                                                   Message.MessageType messageType) throws Exception {
         final long ttlMs = 1000L;
         final boolean isGloballyVisible = true;
 
@@ -159,15 +161,15 @@ public class AbstractGlobalMessagingSkeletonTest {
 
     @Test
     public void testRegisteringGlobalRoutingEntryForNonRequestTypes() throws Exception {
-        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_MULTICAST);
-        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_ONE_WAY);
-        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_PUBLICATION);
-        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_REPLY);
-        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
-        testRegisteringGlobalRoutingEntryForNonRequestType(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
+        testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP);
     }
 
-    private void testRegisteringGlobalRoutingEntryForNonRequestType(String nonRequestType) {
+    private void testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType nonRequestType) {
         when(immutableMessage.getType()).thenReturn(nonRequestType);
 
         subject.dummyRegisterGlobalRoutingEntry(immutableMessage, gbidsArray[0]);

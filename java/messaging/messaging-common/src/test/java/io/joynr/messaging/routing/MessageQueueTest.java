@@ -116,9 +116,9 @@ public class MessageQueueTest {
         when(mockDelayableMessage2_multicast.getMessage()).thenReturn(mockImmutableMessage2_multicast);
         when(mockDelayableMessage3_request.getMessage()).thenReturn(mockImmutableMessage3_request);
 
-        when(mockImmutableMessage2_multicast.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_MULTICAST);
+        when(mockImmutableMessage2_multicast.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
         when(mockDelayableMessage2_multicast.getDestinationAddresses()).thenReturn(multicastDestinationAddresses);
-        when(mockImmutableMessage3_request.getType()).thenReturn(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        when(mockImmutableMessage3_request.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         ObjectMapper objectMapper = new ObjectMapper();
         when(mockImmutableMessage3_request.getReplyTo()).thenReturn(objectMapper.writeValueAsString(replyToAddress));
         when(mockImmutableMessage3_request.getTtlMs()).thenReturn(42l);

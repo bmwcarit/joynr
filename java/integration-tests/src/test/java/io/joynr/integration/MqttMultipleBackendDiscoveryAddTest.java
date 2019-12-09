@@ -73,7 +73,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         verify(expectedClient).publishMessage(eq(gcdTopic), messageCaptor.capture(), anyInt());
         byte[] serializedMessage = messageCaptor.getValue();
         ImmutableMessage capturedMessage = new ImmutableMessage(serializedMessage);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());
         assertEquals(getGcdParticipantId(), capturedMessage.getRecipient());
     }
 
@@ -123,7 +123,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         verify(joynrMqttClient1).publishMessage(eq(gcdTopic), messageCaptor.capture(), anyInt());
         byte[] serializedMessage = messageCaptor.getValue();
         ImmutableMessage capturedMessage = new ImmutableMessage(serializedMessage);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());
         assertEquals(getGcdParticipantId(), capturedMessage.getRecipient());
     }
 

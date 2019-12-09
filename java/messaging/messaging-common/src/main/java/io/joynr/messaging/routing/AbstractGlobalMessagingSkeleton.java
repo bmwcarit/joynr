@@ -43,11 +43,11 @@ public abstract class AbstractGlobalMessagingSkeleton implements IMessagingSkele
     }
 
     protected void registerGlobalRoutingEntry(final ImmutableMessage message, String gbid) {
-        final String messageType = message.getType();
-        if (!messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
-                && !messageType.equals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+        final Message.MessageType messageType = message.getType();
+        if (!messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)
+                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
+                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
             logger.trace("Message type is: {}, no global routing entry added to the routing table for it ",
                          messageType);
             return;

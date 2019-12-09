@@ -262,7 +262,7 @@ public class MessagingTest extends AbstractServiceInterfaceTest {
     private ImmutableMessage createJoynrMessage(ExpiryDate expiryDate) throws Exception {
         MutableMessage message = new MutableMessage();
 
-        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setType(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         message.setPayload(("payload-" + createUuidString()).getBytes(StandardCharsets.UTF_8));
         message.setTtlAbsolute(true);
         message.setTtlMs(expiryDate.getValue());

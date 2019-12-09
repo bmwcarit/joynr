@@ -153,7 +153,7 @@ public class MutableMessageFactoryTest {
                                                                      toParticipantId,
                                                                      request,
                                                                      messagingQos);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_REQUEST, message.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, message.getType());
 
         assertEquals(fromParticipantId, message.getSender());
         assertEquals(toParticipantId, message.getRecipient());
@@ -186,7 +186,7 @@ public class MutableMessageFactoryTest {
                                                                      toParticipantId,
                                                                      request,
                                                                      messagingQos);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_REQUEST, message.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, message.getType());
         assertExpiryDateEquals(expiryDate.getValue(), message);
 
         final String expectedCustomHeaderName = Message.CUSTOM_HEADER_PREFIX + headerName;
@@ -204,7 +204,7 @@ public class MutableMessageFactoryTest {
                                                                            request,
                                                                            messagingQos);
         assertNotNull(message);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_ONE_WAY, message.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY, message.getType());
         assertEquals(fromParticipantId, message.getSender());
         assertEquals(toParticipantId, message.getRecipient());
         assertExpiryDateEquals(expiryDate.getValue(), message);
@@ -223,7 +223,7 @@ public class MutableMessageFactoryTest {
                                                                            request,
                                                                            messagingQos);
         assertNotNull(message);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_ONE_WAY, message.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY, message.getType());
         assertExpiryDateEquals(expiryDate.getValue(), message);
 
         final String expectedCustomHeaderName = Message.CUSTOM_HEADER_PREFIX + headerName;
@@ -241,7 +241,7 @@ public class MutableMessageFactoryTest {
                                                                    reply,
                                                                    messagingQos);
 
-        assertEquals(Message.VALUE_MESSAGE_TYPE_REPLY, message.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY, message.getType());
         assertEquals(fromParticipantId, message.getSender());
         assertEquals(toParticipantId, message.getRecipient());
         assertExpiryDateEquals(expiryDate.getValue(), message);
@@ -255,7 +255,7 @@ public class MutableMessageFactoryTest {
                                                                                  toParticipantId,
                                                                                  subscriptionRequest,
                                                                                  messagingQos);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST, message.getType());
         assertEquals(fromParticipantId, message.getSender());
         assertEquals(toParticipantId, message.getRecipient());
         assertExpiryDateEquals(expiryDate.getValue(), message);
@@ -269,7 +269,7 @@ public class MutableMessageFactoryTest {
                                                                          toParticipantId,
                                                                          publication,
                                                                          messagingQos);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_PUBLICATION, message.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION, message.getType());
         assertEquals(fromParticipantId, message.getSender());
         assertEquals(toParticipantId, message.getRecipient());
         assertExpiryDateEquals(expiryDate.getValue(), message);
@@ -300,7 +300,7 @@ public class MutableMessageFactoryTest {
         assertExpiryDateEquals(expiryDate.getValue(), joynrMessage);
         assertEquals(fromParticipantId, joynrMessage.getSender());
         assertEquals(multicastId, joynrMessage.getRecipient());
-        assertEquals(Message.VALUE_MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
         assertTrue(new String(joynrMessage.getPayload(),
                               StandardCharsets.UTF_8).contains(MulticastPublication.class.getName()));
     }
@@ -323,7 +323,7 @@ public class MutableMessageFactoryTest {
                                                                                 messagingQos);
 
         assertNotNull(result);
-        assertEquals(Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
+        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
         assertExpiryDateEquals(expiryDate.getValue(), result);
     }
 

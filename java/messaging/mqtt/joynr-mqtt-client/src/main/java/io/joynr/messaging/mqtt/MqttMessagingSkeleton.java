@@ -206,9 +206,9 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
 
     // only certain types of messages can be dropped in order not to break
     // the communication, e.g. a reply message must not be dropped
-    private boolean isRequestMessageTypeThatCanBeDropped(String messageType) {
-        if (messageType.equals(Message.VALUE_MESSAGE_TYPE_REQUEST)
-                || messageType.equals(Message.VALUE_MESSAGE_TYPE_ONE_WAY)) {
+    private boolean isRequestMessageTypeThatCanBeDropped(Message.MessageType messageType) {
+        if (messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)
+                || messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY)) {
             return true;
         }
 

@@ -43,7 +43,7 @@ public class MutableMessage extends Message {
     private byte[] payload;
 
     private String id;
-    private String type;
+    private MessageType type;
     private String replyTo;
     private String effort;
     private Map<String, String> customHeaders = new HashMap<>();
@@ -78,8 +78,9 @@ public class MutableMessage extends Message {
                 header.put(CUSTOM_HEADER_PREFIX + entry.getKey(), entry.getValue());
             }
         }
-
-        putIfValueNotNull(Message.HEADER_MSG_TYPE, type, header);
+        if (type != null) {
+            putIfValueNotNull(Message.HEADER_MSG_TYPE, type.toString(), header);
+        }
         putIfValueNotNull(Message.HEADER_ID, id, header);
         putIfValueNotNull(Message.HEADER_REPLY_TO, replyTo, header);
         putIfValueNotNull(Message.HEADER_EFFORT, effort, header);
@@ -125,11 +126,11 @@ public class MutableMessage extends Message {
         this.ttlAbsolute = ttlAbsolute;
     }
 
-    public String getType() {
+    public MessageType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(MessageType type) {
         this.type = type;
     }
 

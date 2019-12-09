@@ -66,7 +66,7 @@ public class MutableMessageFactory {
         this.messageProcessors = messageProcessors;
     }
 
-    private MutableMessage createMessage(String joynrMessageType,
+    private MutableMessage createMessage(Message.MessageType joynrMessageType,
                                          String fromParticipantId,
                                          String toParticipantId,
                                          Object payload,
@@ -74,7 +74,7 @@ public class MutableMessageFactory {
         return createMessage(joynrMessageType, fromParticipantId, toParticipantId, payload, messagingQos, true);
     }
 
-    private MutableMessage createMessage(String joynrMessageType,
+    private MutableMessage createMessage(Message.MessageType joynrMessageType,
                                          String fromParticipantId,
                                          String toParticipantId,
                                          Object payload,
@@ -113,7 +113,7 @@ public class MutableMessageFactory {
                                               final String toParticipantId,
                                               OneWayRequest request,
                                               MessagingQos messagingQos) {
-        return createMessage(Message.VALUE_MESSAGE_TYPE_ONE_WAY,
+        return createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY,
                              fromParticipantId,
                              toParticipantId,
                              request,
@@ -124,7 +124,7 @@ public class MutableMessageFactory {
                                         final String toParticipantId,
                                         Request request,
                                         MessagingQos messagingQos) {
-        MutableMessage msg = createMessage(Message.VALUE_MESSAGE_TYPE_REQUEST,
+        MutableMessage msg = createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
                                            fromParticipantId,
                                            toParticipantId,
                                            request,
@@ -144,7 +144,7 @@ public class MutableMessageFactory {
                                       final String toParticipantId,
                                       Reply reply,
                                       MessagingQos messagingQos) {
-        MutableMessage msg = createMessage(Message.VALUE_MESSAGE_TYPE_REPLY,
+        MutableMessage msg = createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY,
                                            fromParticipantId,
                                            toParticipantId,
                                            reply,
@@ -158,7 +158,7 @@ public class MutableMessageFactory {
                                                   final String toParticipantId,
                                                   SubscriptionReply subscriptionReply,
                                                   MessagingQos messagingQos) {
-        MutableMessage msg = createMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY,
+        MutableMessage msg = createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY,
                                            fromParticipantId,
                                            toParticipantId,
                                            subscriptionReply,
@@ -171,13 +171,13 @@ public class MutableMessageFactory {
                                                     String toParticipantId,
                                                     SubscriptionRequest subscriptionRequest,
                                                     MessagingQos messagingQos) {
-        String messageType;
+        Message.MessageType messageType;
         if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
-            messageType = Message.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
+            messageType = Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
         } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
-            messageType = Message.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
+            messageType = Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
         } else {
-            messageType = Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
+            messageType = Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
         }
         MutableMessage msg = createMessage(messageType,
                                            fromParticipantId,
@@ -192,7 +192,7 @@ public class MutableMessageFactory {
                                             String toParticipantId,
                                             SubscriptionPublication publication,
                                             MessagingQos messagingQos) {
-        MutableMessage msg = createMessage(Message.VALUE_MESSAGE_TYPE_PUBLICATION,
+        MutableMessage msg = createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION,
                                            fromParticipantId,
                                            toParticipantId,
                                            publication,
@@ -205,7 +205,7 @@ public class MutableMessageFactory {
                                                  String toParticipantId,
                                                  SubscriptionStop subscriptionStop,
                                                  MessagingQos messagingQos) {
-        MutableMessage msg = createMessage(Message.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP,
+        MutableMessage msg = createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP,
                                            fromParticipantId,
                                            toParticipantId,
                                            subscriptionStop,
@@ -217,7 +217,7 @@ public class MutableMessageFactory {
     public MutableMessage createMulticast(String fromParticipantId,
                                           MulticastPublication multicastPublication,
                                           MessagingQos messagingQos) {
-        return createMessage(Message.VALUE_MESSAGE_TYPE_MULTICAST,
+        return createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST,
                              fromParticipantId,
                              multicastPublication.getMulticastId(),
                              multicastPublication,

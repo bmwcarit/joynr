@@ -272,7 +272,7 @@ public class BounceProxyCommunicationMock {
                                                                              UnsuppportedVersionException {
         MutableMessage message = new MutableMessage();
 
-        message.setType(Message.VALUE_MESSAGE_TYPE_REQUEST);
+        message.setType(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         message.setTtlAbsolute(true);
         message.setTtlMs(ExpiryDate.fromRelativeTtl(relativeTtlMs).getValue());
         message.setPayload(postPayload);

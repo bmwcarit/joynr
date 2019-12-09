@@ -82,8 +82,8 @@ public class ImmutableMessage extends Message {
         return messageDeserializer.getHeader(Message.HEADER_REPLY_TO);
     }
 
-    public String getType() {
-        return messageDeserializer.getHeader(Message.HEADER_MSG_TYPE);
+    public Message.MessageType getType() {
+        return Message.MessageType.fromString((messageDeserializer.getHeader(Message.HEADER_MSG_TYPE)));
     }
 
     public String getEffort() {
@@ -156,6 +156,7 @@ public class ImmutableMessage extends Message {
 
             SimpleModule module = new SimpleModule();
             module.addSerializer(byte[].class, new PayloadSerializer(byte[].class));
+            module.addSerializer(MessageType.class, new TypeSerializer(MessageType.class));
             objectMapper.registerModule(module);
         }
 
@@ -184,9 +185,26 @@ public class ImmutableMessage extends Message {
         }
     }
 
+    private static class TypeSerializer extends StdSerializer<MessageType> {
+        private static final long serialVersionUID = 1L;
+
+        protected TypeSerializer(Class<MessageType> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(MessageType value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            if (value == null) {
+                gen.writeString("null");
+            } else {
+                gen.writeString(value.toString());
+            }
+        }
+    }
+
     public boolean isReply() {
-        final String messageType = getType();
-        return VALUE_MESSAGE_TYPE_REPLY.equals(messageType)
-                || VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(messageType);
+        final Message.MessageType messageType = getType();
+        return MessageType.VALUE_MESSAGE_TYPE_REPLY.equals(messageType)
+                || MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(messageType);
     }
 }

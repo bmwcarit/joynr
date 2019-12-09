@@ -97,7 +97,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
                 }
             }
 
-            if (Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
+            if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
                 message.setReceivedFromGlobal(true);
             }
             messageRouter.route(message);
