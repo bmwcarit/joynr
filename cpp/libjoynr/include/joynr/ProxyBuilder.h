@@ -122,7 +122,8 @@ public:
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setMessagingQos(const MessagingQos& _messagingQos) noexcept override;
+    std::shared_ptr<IProxyBuilder<T>> setMessagingQos(
+            const MessagingQos& _messagingQos) noexcept override;
 
     /**
      * @brief OPTIONAL - Sets the discovery Qos settings. If no discovery Qos is provided, a default
@@ -130,7 +131,8 @@ public:
      * @param discoveryQos The discovery quality of service settings
      * @return The ProxyBuilder object
      */
-    ProxyBuilder* setDiscoveryQos(const DiscoveryQos& _discoveryQos) noexcept override;
+    std::shared_ptr<IProxyBuilder<T>> setDiscoveryQos(
+            const DiscoveryQos& _discoveryQos) noexcept override;
 
     /**
      * @brief Sets the GBIDs (Global Backend Identifiers) to select the backends in which the
@@ -143,7 +145,7 @@ public:
      * @return The ProxyBuilder object
      * @throw std::invalid_argument if provided gbids vector is empty
      */
-    ProxyBuilder* setGbids(const std::vector<std::string>& _gbids) override;
+    std::shared_ptr<IProxyBuilder<T>> setGbids(const std::vector<std::string>& _gbids) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
@@ -315,14 +317,15 @@ void ProxyBuilder<T>::buildAsync(
 }
 
 template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setMessagingQos(const MessagingQos& messagingQos) noexcept
+std::shared_ptr<IProxyBuilder<T>> ProxyBuilder<T>::setMessagingQos(
+        const MessagingQos& messagingQos) noexcept
 {
     this->_messagingQos = messagingQos;
     // check validity of messaging maximum TTL
     if (this->_messagingQos.getTtl() > _messagingMaximumTtlMs) {
         this->_messagingQos.setTtl(_messagingMaximumTtlMs);
     }
-    return this;
+    return this->shared_from_this();
 }
 
 template <class T>
@@ -330,7 +333,8 @@ template <class T>
    ->build() is called on the proxy Builder.
    All parameter that are needed for arbitration should be set, before setDiscoveryQos is called.
 */
-ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept
+std::shared_ptr<IProxyBuilder<T>> ProxyBuilder<T>::setDiscoveryQos(
+        const DiscoveryQos& discoveryQos) noexcept
 {
     this->_discoveryQos = discoveryQos;
     if (this->_discoveryQos.getDiscoveryTimeoutMs() == DiscoveryQos::NO_VALUE()) {
@@ -339,17 +343,17 @@ ProxyBuilder<T>* ProxyBuilder<T>::setDiscoveryQos(const DiscoveryQos& discoveryQ
     if (this->_discoveryQos.getRetryIntervalMs() == DiscoveryQos::NO_VALUE()) {
         this->_discoveryQos.setRetryIntervalMs(_discoveryDefaultRetryIntervalMs);
     }
-    return this;
+    return this->shared_from_this();
 }
 
 template <class T>
-ProxyBuilder<T>* ProxyBuilder<T>::setGbids(const std::vector<std::string>& gbids)
+std::shared_ptr<IProxyBuilder<T>> ProxyBuilder<T>::setGbids(const std::vector<std::string>& gbids)
 {
     if (gbids.size() == 0) {
         throw std::invalid_argument("GBIDs vector must not be empty.");
     }
     this->_gbids = gbids;
-    return this;
+    return this->shared_from_this();
 }
 
 } // namespace joynr

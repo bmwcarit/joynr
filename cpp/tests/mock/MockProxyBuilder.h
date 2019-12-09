@@ -19,6 +19,8 @@
 #ifndef TESTS_MOCK_MOCKPROXYBUILDER_H
 #define TESTS_MOCK_MOCKPROXYBUILDER_H
 
+#include <memory>
+
 #include <gmock/gmock.h>
 
 #include "joynr/IProxyBuilder.h"
@@ -30,30 +32,28 @@ public:
     MockProxyBuilder(){
         using ::testing::_;
         using ::testing::Return;
-        ON_CALL(*this, setCached(_)).WillByDefault(Return(this));
         ON_CALL(*this, setMessagingQosMock(_)).WillByDefault(Return(this));
         ON_CALL(*this, setDiscoveryQosMock(_)).WillByDefault(Return(this));
         ON_CALL(*this, setGbidsMock(_)).WillByDefault(Return(this));
     }
 
-    MOCK_METHOD1_T(setCached, joynr::IProxyBuilder<T>*(const bool cached));
-    joynr::IProxyBuilder<T>* setMessagingQos(const joynr::MessagingQos& cached) noexcept override
+    joynr::std::shared_ptr<IProxyBuilder<T>> setMessagingQos(const joynr::MessagingQos& cached) noexcept override
     {
         return setMessagingQosMock(cached);
     }
-    MOCK_METHOD1_T(setMessagingQosMock, joynr::IProxyBuilder<T>*(const joynr::MessagingQos& cached));
+    MOCK_METHOD1_T(setMessagingQosMock, joynr::std::shared_ptr<IProxyBuilder<T>>(const joynr::MessagingQos& cached));
 
-    joynr::IProxyBuilder<T>* setDiscoveryQos(const joynr::DiscoveryQos& cached) noexcept override
+    joynr::std::shared_ptr<IProxyBuilder<T>> setDiscoveryQos(const joynr::DiscoveryQos& cached) noexcept override
     {
         return setDiscoveryQosMock(cached);
     }
-    MOCK_METHOD1_T(setDiscoveryQosMock, joynr::IProxyBuilder<T>*(const joynr::DiscoveryQos& cached));
+    MOCK_METHOD1_T(setDiscoveryQosMock, joynr::std::shared_ptr<IProxyBuilder<T>>(const joynr::DiscoveryQos& cached));
 
-    joynr::IProxyBuilder<T>* setGbids(const std::vector<std::string>& gbids) noexcept override
+    joynr::std::shared_ptr<IProxyBuilder<T>> setGbids(const std::vector<std::string>& gbids) noexcept override
     {
         return setGbidsMock(gbids);
     }
-    MOCK_METHOD1_T(setGbidsMock, joynr::IProxyBuilder<T>*(const std::vector<std::string>& gbids));
+    MOCK_METHOD1_T(setGbidsMock, joynr::std::shared_ptr<IProxyBuilder<T>>(const std::vector<std::string>& gbids));
 
     MOCK_METHOD0_T(build, std::shared_ptr<T>());
 

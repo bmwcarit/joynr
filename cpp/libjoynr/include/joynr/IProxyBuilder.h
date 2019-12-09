@@ -72,14 +72,16 @@ public:
      * @param messagingQos The message quality of service settings
      * @return The ProxyBuilder object
      */
-    virtual IProxyBuilder* setMessagingQos(const MessagingQos& messagingQos) noexcept = 0;
+    virtual std::shared_ptr<IProxyBuilder<T>> setMessagingQos(
+            const MessagingQos& messagingQos) noexcept = 0;
 
     /**
      * @brief Sets the discovery qos settings
      * @param discoveryQos The discovery quality of service settings
      * @return The ProxyBuilder object
      */
-    virtual IProxyBuilder* setDiscoveryQos(const DiscoveryQos& discoveryQos) noexcept = 0;
+    virtual std::shared_ptr<IProxyBuilder<T>> setDiscoveryQos(
+            const DiscoveryQos& discoveryQos) noexcept = 0;
 
     /**
      * @brief Sets the GBIDs (Global Backend Identifiers) to select the backends in which the
@@ -92,7 +94,7 @@ public:
      * @return The ProxyBuilder object
      * @throw std::invalid_argument if provided gbids vector is empty
      */
-    virtual IProxyBuilder* setGbids(const std::vector<std::string>& gbids) = 0;
+    virtual std::shared_ptr<IProxyBuilder<T>> setGbids(const std::vector<std::string>& gbids) = 0;
 };
 
 } // namespace joynr
