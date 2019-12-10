@@ -1772,14 +1772,17 @@ public class <Filter>BroadcastFilter extends <Interface><Broadcast>BroadcastFilt
 
 # <a name="status_monitoring"></a> Joynr Status Monitoring
 
-Joynr provides metrics which can be used to detect invalid states and situations
-which require a restart of an instance. In order to access this information,
-inject an implementation of the following interfaces via Guice:
+Joynr provides metrics to monitor the connectivity status of the Mqtt connection
+which can be used to detect invalid states and situations which require
+a restart of an instance. In order to access this information,
+inject an implementation of the following interface via Guice:
 
-* ```io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver```
-* ```io.joynr.statusmetrics.StatusReceiver```
+* `io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver`
 
-See the documentation of each interface for more information.
+Joynr provides `io.joynr.messaging.mqtt.statusmetrics.DefaultMqttStatusReceiver`
+as implementation for this interface by default.
+
+See the documentation of the interface more information.
 
 # <a name="message_persistence"></a> Message Persistence
 
