@@ -53,7 +53,6 @@ import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.JoynrInjectionConstants;
-import io.joynr.statusmetrics.StatusReceiver;
 
 /**
  * Integration tests for the JEE integration bean.
@@ -114,7 +113,6 @@ public class JeeIntegrationBeanTest {
         Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
 
         MqttStatusReceiver mqttStatusReceiver = joynrInjector.getInstance(MqttStatusReceiver.class);
-        StatusReceiver statusReceiver = joynrInjector.getInstance(StatusReceiver.class);
 
         assertNotNull(joynrStatusMetrics);
 
@@ -122,6 +120,5 @@ public class JeeIntegrationBeanTest {
         // wrapped by a java proxy. Therefore the objects are different. However, the toString() method is called on the
         // underlying object.
         assertEquals(mqttStatusReceiver.toString(), joynrStatusMetrics.toString());
-        assertEquals(statusReceiver.toString(), joynrStatusMetrics.toString());
     }
 }

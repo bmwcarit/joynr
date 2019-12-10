@@ -36,7 +36,6 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
-import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.exceptions.ProviderRuntimeException;
@@ -89,8 +88,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
                                  MessageQueue messageQueue,
-                                 ShutdownNotifier shutdownNotifier,
-                                 StatusReceiver statusReceiver) {
+                                 ShutdownNotifier shutdownNotifier) {
         // CHECKSTYLE:ON
         super(routingTable,
               scheduler,
@@ -102,8 +100,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
               addressManager,
               multicastReceiverRegistry,
               messageQueue,
-              shutdownNotifier,
-              statusReceiver);
+              shutdownNotifier);
         this.incomingAddress = incomingAddress;
     }
 

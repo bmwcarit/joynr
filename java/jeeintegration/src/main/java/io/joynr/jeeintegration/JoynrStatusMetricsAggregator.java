@@ -18,7 +18,6 @@
  */
 package io.joynr.jeeintegration;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,17 +27,14 @@ import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Singleton;
 
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
-import io.joynr.statusmetrics.MessageWorkerStatus;
-import io.joynr.statusmetrics.StatusReceiver;
 
 @Singleton
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
-public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics, MqttStatusReceiver, StatusReceiver {
+public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics, MqttStatusReceiver {
     private AtomicInteger numDiscardedMqttRequest = new AtomicInteger();
     private Object connectionStatusChangedLock = new Object();
     private AtomicBoolean isConnectedToMqttBroker = new AtomicBoolean();
     private AtomicLong disconnectedFromMqttBrokerSinceTimestamp = new AtomicLong();
-    private ConcurrentHashMap<Integer, MessageWorkerStatus> messageWorkersStatus = new ConcurrentHashMap<Integer, MessageWorkerStatus>();
 
     @Override
     public void notifyMessageDropped() {
@@ -78,10 +74,5 @@ public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics, MqttSta
     @Override
     public long getDisconnectedFromMqttBrokerSinceTimestamp() {
         return disconnectedFromMqttBrokerSinceTimestamp.get();
-    }
-
-    @Override
-    public void updateMessageWorkerStatus(int messageWorkerId, MessageWorkerStatus messageWorkerStatus) {
-        this.messageWorkersStatus.put(messageWorkerId, messageWorkerStatus);
     }
 }

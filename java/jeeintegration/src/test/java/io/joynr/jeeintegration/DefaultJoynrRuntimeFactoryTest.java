@@ -52,7 +52,6 @@ import com.google.inject.name.Names;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
@@ -64,7 +63,6 @@ import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 import joynr.Request;
@@ -162,7 +160,6 @@ public class DefaultJoynrRuntimeFactoryTest {
                                                  mqttClientIdProviderInstance,
                                                  messagePersisterInstance,
                                                  beanManager,
-                                                 mock(StatusReceiver.class),
                                                  mock(MqttStatusReceiver.class));
         scheduledExecutorService = mock(ScheduledExecutorService.class);
         Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");

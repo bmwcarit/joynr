@@ -105,8 +105,7 @@ import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
-import io.joynr.statusmetrics.MessageWorkerStatus;
-import io.joynr.statusmetrics.StatusReceiver;
+
 import io.joynr.util.JoynrThreadFactory;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -152,8 +151,6 @@ public class CcMessageRouterTest {
     private AbstractMiddlewareMessagingStubFactory<IMessagingStub, InProcessAddress> inProcessMessagingStubFactoryMock;
     @Mock
     private ChannelMessagingSkeletonFactory messagingSkeletonFactoryMock;
-    @Mock
-    private StatusReceiver statusReceiver;
     @Mock
     private ShutdownNotifier shutdownNotifier;
     @Mock
@@ -219,7 +216,6 @@ public class CcMessageRouterTest {
                               .to(false);
 
                 bind(AccessController.class).toInstance(mock(AccessController.class));
-                bind(StatusReceiver.class).toInstance(statusReceiver);
                 bind(MessagePersister.class).toInstance(messagePersisterMock);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
@@ -850,26 +846,6 @@ public class CcMessageRouterTest {
                                                                                      new MessagingQos());
 
         testNotRoutableMessageIsDropped(mutableMessage);
-    }
-
-    @Test
-    public void testMessageWorkerStatusUpdatedWhenMessageWasQueued() throws Exception {
-        ArgumentCaptor<MessageWorkerStatus> messageWorkerStatusCaptor = ArgumentCaptor.forClass(MessageWorkerStatus.class);
-
-        messageRouter.route(joynrMessage.getImmutableMessage());
-        Thread.sleep(250);
-
-        verify(statusReceiver, atLeast(1)).updateMessageWorkerStatus(eq(0), messageWorkerStatusCaptor.capture());
-
-        // Workaround: At the beginning, the abstract message router queues two initial updates ("waiting for message") with the
-        // same timestamp. Remove this duplicate by inserting all values into a LinkedHashSet which preserves the order of insertion.
-        LinkedHashSet<MessageWorkerStatus> uniqueStatusUpdates = new LinkedHashSet<MessageWorkerStatus>(messageWorkerStatusCaptor.getAllValues());
-        MessageWorkerStatus[] statusUpdates = uniqueStatusUpdates.toArray(new MessageWorkerStatus[0]);
-
-        assertEquals(3, statusUpdates.length);
-        assertEquals(true, statusUpdates[0].isWaitingForMessage());
-        assertEquals(false, statusUpdates[1].isWaitingForMessage());
-        assertEquals(true, statusUpdates[2].isWaitingForMessage());
     }
 
     @Test

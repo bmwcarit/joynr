@@ -55,8 +55,6 @@ import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
-import io.joynr.statusmetrics.MessageWorkerStatus;
-import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
@@ -82,7 +80,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     protected final MulticastReceiverRegistry multicastReceiverRegistry;
 
     private final MessageQueue messageQueue;
-    private final StatusReceiver statusReceiver;
 
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
@@ -115,8 +112,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                  AddressManager addressManager,
                                  MulticastReceiverRegistry multicastReceiverRegistry,
                                  MessageQueue messageQueue,
-                                 ShutdownNotifier shutdownNotifier,
-                                 StatusReceiver statusReceiver) {
+                                 ShutdownNotifier shutdownNotifier) {
         // CHECKSTYLE:ON
         this.routingTable = routingTable;
         this.scheduler = scheduler;
@@ -127,7 +123,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
-        this.statusReceiver = statusReceiver;
         this.proxyMap = new ConcurrentHashMap<WeakReference<Object>, ProxyInformation>();
         this.garbageCollectedProxiesQueue = new ReferenceQueue<Object>();
         this.shutdownNotifier = shutdownNotifier;
@@ -501,17 +496,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                 DelayableImmutableMessage delayableMessage = null;
 
                 try {
-                    statusReceiver.updateMessageWorkerStatus(number,
-                                                             new MessageWorkerStatus(System.currentTimeMillis(), true));
                     delayableMessage = messageQueue.poll(1000, TimeUnit.MILLISECONDS);
 
                     if (delayableMessage == null) {
                         continue;
                     }
-
-                    statusReceiver.updateMessageWorkerStatus(number,
-                                                             new MessageWorkerStatus(System.currentTimeMillis(),
-                                                                                     false));
 
                     message = delayableMessage.getMessage();
                     logger.trace("Starting processing of message {}", message);

@@ -87,11 +87,9 @@ import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
-import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectoryImpl;
-import io.joynr.statusmetrics.DefaultStatusReceiver;
-import io.joynr.statusmetrics.StatusReceiver;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
@@ -153,7 +151,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                             .toProvider(DefaultScheduledExecutorServiceProvider.class);
-        bind(StatusReceiver.class).to(DefaultStatusReceiver.class);
         bind(StatelessAsyncCallbackDirectory.class).to(StatelessAsyncCallbackDirectoryImpl.class).in(Singleton.class);
         bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
         bind(StatelessAsyncRequestReplyIdManager.class).to(DefaultStatelessAsyncRequestReplyIdManagerImpl.class);

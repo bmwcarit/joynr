@@ -33,7 +33,6 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
-import io.joynr.statusmetrics.StatusReceiver;
 import joynr.ImmutableMessage;
 
 public class CcMessageRouter extends AbstractMessageRouter {
@@ -56,8 +55,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
                            AccessController accessController,
                            @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
                            MessageQueue messageQueue,
-                           ShutdownNotifier shutdownNotifier,
-                           StatusReceiver statusReceiver) {
+                           ShutdownNotifier shutdownNotifier) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
@@ -68,8 +66,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
               addressManager,
               multicastReceiverRegistry,
               messageQueue,
-              shutdownNotifier,
-              statusReceiver);
+              shutdownNotifier);
 
         this.accessController = accessController;
         this.enableAccessControl = enableAccessControl;

@@ -75,7 +75,6 @@ import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.statusmetrics.StatusReceiver;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -101,7 +100,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private BeanManager beanManager;
 
-    private StatusReceiver statusReceiver;
     private MqttStatusReceiver mqttStatusReceiver;
 
     /**
@@ -131,7 +129,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
      * @param mqttClientIdProvider can be optionally provided to generate custom mqtt client id
      * @param messagePersister can be optionally provided to persist joynr messages and thus increase sudden crash resilience
      * @param beanManager
-     * @param statusReceiver Is passed to POJO joynr and receives metrics about the status of the joynr instance.
      * @param mqttStatusReceiver Is passed to POJO joynr and receives metrics about the status of the mqtt connection.
      */
     // CHECKSTYLE:OFF
@@ -142,7 +139,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
                                       @JoynrMessagePersister Instance<MessagePersister> messagePersister,
                                       BeanManager beanManager,
-                                      StatusReceiver statusReceiver,
                                       MqttStatusReceiver mqttStatusReceiver) {
         // CHECKSTYLE:ON
         if (joynrLocalDomain.isUnsatisfied()) {
@@ -208,7 +204,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
         this.beanManager = beanManager;
         this.mqttStatusReceiver = mqttStatusReceiver;
-        this.statusReceiver = statusReceiver;
     }
 
     @Override
@@ -254,7 +249,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                     }
 
                     bind(MqttStatusReceiver.class).toInstance(mqttStatusReceiver);
-                    bind(StatusReceiver.class).toInstance(statusReceiver);
                 }
             });
 
