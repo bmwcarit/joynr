@@ -51,6 +51,8 @@ and use its native way of performing inter-process communication (IPC).
   have already been collected by the Java garbage collector.
 * **[Java]** Updated jackson.databind to version 2.9.10, net.sourceforge.htmlunit:htmlunit to 2.36.0
 * **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
+* **[Java, Generator]** Removed ProvidesJoynrTypesInfo annotation from generated classes.
+  Classes generated with the new generator will therefore not be compatible with old library versions.
 
 ## Configuration property changes
 None.
