@@ -96,7 +96,6 @@ android {
                     "../../java/core/libjoynr/src/main/java/",
 
                     // common
-                    "../../java/common/status-metrics/src/main/java/",
                     "../../java/common/infrastructure-common/src/main/java/",
                     "../../java/common/discovery-common/src/main/java/",
                     "../../java/common/guice-integration/src/main/java/",
