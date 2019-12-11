@@ -43,7 +43,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PersistedSubscriptionRequest;
 import io.joynr.exceptions.DiscoveryException;
@@ -63,6 +62,7 @@ import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.util.MultiMap;
+import io.joynr.util.ReflectionUtils;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
 import joynr.OnChangeSubscriptionQos;

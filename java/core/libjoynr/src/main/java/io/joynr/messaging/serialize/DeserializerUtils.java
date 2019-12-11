@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.util.ReflectionUtils;
 
 class ParamsAndParamDatatypesHolder {
     public final String[] paramDatatypes;

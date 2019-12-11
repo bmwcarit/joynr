@@ -24,8 +24,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
+import io.joynr.util.ReflectionUtils;
 
 /**
  * Value class representing a java method, that will later be called using reflection. Offers methods to access the

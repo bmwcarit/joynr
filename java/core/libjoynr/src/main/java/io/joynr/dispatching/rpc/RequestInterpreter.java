@@ -33,7 +33,6 @@ import com.google.inject.Provider;
 
 import io.joynr.JoynrVersion;
 import io.joynr.context.JoynrMessageScope;
-import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.JoynrMessageCreator;
@@ -45,6 +44,7 @@ import io.joynr.provider.PromiseListener;
 import io.joynr.provider.ProviderCallback;
 import io.joynr.proxy.MethodSignature;
 import io.joynr.util.AnnotationUtil;
+import io.joynr.util.ReflectionUtils;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;

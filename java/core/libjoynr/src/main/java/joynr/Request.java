@@ -23,8 +23,7 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 import java.util.Arrays;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import io.joynr.dispatcher.rpc.ReflectionUtils;
+import io.joynr.util.ReflectionUtils;
 
 /**
  * This is a value class that represents a JoynRPC function call as JSON. The class also offers a function to

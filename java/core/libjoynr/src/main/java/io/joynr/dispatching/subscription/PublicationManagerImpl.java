@@ -43,7 +43,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.dispatching.DirectoryListener;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
@@ -67,6 +66,7 @@ import io.joynr.pubsub.publication.MulticastListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.MultiMap;
+import io.joynr.util.ReflectionUtils;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;

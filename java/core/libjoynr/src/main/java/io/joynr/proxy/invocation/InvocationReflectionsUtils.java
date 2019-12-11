@@ -21,9 +21,9 @@ package io.joynr.proxy.invocation;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import io.joynr.dispatcher.rpc.ReflectionUtils;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.pubsub.subscription.SubscriptionListener;
+import io.joynr.util.ReflectionUtils;
 
 public final class InvocationReflectionsUtils {
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.dispatcher.rpc;
+package io.joynr.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -253,6 +253,26 @@ public class ReflectionUtils {
             classes[i] = clazz;
         }
         return classes;
+    }
+
+    public static Method getStaticMethodFromSuperInterfaces(final Class<?> clazz,
+                                                            String methodName) throws NoSuchMethodException {
+        try {
+            return clazz.getMethod(methodName);
+        } catch (NoSuchMethodException e) {
+            Class<?>[] parentClasses = clazz.getInterfaces();
+            if (parentClasses.length == 0) {
+                throw e;
+            }
+            for (Class<?> parent : parentClasses) {
+                try {
+                    return getStaticMethodFromSuperInterfaces(parent, methodName);
+                } catch (NoSuchMethodException e2) {
+                    // ignore
+                }
+            }
+            throw e;
+        }
     }
 
     private static Class<?> processArrayTokens(Class<?> clazz, int i) {

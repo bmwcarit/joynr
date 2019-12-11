@@ -16,13 +16,15 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.dispatcher.rpc;
+package io.joynr.util;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import io.joynr.dispatcher.rpc.RequestStatus;
 
 public class ReflectionUtilsTest {
 
