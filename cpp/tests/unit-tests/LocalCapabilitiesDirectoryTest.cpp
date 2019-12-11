@@ -157,7 +157,7 @@ public:
                      200);
         _settings.set(ClusterControllerSettings::
                              SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),
-                     true);
+                     false);
         _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
                 _clusterControllerSettings,
                 _globalCapabilitiesDirectoryClient,
