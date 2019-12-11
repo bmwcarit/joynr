@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.Arbitrator;
@@ -39,7 +38,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.util.AnnotationUtil;
+import io.joynr.util.ReflectionUtils;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
@@ -251,13 +250,11 @@ public class GuidedProxyBuilder {
 
     protected synchronized void registerInterfaceClassTypes(final Class<?> interfaceClass, String errorPrefix) {
         try {
-            ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(interfaceClass,
-                                                                                                   ProvidesJoynrTypesInfo.class);
-            Method m = providesJoynrTypesInfoAnnotation.interfaceClass().getDeclaredMethod("getDataTypes");
+            Method m = ReflectionUtils.getStaticMethodFromSuperInterfaces(interfaceClass, "getDataTypes");
             @SuppressWarnings("unchecked")
             Set<Class<?>> subClasses = (Set<Class<?>>) m.invoke(null);
             objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
             throw new IllegalArgumentException(errorPrefix + ": failed to register interface data types", e);
         }
     }

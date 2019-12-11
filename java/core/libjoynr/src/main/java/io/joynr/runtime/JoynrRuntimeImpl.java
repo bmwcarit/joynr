@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.UsedBy;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
@@ -54,6 +53,7 @@ import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.util.AnnotationUtil;
+import io.joynr.util.ReflectionUtils;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -325,13 +325,11 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     protected synchronized void registerInterfaceClassTypes(final Class<?> interfaceClass, String errorPrefix) {
         try {
-            ProvidesJoynrTypesInfo providesJoynrTypesInfoAnnotation = AnnotationUtil.getAnnotation(interfaceClass,
-                                                                                                   ProvidesJoynrTypesInfo.class);
-            Method m = providesJoynrTypesInfoAnnotation.interfaceClass().getDeclaredMethod("getDataTypes");
+            Method m = ReflectionUtils.getStaticMethodFromSuperInterfaces(interfaceClass, "getDataTypes");
             @SuppressWarnings("unchecked")
             Set<Class<?>> subClasses = (Set<Class<?>>) m.invoke(null);
             objectMapper.registerSubtypes(subClasses.toArray(new Class<?>[subClasses.size()]));
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
             throw new IllegalArgumentException(errorPrefix + ": failed to register interface data types", e);
         }
     }
