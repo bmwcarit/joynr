@@ -124,11 +124,15 @@ class LocalCapabilitiesDirectoryTest : public ::testing::Test
 public:
     LocalCapabilitiesDirectoryTest()
             : _settings(),
+              _settingsForPersistencyTests(),
               _clusterControllerSettings(_settings),
+              _clusterControllerSettingsForPersistencyTests(_settingsForPersistencyTests),
               _purgeExpiredDiscoveryEntriesIntervalMs(100),
               _globalCapabilitiesDirectoryClient(std::make_shared<MockGlobalCapabilitiesDirectoryClient>()),
               _locallyRegisteredCapabilities(std::make_shared<capabilities::Storage>()),
               _globalLookupCache(std::make_shared<capabilities::CachingStorage>()),
+              _locallyRegisteredCapabilitiesForPersistencyTests(std::make_shared<capabilities::Storage>()),
+              _globalLookupCacheForPersistencyTests(std::make_shared<capabilities::CachingStorage>()),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _mockMessageRouter(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
@@ -158,6 +162,9 @@ public:
         _settings.set(ClusterControllerSettings::
                              SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),
                      false);
+        _settingsForPersistencyTests.set(ClusterControllerSettings::
+                             SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),
+                     true);
         _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
                 _clusterControllerSettings,
                 _globalCapabilitiesDirectoryClient,
@@ -663,11 +670,15 @@ protected:
     }
 
     Settings _settings;
+    Settings _settingsForPersistencyTests;
     ClusterControllerSettings _clusterControllerSettings;
+    ClusterControllerSettings _clusterControllerSettingsForPersistencyTests;
     const int _purgeExpiredDiscoveryEntriesIntervalMs;
     std::shared_ptr<MockGlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
     std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
     std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
+    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilitiesForPersistencyTests;
+    std::shared_ptr<capabilities::CachingStorage> _globalLookupCacheForPersistencyTests;
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> _mockMessageRouter;
     std::string _clusterControllerId;
@@ -3427,6 +3438,19 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerReceivedCapabilites_registerHttpA
 
 TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
 {
+    _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
+            _clusterControllerSettingsForPersistencyTests,
+            _globalCapabilitiesDirectoryClient,
+            _locallyRegisteredCapabilitiesForPersistencyTests,
+            _globalLookupCacheForPersistencyTests,
+            _LOCAL_ADDRESS,
+            _mockMessageRouter,
+            _singleThreadedIOService->getIOService(),
+            _clusterControllerId,
+            _KNOWN_GBIDS,
+            _defaultExpiryDateMs);
+    _localCapabilitiesDirectory->init();
+
     // Attempt loading (action usually performed by cluster-controller runtime)
     _localCapabilitiesDirectory->loadPersistedFile();
 
@@ -3478,14 +3502,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     // create a new object
     const std::int64_t defaultExpiryDateMs = 600000;
     auto localCapabilitiesDirectory2 =
-            std::make_shared<LocalCapabilitiesDirectory>(_clusterControllerSettings,
+            std::make_shared<LocalCapabilitiesDirectory>(_clusterControllerSettingsForPersistencyTests,
                                                          _globalCapabilitiesDirectoryClient,
-                                                         _locallyRegisteredCapabilities,
-                                                         _globalLookupCache,
+                                                         _locallyRegisteredCapabilitiesForPersistencyTests,
+                                                         _globalLookupCacheForPersistencyTests,
                                                          _LOCAL_ADDRESS,
                                                          _mockMessageRouter,
                                                          _singleThreadedIOService->getIOService(),
-                                                         "clusterControllerId",
+                                                         _clusterControllerId,
                                                          _KNOWN_GBIDS,
                                                          defaultExpiryDateMs);
     localCapabilitiesDirectory2->init();
