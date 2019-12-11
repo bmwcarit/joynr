@@ -41,7 +41,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.JoynrVersion;
-import io.joynr.ProvidesJoynrTypesInfo;
 import io.joynr.Sync;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -73,7 +72,6 @@ public class ProxyErrorsTest {
 
     // Dummy interface with a major version incompatible to the provider's version
     @Sync
-    @ProvidesJoynrTypesInfo(interfaceClass = test.class, interfaceName = "tests/test")
     @JoynrVersion(major = 2, minor = 0)
     public interface TestProxyWrongVersion {
         public static String INTERFACE_NAME = "tests/test";
