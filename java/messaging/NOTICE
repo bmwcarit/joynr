@@ -54,7 +54,6 @@ This project has dependencies to:
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
   io.joynr.java.common:guice-integration under The Apache Software License, Version 2.0
-  io.joynr.java.common:status-metrics under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:ehcache under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:jdbc under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence:persistence-common under The Apache Software License, Version 2.0
