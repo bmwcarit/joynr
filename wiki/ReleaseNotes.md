@@ -3,6 +3,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.12.0
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java/JEE]** Removed message worker status metrics (interface `StatusReceiver`), status metrics
+  for MQTT (interface `MqttStatusReceiver`) are the only remaining status metrics.
+
+## Configuration property changes
+None.
+
 # joynr 1.11.0
 
 ## API relevant changes
@@ -30,7 +42,7 @@ the versioning scheme [here](JoynrVersioning.md).
   supports `.json` files listing `.fidl` files and the generation of `joynr-includes` facilitating
   the import of generated code.
 
-* **[Android]** Added Android binder transport option to take full advantage of the Android framework, 
+* **[Android]** Added Android binder transport option to take full advantage of the Android framework,
 and use its native way of performing inter-process communication (IPC).
 
 ## Other changes
@@ -46,11 +58,11 @@ None.
 # joynr 1.10.1 **[Android only version]**
 
 ## API relevant changes
-* **[Android]** Added Android binder transport option to take full advantage of the Android framework, 
+* **[Android]** Added Android binder transport option to take full advantage of the Android framework,
 and use its native way of performing inter-process communication (IPC).
 
 ## Other changes
-* **[Android]** Updated the Android examples to demonstrate how to use the binder version of joynr 
+* **[Android]** Updated the Android examples to demonstrate how to use the binder version of joynr
 
 ## Configuration property changes
 None.
@@ -120,7 +132,7 @@ None.
 * **[Java]** Contrary to the documentation, the default proxy for GlobalCapabilitiesDirectory will be picked.
 
 ## Other changes
-None. 
+None.
 
 ## Configuration property changes
 * **[Java]** Renamed property `PROPERTY_DISCOVERY_RETRY_INTERVAL_MS` to
@@ -248,7 +260,7 @@ None.
 # joynr 1.8.2
 
 ## API relevant changes
-None. 
+None.
 
 ## Other changes
 * **[JEE]** Fixed bug for making stateless-async calls to JEE providers which was resulting in an
