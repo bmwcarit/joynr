@@ -18,6 +18,8 @@
  */
 package io.joynr.util;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,5 +63,91 @@ public class ReflectionUtilsTest {
             String key = entry.getKey();
             Assert.assertEquals(key, datatypeName);
         }
+    }
+
+    @Test
+    public void testGetStaticMethodFromSuperInterfacesWithClassContainingSearchedMethod() throws NoSuchMethodException {
+        assertNotNull(ReflectionUtils.getStaticMethodFromSuperInterfaces(TestClassContainingSearchedMethod.class,
+                                                                         "oneMethodToRuleThemAll"));
+    }
+
+    @Test(expected = NoSuchMethodException.class)
+    public void testGetStaticMethodFromSuperInterfacesWithClassNotContainingSearchedMethod() throws NoSuchMethodException {
+        ReflectionUtils.getStaticMethodFromSuperInterfaces(TestClassNotContainingSearchedMethod.class,
+                                                           "oneMethodToRuleThemAll");
+    }
+
+    @Test
+    public void testGetStaticMethodFromSuperInterfacesWithParentClassContainingSearchedMethod() throws NoSuchMethodException {
+        assertNotNull(ReflectionUtils.getStaticMethodFromSuperInterfaces(TestClassWithParentContainingSearchedMethod.class,
+                                                                         "oneMethodToRuleThemAll"));
+    }
+
+    @Test(expected = NoSuchMethodException.class)
+    public void testGetStaticMethodFromSuperInterfacesWithParentClassNotContainingSearchedMethod() throws NoSuchMethodException {
+        ReflectionUtils.getStaticMethodFromSuperInterfaces(TestClassWithParentNotContainingSearchedMethod.class,
+                                                           "oneMethodToRuleThemAll");
+    }
+
+    @Test
+    public void testGetStaticMethodFromSuperInterfacesWithInterfaceContainingSearchedMethod() throws NoSuchMethodException {
+        ReflectionUtils.getStaticMethodFromSuperInterfaces(TestInterfaceContainingSearchedMethod.class,
+                                                           "oneMethodToRuleThemAll");
+    }
+
+    @Test(expected = NoSuchMethodException.class)
+    public void testGetStaticMethodFromSuperInterfacesWithInterfaceNotContainingSearchedMethod() throws NoSuchMethodException {
+        ReflectionUtils.getStaticMethodFromSuperInterfaces(TestInterfaceNotContainingSearchedMethod.class,
+                                                           "oneMethodToRuleThemAll");
+    }
+
+    @Test
+    public void testGetStaticMethodFromSuperInterfacesWithInterfaceExtendingInterfaceContainingSearchedMethod() throws NoSuchMethodException {
+        ReflectionUtils.getStaticMethodFromSuperInterfaces(TestInterfaceExtendingInterfaceContainingSearchedMethod.class,
+                                                           "oneMethodToRuleThemAll");
+    }
+
+    @Test(expected = NoSuchMethodException.class)
+    public void testGetStaticMethodFromSuperInterfacesWithInterfaceExtendingInterfaceNotContainingSearchedMethod() throws NoSuchMethodException {
+        ReflectionUtils.getStaticMethodFromSuperInterfaces(TestInterfaceExtendingInterfaceNotContainingSearchedMethod.class,
+                                                           "oneMethodToRuleThemAll");
+    }
+
+    private class TestClassContainingSearchedMethod {
+        public void oneMethodToRuleThemAll() {
+        };
+    }
+
+    private class TestClassWithParentContainingSearchedMethod extends ParentClassContainingSearchedMethod {
+    }
+
+    private class TestClassNotContainingSearchedMethod {
+    }
+
+    private class TestClassWithParentNotContainingSearchedMethod extends ParentClassNotContainingSearchedMethod {
+    }
+
+    private class ParentClassContainingSearchedMethod {
+        public void oneMethodToRuleThemAll() {
+        };
+    }
+
+    private class ParentClassNotContainingSearchedMethod {
+    }
+
+    private interface TestInterfaceContainingSearchedMethod {
+        public static void oneMethodToRuleThemAll() {
+        };
+    }
+
+    private interface TestInterfaceNotContainingSearchedMethod {
+    }
+
+    private interface TestInterfaceExtendingInterfaceContainingSearchedMethod
+            extends TestInterfaceContainingSearchedMethod {
+    }
+
+    private interface TestInterfaceExtendingInterfaceNotContainingSearchedMethod
+            extends TestInterfaceNotContainingSearchedMethod {
     }
 }
