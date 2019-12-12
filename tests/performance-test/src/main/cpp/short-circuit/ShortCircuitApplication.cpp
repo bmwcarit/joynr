@@ -17,8 +17,12 @@
  * #L%
  */
 
-#include "ShortCircuitTest.h"
 #include <boost/program_options.hpp>
+
+#include "joynr/system/RoutingTypes/Address.h"
+
+#include "ShortCircuitTest.h"
+
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING

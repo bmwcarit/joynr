@@ -19,11 +19,12 @@
 #ifndef WEBSOCKETCCMESSAGINGSKELETONTLS_H
 #define WEBSOCKETCCMESSAGINGSKELETONTLS_H
 
-#include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeleton.h"
-
+#include <memory>
 #include <string>
 
 #include <websocketpp/config/asio.hpp>
+
+#include "WebSocketCcMessagingSkeleton.h"
 
 namespace joynr
 {
@@ -42,7 +43,7 @@ public:
             const std::string& caPemFile,
             const std::string& certPemFile,
             const std::string& privateKeyPemFile,
-            bool useEncryptedTls);
+            bool /*useEncryptedTls*/);
 
     virtual void init() override;
 
@@ -56,7 +57,6 @@ private:
                                                  const std::string& _privateKeyPemFile,
                                                  ConnectionHandle hdl);
 
-    bool _useEncryptedTls;
     const std::string _caPemFile;
     const std::string _certPemFile;
     const std::string _privateKeyPemFile;

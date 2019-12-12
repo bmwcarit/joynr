@@ -1,140 +1,46 @@
-# - Config file for the Joynr package
-# It defines the following variables
-#   Joynr_EXECUTABLES                  - The Joynr executables.
-#   Joynr_RESOURCES_DIR                - Directory containing resource and settings files for Joynr
-#                                        executables.
-#   Joynr_LIB_COMMON_INCLUDE_DIRS      - Common include directories needed for generated code.
-#   Joynr_LIB_COMMON_LIBRARIES         - Common libraries needed for generated code.
-#
-#   Joynr_LIB_INPROCESS_INCLUDE_DIRS   - Include directories for libJoynr with in-process
-#                                        communication.
-#                                        This includes also header files needed to build the cluster
-#                                        controller.
-#   Joynr_LIB_INPROCESS_LIBRARIES      - Libraries needed for libJoynr with in-process
-#                                        communication.
-#                                        This includes also libraries needed to build the cluster
-#                                        controller.
-#
-#   Joynr_LIB_WS_INCLUDE_DIRS          - Include directories for standalone libJoynr with WebSocket
-#                                        communication.
-#                                        (without cluster controller)
-#   Joynr_LIB_WS_LIBRARIES             - Libraries needed for standalone libJoynr with WebSocket
-#                                        communication.
-#                                        (without cluster controller)
+set(JOYNR_ENABLE_DLT_LOGGING @JOYNR_ENABLE_DLT_LOGGING@)
 
-# This file is derived from a CMake tutorial (http://www.cmake.org/Wiki/CMake/)
-# that is available under Creative Commons Attribution 2.5 Generic (CC BY 2.5, http://creativecommons.org/licenses/by/2.5/).
-# There are no attributions specified by the author.
+include(CMakeFindDependencyMacro)
 
-# Compute paths
-get_filename_component(JOYNR_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-
-if(CMAKE_CXX_VERSION LESS 14)
-    if("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
-        if( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-            if(NOT (CMAKE_CXX_FLAGS MATCHES "-std=c\\+\\+14") )
-                message(FATAL_ERROR "joynr requires C++14; add '-std=c++14' to CMAKE_CXX_FLAGS")
-            endif(NOT (CMAKE_CXX_FLAGS MATCHES "-std=c\\+\\+14") )
-        endif( (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-    else("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
-        message(FATAL_ERROR "joynr requires C++14; set CMAKE_CXX_VERSION to (at least) 14")
-    endif("${CMAKE_VERSION}" VERSION_LESS 3.2.0)
-endif(CMAKE_CXX_VERSION LESS 14)
-
-# CURL
-find_package(CURL REQUIRED)
-include(${JOYNR_CMAKE_DIR}/CheckCurlImportTargets.cmake)
-
-# OpenSSL
-find_package(OpenSSL REQUIRED)
-include(${JOYNR_CMAKE_DIR}/CheckOpenSSLImportTargets.cmake)
-
-# Boost
-find_package(Boost @JOYNR_BOOST_REQUIRED_VERSION@ REQUIRED
-    COMPONENTS
-    system
-    filesystem
-    thread
-)
-include(${JOYNR_CMAKE_DIR}/CheckBoostImportTargets.cmake)
-
-# Threads
-find_package(Threads) # sets CMAKE_THREAD_LIBS_INIT
-
-# Our library dependencies (contains definitions for IMPORTED targets)
-include(@JoynrConfig_TARGETS_FILE@)
-
-# default configuration
-set(
-    Joynr_LIB_COMMON_INCLUDE_DIRS
-    ${Boost_INCLUDE_DIRS}
-    @JoynrConfig_LIB_COMMON_INCLUDE_DIRS@
-)
-
-set(
-    Joynr_LIB_COMMON_LIBRARIES
-    @JoynrConfig_LIB_COMMON_LIBRARIES@
-)
-
-@JoynrConfig_RESOLVE_DEPENDENCIES@
-
-set(Joynr_EXECUTABLES)
-set(
-    Joynr_RESOURCES_DIR
-    @JoynrConfig_RESOURCES_DIR@
-)
-
-# in-process configuration
-set(
-    Joynr_LIB_INPROCESS_INCLUDE_DIRS
-    "${Joynr_LIB_COMMON_INCLUDE_DIRS}"
-    @JoynrConfig_LIB_INPROCESS_INCLUDE_DIRS@
-)
-
-set(
-    Joynr_LIB_INPROCESS_LIBRARIES
-    "${Joynr_LIB_COMMON_LIBRARIES}"
-    @JoynrConfig_LIB_INPROCESS_LIBRARIES@
-)
-
-# WebSockets configuration
-set(
-    Joynr_LIB_WS_INCLUDE_DIRS
-    "${Joynr_LIB_COMMON_INCLUDE_DIRS}"
-    @JoynrConfig_LIB_WS_INCLUDE_DIRS@
-)
-
-set(
-    Joynr_LIB_WS_LIBRARIES
-    "${Joynr_LIB_COMMON_LIBRARIES}"
-    @JoynrConfig_LIB_WS_LIBRARIES@
-)
-
-# DLT logger configuration
-set(
-     JOYNR_ENABLE_DLT_LOGGING
-    @JOYNR_ENABLE_DLT_LOGGING@
-)
-
-# STDOUT SPD logger configuration
-set(
-    JOYNR_ENABLE_STDOUT_LOGGING
-    @JOYNR_ENABLE_STDOUT_LOGGING@
-)
-
-if(JOYNR_ENABLE_DLT_LOGGING)
-    set_property(TARGET Joynr APPEND PROPERTY
-      INTERFACE_COMPILE_DEFINITIONS JOYNR_ENABLE_DLT_LOGGING
+find_dependency(Boost @JOYNR_BOOST_REQUIRED_VERSION@ REQUIRED
+                COMPONENTS system filesystem thread)
+find_dependency(spdlog @JOYNR_SPDLOG_REQUIRED_VERSION@ REQUIRED)
+if(${JOYNR_ENABLE_DLT_LOGGING})
+    find_dependency(DLT REQUIRED COMPONENTS automotive-dlt)
+endif()
+# websocketpp-config.cmake iw not guarding target addition; workaround: check it here.
+if(NOT TARGET websocketpp::websocketpp)
+    find_dependency(websocketpp @JOYNR_WEBSOCKETPP_REQUIRED_VERSION@ REQUIRED)
+endif()
+find_dependency(CURL REQUIRED)
+find_dependency(mosquitto @JOYNR_MOSQUITTO_REQUIRED_VERSION@ REQUIRED)
+if(NOT TARGET mosquitto::mosquitto)
+    add_library(mosquitto::mosquitto UNKNOWN IMPORTED)
+    set_target_properties(mosquitto::mosquitto PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${MOSQUITTO_INCLUDE_DIRS}"
+        IMPORTED_LOCATION ${MOSQUITTO_LIBRARIES}
     )
-endif(JOYNR_ENABLE_DLT_LOGGING)
+endif()
+find_dependency(MoCOCrW @JOYNR_MOCOCRW_REQUIRED_VERSION@ REQUIRED)
+find_dependency(muesli @JOYNR_MUESLI_REQUIRED_VERSION@ REQUIRED)
+# Keep this as last, it interferes with finding Boost components.
+find_dependency(smrf @JOYNR_SMRF_REQUIRED_VERSION@ REQUIRED)
 
-if(JOYNR_ENABLE_STDOUT_LOGGING)
-    set_property(TARGET Joynr APPEND PROPERTY
-      INTERFACE_COMPILE_DEFINITIONS JOYNR_ENABLE_STDOUT_LOGGING
-    )
-endif(JOYNR_ENABLE_STDOUT_LOGGING)
+@PACKAGE_INIT@
+
+if(NOT TARGET Joynr::JoynrLib)
+    get_filename_component(CURRENT_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+    include("${CURRENT_CMAKE_DIR}/JoynrTargets.cmake")
+endif()
+
+set_and_check(Joynr_BIN_DIR "@PACKAGE_JOYNR_INSTALL_BINDIR@")
+set_and_check(Joynr_RESOURCES_DIR "@PACKAGE_JoynrConfig_RESOURCES_DIR@")
 
 list(
     APPEND Joynr_EXECUTABLES
-    @JoynrConfig_INSTALL_BIN_DIR@/cluster-controller
+    ${Joynr_BIN_DIR}/cluster-controller
 )
+
+include(FindPackageHandleStandardArgs)
+set(_dummy_var "found")
+find_package_handle_standard_args(@PROJECT_NAME@ DEFAULT_MSG _dummy_var)

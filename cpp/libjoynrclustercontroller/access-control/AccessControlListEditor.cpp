@@ -17,17 +17,29 @@
  * #L%
  */
 
-#include "libjoynrclustercontroller/access-control/AccessControlListEditor.h"
+#include "AccessControlListEditor.h"
+
+#include <tuple>
 
 #include "joynr/CallContext.h"
+#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
+#include "joynr/infrastructure/IAccessControlListEditor.h"
 
-#include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
-#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
+#include "LocalDomainAccessStore.h"
+#include "LocalDomainAccessController.h"
 
 using namespace joynr::infrastructure::DacTypes;
 
 namespace joynr
 {
+
+namespace exceptions
+{
+class ProviderRuntimeException;
+}
 
 AccessControlListEditor::AccessControlListEditor(
         std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,

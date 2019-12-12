@@ -26,6 +26,8 @@
 #include <mococrw/openssl_wrap.h>
 
 #include "joynr/IKeychain.h"
+#include "joynr/Logger.h"
+#include "joynr/WebSocketSettings.h"
 
 namespace joynr
 {

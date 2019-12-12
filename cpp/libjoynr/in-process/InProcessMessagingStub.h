@@ -19,6 +19,7 @@
 #ifndef INPROCESSMESSAGINGSTUB_H
 #define INPROCESSMESSAGINGSTUB_H
 
+#include <functional>
 #include <memory>
 
 #include "joynr/IMessagingStub.h"
@@ -28,7 +29,13 @@
 namespace joynr
 {
 
+class ImmutableMessage;
 class InProcessMessagingSkeleton;
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+}
 
 class JOYNR_EXPORT InProcessMessagingStub : public IMessagingStub
 {

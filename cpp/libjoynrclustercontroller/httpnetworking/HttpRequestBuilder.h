@@ -19,11 +19,13 @@
 #ifndef HTTPREQUESTBUILDER_H
 #define HTTPREQUESTBUILDER_H
 
+#include <chrono>
 #include <string>
 
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
+
+#include "HttpNetworking.h"
 
 struct curl_slist;
 

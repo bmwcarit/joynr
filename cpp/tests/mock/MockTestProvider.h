@@ -50,19 +50,19 @@ public:
     }
 
     void invokeLocationOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
-                         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+                         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/)
     {
         joynr::types::Localisation::GpsLocation gpsLocation;
         onSuccess(gpsLocation);
     }
 
     void invokeListOfStringsOnSuccess(std::function<void(const std::vector<std::string>&)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError)
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/)
     {
         onSuccess(_listOfStrings);
     }
 
-    void invokeAttributeWithProviderRuntimeExceptionOnError(std::function<void(const int32_t&)> onSuccess,
+    void invokeAttributeWithProviderRuntimeExceptionOnError(std::function<void(const int32_t&)> /*onSuccess*/,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) {
         onError(joynr::exceptions::ProviderRuntimeException(_providerRuntimeExceptionTestMsg));
     }
@@ -77,6 +77,7 @@ public:
             const std::vector<std::string>& partitions = std::vector<std::string>()
     ) override
     {
+        std::ignore = partitions;
         joynr::tests::testAbstractProvider::fireBroadcastWithSingleArrayParameter(singleParam);
     }
 
@@ -147,7 +148,7 @@ public:
     void sumInts(
             const std::vector<std::int32_t>& ints,
             std::function<void(const std::int32_t& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
     {
         std::int32_t result = std::accumulate(ints.begin(), ints.end(), 0);
         onSuccess(result);
@@ -157,7 +158,7 @@ public:
             const std::int32_t &upperBound,
             std::function<void(
                 const std::vector<std::int32_t>& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
     {
         std::vector<std::int32_t> result;
         assert(upperBound<7);
@@ -172,7 +173,7 @@ public:
             const joynr::types::Localisation::Trip& input,
             std::function<void(
                 const joynr::types::Localisation::Trip& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
     {
          onSuccess(input);
     }
@@ -180,27 +181,27 @@ public:
             const std::vector<joynr::types::Localisation::GpsLocation>& inputList,
             std::function<void(
                 const std::vector<joynr::types::Localisation::GpsLocation>& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
 
     {
          onSuccess(inputList);
     }
 
     void overloadedOperation(
-            const joynr::tests::testTypes::DerivedStruct& input,
+            const joynr::tests::testTypes::DerivedStruct& /*input*/,
             std::function<void(
                 const std::string& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
     {
         std::string result("DerivedStruct");
         onSuccess(result);
     }
 
     void overloadedOperation(
-            const joynr::tests::testTypes::AnotherDerivedStruct& input,
+            const joynr::tests::testTypes::AnotherDerivedStruct& /*input*/,
             std::function<void(
                 const std::string& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) override
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
     {
         std::string result("AnotherDerivedStruct");
         onSuccess(result);
@@ -209,7 +210,7 @@ public:
     void setListOfStrings(
          const std::vector<std::string> & listOfStrs,
          std::function<void()> onSuccess,
-         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
+         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/
     ) override
     {
         this->_listOfStrings = listOfStrs;

@@ -26,12 +26,8 @@ message(STATUS "option USE_DUMMY_KEYCHAIN=" ${USE_DUMMY_KEYCHAIN})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.14.0 REQUIRED)
+find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
-message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_COMMON_LIBRARIES=${Joynr_LIB_COMMON_LIBRARIES}")
-message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 
@@ -91,7 +87,6 @@ set(
 # defined in libjoynr
 include_directories(
     ${GENERATED_INCLUDE_DIRS}
-    ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 set(
@@ -142,7 +137,6 @@ file(
 
 # Needed libraries
 set(jsit-tests_LIBRARIES
-    ${Joynr_LIB_COMMON_LIBRARIES}
     ${Boost_LIBRARIES}
     ${KEYCHAIN_TARGET}
 )
@@ -163,7 +157,7 @@ add_executable(
 target_link_libraries(
     jsit-provider-ws
     ${jsit-tests_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
 )
 
 # Compile the consumer application (requires: running cluster controller)
@@ -182,7 +176,7 @@ add_executable(
 target_link_libraries(
     jsit-consumer-ws
     ${jsit-tests_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
 )
 
 install(

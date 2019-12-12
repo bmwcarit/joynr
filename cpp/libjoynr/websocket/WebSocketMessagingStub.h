@@ -29,6 +29,7 @@
 namespace joynr
 {
 
+class ImmutableMessage;
 class IWebSocketSendInterface;
 
 namespace exceptions

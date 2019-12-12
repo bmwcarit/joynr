@@ -18,6 +18,10 @@
  */
 #include "WebSocketLibJoynrMessagingSkeleton.h"
 
+#include <stdexcept>
+#include <string>
+#include <utility>
+
 #include <smrf/ByteVector.h>
 #include <smrf/exceptions.h>
 

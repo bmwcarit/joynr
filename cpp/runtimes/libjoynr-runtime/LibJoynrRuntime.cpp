@@ -19,27 +19,43 @@
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
 #include <cassert>
+#include <cstdint>
+#include <limits>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <utility>
 #include <vector>
 
-#include "joynr/Dispatcher.h"
 #include "joynr/CapabilitiesRegistrar.h"
+#include "joynr/Dispatcher.h"
+#include "joynr/IDispatcher.h"
+#include "joynr/IMessageSender.h"
+#include "joynr/IMiddlewareMessagingStubFactory.h"
 #include "joynr/IMulticastAddressCalculator.h"
+#include "joynr/IProxyBuilderBase.h"
 #include "joynr/InProcessMessagingAddress.h"
-#include "joynr/MessageSender.h"
-#include "joynr/MessageQueue.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/LibJoynrMessageRouter.h"
+#include "joynr/LibjoynrSettings.h"
 #include "joynr/LocalDiscoveryAggregator.h"
+#include "joynr/MessageQueue.h"
+#include "joynr/MessageSender.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MessagingStubFactory.h"
+#include "joynr/ParticipantIdStorage.h"
+#include "joynr/ProxyFactory.h"
 #include "joynr/PublicationManager.h"
-#include "joynr/ProxyBuilder.h"
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
-#include "joynr/Util.h"
+#include "joynr/SystemServicesSettings.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/DiscoveryProxy.h"
 #include "joynr/system/RoutingProxy.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
@@ -47,6 +63,14 @@ namespace joynr
 {
 
 class ITransportStatus;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+}
+}
 
 LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
                                  std::shared_ptr<IKeychain> keyChain)

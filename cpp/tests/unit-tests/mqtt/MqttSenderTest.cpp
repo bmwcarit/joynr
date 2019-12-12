@@ -18,15 +18,18 @@
  */
 #include <gtest/gtest.h>
 
-#include <joynr/BrokerUrl.h>
+#include "joynr/BrokerUrl.h"
 #include "joynr/ClusterControllerSettings.h"
-#include "joynr/exceptions/JoynrException.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/Message.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MutableMessage.h"
-#include "joynr/ImmutableMessage.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "libjoynrclustercontroller/mqtt/MqttSender.h"
 #include "joynr/Settings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+
+#include "libjoynrclustercontroller/mqtt/MqttSender.h"
+
 #include "tests/mock/MockMosquittoConnection.h"
 
 using namespace ::testing;
@@ -256,7 +259,7 @@ TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck)
     gotCalled = false;
     mqttSender->sendMessage(mqttAddress,
                             immutableMessage,
-                            [&gotCalled, &gotExpectedExceptionType](
+                            [&gotCalled](
                                     const exceptions::JoynrRuntimeException& exception) {
         gotCalled = true;
         try {
@@ -311,7 +314,7 @@ TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck)
     mqttSender->sendMessage(
             mqttAddress,
             immutableMessage,
-            [&gotCalled](const exceptions::JoynrRuntimeException& exception) { gotCalled = true; });
+            [&gotCalled](const exceptions::JoynrRuntimeException&) { gotCalled = true; });
     EXPECT_FALSE(gotCalled);
 
     std::string longMessagePayload(1000, 'x');
@@ -322,7 +325,7 @@ TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck)
     mqttSender->sendMessage(
             mqttAddress,
             immutableMessage,
-            [&gotCalled](const exceptions::JoynrRuntimeException& exception) { gotCalled = true; });
+            [&gotCalled](const exceptions::JoynrRuntimeException&) { gotCalled = true; });
     EXPECT_FALSE(gotCalled);
 }
 

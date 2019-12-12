@@ -59,7 +59,7 @@ public:
     MOCK_CONST_METHOD0(size, std::size_t());
     MOCK_METHOD0(removeExpired, std::vector<DiscoveryEntry> ());
 
-    void insert(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {})
+    void insert(const DiscoveryEntry& entry, const std::vector<std::string>& gbids = {}) override
     {
         insertMock(entry, gbids);
     }
@@ -90,7 +90,7 @@ public:
         lookupByParticipantIdMock(participantId);
         return _result;
     }
-    boost::optional<DiscoveryEntry> lookupCacheByParticipantId(const std::string& participantId, std::chrono::milliseconds maxAge) {
+    boost::optional<DiscoveryEntry> lookupCacheByParticipantId(const std::string& participantId, std::chrono::milliseconds maxAge) const {
         lookupCacheByParticipantIdMock(participantId, maxAge);
         return _result;
     }

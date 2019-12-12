@@ -20,6 +20,9 @@
 #include "joynr/LocalCapabilitiesDirectory.h"
 
 #include <algorithm>
+#include <cassert>
+#include <limits>
+#include <tuple>
 #include <unordered_set>
 #include <ostream>
 
@@ -31,22 +34,27 @@
 
 #include "joynr/access-control/IAccessController.h"
 
+#include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"
+#include "joynr/CapabilitiesStorage.h"
 #include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/types/DiscoveryScope.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/types/ProviderScope.h"
 
-#include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
+#include "IGlobalCapabilitiesDirectoryClient.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"

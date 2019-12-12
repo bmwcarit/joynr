@@ -20,6 +20,7 @@
 #define CLUSTERCONTROLLERSETTINGS_H
 
 #include <chrono>
+#include <cstdint>
 #include <string>
 
 #include "joynr/JoynrExport.h"

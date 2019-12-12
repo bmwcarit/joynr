@@ -18,9 +18,10 @@
  */
 #include "HttpMessagingStubFactory.h"
 
-#include "HttpMessagingStub.h"
-#include "joynr/ITransportMessageSender.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+
+#include "HttpMessagingStub.h"
 
 namespace joynr
 {

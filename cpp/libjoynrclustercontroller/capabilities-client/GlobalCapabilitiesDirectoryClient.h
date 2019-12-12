@@ -20,6 +20,7 @@
 #define GLOBALCAPABILITIESDIRECTORYCLIENT_H
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -28,12 +29,9 @@
 #include "joynr/Logger.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/DiscoveryError.h"
-#include "joynr/types/DiscoveryQos.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
-#include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
+
+#include "IGlobalCapabilitiesDirectoryClient.h"
 
 /*
 *   Client for the global capabilities directory. Registration and lookup
@@ -43,6 +41,21 @@
 namespace joynr
 {
 class ClusterControllerSettings;
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+}
+
+namespace infrastructure
+{
+class GlobalCapabilitiesDirectoryProxy;
+}
+
+namespace types
+{
+class GlobalDiscoveryEntry;
+}
 
 class JOYNRCLUSTERCONTROLLER_EXPORT GlobalCapabilitiesDirectoryClient
         : public IGlobalCapabilitiesDirectoryClient

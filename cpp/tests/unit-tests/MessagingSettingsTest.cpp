@@ -21,7 +21,7 @@
 
 #include <gtest/gtest.h>
 
-#include "PrettyPrint.h"
+#include "tests/PrettyPrint.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
 #include "joynr/BrokerUrl.h"

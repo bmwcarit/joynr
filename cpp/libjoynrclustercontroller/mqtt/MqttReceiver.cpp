@@ -18,20 +18,19 @@
  */
 #include "joynr/MqttReceiver.h"
 
-#include "joynr/MessagingSettings.h"
 #include "joynr/serializer/Serializer.h"
 
-#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
+#include "MosquittoConnection.h"
 
 namespace joynr
 {
 
 MqttReceiver::MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
-                           const MessagingSettings& settings,
+                           const MessagingSettings& /*settings*/,
                            const std::string& channelIdForMqttTopic,
                            const std::string& gbid,
                            const std::string& unicastTopicPrefix)
-        : _mosquittoConnection(std::move(mosquittoConnection)), _settings(settings)
+        : _mosquittoConnection(std::move(mosquittoConnection))
 {
     const std::string unicastChannelIdForMqttTopic = unicastTopicPrefix + channelIdForMqttTopic;
 

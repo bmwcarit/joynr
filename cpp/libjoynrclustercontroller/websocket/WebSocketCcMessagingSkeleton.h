@@ -40,9 +40,11 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/Util.h"
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "libjoynr/websocket/WebSocketPpReceiver.h"
-#include "libjoynr/websocket/WebSocketPpSender.h"
+
+// This is not good... Coming from "../../libjoynr/websocket
+#include "WebSocketMessagingStubFactory.h"
+#include "WebSocketPpReceiver.h"
+#include "WebSocketPpSender.h"
 
 namespace joynr
 {

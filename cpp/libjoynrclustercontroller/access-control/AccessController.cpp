@@ -19,23 +19,30 @@
 
 #include "AccessController.h"
 
+#include <cassert>
+#include <stdexcept>
 #include <tuple>
 
-#include "LocalDomainAccessController.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/Message.h"
 #include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/OneWayRequest.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/Util.h"
+#include "joynr/infrastructure/DacTypes/Permission.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/types/DiscoveryError.h"
 #include "joynr/types/DiscoveryScope.h"
-#include "libjoynrclustercontroller/ClusterControllerCallContext.h"
-#include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
+
+#include "ClusterControllerCallContext.h"
+#include "ClusterControllerCallContextStorage.h"
+
+#include "LocalDomainAccessController.h"
 
 namespace joynr
 {

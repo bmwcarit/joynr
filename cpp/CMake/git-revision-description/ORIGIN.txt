@@ -1,3 +1,0 @@
-Files in this folder are obtained from:
-- GetGitRevisionDescription.cmake https://github.com/rpavlik/cmake-modules/blob/master/GetGitRevisionDescription.cmake 2016-08-29
-- GetGitRevisionDescription.cmake.in https://github.com/rpavlik/cmake-modules/blob/master/GetGitRevisionDescription.cmake.in 2016-08-29

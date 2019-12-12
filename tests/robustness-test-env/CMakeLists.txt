@@ -8,7 +8,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
-include(SetCppStandard)
 
 ##### cmake options #####################
 
@@ -22,7 +21,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.14.0 REQUIRED)
+find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
@@ -75,12 +74,11 @@ add_executable(consumer-app
 )
 
 target_include_directories(consumer-app
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
     PRIVATE ${Boost_INCLUDE_DIRS}
 )
 
 target_link_libraries(consumer-app
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
     ${Boost_LIBRARIES}
 )
 
@@ -104,12 +102,11 @@ add_executable(provider-app
 )
 
 target_include_directories(provider-app
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
     PRIVATE ${Boost_INCLUDE_DIRS}
 )
 
 target_link_libraries(provider-app
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
     ${Boost_LIBRARIES}
 )
 

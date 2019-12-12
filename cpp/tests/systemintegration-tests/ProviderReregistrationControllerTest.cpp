@@ -26,7 +26,7 @@
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/ProviderReregistrationControllerProxy.h"
 #include "joynr/DiscoveryQos.h"
-#include "utils/TestLibJoynrWebSocketRuntime.h"
+#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;

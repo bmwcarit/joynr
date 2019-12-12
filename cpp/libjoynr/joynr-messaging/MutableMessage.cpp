@@ -19,10 +19,14 @@
 
 #include "joynr/MutableMessage.h"
 
+#include <utility>
+
 #include <smrf/MessageSerializer.h>
 
+#include "joynr/IKeychain.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {
@@ -38,7 +42,6 @@ MutableMessage::MutableMessage()
           _effort(),
           customHeaders(),
           payload(),
-          _ttlAbsolute(true),
           _localMessage(false),
           _encrypt(false),
           _compress(false)

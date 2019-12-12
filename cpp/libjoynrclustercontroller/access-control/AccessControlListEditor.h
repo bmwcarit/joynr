@@ -20,7 +20,9 @@
 #ifndef ACCESSCONTROLLISTEDITOR_H
 #define ACCESSCONTROLLISTEDITOR_H
 
+#include <functional>
 #include <memory>
+#include <string>
 
 #include "joynr/infrastructure/AccessControlListEditorAbstractProvider.h"
 #include "joynr/infrastructure/DacTypes/Role.h"

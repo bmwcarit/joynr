@@ -74,7 +74,7 @@ public:
             Unused,                                 // messaging QoS
             Unused,                                 // request object to send
             std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
-            bool isLocalMessage)
+            bool /*isLocalMessage*/)
     {
         (std::dynamic_pointer_cast<ReplyCaller<void>>(callback))->returnValue();
     }
@@ -86,7 +86,7 @@ public:
             Unused,                                 // messaging QoS
             Unused,                                 // request object to send
             std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
-            bool isLocalMessage)
+            bool /*isLocalMessage*/)
     {
         (std::dynamic_pointer_cast<ReplyCaller<types::Localisation::GpsLocation>>(callback))
                 ->returnValue(expectedGpsLocation);
@@ -99,7 +99,7 @@ public:
             Unused,                                 // messaging QoS
             Unused,                                 // request object to send
             std::shared_ptr<IReplyCaller> callback, // reply caller to notify when reply is received
-            bool isLocalMessage)
+            bool /*isLocalMessage*/)
     {
 
         std::dynamic_pointer_cast<ReplyCaller<int>>(callback)->returnValue(expectedInt);
@@ -183,12 +183,12 @@ public:
                 .WillRepeatedly(Invoke(this, &AbstractSyncAsyncTest::returnError));
     }
 
-    void returnError(const std::string& senderParticipantId,
-                     const std::string& receiverParticipantId,
-                     const MessagingQos& qos,
-                     const Request& request,
+    void returnError(const std::string& /*senderParticipantId*/,
+                     const std::string& /*receiverParticipantId*/,
+                     const MessagingQos& /*qos*/,
+                     const Request& /*request*/,
                      std::shared_ptr<IReplyCaller> callback,
-                     bool isLocalMessage)
+                     bool /*isLocalMessage*/)
     {
         callback->returnError(error);
     }

@@ -20,35 +20,45 @@
 #ifndef CCMESSAGEROUTER_H
 #define CCMESSAGEROUTER_H
 
-#include "joynr/AbstractMessageRouter.h"
-#include "joynr/system/RoutingAbstractProvider.h"
-
+#include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "joynr/AbstractMessageRouter.h"
 #include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
-#include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
+#include "joynr/system/RoutingAbstractProvider.h"
 
 namespace joynr
 {
 
 template <typename T>
 class MessageQueue;
+
+class ClusterControllerSettings;
 class IAccessController;
+class IMessageSender;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 class IPlatformSecurityManager;
+class ITransportStatus;
+class ImmutableMessage;
+class MessagingSettings;
 class MulticastMessagingSkeletonDirectory;
-class ClusterControllerSettings;
-class IMessageSender;
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+class ProviderRuntimeException;
+}
 
 namespace system
 {
-class Address;
 class MessageNotificationProvider;
 } // namespace system
 
@@ -177,6 +187,7 @@ public:
             const std::string& multicastId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
             const std::string& providerParticipantId) final;
+
     void stopSubscription(std::shared_ptr<ImmutableMessage> message) final;
 
     /*

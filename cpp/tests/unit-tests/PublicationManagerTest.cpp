@@ -93,7 +93,7 @@ public:
     void invokeLocationAndSaveCallContext(
             std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
             std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>
-                    onError)
+                    /*onError*/)
     {
         onSuccess(joynr::types::Localisation::GpsLocation());
         _savedCallContext = CallContextStorage::get();
@@ -124,11 +124,11 @@ public:
             : _expectedSubscriptionPublication(expectedSubscriptionPublication)
     {
     }
-    virtual void DescribeTo(::std::ostream* os) const
+    virtual void DescribeTo(::std::ostream* /*os*/) const
     {
     }
     virtual bool MatchAndExplain(const SubscriptionPublication& subscriptionPublication,
-                                 MatchResultListener* listener) const
+                                 MatchResultListener* /*listener*/) const
     {
         return subscriptionPublication == _expectedSubscriptionPublication;
     }

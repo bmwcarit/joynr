@@ -16,11 +16,13 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/httpnetworking/HttpRequestBuilder.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "libjoynrclustercontroller/httpnetworking/DefaultHttpRequest.h"
+#include "HttpRequestBuilder.h"
 
 #include <curl/curl.h>
+
+#include "joynr/exceptions/JoynrException.h"
+
+#include "DefaultHttpRequest.h"
 
 namespace joynr
 {

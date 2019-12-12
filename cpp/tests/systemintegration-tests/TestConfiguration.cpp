@@ -17,7 +17,7 @@
  * #L%
  */
 
-#include "systemintegration-tests/TestConfiguration.h"
+#include "tests/systemintegration-tests/TestConfiguration.h"
 
 using namespace joynr::tests;
 

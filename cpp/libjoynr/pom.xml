@@ -38,7 +38,7 @@
 				<configuration>
 					<model>${basedir}/../../basemodel/src/main/franca</model>
 					<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
-					<outputPath>${basedir}</outputPath>
+					<outputPath>${basedir}/basemodel/generated</outputPath>
 				</configuration>
 				<executions>
 					<execution>
@@ -69,13 +69,13 @@
 						<fileset>
 							<directory>${basedir}</directory>
 							<includes>
-								<include>communication-model/**</include>
-								<include>joynr-messaging/generated/**</include>
-								<include>provider/generated/**</include>
-								<include>proxy/generated/**</include>
-								<include>include/joynr/infrastructure/**</include>
-								<include>include/joynr/system/**</include>
-								<include>include/joynr/types/**</include>
+                                                                <include>generated/communication-model/generated/**</include>
+                                                                <include>generated/joynr-messaging/generated/**</include>
+                                                                <include>generated/provider/generated/**</include>
+                                                                <include>generated/proxy/generated/**</include>
+                                                                <include>generated/include/joynr/infrastructure/**</include>
+                                                                <include>generated/include/joynr/system/**</include>
+                                                                <include>generated/include/joynr/types/**</include>
 							</includes>
 						</fileset>
 					</filesets>

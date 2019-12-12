@@ -4,7 +4,6 @@ set(dummyKeychain_VERSION 0.0.1)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(GNUInstallDirs)
-include(SetCppStandard)
 include(AddClangFormat)
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
@@ -15,7 +14,7 @@ message(STATUS "option BUILD_SHARED_LIBS=" ${BUILD_SHARED_LIBS})
 
 # need a dependency to joynr for joynr::IKeyChain interface
 # depending on joynr will allow to use joynr utils as well
-find_package(Joynr 1.14.0 REQUIRED)
+find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 
 set(
     dummyKeychain_HEADERS
@@ -36,7 +35,10 @@ add_library(
 
 AddClangFormat(dummyKeychain ${dummyKeychain_HEADERS})
 
-target_link_libraries(dummyKeychain Joynr)
+target_link_libraries(dummyKeychain
+    Joynr::JoynrLib
+    MoCOCrW::mococrw
+)
 
 target_include_directories(dummyKeychain
     PUBLIC

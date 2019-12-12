@@ -19,16 +19,34 @@
 #ifndef MQTTSENDER_H
 #define MQTTSENDER_H
 
-#include "joynr/PrivateCopyAssign.h"
+#include <cstdint>
+#include <functional>
+#include <memory>
 
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/Logger.h"
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
+class ITransportMessageReceiver;
+class ImmutableMessage;
 class MessagingSettings;
 class MosquittoConnection;
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+}
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+}
+}
 
 class MqttSender : public ITransportMessageSender
 {

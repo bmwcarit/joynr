@@ -19,8 +19,9 @@
 #ifndef MOSQUITTOCONNECTION_H
 #define MOSQUITTOCONNECTION_H
 
+#include <atomic>
+#include <chrono>
 #include <cstdint>
-#include <cstdlib>
 #include <functional>
 #include <string>
 #include <unordered_set>
@@ -47,7 +48,6 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
-class MessagingSettings;
 class ClusterControllerSettings;
 
 class MosquittoConnection
@@ -162,7 +162,6 @@ private:
 
     std::atomic<bool> _isConnected;
     std::atomic<bool> _isRunning;
-    std::atomic<bool> _isWaitingForDisconnect;
     std::atomic<bool> _isChannelIdRegistered;
     std::atomic<bool> _subscribedToChannelTopic;
     std::atomic<bool> _readyToSend;

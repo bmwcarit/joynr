@@ -30,6 +30,7 @@
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/ProviderQos.h"
 
 namespace joynr

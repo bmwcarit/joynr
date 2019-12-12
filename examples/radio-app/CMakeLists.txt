@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
 project(radio-app-1.14.0-SNAPSHOT)
@@ -6,8 +6,11 @@ project(radio-app-1.14.0-SNAPSHOT)
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
+set(CMAKE_CXX_STANDARD 14)
+set(CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
-include(SetCppStandard)
 include(AddClangFormat)
 
 set(
@@ -45,14 +48,8 @@ endif(ENABLE_CCACHE)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.14.0 REQUIRED)
+find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
-message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_COMMON_LIBRARIES=${Joynr_LIB_COMMON_LIBRARIES}")
-message(STATUS "joynr variable Joynr_LIB_INPROCESS_LIBRARIES=${Joynr_LIB_INPROCESS_LIBRARIES}")
-message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 
@@ -66,18 +63,6 @@ if(${GENERATE_SOURCES})
         GENERATION_LANGUAGE "cpp"
     )
 endif(${GENERATE_SOURCES})
-
-######## Add Boost ########
-
-find_package(Boost 1.58.0 REQUIRED
-    COMPONENTS
-    system
-    filesystem
-)
-message(STATUS "variable Boost_LIBRARIES=${Boost_LIBRARIES}")
-message(STATUS "variable Boost_INCLUDE_DIRS=${Boost_INCLUDE_DIRS}")
-
-include_directories(${Boost_INCLUDE_DIRS})
 
 ##### Helper variables for using generated code ###########
 
@@ -97,7 +82,6 @@ set(GENERATED_INCLUDE_DIRS
 # defined in libjoynr
 include_directories(
     ${GENERATED_INCLUDE_DIRS}
-    ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 # Use the generated header files for the consumer application
@@ -129,12 +113,6 @@ set(radio-app-provider_SOURCES
     "src/main/cpp/GeocastBroadcastFilter.cpp"
 )
 
-# Link with the joynr libraries
-set(radio-app_LIBRARIES
-    ${Joynr_LIB_COMMON_LIBRARIES}
-    ${Boost_LIBRARIES}
-)
-
 # Put the generated code into a library and put the library in the bin directory
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
@@ -144,7 +122,7 @@ add_library(radio-app SHARED
 )
 
 target_link_libraries(radio-app
-    ${radio-app_LIBRARIES}
+    Joynr::JoynrLib
 )
 
 # Compile the provider application (running in-process with cluster controller)
@@ -162,15 +140,13 @@ add_executable(radio-app-consumer-cc
 # Link the provider application
 target_link_libraries(radio-app-provider-cc
     radio-app
-    ${radio-app_LIBRARIES}
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
+    Joynr::JoynrClusterControllerRuntime
 )
 
 # Link the consumer application
 target_link_libraries(radio-app-consumer-cc
     radio-app
-    ${radio-app_LIBRARIES}
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
+    Joynr::JoynrClusterControllerRuntime
 )
 
 # copy joynr resources and settings
@@ -195,8 +171,7 @@ add_executable(radio-app-provider-ws
 # Link the provider application
 target_link_libraries(radio-app-provider-ws
     radio-app
-    ${radio-app_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
 )
 
 # Compile the consumer application (requires: running cluster controller)
@@ -209,8 +184,7 @@ add_executable(radio-app-consumer-ws
 # Link the consumer application
 target_link_libraries(radio-app-consumer-ws
     radio-app
-    ${radio-app_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
 )
 
 install(TARGETS

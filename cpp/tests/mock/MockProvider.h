@@ -27,6 +27,8 @@
 #include "joynr/RequestCallerFactory.h"
 #include "joynr/RequestCaller.h"
 
+#include "joynr/types/ProviderQos.h"
+
 class MockProvider : public joynr::AbstractJoynrProvider {
 public:
     static const std::int32_t MAJOR_VERSION;

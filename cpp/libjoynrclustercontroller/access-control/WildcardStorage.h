@@ -29,8 +29,8 @@
 
 #include "joynr/serializer/Serializer.h"
 
-#include "libjoynrclustercontroller/access-control/AccessControlUtils.h"
-#include "libjoynrclustercontroller/access-control/RadixTree.h"
+#include "AccessControlUtils.h"
+#include "RadixTree.h"
 
 namespace joynr
 {

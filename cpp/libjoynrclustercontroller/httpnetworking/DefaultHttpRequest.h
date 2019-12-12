@@ -19,11 +19,14 @@
 #ifndef DEFAULTHTTPREQUEST_H
 #define DEFAULTHTTPREQUEST_H
 
+#include <cstddef>
 #include <string>
 
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
+
+#include "HttpNetworking.h"
+#include "HttpResult.h"
 
 struct curl_slist;
 

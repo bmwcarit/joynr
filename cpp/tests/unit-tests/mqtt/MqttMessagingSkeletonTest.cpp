@@ -211,7 +211,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest)
     EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
 
     auto onFailure =
-            [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
+            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
 }
 
@@ -233,7 +233,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithMqttReplyToAddress)
                                                Eq(false),
                                                _,_)).Times(1);
     auto onFailure =
-            [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
+            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
 }
 
@@ -250,7 +250,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithNonMqttReplyToAddress)
     EXPECT_CALL(*_mockMessageRouter, addNextHop(_,isPointerToMqttAddress(),
                                                _,_,_,_,_)).Times(0);
     auto onFailure =
-            [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
+            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
 }
 
@@ -262,7 +262,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithBrokenReplyToAddress)
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     auto semaphore = std::make_shared<joynr::Semaphore>(0);
     auto onFailure =
-            [semaphore](const exceptions::JoynrRuntimeException& e) { SUCCEED() << "onFailure called"; semaphore->notify(); };
+            [semaphore](const exceptions::JoynrRuntimeException&) { SUCCEED() << "onFailure called"; semaphore->notify(); };
     EXPECT_CALL(*_mockMessageRouter, route(_, _)).Times(0);
     EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
@@ -276,7 +276,7 @@ void MqttMessagingSkeletonTest::transmitSetsIsReceivedFromGlobal()
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
     auto onFailure =
-            [](const exceptions::JoynrRuntimeException& e) { FAIL() << "onFailure called"; };
+            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
     EXPECT_TRUE(immutableMessage->isReceivedFromGlobal());
 }

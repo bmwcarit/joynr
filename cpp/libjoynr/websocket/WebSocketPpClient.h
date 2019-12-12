@@ -25,12 +25,12 @@
 #include <functional>
 
 #include <boost/asio/steady_timer.hpp>
+
 #include <websocketpp/client.hpp>
 #include <websocketpp/config/asio_client.hpp>
 #include <websocketpp/error.hpp>
 #include <websocketpp/uri.hpp>
 
-#include "IWebSocketPpClient.h"
 #include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
@@ -38,8 +38,10 @@
 #include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketProtocol.h"
-#include "libjoynr/websocket/WebSocketPpReceiver.h"
-#include "libjoynr/websocket/WebSocketPpSender.h"
+
+#include "IWebSocketPpClient.h"
+#include "WebSocketPpReceiver.h"
+#include "WebSocketPpSender.h"
 
 namespace joynr
 {

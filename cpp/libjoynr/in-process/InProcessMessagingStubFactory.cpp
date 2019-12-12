@@ -20,9 +20,11 @@
 #include "InProcessMessagingStubFactory.h"
 
 #include <cassert>
+#include <tuple>
 
 #include "InProcessMessagingStub.h"
 #include "joynr/InProcessMessagingAddress.h"
+#include "joynr/system/RoutingTypes/Address.h"
 
 namespace joynr
 {

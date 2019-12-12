@@ -1,5 +1,0 @@
-###### BEGIN MOCOCRW ######
-set(MOCOCRW_LIBRARIES @JoynrConfig_MOCOCRW_LIBRARIES@)
-set(MOCOCRW_INCLUDE_DIRS @JoynrConfig_MOCOCRW_INCLUDE_DIRS@)
-include(${JOYNR_CMAKE_DIR}/CheckMOCOCRWImportTargets.cmake)
-###### END MOCOCRW ######

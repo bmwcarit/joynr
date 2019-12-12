@@ -472,7 +472,7 @@ public:
     std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>
     createUnexpectedLookupSuccessFunction()
     {
-        return [this] (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
+        return [] (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
             FAIL() << "Got result: " + (result.empty() ? "EMPTY" : result.at(0).toString());
         };
     }

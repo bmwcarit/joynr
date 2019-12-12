@@ -18,15 +18,16 @@
  */
 #include "joynr/MqttMessagingSkeleton.h"
 
+#include <stdexcept>
+#include <utility>
+
 #include <smrf/exceptions.h>
 
 #include "joynr/IMessageRouter.h"
 #include "joynr/ImmutableMessage.h"
-#include "joynr/Message.h"
+#include "joynr/MqttReceiver.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
-
-#include "joynr/MqttReceiver.h"
 
 namespace joynr
 {
@@ -44,11 +45,10 @@ MqttMessagingSkeleton::MqttMessagingSkeleton(std::weak_ptr<IMessageRouter> messa
                                              std::shared_ptr<MqttReceiver> mqttReceiver,
                                              const std::string& multicastTopicPrefix,
                                              const std::string& ownGbid,
-                                             uint64_t ttlUplift)
+                                             uint64_t /*ttlUplift*/)
         : _ownGbid(ownGbid),
           _messageRouter(std::move(messageRouter)),
           _mqttReceiver(std::move(mqttReceiver)),
-          _ttlUplift(ttlUplift),
           _multicastSubscriptionCount(),
           _multicastSubscriptionCountMutex(),
           _multicastTopicPrefix(multicastTopicPrefix)

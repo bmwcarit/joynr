@@ -18,9 +18,11 @@
  */
 #include "joynr/ClusterControllerSettings.h"
 
+#include <cassert>
+
 #include "joynr/Logger.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Settings.h"
+#include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
 {

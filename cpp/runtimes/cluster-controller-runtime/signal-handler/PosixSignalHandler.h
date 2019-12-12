@@ -21,6 +21,7 @@
 #define POSIXSIGNALHANDLER_H
 
 #include <memory>
+#include <thread>
 
 #include "joynr/Logger.h"
 

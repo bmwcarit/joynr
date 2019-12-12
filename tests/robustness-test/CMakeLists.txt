@@ -9,7 +9,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
-include(SetCppStandard)
 
 ##### cmake options #####################
 
@@ -23,7 +22,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.14.0 REQUIRED)
+find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
@@ -109,7 +108,7 @@ set(robustness-tests-provider_SOURCES
 
 # Link with the joynr libraries
 set(robustness-tests_LIBRARIES
-    ${Joynr_LIB_COMMON_LIBRARIES}
+    Joynr::JoynrLib
     ${Boost_LIBRARIES}
 )
 
@@ -128,7 +127,6 @@ add_library(robustness-tests-generated SHARED
 target_include_directories(
     robustness-tests-generated
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 if(NOT USE_PLATFORM_GTEST_GMOCK)
@@ -150,14 +148,13 @@ add_executable(robustness-tests-provider-ws
 target_include_directories(
     robustness-tests-provider-ws
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 # Link the provider application
 target_link_libraries(robustness-tests-provider-ws
     robustness-tests-generated
     ${robustness-tests_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
 )
 
 #Compile Provider-cc
@@ -169,15 +166,13 @@ add_executable(robustness-tests-provider-cc
 target_include_directories(
     robustness-tests-provider-cc
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_INPROCESS_INCLUDE_DIRS}
 )
 
 # Link the provider-cc
 target_link_libraries(robustness-tests-provider-cc
     robustness-tests-generated
     ${robustness-tests_LIBRARIES}
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
+    Joynr::JoynrClusterControllerRuntime
 )
 
 # Compile the test application (requires: running cluster controller)
@@ -191,14 +186,13 @@ AddTest(
 target_include_directories(
     robustness-tests-ws
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 # Link the test application
 target_link_libraries(robustness-tests-ws
     robustness-tests-generated
     ${robustness-tests_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
 )
 
 # Compile the test application (requires: running cluster controller)
@@ -212,15 +206,13 @@ AddTest(
 target_include_directories(
     robustness-tests-consumer-mqtt-cc
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_INPROCESS_INCLUDE_DIRS}
 )
 
 # Link the test application
 target_link_libraries(robustness-tests-consumer-mqtt-cc
     robustness-tests-generated
     ${robustness-tests_LIBRARIES}
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
+    Joynr::JoynrClusterControllerRuntime
 )
 
 # copy runtime dependencies to output directory

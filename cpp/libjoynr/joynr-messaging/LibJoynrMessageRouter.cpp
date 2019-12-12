@@ -20,19 +20,21 @@
 
 #include <cassert>
 #include <functional>
+#include <limits>
 
 #include <boost/asio/io_service.hpp>
 
-#include "joynr/IMessagingStubFactory.h"
-#include "joynr/ImmutableMessage.h"
 #include "joynr/IMulticastAddressCalculator.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MulticastReceiverDirectory.h"
+#include "joynr/RoutingTable.h"
+#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -40,6 +42,16 @@
 
 namespace joynr
 {
+
+class MessagingSettings;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class BrowserAddress;
+}
+}
 
 //------ MessageRouter ---------------------------------------------------------
 

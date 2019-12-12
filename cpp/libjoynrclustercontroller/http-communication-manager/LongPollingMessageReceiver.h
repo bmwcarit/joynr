@@ -18,23 +18,27 @@
  */
 #ifndef LONGPOLLINGMESSAGERECEIVER_H_
 #define LONGPOLLINGMESSAGERECEIVER_H_
+
 #include <chrono>
 #include <condition_variable>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <thread>
 
 #include <smrf/ByteVector.h>
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Semaphore.h"
 
 namespace joynr
 {
 
 class HttpRequest;
+class Semaphore;
+
 /**
  * Structure used for configuring the long poll message receiver
  */

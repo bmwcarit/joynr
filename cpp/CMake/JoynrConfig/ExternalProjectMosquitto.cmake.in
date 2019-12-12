@@ -1,5 +1,0 @@
-###### BEGIN Mosquitto ######
-set(MOSQUITTO_LIBRARIES @JoynrConfig_MOSQUITTO_LIBRARIES@)
-set(MOSQUITTO_INCLUDE_DIRS @JoynrConfig_MOSQUITTO_INCLUDE_DIRS@)
-include(${JOYNR_CMAKE_DIR}/CheckMosquittoImportTargets.cmake)
-###### END Mosquitto ######

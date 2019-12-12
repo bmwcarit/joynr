@@ -18,6 +18,7 @@
  */
 
 #include "TrustLevelComparator.h"
+
 #include <cassert>
 
 namespace joynr

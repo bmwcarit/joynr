@@ -25,7 +25,10 @@
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/exceptions/JoynrException.h"
 
+/* This is just broken...
 #include "../cluster-controller-runtime/signal-handler/PosixSignalHandler.h"
+*/
+#include "../../../../../cpp/runtimes/cluster-controller-runtime/signal-handler/PosixSignalHandler.h"
 
 using joynr::DiscoveryQos;
 using joynr::MessagingQos;

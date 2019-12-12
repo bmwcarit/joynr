@@ -16,13 +16,16 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/http-communication-manager/HttpMessagingSkeleton.h"
+#include "HttpMessagingSkeleton.h"
+
+#include <cassert>
+#include <stdexcept>
+#include <tuple>
 
 #include <smrf/exceptions.h>
 
 #include "joynr/IMessageRouter.h"
 #include "joynr/ImmutableMessage.h"
-#include "joynr/Message.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr

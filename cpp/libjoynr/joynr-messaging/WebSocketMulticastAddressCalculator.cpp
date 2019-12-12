@@ -22,7 +22,6 @@
 #include <memory>
 #include <tuple>
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 

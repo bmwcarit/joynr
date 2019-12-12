@@ -20,6 +20,7 @@
 #ifndef LOCALDOMAINACCESSSTORE_H
 #define LOCALDOMAINACCESSSTORE_H
 
+#include <cassert>
 #include <set>
 #include <string>
 #include <tuple>
@@ -31,10 +32,15 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/ReadWriteLock.h"
+#include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/Role.h"
 #include "joynr/serializer/Serializer.h"
 
-#include "libjoynrclustercontroller/access-control/WildcardStorage.h"
-#include "libjoynrclustercontroller/access-control/AccessControlUtils.h"
+#include "AccessControlUtils.h"
+#include "WildcardStorage.h"
 
 namespace joynr
 {
@@ -43,7 +49,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT LocalDomainAccessStore
 public:
     LocalDomainAccessStore();
     explicit LocalDomainAccessStore(std::string fileName);
-    ~LocalDomainAccessStore() = default;
+    virtual ~LocalDomainAccessStore();
 
     /**
      * Get the domain roles for the given user.

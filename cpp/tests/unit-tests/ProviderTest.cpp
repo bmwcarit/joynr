@@ -25,6 +25,8 @@
 #include "joynr/SubscriptionAttributeListener.h"
 #include "joynr/SingleThreadedIOService.h"
 
+#include "joynr/types/ProviderQos.h"
+
 #include "joynr/tests/DefaulttestProvider.h"
 #include "joynr/tests/TestWithoutVersionProvider.h"
 

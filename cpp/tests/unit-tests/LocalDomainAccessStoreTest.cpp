@@ -19,7 +19,7 @@
 
 #include <gtest/gtest.h>
 
-#include "JoynrTest.h"
+#include "tests/JoynrTest.h"
 
 #include "joynr/Settings.h"
 #include "joynr/ClusterControllerSettings.h"

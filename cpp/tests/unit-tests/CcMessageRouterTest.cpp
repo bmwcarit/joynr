@@ -528,14 +528,14 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
 }
 
 void invokeConsumerPermissionCallbackWithPermissionYes(
-        std::shared_ptr<ImmutableMessage> message,
+        std::shared_ptr<ImmutableMessage> /*message*/,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
 {
     callback->hasConsumerPermission(IAccessController::Enum::YES);
 }
 
 void invokeConsumerPermissionCallbackWithPermissionRetry(
-        std::shared_ptr<ImmutableMessage> message,
+        std::shared_ptr<ImmutableMessage> /*message*/,
         std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
 {
     callback->hasConsumerPermission(IAccessController::Enum::RETRY);

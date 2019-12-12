@@ -16,16 +16,14 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/websocket/WebSocketMessagingStub.h"
+#include "WebSocketMessagingStub.h"
 
 #include <smrf/ByteArrayView.h>
 
-#include "joynr/ImmutableMessage.h"
 #include "joynr/IWebSocketSendInterface.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/Address.h"
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 
 namespace joynr
 {

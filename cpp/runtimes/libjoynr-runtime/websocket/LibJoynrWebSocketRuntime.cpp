@@ -19,16 +19,23 @@
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
 #include <cassert>
+#include <tuple>
+#include <utility>
 
 #include <websocketpp/common/connection_hdl.hpp>
 
+#include "joynr/IMulticastAddressCalculator.h"
+#include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/IKeychain.h"
+#include "joynr/system/RoutingTypes/WebSocketProtocol.h"
+
+#include "libjoynr/websocket/IWebSocketPpClient.h"
 #include "libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketPpClientNonTLS.h"

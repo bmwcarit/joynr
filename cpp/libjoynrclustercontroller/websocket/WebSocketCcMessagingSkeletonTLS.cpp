@@ -16,11 +16,20 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
+#include "WebSocketCcMessagingSkeletonTLS.h"
+
+#include <mutex>
+#include <utility>
+
 #include <mococrw/distinguished_name.h>
 #include <mococrw/openssl_lib.h>
 #include <mococrw/openssl_wrap.h>
-#include <openssl/ssl.h>
+
+#include "joynr/ImmutableMessage.h"
+#include "joynr/Logger.h"
+#include "joynr/Util.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 namespace joynr
 {
@@ -32,13 +41,12 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
         const std::string& caPemFile,
         const std::string& certPemFile,
         const std::string& privateKeyPemFile,
-        bool useEncryptedTls)
+        bool /*useEncryptedTls*/)
         : WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>(
                   ioService,
                   std::move(messageRouter),
                   std::move(messagingStubFactory),
                   serverAddress.getPort()),
-          _useEncryptedTls(useEncryptedTls),
           _caPemFile(caPemFile),
           _certPemFile(certPemFile),
           _privateKeyPemFile(privateKeyPemFile)

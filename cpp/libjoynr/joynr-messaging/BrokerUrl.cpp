@@ -17,7 +17,6 @@
  * #L%
  */
 #include "joynr/BrokerUrl.h"
-#include <boost/algorithm/string/predicate.hpp>
 
 namespace joynr
 {

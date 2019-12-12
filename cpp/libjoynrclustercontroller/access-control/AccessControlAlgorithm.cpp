@@ -17,13 +17,15 @@
  * #L%
  */
 
-#include "libjoynrclustercontroller/access-control/AccessControlAlgorithm.h"
-#include "libjoynrclustercontroller/access-control/Validator.h"
-#include "libjoynrclustercontroller/access-control/TrustLevelComparator.h"
+#include "AccessControlAlgorithm.h"
+
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
+
+#include "TrustLevelComparator.h"
+#include "Validator.h"
 
 namespace joynr
 {

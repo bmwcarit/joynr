@@ -122,7 +122,7 @@ TEST(SemaphoreTest, timedWait_unlockAfterSomeTime)
     std::uint64_t duration = 0;
     bool result = false;
 
-    std::thread t1([&](Semaphore* semaphore, std::uint64_t timeout, std::uint64_t* dur, bool* res) {
+    std::thread t1([&](Semaphore* semaphore, std::uint64_t /*timeout*/, std::uint64_t* dur, bool* res) {
                        const std::uint64_t start = joynr::TimeUtils::getCurrentMillisSinceEpoch();
                        (*res) = semaphore->waitFor(std::chrono::milliseconds(expectedTimeout));
                        (*dur) = joynr::TimeUtils::getCurrentMillisSinceEpoch() - start;

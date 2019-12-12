@@ -22,7 +22,6 @@
 #include "joynr/JoynrRuntimeImpl.h"
 
 #include "joynr/Future.h"
-#include "joynr/IKeychain.h"
 #include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"

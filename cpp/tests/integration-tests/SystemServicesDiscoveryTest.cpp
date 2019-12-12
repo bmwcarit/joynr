@@ -23,14 +23,16 @@
 #include <gmock/gmock.h>
 
 #include "joynr/CapabilityUtils.h"
+#include "joynr/DiscoveryQos.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/system/DiscoveryProxy.h"
+#include "joynr/ProxyBuilder.h"
 #include "joynr/Settings.h"
-#include "joynr/types/Version.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/DiscoveryProxy.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/types/Version.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockTransportMessageSender.h"

@@ -16,20 +16,24 @@
  * limitations under the License.
  * #L%
  */
+#include "MqttSender.h"
+
+#include <chrono>
 #include <cmath>
+#include <limits>
+#include <sstream>
+#include <string>
 
-#include "libjoynrclustercontroller/mqtt/MqttSender.h"
-
-#include "joynr/ITransportMessageReceiver.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
 #include "joynr/MessagingQosEffort.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 
-#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
+#include "MosquittoConnection.h"
 
 namespace joynr
 {

@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 
 #include <smrf/ByteVector.h>
 

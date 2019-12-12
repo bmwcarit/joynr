@@ -16,14 +16,20 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
+#include "HttpReceiver.h"
 
-#include "joynr/Future.h"
-#include "joynr/Util.h"
+#include <chrono>
+#include <cstdint>
+
+#include "joynr/BrokerUrl.h"
+#include "joynr/Semaphore.h"
+#include "joynr/Url.h"
 #include "joynr/serializer/Serializer.h"
-#include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
+
+#include "../httpnetworking/HttpNetworking.h"
+#include "../httpnetworking/HttpResult.h"
+
+#include "LongPollingMessageReceiver.h"
 
 namespace joynr
 {

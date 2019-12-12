@@ -1,4 +1,0 @@
-###### BEGIN SMRF ######
-find_package(smrf @JOYNR_SMRF_REQUIRED_VERSION@ REQUIRED)
-include(${JOYNR_CMAKE_DIR}/CheckSMRFImportTargets.cmake)
-###### END SMRF ######

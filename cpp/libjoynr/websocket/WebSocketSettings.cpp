@@ -19,10 +19,12 @@
 #include "joynr/WebSocketSettings.h"
 
 #include <cassert>
+#include <cstdint>
 
 #include "joynr/Settings.h"
 #include "joynr/Url.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketProtocol.h"
 
 namespace joynr
 {

@@ -21,7 +21,6 @@
 #define LOCALDOMAINACCESSCONTROLLER_H
 
 #include <chrono>
-#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -30,14 +29,9 @@
 
 #include "AccessControlAlgorithm.h"
 #include "joynr/Future.h"
-#include "joynr/ISubscriptionListener.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 #include "joynr/infrastructure/DacTypes/Permission.h"
 #include "joynr/infrastructure/DacTypes/Role.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
@@ -49,6 +43,14 @@ namespace infrastructure
 class GlobalDomainAccessControllerProxy;
 class GlobalDomainRoleControllerProxy;
 class GlobalDomainAccessControlListEditorProxy;
+
+namespace DacTypes
+{
+class MasterAccessControlEntry;
+class MasterRegistrationControlEntry;
+class OwnerAccessControlEntry;
+class OwnerRegistrationControlEntry;
+}
 } // namespace infrastructure
 
 class LocalDomainAccessStore;

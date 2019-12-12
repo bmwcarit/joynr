@@ -19,10 +19,14 @@
 
 #include "DefaultHttpRequest.h"
 
+#include <cstdint>
+#include <unordered_map>
+
 #include <boost/algorithm/string.hpp>
+
 #include <curl/curl.h>
 
-#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
+#include "HttpResult.h"
 
 namespace joynr
 {

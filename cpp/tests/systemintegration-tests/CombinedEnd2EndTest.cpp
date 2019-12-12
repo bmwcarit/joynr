@@ -25,8 +25,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "systemintegration-tests/CombinedEnd2EndTest.h"
-#include "systemintegration-tests/TestConfiguration.h"
+#include "tests/systemintegration-tests/CombinedEnd2EndTest.h"
+#include "tests/systemintegration-tests/TestConfiguration.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
@@ -306,7 +306,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         std::function<void()> onSuccess = []() {};
 
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
-                [](const joynr::exceptions::ProviderRuntimeException& exception) {};
+                [](const joynr::exceptions::ProviderRuntimeException&) {};
 
         /*
          * because of the implementation of the MockTestProvider,
@@ -1076,7 +1076,7 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
     // Setup a callbackFct
     std::function<void()> onSuccess = []() { SUCCEED(); };
     std::function<void(const exceptions::JoynrException& error)> onError =
-            [](const exceptions::JoynrException& error) { FAIL(); };
+            [](const exceptions::JoynrException&) { FAIL(); };
 
     // Asynchonously call the void operation
     std::shared_ptr<Future<void>> future(testProxy->voidOperationAsync(onSuccess, onError));

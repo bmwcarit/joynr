@@ -16,11 +16,10 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
+#include "MqttMessagingStub.h"
 
 #include "joynr/ImmutableMessage.h"
 #include "joynr/ITransportMessageSender.h"
-#include "joynr/MessagingQos.h"
 
 namespace joynr
 {

@@ -19,6 +19,10 @@
 
 #include "joynr/ImmutableMessage.h"
 
+#include <cassert>
+#include <stdexcept>
+#include <utility>
+
 #include "boost/algorithm/string.hpp"
 
 #include "joynr/Message.h"

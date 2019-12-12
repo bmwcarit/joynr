@@ -19,6 +19,7 @@
 #ifndef HTTPRECEIVER_H
 #define HTTPRECEIVER_H
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -27,13 +28,13 @@
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Semaphore.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
 
 class LongPollingMessageReceiver;
+class Semaphore;
 
 /**
   * @class HttpReceiver

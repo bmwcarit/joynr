@@ -28,24 +28,24 @@
 class MockTestRequestCaller : public joynr::tests::testRequestCaller {
 public:
     void invokeLocationOnSuccessFct(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
-                            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
+                            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> /*onError*/) {
         joynr::types::Localisation::GpsLocation location;
         onSuccess(location);
     }
 
     void invokeListOfStringsOnSuccessFct(std::function<void(const std::vector<std::string>&)> onSuccess,
-                            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
+                            std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> /*onError*/) {
         std::vector<std::string> listOfStrings;
         listOfStrings.push_back("firstString");
         onSuccess(listOfStrings);
     }
 
-    void invokeGetterOnErrorFunctionWithProviderRuntimeException(std::function<void(const std::int32_t&)> onSuccess,
+    void invokeGetterOnErrorFunctionWithProviderRuntimeException(std::function<void(const std::int32_t&)> /*onSuccess*/,
             std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)> onError) {
         onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(_providerRuntimeExceptionTestMsg));
     }
 
-    void invokeMethodOnErrorFunctionWithProviderRuntimeException(std::function<void()> onSuccess,
+    void invokeMethodOnErrorFunctionWithProviderRuntimeException(std::function<void()> /*onSuccess*/,
             std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>&)> onError) {
         onError(std::make_shared<joynr::exceptions::ProviderRuntimeException>(_providerRuntimeExceptionTestMsg));
     }

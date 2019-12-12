@@ -22,32 +22,43 @@
 #include <chrono>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <memory>
+#include <mutex>
+#include <stdexcept>
+#include <utility>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
 
+#include "joynr/AbstractGlobalMessagingSkeleton.h"
 #include "joynr/BrokerUrl.h"
 #include "joynr/CapabilitiesRegistrar.h"
+#include "joynr/CapabilitiesStorage.h"
 #include "joynr/CcMessageRouter.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/HttpMulticastAddressCalculator.h"
 #include "joynr/IDispatcher.h"
-#include "joynr/IKeychain.h"
-#include "joynr/ITransportMessageReceiver.h"
-#include "joynr/ITransportMessageSender.h"
+#include "joynr/IMessageSender.h"
 #include "joynr/IMulticastAddressCalculator.h"
+#include "joynr/IPlatformSecurityManager.h"
+#include "joynr/IProxyBuilder.h"
+#include "joynr/IProxyBuilderBase.h"
+#include "joynr/ITransportMessageReceiver.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/JoynrClusterControllerMqttConnectionData.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
 #include "joynr/LocalDiscoveryAggregator.h"
-#include "joynr/MessageSender.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MessageSender.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/MessagingStubFactory.h"
+#include "joynr/MqttMessagingSkeleton.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
+#include "joynr/MqttReceiver.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/ProxyBuilder.h"
@@ -57,29 +68,37 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/SystemServicesSettings.h"
+#include "joynr/Url.h"
+#include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/AccessControlListEditorProvider.h"
-#include "joynr/infrastructure/DacTypes/ControlEntry.h"
-#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
+#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
+#include "joynr/infrastructure/IGlobalDomainAccessController.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/DiscoveryJoynrMessagingConnector.h"
 #include "joynr/system/DiscoveryProvider.h"
-#include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/system/MessageNotificationProvider.h"
+#include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/system/RoutingProvider.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketProtocol.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/Version.h"
+
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
-#include "libjoynrclustercontroller/access-control/AccessController.h"
+
+#include "libjoynrclustercontroller/ClusterControllerCallContext.h"
+#include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
 #include "libjoynrclustercontroller/access-control/AccessControlListEditor.h"
+#include "libjoynrclustercontroller/access-control/AccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
@@ -90,17 +109,17 @@
 #include "libjoynrclustercontroller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
-#include "joynr/MqttMessagingSkeleton.h"
-#include "joynr/MqttReceiver.h"
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 #include "libjoynrclustercontroller/mqtt/MqttTransportStatus.h"
+#include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeleton.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
-#include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
-#include "libjoynrclustercontroller/ClusterControllerCallContext.h"
 
 namespace joynr
 {
+
+class IKeychain;
+class ITransportStatus;
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
@@ -764,15 +783,14 @@ void JoynrClusterControllerRuntime::enableAccessController(
         _accessController->addParticipantToWhitelist(entry.second.getParticipantId());
     }
 
-    _ccMessageRouter->setAccessController(std::move(util::as_weak_ptr(_accessController)));
+    _ccMessageRouter->setAccessController(util::as_weak_ptr(_accessController));
 
     _aclEditor = std::make_shared<AccessControlListEditor>(localDomainAccessStore,
                                                            _localDomainAccessController,
                                                            _clusterControllerSettings.aclAudit());
 
     // Set accessController also in LocalCapabilitiesDirectory
-    _localCapabilitiesDirectory->setAccessController(
-            std::move(util::as_weak_ptr(_accessController)));
+    _localCapabilitiesDirectory->setAccessController(util::as_weak_ptr(_accessController));
 
     // Log entries
     localDomainAccessStore->logContent();

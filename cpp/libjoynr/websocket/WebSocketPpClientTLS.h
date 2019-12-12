@@ -19,11 +19,14 @@
 #ifndef WEBSOCKETPPCLIENTTLS_H
 #define WEBSOCKETPPCLIENTTLS_H
 
-#include "libjoynr/websocket/WebSocketPpClient.h"
+#include "WebSocketPpClient.h"
+
+#include "joynr/BoostIoserviceForwardDecl.h"
 
 namespace joynr
 {
 class IKeychain;
+class WebSocketSettings;
 
 class WebSocketPpClientTLS : public WebSocketPpClient<websocketpp::config::asio_tls_client>
 {

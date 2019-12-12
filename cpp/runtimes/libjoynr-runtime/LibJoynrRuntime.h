@@ -23,26 +23,25 @@
 #include <atomic>
 #include <functional>
 #include <memory>
-#include <string>
 
-#include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/JoynrRuntimeImpl.h"
-#include "joynr/LibjoynrSettings.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
 
+class IKeychain;
 class IMessageRouter;
 class IMessageSender;
 class IMiddlewareMessagingStubFactory;
 class IMulticastAddressCalculator;
 class InProcessMessagingSkeleton;
+class JoynrMessagingConnectorFactory;
 class LibJoynrMessageRouter;
+class LibjoynrSettings;
 class Settings;
 class SubscriptionManager;
-class IKeychain;
 
 namespace system
 {

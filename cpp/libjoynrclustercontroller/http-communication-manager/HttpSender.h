@@ -20,6 +20,8 @@
 #define HTTPSENDER_H
 
 #include <chrono>
+#include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -27,14 +29,26 @@
 #include "joynr/ITransportMessageSender.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Runnable.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 
 namespace joynr
 {
 
-class MessagingSettings;
+class ImmutableMessage;
 class HttpResult;
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+}
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+class ChannelAddress;
+}
+}
 
 class HttpSender : public ITransportMessageSender
 {

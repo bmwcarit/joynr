@@ -16,7 +16,9 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
+#include "InProcessMessagingSkeleton.h"
+
+#include <utility>
 
 #include "joynr/IDispatcher.h"
 #include "joynr/exceptions/JoynrException.h"

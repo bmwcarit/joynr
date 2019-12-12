@@ -17,23 +17,23 @@
  * #L%
  */
 
-#include "libjoynrclustercontroller/http-communication-manager/LongPollingMessageReceiver.h"
+#include "LongPollingMessageReceiver.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <cstdlib>
 #include <thread>
+#include <unordered_map>
 
 #include <boost/lexical_cast.hpp>
 
-#include "joynr/Future.h"
-#include "joynr/ImmutableMessage.h"
+#include "joynr/Semaphore.h"
 #include "joynr/TimePoint.h"
+#include "joynr/Url.h"
 #include "joynr/Util.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
+
+#include "../httpnetworking/HttpNetworking.h"
+#include "../httpnetworking/HttpResult.h"
 
 namespace joynr
 {

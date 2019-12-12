@@ -22,19 +22,20 @@
 
 #include <gtest/gtest.h>
 
-#include "joynr/MutableMessageFactory.h"
-#include "joynr/MutableMessage.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
+#include "joynr/Message.h"
 #include "joynr/MessagingQos.h"
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/SubscriptionRequest.h"
-#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/MulticastPublication.h"
-#include "joynr/SubscriptionReply.h"
-#include "joynr/SubscriptionStop.h"
 #include "joynr/MulticastSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/Reply.h"
+#include "joynr/Request.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionRequest.h"
+#include "joynr/SubscriptionStop.h"
 #include "joynr/TimePoint.h"
 
 using namespace joynr;

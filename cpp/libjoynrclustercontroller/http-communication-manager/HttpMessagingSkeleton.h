@@ -19,6 +19,8 @@
 #ifndef HTTPMESSAGINGSKELETON_H
 #define HTTPMESSAGINGSKELETON_H
 
+#include <functional>
+#include <memory>
 #include <string>
 
 #include <smrf/ByteVector.h>

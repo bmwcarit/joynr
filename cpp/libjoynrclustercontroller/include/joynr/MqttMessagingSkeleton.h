@@ -19,6 +19,8 @@
 #ifndef MQTTMESSAGINGSKELETON_H
 #define MQTTMESSAGINGSKELETON_H
 
+#include <cstdint>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -26,7 +28,7 @@
 
 #include <smrf/ByteVector.h>
 
-#include "JoynrClusterControllerExport.h"
+#include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/AbstractGlobalMessagingSkeleton.h"
@@ -55,7 +57,7 @@ public:
                           std::shared_ptr<MqttReceiver> mqttReceiver,
                           const std::string& multicastTopicPrefix,
                           const std::string& ownGbid,
-                          std::uint64_t ttlUplift = 0);
+                          std::uint64_t /*ttlUplift*/ = 0);
 
     ~MqttMessagingSkeleton() override = default;
 
@@ -77,8 +79,6 @@ private:
 
     std::weak_ptr<IMessageRouter> _messageRouter;
     std::shared_ptr<MqttReceiver> _mqttReceiver;
-
-    std::uint64_t _ttlUplift;
 
     std::unordered_map<std::string, std::uint64_t> _multicastSubscriptionCount;
     std::mutex _multicastSubscriptionCountMutex;

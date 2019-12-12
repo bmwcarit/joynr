@@ -24,7 +24,7 @@ _sed 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' 
 _sed 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
 _sed 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
 
-_sed 's/find_package(Joynr .*/find_package(Joynr '${newVersionWithoutSuffix}' REQUIRED)/g' \
+_sed 's/^find_package(Joynr [0-9.]+/find_package(Joynr '${newVersionWithoutSuffix}'/' \
 examples/radio-app/CMakeLists.txt \
 tests/dummyKeychain/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \

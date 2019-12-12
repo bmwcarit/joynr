@@ -20,6 +20,7 @@
 #define LOCALCAPABILITIESDIRECTORY_H
 
 #include <chrono>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -31,20 +32,15 @@
 #include <boost/asio/steady_timer.hpp>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
-#include "joynr/CapabilitiesStorage.h"
-#include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/InterfaceAddress.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
-#include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Semaphore.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/system/ProviderReregistrationControllerProvider.h"
-#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryError.h"
-#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/DiscoveryScope.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
 namespace joynr
@@ -53,6 +49,24 @@ class IAccessController;
 class IGlobalCapabilitiesDirectoryClient;
 class ClusterControllerSettings;
 class IMessageRouter;
+
+namespace capabilities
+{
+class CachingStorage;
+class Storage;
+}
+
+namespace exceptions
+{
+class ProviderRuntimeException;
+}
+
+namespace types
+{
+class DiscoveryEntry;
+class DiscoveryEntryWithMetaInfo;
+class DiscoveryQos;
+}
 
 /**
   * The local capabilities directory is the "first point of call" for accessing

@@ -29,13 +29,14 @@
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
-#include "joynr/tests/testProxy.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 
-#include "tests/JoynrTest.h"
+#include "joynr/tests/testProxy.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
+
 #include "tests/utils/PtrUtils.h"
+#include "tests/JoynrTest.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -183,7 +184,7 @@ TEST_F(End2EndAccessControlTest, queuedMsgsForUnavailableProviderAreAcCheckedWhe
 
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
 
-    auto onError = [&] (const joynr::exceptions::JoynrRuntimeException& error) {
+    auto onError = [&] (const joynr::exceptions::JoynrRuntimeException&) {
         semaphore.notify();
     };
 

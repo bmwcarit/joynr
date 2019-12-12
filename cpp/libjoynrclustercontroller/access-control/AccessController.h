@@ -32,6 +32,8 @@
 
 namespace joynr
 {
+
+class ImmutableMessage;
 class LocalCapabilitiesDirectory;
 class LocalDomainAccessController;
 

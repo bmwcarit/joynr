@@ -1,0 +1,19 @@
+// #####################################################
+//#######################################################
+//###                                                 ###
+//##    WARNING: This file is generated via cmake.     ##
+//###                                                 ###
+//#######################################################
+// #####################################################
+
+#ifndef JOYNRVERSION_H
+#define JOYNRVERSION_H
+
+#define JOYNR_MAJOR_VERSION (@Joynr_VERSION_MAJOR@)
+#define JOYNR_MINOR_VERSION (@Joynr_VERSION_MINOR@)
+#define JOYNR_PATCH_VERSION (@Joynr_VERSION_PATCH@)
+#define JOYNR_VERSION_STRING "@Joynr_VERSION@"
+#define JOYNR_PACKAGE_REVISION "@JOYNR_GIT_VERSION@"
+#define JOYNR_BUILD_TIME "@JOYNR_BUILD_TIME@"
+
+#endif // JOYNRVERSION_H

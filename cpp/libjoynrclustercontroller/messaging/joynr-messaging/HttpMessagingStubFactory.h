@@ -19,14 +19,24 @@
 #ifndef HTTPMESSAGINGSTUBFACTORY_H
 #define HTTPMESSAGINGSTUBFACTORY_H
 
-#include "joynr/IMiddlewareMessagingStubFactory.h"
+#include <functional>
 #include <memory>
-#include <string>
+
+#include "joynr/IMiddlewareMessagingStubFactory.h"
 
 namespace joynr
 {
 
+class IMessagingStub;
 class ITransportMessageSender;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+}
+}
 
 class HttpMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {

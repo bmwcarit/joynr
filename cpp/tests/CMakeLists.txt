@@ -1,29 +1,12 @@
-message(STATUS "#############################################")
-message(STATUS "Configuring tests...")
-message(STATUS "#############################################\n")
+option(BUILD_UNIT_TESTS "Build unit tests?" ON)
+option(BUILD_INTEGRATION_TESTS "Build integration tests?" ON)
+option(BUILD_SYSTEM_INTEGRATION_TESTS "Build system integration tests?" ON)
 
 option(
-    BUILD_UNIT_TESTS
-    "Build unit tests?"
+    USE_PLATFORM_GTEST_GMOCK
+    "Resolve dependency to gtest and gmock from the system?"
     ON
 )
-
-option(
-    BUILD_INTEGRATION_TESTS
-    "Build integration tests?"
-    ON
-)
-
-option(
-    BUILD_SYSTEM_INTEGRATION_TESTS
-    "Build system integration tests?"
-    ON
-)
-
-if(${WIN32})
-    set(DISABLE_PTHREAD_CMAKE_ARG ON)
-else()
-endif(${WIN32})
 
 include(AddGtestGmock)
 
@@ -135,26 +118,6 @@ if(${GENERATE_SOURCES})
     )
 endif(${GENERATE_SOURCES})
 
-get_target_property(joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY JoynrWsRuntime PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
-
-set(
-    test_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    "${CMAKE_CURRENT_SOURCE_DIR}/.."
-    "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/gen-with-version/include"
-    ${joynrwsruntime_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterControllerRuntime_PUBLIC_INCLUDE_DIRECTORY}
-)
-
-set(
-    JoynrTest_SYSTEM_INCLUDE_DIRECTORIES
-    ${spdlog_INCLUDE_DIRS}
-)
-
 file(
     GLOB_RECURSE JoynrTest_GENSOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -173,30 +136,18 @@ add_library(TestGenerated SHARED
 )
 
 # add needed dependencies by linking to target Joynr
-target_link_libraries(TestGenerated Joynr)
-
-if(NOT USE_PLATFORM_SPDLOG)
-    add_dependencies(TestGenerated spdlog)
-endif(NOT USE_PLATFORM_SPDLOG)
-
-target_include_directories(
-    TestGenerated
-    PUBLIC ${test_INCLUDE_DIRECTORIES}
+target_link_libraries(TestGenerated
+    PUBLIC Joynr::JoynrLib
 )
 
 target_include_directories(
     TestGenerated
-    SYSTEM PUBLIC
-    ${JoynrTest_SYSTEM_INCLUDE_DIRECTORIES}
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/gen/include"
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/gen-with-version/include"
 )
 
 ## Collect link targets for tests
-set(
-    test_TARGET_LIBRARIES
-    Joynr
-    JoynrClusterController
-    JoynrClusterControllerRuntime
-)
+set(test_TARGET_LIBRARIES)
 
 # Visual Studio uses different directories for RELEASE and DEBUG
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
@@ -234,7 +185,7 @@ include(CheckBoostImportTargets)
 
 list(
     APPEND test_TARGET_LIBRARIES
-    Boost::regex
+    Boost::regex # Used in "JoynrTest.cpp"
 )
 
 ## Collect common header files for tests
@@ -266,7 +217,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         MOCK_SOURCES
         mock/MockSubscriptionListener.h
         mock/MockCallback.h
-	mock/MockCapabilitiesStorage.h
+        mock/MockCapabilitiesStorage.h
         mock/MockDiscovery.h
         mock/MockProvider.cpp
         mock/MockProvider.h
@@ -314,36 +265,27 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockTestProvider.h
     )
 
-    add_library(
-        JoynrMocks
-        STATIC
-        ${MOCK_SOURCES}
-    )
+    add_library(JoynrMocks STATIC ${MOCK_SOURCES})
 
     if(NOT USE_PLATFORM_GTEST_GMOCK)
         add_dependencies(JoynrMocks googletest)
         add_dependencies(JoynrMocks googlemock)
     endif(NOT USE_PLATFORM_GTEST_GMOCK)
 
-    target_link_libraries(
-        JoynrMocks
-        PUBLIC
-        ${test_TARGET_LIBRARIES}
+    target_link_libraries(JoynrMocks
+        PUBLIC Joynr::JoynrLib
     )
 
-    target_include_directories(
-        JoynrMocks
-        SYSTEM
-        PUBLIC
-        ${GTEST_INCLUDE_DIRS}
-        ${GMOCK_INCLUDE_DIRS}
+    target_include_directories(JoynrMocks
+        # For includes like #include "tests/mock/Mockxxx.h"
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
     )
 
-    target_include_directories(
-        JoynrMocks
-        PUBLIC
-        ${test_INCLUDE_DIRECTORIES}
+    target_include_directories(JoynrMocks
+        SYSTEM PUBLIC ${GTEST_INCLUDE_DIRS}
+                      ${GMOCK_INCLUDE_DIRS}
     )
+
 endif(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATION_TESTS})
 
 ###############
@@ -373,21 +315,21 @@ if(${BUILD_UNIT_TESTS})
         ${g_UnitTests_SOURCES}
     )
 
-    target_link_libraries(
-        g_UnitTests
+    target_link_libraries(g_UnitTests PRIVATE
         TestGenerated
         ${test_TARGET_LIBRARIES}
         JoynrMocks
+        Joynr::JoynrClusterControllerRuntime
     )
 
     target_include_directories(
         g_UnitTests
-        PRIVATE ${test_INCLUDE_DIRECTORIES}
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
     )
 
     install(TARGETS g_UnitTests TestGenerated
-        RUNTIME DESTINATION ${INSTALL_TEST_DIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${JOYNR_INSTALL_TEST_DIR}
+        LIBRARY DESTINATION ${JOYNR_INSTALL_LIBDIR}
     )
 endif(${BUILD_UNIT_TESTS})
 
@@ -406,29 +348,28 @@ if(${BUILD_INTEGRATION_TESTS})
        ${test_HEADERS}
        ${test_SOURCES}
        ${g_IntegrationTests_SOURCES}
-       # Make the LibJoynrWebSocketRuntime available in parallel to the cluster controller runtime
-       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
-       "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
-       # Allow unit-testing of private header WildcardStorage.h
-       "../libjoynrclustercontroller/access-control/WildcardStorage.h"
     )
 
-    target_link_libraries(
-        g_IntegrationTests
+    target_link_libraries(g_IntegrationTests PRIVATE
         TestGenerated
         ${test_TARGET_LIBRARIES}
         JoynrMocks
+        Joynr::JoynrClusterControllerRuntime
+    )
+    # JoynrRuntime::createRuntime must be found from JoynrClusterControllerRuntime,
+    # not from JoynrWsRuntime. Therefore, do not link Joynr::JoynrWsRuntime.
+    target_link_objlibraries(g_IntegrationTests
+        PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
     )
 
     target_include_directories(
         g_IntegrationTests
-        PRIVATE ${test_INCLUDE_DIRECTORIES}
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
     )
 
     install(TARGETS g_IntegrationTests TestGenerated
-        RUNTIME DESTINATION ${INSTALL_TEST_DIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${JOYNR_INSTALL_TEST_DIR}
+        LIBRARY DESTINATION ${JOYNR_INSTALL_LIBDIR}
     )
 endif(${BUILD_INTEGRATION_TESTS})
 
@@ -447,42 +388,32 @@ if(${BUILD_SYSTEM_INTEGRATION_TESTS})
        ${test_HEADERS}
        ${test_SOURCES}
        ${g_SystemIntegrationTests_SOURCES}
-       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
-       "../runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.cpp"
-       "../runtimes/libjoynr-runtime/LibJoynrRuntime.cpp"
     )
 
-    target_link_libraries(
-        g_SystemIntegrationTests
+    target_link_libraries(g_SystemIntegrationTests PRIVATE
         TestGenerated
         ${test_TARGET_LIBRARIES}
         JoynrMocks
+        Joynr::JoynrClusterControllerRuntime
+        MoCOCrW::mococrw
     )
-
-    set_target_properties(
-       g_SystemIntegrationTests
-       PROPERTIES
-       COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-    )
-
-    target_include_directories(
-        g_SystemIntegrationTests
-        SYSTEM
-        PRIVATE ${CURL_INCLUDE_DIRS}
+    # JoynrRuntime::createRuntime must be found from JoynrClusterControllerRuntime,
+    # not from JoynrWsRuntime. Therefore, do not link Joynr::JoynrWsRuntime.
+    target_link_objlibraries(g_SystemIntegrationTests
+        PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
     )
 
     target_include_directories(
         g_SystemIntegrationTests
-        PRIVATE ${test_INCLUDE_DIRECTORIES}
-        PRIVATE ${BOOST_INCLUDE_DIRS}
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
     )
 
     install(TARGETS g_SystemIntegrationTests TestGenerated
-        RUNTIME DESTINATION ${INSTALL_TEST_DIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${JOYNR_INSTALL_TEST_DIR}
+        LIBRARY DESTINATION ${JOYNR_INSTALL_LIBDIR}
     )
 endif(${BUILD_SYSTEM_INTEGRATION_TESTS})
 
 install(DIRECTORY resources
-        DESTINATION ${INSTALL_TEST_DIR}
+        DESTINATION ${JOYNR_INSTALL_TEST_DIR}
 )

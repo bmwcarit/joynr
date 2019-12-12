@@ -19,7 +19,9 @@
 #ifndef MQTTMESSAGINGSTUBFACTORY_H
 #define MQTTMESSAGINGSTUBFACTORY_H
 
+#include <functional>
 #include <memory>
+#include <string>
 
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 #include "joynr/Logger.h"
@@ -27,7 +29,16 @@
 namespace joynr
 {
 
+class IMessagingStub;
 class ITransportMessageSender;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+}
+}
 
 class MqttMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {

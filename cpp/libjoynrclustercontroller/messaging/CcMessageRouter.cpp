@@ -21,20 +21,28 @@
 
 #include <cassert>
 #include <functional>
+#include <limits>
+#include <stdexcept>
+#include <tuple>
 #include <typeinfo>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
-#include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MulticastReceiverDirectory.h"
+#include "joynr/RoutingTable.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/Util.h"
@@ -44,8 +52,8 @@
 #include "joynr/system/MessageNotificationAbstractProvider.h"
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilter.h"
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters.h"
-#include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/BinderAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"

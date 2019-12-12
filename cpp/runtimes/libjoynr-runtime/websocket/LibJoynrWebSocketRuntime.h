@@ -20,22 +20,28 @@
 #ifndef LIBJOYNRWEBSOCKETRUNTIME_H
 #define LIBJOYNRWEBSOCKETRUNTIME_H
 
+#include <atomic>
 #include <functional>
 #include <memory>
+#include <string>
 
-#include "joynr/IKeychain.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Settings.h"
 #include "joynr/WebSocketSettings.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
 
 namespace joynr
 {
+
+class IKeychain;
+class IMessageRouter;
 class IWebSocketPpClient;
-class WebSocketLibJoynrMessagingSkeleton;
-class IWebSocketPpClient;
+class Settings;
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+}
 
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
 {

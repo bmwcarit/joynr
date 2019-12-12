@@ -16,10 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "WebSocketMessagingStubFactory.h"
 
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "libjoynr/websocket/WebSocketMessagingStub.h"
+
+#include "WebSocketMessagingStub.h"
 
 namespace joynr
 {

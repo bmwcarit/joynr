@@ -24,6 +24,7 @@
 #include <gmock/gmock.h>
 
 #include "joynr/CapabilitiesRegistrar.h"
+#include "joynr/Future.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"

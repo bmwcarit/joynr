@@ -1,5 +1,0 @@
-###### BEGIN DLT ######
-set(DLT_LIBRARIES @JoynrConfig_DLT_LIBRARIES@)
-set(DLT_INCLUDE_DIRS @JoynrConfig_DLT_INCLUDE_DIRS@)
-include(${JOYNR_CMAKE_DIR}/CheckDLTImportTargets.cmake)
-###### END DLT ######

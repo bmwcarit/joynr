@@ -26,7 +26,7 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
-#include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
+#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/DiscoveryError.h"
 #include "joynr/types/Version.h"
 

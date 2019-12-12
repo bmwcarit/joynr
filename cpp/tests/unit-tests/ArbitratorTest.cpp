@@ -1107,7 +1107,7 @@ TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEnt
     auto arbitrator = ArbitratorFactory::createArbitrator(
             _domain, _interfaceName, version, _mockDiscovery, discoveryQos, _gbids);
 
-    auto onSuccess = [this](const types::DiscoveryEntryWithMetaInfo& result) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) {
          FAIL() << "Got result: " << result.toString();
     };
     auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& discoveryException) {
@@ -1168,7 +1168,7 @@ TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEnt
     auto arbitrator = ArbitratorFactory::createArbitrator(
             _domain, _interfaceName, version, _mockDiscovery, discoveryQos, _gbids);
 
-    auto onSuccess = [this](const types::DiscoveryEntryWithMetaInfo& result) {
+    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) {
          FAIL() << "Got result: " << result.toString();
     };
     auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& discoveryException) {
@@ -1332,7 +1332,7 @@ protected:
         auto arbitrator = ArbitratorFactory::createArbitrator(
                 _domain, _interfaceName, version, _mockDiscovery, discoveryQos, _gbids);
 
-        auto onSuccess = [this](const types::DiscoveryEntryWithMetaInfo& result) {
+        auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) {
              FAIL() << "Got result: " << result.toString();
         };
         auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& discoveryException) {

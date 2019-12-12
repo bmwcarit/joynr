@@ -17,13 +17,20 @@
  * #L%
  */
 
-#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
+#include "MosquittoConnection.h"
+
+#include <cassert>
+#include <cerrno>
+#include <sstream>
+#include <thread>
+#include <tuple>
+#include <utility>
 
 #include <openssl/ssl.h>
 #include <openssl/opensslv.h>
 
 #include "joynr/ClusterControllerSettings.h"
-#include "joynr/MessagingSettings.h"
+#include "joynr/Url.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 

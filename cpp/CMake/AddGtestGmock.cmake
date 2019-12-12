@@ -88,19 +88,15 @@ function(AddTest TARGET)
         ${TARGET}
         ${ARGN}
     )
-    set_target_properties(
-        ${TARGET}
-        PROPERTIES
-        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-    )
+#    set_target_properties(
+#        ${TARGET}
+#        PROPERTIES
+#        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
+#    )
     if(NOT USE_PLATFORM_GTEST_GMOCK)
         add_dependencies(${TARGET} googletest)
         add_dependencies(${TARGET} googlemock)
     endif(NOT USE_PLATFORM_GTEST_GMOCK)
-
-    if(NOT USE_PLATFORM_MOSQUITTO)
-        add_dependencies(${TARGET} mosquitto::mosquitto)
-    endif(NOT USE_PLATFORM_MOSQUITTO)
 
     target_include_directories(
         ${TARGET}

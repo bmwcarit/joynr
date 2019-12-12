@@ -20,12 +20,14 @@
 #include "joynr/MutableMessageFactory.h"
 
 #include <limits>
+#include <utility>
 
+#include "DummyPlatformSecurityManager.h"
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/IKeychain.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/Message.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MessagingQosEffort.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/OneWayRequest.h"
@@ -35,8 +37,8 @@
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/TimePoint.h"
 #include "joynr/serializer/Serializer.h"
-#include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 
 namespace joynr
 {

@@ -20,11 +20,8 @@
 #include "joynr/MqttMulticastAddressCalculator.h"
 
 #include <memory>
-#include <tuple>
 
 #include "joynr/ImmutableMessage.h"
-#include "joynr/exceptions/JoynrException.h"
-#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 
 namespace joynr

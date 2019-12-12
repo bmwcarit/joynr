@@ -9,15 +9,6 @@ build/
 buildSignature.ts
 CMakeLists.txt.user*
 cpp/docs/
-cpp/libjoynr/communication-model/
-cpp/libjoynr/include/joynr/JoynrExport.h
-cpp/libjoynr/include/joynr/JoynrVersion.h
-cpp/libjoynr/include/joynr/infrastructure/
-cpp/libjoynr/include/joynr/system/
-cpp/libjoynr/include/joynr/types/
-cpp/libjoynrclustercontroller/include/joynr/JoynrClusterControllerExport.h
-cpp/runtimes/include/joynr/JoynrClusterControllerRuntimeExport.h
-cpp/runtimes/include/joynr/JoynrRuntimeExport.h
 dependency-reduced-pom.xml
 local.properties
 *.bundle.js
@@ -31,7 +22,6 @@ tools/generator/joynr-generator-npm/joynr-generator-npm-test/generated/
 # Generated files
 /**/src/main/generated*/
 /**/src/test/generated*/
-cpp/libjoynr/**/generated/
 cpp/tests/gen-with-version/
 gen/
 javascript/**/generated/

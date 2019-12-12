@@ -19,10 +19,6 @@
 
 #include "joynr/JoynrClusterControllerMqttConnectionData.h"
 
-#include "joynr/ITransportMessageReceiver.h"
-#include "joynr/ITransportMessageSender.h"
-#include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
-
 namespace joynr
 {
 
@@ -30,6 +26,8 @@ JoynrClusterControllerMqttConnectionData::JoynrClusterControllerMqttConnectionDa
         : mosquittoConnection(nullptr), mqttMessageReceiver(nullptr), mqttMessageSender(nullptr)
 {
 }
+
+JoynrClusterControllerMqttConnectionData::~JoynrClusterControllerMqttConnectionData() = default;
 
 std::shared_ptr<MosquittoConnection> JoynrClusterControllerMqttConnectionData::
         getMosquittoConnection() const

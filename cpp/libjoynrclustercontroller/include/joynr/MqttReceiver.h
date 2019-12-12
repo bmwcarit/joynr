@@ -19,6 +19,8 @@
 #ifndef MQTTRECEIVER_H
 #define MQTTRECEIVER_H
 
+#include <functional>
+#include <memory>
 #include <string>
 
 #include "joynr/PrivateCopyAssign.h"
@@ -38,7 +40,7 @@ class JOYNRCLUSTERCONTROLLER_EXPORT MqttReceiver : public ITransportMessageRecei
 {
 public:
     explicit MqttReceiver(std::shared_ptr<MosquittoConnection> mosquittoConnection,
-                          const MessagingSettings& settings,
+                          const MessagingSettings& /*settings*/,
                           const std::string& channelIdForMqttTopic,
                           const std::string& gbid,
                           const std::string& unicastTopicPrefix);
@@ -89,8 +91,6 @@ private:
     system::RoutingTypes::MqttAddress _globalClusterControllerAddress;
 
     std::shared_ptr<MosquittoConnection> _mosquittoConnection;
-
-    const MessagingSettings& _settings;
 
     ADD_LOGGER(MqttReceiver)
 };

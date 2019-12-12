@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/IKeychain.h"
 #include "joynr/JoynrRuntime.h"
+
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"

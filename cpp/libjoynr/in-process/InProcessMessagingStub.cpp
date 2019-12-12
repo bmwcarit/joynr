@@ -16,11 +16,12 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/in-process/InProcessMessagingStub.h"
+#include "InProcessMessagingStub.h"
 
 #include <cassert>
+#include <utility>
 
-#include "libjoynr/in-process/InProcessMessagingSkeleton.h"
+#include "InProcessMessagingSkeleton.h"
 
 namespace joynr
 {

@@ -19,8 +19,8 @@
 #ifndef MQTTMESSAGINGSTUB_H
 #define MQTTMESSAGINGSTUB_H
 
+#include <functional>
 #include <memory>
-#include <string>
 
 #include "joynr/IMessagingStub.h"
 #include "joynr/Logger.h"
@@ -30,7 +30,14 @@
 namespace joynr
 {
 
+class ImmutableMessage;
 class ITransportMessageSender;
+
+namespace exceptions
+{
+class JoynrRuntimeException;
+}
+
 /**
   * Is used by the ClusterController to contact another (remote) ClusterController
   */

@@ -19,6 +19,9 @@
 
 #include "TestRunnable.h"
 
+#include <thread>
+
+
 namespace joynr
 {
 

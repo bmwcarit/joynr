@@ -21,9 +21,12 @@
  * Client for the global capabilities directory.
  */
 
+#include "GlobalCapabilitiesDirectoryClient.h"
+
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/Message.h"
-#include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
+#include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 
 namespace joynr
 {

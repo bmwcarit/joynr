@@ -12,14 +12,14 @@ add_executable(performance-consumer-app-cc
 
 target_link_libraries(performance-consumer-app-ws
     performance-generated
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
     ${Boost_LIBRARIES}
     dummyKeychain
 )
 
 target_link_libraries(performance-consumer-app-cc
     performance-generated
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
+    Joynr::JoynrClusterControllerRuntime
     ${Boost_LIBRARIES}
     dummyKeychain
 )

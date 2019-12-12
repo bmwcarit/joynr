@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/messaging/joynr-messaging/HttpMessagingStub.h"
+#include "HttpMessagingStub.h"
 
 #include "joynr/ImmutableMessage.h"
 #include "joynr/ITransportMessageSender.h"

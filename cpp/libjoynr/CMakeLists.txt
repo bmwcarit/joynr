@@ -1,299 +1,56 @@
-message(STATUS "#############################################")
-message(STATUS "Configuring JoynrLib...")
-message(STATUS "#############################################\n")
+project(JoynrLib)
 
-### Add websocketpp ###########################################################
+add_subdirectory(serializer)
+add_subdirectory(logger)
+add_subdirectory(util)
+add_subdirectory(concurrency)
+add_subdirectory(interface)
+add_subdirectory(basemodel)
+add_subdirectory(capabilities)
+add_subdirectory(joynr-messaging)
+add_subdirectory(in-process)
+add_subdirectory(websocket)
 
-find_package(OpenSSL REQUIRED)
-include(CheckOpenSSLImportTargets)
+add_library(${PROJECT_NAME} SHARED "")
+add_library(Joynr::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-include(AddWebSocketPP)
-
-# generate JoynrVersion.h which contains the version of joynr
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/git-revision-description")
-include(GetGitRevisionDescription)
-get_git_head_revision(GIT_REFSPEC JOYNR_HEAD_SHA1)
-string(SUBSTRING ${JOYNR_HEAD_SHA1} 0 10 JOYNR_HEAD_SHA1_SHORT)
-set(JOYNR_PACKAGE_REVISION ${JOYNR_VERSION}.${JOYNR_HEAD_SHA1_SHORT})
-string(TIMESTAMP JOYNR_BUILD_TIME)
-
-configure_file(
-    "common/JoynrVersion.h.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/include/joynr/JoynrVersion.h"
-    @ONLY
+target_link_objlibraries(${PROJECT_NAME}
+    PUBLIC Joynr::Serializer
+    PUBLIC Joynr::Logger
+    PUBLIC Joynr::Util
+    PUBLIC Joynr::Concurrency
+    PUBLIC Joynr::Interface
+    PUBLIC Joynr::BaseModel
+    PUBLIC Joynr::BaseModelGenerated
+    PUBLIC Joynr::Capabilities
+    PUBLIC Joynr::Messaging
+    PUBLIC Joynr::InProcessMessaging
+    PUBLIC Joynr::WebSocket
 )
 
-if(${GENERATE_SOURCES})
-    JoynrGenerator(
-        OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}"
-        MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/main/franca"
-        GENERATION_LANGUAGE "cpp"
-    )
-endif(${GENERATE_SOURCES})
-
-set(
-    JoynrLib_TARGET_LIBRARIES
-    Boost::system
-    Boost::thread
-    Boost::filesystem
-    smrf::smrf
-    MoCOCrW::mococrw
+target_compile_features(${PROJECT_NAME}
+    PUBLIC cxx_std_14
 )
 
-if(JOYNR_ENABLE_DLT_LOGGING)
-    list(
-        APPEND JoynrLib_TARGET_LIBRARIES
-        DLT::DLT
-    )
-endif(JOYNR_ENABLE_DLT_LOGGING)
+AddClangFormat(${PROJECT_NAME})
 
-set(
-    JoynrLib_EXPORT_HEADER
-    "include/joynr/JoynrExport.h"
-)
+AddIncludeWhatYouUse(${PROJECT_NAME})
 
-file(
-    GLOB_RECURSE JoynrLib_PUBLIC_HEADERS
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "include/joynr/*.h"
-    "include/joynr/serializer/*.h"
-    "include/joynr/exceptions/*.h"
-)
-
-file(GLOB_RECURSE JoynrLib_GENERATED_HEADERS
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "communication-model/generated/*.h"
-    "in-process/generated/*.h"
-    "joynr-messaging/generated/*.h"
-    "proxy/generated/*.h"
-    "provider/generated/*.h"
-)
-
-file(GLOB_RECURSE JoynrLib_GENERATED_SOURCES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "communication-model/generated/*.cpp"
-    "in-process/generated/*.cpp"
-    "joynr-messaging/generated/*.cpp"
-    "proxy/generated/*.cpp"
-    "provider/generated/*.cpp"
-)
-
-set(JoynrLib_PRIVATE_HEADERS
-    "in-process/InProcessMessagingSkeleton.h"
-    "in-process/InProcessMessagingStubFactory.h"
-    "in-process/InProcessMessagingStub.h"
-    "joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
-    "joynr-messaging/DummyPlatformSecurityManager.h"
-    "websocket/IWebSocketPpClient.h"
-    "websocket/WebSocketLibJoynrMessagingSkeleton.h"
-    "websocket/WebSocketMessagingStubFactory.h"
-    "websocket/WebSocketMessagingStub.h"
-    "websocket/WebSocketPpClient.h"
-    "websocket/WebSocketPpClientNonTLS.h"
-    "websocket/WebSocketPpClientTLS.h"
-    "websocket/WebSocketPpReceiver.h"
-    "websocket/WebSocketPpSender.h"
-)
-
-set(
-    JoynrLib_HEADERS
-    ${JoynrLib_PRIVATE_HEADERS}
-    ${JoynrLib_PUBLIC_HEADERS}
-    ${JoynrLib_GENERATED_HEADERS}
-)
-
-set(JoynrLib_SOURCES
-    "capabilities/LocalDiscoveryAggregator.cpp"
-    "capabilities/ParticipantIdStorage.cpp"
-    "CapabilitiesRegistrar.cpp"
-    "TimePoint.cpp"
-    "common/CallContext.cpp"
-    "common/CapabilityUtils.cpp"
-    "common/concurrency/BlockingQueue.cpp"
-    "common/concurrency/DelayedScheduler.cpp"
-    "common/concurrency/Runnable.cpp"
-    "common/concurrency/Semaphore.cpp"
-    "common/concurrency/ThreadPool.cpp"
-    "common/concurrency/ThreadPoolDelayedScheduler.cpp"
-    "common/InterfaceAddress.cpp"
-    "common/MessagingQos.cpp"
-    "common/MessagingStubFactory.cpp"
-    "common/MulticastMessagingSkeletonDirectory.cpp"
-    "common/MulticastReceiverDirectory.cpp"
-    "common/MulticastSubscriptionQos.cpp"
-    "common/ObjectWithDecayTime.cpp"
-    "common/OnChangeSubscriptionQos.cpp"
-    "common/OnChangeWithKeepAliveSubscriptionQos.cpp"
-    "common/PeriodicSubscriptionQos.cpp"
-    "common/rpc/BaseReply.cpp"
-    "common/rpc/OneWayRequest.cpp"
-    "common/rpc/Reply.cpp"
-    "common/rpc/Request.cpp"
-    "common/Settings.cpp"
-    "common/StatusCode.cpp"
-    "common/SteadyTimer.cpp"
-    "common/SubscriptionQos.cpp"
-    "common/SubscriptionUtil.cpp"
-    "common/SystemServicesSettings.cpp"
-    "common/UnicastSubscriptionQos.cpp"
-    "common/Url.cpp"
-    "common/Util.cpp"
-    "exceptions/JoynrException.cpp"
-    "exceptions/MethodInvocationException.cpp"
-    "exceptions/NoCompatibleProviderFoundException.cpp"
-    "exceptions/SubscriptionException.cpp"
-    "in-process/InProcessMessagingAddress.cpp"
-    "in-process/InProcessMessagingSkeleton.cpp"
-    "in-process/InProcessMessagingStub.cpp"
-    "in-process/InProcessMessagingStubFactory.cpp"
-    "joynr-messaging/AbstractJoynrMessagingConnector.cpp"
-    "joynr-messaging/AbstractMessageRouter.cpp"
-    "joynr-messaging/BrokerUrl.cpp"
-    "joynr-messaging/dispatcher/Dispatcher.cpp"
-    "joynr-messaging/dispatcher/ReceivedMessageRunnable.cpp"
-    "joynr-messaging/DummyPlatformSecurityManager.cpp"
-    "joynr-messaging/HttpMulticastAddressCalculator.cpp"
-    "joynr-messaging/ImmutableMessage.cpp"
-    "joynr-messaging/JoynrMessagingConnectorFactory.cpp"
-    "joynr-messaging/LibJoynrMessageRouter.cpp"
-    "joynr-messaging/MessageSender.cpp"
-    "joynr-messaging/MessagingSettings.cpp"
-    "joynr-messaging/MqttMulticastAddressCalculator.cpp"
-    "joynr-messaging/MulticastMatcher.cpp"
-    "joynr-messaging/MutableMessage.cpp"
-    "joynr-messaging/MutableMessageFactory.cpp"
-    "joynr-messaging/RoutingTable.cpp"
-    "joynr-messaging/WebSocketMulticastAddressCalculator.cpp"
-    "LibjoynrSettings.cpp"
-    "provider/AbstractJoynrProvider.cpp"
-    "provider/InterfaceRegistrar.cpp"
-    "provider/RequestCaller.cpp"
-    "proxy/Arbitrator.cpp"
-    "proxy/ArbitratorFactory.cpp"
-    "proxy/DiscoveryQos.cpp"
-    "proxy/FixedParticipantArbitrationStrategyFunction.cpp"
-    "proxy/KeywordArbitrationStrategyFunction.cpp"
-    "proxy/LastSeenArbitrationStrategyFunction.cpp"
-    "proxy/ProxyBase.cpp"
-    "proxy/ProxyFactory.cpp"
-    "proxy/QosArbitrationStrategyFunction.cpp"
-    "subscription/BasePublication.cpp"
-    "subscription/BroadcastFilterParameters.cpp"
-    "subscription/BroadcastSubscriptionRequest.cpp"
-    "subscription/BroadcastSubscriptionRequestInformation.cpp"
-    "subscription/ISubscriptionManager.cpp"
-    "subscription/MulticastPublication.cpp"
-    "subscription/MulticastSubscriptionRequest.cpp"
-    "subscription/PublicationManager.cpp"
-    "subscription/SubscriptionInformation.cpp"
-    "subscription/SubscriptionManager.cpp"
-    "subscription/SubscriptionPublication.cpp"
-    "subscription/SubscriptionReply.cpp"
-    "subscription/SubscriptionRequest.cpp"
-    "subscription/SubscriptionRequestInformation.cpp"
-    "subscription/SubscriptionStop.cpp"
-    "websocket/WebSocketLibJoynrMessagingSkeleton.cpp"
-    "websocket/WebSocketMessagingStub.cpp"
-    "websocket/WebSocketMessagingStubFactory.cpp"
-    "websocket/WebSocketPpClientTLS.cpp"
-    "websocket/WebSocketSettings.cpp"
-    ${JoynrLib_GENERATED_SOURCES}
-)
-
-add_library(
-    Joynr
-    # library type is set via BUILD_SHARED_LIBS
-    ${JoynrLib_HEADERS}
-    ${JoynrLib_SOURCES}
-)
-
-if(JOYNR_ENABLE_DLT_LOGGING)
-    target_include_directories(
-        Joynr
-        SYSTEM PUBLIC
-        "$<BUILD_INTERFACE:${dlt_INCLUDE_DIRS}>"
-    )
-endif(JOYNR_ENABLE_DLT_LOGGING)
-
-add_dependencies(Joynr muesli::muesli)
-get_target_property(muesli_INCLUDE_DIRECTORIES muesli::muesli INTERFACE_INCLUDE_DIRECTORIES)
-
-target_include_directories(
-    Joynr
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-    PRIVATE
-        "../" # allow inclusion of private headers in the form libjoynr/subfolder/header_file.h
-)
-
-target_include_directories(
-    Joynr
-    SYSTEM PUBLIC
-        "$<BUILD_INTERFACE:${spdlog_INCLUDE_DIRS}>"
-        "$<BUILD_INTERFACE:${WEBSOCKETPP_INCLUDE_DIR}>"
-        "$<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>" # necessary, because requirements are not propagated properly in cmake 2.8.x
-        "$<BUILD_INTERFACE:${muesli_INCLUDE_DIRECTORIES}>"
-)
-
-if(NOT USE_PLATFORM_SPDLOG)
-    add_dependencies(Joynr spdlog)
-endif(NOT USE_PLATFORM_SPDLOG)
-
-if(JOYNR_ENABLE_DLT_LOGGING)
-    add_dependencies(Joynr DLT::DLT)
-endif(JOYNR_ENABLE_DLT_LOGGING)
-
-if(NOT USE_PLATFORM_WEBSOCKETPP)
-    add_dependencies(Joynr websocketpp)
-endif(NOT USE_PLATFORM_WEBSOCKETPP)
-
-AddClangFormat(Joynr ${JoynrLib_EXPORT_HEADER})
-
-AddIncludeWhatYouUse(Joynr)
-
-AddClangTidy(Joynr)
+AddClangTidy(${PROJECT_NAME})
 
 set_target_properties(
-    Joynr
-    PROPERTIES
-    SOVERSION "${JOYNR_SOVERSION}"
-    VERSION "${JOYNR_VERSION}"
-    COMPILE_DEFINITIONS CMAKE_JOYNR_SETTINGS_INSTALL_DIR="${JOYNR_INSTALL_FULL_SYSCONFDIR}"
-)
-
-include(GenerateJoynrExports)
-GenerateJoynrExports(
-    Joynr
-    EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/${JoynrLib_EXPORT_HEADER}"
-)
-
-if(NOT USE_PLATFORM_MOCOCRW)
-    # make sure the external project MoCOCrW is built before this
-    add_dependencies(Joynr MoCOCrW::mococrw)
-endif(NOT USE_PLATFORM_MOCOCRW)
-
-target_link_libraries(Joynr
-    ${JoynrLib_TARGET_LIBRARIES}
-    Boost::thread
-    OpenSSL::SSL
+    ${PROJECT_NAME} PROPERTIES
+    OUTPUT_NAME "Joynr"
+    SOVERSION "${Joynr_SOVERSION}"
+    VERSION "${Joynr_VERSION}"
 )
 
 install(
-    TARGETS Joynr
+    TARGETS ${PROJECT_NAME}
     EXPORT JoynrTargets
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    # this will flatten directory hierarchy of header files
-    # PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-)
-
-# so we install header files manually to preserve directory hierarchy
-install(
-    DIRECTORY include/
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    FILES_MATCHING PATTERN "*.h"
+    RUNTIME DESTINATION "${JOYNR_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${JOYNR_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${JOYNR_INSTALL_LIBDIR}"
 )
 
 # Visual Studio compiles to Debug and Release directories
@@ -322,4 +79,3 @@ else()
         DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}
     )
 endif(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-

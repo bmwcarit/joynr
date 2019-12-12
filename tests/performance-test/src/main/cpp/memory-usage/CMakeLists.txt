@@ -4,7 +4,7 @@ add_executable(memory-usage-consumer-app
 
 target_link_libraries(memory-usage-consumer-app
     performance-generated
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
     ${Boost_LIBRARIES}
 )
 

@@ -19,11 +19,16 @@
 #ifndef DUMMYPLATFORMSECURITYMANAGER_H_
 #define DUMMYPLATFORMSECURITYMANAGER_H_
 
+#include <string>
+
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/Logger.h"
 
 namespace joynr
 {
+
+class ImmutableMessage;
+class MutableMessage;
 
 class DummyPlatformSecurityManager : public IPlatformSecurityManager
 {

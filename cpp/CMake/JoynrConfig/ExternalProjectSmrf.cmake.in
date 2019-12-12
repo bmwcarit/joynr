@@ -1,5 +1,0 @@
-###### BEGIN SMRF ######
-set(SMRF_LIBRARIES @JoynrConfig_SMRF_LIBRARIES@)
-set(SMRF_INCLUDE_DIRS @JoynrConfig_SMRF_INCLUDE_DIRS@)
-include(${JOYNR_CMAKE_DIR}/CheckSMRFImportTargets.cmake)
-###### END SMRF ######

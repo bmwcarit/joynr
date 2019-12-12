@@ -17,12 +17,12 @@
  * #L%
  */
 
-#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
+#include "MqttMessagingStubFactory.h"
 
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/ITransportMessageSender.h"
 
-#include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStub.h"
+#include "MqttMessagingStub.h"
 
 namespace joynr
 {

@@ -19,6 +19,7 @@
 
 #include "joynr/RoutingTable.h"
 
+#include <chrono>
 #include <string>
 #include <unordered_set>
 #include <vector>

@@ -19,10 +19,23 @@
 #ifndef INPROCESSMESSAGINGSTUBFACTORY_H
 #define INPROCESSMESSAGINGSTUBFACTORY_H
 
+#include <functional>
+#include <memory>
+
 #include "joynr/IMiddlewareMessagingStubFactory.h"
 
 namespace joynr
 {
+
+class IMessagingStub;
+
+namespace system
+{
+namespace RoutingTypes
+{
+class Address;
+}
+}
 
 class InProcessMessagingStubFactory : public IMiddlewareMessagingStubFactory
 {

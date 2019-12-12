@@ -19,8 +19,11 @@
 #include "PosixSignalHandler.h"
 
 #include <csignal>
-#include <thread>
+#include <fcntl.h>
 #include <unistd.h>
+#include <tuple>
+#include <utility>
+
 #include <sys/socket.h>
 
 #include "joynr/IClusterControllerSignalHandler.h"

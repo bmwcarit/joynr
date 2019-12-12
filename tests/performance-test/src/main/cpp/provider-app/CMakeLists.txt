@@ -9,7 +9,7 @@ add_executable(performance-provider-app-cc
 target_link_libraries(performance-provider-app-ws
     performance-generated
     performance-provider
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
     ${Boost_LIBRARIES}
     dummyKeychain
 )
@@ -17,7 +17,7 @@ target_link_libraries(performance-provider-app-ws
 target_link_libraries(performance-provider-app-cc
     performance-generated
     performance-provider
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
+    Joynr::JoynrClusterControllerRuntime
     ${Boost_LIBRARIES}
     dummyKeychain
 )

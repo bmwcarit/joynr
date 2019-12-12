@@ -16,22 +16,23 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynrclustercontroller/http-communication-manager/HttpSender.h"
+#include "HttpSender.h"
 
 #include <algorithm>
-#include <cassert>
 #include <chrono>
 
 #include <curl/curl.h>
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/ImmutableMessage.h"
-#include "joynr/MessagingSettings.h"
+#include "joynr/TimePoint.h"
 #include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpNetworking.h"
-#include "libjoynrclustercontroller/httpnetworking/HttpResult.h"
+
+#include "../httpnetworking/HttpNetworking.h"
+#include "../httpnetworking/HttpResult.h"
 
 namespace joynr
 {

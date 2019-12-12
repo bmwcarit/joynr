@@ -23,18 +23,19 @@
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/IDispatcher.h"
-#include "joynr/IKeychain.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/MutableMessage.h"
+#include "joynr/OneWayRequest.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionPublication.h"
-#include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionReply.h"
+#include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
 namespace joynr

@@ -16,9 +16,10 @@
  * limitations under the License.
  * #L%
  */
-#include "libjoynr/joynr-messaging/dispatcher/ReceivedMessageRunnable.h"
+#include "ReceivedMessageRunnable.h"
 
-#include <cassert>
+#include <string>
+#include <utility>
 
 #include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"

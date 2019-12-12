@@ -30,6 +30,7 @@
 
 #include "joynr/JoynrVersion.h"
 #include "joynr/Logger.h"
+
 #include "runtimes/cluster-controller-runtime/signal-handler/PosixSignalHandler.h"
 
 namespace
@@ -39,7 +40,7 @@ std::string getVersionInfo()
 {
     return "Joynr cluster-controller."
            "\nJoynr version: " JOYNR_VERSION_STRING "."
-           "\nPackage revision: " JOYNR_PACKAGE_REVISION " build on " JOYNR_BUILD_TIME;
+           "\nPackage revision: " JOYNR_PACKAGE_REVISION " built on " JOYNR_BUILD_TIME;
 }
 
 void printUsage(joynr::Logger& logger, const std::string& programName)

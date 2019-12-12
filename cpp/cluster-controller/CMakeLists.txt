@@ -1,83 +1,43 @@
-message(STATUS "#############################################")
-message(STATUS "Configuring cluster controller executable...")
-message(STATUS "#############################################\n")
+project(cluster-controller)
 
-get_target_property(JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY JoynrClusterController PUBLIC_INCLUDE_DIRECTORY)
-get_target_property(runtime_PUBLIC_INCLUDE_DIRECTORY JoynrClusterControllerRuntime PUBLIC_INCLUDE_DIRECTORY)
+add_executable(${PROJECT_NAME} "")
 
-set(
-    ClusterControllerExecutable_INCLUDE_DIRECTORIES
-    ${runtime_PUBLIC_INCLUDE_DIRECTORY}
-    ${JoynrClusterController_PUBLIC_INCLUDE_DIRECTORY}
-    "../"
+target_sources(${PROJECT_NAME} PRIVATE
+    main.cpp
 )
 
-file(
-    GLOB_RECURSE cluster-controller_PUBLIC_HEADERS
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "*.h"
-)
-file(
-    GLOB_RECURSE cluster-controller_PUBLIC_SOURCES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "*.cpp"
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE Joynr::JoynrClusterControllerRuntime
 )
 
-set(
-    cluster-controller_HEADERS
-    ${cluster-controller_PUBLIC_HEADERS}
-
-)
-
-set(
-    cluster-controller_SOURCES
-    ${cluster-controller_PUBLIC_SOURCES}
-)
-
-add_executable(
-    cluster-controller
-    ${cluster-controller_HEADERS}
-    ${cluster-controller_SOURCES}
-)
-
-AddClangFormat(cluster-controller)
-
-AddClangTidy(cluster-controller)
-
-target_link_libraries(cluster-controller
-    JoynrClusterControllerRuntime
-)
-
-target_include_directories(
-    cluster-controller
-    PRIVATE ${ClusterControllerExecutable_INCLUDE_DIRECTORIES}
+target_include_directories(${PROJECT_NAME}
+    # for includes like #include "runtimes/cluster-controller-runtime/signal-handler/PosixSignalHandler.h"
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
 if(JOYNR_ENABLE_DLT_LOGGING)
-    set(
-      JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID
-      "JOCC"
-      CACHE
-      STRING
-      "DLT application id for cluster-controller"
+    set(JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID "JOCC"
+        CACHE STRING
+        "DLT application id for cluster-controller"
     )
-    set(
-      JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION
-      "joynr cluster controller"
-      CACHE
-      STRING
-      "DLT application description for cluster-controller"
+    set(JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION "joynr cluster controller"
+        CACHE STRING
+        "DLT application description for cluster-controller"
     )
-    target_compile_definitions(
-        cluster-controller
-        PRIVATE
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
         JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID=${JOYNR_CLUSTER_CONTROLLER_DLT_APP_ID}
         JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION=${JOYNR_CLUSTER_CONTROLLER_DLT_DESCRIPTION}
     )
 endif()
 
+AddClangFormat(${PROJECT_NAME})
+
+AddIncludeWhatYouUse(${PROJECT_NAME})
+
+AddClangTidy(${PROJECT_NAME})
+
 install(
-    TARGETS cluster-controller
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION "${JOYNR_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${JOYNR_INSTALL_LIBDIR}"
 )

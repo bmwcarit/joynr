@@ -29,20 +29,20 @@
 
 class MockMessageRouter : public joynr::IMessageRouter {
 public:
-    void invokeAddNextHopOnSuccessFct(const std::string& participantId,
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& inprocessAddress,
-            const bool& isGloballyVisible,
-            const std::int64_t expiryDateMs,
-            const bool isSticky,
+    void invokeAddNextHopOnSuccessFct(const std::string& /*participantId*/,
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& /*inprocessAddress*/,
+            const bool& /*isGloballyVisible*/,
+            const std::int64_t /*expiryDateMs*/,
+            const bool /*isSticky*/,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> /*onError*/) {
         if (onSuccess) {
             onSuccess();
         }
     }
-    void invokeRemoveNextHopOnSuccessFct(const std::string& participantId,
+    void invokeRemoveNextHopOnSuccessFct(const std::string& /*participantId*/,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError) {
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> /*onError*/) {
         if (onSuccess) {
             onSuccess();
         }

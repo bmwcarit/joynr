@@ -32,6 +32,7 @@
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/ProxyBuilder.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/serializer/Serializer.h"
@@ -266,7 +267,7 @@ public:
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    onError)
+                    /*onError*/)
     {
         onSuccess(gpsLocation);
     }

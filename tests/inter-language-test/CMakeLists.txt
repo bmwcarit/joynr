@@ -7,7 +7,6 @@ project(inter-language-test-1.14.0-SNAPSHOT)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
-include(SetCppStandard)
 
 include(AddClangFormat)
 include(Sanitizers)
@@ -23,14 +22,8 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.14.0 REQUIRED)
+find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 
-message(STATUS "joynr variable Joynr_LIB_COMMON_INCLUDE_DIRS=${Joynr_LIB_COMMON_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_INPROCESS_INCLUDE_DIRS=${Joynr_LIB_INPROCESS_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_WS_INCLUDE_DIRS=${Joynr_LIB_WS_INCLUDE_DIRS}")
-message(STATUS "joynr variable Joynr_LIB_COMMON_LIBRARIES=${Joynr_LIB_COMMON_LIBRARIES}")
-message(STATUS "joynr variable Joynr_LIB_INPROCESS_LIBRARIES=${Joynr_LIB_INPROCESS_LIBRARIES}")
-message(STATUS "joynr variable Joynr_LIB_WS_LIBRARIES=${Joynr_LIB_WS_LIBRARIES}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 
@@ -132,7 +125,7 @@ set(ilt-provider_SOURCES
 
 # Link with the joynr libraries
 set(ilt_LIBRARIES
-    ${Joynr_LIB_COMMON_LIBRARIES}
+    Joynr::JoynrLib
     ${Boost_LIBRARIES}
 )
 
@@ -147,7 +140,6 @@ add_library(ilt SHARED
 target_include_directories(
     ilt
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 target_link_libraries(ilt
@@ -176,13 +168,12 @@ add_executable(ilt-provider-cc
 target_link_libraries(ilt-provider-cc
     ilt
     ${ilt_LIBRARIES}
-    ${Joynr_LIB_INPROCESS_LIBRARIES}
+    Joynr::JoynrClusterControllerRuntime
 )
 
 target_include_directories(
     ilt-provider-cc
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 # Compile the provider application (requires: running cluster controller)
@@ -195,14 +186,13 @@ add_executable(ilt-provider-ws
 target_include_directories(
     ilt-provider-ws
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 # Link the provider application
 target_link_libraries(ilt-provider-ws
     ilt
     ${ilt_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
 )
 
 # Compile the test application (requires: running cluster controller)
@@ -216,7 +206,6 @@ AddTest(
 target_include_directories(
     ilt-consumer-ws
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
 )
 
@@ -224,7 +213,7 @@ target_include_directories(
 target_link_libraries(ilt-consumer-ws
     ilt
     ${ilt_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
     ${GTEST_LIBRARIES}
     ${GMOCK_LIBRARIES}
 )
@@ -241,7 +230,6 @@ target_include_directories(
     ilt-consumer-proxy-provider-interface-mismatch-ws
     PRIVATE ${GENERATED_INCLUDE_DIRS_PROXY_PROVIDER_INTERFACE_MISMATCH}
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${Joynr_LIB_COMMON_INCLUDE_DIRS}
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
 )
 
@@ -249,7 +237,7 @@ target_include_directories(
 target_link_libraries(ilt-consumer-proxy-provider-interface-mismatch-ws
     ilt
     ${ilt_LIBRARIES}
-    ${Joynr_LIB_WS_LIBRARIES}
+    Joynr::JoynrWsRuntime
     ${GTEST_LIBRARIES}
     ${GMOCK_LIBRARIES}
 )

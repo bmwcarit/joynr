@@ -29,9 +29,9 @@
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/Settings.h"
 #include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
-#include "mock/MockGlobalCapabilitiesDirectoryProxy.h"
-#include "mock/MockJoynrRuntime.h"
-#include "mock/MockMessageSender.h"
+#include "tests/mock/MockGlobalCapabilitiesDirectoryProxy.h"
+#include "tests/mock/MockJoynrRuntime.h"
+#include "tests/mock/MockMessageSender.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -76,8 +76,8 @@ public:
           messagingQos(10000),
           mockFuture(std::make_shared<joynr::Future<void>>()),
           onSuccess([](){}),
-          onError([](const types::DiscoveryError::Enum& error) {}),
-          onRuntimeError([](const exceptions::JoynrRuntimeException& error) {})
+          onError([](const types::DiscoveryError::Enum& /*error*/) {}),
+          onRuntimeError([](const exceptions::JoynrRuntimeException& /*error*/) {})
     {}
 
     ADD_LOGGER(GlobalCapabilitiesDirectoryClientTest)
@@ -137,7 +137,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd)
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupDomainInterface)
 {
     std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccessForLookup =
-            [](const std::vector<types::GlobalDiscoveryEntry>& result){};
+            [](const std::vector<types::GlobalDiscoveryEntry>& /*result*/){};
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     const std::vector<std::string> domains = {capDomain};
     auto mockLookupFuture = std::make_shared<joynr::Future<std::vector<joynr::types::GlobalDiscoveryEntry>>>();
@@ -159,7 +159,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupDomainInterface)
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupParticipantId)
 {
     std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccessForLookup =
-            [](const std::vector<types::GlobalDiscoveryEntry>& result){};
+            [](const std::vector<types::GlobalDiscoveryEntry>& /*result*/){};
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     auto mockLookupFuture = std::make_shared<joynr::Future<joynr::types::GlobalDiscoveryEntry>>();
 

@@ -1,8 +1,0 @@
-###### BEGIN Spdlog ######
-find_package(spdlog REQUIRED)
-get_target_property(spdlog_INCLUDE_DIRS spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-list(
-    APPEND Joynr_LIB_COMMON_INCLUDE_DIRS
-    ${spdlog_INCLUDE_DIRS}
-)
-###### END Spdlog ######

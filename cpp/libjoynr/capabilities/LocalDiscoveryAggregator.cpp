@@ -19,14 +19,11 @@
 #include "joynr/LocalDiscoveryAggregator.h"
 
 #include <cassert>
-#include <chrono>
-#include <limits>
 #include <memory>
 #include <utility>
 
 #include "joynr/Future.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 namespace joynr

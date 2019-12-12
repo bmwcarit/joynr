@@ -8,7 +8,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
-include(SetCppStandard)
 include(Sanitizers)
 include(AddClangFormat)
 
@@ -17,7 +16,7 @@ include(GNUInstallDirs)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.14.0 REQUIRED)
+find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")
@@ -76,13 +75,12 @@ install(
 )
 
 target_link_libraries(performance-generated
-    ${Joynr_LIB_COMMON_LIBRARIES}
+    Joynr::JoynrLib
 )
 
 target_include_directories(performance-generated
     SYSTEM PUBLIC
     "${CMAKE_CURRENT_LIST_DIR}/src/main/generated-cpp/include"
-    ${Joynr_LIB_COMMON_INCLUDE_DIRS}
 )
 
 ### provider implementation ###

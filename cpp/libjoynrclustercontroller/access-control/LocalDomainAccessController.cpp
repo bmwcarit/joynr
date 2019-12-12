@@ -20,17 +20,28 @@
 #include "LocalDomainAccessController.h"
 
 #include <atomic>
-#include <cassert>
+#include <cstdint>
+#include <functional>
 #include <regex>
 #include <tuple>
 
+#include "joynr/ISubscriptionListener.h"
 #include "joynr/MulticastSubscriptionQos.h"
+#include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/infrastructure/DacTypes/ChangeType.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 #include "joynr/infrastructure/GlobalDomainAccessControlListEditorProxy.h"
 #include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/GlobalDomainRoleControllerProxy.h"
 
-#include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
+#include "AccessControlAlgorithm.h"
+#include "AccessControlUtils.h"
+#include "LocalDomainAccessStore.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
@@ -893,7 +904,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreAces(
     };
 
     std::function<void(const exceptions::JoynrException& error)> mediatorAceOnError =
-            [this, initializer](const exceptions::JoynrException& error) {
+            [initializer](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger(),
                         "Aborting ACL initialisation due to communication error:\n{}",
                         error.getMessage());
@@ -977,7 +988,7 @@ void LocalDomainAccessController::initializeLocalDomainAccessStoreRces(
     };
 
     std::function<void(const exceptions::JoynrException& error)> mediatorRceOnError =
-            [this, initializer](const exceptions::JoynrException& error) {
+            [initializer](const exceptions::JoynrException& error) {
         JOYNR_LOG_ERROR(logger(),
                         "Aborting RCL initialisation due to communication error:\n{}",
                         error.getMessage());

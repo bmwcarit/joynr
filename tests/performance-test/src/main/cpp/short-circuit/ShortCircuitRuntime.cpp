@@ -32,9 +32,10 @@
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/Settings.h"
 #include "joynr/SubscriptionManager.h"
-#include "joynr/system/RoutingTypes/Address.h"
+
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+
 #include "libjoynrclustercontroller/include/joynr/CcMessageRouter.h"
 
 namespace joynr

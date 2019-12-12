@@ -20,10 +20,11 @@
 #include "LocalDomainAccessStore.h"
 
 #include <algorithm>
-#include <iterator>
 
 #include "joynr/Util.h"
-#include "libjoynrclustercontroller/access-control/Validator.h"
+#include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
+
+#include "Validator.h"
 
 namespace joynr
 {
@@ -56,6 +57,8 @@ LocalDomainAccessStore::LocalDomainAccessStore(std::string fileName)
     // insert all entries into wildcard storage
     applyForAllTables([this](auto& entryParam) { addToWildcardStorage(entryParam); });
 }
+
+LocalDomainAccessStore::~LocalDomainAccessStore() = default;
 
 void LocalDomainAccessStore::logContent()
 {

@@ -106,6 +106,7 @@ request.setParams(
 #include <cstdint>
 #include "joynr/SubscriptionUtil.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/Request.h"
 #include "joynr/OneWayRequest.h"
 «IF !francaIntf.attributes.empty»

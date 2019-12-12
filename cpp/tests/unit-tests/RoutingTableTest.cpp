@@ -20,6 +20,7 @@
 #include <atomic>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <gtest/gtest.h>

@@ -19,11 +19,12 @@
 #ifndef MQTTTRANSPORTSTATUS_H
 #define MQTTTRANSPORTSTATUS_H
 
+#include <functional>
 #include <memory>
-
-#include "joynr/PrivateCopyAssign.h"
+#include <string>
 
 #include <joynr/ITransportStatus.h>
+#include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
 {
