@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(jsit-1.11.0-SNAPSHOT)
+project(jsit-1.11.0)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
