@@ -37,6 +37,7 @@ mvn versions:set -P android,javascript -DnewVersion=$2
 mvn versions:commit -P android,javascript
 
 _sed 's/'$oldVersion'/'$newVersion'/g' \
+package.json \
 cpp/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/inter-language-test/package.json \
@@ -52,7 +53,8 @@ examples/radio-node/pom.xml \
 examples/radio-node/package.json \
 javascript/libjoynr-js/package.json \
 javascript/libjoynr-js/src/main/js/package.json \
-javascript/joynr-generator/package.json \
+tools/generator/joynr-generator-npm/package.json \
+tools/generator/joynr-generator-npm/joynr-generator-npm-test/package.json \
 tools/generator/joynr-generator-gradle-plugin/build.gradle \
 android/libjoynr-android-websocket-runtime/build.gradle \
 examples/android/android-hello-world/android-hello-world-provider/build.gradle \
