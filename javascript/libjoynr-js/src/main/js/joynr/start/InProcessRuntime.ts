@@ -142,7 +142,7 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
             provisioning: provisioning.mqtt || {}
         });
 
-        const messagingSkeletonFactory = new MessagingSkeletonFactory();
+        const multicastSkeletons = new MessagingSkeletonFactory();
 
         const messagingStubFactories: Record<string, any> = {};
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
@@ -197,7 +197,7 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
         });
 
         this.messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-        messagingSkeletonFactory.setSkeletons(this.messagingSkeletons);
+        multicastSkeletons.setSkeletons(this.messagingSkeletons);
 
         this.messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
 

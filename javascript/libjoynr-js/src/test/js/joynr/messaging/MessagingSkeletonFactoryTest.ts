@@ -22,27 +22,27 @@ import MessagingSkeletonFactory from "joynr/joynr/messaging/MessagingSkeletonFac
 import MqttAddress from "joynr/generated/joynr/system/RoutingTypes/MqttAddress";
 
 describe("libjoynr-js.joynr.messaging.MessagingSkeletonFactory", () => {
-    let messagingSkeletonFactory: MessagingSkeletonFactory;
+    let multicastSkeletons: MessagingSkeletonFactory;
     let mqttMessagingSkeleton: any;
 
     beforeEach(() => {
         mqttMessagingSkeleton = {
             shutdown: jest.fn()
         };
-        messagingSkeletonFactory = new MessagingSkeletonFactory();
+        multicastSkeletons = new MessagingSkeletonFactory();
         const messagingSkeletons: Record<string, any> = {};
         messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-        messagingSkeletonFactory.setSkeletons(messagingSkeletons);
+        multicastSkeletons.setSkeletons(messagingSkeletons);
     });
 
     it("provides expected API", () => {
         expect(MessagingSkeletonFactory).toBeDefined();
-        expect(messagingSkeletonFactory).toBeDefined();
-        expect(messagingSkeletonFactory).toBeInstanceOf(MessagingSkeletonFactory);
-        expect(messagingSkeletonFactory.getSkeleton).toBeDefined();
+        expect(multicastSkeletons).toBeDefined();
+        expect(multicastSkeletons).toBeInstanceOf(MessagingSkeletonFactory);
+        expect(multicastSkeletons.getSkeleton).toBeDefined();
     });
 
     it("returns the appropriate messaging skeleton depending on object type", () => {
-        expect(messagingSkeletonFactory.getSkeleton(new MqttAddress(undefined as any))).toBe(mqttMessagingSkeleton);
+        expect(multicastSkeletons.getSkeleton(new MqttAddress(undefined as any))).toBe(mqttMessagingSkeleton);
     });
 });

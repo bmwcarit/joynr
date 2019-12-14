@@ -40,10 +40,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     let senderParticipantId: any, receiverParticipantId: any, receiverParticipantId2: any;
     let joynrMessage: any, joynrMessage2: any;
     let persistencySpy: any, address: any;
-    let messagingStubSpy: any,
-        messagingSkeletonSpy: any,
-        messagingStubFactorySpy: any,
-        messagingSkeletonFactorySpy: any;
+    let messagingStubSpy: any, messagingSkeletonSpy: any, messagingStubFactorySpy: any, multicastSkeletonsSpy: any;
     let messageQueueSpy: any,
         messageRouter: any,
         routingProxySpy: any,
@@ -64,7 +61,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             persistency,
             joynrInstanceId: "joynrInstanceID",
             messagingStubFactory: messagingStubFactorySpy,
-            messagingSkeletonFactory: messagingSkeletonFactorySpy,
+            multicastSkeletons: multicastSkeletonsSpy,
             multicastAddressCalculator: multicastAddressCalculatorSpy,
             messageQueue,
             incomingAddress,
@@ -127,13 +124,13 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             createMessagingStub: jest.fn()
         };
 
-        messagingSkeletonFactorySpy = {
+        multicastSkeletonsSpy = {
             getSkeleton: jest.fn()
         };
 
         messagingStubFactorySpy.createMessagingStub.mockReturnValue(messagingStubSpy);
 
-        messagingSkeletonFactorySpy.getSkeleton.mockReturnValue(messagingSkeletonSpy);
+        multicastSkeletonsSpy.getSkeleton.mockReturnValue(messagingSkeletonSpy);
 
         messageQueueSpy = {
             putMessage: jest.fn(),

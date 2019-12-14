@@ -148,7 +148,7 @@ class JoynrRuntime<T extends Provisioning> {
 
     protected initializeComponents(
         provisioning: T,
-        messageRouterSettings: Omit<MessageRouterSettings, "persistency" | "messagingSkeletonFactory" | "messageQueue">,
+        messageRouterSettings: Omit<MessageRouterSettings, "persistency" | "multicastSkeletons" | "messageQueue">,
         discovery: DiscoveryStub,
         typedCapabilities?: DiscoveryEntryWithMetaInfo[]
     ): void {
@@ -158,10 +158,10 @@ class JoynrRuntime<T extends Provisioning> {
             messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
         }
 
-        const messagingSkeletonFactory = new MessagingSkeletonFactory();
+        const multicastSkeletons = new MessagingSkeletonFactory();
 
         (messageRouterSettings as MessageRouterSettings).persistency = this.persistencyConfig.routingTable;
-        (messageRouterSettings as MessageRouterSettings).messagingSkeletonFactory = messagingSkeletonFactory;
+        (messageRouterSettings as MessageRouterSettings).multicastSkeletons = multicastSkeletons;
         (messageRouterSettings as MessageRouterSettings).messageQueue = new MessageQueue(messageQueueSettings);
 
         this.messageRouter = new MessageRouter(messageRouterSettings as MessageRouterSettings);
@@ -179,7 +179,7 @@ class JoynrRuntime<T extends Provisioning> {
         const libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
         libjoynrMessagingSkeleton.registerListener(this.dispatcher.receive);
 
-        messagingSkeletonFactory.setSkeletons(this.messagingSkeletons);
+        multicastSkeletons.setSkeletons(this.messagingSkeletons);
 
         this.requestReplyManager = new RequestReplyManager(this.dispatcher);
         this.subscriptionManager = new SubscriptionManager(this.dispatcher);
