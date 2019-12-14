@@ -172,8 +172,6 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
             incomingAddress: localAddress
         };
 
-        this.messagingSkeletons[WebSocketAddress._typeName] = this.webSocketMessagingSkeleton;
-
         const localDiscoveryAggregator = new LocalDiscoveryAggregator();
 
         await super.initializePersistency(provisioning);

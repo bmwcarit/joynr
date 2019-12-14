@@ -179,7 +179,6 @@ class JoynrRuntime<T extends Provisioning> {
         const libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
         libjoynrMessagingSkeleton.registerListener(this.dispatcher.receive);
 
-        this.messagingSkeletons[InProcessAddress._typeName] = libjoynrMessagingSkeleton;
         messagingSkeletonFactory.setSkeletons(this.messagingSkeletons);
 
         this.requestReplyManager = new RequestReplyManager(this.dispatcher);

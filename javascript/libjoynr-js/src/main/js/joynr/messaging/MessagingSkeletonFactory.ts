@@ -46,7 +46,6 @@ class MessagingSkeletonFactory {
                 this.messagingSkeletons
             ).join(",")}]`;
             log.debug(errorMsg);
-            throw new Error(errorMsg);
         }
         return skeleton;
     }
