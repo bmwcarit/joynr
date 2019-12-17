@@ -36,6 +36,7 @@ This project has dependencies to:
   Commons Logging under The Apache Software License, Version 2.0
   Commons Pool under The Apache Software License, Version 2.0
   Connector Architecture 1.5 API under lgpl
+  Dagger under Apache 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
   EJB 3.1 API under lgpl
@@ -50,6 +51,7 @@ This project has dependencies to:
   Gson under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   Hamcrest library under New BSD License
+  HiveMQ MQTT Client under The Apache License, Version 2.0
   HttpMime under Apache License
   INFOMAS ASL :: Annotation Detector under The Apache Software License, Version 2.0
   Interceptors 1.1 API under lgpl
@@ -64,7 +66,9 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:hivemq-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:paho-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
@@ -95,6 +99,7 @@ This project has dependencies to:
   Java API for XML Web Services 2.2 under lgpl
   Java API for XML-Based RPC (JAX-RPC) 1.1 under lgpl
   Java Architecture for XML Binding 2.2 under lgpl
+  Java Concurrency Tools Core Library under Apache License, Version 2.0
   Java Servlet 3.0 API under lgpl
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
@@ -111,6 +116,7 @@ This project has dependencies to:
   jersey-multipart under CDDL 1.1 or GPL2 w/ CPE
   jersey-server under CDDL 1.1 or GPL2 w/ CPE
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
+  JetBrains Java Annotations under The Apache Software License, Version 2.0
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -135,14 +141,25 @@ This project has dependencies to:
   JUnit under Eclipse Public License 1.0
   MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   Mockito under The MIT License
+  Netty/Buffer under Apache License, Version 2.0
+  Netty/Codec under Apache License, Version 2.0
+  Netty/Codec/HTTP under Apache License, Version 2.0
+  Netty/Common under Apache License, Version 2.0
+  Netty/Handler under Apache License, Version 2.0
+  Netty/Resolver under Apache License, Version 2.0
+  Netty/Transport under Apache License, Version 2.0
+  Netty/Transport/Native/Epoll under Apache License, Version 2.0
+  Netty/Transport/Native/Unix/Common under Apache License, Version 2.0
   Objenesis under MIT License
   OpenJPA JDBC under Apache Software License 2.0
   OpenJPA Kernel under Apache Software License 2.0
   OpenJPA Persistence under Apache Software License 2.0
   OpenJPA Persistence JDBC under Apache Software License 2.0
   OpenJPA Utilities Library under Apache Software License 2.0
+  reactive-streams under CC0
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
+  RxJava under The Apache Software License, Version 2.0
   Serp under BSD
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License

@@ -60,6 +60,7 @@ This project has dependencies to:
   Commons IO under The Apache Software License, Version 2.0
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
+  Dagger under Apache 2.0
   ehcache under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   FlatBuffers Java API under Apache License V2.0
@@ -68,6 +69,7 @@ This project has dependencies to:
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
+  HiveMQ MQTT Client under The Apache License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
@@ -76,6 +78,7 @@ This project has dependencies to:
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
   io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:hivemq-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
@@ -90,11 +93,13 @@ This project has dependencies to:
   jackson-databind under The Apache Software License, Version 2.0
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
+  Java Concurrency Tools Core Library under Apache License, Version 2.0
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under CDDL/GPLv2+CE
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
+  JetBrains Java Annotations under The Apache Software License, Version 2.0
   jsoup under The MIT License
   JUnit under Eclipse Public License 1.0
   Maven Aether Provider under Apache License, Version 2.0
@@ -103,12 +108,23 @@ This project has dependencies to:
   Maven Repository Metadata Model under Apache License, Version 2.0
   Maven Settings under Apache License, Version 2.0
   Maven Settings Builder under Apache License, Version 2.0
+  Netty/Buffer under Apache License, Version 2.0
+  Netty/Codec under Apache License, Version 2.0
+  Netty/Codec/HTTP under Apache License, Version 2.0
+  Netty/Common under Apache License, Version 2.0
+  Netty/Handler under Apache License, Version 2.0
+  Netty/Resolver under Apache License, Version 2.0
+  Netty/Transport under Apache License, Version 2.0
+  Netty/Transport/Native/Epoll under Apache License, Version 2.0
+  Netty/Transport/Native/Unix/Common under Apache License, Version 2.0
   Payara Embedded-All under CDDL + GPLv2 with classpath exception
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Plexus Security Dispatcher Component under Apache Public License 2.0
+  reactive-streams under CC0
+  RxJava under The Apache Software License, Version 2.0
   ShrinkWrap API under Apache License, Version 2.0
   ShrinkWrap Descriptors API Base under Apache License, Version 2.0
   ShrinkWrap Descriptors SPI under Apache License, Version 2.0

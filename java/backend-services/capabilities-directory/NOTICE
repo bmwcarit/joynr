@@ -26,6 +26,7 @@ This project has dependencies to:
   Commons Codec under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
   Core Hibernate O/RM functionality under GNU Lesser General Public License
+  Dagger under Apache 2.0
   dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -37,6 +38,7 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   Hibernate Commons Annotations under GNU Lesser General Public License
   Hibernate JPA Support under GNU Lesser General Public License
+  HiveMQ MQTT Client under The Apache License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
   io.joynr.java.common:discovery-common under The Apache Software License, Version 2.0
@@ -44,6 +46,7 @@ This project has dependencies to:
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
   io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:hivemq-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java:javaapi under The Apache Software License, Version 2.0
@@ -54,14 +57,27 @@ This project has dependencies to:
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
   Java Annotation Indexer under AL 2.0
+  Java Concurrency Tools Core Library under Apache License, Version 2.0
   Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
   Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   JBoss Logging 3 under Apache License, version 2.0
+  JetBrains Java Annotations under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
   Mockito under The MIT License
+  Netty/Buffer under Apache License, Version 2.0
+  Netty/Codec under Apache License, Version 2.0
+  Netty/Codec/HTTP under Apache License, Version 2.0
+  Netty/Common under Apache License, Version 2.0
+  Netty/Handler under Apache License, Version 2.0
+  Netty/Resolver under Apache License, Version 2.0
+  Netty/Transport under Apache License, Version 2.0
+  Netty/Transport/Native/Epoll under Apache License, Version 2.0
+  Netty/Transport/Native/Unix/Common under Apache License, Version 2.0
+  reactive-streams under CC0
+  RxJava under The Apache Software License, Version 2.0
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1

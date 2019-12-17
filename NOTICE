@@ -140,6 +140,7 @@ This project has dependencies to:
   Core Hibernate O/RM functionality under GNU Lesser General Public License
   Core Resource Management under Eclipse Public License - v 2.0
   Core Runtime under Eclipse Public License
+  Dagger under Apache 2.0
   Data Binding Base Library under The Apache Software License, Version 2.0
   Data Binding Compiler Common under The Apache Software License, Version 2.0
   Data Mapper for Jackson under The Apache Software License, Version 2.0
@@ -179,6 +180,7 @@ This project has dependencies to:
   Hamcrest library under New BSD License
   Hibernate Commons Annotations under GNU Lesser General Public License
   Hibernate JPA Support under GNU Lesser General Public License
+  HiveMQ MQTT Client under The Apache License, Version 2.0
   HK2 API module under CDDL + GPLv2 with classpath exception
   HK2 Implementation Utilities under CDDL + GPLv2 with classpath exception
   HtmlUnit under Apache License, Version 2.0
@@ -246,7 +248,9 @@ This project has dependencies to:
   io.joynr.java.messaging.bounceproxy:bounceproxy-controller-persistence under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:controlled-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:hivemq-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:paho-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0
@@ -343,6 +347,7 @@ This project has dependencies to:
   Java Architecture for XML Binding 2.2 under lgpl
   Java Compiler Apt under Eclipse Public License
   Java Compiler Tool Support under Eclipse Public License
+  Java Concurrency Tools Core Library under Apache License, Version 2.0
   Java Development Tools Core under Eclipse Public License
   Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Servlet 3.0 API under lgpl
@@ -380,6 +385,7 @@ This project has dependencies to:
   jersey-repackaged-guava under CDDL+GPL License
   jersey-server under CDDL 1.1 or GPL2 w/ CPE
   jersey-servlet under CDDL 1.1 or GPL2 w/ CPE
+  JetBrains Java Annotations under The Apache Software License, Version 2.0
   Jetty :: Http Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: IO Utility under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
   Jetty :: Security under Apache Software License - Version 2.0 or Eclipse Public License - Version 1.0
@@ -427,6 +433,15 @@ This project has dependencies to:
   message-persistence-backend-services under The Apache Software License, Version 2.0
   MIME streaming extension under CDDL 1.1 or GPL2 w/ CPE
   Mockito under The MIT License
+  Netty/Buffer under Apache License, Version 2.0
+  Netty/Codec under Apache License, Version 2.0
+  Netty/Codec/HTTP under Apache License, Version 2.0
+  Netty/Common under Apache License, Version 2.0
+  Netty/Handler under Apache License, Version 2.0
+  Netty/Resolver under Apache License, Version 2.0
+  Netty/Transport under Apache License, Version 2.0
+  Netty/Transport/Native/Epoll under Apache License, Version 2.0
+  Netty/Transport/Native/Unix/Common under Apache License, Version 2.0
   Objenesis under MIT License
   OpenJPA JDBC under Apache Software License 2.0
   OpenJPA Kernel under Apache Software License 2.0
@@ -457,9 +472,11 @@ This project has dependencies to:
   Protocol Buffers [Core] under 3-Clause BSD License
   Protocol Buffers [Util] under 3-Clause BSD License
   radio-jee-backend-services under The Apache Software License, Version 2.0
+  reactive-streams under CC0
   Reflections under WTFPL or The New BSD License
   REST Assured under Apache 2.0
   rest-assured-common under Apache 2.0
+  RxJava under The Apache Software License, Version 2.0
   Serp under BSD
   ServiceLocator Default Implementation under CDDL + GPLv2 with classpath exception
   ShrinkWrap API under Apache License, Version 2.0

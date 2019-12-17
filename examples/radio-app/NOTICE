@@ -43,6 +43,7 @@ This project has dependencies to:
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
   io.joynr.java.messaging.bounceproxy:single-bounceproxy under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:paho-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging.websocket:joynr-websocket-server under The Apache Software License, Version 2.0

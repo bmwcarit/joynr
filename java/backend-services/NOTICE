@@ -63,6 +63,7 @@ This project has dependencies to:
   Commons Lang under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
   Core Hibernate O/RM functionality under GNU Lesser General Public License
+  Dagger under Apache 2.0
   dom4j under BSD License
   ehcache under The Apache Software License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -75,6 +76,7 @@ This project has dependencies to:
   Hamcrest Core under New BSD License
   Hibernate Commons Annotations under GNU Lesser General Public License
   Hibernate JPA Support under GNU Lesser General Public License
+  HiveMQ MQTT Client under The Apache License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:discovery-directory-jee under The Apache Software License, Version 2.0
   io.joynr.java.backend-services:domain-access-controller under The Apache Software License, Version 2.0
@@ -85,6 +87,7 @@ This project has dependencies to:
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
   io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:hivemq-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
@@ -101,6 +104,7 @@ This project has dependencies to:
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
   Java Annotation Indexer under AL 2.0
+  Java Concurrency Tools Core Library under Apache License, Version 2.0
   Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
@@ -110,6 +114,7 @@ This project has dependencies to:
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
   JBoss Logging 3 under Apache License, version 2.0
+  JetBrains Java Annotations under The Apache Software License, Version 2.0
   jsoup under The MIT License
   JUnit under Eclipse Public License 1.0
   Maven Aether Provider under Apache License, Version 2.0
@@ -119,12 +124,23 @@ This project has dependencies to:
   Maven Settings under Apache License, Version 2.0
   Maven Settings Builder under Apache License, Version 2.0
   Mockito under The MIT License
+  Netty/Buffer under Apache License, Version 2.0
+  Netty/Codec under Apache License, Version 2.0
+  Netty/Codec/HTTP under Apache License, Version 2.0
+  Netty/Common under Apache License, Version 2.0
+  Netty/Handler under Apache License, Version 2.0
+  Netty/Resolver under Apache License, Version 2.0
+  Netty/Transport under Apache License, Version 2.0
+  Netty/Transport/Native/Epoll under Apache License, Version 2.0
+  Netty/Transport/Native/Unix/Common under Apache License, Version 2.0
   Payara Embedded-All under CDDL + GPLv2 with classpath exception
   Plexus :: Component Annotations under The Apache Software License, Version 2.0
   Plexus Cipher: encryption/decryption Component under Apache Public License 2.0
   Plexus Common Utilities under The Apache Software License, Version 2.0
   Plexus Interpolation API under The Apache Software License, Version 2.0
   Plexus Security Dispatcher Component under Apache Public License 2.0
+  reactive-streams under CC0
+  RxJava under The Apache Software License, Version 2.0
   ShrinkWrap API under Apache License, Version 2.0
   ShrinkWrap Descriptors API Base under Apache License, Version 2.0
   ShrinkWrap Descriptors SPI under Apache License, Version 2.0

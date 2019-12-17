@@ -47,6 +47,7 @@ This project has dependencies to:
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
+  Dagger under Apache 2.0
   ehcache under The Apache Software License, Version 2.0
   Embedded GlassFish All-In-One under CDDL + GPLv2 with classpath exception
   FindBugs-jsr305 under The Apache Software License, Version 2.0
@@ -55,6 +56,7 @@ This project has dependencies to:
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
+  HiveMQ MQTT Client under The Apache License, Version 2.0
   HK2 API module under CDDL + GPLv2 with classpath exception
   HK2 Implementation Utilities under CDDL + GPLv2 with classpath exception
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
@@ -63,6 +65,7 @@ This project has dependencies to:
   io.joynr.java.common:infrastructure-common under The Apache Software License, Version 2.0
   io.joynr.java.core:clustercontroller under The Apache Software License, Version 2.0
   io.joynr.java.core:libjoynr under The Apache Software License, Version 2.0
+  io.joynr.java.messaging.mqtt:hivemq-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging.mqtt:joynr-mqtt-client under The Apache Software License, Version 2.0
   io.joynr.java.messaging:messaging-common under The Apache Software License, Version 2.0
   io.joynr.java.messaging:servlet-common under The Apache Software License, Version 2.0
@@ -77,6 +80,7 @@ This project has dependencies to:
   jackson-databind under The Apache Software License, Version 2.0
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
+  Java Concurrency Tools Core Library under Apache License, Version 2.0
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
   JavaMail API under CDDL/GPLv2+CE
@@ -90,11 +94,23 @@ This project has dependencies to:
   jersey-core-server under CDDL+GPL License
   jersey-media-jaxb under CDDL+GPL License
   jersey-repackaged-guava under CDDL+GPL License
+  JetBrains Java Annotations under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
   Logback Classic Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Logback Core Module under Eclipse Public License - v 1.0 or GNU Lesser General Public License
   Mockito under The MIT License
+  Netty/Buffer under Apache License, Version 2.0
+  Netty/Codec under Apache License, Version 2.0
+  Netty/Codec/HTTP under Apache License, Version 2.0
+  Netty/Common under Apache License, Version 2.0
+  Netty/Handler under Apache License, Version 2.0
+  Netty/Resolver under Apache License, Version 2.0
+  Netty/Transport under Apache License, Version 2.0
+  Netty/Transport/Native/Epoll under Apache License, Version 2.0
+  Netty/Transport/Native/Unix/Common under Apache License, Version 2.0
   OSGi resource locator bundle - used by various API providers that rely on META-INF/services mechanism to locate providers. under CDDL + GPLv2 with classpath exception
+  reactive-streams under CC0
+  RxJava under The Apache Software License, Version 2.0
   ServiceLocator Default Implementation under CDDL + GPLv2 with classpath exception
   ShrinkWrap API under Apache License, Version 2.0
   ShrinkWrap Descriptors API Base under Apache License, Version 2.0
