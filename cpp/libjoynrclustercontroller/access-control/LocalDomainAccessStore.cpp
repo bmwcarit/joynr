@@ -233,6 +233,12 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMasterAcces
 {
     // ignoring operation as not yet supported
     std::ignore = operation;
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering getMasterAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    uid,
+                    domain,
+                    interfaceName);
     return lookupOptionalWithWildcard(masterAccessTable, uid, domain, interfaceName);
 }
 
@@ -299,6 +305,12 @@ boost::optional<MasterAccessControlEntry> LocalDomainAccessStore::getMediatorAcc
 {
     // ignoring operation as not yet supported
     std::ignore = operation;
+    JOYNR_LOG_TRACE(logger(),
+                    "execute: entering getMediatorAccessControlEntry with uId={} domain={} "
+                    "interfaceName={}",
+                    uid,
+                    domain,
+                    interfaceName);
     return convertMediator(
             lookupOptionalWithWildcard(mediatorAccessTable, uid, domain, interfaceName));
 }
