@@ -8,4 +8,4 @@ RUN chmod +x /start-me-up.sh
 
 COPY target/sharedsubscriptions-test-clustered-app-*-microbundle.jar /app.jar
 
-ENTRYPOINT ["/start-me-up.sh"]
+ENTRYPOINT ["sh","/start-me-up.sh"]
