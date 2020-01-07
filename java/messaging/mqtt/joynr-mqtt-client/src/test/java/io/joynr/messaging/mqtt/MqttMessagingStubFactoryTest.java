@@ -37,7 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
+import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -53,7 +53,7 @@ public class MqttMessagingStubFactoryTest {
     private final String TESTTOPIC2 = "testtopic2";
 
     @Mock
-    private MqttPahoClientFactory mqttPahoClientFactory;
+    private MqttClientFactory mqttClientFactory;
 
     @Mock
     private JoynrMqttClient joynrMqttClient1;
@@ -63,8 +63,8 @@ public class MqttMessagingStubFactoryTest {
 
     @Before
     public void setUp() {
-        doReturn(joynrMqttClient1).when(mqttPahoClientFactory).createSender(TESTGBID1);
-        doReturn(joynrMqttClient2).when(mqttPahoClientFactory).createSender(TESTGBID2);
+        doReturn(joynrMqttClient1).when(mqttClientFactory).createSender(TESTGBID1);
+        doReturn(joynrMqttClient2).when(mqttClientFactory).createSender(TESTGBID2);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class MqttMessagingStubFactoryTest {
 
         ArgumentCaptor<String> topicCaptor = ArgumentCaptor.forClass(String.class);
         String[] gbid_array = new String[]{ TESTGBID1, TESTGBID2 };
-        MqttMessagingStubFactory subject = new MqttMessagingStubFactory(mqttPahoClientFactory, gbid_array);
+        MqttMessagingStubFactory subject = new MqttMessagingStubFactory(mqttClientFactory, gbid_array);
 
         MqttAddress address1 = new MqttAddress(TESTGBID1, TESTTOPIC1);
         MqttMessagingStub messagingStub1 = subject.createInternal(address1);
@@ -113,7 +113,7 @@ public class MqttMessagingStubFactoryTest {
     @Test
     public void testReturnNullOnUnknownGbid() {
         String[] gbid_array = new String[]{ TESTGBID1, TESTGBID2 };
-        MqttMessagingStubFactory subject = new MqttMessagingStubFactory(mqttPahoClientFactory, gbid_array);
+        MqttMessagingStubFactory subject = new MqttMessagingStubFactory(mqttClientFactory, gbid_array);
         MqttAddress address = new MqttAddress("UnknownGbid", "UnknownTopic");
         MqttMessagingStub messagingStub = subject.createInternal(address);
         assertNull(messagingStub);
