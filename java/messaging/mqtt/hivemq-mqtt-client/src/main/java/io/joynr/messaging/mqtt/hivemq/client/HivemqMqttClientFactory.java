@@ -3,6 +3,7 @@ package io.joynr.messaging.mqtt.hivemq.client;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.HashMap;
 
 import com.google.inject.Singleton;
 import com.hivemq.client.mqtt.MqttClient;
@@ -44,61 +45,69 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientFactory.class);
 
+    private HashMap<String, JoynrMqttClient> receivingMqttClients; // gbid to client
+    private HashMap<String, JoynrMqttClient> sendingMqttClients; // gbid to client
     private final MqttAddress ownAddress;
     private final boolean separateConnections;
     private final MqttClientIdProvider mqttClientIdProvider;
     private final ScheduledExecutorService scheduledExecutorService;
-    private final int keepAliveTimeSeconds;
-
-    private JoynrMqttClient sender;
-    private JoynrMqttClient receiver;
+    private HashMap<String, String> mqttGbidToBrokerUriMap;
+    private HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap;
+    private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
 
     @Inject
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
-                                   @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimeSeconds,
+                                   @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap,
+                                   @Named(MqttModule.MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP) HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap,
+                                   @Named(MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP) HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider) {
         this.ownAddress = ownAddress;
+        this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
+        this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
+        this.mqttGbidToConnectionTimeoutSecMap = mqttGbidToConnectionTimeoutSecMap;
         this.separateConnections = separateConnections;
         this.scheduledExecutorService = scheduledExecutorService;
         this.mqttClientIdProvider = mqttClientIdProvider;
-        this.keepAliveTimeSeconds = keepAliveTimeSeconds;
+        sendingMqttClients = new HashMap<>(); // gbid to client
+        receivingMqttClients = new HashMap<>(); // gbid to client
     }
 
     @Override
-    public JoynrMqttClient createSender() {
-        if (sender == null) {
-            synchronized (this) {
-                if (sender == null) {
-                    logger.info("Creating sender MQTT client");
-                    sender = createClient(mqttClientIdProvider.getClientId() + (separateConnections ? "Pub" : ""));
-                    logger.info("Sender MQTT client now: {}", sender);
-                }
+    public synchronized JoynrMqttClient createSender(String gbid) {
+        if (!sendingMqttClients.containsKey(gbid)) {
+            if (separateConnections) {
+                logger.info("Creating sender MQTT client for gbid {}", gbid);
+                sendingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId() + "Pub"));
+                logger.debug("Sender MQTT client for gbid {} now: {}", gbid, sendingMqttClients.get(gbid));
+            } else {
+                createCombinedClient(gbid);
             }
         }
-        return sender;
+        return sendingMqttClients.get(gbid);
     }
 
     @Override
-    public JoynrMqttClient createReceiver() {
-        if (receiver == null) {
-            synchronized (this) {
-                if (receiver == null) {
-                    logger.info("Creating receiver MQTT client");
-                    if (separateConnections) {
-                        receiver = createClient(mqttClientIdProvider.getClientId() + "Sub");
-                    } else {
-                        receiver = createSender();
-                    }
-                    logger.info("Receiver MQTT client now: {}", receiver);
-                }
+    public synchronized JoynrMqttClient createReceiver(String gbid) {
+        if (!receivingMqttClients.containsKey(gbid)) {
+            logger.info("Creating receiver MQTT client for gbid {}", gbid);
+            if (separateConnections) {
+                receivingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId() + "Sub"));
+            } else {
+                createCombinedClient(gbid);
             }
+            logger.debug("Receiver MQTT client for gbid {} now: {}", gbid, receivingMqttClients.get(gbid));
         }
-        return receiver;
+        return receivingMqttClients.get(gbid);
     }
 
-    private JoynrMqttClient createClient(String clientId) {
+    private void createCombinedClient(String gbid) {
+        sendingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId()));
+        receivingMqttClients.put(gbid, sendingMqttClients.get(gbid));
+    }
+
+    private JoynrMqttClient createClient(String gbid, String clientId) {
         try {
             URI serverUri = new URI(ownAddress.getBrokerUri());
             logger.info("Connecting to {}:{}", serverUri.getHost(), serverUri.getPort());
@@ -116,7 +125,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                 clientBuilder.useSslWithDefaultConfig();
             }
             Mqtt3RxClient client = clientBuilder.buildRx();
-            return new HivemqMqttClient(client, keepAliveTimeSeconds);
+            return new HivemqMqttClient(client, mqttGbidToKeepAliveTimerSecMap.get(gbid));
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + ownAddress.getBrokerUri(), e);
         }
