@@ -3,12 +3,14 @@
 function wait_for_endpoint {
 	retry_count=0
 	max_retries=60
-	until curl -f -s $1 || ((retry_count++ > max_retries))
+	until curl -f -s $1 || [ $retry_count -ge $max_retries ]
 	do
 		echo "$1 not available yet ..."
+		retry_count=`expr $retry_count + 1`
 		sleep 5
 	done
-	if (( retry_count > max_retries )); then
+	if [ $retry_count -gt $max_retries ]
+	then
 		echo "$1 not reachable in time."
 		return -1
 	fi
