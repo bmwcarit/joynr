@@ -40,7 +40,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     let senderParticipantId: any, receiverParticipantId: any, receiverParticipantId2: any;
     let joynrMessage: any, joynrMessage2: any;
     let persistencySpy: any, address: any;
-    let messagingStubSpy: any, messagingSkeletonSpy: any, messagingStubFactorySpy: any, multicastSkeletonsSpy: any;
+    let messagingStubSpy: any, messagingSkeletonSpy: any, messagingStubFactorySpy: any;
     let messageQueueSpy: any,
         messageRouter: any,
         routingProxySpy: any,
@@ -49,6 +49,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     let multicastAddressCalculatorSpy: any;
     let serializedTestGlobalClusterControllerAddress: any;
     let multicastAddress: any;
+    const routingTable: any = {};
+    const multicastSkeletons: any = {};
 
     const createMessageRouter = function(
         persistency: any,
@@ -57,11 +59,11 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         parentMessageRouterAddress?: any
     ): MessageRouter {
         return new MessageRouter({
-            initialRoutingTable: {},
+            initialRoutingTable: routingTable,
             persistency,
             joynrInstanceId: "joynrInstanceID",
             messagingStubFactory: messagingStubFactorySpy,
-            multicastSkeletons: multicastSkeletonsSpy,
+            multicastSkeletons,
             multicastAddressCalculator: multicastAddressCalculatorSpy,
             messageQueue,
             incomingAddress,
@@ -124,13 +126,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             createMessagingStub: jest.fn()
         };
 
-        multicastSkeletonsSpy = {
-            getSkeleton: jest.fn()
-        };
-
         messagingStubFactorySpy.createMessagingStub.mockReturnValue(messagingStubSpy);
-
-        multicastSkeletonsSpy.getSkeleton.mockReturnValue(messagingSkeletonSpy);
 
         messageQueueSpy = {
             putMessage: jest.fn(),
@@ -485,6 +481,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                 subscriberParticipantId: "subscriberParticipantId",
                 providerParticipantId: "providerParticipantId"
             };
+            routingTable["providerParticipantId"] = { _typeName: "typeName" };
+            multicastSkeletons["typeName"] = messagingSkeletonSpy;
 
             multicastMessage = new JoynrMessage({
                 type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
@@ -693,6 +691,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                     subscriberParticipantId: "subscriberParticipantId",
                     providerParticipantId: "providerParticipantId"
                 };
+                routingTable["providerParticipantId"] = { _typeName: "typeName" };
+                multicastSkeletons["typeName"] = messagingSkeletonSpy;
 
                 messageRouter.setToKnown(parameters.providerParticipantId);
 
@@ -754,6 +754,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
                     subscriberParticipantId: "subscriberParticipantId",
                     providerParticipantId: "providerParticipantId"
                 };
+                routingTable["providerParticipantId"] = { _typeName: "typeName" };
+                multicastSkeletons["typeName"] = messagingSkeletonSpy;
 
                 messageRouter.setToKnown(parameters.providerParticipantId);
 

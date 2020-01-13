@@ -35,7 +35,6 @@ import * as JSONSerializer from "../../util/JSONSerializer";
 import MessagingStubFactory = require("../MessagingStubFactory");
 import LocalStorageNode = require("../../../global/LocalStorageNode");
 import MessageQueue = require("./MessageQueue");
-import MessagingSkeletonFactory = require("../MessagingSkeletonFactory");
 import Address = require("../../../generated/joynr/system/RoutingTypes/Address");
 import JoynrCompound = require("../../types/JoynrCompound");
 
@@ -43,6 +42,7 @@ const log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
 
 type RoutingTable = Record<string, Address>;
 type LocalStorage = LocalStorageNode;
+type MulticastSkeletons = Record<string, any>;
 /*
     TODO: let WebSocketMulticastAddressCalculator and MqttMulticastAddresscalculator, etc. implement this interface,
     or create an abstract class for it
@@ -62,7 +62,7 @@ namespace MessageRouter {
         joynrInstanceId: string;
         initialRoutingTable?: RoutingTable;
         multicastAddressCalculator: MulticastAddressCalculator;
-        multicastSkeletons: MessagingSkeletonFactory;
+        multicastSkeletons: MulticastSkeletons;
     }
 }
 
@@ -74,7 +74,7 @@ class MessageRouter {
     private messageReplyToAddressCalculator: MessageReplyToAddressCalculator;
     private replyToAddress!: string;
     private multicastReceiversRegistry: any = {};
-    private multicastSkeletons: MessagingSkeletonFactory;
+    private multicastSkeletons: MulticastSkeletons;
     private multicastAddressCalculator: MulticastAddressCalculator;
     private parentMessageRouterAddress?: Address;
     private incomingAddress?: Address;
@@ -648,7 +648,7 @@ class MessageRouter {
             this.multicastReceiversRegistry[multicastIdPattern] = [];
 
             //1.b the first receiver for this multicastId -> inform MessagingSkeleton about receiver
-            const skeleton = this.multicastSkeletons.getSkeleton(providerAddress);
+            const skeleton = this.multicastSkeletons[providerAddress._typeName];
             if (skeleton !== undefined && skeleton.registerMulticastSubscription !== undefined) {
                 skeleton.registerMulticastSubscription(parameters.multicastId);
             }
@@ -708,7 +708,7 @@ class MessageRouter {
                 delete this.multicastReceiversRegistry[multicastIdPattern];
 
                 //1.b no receiver anymore for this multicastId -> inform MessagingSkeleton about removed receiver
-                const skeleton = this.multicastSkeletons.getSkeleton(providerAddress);
+                const skeleton = this.multicastSkeletons[providerAddress._typeName];
                 if (skeleton !== undefined && skeleton.unregisterMulticastSubscription !== undefined) {
                     skeleton.unregisterMulticastSubscription(parameters.multicastId);
                 }

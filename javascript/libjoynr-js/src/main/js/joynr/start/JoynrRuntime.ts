@@ -29,7 +29,6 @@ import PublicationManager from "../dispatching/subscription/PublicationManager";
 import SubscriptionManager from "../dispatching/subscription/SubscriptionManager";
 import Dispatcher from "../dispatching/Dispatcher";
 import PlatformSecurityManager from "../security/PlatformSecurityManagerNode";
-import MessagingSkeletonFactory from "../messaging/MessagingSkeletonFactory";
 import MessageRouter, { MessageRouterSettings } from "../messaging/routing/MessageRouter";
 import MessageQueue from "../messaging/routing/MessageQueue";
 import InProcessMessagingSkeleton from "../messaging/inprocess/InProcessMessagingSkeleton";
@@ -158,10 +157,8 @@ class JoynrRuntime<T extends Provisioning> {
             messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
         }
 
-        const multicastSkeletons = new MessagingSkeletonFactory();
-
         (messageRouterSettings as MessageRouterSettings).persistency = this.persistencyConfig.routingTable;
-        (messageRouterSettings as MessageRouterSettings).multicastSkeletons = multicastSkeletons;
+        (messageRouterSettings as MessageRouterSettings).multicastSkeletons = this.messagingSkeletons;
         (messageRouterSettings as MessageRouterSettings).messageQueue = new MessageQueue(messageQueueSettings);
 
         this.messageRouter = new MessageRouter(messageRouterSettings as MessageRouterSettings);
@@ -178,8 +175,6 @@ class JoynrRuntime<T extends Provisioning> {
 
         const libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
         libjoynrMessagingSkeleton.registerListener(this.dispatcher.receive);
-
-        multicastSkeletons.setSkeletons(this.messagingSkeletons);
 
         this.requestReplyManager = new RequestReplyManager(this.dispatcher);
         this.subscriptionManager = new SubscriptionManager(this.dispatcher);

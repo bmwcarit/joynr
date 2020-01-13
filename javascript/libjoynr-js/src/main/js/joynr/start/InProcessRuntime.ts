@@ -27,7 +27,6 @@ import MqttMessagingSkeleton from "../messaging/mqtt/MqttMessagingSkeleton";
 import MqttAddress from "../../generated/joynr/system/RoutingTypes/MqttAddress";
 import SharedMqttClient from "../messaging/mqtt/SharedMqttClient";
 import MqttMulticastAddressCalculator from "../messaging/mqtt/MqttMulticastAddressCalculator";
-import MessagingSkeletonFactory from "../messaging/MessagingSkeletonFactory";
 import MessagingStubFactory from "../messaging/MessagingStubFactory";
 import InProcessMessagingStubFactory from "../messaging/inprocess/InProcessMessagingStubFactory";
 import InProcessAddress from "../messaging/inprocess/InProcessAddress";
@@ -142,8 +141,6 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
             provisioning: provisioning.mqtt || {}
         });
 
-        const multicastSkeletons = new MessagingSkeletonFactory();
-
         const messagingStubFactories: Record<string, any> = {};
         messagingStubFactories[InProcessAddress._typeName] = new InProcessMessagingStubFactory();
         //messagingStubFactories[ChannelAddress._typeName] = channelMessagingStubFactory;
@@ -197,7 +194,6 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
         });
 
         this.messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
-        multicastSkeletons.setSkeletons(this.messagingSkeletons);
 
         this.messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
 
