@@ -12,8 +12,8 @@ then
   exit 1
 fi
 
-echo "wait 3 minutes, then log the result of the docker containers"
-sleep 180
+echo "wait 6 minutes, then log the result of the docker containers"
+sleep 360
 
 docker-compose logs -t > sst-full.log
 
