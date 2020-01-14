@@ -28,6 +28,10 @@
 
 #include <mosquitto.h>
 
+#if (LIBMOSQUITTO_VERSION_NUMBER < 1006007)
+#error unsupported libmosquitto version, must be 1.6.7 or later
+#endif
+
 #include <smrf/ByteVector.h>
 
 #include "joynr/BrokerUrl.h"
@@ -92,17 +96,30 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);
 
-    static void on_connect(struct mosquitto* mosq, void* userdata, int rc);
-    static void on_disconnect(struct mosquitto* mosq, void* userdata, int rc);
-    static void on_publish(struct mosquitto* mosq, void* userdata, int mid);
-    static void on_message(struct mosquitto* mosq,
-                           void* userdata,
-                           const struct mosquitto_message* message);
-    static void on_subscribe(struct mosquitto* mosq,
-                             void* userdata,
-                             int mid,
-                             int qos_count,
-                             const int* granted_qos);
+    static void on_connect_v5(struct mosquitto* mosq,
+                              void* userdata,
+                              int rc,
+                              int flags,
+                              const mosquitto_property* props);
+    static void on_disconnect_v5(struct mosquitto* mosq,
+                                 void* userdata,
+                                 int rc,
+                                 const mosquitto_property* props);
+    static void on_publish_v5(struct mosquitto* mosq,
+                              void* userdata,
+                              int mid,
+                              int reason_code,
+                              const mosquitto_property* props);
+    static void on_message_v5(struct mosquitto* mosq,
+                              void* userdata,
+                              const struct mosquitto_message* message,
+                              const mosquitto_property* props);
+    static void on_subscribe_v5(struct mosquitto* mosq,
+                                void* userdata,
+                                int mid,
+                                int qos_count,
+                                const int* granted_qos,
+                                const mosquitto_property* props);
     static void on_log(struct mosquitto* mosq, void* userdata, int level, const char* str);
 
     /**

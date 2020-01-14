@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,11 +80,13 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
         cleanupLibrary();
         throw joynr::exceptions::JoynrRuntimeException(message);
     }
-    mosquitto_connect_callback_set(_mosq, on_connect);
-    mosquitto_disconnect_callback_set(_mosq, on_disconnect);
-    mosquitto_publish_callback_set(_mosq, on_publish);
-    mosquitto_message_callback_set(_mosq, on_message);
-    mosquitto_subscribe_callback_set(_mosq, on_subscribe);
+    mosquitto_int_option(_mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
+    mosquitto_connect_v5_callback_set(_mosq, on_connect_v5);
+    mosquitto_disconnect_v5_callback_set(_mosq, on_disconnect_v5);
+    mosquitto_publish_v5_callback_set(_mosq, on_publish_v5);
+    mosquitto_message_v5_callback_set(_mosq, on_message_v5);
+    mosquitto_subscribe_v5_callback_set(_mosq, on_subscribe_v5);
+    // unsubscribe callback not used
     mosquitto_log_callback_set(_mosq, on_log);
 
     if (ccSettings.isMqttUsernameSet()) {
@@ -194,9 +196,15 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
 
 // wrappers
 
-void MosquittoConnection::on_connect(struct mosquitto* mosq, void* userdata, int rc)
+void MosquittoConnection::on_connect_v5(struct mosquitto* mosq,
+                                        void* userdata,
+                                        int rc,
+                                        int flags,
+                                        const mosquitto_property* props)
 {
     std::ignore = mosq;
+    std::ignore = flags;
+    std::ignore = props;
     class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
     if (rc == MOSQ_ERR_SUCCESS) {
         JOYNR_LOG_INFO(logger(), "Mosquitto Connection established");
@@ -210,9 +218,13 @@ void MosquittoConnection::on_connect(struct mosquitto* mosq, void* userdata, int
     }
 }
 
-void MosquittoConnection::on_disconnect(struct mosquitto* mosq, void* userdata, int rc)
+void MosquittoConnection::on_disconnect_v5(struct mosquitto* mosq,
+                                           void* userdata,
+                                           int rc,
+                                           const mosquitto_property* props)
 {
     std::ignore = mosq;
+    std::ignore = props;
     class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
     const std::string errorString(getErrorString(rc));
     mosquittoConnection->setReadyToSend(false);
@@ -244,18 +256,26 @@ void MosquittoConnection::on_disconnect(struct mosquitto* mosq, void* userdata, 
     }
 }
 
-void MosquittoConnection::on_publish(struct mosquitto* mosq, void* userdata, int mid)
+void MosquittoConnection::on_publish_v5(struct mosquitto* mosq,
+                                        void* userdata,
+                                        int mid,
+                                        int reason_code,
+                                        const mosquitto_property* props)
 {
     std::ignore = mosq;
     std::ignore = userdata;
+    std::ignore = reason_code;
+    std::ignore = props;
     JOYNR_LOG_TRACE(logger(), "published message with mid {}", std::to_string(mid));
 }
 
-void MosquittoConnection::on_message(struct mosquitto* mosq,
-                                     void* userdata,
-                                     const struct mosquitto_message* message)
+void MosquittoConnection::on_message_v5(struct mosquitto* mosq,
+                                        void* userdata,
+                                        const struct mosquitto_message* message,
+                                        const mosquitto_property* props)
 {
     std::ignore = mosq;
+    std::ignore = props;
     class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
     if (!mosquittoConnection->_onMessageReceived) {
         JOYNR_LOG_ERROR(logger(),
@@ -285,13 +305,15 @@ void MosquittoConnection::on_message(struct mosquitto* mosq,
     mosquittoConnection->_onMessageReceived(std::move(rawMessage));
 }
 
-void MosquittoConnection::on_subscribe(struct mosquitto* mosq,
-                                       void* userdata,
-                                       int mid,
-                                       int qos_count,
-                                       const int* granted_qos)
+void MosquittoConnection::on_subscribe_v5(struct mosquitto* mosq,
+                                          void* userdata,
+                                          int mid,
+                                          int qos_count,
+                                          const int* granted_qos,
+                                          const mosquitto_property* props)
 {
     std::ignore = mosq;
+    std::ignore = props;
     class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
     JOYNR_LOG_DEBUG(logger(), "Subscribed (mid: {} with granted QOS {}", mid, granted_qos[0]);
 
@@ -444,9 +466,11 @@ void MosquittoConnection::stop()
     // continues forever and thus the join in stopLoop()
     // blocks indefinitely. This applies even if a connection
     // does not exist yet.
+    const mosquitto_property* props = nullptr;
+    const int reason_code = 0;
 
     if (_isConnected) {
-        int rc = mosquitto_disconnect(_mosq);
+        int rc = mosquitto_disconnect_v5(_mosq, reason_code, props);
 
         if (rc == MOSQ_ERR_SUCCESS) {
             JOYNR_LOG_INFO(logger(), "Mosquitto Connection disconnected");
@@ -459,7 +483,7 @@ void MosquittoConnection::stop()
         }
         stopLoop();
     } else if (_isRunning) {
-        mosquitto_disconnect(_mosq);
+        mosquitto_disconnect_v5(_mosq, reason_code, props);
         stopLoop();
     }
     setReadyToSend(false);
@@ -509,7 +533,9 @@ void MosquittoConnection::subscribeToTopicInternal(const std::string& topic,
     if (isChannelTopic) {
         mid = &_subscribeChannelMid;
     }
-    int rc = mosquitto_subscribe(_mosq, mid, topic.c_str(), getMqttQos());
+    const int options = 0;
+    const mosquitto_property* props = nullptr;
+    int rc = mosquitto_subscribe_v5(_mosq, mid, topic.c_str(), getMqttQos(), options, props);
     switch (rc) {
     case (MOSQ_ERR_SUCCESS):
         JOYNR_LOG_INFO(
@@ -566,7 +592,8 @@ void MosquittoConnection::unsubscribeFromTopic(const std::string& topic)
         }
         _additionalTopics.erase(topic);
         if (_isConnected && _isRunning) {
-            int rc = mosquitto_unsubscribe(_mosq, nullptr, topic.c_str());
+            const mosquitto_property* props = nullptr;
+            int rc = mosquitto_unsubscribe_v5(_mosq, nullptr, topic.c_str(), props);
             if (rc == MOSQ_ERR_SUCCESS) {
                 JOYNR_LOG_INFO(logger(), "Unsubscribed from {}", topic);
             } else {
@@ -596,13 +623,15 @@ void MosquittoConnection::publishMessage(
                     topic);
 
     int mid;
-    int rc = mosquitto_publish(_mosq,
-                               &mid,
-                               topic.c_str(),
-                               static_cast<std::int32_t>(payloadlen),
-                               payload,
-                               qosLevel,
-                               isMqttRetain());
+    const mosquitto_property* props = nullptr;
+    int rc = mosquitto_publish_v5(_mosq,
+                                  &mid,
+                                  topic.c_str(),
+                                  static_cast<std::int32_t>(payloadlen),
+                                  payload,
+                                  qosLevel,
+                                  isMqttRetain(),
+                                  props);
     if (!(rc == MOSQ_ERR_SUCCESS)) {
         const std::string errorString(getErrorString(rc));
         if (rc == MOSQ_ERR_INVAL || rc == MOSQ_ERR_PAYLOAD_SIZE) {
