@@ -55,8 +55,8 @@ import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext;
 import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedListener;
 import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext;
 import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedListener;
-import com.hivemq.client.mqtt.mqtt3.Mqtt3ClientBuilder;
-import com.hivemq.client.mqtt.mqtt3.Mqtt3RxClient;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientBuilder;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
@@ -200,8 +200,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                                           .build();
         ResubscribeHandler resubscribeHandler = new ResubscribeHandler();
         DisconnectedListener disconnectedListener = new DisconnectedListener();
-        Mqtt3ClientBuilder clientBuilder = MqttClient.builder()
-                                                     .useMqttVersion3()
+        Mqtt5ClientBuilder clientBuilder = MqttClient.builder()
+                                                     .useMqttVersion5()
                                                      .identifier(clientId)
                                                      .serverHost(serverUri.getHost())
                                                      .serverPort(serverUri.getPort())
@@ -219,7 +219,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                          .password(password.getBytes(StandardCharsets.UTF_8))
                          .applySimpleAuth();
         }
-        Mqtt3RxClient client = clientBuilder.buildRx();
+        Mqtt5RxClient client = clientBuilder.buildRx();
         HivemqMqttClient result = new HivemqMqttClient(client,
                                                        mqttGbidToKeepAliveTimerSecMap.get(gbid),
                                                        cleanSession,
@@ -232,8 +232,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         return result;
     }
 
-    private void setupSslConfig(Mqtt3ClientBuilder clientBuilder) {
-        MqttClientSslConfigBuilder.Nested<? extends Mqtt3ClientBuilder> sslConfig = clientBuilder.sslConfig();
+    private void setupSslConfig(Mqtt5ClientBuilder clientBuilder) {
+        MqttClientSslConfigBuilder.Nested<? extends Mqtt5ClientBuilder> sslConfig = clientBuilder.sslConfig();
         if (cipherSuiteList != null && cipherSuiteList.size() > 0) {
             for (String cipherSuite : cipherSuiteList) {
                 logger.debug("Using cipher suite {}.", cipherSuite);
