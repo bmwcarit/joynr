@@ -3,7 +3,7 @@ message(STATUS "Configuring JoynrClusterController...")
 message(STATUS "#############################################\n")
 
 ### Add mosquitto mqtt ###########################################################
-set(JOYNR_REQUIRED_MOSQUITTO_VERSION 1.4.14)
+set(JOYNR_REQUIRED_MOSQUITTO_VERSION 1.6.7)
 if(USE_PLATFORM_MOSQUITTO)
     find_package(mosquitto ${JOYNR_REQUIRED_MOSQUITTO_VERSION} REQUIRED)
 
