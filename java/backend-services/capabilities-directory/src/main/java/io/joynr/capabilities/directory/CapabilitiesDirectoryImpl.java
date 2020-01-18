@@ -249,7 +249,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                 int deletedCount = removeInternal(participantId, gbids);
                 switch (deletedCount) {
                 case 0:
-                    logger.warn("Error removing participantId {}. Participant is not registered (NO_ENTRY_FOR_PARTICIPANT).");
+                    logger.warn("Error removing participantId {}. Participant is not registered (NO_ENTRY_FOR_PARTICIPANT).", participantId);
                     deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
                     break;
                 case -1:

@@ -235,7 +235,7 @@ public class LongPollChannel {
             return;
         }
 
-        logger.info("LongPollingChannel CHANNEL: {} messages received: {}", listOfMessages.size());
+        logger.info("LongPollingChannel CHANNEL: {} messages received:", listOfMessages.size());
 
         for (final ImmutableMessage message : listOfMessages) {
             messageReceiverExecutor.execute(new Runnable() {
