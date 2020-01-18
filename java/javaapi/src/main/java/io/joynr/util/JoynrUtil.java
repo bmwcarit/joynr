@@ -223,6 +223,8 @@ public class JoynrUtil {
                         InputStream is = jf.getInputStream(ze);
                         String name = ze.getName().substring(ze.getName().lastIndexOf("/") + 1);
                         File tmpFile = new File(tmpDir + "/" + name); //File.createTempFile(file.getName(), "tmp");
+                        if (!tmpFile.toPath().normalize().startsWith(tmpDir.toPath().normalize()))
+                            throw new Exception("Bad zip entry");
                         tmpFile.deleteOnExit();
                         OutputStream outputStreamRuntime = new FileOutputStream(tmpFile);
                         copyStream(is, outputStreamRuntime);
