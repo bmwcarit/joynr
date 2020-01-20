@@ -47,6 +47,7 @@ RUN dnf update -y \
     && dnf install -y \
     autoconf \
     automake \
+    ccache \
     cmake \
     corkscrew \
     expat-devel \
