@@ -37,7 +37,7 @@ RUN dnf update -y \
 # install jetty
 ###################################################
 RUN . /etc/profile \
-	&& wget -O /usr/local/jetty.tar.gz http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.2.13.v20150730/jetty-distribution-9.2.13.v20150730.tar.gz \
+	&& wget -O /usr/local/jetty.tar.gz https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.2.13.v20150730/jetty-distribution-9.2.13.v20150730.tar.gz \
 	&& cd /usr/local \
 	&& mkdir jetty \
 	&& tar xzf jetty.tar.gz --strip-components=1 -C /usr/local/jetty \
