@@ -58,7 +58,7 @@ class JoynrRuntime<T extends Provisioning> {
     protected persistencyConfig: any;
     protected persistency!: Persistency;
     protected joynrState: typeof JoynrStates[keyof typeof JoynrStates];
-    protected messagingSkeletons: Record<string, any> = {};
+    protected multicastSkeletons: Record<string, any> = {};
     protected dispatcher!: Dispatcher;
     protected subscriptionManager!: SubscriptionManager;
     protected publicationManager!: PublicationManager;
@@ -158,7 +158,7 @@ class JoynrRuntime<T extends Provisioning> {
         }
 
         (messageRouterSettings as MessageRouterSettings).persistency = this.persistencyConfig.routingTable;
-        (messageRouterSettings as MessageRouterSettings).multicastSkeletons = this.messagingSkeletons;
+        (messageRouterSettings as MessageRouterSettings).multicastSkeletons = this.multicastSkeletons;
         (messageRouterSettings as MessageRouterSettings).messageQueue = new MessageQueue(messageQueueSettings);
 
         this.messageRouter = new MessageRouter(messageRouterSettings as MessageRouterSettings);

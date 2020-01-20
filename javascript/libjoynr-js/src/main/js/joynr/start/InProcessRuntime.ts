@@ -193,7 +193,7 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
             messageRouter: this.messageRouter
         });
 
-        this.messagingSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
+        this.multicastSkeletons[MqttAddress._typeName] = mqttMessagingSkeleton;
 
         this.messageRouter.setReplyToAddress(serializedGlobalClusterControllerAddress);
 
