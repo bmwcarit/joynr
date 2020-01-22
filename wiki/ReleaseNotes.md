@@ -2,6 +2,19 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.13.0
+
+## API relevant changes
+None.
+
+## Other changes
+* **[C++]** ClusterController runtime now uses MQTT 5 protocol and thus connects only to
+  MQTT 5 enabled brokers.
+* **[C++]** Updated Mosquitto dependency to 1.6.7
+
+## Configuration property changes
+None.
+
 # joynr 1.12.0
 
 ## API relevant changes
