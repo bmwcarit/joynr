@@ -11,6 +11,7 @@ In order to select which MQTT Client integration you want to use, simply include
 following dependencies in your application (Maven dependency syntax shown):
 
 ### HiveMQ MQTT Client
+uses MQTT 5
 
 	<dependency>
 		<groupId>io.joynr.java.messaging.mqtt</groupId>
@@ -19,6 +20,7 @@ following dependencies in your application (Maven dependency syntax shown):
 	</dependency>
 
 ### Paho MQTT Client
+uses MQTT v3
 
 	<dependency>
 		<groupId>io.joynr.java.messaging.mqtt</groupId>

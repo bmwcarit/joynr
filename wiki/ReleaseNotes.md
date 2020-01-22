@@ -11,6 +11,12 @@ None.
 * **[C++]** ClusterController runtime now uses MQTT 5 protocol and thus connects only to
   MQTT 5 enabled brokers.
 * **[C++]** Updated Mosquitto dependency to 1.6.7
+* **[Java, JEE]** Switched from MQTT 3 to MQTT 5 for HiveMQ MQTT
+  Client. MQTT Paho Client continues to use MQTT 3.
+
+* **[All]** Joynr now requires a MQTT broker that supports MQTT 5 and
+  MQTT 3 (for global communication). MQTT 3 is still required for Paho
+  MQTT Client in Java, for JS test execution and for JS InProcessRuntime.
 
 ## Configuration property changes
 None.
