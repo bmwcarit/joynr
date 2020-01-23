@@ -16,9 +16,7 @@ specific language governing permissions and limitations
 under the License.
 
 This project has dependencies to:
-  FindBugs-jsr305 under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
   io.joynr.tests.system-integration-test:sit-node-app under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
-  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 

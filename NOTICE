@@ -498,7 +498,6 @@ This project has dependencies to:
   SLF4J JDK14 Binding under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SOAP with Attachments API for Java 1.3 under lgpl
-  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
   stateless-async-backend-services under The Apache Software License, Version 2.0
   StAX API under The Apache Software License, Version 2.0
   TagSoup under Apache License 2.0

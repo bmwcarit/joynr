@@ -24,7 +24,6 @@ This project has dependencies to:
   Commons Codec under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
   ehcache under The Apache Software License, Version 2.0
-  FindBugs-jsr305 under The Apache Software License, Version 2.0
   FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
@@ -52,5 +51,4 @@ This project has dependencies to:
   JUnit under Eclipse Public License 1.0
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
-  SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 
