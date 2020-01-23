@@ -69,10 +69,6 @@ import org.slf4j.LoggerFactory;
 	import «datatype»;
 «ENDFOR»
 
-«IF hasWritableAttributeOfTypeArrayOrByteBuffer(francaIntf)»
-	import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-«ENDIF»
-
 public class «className» extends «abstractProviderName» {
 	private static final Logger logger = LoggerFactory.getLogger(«className».class);
 
@@ -102,11 +98,18 @@ public class «className» extends «abstractProviderName» {
 		«ENDIF»
 
 		«IF isWritable(attribute)»
-			«IF (isArray(attribute) || isByteBuffer(attribute.type))»@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")«ENDIF»
 			@Override
 			public Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName») {
 				DeferredVoid deferred = new DeferredVoid();
-				this.«attributeName» = «attributeName»;
+				«IF (isArray(attribute) || isByteBuffer(attribute.type))»
+                                        if («attributeName» != null) {
+					    this.«attributeName» = «attributeName».clone();
+                                        } else {
+                                            this.«attributeName» = null;
+                                        }
+				«ELSE»
+					this.«attributeName» = «attributeName»;
+				«ENDIF»
 				«IF isNotifiable(attribute)»
 					«attributeName»Changed(«attributeName»);
 				«ENDIF»

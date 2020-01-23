@@ -52,9 +52,6 @@ import io.joynr.subtypes.JoynrType;
 «FOR member : getRequiredIncludesFor(type)»
 import «member»;
 «ENDFOR»
-«IF hasArrayMembers(type)»
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-«ENDIF»
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -123,7 +120,6 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 	 «appendJavadocParameter(member, "*")»
 	 «ENDFOR»
 	 */
-	«IF hasArrayMembers(type)»@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")«ENDIF»
 	public «typeName»(
 		«FOR member : getMembersRecursive(type) SEPARATOR ','»
 		«member.typeName.replace("::","__")» «member.joynrName»
@@ -137,7 +133,13 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 			);
 		«ENDIF»
 		«FOR member : getMembers(type)»
+		«IF isArray(member)»
+                if(«member.joynrName» != null) {
+		    this.«member.joynrName» = «member.joynrName».clone();
+                }
+		«ELSE»
 		this.«member.joynrName» = «member.joynrName»;
+		«ENDIF»
 		«ENDFOR»
 	}
 	«ENDIF»
@@ -150,10 +152,17 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 	 *
 	 * @return «appendJavadocComment(member, "* ")»«IF member.type.isTypeDef» (type resolved from modeled Franca typedef «member.type.joynrName» as «member.type.typeDefType.actualType.typeName»)«ENDIF»
 	 */
-	«IF isArray(member)»@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")«ENDIF»
 	@JsonIgnore
 	public «memberType» get«memberName.toFirstUpper»() {
-		return this.«member.joynrName»;
+		«IF isArray(member)»
+                        if(«member.joynrName» != null) {
+			    return «member.joynrName».clone();
+                        } else {
+                            return null;
+                        }
+		«ELSE»
+			return «member.joynrName»;
+		«ENDIF»
 	}
 
 	/**
@@ -161,7 +170,6 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 	 *
 	 «appendJavadocParameter(member, "*")»
 	 */
-	«IF isArray(member)»@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")«ENDIF»
 	@JsonIgnore
 	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
 		«IF !ignoreInvalidNullClassMembersExtension»
@@ -169,7 +177,11 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 				throw new IllegalArgumentException("setting «member.joynrName» to null is not allowed");
 			}
 		«ENDIF»
+                «IF isArray(member)»
+		this.«member.joynrName» = «member.joynrName».clone();
+		«ELSE»
 		this.«member.joynrName» = «member.joynrName»;
+		«ENDIF»
 	}
 
 	«ENDFOR»
