@@ -23,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,7 +77,7 @@ public class CcRoutingTableAddressValidatorTest {
         final MqttAddress testOwnAddress = new MqttAddress(brokerUri, globalTopic);
         assertTrue(validator.isValidForRoutingTable(testOwnAddress));
 
-        globalAddressReadyListener.getValue().transportReady(globalAddress);
+        globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
         assertFalse(validator.isValidForRoutingTable(testOwnAddress));
     }
 
@@ -84,14 +86,14 @@ public class CcRoutingTableAddressValidatorTest {
         final MqttAddress testOwnAddress = new MqttAddress(brokerUri, replyToTopic);
         assertTrue(validator.isValidForRoutingTable(testOwnAddress));
 
-        replyToAddressReadyListener.getValue().transportReady(replyToAddress);
+        replyToAddressReadyListener.getValue().transportReady(Optional.of(replyToAddress));
         assertFalse(validator.isValidForRoutingTable(testOwnAddress));
     }
 
     @Test
     public void multipleOwnAddresses() {
-        globalAddressReadyListener.getValue().transportReady(globalAddress);
-        replyToAddressReadyListener.getValue().transportReady(replyToAddress);
+        globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
+        replyToAddressReadyListener.getValue().transportReady(Optional.of(replyToAddress));
 
         final MqttAddress testGlobalAddress = new MqttAddress(brokerUri, globalTopic);
         final MqttAddress testReplyToAddress = new MqttAddress(brokerUri, replyToTopic);
@@ -113,7 +115,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void otherAddressesOfGlobalAddressTypeAreValid() {
-        globalAddressReadyListener.getValue().transportReady(globalAddress);
+        globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
         assertFalse(validator.isValidForRoutingTable(globalAddress));
 
         otherAddressesOfOwnAddressTypeAreValid();
@@ -121,7 +123,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void otherAddressesOfReplyToAddressTypeAreValid() {
-        replyToAddressReadyListener.getValue().transportReady(replyToAddress);
+        replyToAddressReadyListener.getValue().transportReady(Optional.of(replyToAddress));
         assertFalse(validator.isValidForRoutingTable(replyToAddress));
 
         otherAddressesOfOwnAddressTypeAreValid();
@@ -134,7 +136,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void otherAddressTypesAreValid() {
-        globalAddressReadyListener.getValue().transportReady(globalAddress);
+        globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
         assertFalse(validator.isValidForRoutingTable(globalAddress));
 
         Address otherAddress = new ChannelAddress();

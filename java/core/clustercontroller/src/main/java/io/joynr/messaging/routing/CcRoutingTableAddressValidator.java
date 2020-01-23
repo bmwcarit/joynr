@@ -19,6 +19,7 @@
 package io.joynr.messaging.routing;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -56,10 +57,10 @@ public class CcRoutingTableAddressValidator implements RoutingTableAddressValida
         ownAddressReadLock = ownAddressesLock.readLock();
         globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
-            public void transportReady(Address address) {
+            public void transportReady(Optional<Address> address) {
                 ownAddressWriteLock.lock();
                 try {
-                    ownAddresses.add(address);
+                    ownAddresses.add(address.isPresent() ? address.get() : null);
                 } finally {
                     ownAddressWriteLock.unlock();
                 }
@@ -67,10 +68,10 @@ public class CcRoutingTableAddressValidator implements RoutingTableAddressValida
         });
         replyToAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
-            public void transportReady(Address address) {
+            public void transportReady(Optional<Address> address) {
                 ownAddressWriteLock.lock();
                 try {
-                    ownAddresses.add(address);
+                    ownAddresses.add(address.isPresent() ? address.get() : null);
                 } finally {
                     ownAddressWriteLock.unlock();
                 }
