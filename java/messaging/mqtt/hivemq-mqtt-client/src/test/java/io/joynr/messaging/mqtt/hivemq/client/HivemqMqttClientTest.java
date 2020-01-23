@@ -19,9 +19,11 @@
 package io.joynr.messaging.mqtt.hivemq.client;
 
 import static com.google.inject.util.Modules.override;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -31,8 +33,10 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -42,6 +46,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -49,7 +55,9 @@ import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
-import com.hivemq.client.mqtt.datatypes.MqttQos;
+import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -63,8 +71,11 @@ import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
+import io.reactivex.functions.Consumer;
 
 public class HivemqMqttClientTest {
+    private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientTest.class);
+
     private static final String[] gbids = new String[]{ "testGbid1", "testGbid2" };
 
     private static final int DEFAULT_QOS_LEVEL = 1; // AT_LEAST_ONCE
@@ -315,4 +326,82 @@ public class HivemqMqttClientTest {
         verify(mockReceiver2, times(0)).transmit(any(byte[].class), any(FailureAction.class));
     }
 
+    private void setIncomingMessageHandler(Mqtt5RxClient client, Consumer<? super Mqtt5Publish> handler) {
+        client.publishes(MqttGlobalPublishFilter.ALL)
+              .subscribe(handler, throwable -> fail("Error encountered for publish callback: " + throwable));
+    }
+
+    @Test
+    public void publishAndReceiveWithMessageExpiryInterval() throws Exception {
+        final int expectedExpiryInterval = DEFAULT_EXPIRY_INTERVAL_SEC;
+        createHivemqMqttClientFactory();
+        ownTopic = "testTopic";
+        HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver(gbids[1]);
+        assertNotEquals(clientSender, clientReceiver);
+
+        CountDownLatch publicationCdl = new CountDownLatch(1);
+        setIncomingMessageHandler(clientReceiver.getClient(), mqtt5Publish -> {
+            logger.trace("Incoming message {}", mqtt5Publish);
+            assertEquals(expectedExpiryInterval, mqtt5Publish.getMessageExpiryInterval().getAsLong());
+            publicationCdl.countDown();
+        });
+
+        clientSender.setMessageListener(mockReceiver);
+        clientSender.start();
+
+        clientReceiver.setMessageListener(mockReceiver2);
+        clientReceiver.start();
+
+        clientReceiver.subscribe(ownTopic);
+        // wait for subscription to be established
+        Thread.sleep(128);
+
+        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, DEFAULT_EXPIRY_INTERVAL_SEC);
+        assertTrue(publicationCdl.await(10, TimeUnit.SECONDS));
+        clientReceiver.unsubscribe(ownTopic);
+        Thread.sleep(128);
+        clientReceiver.shutdown();
+        clientSender.shutdown();
+    }
+
+    @Test
+    public void publishWithMessageExpiryInterval_receiveWithDelay() throws Exception {
+        final int sleepTimeMs = 1000;
+        final int expectedExpiryInterval = DEFAULT_EXPIRY_INTERVAL_SEC - sleepTimeMs / 1000;
+        createHivemqMqttClientFactory();
+        ownTopic = "testTopic";
+        HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver(gbids[1]);
+        assertNotEquals(clientSender, clientReceiver);
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        setIncomingMessageHandler(clientReceiver.getClient(), mqtt5Publish -> {
+            logger.trace("Incoming message {}", mqtt5Publish);
+            assertEquals(expectedExpiryInterval, mqtt5Publish.getMessageExpiryInterval().getAsLong());
+            cdl.countDown();
+        });
+
+        clientSender.setMessageListener(mockReceiver);
+        clientSender.start();
+
+        clientReceiver.setMessageListener(mockReceiver2);
+        clientReceiver.start();
+
+        clientReceiver.subscribe(ownTopic);
+        // wait for subscription to be established
+        Thread.sleep(128);
+
+        clientReceiver.shutdown();
+        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, DEFAULT_EXPIRY_INTERVAL_SEC);
+        // wait some time to let the expiry interval decrease at the broker before receiving the message
+        Thread.sleep(sleepTimeMs);
+        clientReceiver.start();
+
+        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        clientReceiver.unsubscribe(ownTopic);
+        Thread.sleep(128);
+        clientReceiver.shutdown();
+        clientSender.shutdown();
+    }
 }
