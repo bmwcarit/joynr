@@ -39,7 +39,6 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -155,7 +154,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    @SuppressFBWarnings(value = "SF_SWITCH_FALLTHROUGH", justification = "extra error log for TLS errors")
     public void start() {
         while (!shutdown.get() && clientExistsAndIsNotConnected()) {
             final String unableToCreateClientErrorMessage = "Unable to create MqttClient: ";
@@ -184,18 +182,29 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     if (isSecureConnection) {
                         logger.error("Failed to establish TLS connection, error: ", mqttError);
                     }
-                    // fallthrough
+                    // fall through
                 case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
+                    // fall through
                 case MqttException.REASON_CODE_CLIENT_DISCONNECTING:
+                    // fall through
                 case MqttException.REASON_CODE_CLIENT_NOT_CONNECTED:
+                    // fall through
                 case MqttException.REASON_CODE_CLIENT_TIMEOUT:
+                    // fall through
                 case MqttException.REASON_CODE_CONNECT_IN_PROGRESS:
+                    // fall through
                 case MqttException.REASON_CODE_CONNECTION_LOST:
+                    // fall through
                 case MqttException.REASON_CODE_MAX_INFLIGHT:
+                    // fall through
                 case MqttException.REASON_CODE_NO_MESSAGE_IDS_AVAILABLE:
+                    // fall through
                 case MqttException.REASON_CODE_SERVER_CONNECT_ERROR:
+                    // fall through
                 case MqttException.REASON_CODE_SUBSCRIBE_FAILED:
+                    // fall through
                 case MqttException.REASON_CODE_UNEXPECTED_ERROR:
+                    // fall through
                 case MqttException.REASON_CODE_WRITE_TIMEOUT:
                     mqttClientLock.unlockRead(stamp);
                     try {
@@ -218,6 +227,9 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     }
                     stamp = mqttClientLock.readLock();
                     continue;
+                default:
+                    //TODO
+                    break;
                 }
             } catch (JoynrIllegalStateException e) {
                 Throwable cause = e.getCause();
@@ -371,7 +383,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    @SuppressFBWarnings(value = "NN_NAKED_NOTIFY", justification = "required to control shutdown of this instance")
     public synchronized void shutdown() {
         if (shutdown.get()) {
             return;

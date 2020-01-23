@@ -37,7 +37,6 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.Mqtt5Unsubscribe;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
@@ -67,7 +66,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     private Map<String, Mqtt5Subscription> subscriptions = new ConcurrentHashMap<>();
 
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the subscribe via callbacks.")
     public HivemqMqttClient(Mqtt5RxClient client,
                             int keepAliveTimeSeconds,
                             boolean cleanSession,
@@ -86,7 +84,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     @Override
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the connect via callbacks.")
     public synchronized void start() {
         logger.info("Initializing MQTT client {}", client);
         if (!client.getConfig().getState().isConnected()) {
@@ -209,7 +206,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
         doSubscribe(subscription);
     }
 
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the subscribe via callbacks.")
     private void doSubscribe(Mqtt5Subscription subscription) {
         Mqtt5Subscribe subscribe = Mqtt5Subscribe.builder().addSubscription(subscription).build();
         client.subscribeStream(subscribe)
@@ -235,7 +231,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
         });
     }
 
-    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the subscribe via callbacks.")
     @Override
     public void unsubscribe(String topic) {
         logger.info("Unsubscribing from {}, client {}", topic, client);

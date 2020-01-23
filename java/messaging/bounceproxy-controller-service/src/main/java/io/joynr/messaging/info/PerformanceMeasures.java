@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Map;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * Holds a map of performance measures for bounce proxies.
  * 
@@ -67,8 +65,6 @@ public class PerformanceMeasures implements Serializable {
          * @return the matching {@link Key} object or <code>null</code> if
          *         there's no such key.
          */
-        @SuppressWarnings(value = "NP_NONNULL_RETURN_VIOLATION",
-                          justification = "Ignore unknown keys until it is specified which performance measures are used and how stable their definitions are")
         public static Key fromString(String name) {
             for (Key key : values()) {
                 if (key.name.equals(name)) {

@@ -51,6 +51,62 @@
 		<Class name="joynr.system.JoynrLoggedException" />
 		<Bug pattern="NM_CLASS_NOT_EXCEPTION"/>
 	</Match>
+	<Match>
+                <Class name="io.joynr.messaging.mqtt.paho.client.MqttPahoClient" />
+                <Bug pattern="SF_SWITCH_FALLTHROUGH"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.jeeintegration.context.JoynrJeeMessageContext" />
+                <Bug pattern="DC_DOUBLECHECK"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.integration.AbstractSubscriptionEnd2EndTest" />
+                <Bug pattern="NP_NULL_ON_SOME_PATH_EXCEPTION"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.sender.AbstractMessageSender" />
+                <Bug pattern="IS2_INCONSISTENT_SYNC"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.bounceproxy.BounceProxyBroadcaster" />
+                <Bug pattern="JLM_JSR166_UTILCONCURRENT_MONITORENTER"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.info.PerformanceMeasures" />
+                <Bug pattern="NP_NONNULL_RETURN_VIOLATION"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.http.operation.HttpCommunicationManagerTest" />
+                <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.http.operation.LongPollingMessageReceiver" />
+                <Bug pattern="NP_NONNULL_PARAM_VIOLATION"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.http.operation.LongPollingMessageReceiver" />
+                <Bug pattern="IS2_INCONSISTENT_SYNC"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.http.operation.LongPollingChannelLifecycle" />
+                <Bug pattern="IS2_INCONSISTENT_SYNC"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.http.operation.LongPollingChannelLifecycle" />
+                <Bug pattern="SWL_SLEEP_WITH_LOCK_HELD"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.proxy.invocation.StatelessAsyncMethodInvocation" />
+                <Bug pattern="EI_EXPOSE_REP"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.runtime.AbstractRuntimeModule" />
+                <Bug pattern="URF_UNREAD_FIELD"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.Reply" />
+                <Bug pattern="EI_EXPOSE_REP"/>
+        </Match>
 	<!-- remove all null pointer warnings from tests -->
 	<Match>
 		<Class name="~.*\.*Tests" />

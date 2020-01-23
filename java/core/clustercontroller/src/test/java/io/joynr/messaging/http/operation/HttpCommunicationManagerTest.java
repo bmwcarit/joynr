@@ -108,8 +108,6 @@ public class HttpCommunicationManagerTest {
     private String bounceProxyUrlString;
 
     @Before
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-                                                      justification = "correct use of RestAssured API")
     public void setUp() throws Exception {
 
         RestAssured.port = port;

@@ -656,8 +656,6 @@ public abstract class AbstractSubscriptionEnd2EndTest extends JoynrEnd2EndTest {
         getSubscriptionTestsPublisher().waitForAttributeUnsubscription("testAttribute");
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH_EXCEPTION",
-                                                      justification = "NPE in test would fail test")
     @SuppressWarnings("unchecked")
     @Ignore
     @Test

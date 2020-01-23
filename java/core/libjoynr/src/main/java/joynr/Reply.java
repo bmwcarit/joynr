@@ -48,8 +48,7 @@ public class Reply implements JoynrMessageType {
         this.response = null;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP",
-                                                      justification = "response is just a data container and only accessed by trusted code.")
+    //The internal implementation has to be exposed here so that RpcUtils can change it (bad design....)
     public Object[] getResponse() {
         return response;
     }

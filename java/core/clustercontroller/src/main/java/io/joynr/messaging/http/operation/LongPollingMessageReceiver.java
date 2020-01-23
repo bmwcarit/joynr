@@ -32,8 +32,6 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.MessageArrivedListener;
 import io.joynr.messaging.MessageReceiver;
@@ -90,8 +88,6 @@ public class LongPollingMessageReceiver implements MessageReceiver {
         final CompletableFuture<Void> channelCreatedFuture = new CompletableFuture();
         ReceiverStatusListener listener = new ReceiverStatusListener() {
             @Override
-            @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION",
-                                justification = "HandleNullableDeclWithFindBugsAndJava8")
             // Register the ChannelUrl once the receiver is started
             public void receiverStarted() {
                 if (channelMonitor.isChannelCreated()) {
@@ -119,8 +115,6 @@ public class LongPollingMessageReceiver implements MessageReceiver {
     }
 
     @Override
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IS2_INCONSISTENT_SYNC",
-                                                      justification = "shutdown is locked using the shutdownSynchronizer object")
     public void shutdown(boolean clear) {
         logger.info("SHUTTING DOWN long polling message receiver");
 

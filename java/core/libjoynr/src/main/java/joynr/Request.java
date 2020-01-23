@@ -33,8 +33,7 @@ public class Request extends OneWayRequest implements JoynrMessageType {
 
     private static final long serialVersionUID = 1L;
     private String requestReplyId;
-    @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
-    private transient String statelessAsyncCallbackMethodId;
+    private String statelessAsyncCallbackMethodId;
 
     public Request() {
     }

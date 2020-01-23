@@ -27,8 +27,6 @@ import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import io.joynr.jeeintegration.api.JoynrJeeMessageScoped;
 
 /**
@@ -84,7 +82,6 @@ public class JoynrJeeMessageContext implements Context {
         contextualStore.remove();
     }
 
-    @SuppressFBWarnings(value = "DC_DOUBLECHECK", justification = "lazy synchronization")
     public static JoynrJeeMessageContext getInstance() {
         if (instance == null) {
             synchronized (JoynrJeeMessageContext.class) {

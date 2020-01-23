@@ -30,7 +30,6 @@ import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -110,6 +109,10 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
         return;
     }
 
+    private static void setStartOk(boolean value) {
+        startOk = value;
+    }
+
     public static void main(String[] args) {
         GlobalDomainAccessControllerLauncher.start();
     }
@@ -135,8 +138,6 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
     }
 
     @Override
-    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-                        justification = "static member startOk is read from static method start")
     public void run() {
         try {
             runtime.getProviderRegistrar(localDomain, globalDomainAccessSyncProvider).register().get();
@@ -145,7 +146,7 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
             globalDomainRoleSyncProviderRegistered = true;
             runtime.getProviderRegistrar(localDomain, globalDomainAccessControlListEditorSyncProvider).register().get();
             globalDomainAccessControlListEditorSyncProviderRegistered = true;
-            startOk = true;
+            GlobalDomainAccessControllerLauncher.setStartOk(true);
         } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {
             // ignore
         }

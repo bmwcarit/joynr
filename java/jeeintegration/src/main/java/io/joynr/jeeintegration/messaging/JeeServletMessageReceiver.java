@@ -32,8 +32,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient;
 import io.joynr.messaging.MessageArrivedListener;
@@ -127,7 +125,6 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
     }
 
     @Override
-    @SuppressFBWarnings(value = "NP_NONNULL_PARAM_VIOLATION", justification = "HandleNullableDeclWithFindBugsAndJava8")
     public Future<Void> start(MessageArrivedListener messageArrivedListener,
                               ReceiverStatusListener... receiverStatusListeners) {
         if (messageArrivedListener == null) {
@@ -138,7 +135,7 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
         if (!registered) {
             registerChannelUrl();
         }
-        return CompletableFuture.completedFuture(null);
+        return CompletableFuture.allOf();
     }
 
     @Override

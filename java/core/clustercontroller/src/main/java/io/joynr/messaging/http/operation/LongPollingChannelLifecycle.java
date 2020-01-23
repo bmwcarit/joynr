@@ -304,8 +304,6 @@ public class LongPollingChannelLifecycle {
         }
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IS2_INCONSISTENT_SYNC",
-                                                      justification = "Shutdown doesn't have to synchronize the access to channelMonitorExecutorService")
     public void shutdown() {
         started = false;
         logger.debug("ChannelMonitor channel: {} SHUTDOWN...", channelId);
@@ -389,8 +387,6 @@ public class LongPollingChannelLifecycle {
         return created;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "SWL_SLEEP_WITH_LOCK_HELD",
-                                                      justification = "Other synchronized methods should block while deleting a channel")
     synchronized boolean deleteChannel(int retries) {
 
         // already deleted
@@ -459,8 +455,6 @@ public class LongPollingChannelLifecycle {
         return channelId;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "IS2_INCONSISTENT_SYNC",
-                                                      justification = "isStarted is just a getter for the flag")
     /**
      * Started is set as soon as startLongPolling is called, irrespective of whether the channel is created
      * @return started

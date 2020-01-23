@@ -33,7 +33,6 @@ import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.CapabilitiesRegistrarImpl;
@@ -87,9 +86,9 @@ import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectoryImpl;
-import io.joynr.proxy.StatelessAsyncIdCalculator;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
@@ -98,7 +97,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
-    @SuppressWarnings("URF_UNREAD_FIELD")
     Multibinder<MulticastAddressCalculator> multicastAddressCalculators;
 
     @Override
