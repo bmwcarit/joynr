@@ -20,7 +20,6 @@ package io.joynr.capabilities;
 
 import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
 
-import javax.annotation.CheckForNull;
 import javax.inject.Named;
 
 import org.slf4j.Logger;
@@ -134,7 +133,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private CallbackWithModeledError<Void, DiscoveryError> buildCallback(final String participantId) {
         return new CallbackWithModeledError<Void, DiscoveryError>() {
             @Override
-            public void onSuccess(@CheckForNull Void result) {
+            public void onSuccess(Void result) {
                 logger.trace("Successfully registered provider with participantId={}", participantId);
             }
 
@@ -163,7 +162,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                                                    ProviderAnnotations.getMajorVersion(provider));
         Callback<Void> callback = new Callback<Void>() {
             @Override
-            public void onSuccess(@CheckForNull Void result) {
+            public void onSuccess(Void result) {
                 logger.trace("Successfully unregistered provider with participantId={}", participantId);
             }
 

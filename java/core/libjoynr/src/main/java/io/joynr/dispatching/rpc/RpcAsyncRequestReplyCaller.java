@@ -36,7 +36,6 @@ import joynr.exceptions.ApplicationException;
 
 public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
 
-    @CheckForNull
     private ICallback callback;
     private Method method;
     private MethodMetaInformation methodMetaInformation;

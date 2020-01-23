@@ -20,8 +20,6 @@ package io.joynr.accesscontrol;
 
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -61,7 +59,6 @@ public interface LocalDomainAccessController {
      *                      If the callback returns NULL, use {@link #getConsumerPermission(String,
      *                      String, String, TrustLevel)} to gain Permission on interface operation.
      */
-    @CheckForNull
     void getConsumerPermission(String userId,
                                String domain,
                                String interfaceName,

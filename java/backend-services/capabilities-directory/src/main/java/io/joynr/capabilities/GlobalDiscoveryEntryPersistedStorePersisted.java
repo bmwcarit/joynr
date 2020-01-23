@@ -22,10 +22,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
@@ -177,14 +176,14 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
     }
 
     @Override
-    @CheckForNull
-    public synchronized Collection<GlobalDiscoveryEntryPersisted> lookup(String participantId) {
+    public synchronized Optional<Collection<GlobalDiscoveryEntryPersisted>> lookup(String participantId) {
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE " + "gdep.participantId = :participantId";
-        List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
-                                                                                    GlobalDiscoveryEntryPersisted.class)
-                                                                       .setParameter("participantId", participantId)
-                                                                       .getResultList();
-        return queryResult;
+        Collection<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
+                                                                                          GlobalDiscoveryEntryPersisted.class)
+                                                                             .setParameter("participantId",
+                                                                                           participantId)
+                                                                             .getResultList();
+        return Optional.ofNullable(queryResult);
     }
 
     @Override
@@ -198,7 +197,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
     }
 
     @Override
-    public boolean hasDiscoveryEntry(@Nonnull GlobalDiscoveryEntryPersisted discoveryEntry) {
+    public boolean hasDiscoveryEntry(GlobalDiscoveryEntryPersisted discoveryEntry) {
         String query = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.clusterControllerId = :clusterControllerId";
         String clusterControllerId = discoveryEntry.getClusterControllerId();
         @SuppressWarnings("unchecked")

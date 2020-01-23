@@ -22,8 +22,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -206,7 +204,6 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         messageIdCallback.accept(request.getRequestReplyId());
     }
 
-    @CheckForNull
     @Override
     public Object executeSyncMethod(Method method, Object[] args) throws ApplicationException {
 

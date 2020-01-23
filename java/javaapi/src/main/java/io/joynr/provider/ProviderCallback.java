@@ -18,12 +18,10 @@
  */
 package io.joynr.provider;
 
-import javax.annotation.CheckForNull;
-
 import io.joynr.exceptions.JoynrException;
 
 public abstract class ProviderCallback<T> {
-    public abstract void onSuccess(@CheckForNull T result);
+    public abstract void onSuccess(T result);
 
     @SuppressWarnings("unchecked")
     public void resolve(Object... result) {

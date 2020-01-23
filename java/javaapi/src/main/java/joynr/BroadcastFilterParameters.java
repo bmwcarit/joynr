@@ -21,8 +21,6 @@ package joynr;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
-
 import io.joynr.subtypes.JoynrType;
 
 public class BroadcastFilterParameters implements JoynrType {
@@ -37,11 +35,11 @@ public class BroadcastFilterParameters implements JoynrType {
         this.filterParameters = filterParameters;
     }
 
-    protected void setFilterParameter(@Nonnull String key, String value) {
+    protected void setFilterParameter(String key, String value) {
         filterParameters.put(key, value);
     }
 
-    protected String getFilterParameter(@Nonnull String key) {
+    protected String getFilterParameter(String key) {
         return filterParameters.get(key);
     }
 

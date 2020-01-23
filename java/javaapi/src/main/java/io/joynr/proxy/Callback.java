@@ -18,16 +18,14 @@
  */
 package io.joynr.proxy;
 
-import javax.annotation.CheckForNull;
-
 public abstract class Callback<T> implements ICallback {
-    public abstract void onSuccess(@CheckForNull T result);
+    public abstract void onSuccess(T result);
 
     @SuppressWarnings("unchecked")
     @Override
     public void resolve(Object... result) {
         if (result.length == 0) {
-            onSuccess(null);
+            onSuccess(null); // TODO ?!
         } else {
             onSuccess((T) result[0]);
         }

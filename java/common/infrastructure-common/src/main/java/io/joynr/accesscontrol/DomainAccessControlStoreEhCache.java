@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +34,6 @@ import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Role;
-
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
@@ -131,7 +128,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean updateDomainRole(@Nonnull DomainRoleEntry updatedEntry) {
+    public Boolean updateDomainRole(DomainRoleEntry updatedEntry) {
         boolean updateSuccess = false;
         Cache cache = getCache(CacheId.DOMAIN_ROLES);
         UserRoleKey dreKey = new UserRoleKey(updatedEntry.getUid(), updatedEntry.getRole());

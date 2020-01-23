@@ -21,7 +21,6 @@ package io.joynr.messaging.bounceproxy.filter;
 import java.io.IOException;
 import java.net.URI;
 
-import javax.annotation.CheckForNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -129,18 +128,15 @@ public class SessionFilter implements Filter {
         }
 
         @Override
-        @CheckForNull
         public String encodeURL(String url) {
             return encodeJoynrLocation(url);
         }
 
         @Override
-        @CheckForNull
         public String encodeRedirectURL(String url) {
             return encodeJoynrLocation(url);
         }
 
-        @CheckForNull
         private String encodeJoynrLocation(String url) {
 
             if (url == null) {

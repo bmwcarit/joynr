@@ -4,8 +4,6 @@ import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
-import javax.annotation.CheckForNull;
-
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -43,7 +41,7 @@ public class HelloWorldConsumerModel {
         futureString = this.proxy.getHello(
                 new Callback<String>() {
                     @Override
-                    public void onSuccess(@CheckForNull final String s1) {
+                    public void onSuccess(final String s1) {
                         Log.d("Received Message", PRINT_BORDER + " Received: " + s1 + PRINT_BORDER);
                     }
 

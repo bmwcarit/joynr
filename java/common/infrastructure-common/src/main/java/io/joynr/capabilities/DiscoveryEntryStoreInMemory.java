@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -253,7 +252,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     }
 
     @Override
-    public boolean hasDiscoveryEntry(@Nonnull DiscoveryEntry discoveryEntry) {
+    public boolean hasDiscoveryEntry(DiscoveryEntry discoveryEntry) {
         synchronized (storeLock) {
             String discoveryEntryId = domainInterfaceParticipantIdKey(discoveryEntry.getDomain(),
                                                                       discoveryEntry.getInterfaceName(),

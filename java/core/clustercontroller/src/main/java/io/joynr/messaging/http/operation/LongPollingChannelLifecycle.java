@@ -28,8 +28,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
-import javax.annotation.Nullable;
-
 import org.apache.http.Header;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
@@ -86,7 +84,6 @@ public class LongPollingChannelLifecycle {
     private HttpRequestFactory httpRequestFactory;
 
     @Inject
-    @Nullable
     public LongPollingChannelLifecycle(CloseableHttpClient httpclient,
                                        RequestConfig defaultRequestConfig,
                                        @Named(MessagingPropertyKeys.CHANNELID) String channelId,

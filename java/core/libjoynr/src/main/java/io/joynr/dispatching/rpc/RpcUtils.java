@@ -21,13 +21,12 @@ package io.joynr.dispatching.rpc;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.annotation.CheckForNull;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+
 import joynr.MethodMetaInformation;
 import joynr.Reply;
 
@@ -37,7 +36,6 @@ public class RpcUtils {
     @Inject
     private static ObjectMapper objectMapper;
 
-    @CheckForNull
     public static Object reconstructReturnedObject(Method method,
                                                    MethodMetaInformation methodMetaInformation,
                                                    Object... response) {
@@ -65,7 +63,6 @@ public class RpcUtils {
         return responsePayload;
     }
 
-    @CheckForNull
     public static Object[] reconstructCallbackReplyObject(Method method,
                                                           MethodMetaInformation methodMetaInformation,
                                                           Reply response) {
