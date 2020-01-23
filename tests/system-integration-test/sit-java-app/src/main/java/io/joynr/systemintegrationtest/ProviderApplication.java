@@ -31,11 +31,9 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Module;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
@@ -53,8 +51,8 @@ import io.joynr.runtime.ProviderRegistrar;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.types.ProviderScope;
 import joynr.types.ProviderQos;
+import joynr.types.ProviderScope;
 
 public class ProviderApplication extends AbstractJoynrApplication {
     private static final Logger LOG = LoggerFactory.getLogger(ProviderApplication.class);
@@ -305,7 +303,6 @@ public class ProviderApplication extends AbstractJoynrApplication {
     }
 
     @Override
-    @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         System.exit(0);
     }

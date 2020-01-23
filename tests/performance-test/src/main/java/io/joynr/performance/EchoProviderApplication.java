@@ -29,8 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -56,7 +54,6 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
 
     private EchoProvider provider = null;
 
-    @SuppressWarnings("DM_EXIT")
     public static void main(String[] args) {
         try {
             invocationParams = new EchoProviderInvocationParameters(args);
@@ -93,7 +90,6 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
         }
     }
 
-    @SuppressWarnings("DM_EXIT")
     @Override
     public void shutdown() {
         if (null != provider) {

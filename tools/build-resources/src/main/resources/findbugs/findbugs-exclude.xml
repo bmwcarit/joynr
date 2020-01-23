@@ -34,6 +34,18 @@
 		<Package name="~.*\.demoApplications.*" />
 		<Bug code="NP"/>
 	</Match>
+        <Match>
+                <Package name="~.*\.systemintegrationtest.*" />
+                <Bug code="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Package name="~.*\.performance.*" />
+                <Bug code="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Package name="~.*\.interlanguage.*" />
+                <Bug code="DM_EXIT"/>
+        </Match>
 	<!-- Nm: Class is not derived from an Exception, even though it is named as such -->
 	<Match>
 		<Class name="joynr.system.JoynrLoggedException" />

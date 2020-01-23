@@ -23,13 +23,11 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
@@ -145,7 +143,6 @@ public class IltProviderApplication extends AbstractJoynrApplication {
     }
 
     @Override
-    @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         LOG.info("shutting down");
         if (provider != null) {

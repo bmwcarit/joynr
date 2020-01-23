@@ -32,8 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.proxy.Future;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;

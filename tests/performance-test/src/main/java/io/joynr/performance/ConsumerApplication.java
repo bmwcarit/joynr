@@ -31,8 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -67,7 +65,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
     private int exitCode = 0;
 
-    @SuppressWarnings("DM_EXIT")
     public static void main(String[] args) {
 
         try {
@@ -453,7 +450,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         }
     }
 
-    @SuppressWarnings("DM_EXIT")
     @Override
     public void shutdown() {
         runtime.shutdown(true);

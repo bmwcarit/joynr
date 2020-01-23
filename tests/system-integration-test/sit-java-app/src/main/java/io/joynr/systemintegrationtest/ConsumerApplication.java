@@ -36,19 +36,17 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
@@ -211,7 +209,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
     }
 
     @Override
-    @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         // Add any clean up code here for your application.
         runtime.shutdown(true);
@@ -226,7 +223,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         System.exit(0);
     }
 
-    @SuppressWarnings({ "checkstyle:methodlength", "DM_EXIT" })
     @Override
     public void run() {
         DiscoveryQos discoveryQos = new DiscoveryQos();

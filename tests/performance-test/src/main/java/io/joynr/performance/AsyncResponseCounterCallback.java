@@ -21,8 +21,6 @@ package io.joynr.performance;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Callback;
 
@@ -57,7 +55,6 @@ public class AsyncResponseCounterCallback<type> extends Callback<type> {
         responseCounterSemaphore.release();
     }
 
-    @SuppressWarnings("DM_EXIT")
     public void acquire() {
         try {
             responseCounterSemaphore.acquire();
@@ -78,7 +75,6 @@ public class AsyncResponseCounterCallback<type> extends Callback<type> {
         }
     }
 
-    @SuppressWarnings("DM_EXIT")
     public void waitForNumberOfResponses(int numExpectedResponses) {
         try {
             responseCounterSemaphore.acquire(numExpectedResponses);
