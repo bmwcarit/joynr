@@ -38,7 +38,6 @@ import com.google.inject.Module;
 import com.google.inject.name.Named;
 import com.google.inject.util.Modules;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -311,7 +310,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     }
 
     @Override
-    @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         if (radioProxy != null) {
             if (subscriptionFutureCurrentStation != null) {

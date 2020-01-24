@@ -37,7 +37,6 @@ import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -362,7 +361,6 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
     }
 
     @Override
-    @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         LOG.info("shutting down");
         if (provider != null) {

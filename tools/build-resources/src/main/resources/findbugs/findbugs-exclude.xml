@@ -46,6 +46,18 @@
                 <Package name="~.*\.interlanguage.*" />
                 <Bug code="DM_EXIT"/>
         </Match>
+        <Match>
+                <Package name="~.*\.demo.*" />
+                <Bug code="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Package name="~.*\.examples.*" />
+                <Bug code="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Package name="~.*\.examples.*" />
+                <Bug code="DM_DEFAULT_ENCODING"/>
+        </Match>
 	<!-- Nm: Class is not derived from an Exception, even though it is named as such -->
 	<Match>
 		<Class name="joynr.system.JoynrLoggedException" />

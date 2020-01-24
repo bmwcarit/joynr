@@ -29,8 +29,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.inject.util.Modules;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -137,7 +135,6 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
     }
 
     @Override
-    @SuppressWarnings(value = "DM_EXIT", justification = "WORKAROUND to be removed")
     public void shutdown() {
         if (gpsProxy != null) {
             if (subscriptionFuture != null) {
@@ -229,8 +226,6 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         }, subscriptionQos);
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_DEFAULT_ENCODING",
-                                                      justification = "Just reading key-input, encoding does not matter here")
     static void pressQEnterToContinue() {
         try {
             // sleep a while to have the log output at the end
