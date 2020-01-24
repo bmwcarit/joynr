@@ -29,7 +29,7 @@ public class BounceProxySystemPropertyLoaderTest {
     @Test
     public void testReplacementOnString() {
         String value = "nothingToReplace";
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals(value, result);
     }
 
@@ -37,7 +37,7 @@ public class BounceProxySystemPropertyLoaderTest {
     public void testReplacementForSingleVariable() {
         String value = "${testproperty}";
         System.setProperty("testproperty", "correctreplacement");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("correctreplacement", result);
         System.clearProperty("testproperty");
     }
@@ -46,7 +46,7 @@ public class BounceProxySystemPropertyLoaderTest {
     public void testReplacementForSingleVariableWithAppendix() {
         String value = "${testproperty}.appendix";
         System.setProperty("testproperty", "correctreplacement");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("correctreplacement.appendix", result);
         System.clearProperty("testproperty");
     }
@@ -55,7 +55,7 @@ public class BounceProxySystemPropertyLoaderTest {
     public void testReplacementForSingleVariableWithPrefix() {
         String value = "prefix.${testproperty}";
         System.setProperty("testproperty", "correctreplacement");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("prefix.correctreplacement", result);
         System.clearProperty("testproperty");
     }
@@ -64,7 +64,7 @@ public class BounceProxySystemPropertyLoaderTest {
     public void testReplacementForSingleVariableWithPrefixAndAppendix() {
         String value = "prefix.${testproperty}.appendix";
         System.setProperty("testproperty", "correctreplacement");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("prefix.correctreplacement.appendix", result);
         System.clearProperty("testproperty");
     }
@@ -74,7 +74,7 @@ public class BounceProxySystemPropertyLoaderTest {
         String value = "${testproperty1}${testproperty2}";
         System.setProperty("testproperty1", "correctreplacement1");
         System.setProperty("testproperty2", "correctreplacement2");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("correctreplacement1correctreplacement2", result);
         System.clearProperty("testproperty1");
         System.clearProperty("testproperty2");
@@ -85,7 +85,7 @@ public class BounceProxySystemPropertyLoaderTest {
         String value = "prefix.${testproperty1}${testproperty2}";
         System.setProperty("testproperty1", "correctreplacement1");
         System.setProperty("testproperty2", "correctreplacement2");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("prefix.correctreplacement1correctreplacement2", result);
         System.clearProperty("testproperty1");
         System.clearProperty("testproperty2");
@@ -96,7 +96,7 @@ public class BounceProxySystemPropertyLoaderTest {
         String value = "${testproperty1}${testproperty2}.appendix";
         System.setProperty("testproperty1", "correctreplacement1");
         System.setProperty("testproperty2", "correctreplacement2");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("correctreplacement1correctreplacement2.appendix", result);
         System.clearProperty("testproperty1");
         System.clearProperty("testproperty2");
@@ -107,7 +107,7 @@ public class BounceProxySystemPropertyLoaderTest {
         String value = "${testproperty1}.infix.${testproperty2}";
         System.setProperty("testproperty1", "correctreplacement1");
         System.setProperty("testproperty2", "correctreplacement2");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("correctreplacement1.infix.correctreplacement2", result);
         System.clearProperty("testproperty1");
         System.clearProperty("testproperty2");
@@ -118,7 +118,7 @@ public class BounceProxySystemPropertyLoaderTest {
         String value = "prefix.${testproperty1}${testproperty2}.appendix";
         System.setProperty("testproperty1", "correctreplacement1");
         System.setProperty("testproperty2", "correctreplacement2");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("prefix.correctreplacement1correctreplacement2.appendix", result);
         System.clearProperty("testproperty1");
         System.clearProperty("testproperty2");
@@ -129,7 +129,7 @@ public class BounceProxySystemPropertyLoaderTest {
         String value = "prefix.${testproperty1}.infix.${testproperty2}.appendix";
         System.setProperty("testproperty1", "correctreplacement1");
         System.setProperty("testproperty2", "correctreplacement2");
-        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value);
+        String result = BounceProxySystemPropertyLoader.replaceVariableBySystemProperty(value).get();
         Assert.assertEquals("prefix.correctreplacement1.infix.correctreplacement2.appendix", result);
         System.clearProperty("testproperty1");
         System.clearProperty("testproperty2");

@@ -23,6 +23,8 @@ import static io.joynr.messaging.MessagingPropertyKeys.RECEIVERID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 
+import java.util.Optional;
+
 import javax.inject.Named;
 
 import com.google.inject.Inject;
@@ -58,8 +60,8 @@ public class MqttReplyToAddressFactory extends GlobalAddressFactory<MqttAddress>
     }
 
     @Override
-    public boolean supportsTransport(String transport) {
-        return SUPPORTED_TRANSPORT_MQTT.equals(transport);
+    public boolean supportsTransport(Optional<String> transport) {
+        return SUPPORTED_TRANSPORT_MQTT.equals(transport.isPresent() ? transport.get() : null);
     }
 
 }

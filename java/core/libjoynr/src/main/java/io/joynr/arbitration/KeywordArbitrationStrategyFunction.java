@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import joynr.types.CustomParameter;
@@ -37,9 +38,10 @@ public class KeywordArbitrationStrategyFunction extends ArbitrationStrategyFunct
 
         for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             // Search for a matching keyword parameter
-            CustomParameter keywordParameter = findQosParameter(discoveryEntry, ArbitrationConstants.KEYWORD_PARAMETER);
-            if (keywordParameter != null) {
-                String currentKeyword = keywordParameter.getValue();
+            Optional<CustomParameter> keywordParameter = findQosParameter(discoveryEntry,
+                                                                          ArbitrationConstants.KEYWORD_PARAMETER);
+            if (keywordParameter.isPresent()) {
+                String currentKeyword = keywordParameter.get().getValue();
                 if (currentKeyword.equals(requestedKeyword)) {
                     capabilityWithKeyword = discoveryEntry;
                     break;

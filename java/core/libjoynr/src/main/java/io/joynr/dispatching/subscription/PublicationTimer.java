@@ -21,6 +21,7 @@ package io.joynr.dispatching.subscription;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.TimerTask;
 
 import org.slf4j.Logger;
@@ -110,7 +111,9 @@ public class PublicationTimer extends PubSubTimerBase {
                     logger.debug("run: executing attributePollInterpreter for attribute "
                             + publicationInformation.getSubscribedToName());
                     try {
-                        Promise<?> attributeGetterPromise = attributePollInterpreter.execute(providerContainer, method);
+                        Optional<Promise<?>> optionalPromise = attributePollInterpreter.execute(providerContainer, method);
+                        Promise<?> attributeGetterPromise =
+                                optionalPromise.isPresent() ? optionalPromise.get() : null;
                         attributeGetterPromise.then(new PromiseListener() {
 
                             @Override

@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -131,7 +132,7 @@ public class ProxyBuilderDefaultImplTest {
                                                   Mockito.<DiscoveryQos> any(),
                                                   Mockito.<MessagingQos> any(),
                                                   Mockito.<ShutdownNotifier> any(),
-                                                  Mockito.<StatelessAsyncCallback> any())).thenReturn(proxyInvocationHandler);
+                                                  Mockito.<Optional<StatelessAsyncCallback>> any())).thenReturn(proxyInvocationHandler);
     }
 
     @Test

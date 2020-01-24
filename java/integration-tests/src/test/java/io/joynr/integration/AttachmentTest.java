@@ -26,9 +26,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Future;
-
-import javax.annotation.Nullable;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -85,8 +84,7 @@ public class AttachmentTest {
         sendAttachmentMessage(channelId);
     }
 
-    @Nullable
-    private Response sendAttachmentMessage(String channelId) throws Exception {
+    private Optional<Response> sendAttachmentMessage(String channelId) throws Exception {
         long ttl_ms = 1000000;
         byte[] payload = "attachmentTest".getBytes(StandardCharsets.UTF_8);
         byte[] serializedMessageWrapper = bpMock.createImmutableMessage(ttl_ms, payload).getSerializedMessage();
@@ -105,7 +103,7 @@ public class AttachmentTest {
                                    .post("/channels/" + channelId + "/messageWithAttachment");
 
         logger.debug("Response : " + response);
-        return response;
+        return Optional.ofNullable(response);
     }
 
     @Test
@@ -114,7 +112,7 @@ public class AttachmentTest {
 
         bpMock.createChannel(channelId);
 
-        Response senMsgResponse = sendAttachmentMessage(channelId);
+        Response senMsgResponse = sendAttachmentMessage(channelId).get();
 
         String msgId = senMsgResponse.getHeader("msgId");
 

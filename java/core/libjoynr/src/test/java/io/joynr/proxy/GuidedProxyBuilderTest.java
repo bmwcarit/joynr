@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -108,7 +109,7 @@ public class GuidedProxyBuilderTest {
                                                   Mockito.<DiscoveryQos> any(),
                                                   Mockito.<MessagingQos> any(),
                                                   Mockito.<ShutdownNotifier> any(),
-                                                  Mockito.<StatelessAsyncCallback> any())).thenReturn(proxyInvocationHandler);
+                                                  Mockito.<Optional<StatelessAsyncCallback>> any())).thenReturn(proxyInvocationHandler);
     }
 
     private void initializeSubject() {

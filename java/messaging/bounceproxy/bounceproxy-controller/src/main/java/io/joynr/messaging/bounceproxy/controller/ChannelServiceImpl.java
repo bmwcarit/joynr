@@ -22,6 +22,7 @@ package io.joynr.messaging.bounceproxy.controller;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.atmosphere.jersey.Broadcastable;
 import org.slf4j.Logger;
@@ -73,7 +74,7 @@ public class ChannelServiceImpl implements ChannelService {
         List<ChannelInformation> channelInformationList = new LinkedList<ChannelInformation>();
         for (Channel channel : channels) {
 
-            ChannelInformation channelInfo = new ChannelInformation(channel.getChannelId(), 0, 0);
+            ChannelInformation channelInfo = new ChannelInformation(channel.getChannelId(), 0, Optional.of(0));
             channelInformationList.add(channelInfo);
         }
         return channelInformationList;
@@ -87,8 +88,8 @@ public class ChannelServiceImpl implements ChannelService {
      * (java.lang.String)
      */
     @Override
-    public Channel getChannel(String ccid) {
-        return channelDirectory.getChannel(ccid);
+    public Optional<Channel> getChannel(String ccid) {
+        return Optional.ofNullable(channelDirectory.getChannel(Optional.of(ccid)));
     }
 
     /*

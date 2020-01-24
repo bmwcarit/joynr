@@ -22,6 +22,8 @@ package io.joynr.messaging.service;
 import static com.jayway.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Optional;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -67,7 +69,7 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
     public void testCreateChannelThatIsAlreadyKnown() {
 
         Mockito.when(mock.getChannel("channel-123"))
-               .thenReturn(createChannel("X.Y", "http://joyn-bpX.de/bp", "channel-123"));
+               .thenReturn(Optional.of(createChannel("X.Y", "http://joyn-bpX.de/bp", "channel-123")));
 
         Response response = //
                 given(). //
@@ -84,7 +86,7 @@ public class ChannelSetUpTest extends AbstractChannelSetUpTest {
     @Test
     public void testCreateNewChannel() {
 
-        Mockito.when(mock.getChannel("channel-123")).thenReturn(null);
+        Mockito.when(mock.getChannel("channel-123")).thenReturn(Optional.empty());
         Mockito.when(mock.createChannel("channel-123", null))
                .thenReturn(createChannel("0.0", "http://joyn-bp0.de/bp", "channel-123"));
 

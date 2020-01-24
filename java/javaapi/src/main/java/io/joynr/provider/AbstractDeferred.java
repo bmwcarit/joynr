@@ -20,10 +20,7 @@ package io.joynr.provider;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Optional;
 
 import io.joynr.exceptions.JoynrException;
 import joynr.exceptions.ProviderRuntimeException;
@@ -91,19 +88,16 @@ public abstract class AbstractDeferred {
      * @return the error that caused the rejection of the deferred; null if the
      *      deferred is not in rejected state.
      */
-    @Nullable
-    public JoynrException getError() {
-        return error;
+    public Optional<JoynrException> getError() {
+        return Optional.ofNullable(error);
     }
 
     /**
      * @return the values that caused the fulfillment of the deferred; null if
      *      the deferred is not in fulfilled state.
      */
-    @Nullable
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "This is only accessed internally by the promise.")
-    public Object[] getValues() {
-        return values;
+    public Optional<Object[]> getValues() {
+        return Optional.ofNullable(values);
     }
 
     private void notifyListeners() {

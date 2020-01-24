@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -137,7 +138,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                          DiscoveryQos discoveryQos,
                                          MessagingQos messagingQos,
                                          ShutdownNotifier shutdownNotifier,
-                                         StatelessAsyncCallback statelessAsyncCallback) {
+                                         Optional<StatelessAsyncCallback> statelessAsyncCallback) {
         if (domains.contains("io.joynr.system")) {
             return new ProxyInvocationHandlerImpl(domains,
                                                   interfaceName,

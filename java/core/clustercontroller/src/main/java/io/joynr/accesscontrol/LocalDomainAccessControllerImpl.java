@@ -23,9 +23,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +47,8 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.MulticastSubscriptionQos;
 import joynr.exceptions.ApplicationException;
+import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
@@ -56,8 +57,6 @@ import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.Discovery;
 import joynr.system.Routing;
 import joynr.types.GlobalDiscoveryEntry;
@@ -145,7 +144,6 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     }
 
     @Override
-    @CheckForNull
     public void getConsumerPermission(final String userId,
                                       final String domain,
                                       final String interfaceName,
@@ -158,9 +156,9 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         LOG.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
 
         // Handle special cases which should not require a lookup or a subscription
-        Permission specialPermission = handleSpecialCases(domain, interfaceName);
-        if (specialPermission != null) {
-            callback.getConsumerPermission(specialPermission);
+        Optional<Permission> specialPermission = handleSpecialCases(domain, interfaceName);
+        if (specialPermission.isPresent()) {
+            callback.getConsumerPermission(specialPermission.get());
             return;
         }
 
@@ -209,19 +207,18 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         }
     }
 
-    @CheckForNull
-    private Permission handleSpecialCases(String domain, String interfaceName) {
+    private Optional<Permission> handleSpecialCases(String domain, String interfaceName) {
 
         // Allow access to the global directories
         if (domain.equals(discoveryDirectoriesDomain) || domain.equals(systemServicesDomain)) {
             if (interfaceName.equals(GlobalCapabilitiesDirectory.INTERFACE_NAME)
                     || interfaceName.equals(GlobalDomainAccessController.INTERFACE_NAME)
                     || interfaceName.equals(Discovery.INTERFACE_NAME) || interfaceName.equals(Routing.INTERFACE_NAME)) {
-                return Permission.YES;
+                return Optional.of(Permission.YES);
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -244,7 +241,10 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             ownerAce = localDomainAccessStore.getOwnerAccessControlEntry(userId, domain, interfaceName, operation);
         }
 
-        return accessControlAlgorithm.getConsumerPermission(masterAce, mediatorAce, ownerAce, trustLevel);
+        return accessControlAlgorithm.getConsumerPermission(Optional.ofNullable(masterAce),
+                                                            Optional.ofNullable(mediatorAce),
+                                                            Optional.ofNullable(ownerAce),
+                                                            trustLevel);
     }
 
     @Override

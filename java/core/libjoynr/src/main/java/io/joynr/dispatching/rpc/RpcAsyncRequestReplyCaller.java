@@ -19,8 +19,7 @@
 package io.joynr.dispatching.rpc;
 
 import java.lang.reflect.Method;
-
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,13 +45,15 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
 
     public RpcAsyncRequestReplyCaller(Object proxy,
                                       String requestReplyId,
-                                      @CheckForNull ICallback callback,
+                                      Optional<ICallback> callback,
                                       Future<T> future,
                                       Method method,
                                       MethodMetaInformation methodMetaInformation) {
         this.proxy = proxy;
         this.requestReplyId = requestReplyId;
-        this.callback = callback;
+        if (callback.isPresent()) {
+            this.callback = callback.get();
+        }
         this.future = future;
         this.method = method;
         this.methodMetaInformation = methodMetaInformation;

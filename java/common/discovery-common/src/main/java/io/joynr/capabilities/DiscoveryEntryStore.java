@@ -19,6 +19,7 @@
 package io.joynr.capabilities;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import joynr.types.DiscoveryEntry;
@@ -37,7 +38,7 @@ public interface DiscoveryEntryStore<T extends DiscoveryEntry> {
 
     public abstract Collection<T> lookup(String[] domain, String interfaceName);
 
-    public abstract T lookup(String participantId, long cacheMaxAge);
+    public abstract Optional<T> lookup(String participantId, long cacheMaxAge);
 
     public abstract Set<T> getAllDiscoveryEntries();
 

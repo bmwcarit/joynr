@@ -37,8 +37,8 @@ public class CcMessageSender extends AbstractMessageSender {
                            ReplyToAddressProvider replyToAddressProvider,
                            GlobalAddressProvider globalAddressProvider) {
         super(messageRouter);
-        replyToAddressProvider.registerGlobalAddressesReadyListener((address) -> addReplyToAddress(toAddressString(address)));
-        globalAddressProvider.registerGlobalAddressesReadyListener((address) -> addGlobalAddress(toAddressString(address)));
+        replyToAddressProvider.registerGlobalAddressesReadyListener((address) -> addReplyToAddress(toAddressString(address.get())));
+        globalAddressProvider.registerGlobalAddressesReadyListener((address) -> addGlobalAddress(toAddressString(address.get())));
     }
 
     private void addReplyToAddress(String replyToAddress) {

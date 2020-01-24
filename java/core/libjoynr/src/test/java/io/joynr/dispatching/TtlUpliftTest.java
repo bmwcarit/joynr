@@ -32,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -197,8 +198,8 @@ public class TtlUpliftTest {
         Deferred<String> valueToPublishDeferred = new Deferred<String>();
         valueToPublishDeferred.resolve(valueToPublish);
         Promise<Deferred<String>> valueToPublishPromise = new Promise<Deferred<String>>(valueToPublishDeferred);
-        doReturn(valueToPublishPromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
-                                                                               any(Method.class));
+        doReturn(Optional.of(valueToPublishPromise)).when(attributePollInterpreter)
+                                                    .execute(any(ProviderContainer.class), any(Method.class));
 
         Module subcriptionUpliftModule = Modules.override(defaultModule).with(new AbstractModule() {
             @Override

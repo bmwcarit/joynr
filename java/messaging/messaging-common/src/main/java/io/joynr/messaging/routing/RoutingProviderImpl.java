@@ -20,6 +20,7 @@ package io.joynr.messaging.routing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -64,9 +65,10 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
 
         globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
-            public void transportReady(Address address) {
+            public void transportReady(Optional<Address> address) {
                 synchronized (unresolvedGlobalAddressDeferreds) {
-                    globalAddressString = RoutingTypesUtil.toAddressString(address);
+                    globalAddressString = RoutingTypesUtil.toAddressString(
+                            address.isPresent() ? address.get() : null);
                     for (Deferred<String> globalAddressDeferred : unresolvedGlobalAddressDeferreds) {
                         globalAddressDeferred.resolve(globalAddressString);
                     }
@@ -77,9 +79,10 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
         });
         replyToAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
             @Override
-            public void transportReady(Address address) {
+            public void transportReady(Optional<Address> address) {
                 synchronized (unresolvedReplyToAddressDeferreds) {
-                    replyToAddressString = RoutingTypesUtil.toAddressString(address);
+                    replyToAddressString = RoutingTypesUtil.toAddressString(
+                            address.isPresent() ? address.get() : null);
                     for (Deferred<String> replyToAddressDeferred : unresolvedReplyToAddressDeferreds) {
                         replyToAddressDeferred.resolve(replyToAddressString);
                     }

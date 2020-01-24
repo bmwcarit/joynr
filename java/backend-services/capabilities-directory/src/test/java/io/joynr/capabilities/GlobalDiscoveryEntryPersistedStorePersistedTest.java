@@ -390,7 +390,8 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     }
 
     private void assertContains(GlobalDiscoveryEntryPersisted discoveryEntry, String[] gbids) {
-        Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(discoveryEntry.getParticipantId());
+        Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(discoveryEntry.getParticipantId())
+                                                                         .get();
         assertEquals(gbids.length, returnedEntries.size());
 
         for (String gbid : gbids) {
@@ -421,7 +422,8 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     }
 
     private void assertNotContains(GlobalDiscoveryEntryPersisted discoveryEntry, String[] gbids) {
-        Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(discoveryEntry.getParticipantId());
+        Collection<GlobalDiscoveryEntryPersisted> returnedEntries = store.lookup(discoveryEntry.getParticipantId())
+                                                                         .get();
         Collection<GlobalDiscoveryEntryPersisted> filteredEntries = returnedEntries.stream()
                                                                                    .filter(e -> Arrays.asList(gbids)
                                                                                                       .contains(e.getGbid()))

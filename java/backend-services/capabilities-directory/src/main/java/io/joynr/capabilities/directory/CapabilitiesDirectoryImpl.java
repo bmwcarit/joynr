@@ -21,6 +21,7 @@ package io.joynr.capabilities.directory;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -434,7 +435,9 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                 }
             }).toArray(String[]::new);
             try {
-                Collection<GlobalDiscoveryEntryPersisted> lookupResult = discoveryEntryStore.lookup(participantId);
+                Optional<Collection<GlobalDiscoveryEntryPersisted>> optionalResult = discoveryEntryStore.lookup(participantId);
+                Collection<GlobalDiscoveryEntryPersisted> lookupResult =
+                        optionalResult.isPresent() ? optionalResult.get() : null;
                 if (lookupResult.isEmpty()) {
                     deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
                     return promise;

@@ -187,7 +187,8 @@ public class CapabilitiesDirectoryIntegrationTest {
         PromiseKeeper lookupCapInfo2 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface2).then(lookupCapInfo2);
         lookupCapInfo2.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
-        GlobalDiscoveryEntry[] discoveredEntries2 = (GlobalDiscoveryEntry[]) lookupCapInfo2.getValues()[0];
+        Object[] objectArray2 = lookupCapInfo2.getValues().get();
+        GlobalDiscoveryEntry[] discoveredEntries2 = (GlobalDiscoveryEntry[]) objectArray2[0];
         assertEquals(1, discoveredEntries2.length);
         checkDiscoveryEntry(expectedDiscoveryEntry2, discoveredEntries2[0], gcdGbid);
 
@@ -195,7 +196,7 @@ public class CapabilitiesDirectoryIntegrationTest {
         capabilitiesDirectory.lookup(new String[]{ domain }, interface3).then(lookupCapInfo3);
 
         lookupCapInfo3.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
-        GlobalDiscoveryEntry[] discoveredEntries3 = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues()[0];
+        GlobalDiscoveryEntry[] discoveredEntries3 = (GlobalDiscoveryEntry[]) lookupCapInfo3.getValues().get()[0];
         assertEquals(1, discoveredEntries3.length);
         checkDiscoveryEntry(expectedDiscoveryEntry3, discoveredEntries3[0], gcdGbid);
     }
@@ -214,7 +215,7 @@ public class CapabilitiesDirectoryIntegrationTest {
         capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupPromiseKeeper1);
         lookupPromiseKeeper1.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
         assertTrue(lookupPromiseKeeper1.isFulfilled());
-        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupPromiseKeeper1.getValues()[0];
+        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupPromiseKeeper1.getValues().get()[0];
         assertEquals(1, discoveredEntries.length);
         checkDiscoveryEntry(expectedDiscoveryEntry, discoveredEntries[0], gbids[0]);
 
@@ -227,7 +228,8 @@ public class CapabilitiesDirectoryIntegrationTest {
         capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupPromiseKeeper2);
         lookupPromiseKeeper2.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
         assertTrue(lookupPromiseKeeper2.isFulfilled());
-        assertArrayEquals(new GlobalDiscoveryEntry[]{}, (GlobalDiscoveryEntry[]) lookupPromiseKeeper2.getValues()[0]);
+        assertArrayEquals(new GlobalDiscoveryEntry[]{},
+                          (GlobalDiscoveryEntry[]) lookupPromiseKeeper2.getValues().get()[0]);
     }
 
     @Test
@@ -238,7 +240,7 @@ public class CapabilitiesDirectoryIntegrationTest {
         capabilitiesDirectory.add(discoveryEntry1, gbids).then(addPromiseKeeper);
         addPromiseKeeper.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
         assertTrue(addPromiseKeeper.isRejected());
-        JoynrException error = addPromiseKeeper.getError();
+        JoynrException error = addPromiseKeeper.getError().get();
         assertTrue(error instanceof ApplicationException);
         assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException) error).getError());
 
@@ -246,7 +248,7 @@ public class CapabilitiesDirectoryIntegrationTest {
         capabilitiesDirectory.lookup(new String[]{ domain }, interface1, gbids).then(lookupPromiseKeeper);
         lookupPromiseKeeper.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
         assertTrue(lookupPromiseKeeper.isRejected());
-        error = lookupPromiseKeeper.getError();
+        error = lookupPromiseKeeper.getError().get();
         assertTrue(error instanceof ApplicationException);
         assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException) error).getError());
 
@@ -254,7 +256,7 @@ public class CapabilitiesDirectoryIntegrationTest {
         capabilitiesDirectory.remove(participantId1, gbids).then(removePromiseKeeper);
         removePromiseKeeper.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
         assertTrue(removePromiseKeeper.isRejected());
-        error = removePromiseKeeper.getError();
+        error = removePromiseKeeper.getError().get();
         assertTrue(error instanceof ApplicationException);
         assertEquals(DiscoveryError.UNKNOWN_GBID, ((ApplicationException) error).getError());
 
@@ -268,7 +270,7 @@ public class CapabilitiesDirectoryIntegrationTest {
         PromiseKeeper lookupCapInfo1 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface1).then(lookupCapInfo1);
         lookupCapInfo1.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
-        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues()[0];
+        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupCapInfo1.getValues().get()[0];
         assertEquals(1, discoveredEntries.length);
         checkDiscoveryEntry(expectedEntry, discoveredEntries[0], gcdGbid);
     }
@@ -282,7 +284,7 @@ public class CapabilitiesDirectoryIntegrationTest {
         PromiseKeeper lookupCapInfo4 = new PromiseKeeper();
         capabilitiesDirectory.lookup(new String[]{ domain }, interface4).then(lookupCapInfo4);
         lookupCapInfo4.waitForSettlement(PROMISE_SETTLEMENT_TIMEOUT_MS);
-        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupCapInfo4.getValues()[0];
+        GlobalDiscoveryEntry[] discoveredEntries = (GlobalDiscoveryEntry[]) lookupCapInfo4.getValues().get()[0];
         assertEquals(1, discoveredEntries.length);
         checkDiscoveryEntry(expectedEntry, discoveredEntries[0], gcdGbid);
     }

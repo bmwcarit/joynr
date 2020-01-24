@@ -21,8 +21,8 @@ package io.joynr.messaging.bounceproxy.controller.directory.jdbc;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
-import javax.annotation.CheckForNull;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -79,15 +79,21 @@ public class ChannelDatabase implements ChannelDirectory {
     }
 
     @Override
-    @CheckForNull
-    public Channel getChannel(String ccid) {
+    public Channel getChannel(Optional<String> ccid) {
 
-        logger.trace("getChannel({})", ccid);
+        String channelId;
+        if (ccid.isPresent()) {
+            channelId = ccid.get();
+        } else {
+            logger.debug("no channel found for ID NULL");
+            return null;
+        }
+        logger.trace("getChannel({})", channelId);
 
         EntityManager em = emf.createEntityManager();
-        ChannelEntity channelEntity = em.find(ChannelEntity.class, ccid);
+        ChannelEntity channelEntity = em.find(ChannelEntity.class, channelId);
         if (channelEntity == null) {
-            logger.debug("no channel found for ID {}", ccid);
+            logger.debug("no channel found for ID {}", channelId);
             return null;
         }
 

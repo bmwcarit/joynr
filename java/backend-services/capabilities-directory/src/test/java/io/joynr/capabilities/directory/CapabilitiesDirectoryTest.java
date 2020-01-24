@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -619,7 +620,8 @@ public class CapabilitiesDirectoryTest {
                                                                                   validGbids[2]);
         gdep1_3.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_3.getGbid(), TOPIC_NAME)));
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(gdep1_3);
-        doReturn(Arrays.asList(gdep1_1, gdep1_2, gdep1_3)).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(Arrays.asList(gdep1_1, gdep1_2, gdep1_3))).when(discoveryEntryStoreMock)
+                                                                       .lookup(anyString());
 
         Promise<Lookup3Deferred> promise = subject.lookup(PARTICIPANT_ID);
 
@@ -643,7 +645,8 @@ public class CapabilitiesDirectoryTest {
                                                                                   TOPIC_NAME,
                                                                                   validGbids[2]);
         gdep1_3.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_3.getGbid(), TOPIC_NAME)));
-        doReturn(Arrays.asList(gdep1_1, gdep1_2, gdep1_3)).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(Arrays.asList(gdep1_1, gdep1_2, gdep1_3))).when(discoveryEntryStoreMock)
+                                                                       .lookup(anyString());
 
         Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ validGbids[0], validGbids[1] });
 
@@ -672,7 +675,8 @@ public class CapabilitiesDirectoryTest {
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(gdep1_3);
         expectedEntry.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(GCD_GBID, TOPIC_NAME)));
 
-        doReturn(Arrays.asList(gdep1_1, gdep1_2, gdep1_3)).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(Arrays.asList(gdep1_1, gdep1_2, gdep1_3))).when(discoveryEntryStoreMock)
+                                                                       .lookup(anyString());
 
         Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ "" });
 
@@ -696,7 +700,8 @@ public class CapabilitiesDirectoryTest {
                                                                                   TOPIC_NAME,
                                                                                   validGbids[2]);
         gdep1_3.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_3.getGbid(), TOPIC_NAME)));
-        doReturn(Arrays.asList(gdep1_1, gdep1_2, gdep1_3)).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(Arrays.asList(gdep1_1, gdep1_2, gdep1_3))).when(discoveryEntryStoreMock)
+                                                                       .lookup(anyString());
 
         Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ "", validGbids[1] });
 
@@ -721,7 +726,8 @@ public class CapabilitiesDirectoryTest {
                                                                                   TOPIC_NAME,
                                                                                   validGbids[2]);
         gdep1_3.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(gdep1_3.getGbid(), TOPIC_NAME)));
-        doReturn(Arrays.asList(gdep1_1, gdep1_2, gdep1_3)).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(Arrays.asList(gdep1_1, gdep1_2, gdep1_3))).when(discoveryEntryStoreMock)
+                                                                       .lookup(anyString());
 
         Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ "", GCD_GBID });
 
@@ -872,7 +878,7 @@ public class CapabilitiesDirectoryTest {
 
     @Test
     public void lookupByParticipantIdWithGbids_noEntryForParticipant() throws InterruptedException {
-        doReturn(new ArrayList<>()).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(new ArrayList<>())).when(discoveryEntryStoreMock).lookup(anyString());
 
         Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ validGbids[0], validGbids[1] });
 
@@ -886,7 +892,7 @@ public class CapabilitiesDirectoryTest {
                                                                                TOPIC_NAME,
                                                                                validGbids[0]);
         gdep.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(validGbids[0], TOPIC_NAME)));
-        doReturn(Arrays.asList(gdep)).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(Arrays.asList(gdep))).when(discoveryEntryStoreMock).lookup(anyString());
 
         Promise<Lookup4Deferred> promise = subject.lookup(PARTICIPANT_ID, new String[]{ validGbids[1], validGbids[2] });
 
@@ -924,7 +930,7 @@ public class CapabilitiesDirectoryTest {
 
     @Test
     public void lookupByParticipantId_noEntryForParticipant() throws InterruptedException {
-        doReturn(new ArrayList<>()).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(new ArrayList<>())).when(discoveryEntryStoreMock).lookup(anyString());
 
         Promise<Lookup3Deferred> promise = subject.lookup(PARTICIPANT_ID);
 
@@ -938,7 +944,7 @@ public class CapabilitiesDirectoryTest {
                                                                                TOPIC_NAME,
                                                                                validGbids[0]);
         gdep.setAddress(CapabilityUtils.serializeAddress(new MqttAddress(validGbids[0], TOPIC_NAME)));
-        doReturn(Arrays.asList(gdep)).when(discoveryEntryStoreMock).lookup(anyString());
+        doReturn(Optional.of(Arrays.asList(gdep))).when(discoveryEntryStoreMock).lookup(anyString());
 
         Promise<Lookup3Deferred> promise = subject.lookup(PARTICIPANT_ID);
 

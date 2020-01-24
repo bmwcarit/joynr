@@ -18,10 +18,12 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.Optional;
+
 import joynr.system.RoutingTypes.Address;
 
 public interface TransportReadyListener {
 
-    void transportReady(Address address);
+    void transportReady(Optional<Address> address);
 
 }

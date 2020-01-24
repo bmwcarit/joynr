@@ -29,13 +29,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -306,8 +304,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
-            DiscoveryEntry localEntry = localDiscoveryEntryStore.lookup(discoveryEntry.getParticipantId(),
-                                                                        Long.MAX_VALUE);
+            Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(discoveryEntry.getParticipantId(),
+                                                                                              Long.MAX_VALUE);
+            DiscoveryEntry localEntry = optionalDiscoveryEntry.isPresent() ? optionalDiscoveryEntry.get() : null;
             if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL) && localEntry.equals(discoveryEntry)) {
                 // in this case, no further need for global registration is required. Registration completed.
                 deferred.resolve();
@@ -438,9 +437,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     @Override
     public io.joynr.provider.Promise<io.joynr.provider.DeferredVoid> remove(String participantId) {
         DeferredVoid deferred = new DeferredVoid();
-        DiscoveryEntry entryToRemove = localDiscoveryEntryStore.lookup(participantId, Long.MAX_VALUE);
-        if (entryToRemove != null) {
-            remove(entryToRemove);
+        Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(participantId,
+                                                                                          Long.MAX_VALUE);
+        if (optionalDiscoveryEntry.isPresent()) {
+            remove(optionalDiscoveryEntry.get());
             deferred.resolve();
         } else {
             logger.debug("Failed to remove participantId: {}. ParticipantId is not registered in cluster controller.",
@@ -558,11 +558,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
-            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-                if (capabilities == null) {
+            public void processCapabilitiesReceived(Optional<Collection<DiscoveryEntryWithMetaInfo>> capabilities) {
+                if (!capabilities.isPresent()) {
                     deferred.reject(new ProviderRuntimeException("Received capablities collection was null"));
                 } else {
-                    deferred.resolve(capabilities.toArray(new DiscoveryEntryWithMetaInfo[capabilities.size()]));
+                    deferred.resolve(capabilities.get()
+                                                 .toArray(new DiscoveryEntryWithMetaInfo[capabilities.get().size()]));
                 }
             }
 
@@ -648,8 +649,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                     discoveryQos.getCacheMaxAge());
         switch (discoveryScope) {
         case LOCAL_ONLY:
-            capabilitiesCallback.processCapabilitiesReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
-                                                                                                                    localDiscoveryEntries));
+            capabilitiesCallback.processCapabilitiesReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
+                                                                                                                                localDiscoveryEntries)));
             break;
         case LOCAL_THEN_GLOBAL:
             handleLocalThenGlobal(domains,
@@ -756,7 +757,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                             Set<String> domainsForGlobalLookup,
                                             Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries) {
         if (domainsForGlobalLookup.isEmpty()) {
-            capabilitiesCallback.processCapabilitiesReceived(matchedDiscoveryEntries);
+            capabilitiesCallback.processCapabilitiesReceived(Optional.of(matchedDiscoveryEntries));
         } else {
             asyncGetGlobalCapabilitities(gbids,
                                          domainsForGlobalLookup.toArray(new String[domainsForGlobalLookup.size()]),
@@ -868,8 +869,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         lookup(participantId, discoveryQos, gbids, new CapabilityCallback() {
 
             @Override
-            public void processCapabilityReceived(DiscoveryEntryWithMetaInfo capability) {
-                deferred.resolve(capability);
+            public void processCapabilityReceived(Optional<DiscoveryEntryWithMetaInfo> capability) {
+                deferred.resolve(capability.isPresent() ? capability.get() : null);
             }
 
             @Override
@@ -894,20 +895,20 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
      * @param callback called if the capability with the given participant ID
      *      is retrieved. Or null if not found.
      */
-    @CheckForNull
     public void lookup(final String participantId,
                        final DiscoveryQos discoveryQos,
                        final String[] gbids,
                        final CapabilityCallback capabilityCallback) {
 
-        final DiscoveryEntry localDiscoveryEntry = localDiscoveryEntryStore.lookup(participantId, Long.MAX_VALUE);
+        final Optional<DiscoveryEntry> localDiscoveryEntry = localDiscoveryEntryStore.lookup(participantId,
+                                                                                             Long.MAX_VALUE);
 
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
         switch (discoveryScope) {
         case LOCAL_ONLY:
-            if (localDiscoveryEntry != null) {
-                capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
-                                                                                                                 localDiscoveryEntry));
+            if (localDiscoveryEntry.isPresent()) {
+                capabilityCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                             localDiscoveryEntry.get())));
             } else {
                 logger.debug("Local only lookup for participantId {} failed with DiscoveryError: {}",
                              participantId,
@@ -917,9 +918,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             break;
         case LOCAL_THEN_GLOBAL:
         case LOCAL_AND_GLOBAL:
-            if (localDiscoveryEntry != null) {
-                capabilityCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
-                                                                                                                 localDiscoveryEntry));
+            if (localDiscoveryEntry.isPresent()) {
+                capabilityCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                             localDiscoveryEntry.get())));
             } else {
                 asyncGetGlobalCapabilitity(gbids, participantId, discoveryQos, capabilityCallback);
             }
@@ -949,13 +950,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                             final String participantId,
                                             DiscoveryQos discoveryQos,
                                             final CapabilityCallback capabilitiesCallback) {
-        GlobalDiscoveryEntry cachedGlobalCapability = globalDiscoveryEntryCache.lookup(participantId,
-                                                                                       discoveryQos.getCacheMaxAge());
+        Optional<GlobalDiscoveryEntry> cachedGlobalCapability = globalDiscoveryEntryCache.lookup(participantId,
+                                                                                                 discoveryQos.getCacheMaxAge());
 
-        if (cachedGlobalCapability != null
-                && isEntryForGbids(cachedGlobalCapability, new HashSet<>(Arrays.asList(gbids)))) {
-            capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                               cachedGlobalCapability));
+        if (cachedGlobalCapability.isPresent()
+                && isEntryForGbids(cachedGlobalCapability.get(), new HashSet<>(Arrays.asList(gbids)))) {
+            capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                           cachedGlobalCapability.get())));
         } else {
             globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>() {
 
@@ -965,8 +966,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         registerIncomingEndpoints(Arrays.asList(newGlobalDiscoveryEntry));
                         globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
                         // No need to filter the received GDE by GBIDs: already done in GCD
-                        capabilitiesCallback.processCapabilityReceived(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                           newGlobalDiscoveryEntry));
+                        capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                                       newGlobalDiscoveryEntry)));
                     } else {
                         capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
                     }
@@ -1019,7 +1020,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     allDisoveryEntries.addAll(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoList(false,
                                                                                                       globalDiscoverEntries));
                     allDisoveryEntries.addAll(localDiscoveryEntries);
-                    capabilitiesCallback.processCapabilitiesReceived(allDisoveryEntries);
+                    capabilitiesCallback.processCapabilitiesReceived(Optional.of(allDisoveryEntries));
                 } else {
                     capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
                 }
@@ -1101,9 +1102,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public void transportReady(@Nonnull Address address) {
+    public void transportReady(Optional<Address> address) {
         synchronized (globalAddressLock) {
-            globalAddress = address;
+            globalAddress = address.isPresent() ? address.get() : null;
         }
         for (QueuedDiscoveryEntry queuedDiscoveryEntry : queuedDiscoveryEntries) {
             registerGlobal(queuedDiscoveryEntry.getDiscoveryEntry(),

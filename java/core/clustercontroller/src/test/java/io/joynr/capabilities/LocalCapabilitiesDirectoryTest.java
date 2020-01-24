@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
@@ -259,6 +260,8 @@ public class LocalCapabilitiesDirectoryTest {
         expectedGlobalDiscoveryEntry = new GlobalDiscoveryEntry(globalDiscoveryEntry);
 
         when(globalAddressProvider.get()).thenReturn(globalAddress1);
+        when(localDiscoveryEntryStoreMock.lookup(anyString(), anyLong())).thenReturn(Optional.empty());
+        when(globalDiscoveryEntryCacheMock.lookup(anyString(), anyLong())).thenReturn(Optional.empty());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -531,8 +534,8 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseSuccess(promise, "add failed");
 
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
-        doReturn(globalDiscoveryEntry).when(globalDiscoveryEntryCacheMock)
-                                      .lookup(eq(expectedDiscoveryEntry.getParticipantId()), anyLong());
+        doReturn(Optional.of(globalDiscoveryEntry)).when(globalDiscoveryEntryCacheMock)
+                                                   .lookup(eq(expectedDiscoveryEntry.getParticipantId()), anyLong());
 
         Promise<Add1Deferred> promise2 = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
 
@@ -572,8 +575,9 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseSuccess(promise, "add failed");
 
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
-        doReturn(globalDiscoveryEntry).when(globalDiscoveryEntryCacheMock)
-                                      .lookup(eq(expectedGlobalDiscoveryEntry.getParticipantId()), anyLong());
+        doReturn(Optional.of(globalDiscoveryEntry)).when(globalDiscoveryEntryCacheMock)
+                                                   .lookup(eq(expectedGlobalDiscoveryEntry.getParticipantId()),
+                                                           anyLong());
 
         Promise<Add1Deferred> promise2 = localCapabilitiesDirectory.add(discoveryEntry,
                                                                         awaitGlobalRegistration,
@@ -614,8 +618,8 @@ public class LocalCapabilitiesDirectoryTest {
         discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
         expectedDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(expectedDiscoveryEntry);
-        doReturn(discoveryEntry).when(localDiscoveryEntryStoreMock)
-                                .lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
+        doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
+                                             .lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
 
         DiscoveryEntry newDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(newDiscoveryEntry, false, knownGbids);
@@ -635,8 +639,8 @@ public class LocalCapabilitiesDirectoryTest {
         newDiscoveryEntry.setExpiryDateMs(discoveryEntry.getExpiryDateMs() + 1);
         newDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(newDiscoveryEntry);
-        doReturn(discoveryEntry).when(localDiscoveryEntryStoreMock).lookup(eq(newDiscoveryEntry.getParticipantId()),
-                                                                           eq(Long.MAX_VALUE));
+        doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
+                                             .lookup(eq(newDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
 
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(newDiscoveryEntry, false, knownGbids);
 
@@ -1093,7 +1097,7 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                 discoveryEntry);
         when(localDiscoveryEntryStoreMock.lookup(eq(participantId1),
-                                                 eq(discoveryQos.getCacheMaxAge()))).thenReturn(discoveryEntry);
+                                                 eq(discoveryQos.getCacheMaxAge()))).thenReturn(Optional.of(discoveryEntry));
 
         Promise<Lookup3Deferred> lookupPromise = localCapabilitiesDirectory.lookup(participantId1);
 
@@ -1377,8 +1381,8 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryEntryWithMetaInfo expectedEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                        cachedEntry);
 
-        doReturn(cachedEntry).when(globalDiscoveryEntryCacheMock).lookup(eq(expectedEntry.getParticipantId()),
-                                                                         eq(30000L));
+        doReturn(Optional.of(cachedEntry)).when(globalDiscoveryEntryCacheMock)
+                                          .lookup(eq(expectedEntry.getParticipantId()), eq(30000L));
 
         Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(localEntry, true, knownGbids);
         checkPromiseSuccess(promiseAdd, "add failed");
@@ -1578,7 +1582,8 @@ public class LocalCapabilitiesDirectoryTest {
         String participantId = discoveryEntry.getParticipantId();
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
 
-        doReturn(globalDiscoveryEntry).when(globalDiscoveryEntryCacheMock).lookup(eq(participantId), anyLong());
+        doReturn(Optional.of(globalDiscoveryEntry)).when(globalDiscoveryEntryCacheMock).lookup(eq(participantId),
+                                                                                               anyLong());
 
         Promise<Lookup4Deferred> lookupPromise = localCapabilitiesDirectory.lookup(participantId,
                                                                                    discoveryQos,
@@ -1600,7 +1605,7 @@ public class LocalCapabilitiesDirectoryTest {
         String participantId = discoveryEntry.getParticipantId();
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
 
-        doReturn(null).when(globalDiscoveryEntryCacheMock).lookup(eq(participantId), anyLong());
+        doReturn(Optional.empty()).when(globalDiscoveryEntryCacheMock).lookup(eq(participantId), anyLong());
         doAnswer(createLookupAnswer(globalDiscoveryEntry)).when(globalCapabilitiesDirectoryClient)
                                                           .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
                                                                   eq(participantId),
@@ -1852,7 +1857,7 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryEntryWithMetaInfo localEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                 localEntry);
         when(localDiscoveryEntryStoreMock.lookup(eq(participantId),
-                                                 eq(discoveryQos.getCacheMaxAge()))).thenReturn(localEntry);
+                                                 eq(discoveryQos.getCacheMaxAge()))).thenReturn(Optional.of(localEntry));
 
         Promise<Lookup3Deferred> lookupPromise = localCapabilitiesDirectory.lookup(participantId);
 
@@ -1875,7 +1880,8 @@ public class LocalCapabilitiesDirectoryTest {
         cachedGlobalEntry.setAddress(globalAddress1Serialized);
         DiscoveryEntryWithMetaInfo cachedGlobalEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                        cachedGlobalEntry);
-        when(globalDiscoveryEntryCacheMock.lookup(eq(participantId), eq(Long.MAX_VALUE))).thenReturn(cachedGlobalEntry);
+        when(globalDiscoveryEntryCacheMock.lookup(eq(participantId),
+                                                  eq(Long.MAX_VALUE))).thenReturn(Optional.of(cachedGlobalEntry));
         Promise<Lookup3Deferred> lookupPromise = localCapabilitiesDirectory.lookup(participantId);
 
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
@@ -1967,7 +1973,8 @@ public class LocalCapabilitiesDirectoryTest {
 
         DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, discoveryScope, false);
         if (localEntryAvalaible) {
-            when(localDiscoveryEntryStoreMock.lookup(eq(participantId), eq(Long.MAX_VALUE))).thenReturn(discoveryEntry);
+            when(localDiscoveryEntryStoreMock.lookup(eq(participantId),
+                                                     eq(Long.MAX_VALUE))).thenReturn(Optional.of(discoveryEntry));
         }
         doAnswer(createLookupAnswer(globalDiscoveryEntry)).when(globalCapabilitiesDirectoryClient)
                                                           .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),

@@ -20,6 +20,7 @@ package io.joynr.proxy;
 
 import static io.joynr.util.JoynrUtil.createUuidString;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -268,7 +269,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                                                                                                    discoveryQos,
                                                                                                    messagingQos,
                                                                                                    shutdownNotifier,
-                                                                                                   statelessAsyncCallback);
+                                                                                                   Optional.ofNullable(statelessAsyncCallback));
         proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
         proxyInvocationHandler.registerProxy(proxy);
         proxyInvocationHandler.createConnector(result);
@@ -298,7 +299,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                                                                                                    discoveryQos,
                                                                                                    messagingQos,
                                                                                                    shutdownNotifier,
-                                                                                                   statelessAsyncCallback);
+                                                                                                   Optional.ofNullable(statelessAsyncCallback));
 
         // This order is necessary because the Arbitrator might return early
         // But if the listener is set after the ProxyInvocationHandler the

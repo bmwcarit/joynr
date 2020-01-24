@@ -75,7 +75,6 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
-import io.joynr.runtime.ProviderRegistrar;
 import joynr.ImmutableMessage;
 import joynr.MulticastSubscriptionQos;
 import joynr.exceptions.ApplicationException;
@@ -90,16 +89,16 @@ import joynr.tests.testBroadcastInterface.LocationUpdateWithSpeedBroadcastAdapte
 import joynr.tests.testProxy;
 import joynr.tests.testSync.MethodWithMultipleOutputParametersReturned;
 import joynr.tests.testTypes.AnotherDerivedStruct;
-import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.ComplexTestType;
+import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.DerivedStruct;
 import joynr.tests.testTypes.ErrorEnumBase;
 import joynr.tests.testTypes.TestEnum;
 import joynr.tests.testTypes.TestEnumWithoutValues;
+import joynr.types.ProviderQos;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.Trip;
-import joynr.types.ProviderQos;
 import joynr.types.TestTypes.TStringKeyMap;
 
 public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest {

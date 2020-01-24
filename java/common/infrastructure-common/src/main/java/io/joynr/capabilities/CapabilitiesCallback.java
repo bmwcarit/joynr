@@ -19,8 +19,7 @@
 package io.joynr.capabilities;
 
 import java.util.Collection;
-
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.DiscoveryError;
@@ -30,7 +29,7 @@ import joynr.types.DiscoveryError;
  * lookup.
  */
 public interface CapabilitiesCallback {
-    void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntryWithMetaInfo> capabilities);
+    void processCapabilitiesReceived(Optional<Collection<DiscoveryEntryWithMetaInfo>> capabilities);
 
     void onError(Throwable e);
 

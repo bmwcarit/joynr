@@ -29,6 +29,7 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.ws.rs.core.Response.Status;
 
@@ -75,7 +76,9 @@ public class LongPollingMessagingDelegate {
             }
 
             Integer cachedSize = null;
-            entries.add(new ChannelInformation(name, broadcaster.getAtmosphereResources().size(), cachedSize));
+            entries.add(new ChannelInformation(name,
+                                               broadcaster.getAtmosphereResources().size(),
+                                               Optional.ofNullable(cachedSize)));
         }
 
         return entries;

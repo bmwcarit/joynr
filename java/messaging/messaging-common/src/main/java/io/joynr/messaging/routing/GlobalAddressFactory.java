@@ -18,7 +18,7 @@
  */
 package io.joynr.messaging.routing;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 import joynr.system.RoutingTypes.Address;
 
@@ -35,7 +35,7 @@ public abstract class GlobalAddressFactory<T extends Address> {
      *          the transport, for which the support request is triggered
      * @return the boolean representing the transport supported by this Address type.
      */
-    public abstract boolean supportsTransport(@Nullable String transport);
+    public abstract boolean supportsTransport(Optional<String> transport);
 
     /**
      *
@@ -44,7 +44,7 @@ public abstract class GlobalAddressFactory<T extends Address> {
      * Address types that must be discovered etc.
      */
     public void registerGlobalAddressReady(TransportReadyListener listener) {
-        listener.transportReady(create());
+        listener.transportReady(Optional.ofNullable(create()));
     }
 
 }

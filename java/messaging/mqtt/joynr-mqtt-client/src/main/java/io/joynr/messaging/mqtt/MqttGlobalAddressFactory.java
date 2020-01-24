@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging.mqtt;
 
+import java.util.Optional;
+
 import javax.inject.Named;
 
 import com.google.inject.Inject;
@@ -47,8 +49,8 @@ public class MqttGlobalAddressFactory extends GlobalAddressFactory<MqttAddress> 
     }
 
     @Override
-    public boolean supportsTransport(String transport) {
-        return SUPPORTED_TRANSPORT_MQTT.equals(transport);
+    public boolean supportsTransport(Optional<String> transport) {
+        return SUPPORTED_TRANSPORT_MQTT.equals(transport.isPresent() ? transport.get() : null);
     }
 
 }

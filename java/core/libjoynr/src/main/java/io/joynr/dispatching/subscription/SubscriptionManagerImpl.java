@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -366,26 +367,26 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     @Override
     public <T> void handleAttributePublication(String subscriptionId, T attributeValue) {
         touchSubscriptionState(subscriptionId);
-        AttributeSubscriptionListener<T> listener = getSubscriptionListener(subscriptionId);
-        if (listener == null) {
+        Optional<AttributeSubscriptionListener<T>> listener = getSubscriptionListener(subscriptionId);
+        if (!listener.isPresent()) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
             logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, attributeValue: {}",
                          subscriptionId,
                          attributeValue);
-            listener.onReceive(attributeValue);
+            listener.get().onReceive(attributeValue);
         }
     }
 
     @Override
     public <T> void handleAttributePublicationError(String subscriptionId, JoynrRuntimeException error) {
         touchSubscriptionState(subscriptionId);
-        AttributeSubscriptionListener<T> listener = getSubscriptionListener(subscriptionId);
-        if (listener == null) {
+        Optional<AttributeSubscriptionListener<T>> listener = getSubscriptionListener(subscriptionId);
+        if (!listener.isPresent()) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
             logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, error: {}", subscriptionId, error);
-            listener.onError(error);
+            listener.get().onError(error);
         }
     }
 
@@ -438,12 +439,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> AttributeSubscriptionListener<T> getSubscriptionListener(final String subscriptionId) {
+    public <T> Optional<AttributeSubscriptionListener<T>> getSubscriptionListener(final String subscriptionId) {
         if (!subscriptionStates.containsKey(subscriptionId)
                 || !subscriptionListenerDirectory.containsKey(subscriptionId)) {
             logger.error("Received publication for not existing subscription callback with id=" + subscriptionId);
         }
-        return (AttributeSubscriptionListener<T>) subscriptionListenerDirectory.get(subscriptionId);
+        return Optional.ofNullable((AttributeSubscriptionListener<T>) subscriptionListenerDirectory.get(subscriptionId));
 
     }
 

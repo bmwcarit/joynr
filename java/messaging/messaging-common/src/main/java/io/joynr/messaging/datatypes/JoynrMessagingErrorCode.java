@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging.datatypes;
 
+import java.util.Optional;
+
 /**
  * Error codes related to messaging between joynr participants.
  * 
@@ -61,13 +63,13 @@ public enum JoynrMessagingErrorCode implements JoynrErrorCode {
      *         there's no matching code.
      */
     public static JoynrMessagingErrorCode getJoynrMessagingErrorCode(int code) {
-        JoynrErrorCode errorCode = JoynrErrorCodeMapper.getErrorCode(code);
+        Optional<JoynrErrorCode> errorCode = JoynrErrorCodeMapper.getErrorCode(code);
 
-        if (errorCode == null || !(errorCode instanceof JoynrMessagingErrorCode)) {
+        if (!errorCode.isPresent() || !(errorCode.get() instanceof JoynrMessagingErrorCode)) {
             return JOYNRMESSAGINGERROR_UNDEFINED;
         }
 
-        return (JoynrMessagingErrorCode) errorCode;
+        return (JoynrMessagingErrorCode) errorCode.get();
     }
 
     @Override

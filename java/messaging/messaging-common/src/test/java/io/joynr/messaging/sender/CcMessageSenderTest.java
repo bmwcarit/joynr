@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -101,7 +102,7 @@ public class CcMessageSenderTest extends MessageSenderTestBase {
             assertThat(invocation.getArguments()[0], instanceOf(TransportReadyListener.class));
 
             TransportReadyListener listener = (TransportReadyListener) invocation.getArguments()[0];
-            listener.transportReady(address);
+            listener.transportReady(Optional.of(address));
             return null;
         };
     }

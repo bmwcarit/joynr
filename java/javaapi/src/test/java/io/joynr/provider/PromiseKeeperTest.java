@@ -80,8 +80,8 @@ public class PromiseKeeperTest {
 
         promise.then(keeper);
 
-        Assert.assertNull(keeper.getError(10));
-        Assert.assertNull(keeper.getValues(10));
+        Assert.assertFalse(keeper.getError(10).isPresent());
+        Assert.assertFalse(keeper.getValues(10).isPresent());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class PromiseKeeperTest {
                 deferred.reject(expectedError);
             }
         });
-        JoynrException error = keeper.getError();
+        JoynrException error = keeper.getError().get();
 
         Assert.assertEquals(expectedError, error);
     }
@@ -132,7 +132,7 @@ public class PromiseKeeperTest {
                 deferred.resolve(expectedValue);
             }
         });
-        Object[] values = keeper.getValues();
+        Object[] values = keeper.getValues().get();
 
         Assert.assertArrayEquals(new Object[]{ expectedValue }, values);
     }

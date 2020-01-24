@@ -106,7 +106,7 @@ public class LocalDomainAccessControllerTest {
                                                       any(DiscoveryQos.class),
                                                       any(MessagingQos.class),
                                                       any(ShutdownNotifier.class),
-                                                      any(StatelessAsyncCallback.class))).thenReturn(proxyInvocationHandlerMock);
+                                                      any())).thenReturn(proxyInvocationHandlerMock);
         GlobalDiscoveryEntry accessControlDomain = mock(GlobalDiscoveryEntry.class);
         when(accessControlDomain.getDomain()).thenReturn("accessControlDomain");
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,

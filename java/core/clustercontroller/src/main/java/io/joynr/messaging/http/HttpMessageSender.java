@@ -21,6 +21,7 @@ package io.joynr.messaging.http;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -100,7 +101,8 @@ public class HttpMessageSender implements ShutdownListener {
             failureAction.execute(new JoynrDelayMessageException(delay_ms, RECEIVER_NOT_STARTED_REASON));
         }
 
-        String sendUrl = urlResolver.getSendUrl(address.getMessagingEndpointUrl());
+        Optional<String> optionalSendUrl = urlResolver.getSendUrl(address.getMessagingEndpointUrl());
+        String sendUrl = optionalSendUrl.isPresent() ? optionalSendUrl.get() : null;
 
         logger.trace("SENDING: channelId: {} message: {}", sendUrl, serializedMessage);
 

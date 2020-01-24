@@ -21,6 +21,7 @@ package io.joynr.messaging;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -46,9 +47,9 @@ public class LongPollingHttpMulticastAddressCalculator implements MulticastAddre
     public LongPollingHttpMulticastAddressCalculator(LongPollingHttpGlobalAddressFactory longPollingHttpGlobalAddressFactory) {
         longPollingHttpGlobalAddressFactory.registerGlobalAddressReady(new TransportReadyListener() {
             @Override
-            public void transportReady(Address address) {
-                if (address instanceof ChannelAddress) {
-                    globalAddress = (ChannelAddress) address;
+            public void transportReady(Optional<Address> address) {
+                if (address.isPresent() && (address.get() instanceof ChannelAddress)) {
+                    globalAddress = (ChannelAddress) address.get();
                 }
             }
         });

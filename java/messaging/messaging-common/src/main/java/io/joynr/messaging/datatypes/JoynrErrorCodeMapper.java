@@ -20,8 +20,7 @@ package io.joynr.messaging.datatypes;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 /**
  * Contains a global mapping of integer error code to a implementation of
@@ -67,13 +66,12 @@ public class JoynrErrorCodeMapper {
      * 
      * @param code
      *            the integer error code
-     * @return the {@link JoynrErrorCode} object for which
+     * @return an Optional containing the {@link JoynrErrorCode} object for which
      *         {@link JoynrErrorCode#getCode()} matches the given integer error
      *         code. If there's no error code object for that error code,
-     *         <code>null</code> is returned.
+     *         an empty Optional is returned.
      */
-    @CheckForNull
-    public static JoynrErrorCode getErrorCode(int code) {
-        return codeToErrorCode.get(code);
+    public static Optional<JoynrErrorCode> getErrorCode(int code) {
+        return Optional.ofNullable(codeToErrorCode.get(code));
     }
 }

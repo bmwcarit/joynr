@@ -18,10 +18,12 @@
  */
 package io.joynr.proxy;
 
+import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nullable;
+
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingQos;
@@ -39,7 +41,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                                       @Assisted("proxyParticipantId") String proxyParticipantId,
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
-                                      @Nullable @Assisted StatelessAsyncCallback statelessAsyncCallback,
+                                      @Assisted Optional<StatelessAsyncCallback> statelessAsyncCallback,
                                       ConnectorFactory connectorFactory,
                                       MessageRouter messageRouter,
                                       ShutdownNotifier shutdownNotifier,
@@ -65,7 +67,11 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
      */
     @Override
     public void createConnector(ArbitrationResult result) {
-        connector = connectorFactory.create(proxyParticipantId, result, qosSettings, statelessAsyncParticipantId);
+        Optional<ConnectorInvocationHandler> connectorOptional = connectorFactory.create(proxyParticipantId,
+                                                                                         result,
+                                                                                         qosSettings,
+                                                                                         statelessAsyncParticipantId);
+        connector = connectorOptional.isPresent() ? connectorOptional.get() : null;
         setConnectorStatusSuccessAndSendQueuedRequests();
     }
 

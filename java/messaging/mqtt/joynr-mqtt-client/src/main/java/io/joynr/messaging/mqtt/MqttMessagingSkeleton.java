@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -150,7 +151,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     public void transmit(byte[] serializedMessage, FailureAction failureAction) {
         try {
             HashMap<String, Serializable> context = new HashMap<String, Serializable>();
-            byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, context);
+            byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, Optional.of(context));
 
             ImmutableMessage message = new ImmutableMessage(processedMessage);
             message.setContext(context);

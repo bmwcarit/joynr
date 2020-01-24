@@ -20,11 +20,12 @@ package io.joynr.messaging;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Optional;
 
 public class NoOpRawMessagingPreprocessor extends RawMessagingPreprocessor {
 
     @Override
-    public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {
+    public byte[] process(byte[] rawMessage, Optional<Map<String, Serializable>> context) {
         return rawMessage;
     }
 }

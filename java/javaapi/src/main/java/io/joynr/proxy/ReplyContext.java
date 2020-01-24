@@ -1,9 +1,11 @@
 package io.joynr.proxy;
 
+import java.util.Optional;
+
 /*-
  * #%L
  * %%
- * Copyright (C) 2011 - 2018 BMW Car IT GmbH
+ * Copyright (C) 2019 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +21,6 @@ package io.joynr.proxy;
  * #L%
  */
 
-import javax.annotation.Nonnull;
-
 /**
  * Used for stateless async callback methods in order to provide them with the context in which this reply is
  * being called, e.g. the method ID of the request for which the call is being made.
@@ -31,8 +31,8 @@ public class ReplyContext {
 
     private final String messageId;
 
-    public ReplyContext(@Nonnull String messageId) {
-        this.messageId = messageId;
+    public ReplyContext(Optional<String> messageId) {
+        this.messageId = messageId.isPresent() ? messageId.get() : null;
     }
 
     public String getMessageId() {

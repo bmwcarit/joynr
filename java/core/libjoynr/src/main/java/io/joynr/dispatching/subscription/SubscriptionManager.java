@@ -18,9 +18,8 @@
  */
 package io.joynr.dispatching.subscription;
 
+import java.util.Optional;
 import java.util.Set;
-
-import javax.annotation.CheckForNull;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
@@ -65,8 +64,7 @@ public interface SubscriptionManager {
 
     BroadcastSubscriptionListener getBroadcastSubscriptionListener(String subscriptionId);
 
-    @CheckForNull
-    <T> AttributeSubscriptionListener<T> getSubscriptionListener(String subscriptionId);
+    <T> Optional<AttributeSubscriptionListener<T>> getSubscriptionListener(String subscriptionId);
 
     void handleBroadcastPublication(String subscriptionId, Object[] broadcastValues);
 

@@ -19,6 +19,8 @@
  */
 package io.joynr.messaging.datatypes;
 
+import java.util.Optional;
+
 /**
  * Error codes related to controlled bounce proxy scenarios.
  * 
@@ -54,13 +56,13 @@ public enum JoynrBounceProxyControlErrorCode implements JoynrErrorCode {
      *         there's no matching code.
      */
     public static JoynrBounceProxyControlErrorCode getJoynrBounceProxyControlErrorCode(int code) {
-        JoynrErrorCode errorCode = JoynrErrorCodeMapper.getErrorCode(code);
+        Optional<JoynrErrorCode> errorCode = JoynrErrorCodeMapper.getErrorCode(code);
 
-        if (errorCode == null || !(errorCode instanceof JoynrBounceProxyControlErrorCode)) {
+        if (!errorCode.isPresent() || !(errorCode.get() instanceof JoynrBounceProxyControlErrorCode)) {
             return JoynrBounceProxyControlErrorCode.UNDEFINED;
         }
 
-        return (JoynrBounceProxyControlErrorCode) errorCode;
+        return (JoynrBounceProxyControlErrorCode) errorCode.get();
     }
 
     @Override

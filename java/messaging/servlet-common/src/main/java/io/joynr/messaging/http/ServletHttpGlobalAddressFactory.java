@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging.http;
 
+import java.util.Optional;
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -55,7 +57,7 @@ public class ServletHttpGlobalAddressFactory extends HttpGlobalAddressFactory {
     }
 
     @Override
-    public boolean supportsTransport(String transport) {
-        return SUPPORTED_TRANSPORT_SERVLET.equalsIgnoreCase(transport);
+    public boolean supportsTransport(Optional<String> transport) {
+        return SUPPORTED_TRANSPORT_SERVLET.equalsIgnoreCase(transport.get());
     }
 }

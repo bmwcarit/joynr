@@ -20,8 +20,7 @@ package io.joynr.messaging;
 
 import java.io.Serializable;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
+import java.util.Optional;
 
 public abstract class RawMessagingPreprocessor {
 
@@ -35,6 +34,6 @@ public abstract class RawMessagingPreprocessor {
      * returning a message that can still be parsed by the messaging skeleton;
      * otherwise the message will be discarded.
      */
-    public abstract byte[] process(byte[] rawMessage, @Nonnull Map<String, Serializable> context);
+    public abstract byte[] process(byte[] rawMessage, Optional<Map<String, Serializable>> context);
 
 }

@@ -21,9 +21,8 @@ package io.joynr.capabilities;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,9 +88,9 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
         final Lookup1Deferred deferred = new Lookup1Deferred();
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
-            public void processCapabilitiesReceived(@CheckForNull Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-                if (capabilities != null) {
-                    deferred.resolve(capabilities.toArray(new DiscoveryEntryWithMetaInfo[0]));
+            public void processCapabilitiesReceived(Optional<Collection<DiscoveryEntryWithMetaInfo>> capabilities) {
+                if (capabilities.isPresent()) {
+                    deferred.resolve(capabilities.get().toArray(new DiscoveryEntryWithMetaInfo[0]));
                 } else {
                     deferred.reject(new ProviderRuntimeException("Received capabilities list was null"));
                 }
@@ -160,7 +159,7 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
                 }
             }
         }
-        capabilitiesCallback.processCapabilitiesReceived(foundCapabilities);
+        capabilitiesCallback.processCapabilitiesReceived(Optional.of(foundCapabilities));
     }
 
     @Override
@@ -172,7 +171,6 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
         throw new ProviderRuntimeException("NOT IMPLEMENTED");
     }
 
-    @CheckForNull
     public void lookup(String participantId, DiscoveryQos discoveryQos, String[] gbids, CapabilityCallback callback) {
         logger.info("!!!!!!!!!!!!!!!getCapabilitiesForParticipantId");
     }

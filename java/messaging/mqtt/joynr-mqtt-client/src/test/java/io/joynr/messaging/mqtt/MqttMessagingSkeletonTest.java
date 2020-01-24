@@ -44,6 +44,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Assert;
@@ -212,7 +213,7 @@ public class MqttMessagingSkeletonTest {
     public void testRawMessageProcessorIsCalled() throws Exception {
         RawMessagingPreprocessor rawMessagingPreprocessorMock = mock(RawMessagingPreprocessor.class);
         when(rawMessagingPreprocessorMock.process(any(byte[].class),
-                                                  Matchers.<Map<String, Serializable>> any())).then(returnsFirstArg());
+                                                  Matchers.<Optional<Map<String, Serializable>>> any())).then(returnsFirstArg());
 
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
@@ -230,7 +231,8 @@ public class MqttMessagingSkeletonTest {
         subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
 
         ArgumentCaptor<byte[]> argCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(rawMessagingPreprocessorMock).process(argCaptor.capture(), Matchers.<Map<String, Serializable>> any());
+        verify(rawMessagingPreprocessorMock).process(argCaptor.capture(),
+                                                     Matchers.<Optional<Map<String, Serializable>>> any());
 
         Assert.assertArrayEquals(rqMessage.getSerializedMessage(), argCaptor.getValue());
     }

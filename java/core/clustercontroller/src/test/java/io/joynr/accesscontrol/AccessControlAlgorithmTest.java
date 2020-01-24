@@ -18,6 +18,8 @@
  */
 package io.joynr.accesscontrol;
 
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,9 +81,9 @@ public class AccessControlAlgorithmTest {
     public void testPermissionWithMasterAceOnly() {
         masterAce.setDefaultConsumerPermission(Permission.YES);
         masterAce.setDefaultRequiredTrustLevel(TrustLevel.HIGH);
-        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(masterAce,
-                                                                                     null,
-                                                                                     null,
+        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(Optional.of(masterAce),
+                                                                                     Optional.empty(),
+                                                                                     Optional.empty(),
                                                                                      TrustLevel.HIGH);
         Assert.assertEquals(Permission.YES, consumerPermission);
     }
@@ -90,16 +92,19 @@ public class AccessControlAlgorithmTest {
     public void testPermissionMessageTrustLevelDoesntMatchAce() {
         masterAce.setDefaultConsumerPermission(Permission.YES);
         masterAce.setDefaultRequiredTrustLevel(TrustLevel.MID);
-        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(masterAce,
-                                                                                     null,
-                                                                                     null,
+        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(Optional.of(masterAce),
+                                                                                     Optional.empty(),
+                                                                                     Optional.empty(),
                                                                                      TrustLevel.LOW);
         Assert.assertEquals(Permission.NO, consumerPermission);
     }
 
     @Test
     public void testPermissionWithAllAceNull() {
-        Permission providerPermission = accessControlAlgorithm.getConsumerPermission(null, null, null, TrustLevel.HIGH);
+        Permission providerPermission = accessControlAlgorithm.getConsumerPermission(Optional.empty(),
+                                                                                     Optional.empty(),
+                                                                                     Optional.empty(),
+                                                                                     TrustLevel.HIGH);
         Assert.assertEquals(Permission.NO, providerPermission);
     }
 
@@ -115,9 +120,9 @@ public class AccessControlAlgorithmTest {
         mediatorAce.setDefaultConsumerPermission(Permission.ASK);
         mediatorAce.setDefaultRequiredTrustLevel(TrustLevel.LOW);
 
-        Permission providerPermission = accessControlAlgorithm.getConsumerPermission(masterAce,
-                                                                                     mediatorAce,
-                                                                                     null,
+        Permission providerPermission = accessControlAlgorithm.getConsumerPermission(Optional.of(masterAce),
+                                                                                     Optional.of(mediatorAce),
+                                                                                     Optional.empty(),
                                                                                      TrustLevel.LOW);
         Assert.assertEquals(Permission.ASK, providerPermission);
     }
@@ -127,9 +132,9 @@ public class AccessControlAlgorithmTest {
         mediatorAce.setDefaultConsumerPermission(Permission.YES);
         mediatorAce.setDefaultRequiredTrustLevel(TrustLevel.MID);
 
-        Permission providerPermission = accessControlAlgorithm.getConsumerPermission(null,
-                                                                                     mediatorAce,
-                                                                                     null,
+        Permission providerPermission = accessControlAlgorithm.getConsumerPermission(Optional.empty(),
+                                                                                     Optional.of(mediatorAce),
+                                                                                     Optional.empty(),
                                                                                      TrustLevel.HIGH);
         Assert.assertEquals(Permission.YES, providerPermission);
     }
@@ -142,9 +147,9 @@ public class AccessControlAlgorithmTest {
         mediatorAce.setDefaultConsumerPermission(Permission.YES);
         mediatorAce.setDefaultRequiredTrustLevel(TrustLevel.MID);
 
-        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(masterAce,
-                                                                                     mediatorAce,
-                                                                                     null,
+        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(Optional.of(masterAce),
+                                                                                     Optional.of(mediatorAce),
+                                                                                     Optional.empty(),
                                                                                      TrustLevel.HIGH);
         Assert.assertEquals(Permission.NO, consumerPermission);
     }
@@ -162,9 +167,9 @@ public class AccessControlAlgorithmTest {
         ownerAce.setConsumerPermission(Permission.YES);
         ownerAce.setRequiredTrustLevel(TrustLevel.MID);
 
-        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(masterAce,
-                                                                                     mediatorAce,
-                                                                                     ownerAce,
+        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(Optional.of(masterAce),
+                                                                                     Optional.of(mediatorAce),
+                                                                                     Optional.of(ownerAce),
                                                                                      TrustLevel.MID);
         Assert.assertEquals(Permission.YES, consumerPermission);
     }
@@ -177,9 +182,9 @@ public class AccessControlAlgorithmTest {
         ownerAce.setConsumerPermission(Permission.YES);
         ownerAce.setRequiredTrustLevel(TrustLevel.HIGH);
 
-        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(masterAce,
-                                                                                     null,
-                                                                                     ownerAce,
+        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(Optional.of(masterAce),
+                                                                                     Optional.empty(),
+                                                                                     Optional.of(ownerAce),
                                                                                      TrustLevel.HIGH);
         Assert.assertEquals(Permission.YES, consumerPermission);
     }
@@ -189,9 +194,9 @@ public class AccessControlAlgorithmTest {
         ownerAce.setConsumerPermission(Permission.YES);
         ownerAce.setRequiredTrustLevel(TrustLevel.HIGH);
 
-        Permission providerPermission = accessControlAlgorithm.getConsumerPermission(null,
-                                                                                     null,
-                                                                                     ownerAce,
+        Permission providerPermission = accessControlAlgorithm.getConsumerPermission(Optional.empty(),
+                                                                                     Optional.empty(),
+                                                                                     Optional.of(ownerAce),
                                                                                      TrustLevel.HIGH);
         Assert.assertEquals(Permission.YES, providerPermission);
     }
@@ -202,9 +207,9 @@ public class AccessControlAlgorithmTest {
 
         ownerAce.setConsumerPermission(Permission.ASK);
 
-        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(null,
-                                                                                     mediatorAce,
-                                                                                     ownerAce,
+        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(Optional.empty(),
+                                                                                     Optional.of(mediatorAce),
+                                                                                     Optional.of(ownerAce),
                                                                                      TrustLevel.HIGH);
         Assert.assertEquals(Permission.NO, consumerPermission);
     }
@@ -215,9 +220,9 @@ public class AccessControlAlgorithmTest {
 
         ownerAce.setConsumerPermission(Permission.ASK);
 
-        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(masterAce,
-                                                                                     null,
-                                                                                     ownerAce,
+        Permission consumerPermission = accessControlAlgorithm.getConsumerPermission(Optional.of(masterAce),
+                                                                                     Optional.empty(),
+                                                                                     Optional.of(ownerAce),
                                                                                      TrustLevel.HIGH);
         Assert.assertEquals(Permission.NO, consumerPermission);
     }

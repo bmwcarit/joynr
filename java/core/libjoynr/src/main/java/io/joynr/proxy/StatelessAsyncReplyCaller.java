@@ -21,6 +21,7 @@ package io.joynr.proxy;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -110,7 +111,7 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
 
     private Object[] addReplyContext(Object[] parameters, String requestReplyId) {
         Object[] parametersWithMessageId = Arrays.copyOf(parameters, parameters.length + 1);
-        parametersWithMessageId[parametersWithMessageId.length - 1] = new ReplyContext(requestReplyId);
+        parametersWithMessageId[parametersWithMessageId.length - 1] = new ReplyContext(Optional.of(requestReplyId));
         return parametersWithMessageId;
     }
 

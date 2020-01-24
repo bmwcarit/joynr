@@ -18,6 +18,7 @@
  */
 package io.joynr.proxy;
 
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.inject.assistedinject.Assisted;
@@ -33,6 +34,6 @@ public interface ProxyInvocationHandlerFactory {
                                          DiscoveryQos discoveryQos,
                                          MessagingQos messagingQos,
                                          ShutdownNotifier shutdownNotifier,
-                                         StatelessAsyncCallback statelessAsyncCallback);
+                                         Optional<StatelessAsyncCallback> statelessAsyncCallback);
 
 }

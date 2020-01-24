@@ -24,8 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,13 +221,12 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     }
 
     @Override
-    @CheckForNull
-    public T lookup(String participantId, long cacheMaxAge) {
+    public Optional<T> lookup(String participantId, long cacheMaxAge) {
 
         synchronized (storeLock) {
             String discoveryEntryId = participantIdToCapabilityMapping.get(participantId);
             if (discoveryEntryId == null) {
-                return null;
+                return Optional.empty();
             }
 
             T discoveryEntry = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
@@ -236,10 +234,10 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
             logger.debug("Capability for participantId {} found: {}", participantId, discoveryEntry);
             if (discoveryEntry instanceof GlobalDiscoveryEntry
                     && !checkAge(registeredCapabilitiesTime.get(discoveryEntryId), cacheMaxAge)) {
-                return null;
+                return Optional.empty();
             }
 
-            return discoveryEntry;
+            return Optional.of(discoveryEntry);
         }
     }
 

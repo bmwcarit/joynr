@@ -21,6 +21,7 @@ package io.joynr.messaging.bounceproxy.controller.directory.inmemory;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import com.google.inject.Singleton;
 
@@ -42,8 +43,8 @@ public class InMemoryChannelDirectory implements ChannelDirectory {
     }
 
     @Override
-    public Channel getChannel(String ccid) {
-        return channels.get(ccid);
+    public Channel getChannel(Optional<String> ccid) {
+        return channels.get(ccid.isPresent() ? ccid.get() : null);
     }
 
     @Override

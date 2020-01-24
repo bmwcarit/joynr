@@ -24,10 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +43,7 @@ import io.joynr.guice.LowerCaseProperties;
 public class PropertyLoader {
     private static Logger logger = LoggerFactory.getLogger(PropertyLoader.class);
 
-    @CheckForNull
-    public static InputStream loadResource(String resourceName) {
+    public static Optional<InputStream> loadResource(String resourceName) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL url = classLoader.getResource(resourceName);
 
@@ -54,7 +52,7 @@ public class PropertyLoader {
             InputStream urlStream = null;
             try {
                 urlStream = url.openStream();
-                return urlStream;
+                return Optional.of(urlStream);
             } catch (IOException e) {
             } finally {
             }
@@ -64,11 +62,11 @@ public class PropertyLoader {
         FileInputStream fileInputStream = null;
         try {
             fileInputStream = new FileInputStream(resourceName);
-            return fileInputStream;
+            return Optional.ofNullable(fileInputStream);
         } catch (IOException e) {
         } finally {
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

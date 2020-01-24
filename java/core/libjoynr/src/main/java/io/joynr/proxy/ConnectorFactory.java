@@ -18,9 +18,9 @@
  */
 package io.joynr.proxy;
 
+import java.util.Optional;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
 import javax.inject.Named;
 
 import com.google.inject.Inject;
@@ -61,11 +61,10 @@ public class ConnectorFactory {
      * @param statelessAsyncParticipantId
      * @return connector object
      */
-    @CheckForNull
-    public ConnectorInvocationHandler create(final String fromParticipantId,
-                                             final ArbitrationResult arbitrationResult,
-                                             final MessagingQos qosSettings,
-                                             String statelessAsyncParticipantId) {
+    public Optional<ConnectorInvocationHandler> create(final String fromParticipantId,
+                                                       final ArbitrationResult arbitrationResult,
+                                                       final MessagingQos qosSettings,
+                                                       String statelessAsyncParticipantId) {
         // iterate through  arbitrationResult.getDiscoveryEntries()
         // check if there is at least one Globally visible
         // set isGloballyVisible = true. otherwise = false
@@ -78,9 +77,9 @@ public class ConnectorFactory {
             messageRouter.setToKnown(entry.getParticipantId());
         }
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
-        return joynrMessagingConnectorFactory.create(fromParticipantId,
-                                                     arbitrationResult.getDiscoveryEntries(),
-                                                     qosSettings,
-                                                     statelessAsyncParticipantId);
+        return Optional.ofNullable(joynrMessagingConnectorFactory.create(fromParticipantId,
+                                                                         arbitrationResult.getDiscoveryEntries(),
+                                                                         qosSettings,
+                                                                         statelessAsyncParticipantId));
     }
 }

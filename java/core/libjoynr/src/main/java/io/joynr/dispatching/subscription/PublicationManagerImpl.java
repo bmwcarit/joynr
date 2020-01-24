@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -740,7 +741,8 @@ public class PublicationManagerImpl
                                     ProviderContainer providerContainer,
                                     Method method) {
         try {
-            Promise<?> attributeGetterPromise = attributePollInterpreter.execute(providerContainer, method);
+            Optional<Promise<?>> optionalPromise = attributePollInterpreter.execute(providerContainer, method);
+            Promise<?> attributeGetterPromise = optionalPromise.isPresent() ? optionalPromise.get() : null;
             attributeGetterPromise.then(new PromiseListener() {
 
                 @Override

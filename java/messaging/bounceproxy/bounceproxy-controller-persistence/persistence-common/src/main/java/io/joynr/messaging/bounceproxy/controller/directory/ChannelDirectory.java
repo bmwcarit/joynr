@@ -19,8 +19,7 @@
 package io.joynr.messaging.bounceproxy.controller.directory;
 
 import java.util.List;
-
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 import io.joynr.messaging.info.Channel;
 
@@ -43,10 +42,9 @@ public interface ChannelDirectory {
      * Returns the channel for a certain channel ID.
      * 
      * @param ccid the channel ID
-     * @return the channel ID or <code>null</code> if no channel is stored for the ID.
+     * @return an Optional containing the channel ID or an empty Optional if no channel is stored for the ID.
      */
-    @CheckForNull
-    public Channel getChannel(String ccid);
+    public Channel getChannel(Optional<String> ccid);
 
     /**
      * Adds a new channel to the directory.

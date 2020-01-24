@@ -31,14 +31,13 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Enumeration;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,14 +62,14 @@ public class JoynrUtil {
         }
     }
 
-    @CheckForNull
-    public static Properties loadProperties(File file) throws IOException {
-        if (file != null) {
-            if (!file.isDirectory()) {
-                InputStream inputStream = new FileInputStream(file);
+    public static Properties loadProperties(Optional<File> file) throws IOException {
+        if (file.isPresent()) {
+            File actualFile = file.get();
+            if (!actualFile.isDirectory()) {
+                InputStream inputStream = new FileInputStream(actualFile);
                 return loadProperties(inputStream);
             } else {
-                return loadPropertyDirectory(file);
+                return loadPropertyDirectory(actualFile);
             }
         }
         return null;
@@ -160,7 +159,7 @@ public class JoynrUtil {
             for (File file : files) {
                 if (file.getName().endsWith("properties")) {
                     InputStream inputStream = new FileInputStream(file);
-                    loadProperties(inputStream, returnValue);
+                    loadProperties(inputStream, Optional.of(returnValue));
                 }
             }
         }
@@ -169,20 +168,21 @@ public class JoynrUtil {
     }
 
     public static Properties loadProperties(InputStream configInputStream) throws IOException {
-        return loadProperties(configInputStream, null);
+        return loadProperties(configInputStream, Optional.empty());
     }
 
     public static Properties loadProperties(InputStream configInputStream,
-                                            @CheckForNull Properties properties) throws IOException {
+                                            Optional<Properties> properties) throws IOException {
+        Properties propertiesToReturn = new Properties();
         if (configInputStream != null) {
-            if (properties == null) {
-                properties = new Properties();
+            if (!properties.isPresent()) {
+                propertiesToReturn = new Properties();
             }
-            properties.load(configInputStream);
+            propertiesToReturn.load(configInputStream);
             configInputStream.close();
-            return properties;
+            return propertiesToReturn;
         }
-        return properties;
+        return properties.get();
     }
 
     public static OS getOSFromString(String os) {

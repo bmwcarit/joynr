@@ -21,6 +21,7 @@ package itest.io.joynr.jeeintegration.preprocessor;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class TestRawMessagingProcessor extends RawMessagingPreprocessor {
     private static final Logger logger = LoggerFactory.getLogger(TestRawMessagingProcessor.class);
 
     @Override
-    public byte[] process(byte[] rawMessage, Map<String, Serializable> context) {
+    public byte[] process(byte[] rawMessage, Optional<Map<String, Serializable>> context) {
         logger.info("raw message received: " + new String(rawMessage, StandardCharsets.UTF_8));
         return rawMessage;
     }

@@ -19,10 +19,9 @@
 package io.joynr.messaging;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,11 +97,10 @@ public class MessagingSkeletonFactory implements ShutdownListener {
         }
     }
 
-    @CheckForNull
-    public IMessagingSkeleton getSkeleton(Address address) {
+    public Optional<IMessagingSkeleton> getSkeleton(Address address) {
         if (address != null) {
-            return messagingSkeletonFactories.get(address.getClass()).getSkeleton(address);
+            return Optional.of(messagingSkeletonFactories.get(address.getClass()).getSkeleton(address));
         }
-        return null;
+        return Optional.empty();
     }
 }

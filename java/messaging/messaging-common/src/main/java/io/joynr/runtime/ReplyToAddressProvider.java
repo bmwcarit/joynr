@@ -18,6 +18,7 @@
  */
 package io.joynr.runtime;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,7 +57,7 @@ public class ReplyToAddressProvider implements Provider<Address> {
 
     public GlobalAddressFactory<? extends Address> getAddressFactoryForTransport(String transport) {
         for (GlobalAddressFactory<? extends Address> addressFactory : replyToAddressFactories) {
-            if (addressFactory.supportsTransport(transport)) {
+            if (addressFactory.supportsTransport(Optional.ofNullable(transport))) {
                 return addressFactory;
             }
         }

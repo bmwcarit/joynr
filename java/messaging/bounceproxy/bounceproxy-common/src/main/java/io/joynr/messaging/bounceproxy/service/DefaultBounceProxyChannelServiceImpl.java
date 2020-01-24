@@ -20,6 +20,7 @@ package io.joynr.messaging.bounceproxy.service;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -51,9 +52,8 @@ public class DefaultBounceProxyChannelServiceImpl implements ChannelService {
     }
 
     @Override
-    public Channel getChannel(String ccid) {
-        // TODO Auto-generated method stub
-        return null;
+    public Optional<Channel> getChannel(String ccid) {
+        return Optional.empty();
     }
 
     @Override

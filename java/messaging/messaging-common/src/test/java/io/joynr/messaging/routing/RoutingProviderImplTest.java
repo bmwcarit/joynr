@@ -23,6 +23,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
 import io.joynr.messaging.MulticastReceiverRegistrar;
@@ -136,7 +137,7 @@ public class RoutingProviderImplTest {
     @Test(timeout = 500)
     public void testGlobalAddressGetAfterTransportIsReady() throws InterruptedException {
         verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(expectedMqttAddress);
+        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
 
         Promise<Deferred<String>> globalAddressPromise = routingProvider.getGlobalAddress();
         globalAddressPromise.then(mockGlobalAddressPromiseListener);
@@ -147,7 +148,7 @@ public class RoutingProviderImplTest {
     @Test(timeout = 500)
     public void testReplyToAddressGetAfterTransportIsReady() throws InterruptedException {
         verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(expectedMqttAddress);
+        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
 
         Promise<Deferred<String>> replyToAddressPromise = routingProvider.getReplyToAddress();
         replyToAddressPromise.then(mockReplyToAddressPromiseListener);
@@ -160,7 +161,7 @@ public class RoutingProviderImplTest {
         Promise<Deferred<String>> globalAddressPromise = routingProvider.getGlobalAddress();
 
         verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(expectedMqttAddress);
+        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
 
         globalAddressPromise.then(mockGlobalAddressPromiseListener);
         verify(mockGlobalAddressPromiseListener).onFulfillment(expectedMqttAddressString);
@@ -172,7 +173,7 @@ public class RoutingProviderImplTest {
         Promise<Deferred<String>> replyToAddressPromise = routingProvider.getReplyToAddress();
 
         verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(expectedMqttAddress);
+        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
 
         replyToAddressPromise.then(mockReplyToAddressPromiseListener);
         verify(mockReplyToAddressPromiseListener).onFulfillment(expectedMqttAddressString);
@@ -182,11 +183,11 @@ public class RoutingProviderImplTest {
     @Test(timeout = 500)
     public void testGlobalAddressOnChangeNotifications() throws InterruptedException {
         verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(expectedMqttAddress);
+        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
 
         verify(mockRoutingSubscriptionPublisher).globalAddressChanged(expectedMqttAddressString);
 
-        transportReadyListener.getValue().transportReady(expectedChannelAddress);
+        transportReadyListener.getValue().transportReady(Optional.of(expectedChannelAddress));
 
         verify(mockRoutingSubscriptionPublisher).globalAddressChanged(expectedChannelAddressString);
 
@@ -196,11 +197,11 @@ public class RoutingProviderImplTest {
     @Test(timeout = 500)
     public void testReplyToAddressOnChangeNotifications() throws InterruptedException {
         verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(expectedMqttAddress);
+        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
 
         verify(mockRoutingSubscriptionPublisher).replyToAddressChanged(expectedMqttAddressString);
 
-        transportReadyListener.getValue().transportReady(expectedChannelAddress);
+        transportReadyListener.getValue().transportReady(Optional.of(expectedChannelAddress));
 
         verify(mockRoutingSubscriptionPublisher).replyToAddressChanged(expectedChannelAddressString);
 

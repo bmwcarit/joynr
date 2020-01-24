@@ -21,6 +21,7 @@ package io.joynr.messaging.bounceproxy.controller.directory.jdbc;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -273,7 +274,7 @@ public class DatabasesTest {
         Assert.assertEquals("bp1.0", channel.getBounceProxy().getId());
         Assert.assertEquals("http://www.joyn1.de/bp1/channels/channel1", channel.getLocation().toString());
 
-        Assert.assertEquals(channel.getChannelId(), channelDb.getChannel("channel1").getChannelId());
+        Assert.assertEquals(channel.getChannelId(), channelDb.getChannel(Optional.of("channel1")).getChannelId());
 
         channelDb.addChannel(new Channel(bpInfo1,
                                          "channel1b",
@@ -281,7 +282,7 @@ public class DatabasesTest {
 
         channels = channelDb.getChannels();
         Assert.assertEquals(2, channels.size());
-        Channel channel1b = channelDb.getChannel("channel1b");
+        Channel channel1b = channelDb.getChannel(Optional.of("channel1b"));
         Assert.assertNotNull(channel1b);
         Assert.assertEquals("channel1b", channel1b.getChannelId());
         Assert.assertEquals("bp1.0", channel1b.getBounceProxy().getId());

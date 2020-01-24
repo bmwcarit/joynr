@@ -21,8 +21,7 @@ package io.joynr.proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 import io.joynr.arbitration.ArbitrationConstants;
 import joynr.types.CustomParameter;
@@ -93,22 +92,22 @@ public class DiscoveryResult {
     public Collection<DiscoveryEntry> getWithKeyword(String keyword) {
         List<DiscoveryEntry> entriesWithKeyword = new ArrayList<>();
         for (DiscoveryEntry entry : discoveryEntries) {
-            CustomParameter keywordParameter = findQosParameter(entry, ArbitrationConstants.KEYWORD_PARAMETER);
-            if (keywordParameter != null && keywordParameter.getValue().equals(keyword)) {
+            Optional<CustomParameter> keywordParameter = findQosParameter(entry,
+                                                                          ArbitrationConstants.KEYWORD_PARAMETER);
+            if (keywordParameter.isPresent() && keywordParameter.get().getValue().equals(keyword)) {
                 entriesWithKeyword.add(entry);
             }
         }
         return entriesWithKeyword;
     }
 
-    @CheckForNull
-    private CustomParameter findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {
+    private Optional<CustomParameter> findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {
         for (CustomParameter parameter : discoveryEntry.getQos().getCustomParameters()) {
             if (parameterName.equals(parameter.getName())) {
-                return parameter;
+                return Optional.of(parameter);
             }
         }
-        return null;
+        return Optional.empty();
 
     }
 }

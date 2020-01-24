@@ -23,6 +23,7 @@ import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGIN
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
@@ -138,27 +139,27 @@ public class ChannelServiceRestAdapter {
             if (ccid == null || ccid.isEmpty())
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
 
-            Channel channel = channelService.getChannel(ccid);
+            Optional<Channel> channel = channelService.getChannel(ccid);
 
-            if (channel != null) {
-                String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
+            if (channel.isPresent()) {
+                String encodedChannelLocation = response.encodeURL(channel.get().getLocation().toString());
 
                 return Response.ok()
                                .entity(encodedChannelLocation)
                                .header("Location", encodedChannelLocation)
-                               .header("bp", channel.getBounceProxy().getId())
+                               .header("bp", channel.get().getBounceProxy().getId())
                                .build();
             }
 
             // look for an existing bounce proxy handling the channel
-            channel = channelService.createChannel(ccid, atmosphereTrackingId);
+            Channel newChannel = channelService.createChannel(ccid, atmosphereTrackingId);
 
-            String encodedChannelLocation = response.encodeURL(channel.getLocation().toString());
-            log.debug("encoded channel URL " + channel.getLocation() + " to " + encodedChannelLocation);
+            String encodedChannelLocation = response.encodeURL(newChannel.getLocation().toString());
+            log.debug("encoded channel URL " + newChannel.getLocation() + " to " + encodedChannelLocation);
 
             return Response.created(URI.create(encodedChannelLocation))
                            .entity(encodedChannelLocation)
-                           .header("bp", channel.getBounceProxy().getId())
+                           .header("bp", newChannel.getBounceProxy().getId())
                            .build();
         } catch (WebApplicationException ex) {
             throw ex;

@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.Optional;
+
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.ChannelAddress;
 
@@ -29,7 +31,7 @@ public class MockChannelAddressFactory extends GlobalAddressFactory<ChannelAddre
     }
 
     @Override
-    public boolean supportsTransport(String transport) {
-        return "longpolling".equals(transport);
+    public boolean supportsTransport(Optional<String> transport) {
+        return "longpolling".equals(transport.isPresent() ? transport.get() : null);
     }
 }

@@ -19,9 +19,8 @@
  */
 package io.joynr.messaging.bounceproxy.runtime;
 
+import java.util.Optional;
 import java.util.Properties;
-
-import javax.annotation.CheckForNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,12 +83,13 @@ public class BounceProxySystemPropertyLoader {
 
             if (value == null) {
 
-                value = loadPropertyFromFile(key);
+                Optional<String> optionalValue = loadPropertyFromFile(key);
 
-                if (value == null) {
+                if (!optionalValue.isPresent()) {
                     throw new JoynrRuntimeException("No value for system property '" + key
                             + "' set. Unable to start Bounce Proxy");
                 }
+                value = optionalValue.get();
             }
 
             properties.put(key, value);
@@ -98,8 +98,7 @@ public class BounceProxySystemPropertyLoader {
         return properties;
     }
 
-    @CheckForNull
-    private static String loadPropertyFromFile(String key) {
+    private static Optional<String> loadPropertyFromFile(String key) {
 
         if (systemPropertiesFromFile == null) {
             logger.info("Loading system properties file " + CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES);
@@ -116,7 +115,7 @@ public class BounceProxySystemPropertyLoader {
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -125,17 +124,16 @@ public class BounceProxySystemPropertyLoader {
      *
      * @param value
      *            a string with any number of variables defined
-     * @return a string in which each occurrence of <code>${variable}</code> is
+     * @return an Optional containing string in which each occurrence of <code>${variable}</code> is
      *         replaced by {@link System#getProperty(String)} with
      *         <code>variable</code> as property key.
      * @throws JoynrRuntimeException
      *             if the property key for the variable does not exist
      */
-    @CheckForNull
-    static String replaceVariableBySystemProperty(String value) {
+    static Optional<String> replaceVariableBySystemProperty(String value) {
 
         if (value == null)
-            return null;
+            return Optional.empty();
 
         int startVariableIndex = value.indexOf("${");
 
@@ -155,6 +153,6 @@ public class BounceProxySystemPropertyLoader {
             startVariableIndex = value.indexOf("${");
         }
 
-        return value;
+        return Optional.of(value);
     }
 }

@@ -19,8 +19,7 @@
 package io.joynr.provider;
 
 import java.util.Arrays;
-
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 import io.joynr.exceptions.JoynrException;
 
@@ -58,8 +57,7 @@ public class PromiseKeeper implements PromiseListener {
      * @return the resolved values or null in case of timeout.
      * @throws InterruptedException if the thread is interrupted.
      */
-    @CheckForNull
-    public Object[] getValues() throws InterruptedException {
+    public Optional<Object[]> getValues() throws InterruptedException {
         return getValues(0);
     }
 
@@ -71,17 +69,16 @@ public class PromiseKeeper implements PromiseListener {
      * @return the resolved values or null in case of timeout.
      * @throws InterruptedException if the thread is interrupted.
      */
-    @CheckForNull
-    public Object[] getValues(long timeout) throws InterruptedException {
+    public Optional<Object[]> getValues(long timeout) throws InterruptedException {
         if (!isSettled()) {
             synchronized (this) {
                 wait(timeout);
             }
         }
         if (values == null) {
-            return null;
+            return Optional.ofNullable(null);
         }
-        return Arrays.copyOf(values, values.length);
+        return Optional.of(Arrays.copyOf(values, values.length));
     }
 
     /**
@@ -91,8 +88,7 @@ public class PromiseKeeper implements PromiseListener {
      * @return the error causing rejection or null in case of timeout.
      * @throws InterruptedException if the thread is interrupted.
      */
-    @CheckForNull
-    public JoynrException getError() throws InterruptedException {
+    public Optional<JoynrException> getError() throws InterruptedException {
         return getError(0);
     }
 
@@ -105,14 +101,13 @@ public class PromiseKeeper implements PromiseListener {
      * @return the error causing rejection or null in case of timeout.
      * @throws InterruptedException if the thread is interrupted.
      */
-    @CheckForNull
-    public JoynrException getError(long timeout) throws InterruptedException {
+    public Optional<JoynrException> getError(long timeout) throws InterruptedException {
         if (!isSettled()) {
             synchronized (this) {
                 wait(timeout);
             }
         }
-        return error;
+        return Optional.ofNullable(error);
     }
 
     /**

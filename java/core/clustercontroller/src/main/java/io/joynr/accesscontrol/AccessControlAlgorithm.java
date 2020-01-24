@@ -18,7 +18,7 @@
  */
 package io.joynr.accesscontrol;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
@@ -39,9 +39,9 @@ public class AccessControlAlgorithm {
      * @param trustLevel The trust level of the user sending the message
      * @return consumer permission
      */
-    public Permission getConsumerPermission(@Nullable MasterAccessControlEntry master,
-                                            @Nullable MasterAccessControlEntry mediator,
-                                            @Nullable OwnerAccessControlEntry owner,
+    public Permission getConsumerPermission(Optional<MasterAccessControlEntry> master,
+                                            Optional<MasterAccessControlEntry> mediator,
+                                            Optional<OwnerAccessControlEntry> owner,
                                             TrustLevel trustLevel) {
 
         return getPermission(PermissionType.CONSUMER, master, mediator, owner, trustLevel);
@@ -56,41 +56,43 @@ public class AccessControlAlgorithm {
      * @param trustLevel The trust level of the user sending the message
      * @return provider permission
      */
-    public Permission getProviderPermission(@Nullable MasterAccessControlEntry master,
-                                            @Nullable MasterAccessControlEntry mediator,
-                                            @Nullable OwnerAccessControlEntry owner,
+    public Permission getProviderPermission(Optional<MasterAccessControlEntry> master,
+                                            Optional<MasterAccessControlEntry> mediator,
+                                            Optional<OwnerAccessControlEntry> owner,
                                             TrustLevel trustLevel) {
         assert (false) : "Provider permission algorithm is not yet implemented!";
         return getPermission(PermissionType.PROVIDER, master, mediator, owner, trustLevel);
     }
 
     private Permission getPermission(PermissionType type,
-                                     @Nullable MasterAccessControlEntry masterAce,
-                                     @Nullable MasterAccessControlEntry mediatorAce,
-                                     @Nullable OwnerAccessControlEntry ownerAce,
+                                     Optional<MasterAccessControlEntry> masterAce,
+                                     Optional<MasterAccessControlEntry> mediatorAce,
+                                     Optional<OwnerAccessControlEntry> ownerAce,
                                      TrustLevel trustLevel) {
-        AceValidator aceValidator = new AceValidator(masterAce, mediatorAce, ownerAce);
+        AceValidator aceValidator = new AceValidator(masterAce.isPresent() ? masterAce.get() : null,
+                                                     mediatorAce.isPresent() ? mediatorAce.get() : null,
+                                                     ownerAce.isPresent() ? ownerAce.get() : null);
         if (!aceValidator.isValid()) {
             return Permission.NO;
         }
 
         Permission permission = Permission.NO;
-        if (ownerAce != null) {
-            if (TrustLevelComparator.compare(trustLevel, ownerAce.getRequiredTrustLevel()) >= 0) {
+        if (ownerAce.isPresent()) {
+            if (TrustLevelComparator.compare(trustLevel, ownerAce.get().getRequiredTrustLevel()) >= 0) {
                 if (type == PermissionType.CONSUMER) {
-                    permission = ownerAce.getConsumerPermission();
+                    permission = ownerAce.get().getConsumerPermission();
                 }
             }
-        } else if (mediatorAce != null) {
-            if (TrustLevelComparator.compare(trustLevel, mediatorAce.getDefaultRequiredTrustLevel()) >= 0) {
+        } else if (mediatorAce.isPresent()) {
+            if (TrustLevelComparator.compare(trustLevel, mediatorAce.get().getDefaultRequiredTrustLevel()) >= 0) {
                 if (type == PermissionType.CONSUMER) {
-                    permission = mediatorAce.getDefaultConsumerPermission();
+                    permission = mediatorAce.get().getDefaultConsumerPermission();
                 }
             }
-        } else if (masterAce != null) {
-            if (TrustLevelComparator.compare(trustLevel, masterAce.getDefaultRequiredTrustLevel()) >= 0) {
+        } else if (masterAce.isPresent()) {
+            if (TrustLevelComparator.compare(trustLevel, masterAce.get().getDefaultRequiredTrustLevel()) >= 0) {
                 if (type == PermissionType.CONSUMER) {
-                    permission = masterAce.getDefaultConsumerPermission();
+                    permission = masterAce.get().getDefaultConsumerPermission();
                 }
             }
         }

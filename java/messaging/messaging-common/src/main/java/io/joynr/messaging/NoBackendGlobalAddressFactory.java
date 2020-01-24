@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging;
 
+import java.util.Optional;
+
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import joynr.system.RoutingTypes.Address;
 
@@ -31,7 +33,7 @@ public class NoBackendGlobalAddressFactory extends GlobalAddressFactory<Address>
     }
 
     @Override
-    public boolean supportsTransport(String transport) {
+    public boolean supportsTransport(Optional<String> transport) {
         return false;
     }
 

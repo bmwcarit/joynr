@@ -19,9 +19,9 @@
 package io.joynr.messaging.http;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -96,14 +96,13 @@ public class UrlResolver {
         }
     }
 
-    @Nullable
-    public String getSendUrl(String url) {
+    public Optional<String> getSendUrl(String url) {
         String sendUrl = encodeSendUrl(url);
         try {
             sendUrl = mapHost(sendUrl);
         } catch (Exception e) {
             logger.error("error in URL mapping while sending to url: {} reason: {}", url, e.getMessage());
         }
-        return sendUrl;
+        return Optional.ofNullable(sendUrl);
     }
 }

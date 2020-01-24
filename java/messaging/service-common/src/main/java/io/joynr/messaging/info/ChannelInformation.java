@@ -19,7 +19,7 @@
  */
 package io.joynr.messaging.info;
 
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 /**
  * Information about a messaging channel that can be used by messaging clients.<br>
@@ -36,14 +36,18 @@ public class ChannelInformation {
     public final Integer resources;
     public final Integer cachedSize;
 
-    public ChannelInformation(String name, Integer resources, @CheckForNull Integer cachedSize) {
+    public ChannelInformation(String name, Integer resources, Optional<Integer> cachedSize) {
         if (name == null) {
             name = "";
         }
 
         this.name = name;
         this.resources = resources;
-        this.cachedSize = cachedSize;
+        if (cachedSize.isPresent()) {
+            this.cachedSize = cachedSize.get();
+        } else {
+            this.cachedSize = null;
+        }
     }
 
     public String getName() {

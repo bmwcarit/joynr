@@ -19,6 +19,7 @@
 package io.joynr.accesscontrol;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -119,16 +120,16 @@ public class AccessControllerImpl implements AccessController {
         // First get the domain and interface that is being called from appropriate capability entry
         getCapabilityEntry(message, new CapabilityCallback() {
             @Override
-            public void processCapabilityReceived(DiscoveryEntryWithMetaInfo discoveryEntry) {
-                if (discoveryEntry == null) {
+            public void processCapabilityReceived(Optional<DiscoveryEntryWithMetaInfo> discoveryEntry) {
+                if (!discoveryEntry.isPresent()) {
                     logger.error("Failed to get capability for participant id {} for acl check",
                                  message.getRecipient());
                     hasConsumerPermissionCallback.hasConsumerPermission(false);
                     return;
                 }
 
-                final String domain = discoveryEntry.getDomain();
-                final String interfaceName = discoveryEntry.getInterfaceName();
+                final String domain = discoveryEntry.get().getDomain();
+                final String interfaceName = discoveryEntry.get().getInterfaceName();
                 final String msgCreatorUid = message.getCreatorUserId();
 
                 GetConsumerPermissionCallback consumerPermissionCallback = new GetConsumerPermissionCallback() {
@@ -197,7 +198,7 @@ public class AccessControllerImpl implements AccessController {
 
             @Override
             public void onFulfillment(Object... values) {
-                callback.processCapabilityReceived((DiscoveryEntryWithMetaInfo) values[0]);
+                callback.processCapabilityReceived(Optional.ofNullable((DiscoveryEntryWithMetaInfo) values[0]));
             }
         });
     }

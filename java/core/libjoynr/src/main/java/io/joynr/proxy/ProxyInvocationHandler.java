@@ -18,7 +18,23 @@
  */
 package io.joynr.proxy;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.assistedinject.Assisted;
+
 import io.joynr.Async;
 import io.joynr.StatelessAsync;
 import io.joynr.Sync;
@@ -46,22 +62,6 @@ import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.MethodMetaInformation;
 import joynr.exceptions.ApplicationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class ProxyInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(ProxyInvocationHandler.class);
@@ -89,7 +89,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                                   @Assisted("proxyParticipantId") String proxyParticipantId,
                                   @Assisted DiscoveryQos discoveryQos,
                                   @Assisted MessagingQos messagingQos,
-                                  @Nullable @Assisted StatelessAsyncCallback statelessAsyncCallback,
+                                  @Assisted Optional<StatelessAsyncCallback> statelessAsyncCallback,
                                   ShutdownNotifier shutdownNotifier,
                                   StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         // CHECKSTYLE:ON
@@ -111,9 +111,9 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             }
         };
         shutdownNotifier.registerForShutdown(shutdownListener);
-        if (statelessAsyncCallback != null) {
+        if (statelessAsyncCallback.isPresent()) {
             statelessAsyncParticipantId = statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
-                                                                                            statelessAsyncCallback);
+                                                                                            statelessAsyncCallback.get());
         }
     }
 
@@ -131,22 +131,20 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
      *
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
-    @CheckForNull
-    private Object executeSyncMethod(Method method, Object[] args) throws ApplicationException {
+    private Optional<Object> executeSyncMethod(Method method, Object[] args) throws ApplicationException {
         if (preparingForShutdown.get()) {
             throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
         }
-        return executeMethodWithCaller(method, args, new ConnectorCaller() {
+        return Optional.ofNullable(executeMethodWithCaller(method, args, new ConnectorCaller() {
             @Override
             public Object call(Method method, Object[] args) throws ApplicationException {
                 return connector.executeSyncMethod(method, args);
             }
-        });
+        }));
     }
 
-    @CheckForNull
-    private Object executeOneWayMethod(Method method, Object[] args) throws ApplicationException {
-        return executeMethodWithCaller(method, args, new ConnectorCaller() {
+    private Optional<Object> executeOneWayMethod(Method method, Object[] args) throws ApplicationException {
+        Object result = executeMethodWithCaller(method, args, new ConnectorCaller() {
 
             @Override
             public Object call(Method method, Object[] args) {
@@ -154,6 +152,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                 return null;
             }
         });
+        return Optional.ofNullable(result);
     }
 
     private Object executeMethodWithCaller(Method method,
@@ -329,8 +328,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         }
     }
 
-    @CheckForNull
-    private Object executeSubscriptionMethod(Method method, Object[] args) {
+    private Optional<Object> executeSubscriptionMethod(Method method, Object[] args) {
         if (preparingForShutdown.get()) {
             throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
         }
@@ -346,9 +344,11 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                 throw new JoynrRuntimeException("Method " + method
                         + " not declared in JoynrSubscriptionInterface or annotated with either @JoynrRpcBroadcast or @JoynrMulticast.");
             }
-            return future;
+            return Optional.ofNullable(future);
         } else if (method.getName().startsWith("unsubscribeFrom")) {
-            return unsubscribe(new UnsubscribeInvocation(method, args, future)).getSubscriptionId();
+            return Optional.ofNullable(unsubscribe(new UnsubscribeInvocation(method,
+                                                                             args,
+                                                                             future)).getSubscriptionId());
         } else {
             throw new JoynrIllegalStateException("Called unknown method in one of the subscription interfaces.");
         }
@@ -494,8 +494,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         return unsubscribeInvocation;
     }
 
-    @CheckForNull
-    public Object invokeInternal(Object proxy, @Nonnull Method method, Object[] args) throws ApplicationException {
+    public Object invokeInternal(Object proxy, Method method, Object[] args) throws ApplicationException {
         logger.trace("calling proxy.{}({}) on domain: {} and interface {}, proxy participant ID: {}",
                      method.getName(),
                      args,
@@ -506,11 +505,14 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         try {
             if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)
                     || JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
-                return executeSubscriptionMethod(method, args);
+                Optional<Object> result = executeSubscriptionMethod(method, args);
+                return result.isPresent() ? result.get() : null;
             } else if (methodInterfaceClass.getAnnotation(FireAndForget.class) != null) {
-                return executeOneWayMethod(method, args);
+                Optional<Object> result = executeOneWayMethod(method, args);
+                return result.isPresent() ? result.get() : null;
             } else if (methodInterfaceClass.getAnnotation(Sync.class) != null) {
-                return executeSyncMethod(method, args);
+                Optional<Object> result = executeSyncMethod(method, args);
+                return result.isPresent() ? result.get() : null;
             } else if (methodInterfaceClass.getAnnotation(Async.class) != null) {
                 return executeAsyncMethod(proxy, method, args);
             } else if (methodInterfaceClass.getAnnotation(StatelessAsync.class) != null) {

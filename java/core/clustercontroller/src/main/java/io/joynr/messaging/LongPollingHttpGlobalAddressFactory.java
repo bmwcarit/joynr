@@ -20,6 +20,7 @@ package io.joynr.messaging;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -59,15 +60,15 @@ public class LongPollingHttpGlobalAddressFactory extends HttpGlobalAddressFactor
     }
 
     @Override
-    public boolean supportsTransport(String transport) {
-        return SUPPORTED_TRANSPORT_LONGPOLLING.equalsIgnoreCase(transport);
+    public boolean supportsTransport(Optional<String> transport) {
+        return SUPPORTED_TRANSPORT_LONGPOLLING.equalsIgnoreCase(transport.isPresent() ? transport.get() : null);
     }
 
     @Override
     public synchronized void registerGlobalAddressReady(final TransportReadyListener listener) {
         addressReadyListeners.add(listener);
         if (messagingEndpointUrl != null) {
-            listener.transportReady(create());
+            listener.transportReady(Optional.ofNullable(create()));
         }
     }
 
@@ -79,7 +80,7 @@ public class LongPollingHttpGlobalAddressFactory extends HttpGlobalAddressFactor
     public synchronized void channelCreated(String messagingEndpointUrl) {
         setMessagingEndpointUrl(messagingEndpointUrl);
         for (TransportReadyListener listener : addressReadyListeners) {
-            listener.transportReady(create());
+            listener.transportReady(Optional.ofNullable(create()));
         }
     }
 }

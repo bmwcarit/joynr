@@ -475,7 +475,8 @@ public class ConnectorTest {
         ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,
                                                                        arbitrationResult,
                                                                        qosSettings,
-                                                                       statelessAsyncParticipantId);
+                                                                       statelessAsyncParticipantId)
+                                                               .get();
         return connector;
     }
 }

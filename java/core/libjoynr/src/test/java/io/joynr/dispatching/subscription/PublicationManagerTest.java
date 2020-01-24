@@ -41,6 +41,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -137,8 +138,8 @@ public class PublicationManagerTest {
 
         when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(false);
 
-        doReturn(valueToPublishPromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
-                                                                               any(Method.class));
+        doReturn(Optional.of(valueToPublishPromise)).when(attributePollInterpreter)
+                                                    .execute(any(ProviderContainer.class), any(Method.class));
     }
 
     @SuppressWarnings("unchecked")

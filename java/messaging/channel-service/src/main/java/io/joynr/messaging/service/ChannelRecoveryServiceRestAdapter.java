@@ -21,6 +21,8 @@ package io.joynr.messaging.service;
 
 import static io.joynr.messaging.datatypes.JoynrMessagingErrorCode.JOYNRMESSAGINGERROR_CHANNELNOTSET;
 
+import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
@@ -90,21 +92,23 @@ public class ChannelRecoveryServiceRestAdapter {
 
         try {
 
-            Channel channel = channelService.getChannel(ccid);
+            Optional<Channel> channel = channelService.getChannel(ccid);
 
-            if (channel == null) {
+            if (!channel.isPresent()) {
 
                 // bounce proxy controller lost data
-                channel = channelService.createChannel(ccid, atmosphereTrackingId);
-                return Response.created(channel.getLocation()).header("bp", channel.getBounceProxy().getId()).build();
+                Channel newChannel = channelService.createChannel(ccid, atmosphereTrackingId);
+                return Response.created(newChannel.getLocation())
+                               .header("bp", newChannel.getBounceProxy().getId())
+                               .build();
 
             } else {
 
-                if (!bpId.equals(channel.getBounceProxy().getId())) {
+                if (!bpId.equals(channel.get().getBounceProxy().getId())) {
                     // channel was moved to another bounce proxy
                     return Response.ok()
-                                   .header("Location", channel.getLocation().toString())
-                                   .header("bp", channel.getBounceProxy().getId())
+                                   .header("Location", channel.get().getLocation().toString())
+                                   .header("bp", channel.get().getBounceProxy().getId())
                                    .build();
                 } else {
                     // bounce proxy exists, but was unreachable for cluster

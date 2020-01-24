@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -100,8 +101,9 @@ public class PublicationTimersTest {
         Deferred<String> testAttributeDeferred = new Deferred<String>();
         testAttributeDeferred.resolve("testAttributeValue");
         Promise<Deferred<String>> testAttributePromise = new Promise<Deferred<String>>(testAttributeDeferred);
-        Mockito.doReturn(testAttributePromise).when(attributePollInterpreter).execute(any(ProviderContainer.class),
-                                                                                      any(Method.class));
+        Mockito.doReturn(Optional.of(testAttributePromise))
+               .when(attributePollInterpreter)
+               .execute(any(ProviderContainer.class), any(Method.class));
     }
 
     @SuppressWarnings("unchecked")

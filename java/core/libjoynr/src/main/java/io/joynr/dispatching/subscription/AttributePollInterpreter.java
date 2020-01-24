@@ -20,8 +20,7 @@ package io.joynr.dispatching.subscription;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import javax.annotation.Nonnull;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +38,7 @@ public class AttributePollInterpreter {
 
     private static final Logger logger = LoggerFactory.getLogger(AttributePollInterpreter.class);
 
-    @Nonnull
-    public Promise<?> execute(ProviderContainer providerContainer, Method method) {
+    public Optional<Promise<?>> execute(ProviderContainer providerContainer, Method method) {
         String interfaceName = providerContainer.getInterfaceName();
         Object returnValueFromProvider = null;
         try {
@@ -100,6 +98,6 @@ public class AttributePollInterpreter {
             logger.error(message, e);
             throw new JoynrRuntimeException(message, e);
         }
-        return returnedPromiseFromProvider;
+        return Optional.ofNullable(returnedPromiseFromProvider);
     }
 }

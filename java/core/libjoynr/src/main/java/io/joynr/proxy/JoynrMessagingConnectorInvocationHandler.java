@@ -20,6 +20,7 @@ package io.joynr.proxy;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -143,7 +144,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         @SuppressWarnings("rawtypes")
         RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(proxy,
                                                                                                    requestReplyId,
-                                                                                                   callback,
+                                                                                                   Optional.ofNullable(callback),
                                                                                                    future,
                                                                                                    method,
                                                                                                    methodMetaInformation);

@@ -20,8 +20,7 @@
 package io.joynr.messaging.service;
 
 import java.util.List;
-
-import javax.annotation.CheckForNull;
+import java.util.Optional;
 
 import org.atmosphere.jersey.Broadcastable;
 
@@ -49,11 +48,10 @@ public interface ChannelService {
      * 
      * @param ccid
      *            the channel to communication on
-     * @return information of the bounce proxy or <code>null</code> if channel
+     * @return Optional containing information of the bounce proxy or empty Optional if channel
      *         for the ID does not exist
      */
-    @CheckForNull
-    public Channel getChannel(String ccid);
+    public Optional<Channel> getChannel(String ccid);
 
     /**
      * Opens a long poll channel.

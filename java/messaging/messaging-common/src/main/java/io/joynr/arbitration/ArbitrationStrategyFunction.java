@@ -20,9 +20,8 @@ package io.joynr.arbitration;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-
-import javax.annotation.CheckForNull;
 
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
@@ -55,14 +54,13 @@ public abstract class ArbitrationStrategyFunction {
     protected abstract Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
                                                               Collection<DiscoveryEntryWithMetaInfo> capabilities);
 
-    @CheckForNull
-    protected CustomParameter findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {
+    protected Optional<CustomParameter> findQosParameter(DiscoveryEntry discoveryEntry, String parameterName) {
         for (CustomParameter parameter : discoveryEntry.getQos().getCustomParameters()) {
             if (parameterName.equals(parameter.getName())) {
-                return parameter;
+                return Optional.of(parameter);
             }
         }
-        return null;
+        return Optional.empty();
 
     }
 }
