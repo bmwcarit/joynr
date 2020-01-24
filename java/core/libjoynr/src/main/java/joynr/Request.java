@@ -22,7 +22,6 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 
 import java.util.Arrays;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.util.ReflectionUtils;
 
 /**
@@ -38,13 +37,12 @@ public class Request extends OneWayRequest implements JoynrMessageType {
     public Request() {
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public Request(String methodName,
                    Object[] params,
                    String[] paramDatatypes,
                    String requestReplyId,
                    String statelessAsyncCallbackMethodId) {
-        super(methodName, params, paramDatatypes);
+        super(methodName, params, paramDatatypes == null ? null : paramDatatypes.clone());
         if (requestReplyId == null) {
             this.requestReplyId = createUuidString();
         } else {
@@ -53,9 +51,8 @@ public class Request extends OneWayRequest implements JoynrMessageType {
         this.statelessAsyncCallbackMethodId = statelessAsyncCallbackMethodId;
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public Request(String methodName, Object[] params, String[] paramDatatypes, String requestReplyId) {
-        this(methodName, params, paramDatatypes, requestReplyId, null);
+        this(methodName, params, paramDatatypes == null ? null : paramDatatypes.clone(), requestReplyId, null);
     }
 
     public Request(String name, Object[] params, Class<?>[] parameterTypes) {

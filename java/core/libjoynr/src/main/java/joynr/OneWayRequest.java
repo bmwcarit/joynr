@@ -25,7 +25,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.util.ReflectionUtils;
 
@@ -45,14 +44,21 @@ public class OneWayRequest implements JoynrMessageType {
     public OneWayRequest() {
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public OneWayRequest(String methodName, Object[] parameters, String[] parameterDatatypes) {
+    public OneWayRequest(String methodName, Object[] params, String[] parameterDatatypes) {
         if (methodName == null || methodName.trim().isEmpty()) {
             throw new JoynrIllegalStateException("Cannot create a request with a null or empty method name.");
         }
         this.methodName = methodName;
-        this.paramDatatypes = parameterDatatypes;
-        this.params = parameters;
+        if (parameterDatatypes != null) {
+            this.paramDatatypes = parameterDatatypes.clone();
+        } else {
+            paramDatatypes = null;
+        }
+        if (params != null) {
+            this.params = params.clone();
+        } else {
+            params = null;
+        }
     }
 
     public OneWayRequest(String methodName, Object[] parameters, Class<?>[] parameterDatatypes) {
@@ -72,9 +78,8 @@ public class OneWayRequest implements JoynrMessageType {
         this.creatorUserId = creator;
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public String[] getParamDatatypes() {
-        return paramDatatypes;
+        return paramDatatypes == null ? null : paramDatatypes.clone();
     }
 
     @JsonIgnore
@@ -82,9 +87,8 @@ public class OneWayRequest implements JoynrMessageType {
         return paramDatatypes != null && paramDatatypes.length > 0;
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Object[] getParams() {
-        return params;
+        return params == null ? null : params.clone();
     }
 
     @JsonIgnore

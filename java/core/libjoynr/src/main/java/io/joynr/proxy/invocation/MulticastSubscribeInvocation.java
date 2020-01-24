@@ -22,8 +22,6 @@ import static io.joynr.proxy.invocation.InvocationReflectionsUtils.extractOutPar
 
 import java.lang.reflect.Method;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.proxy.Future;
@@ -70,14 +68,11 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
         return listener;
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP",
-                                                      justification = "MulticastSubscribeInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
     public Class<?>[] getOutParameterTypes() {
-        return outParameterTypes;
+        return outParameterTypes == null ? null : outParameterTypes.clone();
     }
 
-    @SuppressWarnings("EI_EXPOSE_REP")
     public String[] getPartitions() {
-        return partitions;
+        return partitions == null ? null : partitions.clone();
     }
 }

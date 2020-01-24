@@ -20,21 +20,20 @@ package io.joynr.test.interlanguage;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
-import joynr.interlanguagetest.TestInterfaceAbstractProvider;
 import joynr.interlanguagetest.TestInterface.MethodWithAnonymousErrorEnumErrorEnum;
 import joynr.interlanguagetest.TestInterface.MethodWithExtendedErrorEnumErrorEnum;
+import joynr.interlanguagetest.TestInterfaceAbstractProvider;
 import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStruct;
 import joynr.interlanguagetest.namedTypeCollection2.BaseStructWithoutElements;
@@ -148,11 +147,11 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         return new Promise<Deferred<String[]>>(deferred);
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public Promise<DeferredVoid> setAttributeArrayOfStringImplicit(String[] attributeArrayOfStringImplicit) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeArrayOfStringImplicit = attributeArrayOfStringImplicit;
+        this.attributeArrayOfStringImplicit =
+                attributeArrayOfStringImplicit == null ? null : attributeArrayOfStringImplicit.clone();
         attributeArrayOfStringImplicitChanged(attributeArrayOfStringImplicit);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -165,11 +164,10 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         return new Promise<Deferred<Byte[]>>(deferred);
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public Promise<DeferredVoid> setAttributeByteBuffer(Byte[] attributeByteBuffer) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeByteBuffer = attributeByteBuffer;
+        this.attributeByteBuffer = attributeByteBuffer == null ? null : attributeByteBuffer.clone();
         attributeByteBufferChanged(attributeByteBuffer);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -340,11 +338,11 @@ public class IltProvider extends TestInterfaceAbstractProvider {
         return new Promise<Deferred<Byte[]>>(deferred);
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public Promise<DeferredVoid> setAttributeByteBufferTypeDef(Byte[] attributeByteBufferTypeDef) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeByteBufferTypeDef = attributeByteBufferTypeDef;
+        this.attributeByteBufferTypeDef =
+                attributeByteBufferTypeDef == null ? null : attributeByteBufferTypeDef.clone();
         attributeByteBufferTypeDefChanged(attributeByteBufferTypeDef);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);

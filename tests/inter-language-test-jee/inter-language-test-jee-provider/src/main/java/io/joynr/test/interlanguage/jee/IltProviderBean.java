@@ -28,7 +28,6 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
@@ -139,16 +138,15 @@ public class IltProviderBean
         return attributeInt8readonlyNoSubscriptions;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")
     @Override
     public String[] getAttributeArrayOfStringImplicit() {
-        return attributeArrayOfStringImplicit;
+        return attributeArrayOfStringImplicit == null ? null : attributeArrayOfStringImplicit.clone();
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public void setAttributeArrayOfStringImplicit(String[] attributeArrayOfStringImplicit) {
-        this.attributeArrayOfStringImplicit = attributeArrayOfStringImplicit;
+        this.attributeArrayOfStringImplicit =
+                attributeArrayOfStringImplicit == null ? null : attributeArrayOfStringImplicit.clone();
 
         // TODO
         //attributeArrayOfStringImplicitChanged(attributeArrayOfStringImplicit);
@@ -280,31 +278,29 @@ public class IltProviderBean
         // attributeEnumTypeDefChanged(attributeEnumTypeDef);
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")
     @Override
     public Byte[] getAttributeByteBufferTypeDef() {
-        return attributeByteBufferTypeDef;
+        return attributeByteBufferTypeDef == null ? null :attributeByteBufferTypeDef.clone();
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")
     @Override
     public Byte[] getAttributeByteBuffer() {
-        return attributeByteBuffer;
+        return attributeByteBuffer == null ? null : attributeByteBuffer.clone();
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public void setAttributeByteBufferTypeDef(Byte[] attributeByteBufferTypeDef) {
-        this.attributeByteBufferTypeDef = attributeByteBufferTypeDef;
+        this.attributeByteBufferTypeDef =
+                attributeByteBufferTypeDef == null ? null : attributeByteBufferTypeDef.clone();
 
         // TODO
         // attributeByteBufferTypeDefChanged(attributeByteBufferTypeDef);
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     @Override
     public void setAttributeByteBuffer(Byte[] attributeByteBuffer) {
-        this.attributeByteBuffer = attributeByteBuffer;
+        this.attributeByteBuffer =
+                attributeByteBuffer == null ? null : attributeByteBuffer.clone();
 
         // TODO
         // attributeByteBufferChanged(attributeByteBuffer);

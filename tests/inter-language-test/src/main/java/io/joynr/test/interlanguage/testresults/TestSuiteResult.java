@@ -23,8 +23,6 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import io.joynr.subtypes.JoynrType;
 
 // NOTE: serialVersionUID is not defined since we don't support Franca versions right now.
@@ -91,7 +89,6 @@ public class TestSuiteResult implements Serializable, JoynrType {
      * @param failures
      * @param testCaseResults
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "joynr object not used for storing internal state")
     public TestSuiteResult(String name,
                            String time,
                            Integer tests,
@@ -105,7 +102,7 @@ public class TestSuiteResult implements Serializable, JoynrType {
         this.errors = errors;
         this.skipped = skipped;
         this.failures = failures;
-        this.testCaseResults = testCaseResults;
+        this.testCaseResults = testCaseResults == null ? null : testCaseResults.clone();
     }
 
     /**
@@ -173,10 +170,9 @@ public class TestSuiteResult implements Serializable, JoynrType {
      *
      * @return
      */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "joynr object not used for storing internal state")
     @JsonIgnore
     public TestCaseResult[] getTestCaseResults() {
-        return this.testCaseResults;
+        return testCaseResults == null ? null : testCaseResults.clone();
     }
 
     /**

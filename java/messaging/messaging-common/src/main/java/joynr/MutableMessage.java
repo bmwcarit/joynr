@@ -23,8 +23,6 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageSerializer;
 import io.joynr.smrf.MessageSerializerImpl;
@@ -64,7 +62,7 @@ public class MutableMessage extends Message {
         messageSerializer.setTtlMs(getTtlMs());
         messageSerializer.setTtlAbsolute(isTtlAbsolute());
         messageSerializer.setHeaders(createHeader());
-        messageSerializer.setBody(getPayload());
+        messageSerializer.setBody(payload);
         messageSerializer.setCompressed(compressed);
 
         return new ImmutableMessage(messageSerializer.serialize());
@@ -138,18 +136,12 @@ public class MutableMessage extends Message {
         return id;
     }
 
-    // Findbugs wants us to return a copy. However, this is a getter for the externally provided
-    // payload which may change at any time.
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public byte[] getPayload() {
-        return payload;
+        return payload == null ? null : payload.clone();
     }
 
-    // Findbugs wants us to copy the parameter. However, the payload is only used during the serialization.
-    // Therefore it is okay if it changes.
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public void setPayload(byte[] payload) {
-        this.payload = payload;
+        this.payload = payload == null ? null : payload.clone();
     }
 
     public String getReplyTo() {

@@ -26,8 +26,6 @@ import io.joynr.proxy.Future;
  * MethodInvocation contains the queuable information for a proxy method call
  */
 
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "EI_EXPOSE_REP",
-                                                  justification = "MethodInvocation is just a data container and only accessed by trusted code. So exposing internal representation is by design.")
 public class MethodInvocation<T> extends Invocation<T> {
 
     private final Object proxy;
@@ -38,7 +36,7 @@ public class MethodInvocation<T> extends Invocation<T> {
         super(future);
         this.proxy = proxy;
         this.method = method;
-        this.args = args;
+        this.args = args == null ? null : args.clone();
     }
 
     public Object getProxy() {
@@ -50,6 +48,6 @@ public class MethodInvocation<T> extends Invocation<T> {
     }
 
     public Object[] getArgs() {
-        return args;
+        return args == null ? null : args.clone();
     }
 }
