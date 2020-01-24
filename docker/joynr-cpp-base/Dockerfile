@@ -19,14 +19,15 @@ RUN cd /tmp/ \
     && rm -f clang+llvm-3.5.0-x86_64-fedora20.tar.xz
 
 ###################################################
-# install rpm-build required by CMake / CPack
+# install dnf packages
 ###################################################
 RUN dnf update -y \
-	&& dnf install -y \
-	rpm-build \
+    && dnf install -y \
+        ninja-build \
+        rpm-build \
         boost \
         boost-devel \
-	&& dnf clean all
+    && dnf clean all
 
 ###################################################
 # install spdlog
