@@ -145,8 +145,8 @@ public class IltProviderBean
 
     @Override
     public void setAttributeArrayOfStringImplicit(String[] attributeArrayOfStringImplicit) {
-        this.attributeArrayOfStringImplicit =
-                attributeArrayOfStringImplicit == null ? null : attributeArrayOfStringImplicit.clone();
+        this.attributeArrayOfStringImplicit = attributeArrayOfStringImplicit == null ? null
+                : attributeArrayOfStringImplicit.clone();
 
         // TODO
         //attributeArrayOfStringImplicitChanged(attributeArrayOfStringImplicit);
@@ -280,7 +280,7 @@ public class IltProviderBean
 
     @Override
     public Byte[] getAttributeByteBufferTypeDef() {
-        return attributeByteBufferTypeDef == null ? null :attributeByteBufferTypeDef.clone();
+        return attributeByteBufferTypeDef == null ? null : attributeByteBufferTypeDef.clone();
     }
 
     @Override
@@ -290,8 +290,8 @@ public class IltProviderBean
 
     @Override
     public void setAttributeByteBufferTypeDef(Byte[] attributeByteBufferTypeDef) {
-        this.attributeByteBufferTypeDef =
-                attributeByteBufferTypeDef == null ? null : attributeByteBufferTypeDef.clone();
+        this.attributeByteBufferTypeDef = attributeByteBufferTypeDef == null ? null
+                : attributeByteBufferTypeDef.clone();
 
         // TODO
         // attributeByteBufferTypeDefChanged(attributeByteBufferTypeDef);
@@ -299,8 +299,7 @@ public class IltProviderBean
 
     @Override
     public void setAttributeByteBuffer(Byte[] attributeByteBuffer) {
-        this.attributeByteBuffer =
-                attributeByteBuffer == null ? null : attributeByteBuffer.clone();
+        this.attributeByteBuffer = attributeByteBuffer == null ? null : attributeByteBuffer.clone();
 
         // TODO
         // attributeByteBufferChanged(attributeByteBuffer);

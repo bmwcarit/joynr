@@ -150,8 +150,8 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     @Override
     public Promise<DeferredVoid> setAttributeArrayOfStringImplicit(String[] attributeArrayOfStringImplicit) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeArrayOfStringImplicit =
-                attributeArrayOfStringImplicit == null ? null : attributeArrayOfStringImplicit.clone();
+        this.attributeArrayOfStringImplicit = attributeArrayOfStringImplicit == null ? null
+                : attributeArrayOfStringImplicit.clone();
         attributeArrayOfStringImplicitChanged(attributeArrayOfStringImplicit);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -341,8 +341,8 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     @Override
     public Promise<DeferredVoid> setAttributeByteBufferTypeDef(Byte[] attributeByteBufferTypeDef) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeByteBufferTypeDef =
-                attributeByteBufferTypeDef == null ? null : attributeByteBufferTypeDef.clone();
+        this.attributeByteBufferTypeDef = attributeByteBufferTypeDef == null ? null
+                : attributeByteBufferTypeDef.clone();
         attributeByteBufferTypeDefChanged(attributeByteBufferTypeDef);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);

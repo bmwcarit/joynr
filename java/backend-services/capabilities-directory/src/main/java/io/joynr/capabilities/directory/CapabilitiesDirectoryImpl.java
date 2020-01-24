@@ -436,8 +436,9 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             }).toArray(String[]::new);
             try {
                 Optional<Collection<GlobalDiscoveryEntryPersisted>> optionalResult = discoveryEntryStore.lookup(participantId);
-                Collection<GlobalDiscoveryEntryPersisted> lookupResult =
-                        optionalResult.isPresent() ? optionalResult.get() : null;
+                Collection<GlobalDiscoveryEntryPersisted> lookupResult = optionalResult.isPresent()
+                        ? optionalResult.get()
+                        : null;
                 if (lookupResult.isEmpty()) {
                     deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
                     return promise;

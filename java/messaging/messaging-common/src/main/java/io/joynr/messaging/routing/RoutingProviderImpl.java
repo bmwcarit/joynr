@@ -67,8 +67,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
             @Override
             public void transportReady(Optional<Address> address) {
                 synchronized (unresolvedGlobalAddressDeferreds) {
-                    globalAddressString = RoutingTypesUtil.toAddressString(
-                            address.isPresent() ? address.get() : null);
+                    globalAddressString = RoutingTypesUtil.toAddressString(address.isPresent() ? address.get() : null);
                     for (Deferred<String> globalAddressDeferred : unresolvedGlobalAddressDeferreds) {
                         globalAddressDeferred.resolve(globalAddressString);
                     }
@@ -81,8 +80,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
             @Override
             public void transportReady(Optional<Address> address) {
                 synchronized (unresolvedReplyToAddressDeferreds) {
-                    replyToAddressString = RoutingTypesUtil.toAddressString(
-                            address.isPresent() ? address.get() : null);
+                    replyToAddressString = RoutingTypesUtil.toAddressString(address.isPresent() ? address.get() : null);
                     for (Deferred<String> replyToAddressDeferred : unresolvedReplyToAddressDeferreds) {
                         replyToAddressDeferred.resolve(replyToAddressString);
                     }

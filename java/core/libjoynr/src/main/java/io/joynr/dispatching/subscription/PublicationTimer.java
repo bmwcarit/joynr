@@ -111,9 +111,9 @@ public class PublicationTimer extends PubSubTimerBase {
                     logger.debug("run: executing attributePollInterpreter for attribute "
                             + publicationInformation.getSubscribedToName());
                     try {
-                        Optional<Promise<?>> optionalPromise = attributePollInterpreter.execute(providerContainer, method);
-                        Promise<?> attributeGetterPromise =
-                                optionalPromise.isPresent() ? optionalPromise.get() : null;
+                        Optional<Promise<?>> optionalPromise = attributePollInterpreter.execute(providerContainer,
+                                                                                                method);
+                        Promise<?> attributeGetterPromise = optionalPromise.isPresent() ? optionalPromise.get() : null;
                         attributeGetterPromise.then(new PromiseListener() {
 
                             @Override
