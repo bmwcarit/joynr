@@ -342,8 +342,8 @@ void JoynrClusterControllerRuntime::init()
                                     brokerIndex);
                     connectionData->setMosquittoConnection(mosquittoConnection);
 
-                    auto mqttTransportStatus =
-                            std::make_unique<MqttTransportStatus>(mosquittoConnection);
+                    auto mqttTransportStatus = std::make_unique<MqttTransportStatus>(
+                            mosquittoConnection, _availableGbids[brokerIndex]);
                     transportStatuses.emplace_back(std::move(mqttTransportStatus));
                 }
                 if (!mqttMessageReceiver) {

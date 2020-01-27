@@ -32,7 +32,8 @@ class MosquittoConnection;
 class MqttTransportStatus : public ITransportStatus
 {
 public:
-    explicit MqttTransportStatus(std::shared_ptr<MosquittoConnection> mosquittoConnection);
+    explicit MqttTransportStatus(std::shared_ptr<MosquittoConnection> mosquittoConnection,
+                                 const std::string& gbid);
     ~MqttTransportStatus() override;
 
     bool isReponsibleFor(std::shared_ptr<const joynr::system::RoutingTypes::Address>) override;
@@ -45,6 +46,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MqttTransportStatus);
 
     std::shared_ptr<MosquittoConnection> _mosquittoConnection;
+    std::string _gbid;
     std::function<void(bool)> _availabilityChangedCallback;
 };
 

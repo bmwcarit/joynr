@@ -25,8 +25,11 @@
 namespace joynr
 {
 
-MqttTransportStatus::MqttTransportStatus(std::shared_ptr<MosquittoConnection> mosquittoConnection)
-        : _mosquittoConnection(std::move(mosquittoConnection)), _availabilityChangedCallback()
+MqttTransportStatus::MqttTransportStatus(std::shared_ptr<MosquittoConnection> mosquittoConnection,
+                                         const std::string& gbid)
+        : _mosquittoConnection(std::move(mosquittoConnection)),
+          _gbid(gbid),
+          _availabilityChangedCallback()
 {
     this->_mosquittoConnection->registerReadyToSendChangedCallback([this](bool readyToSend) {
         if (_availabilityChangedCallback) {
@@ -43,7 +46,8 @@ MqttTransportStatus::~MqttTransportStatus()
 bool MqttTransportStatus::isReponsibleFor(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
-    return dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get()) != nullptr;
+    auto mqttAddress = dynamic_cast<const joynr::system::RoutingTypes::MqttAddress*>(address.get());
+    return (mqttAddress && (mqttAddress->getBrokerUri() == _gbid));
 }
 
 bool MqttTransportStatus::isAvailable()
