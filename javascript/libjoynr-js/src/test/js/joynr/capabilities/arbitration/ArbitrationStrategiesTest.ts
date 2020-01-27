@@ -38,11 +38,13 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
         expect(ArbitrationStrategyCollection.HighestPriority).toBeDefined();
         expect(ArbitrationStrategyCollection.Keyword).toBeDefined();
         expect(ArbitrationStrategyCollection.LastSeen).toBeDefined();
+        expect(ArbitrationStrategyCollection.FixedParticipant).toBeDefined();
 
         expect(typeof ArbitrationStrategyCollection.Nothing).toBe("function");
         expect(typeof ArbitrationStrategyCollection.HighestPriority).toBe("function");
         expect(typeof ArbitrationStrategyCollection.Keyword).toBe("function");
         expect(typeof ArbitrationStrategyCollection.LastSeen).toBe("function");
+        expect(typeof ArbitrationStrategyCollection.FixedParticipant).toBe("function");
     });
 
     function getDiscoveryEntryWithMetaInfoList() {

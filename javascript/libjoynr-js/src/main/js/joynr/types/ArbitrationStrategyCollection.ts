@@ -102,3 +102,21 @@ export function LastSeen(capabilities: DiscoveryEntryWithMetaInfo[]): DiscoveryE
         return b.lastSeenDateMs - a.lastSeenDateMs;
     });
 }
+/**
+ * The ArbitrationStrategyCollection.FixedParticipant returns an array of one entry with the FixedParticipantId
+ *
+ * @param capabilities the array of capability entries
+ * @param capabilities.array the array of capability entries
+ *
+ * @returns an array of one and solely capability which is the one of FixedParticipantId
+ */
+export function FixedParticipant(capabilities: DiscoveryEntryWithMetaInfo[]): DiscoveryEntryWithMetaInfo[] {
+    if (!Array.isArray(capabilities)) {
+        throw new Error("provided argument capabilities is not of type Array");
+    }
+
+    if (capabilities.length > 1) {
+        throw new Error("multiple providers found for the given fixed participantId");
+    }
+    return capabilities;
+}
