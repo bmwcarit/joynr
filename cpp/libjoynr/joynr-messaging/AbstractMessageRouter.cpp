@@ -273,6 +273,7 @@ void AbstractMessageRouter::scheduleMessage(
                     return;
                 }
             }
+            break;
         }
     }
 
