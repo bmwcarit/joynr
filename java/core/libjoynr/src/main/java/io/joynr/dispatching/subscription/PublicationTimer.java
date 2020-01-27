@@ -113,7 +113,11 @@ public class PublicationTimer extends PubSubTimerBase {
                     try {
                         Optional<Promise<?>> optionalPromise = attributePollInterpreter.execute(providerContainer,
                                                                                                 method);
-                        Promise<?> attributeGetterPromise = optionalPromise.isPresent() ? optionalPromise.get() : null;
+                        if (!optionalPromise.isPresent()) {
+                            throw new ProviderRuntimeException("Unexpected exception while calling getter for attribute "
+                                    + publicationInformation.getSubscribedToName());
+                        }
+                        Promise<?> attributeGetterPromise = optionalPromise.get();
                         attributeGetterPromise.then(new PromiseListener() {
 
                             @Override

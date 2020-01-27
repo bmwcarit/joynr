@@ -743,6 +743,10 @@ public class PublicationManagerImpl
         try {
             Optional<Promise<?>> optionalPromise = attributePollInterpreter.execute(providerContainer, method);
             Promise<?> attributeGetterPromise = optionalPromise.isPresent() ? optionalPromise.get() : null;
+            if (attributeGetterPromise == null) {
+                throw new ProviderRuntimeException("Unexpected exception while calling getter for attribute "
+                        + publicationInformation.getSubscribedToName());
+            }
             attributeGetterPromise.then(new PromiseListener() {
 
                 @Override

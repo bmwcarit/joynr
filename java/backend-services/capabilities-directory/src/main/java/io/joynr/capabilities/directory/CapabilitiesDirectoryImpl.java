@@ -439,7 +439,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                 Collection<GlobalDiscoveryEntryPersisted> lookupResult = optionalResult.isPresent()
                         ? optionalResult.get()
                         : null;
-                if (lookupResult.isEmpty()) {
+                if (lookupResult == null || lookupResult.isEmpty()) {
                     deferred.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
                     return promise;
                 }

@@ -35,28 +35,74 @@
 		<Bug code="NP"/>
 	</Match>
         <Match>
-                <Package name="~.*\.systemintegrationtest.*" />
-                <Bug code="DM_EXIT"/>
+                <Class name="io.joynr.systemintegrationtest.ConsumerApplication" />
+                <Or>
+                        <Method name ="run" />
+                        <Method name ="shutdown" />
+                </Or>
+                <Bug pattern="DM_EXIT"/>
         </Match>
         <Match>
-                <Package name="~.*\.performance.*" />
-                <Bug code="DM_EXIT"/>
+                <Class name="io.joynr.systemintegrationtest.ProviderApplication" />
+                <Method name ="shutdown" />
+                <Bug pattern="DM_EXIT"/>
         </Match>
         <Match>
-                <Package name="~.*\.interlanguage.*" />
-                <Bug code="DM_EXIT"/>
+                <Class name="io.joynr.performance.AsyncResponseCounterCallback" />
+                <Or>
+                        <Method name ="acquire" />
+                        <Method name ="waitForNumberOfResponses" />
+                </Or>
+                <Bug pattern="DM_EXIT"/>
         </Match>
         <Match>
-                <Package name="~.*\.demo.*" />
-                <Bug code="DM_EXIT"/>
+                <Class name="io.joynr.performance.ConsumerApplication" />
+                <Method name ="shutdown" />
+                <Bug pattern="DM_EXIT"/>
         </Match>
         <Match>
-                <Package name="~.*\.examples.*" />
-                <Bug code="DM_EXIT"/>
+                <Class name="io.joynr.performance.EchoProviderApplication" />
+                <Method name ="shutdown" />
+                <Bug pattern="DM_EXIT"/>
         </Match>
         <Match>
-                <Package name="~.*\.examples.*" />
-                <Bug code="DM_DEFAULT_ENCODING"/>
+                <Class name="io.joynr.test.interlanguage.IltProviderApplication" />
+                <Method name ="shutdown" />
+                <Bug pattern="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.demo.MyRadioConsumerApplication" />
+                <Method name ="shutdown" />
+                <Bug pattern="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.demo.MyRadioProviderApplication" />
+                <Method name ="shutdown" />
+                <Bug pattern="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.examples.android_example.MyGpsProviderApplication" />
+                <Method name ="shutdown" />
+                <Bug pattern="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.examples.android_example.MyGpsProviderApplication" />
+                <Bug pattern="DM_DEFAULT_ENCODING"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.examples.android_location_provider.GpsConsumerApplication" />
+                <Method name ="shutdown" />
+                <Bug pattern="DM_EXIT"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.examples.android_location_provider.GpsConsumerApplication" />
+                <Method name ="pressQEnterToContinue" />
+                <Bug pattern="DM_DEFAULT_ENCODING"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.runtime.PropertyLoader" />
+                <Method name ="loadResource" />
+                <Bug pattern="OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE"/>
         </Match>
 	<!-- Nm: Class is not derived from an Exception, even though it is named as such -->
 	<Match>
@@ -116,8 +162,12 @@
                 <Bug pattern="URF_UNREAD_FIELD"/>
         </Match>
         <Match>
-                <Class name="io.joynr.Reply" />
+                <Class name="joynr.Reply" />
                 <Bug pattern="EI_EXPOSE_REP"/>
+        </Match>
+        <Match>
+                <Class name="io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClient" />
+                <Bug pattern="RV_RETURN_VALUE_IGNORED"/>
         </Match>
 	<!-- remove all null pointer warnings from tests -->
 	<Match>

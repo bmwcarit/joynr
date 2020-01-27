@@ -31,7 +31,7 @@ public class StatelessAsyncMethodInvocation {
 
     public StatelessAsyncMethodInvocation(Method method, Object[] args) {
         this.method = method;
-        this.args = args;
+        this.args = args == null ? null : args.clone();
     }
 
     public Method getMethod() {
@@ -39,6 +39,6 @@ public class StatelessAsyncMethodInvocation {
     }
 
     public Object[] getArgs() {
-        return args;
+        return args == null ? null : args.clone();
     }
 }
