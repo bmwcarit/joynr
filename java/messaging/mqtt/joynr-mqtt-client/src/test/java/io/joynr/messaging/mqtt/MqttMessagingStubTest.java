@@ -18,12 +18,14 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -33,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessagingQosEffort;
@@ -46,7 +49,6 @@ import joynr.system.RoutingTypes.MqttAddress;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingStubTest {
-
     @Mock
     private MqttAddress mqttAddress;
 
@@ -104,6 +106,58 @@ public class MqttMessagingStubTest {
 
         Mockito.verify(mqttClient)
                .publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL), anyLong());
+    }
+
+    @Test
+    public void testMessagePublishedWithMsgTtlSecAlwaysRoundedUp() {
+        when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
+
+        final long expectedRoundedMsgTtlSec = 61;
+        // check number that is closer to the larger value (61)
+        final long messageTtlMs1 = System.currentTimeMillis() + 60700;
+        when(joynrMessage.getTtlMs()).thenReturn(messageTtlMs1);
+
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        long relativeTtl1 = ExpiryDate.fromAbsolute(messageTtlMs1).getRelativeTtl();
+        assertTrue(relativeTtl1 % 1000 > 600 && relativeTtl1 % 1000 < 800);
+
+        // check number that is closer to the lower value (60)
+        final long messageTtlMs2 = System.currentTimeMillis() + 60200;
+        when(joynrMessage.getTtlMs()).thenReturn(messageTtlMs2);
+
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        long relativeTtl2 = ExpiryDate.fromAbsolute(messageTtlMs2).getRelativeTtl();
+        assertTrue(relativeTtl2 % 1000 > 100 && relativeTtl2 % 1000 < 300);
+
+        Mockito.verify(mqttClient, times(2)).publishMessage(anyString(),
+                                                            any(byte[].class),
+                                                            eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                                            eq(expectedRoundedMsgTtlSec));
+    }
+
+    @Test
+    public void testMessagePublishedWithMsgTtlSecGreaterThanMaxIntervalAlwaysSetToMaxInterval() {
+        when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
+
+        final long MESSAGE_EXPIRY_MAX_INTERVAL = 4294967295L;
+        final long expectedMaxMsgTtlSec = MESSAGE_EXPIRY_MAX_INTERVAL;
+
+        // MessageExpiryInterval is > MESSAGE_EXPIRY_MAX_INTERVAL
+        final long messageTtlMs1 = System.currentTimeMillis() + MESSAGE_EXPIRY_MAX_INTERVAL * 1000 + 60000;
+        when(joynrMessage.getTtlMs()).thenReturn(messageTtlMs1);
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        // MessageExpiryInterval is < 0
+        final long messageTtlMs2 = -10;
+        when(joynrMessage.getTtlMs()).thenReturn(messageTtlMs2);
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        Mockito.verify(mqttClient, times(2)).publishMessage(anyString(),
+                                                            any(byte[].class),
+                                                            eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                                            eq(expectedMaxMsgTtlSec));
     }
 
     @Test
