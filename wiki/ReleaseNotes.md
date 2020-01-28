@@ -1,4 +1,3 @@
-
 # Release Notes
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
@@ -12,6 +11,26 @@ None.
 * **[Java, JEE]** Integration for HiveMQ MQTT Client. See joynr 1.8.3 - 1.8.6 for details.
 * **[Java/JEE]** Removed message worker status metrics (interface `StatusReceiver`), status metrics
   for MQTT (interface `MqttStatusReceiver`) are the only remaining status metrics.
+
+# joynr 1.11.2
+
+## API relevant changes
+None
+
+## Other changes
+* **[C++]** Fixed an issue where unavailability of a MQTT connection could lead to
+  a deadlock situation.
+
+## Configuration property changes
+None.
+
+# joynr 1.11.1
+
+## API relevant changes
+None
+
+## Other changes
+* **[Android]** Release required for Android deployment.
 
 ## Configuration property changes
 None.
