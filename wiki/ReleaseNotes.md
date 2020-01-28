@@ -1,7 +1,29 @@
-
 # Release Notes
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
+
+# joynr 1.11.2
+
+## API relevant changes
+None
+
+## Other changes
+* **[C++]** Fixed an issue where unavailability of a MQTT connection could lead to
+  a deadlock situation.
+
+## Configuration property changes
+None.
+
+# joynr 1.11.1
+
+## API relevant changes
+None
+
+## Other changes
+* **[Android]** Release required for Android deployment.
+
+## Configuration property changes
+None.
 
 # joynr 1.11.0
 
