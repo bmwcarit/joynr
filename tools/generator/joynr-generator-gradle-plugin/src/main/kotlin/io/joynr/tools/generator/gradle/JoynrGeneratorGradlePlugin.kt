@@ -37,7 +37,9 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         private const val ANDROID_DEFAULT_OUTPUT_PATH_APP = "app/build"
         private const val ANDROID_DEFAULT_OUTPUT_PATH_DIRECT = "build"
         private const val ANDROID_DEFAULT_OUTPUT_PATH_GEN = "generated/source/fidl/"
-        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN = "/META-INF/DEPENDENCIES"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_DEPENDENCIES    = "/META-INF/DEPENDENCIES"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_INDEX_LIST      = "/META-INF/INDEX.LIST"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_NETTY_VERSIONS  = "/META-INF/io.netty.versions.properties"
     }
 
     override fun apply(project: Project) {
@@ -120,9 +122,16 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
             if (androidComponentExtension is BaseExtension) {
                 androidComponentExtension.sourceSets.getByName("main").java.srcDirs(outputDir)
 
-                // merge /META-INF/DEPENDENCIES to avoid conflicts during assemble
+                // merge /META-INF DEPENDENCIES, INDEX.LIST and io.netty.versions.properties
+                // to avoid conflicts during assemble
                 androidComponentExtension.packagingOptions.merge(
-                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN
+                        JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_DEPENDENCIES
+                )
+                androidComponentExtension.packagingOptions.merge(
+                        JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_INDEX_LIST
+                )
+                androidComponentExtension.packagingOptions.merge(
+                        JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_NETTY_VERSIONS
                 )
 
                 androidComponentExtension.compileOptions.sourceCompatibility =

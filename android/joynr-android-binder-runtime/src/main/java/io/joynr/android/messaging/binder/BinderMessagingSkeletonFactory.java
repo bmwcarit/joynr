@@ -19,13 +19,29 @@
 package io.joynr.android.messaging.binder;
 
 import io.joynr.messaging.AbstractMessagingSkeletonFactory;
+import io.joynr.messaging.IMessagingSkeleton;
 
 public class BinderMessagingSkeletonFactory extends AbstractMessagingSkeletonFactory {
 
+    /**
+     * Because {@link io.joynr.messaging.routing.AbstractMessageRouter} performSubscriptionOperation() method crashes when asking
+     * for binder messaging skeleton, we instantiate a dummy skeleton that does nothing.
+     */
+    private class BinderMessagingSkeleton implements IMessagingSkeleton {
+
+        @Override
+        public void init() {
+        }
+
+        @Override
+        public void shutdown() {
+
+        }
+    }
+
     public BinderMessagingSkeletonFactory() {
         super();
-
-        messagingSkeletonList.add(this);
+        messagingSkeletonList.add(new BinderMessagingSkeleton());
     }
 
     @Override

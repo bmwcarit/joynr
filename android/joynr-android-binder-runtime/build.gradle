@@ -160,12 +160,6 @@ dependencies {
         implementation("io.joynr.java.common:guice-integration:${version}") {
             exclude(module: 'guice')
         }
-        implementation("io.joynr.java.messaging.mqtt:joynr-mqtt-client:${version}") {
-            exclude(module: 'guice')
-        }
-        implementation("io.joynr.java.messaging.mqtt:paho-mqtt-client:${version}") {
-            exclude(module: 'guice')
-        }
         implementation("io.joynr.java.messaging.mqtt:hivemq-mqtt-client:${version}") {
             exclude(module: 'guice')
         }

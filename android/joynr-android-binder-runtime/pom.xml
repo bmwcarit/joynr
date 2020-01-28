@@ -308,7 +308,7 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
-			<artifactId>joynr-mqtt-client</artifactId>
+			<artifactId>hivemq-mqtt-client</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 			<exclusions>
