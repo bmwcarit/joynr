@@ -17,6 +17,7 @@
  * #L%
  */
 import * as DiscoveryEntryWithMetaInfo from "../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
+import { KEYWORD_PARAMETER } from "./ArbitrationConstants";
 
 /**
  * The ArbitrationStrategyCollection.Nothing just returns the passed array
@@ -73,7 +74,12 @@ export function Keyword(keyword: string, capabilities: DiscoveryEntryWithMetaInf
                 for (const qosId in cap.qos.customParameters) {
                     if (cap.qos.customParameters.hasOwnProperty(qosId)) {
                         const qosParam = cap.qos.customParameters[qosId];
-                        if (qosParam && qosParam.value && qosParam.name === "keyword" && qosParam.value === keyword) {
+                        if (
+                            qosParam &&
+                            qosParam.value &&
+                            qosParam.name === KEYWORD_PARAMETER &&
+                            qosParam.value === keyword
+                        ) {
                             keywordCaps.push(cap);
                         }
                     }

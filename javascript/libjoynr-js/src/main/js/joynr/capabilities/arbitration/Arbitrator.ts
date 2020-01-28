@@ -31,6 +31,9 @@ import { DiscoveryStub } from "../interface/DiscoveryStub";
 import DiscoveryQosGen = require("../../../generated/joynr/types/DiscoveryQos");
 import DiscoveryQos = require("../../proxy/DiscoveryQos");
 import ApplicationException = require("../../exceptions/ApplicationException");
+import * as ArbitrationStrategyCollection from "../../../joynr/types/ArbitrationStrategyCollection";
+import { FIXED_PARTICIPANT_PARAMETER } from "../../types/ArbitrationConstants";
+import { isEqual } from "lodash";
 
 const log = LoggingManager.getLogger("joynr.capabilities.arbitration.Arbitrator");
 
@@ -195,6 +198,20 @@ class Arbitrator {
         const discoveryRetryDelayMs = discoveryQos.discoveryRetryDelayMs;
         let errorMsg: string | null = null;
         let firstLoop = true;
+        let participantId: string;
+        const isArbitrationStrategyFixedParticipant = isEqual(
+            discoveryQos.arbitrationStrategy,
+            ArbitrationStrategyCollection.FixedParticipant
+        );
+        participantId = "";
+        if (isArbitrationStrategyFixedParticipant) {
+            if (!discoveryQos.additionalParameters.hasOwnProperty(FIXED_PARTICIPANT_PARAMETER)) {
+                throw new Error(
+                    "parameter FIXED_PARTICIPANT_PARAMETER does not exist in DiscoveryQos.additionalParameters"
+                );
+            }
+            participantId = discoveryQos.additionalParameters[FIXED_PARTICIPANT_PARAMETER];
+        }
 
         do {
             if (!firstLoop) {
@@ -205,19 +222,45 @@ class Arbitrator {
             }
             firstLoop = false;
             incompatibleVersionsFound = [];
-
+            let discoveredCaps: DiscoveryEntryWithMetaInfo[];
             try {
-                const discoveredCaps = await capabilityDiscoveryStub.lookup(
-                    domains,
-                    interfaceName,
-                    new DiscoveryQosGen({
-                        discoveryScope: discoveryQos.discoveryScope,
-                        cacheMaxAge: discoveryQos.cacheMaxAgeMs,
-                        discoveryTimeout: discoveryQos.discoveryTimeoutMs,
-                        providerMustSupportOnChange: discoveryQos.providerMustSupportOnChange
-                    }),
-                    gbids
-                );
+                if (isArbitrationStrategyFixedParticipant) {
+                    discoveredCaps = [];
+                    discoveredCaps.push(
+                        await capabilityDiscoveryStub.lookupByParticipantId(
+                            participantId,
+                            new DiscoveryQosGen({
+                                discoveryScope: discoveryQos.discoveryScope,
+                                cacheMaxAge: discoveryQos.cacheMaxAgeMs,
+                                discoveryTimeout: discoveryQos.discoveryTimeoutMs,
+                                providerMustSupportOnChange: discoveryQos.providerMustSupportOnChange
+                            }),
+                            gbids
+                        )
+                    );
+                    if (discoveredCaps.length > 0) {
+                        if (discoveredCaps[0].interfaceName !== interfaceName) {
+                            const errorMsg = `Interface "${
+                                discoveredCaps[0].interfaceName
+                            }" of discovered provider does not match proxy's interface "${interfaceName}".`;
+                            log.error(errorMsg);
+                            return Promise.reject(errorMsg);
+                        }
+                    }
+                } else {
+                    discoveredCaps = await capabilityDiscoveryStub.lookup(
+                        domains,
+                        interfaceName,
+                        new DiscoveryQosGen({
+                            discoveryScope: discoveryQos.discoveryScope,
+                            cacheMaxAge: discoveryQos.cacheMaxAgeMs,
+                            discoveryTimeout: discoveryQos.discoveryTimeoutMs,
+                            providerMustSupportOnChange: discoveryQos.providerMustSupportOnChange
+                        }),
+                        gbids
+                    );
+                }
+
                 const versionCompatibleCaps: DiscoveryEntryWithMetaInfo[] = [];
 
                 for (let i = 0; i < discoveredCaps.length; i++) {

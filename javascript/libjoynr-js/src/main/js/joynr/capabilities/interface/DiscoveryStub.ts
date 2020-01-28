@@ -22,12 +22,18 @@ import * as DiscoveryEntryWithMetaInfo from "../../../generated/joynr/types/Disc
 import DiscoveryQosGen from "../../../generated/joynr/types/DiscoveryQos";
 
 export interface DiscoveryStub {
+    lookupByParticipantId(
+        participantId: string,
+        discoveryQos: DiscoveryQosGen,
+        gbids: string[]
+    ): Promise<DiscoveryEntryWithMetaInfo>;
     lookup(
         domains: string[],
         interfaceName: string,
         discoveryQos: DiscoveryQosGen,
         gbids: string[]
     ): Promise<DiscoveryEntryWithMetaInfo[]>;
+
     add(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean, gbIds: string[]): Promise<void>;
     addToAll(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean): Promise<void>;
     remove(participantId: string): Promise<void>;

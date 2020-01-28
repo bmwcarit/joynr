@@ -40,6 +40,8 @@ import ProxyBuilder = require("../../proxy/ProxyBuilder");
 import MessageRouter = require("../../messaging/routing/MessageRouter");
 import CapabilitiesStore = require("../CapabilitiesStore");
 import JoynrRuntimeException = require("../../exceptions/JoynrRuntimeException");
+import DiscoveryError from "../../../generated/joynr/types/DiscoveryError";
+import ApplicationException from "../../exceptions/ApplicationException";
 
 const TTL_30DAYS_IN_MS = 30 * 24 * 60 * 60 * 1000;
 const log = LoggingManager.getLogger("joynr/capabilities/discovery/CapabilityDiscovery");
@@ -61,6 +63,14 @@ interface QueuedGlobalLookups {
     reject: (error: any) => void;
 }
 
+interface QueuedGlobalLookupsByParticipantId {
+    participantId: string;
+    ttl: number;
+    gbids: string[];
+    resolve: (value: any) => void;
+    reject: (error: any) => void;
+}
+
 class CapabilityDiscovery implements DiscoveryStub {
     private globalCapabilitiesDomain: string;
     private proxyBuilder!: ProxyBuilder;
@@ -68,6 +78,7 @@ class CapabilityDiscovery implements DiscoveryStub {
     private globalCapabilitiesCache: CapabilitiesStore;
     private localCapabilitiesStore: CapabilitiesStore;
     private queuedGlobalLookups: QueuedGlobalLookups[];
+    private queuedGlobalLookupsByParticipantId: QueuedGlobalLookupsByParticipantId[];
 
     private queuedGlobalDiscoveryEntries: QueuedGlobalDiscoveryEntires[];
     private globalAddressSerialized?: string;
@@ -98,6 +109,7 @@ class CapabilityDiscovery implements DiscoveryStub {
 
         this.queuedGlobalDiscoveryEntries = [];
         this.queuedGlobalLookups = [];
+        this.queuedGlobalLookupsByParticipantId = [];
 
         this.localCapabilitiesStore = localCapabilitiesStore;
         this.globalCapabilitiesCache = globalCapabilitiesCache;
@@ -232,6 +244,81 @@ class CapabilityDiscovery implements DiscoveryStub {
         }
     }
 
+    private lookupGlobalByParticipantId(
+        participantId: string,
+        ttl: number,
+        gbids: string[]
+    ): Promise<DiscoveryEntryWithMetaInfo> {
+        let result: DiscoveryEntryWithMetaInfo;
+        return this.getGlobalCapabilitiesDirectoryProxy(ttl)
+            .then(globalCapabilitiesDirectoryProxy =>
+                globalCapabilitiesDirectoryProxy.lookup({
+                    participantId,
+                    gbids
+                })
+            )
+            .then(opArgs => {
+                const messageRouterPromises = [];
+                const globalDiscoveryEntry = opArgs.result;
+                let globalAddress;
+                if (!globalDiscoveryEntry) {
+                    log.error("globalCapabilitiesDirectoryProxy.lookup() returns with missing result");
+                    return Promise.reject(
+                        new ApplicationException({
+                            detailMessage: "Got empty result from global lookup",
+                            error: DiscoveryError.INTERNAL_ERROR
+                        })
+                    );
+                } else {
+                    if (globalDiscoveryEntry.address !== this.globalAddressSerialized) {
+                        try {
+                            globalAddress = Typing.augmentTypes(JSON.parse(globalDiscoveryEntry.address));
+                        } catch (e) {
+                            log.error(
+                                `unable to use global discoveryEntry with unknown address type: ${
+                                    globalDiscoveryEntry.address
+                                }`
+                            );
+                            return Promise.reject(
+                                new ApplicationException({
+                                    detailMessage: "The address could not be deserialized, see error log message",
+                                    error: DiscoveryError.INTERNAL_ERROR
+                                })
+                            );
+                        }
+                        // Update routing table
+                        const isGloballyVisible = globalDiscoveryEntry.qos.scope === ProviderScope.GLOBAL;
+                        messageRouterPromises.push(
+                            this.messageRouter.addNextHop(
+                                globalDiscoveryEntry.participantId,
+                                globalAddress,
+                                isGloballyVisible
+                            )
+                        );
+                    }
+                    result = CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalDiscoveryEntry);
+                }
+                return Promise.all(messageRouterPromises);
+            })
+            .then(() => result);
+    }
+
+    private lookupGlobalCapabilitiesByParticipantId(participantId: string, ttl: number, gbids: string[]): Promise<any> {
+        if (!this.globalAddressSerialized) {
+            const deferred = UtilInternal.createDeferred();
+            this.queuedGlobalLookupsByParticipantId.push({
+                participantId,
+                ttl,
+                gbids,
+                resolve: deferred.resolve,
+                reject: deferred.reject
+            });
+            return deferred.promise;
+        } else {
+            return this.lookupGlobalByParticipantId(participantId, ttl, gbids);
+        }
+    }
+
     /**
      * @param discoveryEntry to be added to the global discovery directory
      * @param gbids global backend identifiers of backends to add discoveryEntries into
@@ -308,6 +395,13 @@ class CapabilityDiscovery implements DiscoveryStub {
                 .catch(parameters.reject);
         }
         this.queuedGlobalLookups = [];
+        for (let i = 0; i < this.queuedGlobalLookupsByParticipantId.length; i++) {
+            parameters = this.queuedGlobalLookupsByParticipantId[i];
+            this.lookupGlobalByParticipantId(parameters.participantId, parameters.ttl, parameters.gbids)
+                .then(parameters.resolve)
+                .catch(parameters.reject);
+        }
+        this.queuedGlobalLookupsByParticipantId = [];
     }
 
     /**
@@ -428,6 +522,78 @@ class CapabilityDiscovery implements DiscoveryStub {
                         detailMessage: `unknown discoveryScope value: ${discoveryQos.discoveryScope.value}`
                     })
                 );
+        }
+    }
+
+    /**
+     * This method queries the local and/or global capabilities directory according to the given discoveryStrategy given in the
+     * DiscoveryQos object
+     *
+     * @param participantId the participantId
+     * @param discoveryQos the DiscoveryQos giving the strategy for discovering a capability
+     * @param gbids the backends in which the lookup shall be performed
+     * @returns an A+ Promise object, that will one single discovered capabilities, callback signatures:
+     *          then({GlobalDiscoveryEntry} discoveredCap).catch({Error} error)
+     */
+    public lookupByParticipantId(
+        participantId: string,
+        discoveryQos: DiscoveryQosGen,
+        gbids: string[]
+    ): Promise<DiscoveryEntryWithMetaInfo> {
+        let localCapabilities, globalCapabilities;
+        gbids = gbids.length > 0 ? gbids : this.knownGbids;
+        switch (discoveryQos.discoveryScope.value) {
+            // only interested in local results
+            case DiscoveryScope.LOCAL_ONLY.value:
+                localCapabilities = this.localCapabilitiesStore.lookup({ participantId });
+                if (localCapabilities.length === 0) {
+                    log.debug(
+                        `lookupByParticipantId(): no capability entry found in local capabilities store for participantId ${participantId}.`
+                    );
+                    return Promise.reject(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                }
+                return Promise.resolve(
+                    CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(true, localCapabilities[0])
+                );
+
+            case DiscoveryScope.LOCAL_THEN_GLOBAL.value:
+            case DiscoveryScope.LOCAL_AND_GLOBAL.value:
+                localCapabilities = this.localCapabilitiesStore.lookup({ participantId });
+                if (localCapabilities.length > 0) {
+                    return Promise.resolve(
+                        CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(true, localCapabilities[0])
+                    );
+                }
+
+                globalCapabilities = this.globalCapabilitiesCache.lookup({
+                    participantId,
+                    cacheMaxAge: discoveryQos.cacheMaxAge
+                });
+
+                if (globalCapabilities.length > 0) {
+                    return Promise.resolve(
+                        CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalCapabilities[0])
+                    );
+                }
+                // no capability entry found in local or global cache
+                // search for local entries in the global capabilities directory
+                return this.lookupGlobalCapabilitiesByParticipantId(participantId, TTL_30DAYS_IN_MS, gbids);
+            case DiscoveryScope.GLOBAL_ONLY.value:
+                globalCapabilities = this.globalCapabilitiesCache.lookup({
+                    participantId,
+                    cacheMaxAge: discoveryQos.cacheMaxAge
+                });
+                if (globalCapabilities.length > 0) {
+                    return Promise.resolve(
+                        CapabilitiesUtil.convertToDiscoveryEntryWithMetaInfo(false, globalCapabilities[0])
+                    );
+                }
+                // no capability entry found found in local cache
+                // search for global entries in the global capabilities directory
+                return this.lookupGlobalCapabilitiesByParticipantId(participantId, TTL_30DAYS_IN_MS, gbids);
+            default:
+                log.debug(`lookupByParticipantId(): unknown discovery scope ${discoveryQos.discoveryScope.value}`);
+                return Promise.reject(DiscoveryError.INTERNAL_ERROR);
         }
     }
 

@@ -31,6 +31,22 @@ class LocalDiscoveryAggregator implements DiscoveryStub {
         this.discoveryProxy = discoveryProxy;
     }
 
+    public lookupByParticipantId(
+        participantId: string,
+        discoveryQos: DiscoveryQos,
+        gbids: string[]
+    ): Promise<DiscoveryEntryWithMetaInfo> {
+        return this.discoveryProxy
+            .lookup({
+                participantId,
+                discoveryQos,
+                gbids
+            })
+            .then(opArgs => {
+                return opArgs.result;
+            });
+    }
+
     public lookup(
         domains: string[],
         interfaceName: string,
@@ -49,6 +65,7 @@ class LocalDiscoveryAggregator implements DiscoveryStub {
                 return opArgs.result;
             });
     }
+
     public add(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean, gbids: string[]): Promise<void> {
         return this.discoveryProxy.add({
             discoveryEntry,
