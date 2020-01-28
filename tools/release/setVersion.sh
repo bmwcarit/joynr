@@ -38,6 +38,7 @@ mvn versions:commit -P android,javascript
 
 _sed 's/'$oldVersion'/'$newVersion'/g' \
 cpp/CMakeLists.txt \
+package.json \
 tests/inter-language-test/CMakeLists.txt \
 tests/inter-language-test/package.json \
 tests/performance-test/CMakeLists.txt \
@@ -54,6 +55,8 @@ javascript/libjoynr-js/package.json \
 javascript/libjoynr-js/src/main/js/package.json \
 javascript/joynr-generator/package.json \
 tools/generator/joynr-generator-gradle-plugin/build.gradle \
+tools/generator/joynr-generator-npm/joynr-generator-npm-test/package.json \
+tools/generator/joynr-generator-npm/package.json \
 android/libjoynr-android-websocket-runtime/build.gradle \
 examples/android/android-hello-world/android-hello-world-provider/build.gradle \
 examples/android/android-hello-world/android-hello-world-consumer/build.gradle \
