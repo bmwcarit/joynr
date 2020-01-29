@@ -39,8 +39,7 @@ while [ "$1" != "" ]; do
         --version )              shift
                                  VERSION=$1
                                  ;;
-        --setup )                shift
-                                 SETUP=ON
+        --setup )                SETUP=ON
                                  ;;
         * )                      usage
                                  exit 1
@@ -56,6 +55,7 @@ fi
 
 if [ "$SETUP" == "ON" ]
 then
+    echo "Install licensecheck:"
     npm -g install licensecheck
 fi
 
