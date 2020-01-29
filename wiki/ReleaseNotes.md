@@ -9,8 +9,17 @@ None.
 
 ## Other changes
 * **[Java, JEE]** Integration for HiveMQ MQTT Client. See joynr 1.8.3 - 1.8.6 for details.
-* **[Java/JEE]** Removed message worker status metrics (interface `StatusReceiver`), status metrics
+* **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.3
+* **[Java, JEE]** Removed message worker status metrics (interface `StatusReceiver`), status metrics
   for MQTT (interface `MqttStatusReceiver`) are the only remaining status metrics.
+* **[Java]** Removed dependency to commons-lang.
+* **[Java, Generator]** Removed ProvidesJoynrTypesInfo annotation from generated classes.
+  Classes generated with the new generator will therefore not be compatible with old library versions.
+* **[Android]** Fixed Binder race condition on Android version of joynr.
+* **[Android]** Added message queue for joynr initialization procedure.
+
+## Configuration property changes
+None.
 
 # joynr 1.11.2
 
@@ -38,7 +47,7 @@ None.
 # joynr 1.11.0
 
 ## API relevant changes
-* **[Java/JEE]** Introduced the `GuidedProxyBuilder`, which allows extended control
+* **[Java, JEE]** Introduced the `GuidedProxyBuilder`, which allows extended control
   over how proxies are built after executing a lookup. In particular, the provider
   version can be determined before actually building the proxy. The `GuidedProxyBuilder`
   can be retrieved via the `getGuidedProxyBuilder` method through the `JoynrRuntime` (Java) or
@@ -71,8 +80,6 @@ and use its native way of performing inter-process communication (IPC).
   have already been collected by the Java garbage collector.
 * **[Java]** Updated jackson.databind to version 2.9.10, net.sourceforge.htmlunit:htmlunit to 2.36.0
 * **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
-* **[Java, Generator]** Removed ProvidesJoynrTypesInfo annotation from generated classes.
-  Classes generated with the new generator will therefore not be compatible with old library versions.
 
 ## Configuration property changes
 None.
@@ -252,6 +259,7 @@ None.
 * **[Java]** Updated jackson to version 2.9.9, jackson.databind to 2.9.9.2
 * **[Java]** Updated net.sourceforge.htmlunit.htmlunit to 2.35.0
 * **[Java]** Updated smrf to 0.3.3
+* **[Java]** Updated hivemq-mqtt-client to 1.1.2
 
 ## Configuration property changes
 * **[Java, JEE]** Introduced the `PROPERTY_KEY_MQTT_CIPHERSUITES` property, which can be set via
