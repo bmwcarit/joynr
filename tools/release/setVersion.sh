@@ -58,6 +58,7 @@ tools/generator/joynr-generator-gradle-plugin/build.gradle \
 tools/generator/joynr-generator-npm/joynr-generator-npm-test/package.json \
 tools/generator/joynr-generator-npm/package.json \
 android/libjoynr-android-websocket-runtime/build.gradle \
+android/libjoynr-android-websocket-runtime/README.md \
 examples/android/android-hello-world/android-hello-world-provider/build.gradle \
 examples/android/android-hello-world/android-hello-world-consumer/build.gradle \
 android/libjoynr-android-integration-tests/test-radio-provider/build.gradle \
