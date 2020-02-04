@@ -102,6 +102,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
                                 << errorString;
             JOYNR_LOG_ERROR(logger(), messageStringStream.str());
             mosquitto_destroy(_mosq);
+            _mosq = nullptr;
             cleanupLibrary();
             throw joynr::exceptions::JoynrRuntimeException(messageStringStream.str());
         }
@@ -142,6 +143,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
 
         if (rc != MOSQ_ERR_SUCCESS) {
             mosquitto_destroy(_mosq);
+            _mosq = nullptr;
             cleanupLibrary();
             const std::string message = "Connection to " + brokerUrl.toString() +
                                         " : Mqtt TLS enabled, but TLS certificates are incorrectly "
@@ -161,6 +163,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
 
         if (rc != MOSQ_ERR_SUCCESS) {
             mosquitto_destroy(_mosq);
+            _mosq = nullptr;
             cleanupLibrary();
             const std::string message =
                     "Connection to " + brokerUrl.toString() +
@@ -175,6 +178,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
         rc = mosquitto_int_option(_mosq, MOSQ_OPT_TLS_OCSP_REQUIRED, true);
         if (rc != MOSQ_ERR_SUCCESS) {
             mosquitto_destroy(_mosq);
+            _mosq = nullptr;
             cleanupLibrary();
             const std::string message =
                     "Connection to " + brokerUrl.toString() +
@@ -354,7 +358,7 @@ void MosquittoConnection::cleanupLibrary()
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
     {
         std::unique_lock<std::mutex> lock(_libUseCountMutex);
-        if (--_libUseCount == 0) {
+        if (_libUseCount && --_libUseCount == 0) {
             mosquitto_lib_cleanup();
         }
     }
@@ -366,6 +370,10 @@ MosquittoConnection::~MosquittoConnection()
     std::lock_guard<std::mutex> stopLocker(_stopMutex);
     assert(_isStopped);
 
+    if (_mosq) {
+        mosquitto_destroy(_mosq);
+        _mosq = nullptr;
+    }
     cleanupLibrary();
 }
 
