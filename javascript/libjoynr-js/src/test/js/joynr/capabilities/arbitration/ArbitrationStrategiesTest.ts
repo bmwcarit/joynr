@@ -47,6 +47,30 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
         expect(typeof ArbitrationStrategyCollection.FixedParticipant).toBe("function");
     });
 
+    function getDiscoveryEntryWithMetaInfoForFixedParticipantId() {
+        return [
+            new DiscoveryEntryWithMetaInfo({
+                providerVersion: new Version({
+                    majorVersion: 47,
+                    minorVersion: 11
+                }),
+                domain: "myDomain",
+                interfaceName: "myInterfaceName",
+                lastSeenDateMs: 111,
+                qos: new ProviderQos({
+                    customParameters: [],
+                    priority: 1,
+                    scope: ProviderScope.GLOBAL,
+                    supportsOnChangeSubscriptions: true
+                }),
+                participantId: "myFixedParticipantId",
+                isLocal: false,
+                publicKeyId: "",
+                expiryDateMs
+            })
+        ];
+    }
+
     function getDiscoveryEntryWithMetaInfoList() {
         return [
             new DiscoveryEntryWithMetaInfo({
@@ -216,6 +240,15 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
         for (i = 0; i < lastSeen.length - 1; ++i) {
             expect(lastSeen[i].lastSeenDateMs).toBeGreaterThan(lastSeen[i + 1].lastSeenDateMs);
         }
+    });
+
+    it("Strategy 'FixedParticipantId' gets discovered capability based on fixed participantId", () => {
+        const discoveredEntries = ArbitrationStrategyCollection.FixedParticipant(
+            getDiscoveryEntryWithMetaInfoForFixedParticipantId()
+        );
+        expect(discoveredEntries.length).toBe(1);
+        expect(discoveredEntries[0].participantId).toBe("myFixedParticipantId");
+        expect(discoveredEntries[0].interfaceName).toBe("myInterfaceName");
     });
 
     it("Strategy 'Keyword' only includes capability infos that have the keyword Qos set to 'myKeyword'", () => {
