@@ -342,7 +342,7 @@ void JoynrClusterControllerRuntime::init()
                                     brokerIndex);
                     connectionData->setMosquittoConnection(mosquittoConnection);
 
-                    auto mqttTransportStatus = std::make_unique<MqttTransportStatus>(
+                    auto mqttTransportStatus = std::make_shared<MqttTransportStatus>(
                             mosquittoConnection, _availableGbids[brokerIndex]);
                     transportStatuses.emplace_back(std::move(mqttTransportStatus));
                 }
@@ -520,9 +520,15 @@ void JoynrClusterControllerRuntime::init()
                     _availableGbids[brokerIndex],
                     _messagingSettings.getTtlUpliftMs());
 
-            connectionData->getMqttMessageReceiver()->registerReceiveCallback(
-                    [mqttMessagingSkeleton](smrf::ByteVector&& msg) {
-                        mqttMessagingSkeleton->onMessageReceived(std::move(msg));
+            connectionData->getMqttMessageReceiver()
+                    ->registerReceiveCallback([mqttMessagingSkeletonWeakPtr =
+                                                       joynr::util::as_weak_ptr(
+                                                               mqttMessagingSkeleton)](
+                            smrf::ByteVector && msg) {
+                        if (auto mqttMessagingSkeletonSharedPtr =
+                                    mqttMessagingSkeletonWeakPtr.lock()) {
+                            mqttMessagingSkeletonSharedPtr->onMessageReceived(std::move(msg));
+                        }
                     });
             _multicastMessagingSkeletonDirectory
                     ->registerSkeleton<system::RoutingTypes::MqttAddress>(
