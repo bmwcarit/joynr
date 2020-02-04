@@ -9,6 +9,7 @@ None.
 
 ## Other changes
 * **[C++]** Mosquitto MQTT Client now sets message expiry interval of
+* **[Java, JEE]** HiveMQ MQTT Client now sets message expiry interval of
   published MQTT messages.
 
 ## Configuration property changes
