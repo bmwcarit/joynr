@@ -30,6 +30,8 @@ import Version from "../../../../../main/js/generated/joynr/types/Version";
 import * as CapabilitiesUtil from "../../../../../main/js/joynr/util/CapabilitiesUtil";
 import { multipleSetImmediate, reversePromise } from "../../../testUtil";
 import testUtil = require("../../../testUtil");
+import ApplicationException from "joynr/joynr/exceptions/ApplicationException";
+import DiscoveryError from "joynr/generated/joynr/types/DiscoveryError";
 const typeRegistry = require("../../../../../main/js/joynr/types/TypeRegistrySingleton").getInstance();
 typeRegistry
     .addType(DiscoveryQos)
@@ -42,7 +44,7 @@ typeRegistry
     .addType(ChannelAddress)
     .addType(Version);
 
-let domain: any, interfaceName: string, discoveryQos: DiscoveryQos;
+let participantId: any, domain: any, interfaceName: string, discoveryQos: DiscoveryQos;
 let discoveryEntries: any,
     discoveryEntriesReturned: any,
     globalDiscoveryEntries: any,
@@ -180,7 +182,6 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         localCapStoreSpy = getSpiedLookupObjWithReturnValue([]);
         globalCapCacheSpy = getSpiedLookupObjWithReturnValue([]);
         globalCapDirSpy = getSpiedLookupObjWithReturnValue(Promise.resolve({ result: [] }));
-
         proxyBuilderSpy = {
             build: jest.fn()
         };
@@ -189,6 +190,65 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         capabilityDiscovery.setDependencies(messageRouterSpy, proxyBuilderSpy);
         capabilityDiscovery.globalAddressReady(address);
         done();
+    });
+
+    describe("lookupByParticipantId", () => {
+        beforeEach(done => {
+            globalCapDirSpy = getSpiedLookupObjWithReturnValue(Promise.resolve({ result: undefined }));
+            proxyBuilderSpy.build.mockReturnValue(Promise.resolve(globalCapDirSpy));
+            done();
+        });
+
+        it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides non-empty result", () => {
+            localCapStoreSpy.lookup.mockReturnValue(discoveryEntries);
+
+            capabilityDiscovery.lookupByParticipantId(participantId, discoveryQos, gbids);
+            expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
+                participantId
+            });
+            expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
+            expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
+        });
+
+        it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when global cache provides non-empty result", () => {
+            // discoveryEntries cached in globalCapabilitiesCache
+            globalCapCacheSpy.lookup.mockReturnValue(discoveryEntries);
+
+            capabilityDiscovery.lookupByParticipantId(participantId, discoveryQos, gbids);
+            expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
+                participantId,
+                cacheMaxAge: discoveryQos.cacheMaxAge
+            });
+            expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
+                participantId
+            });
+            expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
+        });
+
+        it("calls local and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store and global cache provide empty result", async done => {
+            discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
+            try {
+                await capabilityDiscovery.lookupByParticipantId(participantId, discoveryQos, gbids);
+                done.fail("lookupByParticipantId should throw ApplicationException.");
+            } catch (e) {
+                expect(e).toBeInstanceOf(ApplicationException);
+                expect(e.error).toBeInstanceOf(DiscoveryError);
+                expect(e.error).toEqual(DiscoveryError.INTERNAL_ERROR);
+            }
+            await multipleSetImmediate();
+            expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
+                participantId
+            });
+            expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
+                participantId,
+                cacheMaxAge: discoveryQos.cacheMaxAge
+            });
+            expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
+                participantId,
+                gbids
+            });
+            done();
+        });
     });
 
     it(`throws if instantiated without knownGbids`, () => {
@@ -202,9 +262,11 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         expect(capabilityDiscovery instanceof CapabilityDiscovery).toBeTruthy();
         expect(capabilityDiscovery.lookup).toBeDefined();
         expect(typeof capabilityDiscovery.lookup === "function").toBeTruthy();
+        expect(capabilityDiscovery.lookupByParticipantId).toBeDefined();
+        expect(typeof capabilityDiscovery.lookupByParticipantId === "function").toBeTruthy();
     });
 
-    it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides non-empty result", () => {
+    it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store provides non-empty result", () => {
         localCapStoreSpy = getSpiedLookupObjWithReturnValue(discoveryEntries);
         globalCapCacheSpy = getSpiedLookupObjWithReturnValue([]);
         capabilityDiscovery = new CapabilityDiscovery(localCapStoreSpy, globalCapCacheSpy, "io.joynr", knownGbids);
@@ -220,7 +282,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
     });
 
-    it("calls local and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local cache provides empty result", async () => {
+    it("calls local and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store and global cache provide empty result", async () => {
         discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
         await capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
         await multipleSetImmediate();
@@ -249,27 +311,6 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         });
         expect(globalCapCacheSpy.lookup).not.toHaveBeenCalled();
         expect(globalCapDirSpy.lookup).not.toHaveBeenCalled();
-    });
-
-    it("calls local and global cache and global capabilities directory according to discoveryQos.discoveryScope LOCAL_THEN_GLOBAL when local store and global cache provides non-empty result", async () => {
-        discoveryQos.discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
-        await capabilityDiscovery.lookup([domain], interfaceName, discoveryQos, gbids);
-        await multipleSetImmediate();
-
-        expect(localCapStoreSpy.lookup).toHaveBeenCalledWith({
-            domains: [domain],
-            interfaceName
-        });
-        expect(globalCapCacheSpy.lookup).toHaveBeenCalledWith({
-            domains: [domain],
-            interfaceName,
-            cacheMaxAge: discoveryQos.cacheMaxAge
-        });
-        expect(globalCapDirSpy.lookup).toHaveBeenCalledWith({
-            domains: [domain],
-            interfaceName,
-            gbids
-        });
     });
 
     it("calls local capabilities directory according to discoveryQos.discoveryScope LOCAL_ONLY", () => {
@@ -564,7 +605,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         });
     }
 
-    it("calls local cap dir correctly", async () => {
+    it("add calls cap dir correctly with ProviderScope.LOCAL", async () => {
         const discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.LOCAL);
 
         await capabilityDiscovery.add(discoveryEntry);
@@ -577,7 +618,7 @@ describe("libjoynr-js.joynr.capabilities.discovery.CapabilityDiscovery", () => {
         expect(globalCapDirSpy.add).not.toHaveBeenCalledWith(undefined);
     });
 
-    it("calls global cap dir correctly", async () => {
+    it("add calls cap dir correctly with ProviderScope.GLOBAL", async () => {
         const discoveryEntry = getDiscoveryEntryWithScope(ProviderScope.GLOBAL);
         const expectedDiscoveryEntry = CapabilitiesUtil.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, address);
 
