@@ -26,7 +26,8 @@ function(AddExternalProject NAME)
         )
 
         list(FIND INPUT_ARGS "NO_PROPAGATE_CMAKE_ARGS" NO_PROPAGATE_CMAKE_ARGS_INDEX)
-        if (NO_PROPAGATE_CMAKE_ARGS_INDEX EQUAL -1)
+        list(FIND INPUT_ARGS "NO_PROPAGATE_CXX_FLAGS" NO_PROPAGATE_CXX_FLAGS_INDEX)
+        if (NO_PROPAGATE_CMAKE_ARGS_INDEX EQUAL -1 AND NO_PROPAGATE_CXX_FLAGS_INDEX EQUAL -1)
             list(
                 APPEND
                 DEFAULT_EP_ARGS
@@ -34,8 +35,22 @@ function(AddExternalProject NAME)
                                  "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
                                  "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
             )
+        elseif(NO_PROPAGATE_CXX_FLAGS_INDEX GREATER -1 AND NO_PROPAGATE_CMAKE_ARGS_INDEX EQUAL -1)
+            message(STATUS "NO_PROPAGATE_CXX_FLAGS")
+            list(
+                APPEND
+                DEFAULT_EP_ARGS
+                CMAKE_CACHE_ARGS "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}"
+                                 "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}"
+            )
         else()
+            message(STATUS "NO_PROPAGATE_CMAKE_ARGS")
+        endif()
+        if(NO_PROPAGATE_CMAKE_ARGS_INDEX GREATER -1)
             list(REMOVE_AT INPUT_ARGS ${NO_PROPAGATE_CMAKE_ARGS_INDEX})
+        endif()
+        if(NO_PROPAGATE_CXX_FLAGS_INDEX GREATER -1)
+            list(REMOVE_AT INPUT_ARGS ${NO_PROPAGATE_CXX_FLAGS_INDEX})
         endif()
 
         # if CMAKE_VERSION > 3.2 ninja generator can be used by NOT removing BUILD_BYPRODUCTS

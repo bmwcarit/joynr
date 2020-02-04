@@ -16,27 +16,28 @@ else(USE_PLATFORM_MOSQUITTO)
     message(STATUS "############ Download: mosquitto ############")
     set(MOSQUITTO_SOURCE_URL "https://github.com/eclipse/mosquitto")
     set(MOSQUITTO_SOURCE_TYPE "GIT_REPOSITORY")
-    set(MOSQUITTO_LIBRARY_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}mosquittopp${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(MOSQUITTO_LIBRARY_NAME ${CMAKE_SHARED_LIBRARY_PREFIX}mosquitto${CMAKE_SHARED_LIBRARY_SUFFIX})
 
     AddExternalProject(
         mosquitto
         ${MOSQUITTO_SOURCE_TYPE} "${MOSQUITTO_SOURCE_URL}"
         GIT_TAG v${JOYNR_REQUIRED_MOSQUITTO_VERSION}
         TIMEOUT 10
-        BUILD_BYPRODUCTS("${EXTERNAL_PROJECTS_ROOT}/src/mosquitto-build/lib/cpp/${MOSQUITTO_LIBRARY_NAME}")
+        BUILD_BYPRODUCTS("${EXTERNAL_PROJECTS_ROOT}/src/mosquitto-build/lib/${MOSQUITTO_LIBRARY_NAME}")
+        NO_PROPAGATE_CXX_FLAGS
     )
 
     ExternalProject_Get_Property(mosquitto SOURCE_DIR)
 
     # The directory does not exist when the import targets are checked. As a workaround
     # we need to create it here. Otherwise the initial cmake call will fail.
-    file(MAKE_DIRECTORY ${SOURCE_DIR}/lib/cpp)
+    file(MAKE_DIRECTORY ${SOURCE_DIR}/lib)
 
-    set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib/cpp ${SOURCE_DIR}/lib)
+    set(MOSQUITTO_INCLUDE_DIRS ${SOURCE_DIR}/lib)
     message(STATUS "variable MOSQUITTO_INCLUDE_DIRS=${MOSQUITTO_INCLUDE_DIRS}")
 
     ExternalProject_Get_Property(mosquitto BINARY_DIR)
-    set(MOSQUITTO_BINARY_DIR ${BINARY_DIR}/lib/cpp)
+    set(MOSQUITTO_BINARY_DIR ${BINARY_DIR}/lib)
     message(STATUS "variable MOSQUITTO_BINARY_DIR=${MOSQUITTO_BINARY_DIR}")
     set(MOSQUITTO_LIBRARIES ${MOSQUITTO_BINARY_DIR}/${MOSQUITTO_LIBRARY_NAME})
     message(STATUS "variable MOSQUITTO_LIBRARIES=${MOSQUITTO_LIBRARIES}")
