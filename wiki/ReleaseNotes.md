@@ -13,6 +13,7 @@ None.
 * **[C++]** Updated Mosquitto dependency to 1.6.7
 * **[Java, JEE]** Switched from MQTT 3 to MQTT 5 for HiveMQ MQTT
   Client. MQTT Paho Client continues to use MQTT 3.
+* **[Java]** Updated jackson to version 2.10.2
 
 * **[All]** Joynr now requires a MQTT broker that supports MQTT 5 and
   MQTT 3 (for global communication). MQTT 3 is still required for Paho
