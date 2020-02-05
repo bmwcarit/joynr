@@ -37,6 +37,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessagingQosEffort;
 import io.joynr.messaging.SuccessAction;
 import joynr.ImmutableMessage;
+import joynr.Message.MessageType;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -68,8 +69,41 @@ public class MqttMessagingStubTest {
     }
 
     @Test
+    public void testMessagePublishedToCorrectTopic() {
+        final String testTopic = "topicTestTopic";
+        final String expectedTopic = testTopic + "/low";
+        when(mqttAddress.getTopic()).thenReturn(testTopic);
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        Mockito.verify(mqttClient)
+               .publishMessage(eq(expectedTopic), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+    }
+
+    @Test
+    public void testMulticastMessagePublishedToCorrectTopic() {
+        final String testTopic = "topicTestTopic";
+        final String expectedTopic = testTopic;
+        when(mqttAddress.getTopic()).thenReturn(testTopic);
+        when(joynrMessage.getType()).thenReturn(MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        Mockito.verify(mqttClient)
+               .publishMessage(eq(expectedTopic), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+    }
+
+    @Test
     public void testMessagePublishedWithNormalEffort() {
         when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
+
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        Mockito.verify(mqttClient)
+               .publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+    }
+
+    @Test
+    public void testMessagePublishedWithoutEffort() {
+        when(joynrMessage.getEffort()).thenReturn(null);
 
         subject.transmit(joynrMessage, successAction, failureAction);
 

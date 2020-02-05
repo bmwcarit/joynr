@@ -38,7 +38,7 @@ public class MqttMessagingStub implements IMessagingStub {
     public static final int DEFAULT_QOS_LEVEL = 1;
     public static final int BEST_EFFORT_QOS_LEVEL = 0;
 
-    private static final String PRIORITY_LOW = "/low/";
+    private static final String PRIORITY_LOW = "/low";
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
 
@@ -52,7 +52,7 @@ public class MqttMessagingStub implements IMessagingStub {
         LOG.debug(">>> OUTGOING TO {} >>> {}", address.getBrokerUri(), message);
         String topic = address.getTopic();
         if (!Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-            topic += PRIORITY_LOW + message.getRecipient();
+            topic += PRIORITY_LOW;
         }
 
         int qosLevel = DEFAULT_QOS_LEVEL;
