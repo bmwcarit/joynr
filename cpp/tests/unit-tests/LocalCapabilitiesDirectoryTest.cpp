@@ -3017,7 +3017,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_FALSE(_localCapabilitiesDirectory->hasPendingLookups());
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntires_ReturnNonExpiredGlobalEntries)
+TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpiredGlobalEntries)
 {
     // add a few entries
     types::ProviderQos providerQos;

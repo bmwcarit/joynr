@@ -639,7 +639,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
 
     // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
-        // search for global entires in the global capabilities directory
+        // search for global entries in the global capabilities directory
         auto onSuccess = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
             participantId,
@@ -730,7 +730,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
 
     // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
-        // search for global entires in the global capabilities directory
+        // search for global entries in the global capabilities directory
         auto onSuccess = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
             interfaceAddresses,
