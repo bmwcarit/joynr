@@ -987,7 +987,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -1600,10 +1600,10 @@
 							<exportAntProperties>true</exportAntProperties>
 							<target>
 								<condition property="skip.copy-notice-and-license-files" value="true" else="false">
-									<equals arg1="${project.packaging}" arg2="pom" />
+									<equals arg1="${project.packaging}" arg2="pom"/>
 								</condition>
 								<condition property="skip.unpack-license-info" value="true" else="false">
-									<equals arg1="${project.packaging}" arg2="pom" />
+									<equals arg1="${project.packaging}" arg2="pom"/>
 								</condition>
 							</target>
 						</configuration>
