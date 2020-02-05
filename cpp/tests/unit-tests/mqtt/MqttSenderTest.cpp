@@ -77,6 +77,54 @@ protected:
     std::shared_ptr<MqttSender> mqttSender;
 };
 
+TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
+{
+    const std::string expectedTopic = mqttAddress.getTopic() + "/low";
+    MutableMessage mutableMessage;
+
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setSender("testSender");
+    mutableMessage.setRecipient("testRecipient");
+    mutableMessage.setPayload("shortMessage");
+
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
+            mutableMessage.getImmutableMessage();
+
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(Eq(expectedTopic), Eq(0), _, _, _));
+
+    mqttSender->sendMessage(mqttAddress,
+                            immutableMessage,
+                            [] (const exceptions::JoynrRuntimeException& exception) {
+                                FAIL() << "sendMessage failed: " << exception.getMessage();
+                            });
+}
+
+TEST_F(MqttSenderTest, multicastMessagePublishedToCorrectTopic)
+{
+    const std::string expectedTopic = mqttAddress.getTopic();
+    MutableMessage mutableMessage;
+
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
+    mutableMessage.setSender("testSender");
+    mutableMessage.setRecipient("testMulticastId");
+    mutableMessage.setPayload("shortMessage");
+
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
+            mutableMessage.getImmutableMessage();
+
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(Eq(expectedTopic), Eq(0), _, _, _));
+
+    mqttSender->sendMessage(mqttAddress,
+                            immutableMessage,
+                            [] (const exceptions::JoynrRuntimeException& exception) {
+                                FAIL() << "sendMessage failed: " << exception.getMessage();
+                            });
+}
+
 TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck)
 {
     MutableMessage mutableMessage;

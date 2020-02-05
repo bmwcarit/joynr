@@ -64,8 +64,7 @@ void MqttSender::sendMessage(
     if (message->getType() == Message::VALUE_MESSAGE_TYPE_MULTICAST()) {
         topic = mqttAddress->getTopic();
     } else {
-        topic = mqttAddress->getTopic() + "/" + _mosquittoConnection->getMqttPrio() + "/" +
-                message->getRecipient();
+        topic = mqttAddress->getTopic() + "/" + _mosquittoConnection->getMqttPrio();
     }
 
     int qosLevel = _mosquittoConnection->getMqttQos();
