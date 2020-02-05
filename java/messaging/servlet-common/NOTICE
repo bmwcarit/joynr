@@ -38,7 +38,9 @@ This project has dependencies to:
   jackson-databind under The Apache Software License, Version 2.0
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
+  jakarta.xml.bind-api under Eclipse Distribution License - v 1.0
   Java Servlet API under CDDL + GPLv2 with classpath exception
+  JavaBeans Activation Framework API jar under EDL 1.0
   javax.inject under The Apache Software License, Version 2.0
   jersey-core under CDDL 1.1 or GPL2 w/ CPE
   jersey-guice under CDDL 1.1 or GPL2 w/ CPE

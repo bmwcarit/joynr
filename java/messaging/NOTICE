@@ -95,6 +95,7 @@ This project has dependencies to:
   jackson-databind under The Apache Software License, Version 2.0
   Jackson-JAXRS-base under The Apache Software License, Version 2.0
   Jackson-JAXRS-JSON under The Apache Software License, Version 2.0
+  jakarta.xml.bind-api under Eclipse Distribution License - v 1.0
   Java API for XML Based RPC under CDDL-1.0
   Java API for XML Registries 1.0 under lgpl
   Java API for XML Web Services 2.2 under lgpl
@@ -105,6 +106,7 @@ This project has dependencies to:
   Java Servlet API under CDDL + GPLv2 with classpath exception
   Java(TM) EE 7 Specification APIs under CDDL + GPLv2 with classpath exception
   JavaBeans Activation Framework (JAF) under Common Development and Distribution License (CDDL) v1.0
+  JavaBeans Activation Framework API jar under EDL 1.0
   JavaEE Application Deployment 1.2 API under lgpl
   JavaMail API under CDDL/GPLv2+CE
   javax.inject under The Apache Software License, Version 2.0
