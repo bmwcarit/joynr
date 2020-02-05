@@ -26,7 +26,7 @@ import SharedMqttClient = require("./SharedMqttClient");
 const log = LoggingManager.getLogger("joynr/messaging/mqtt/MqttMessagingStub");
 
 class MqttMessagingStub {
-    public static PRIORITY_LOW = "/low/";
+    public static PRIORITY_LOW = "/low";
     private address: MqttAddress;
     private client: SharedMqttClient;
 
@@ -47,7 +47,7 @@ class MqttMessagingStub {
         log.debug(`transmit message: "${JSONSerializer.stringify(message)}"`);
         let topic = this.address.topic;
         if (!(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST === message.type)) {
-            topic += MqttMessagingStub.PRIORITY_LOW + message.to;
+            topic += MqttMessagingStub.PRIORITY_LOW;
         }
 
         return this.client.send(topic, message);
