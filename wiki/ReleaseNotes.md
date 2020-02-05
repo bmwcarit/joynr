@@ -5,11 +5,13 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.8.8
 
 ## API relevant changes
-* **[JS] Fixed potential messages loss when a websocket connection could not be
-  established
+None.
 
 ## Other changes
+* **[JS] Fixed potential messages loss when a websocket connection could not be
+  established
 * **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.3
+* **[Java]** Updated jackson to 2.10.2
 
 ## Configuration property changes
 None.
