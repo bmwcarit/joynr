@@ -539,7 +539,7 @@
 				<version>${xtext.version}</version>
 			</dependency>
 			<!--
-				This dependecy is needed to avoid conflicts with Java 5 code (generics)
+				This dependency is needed to avoid conflicts with Java 5 code (generics)
 				when pulling in transitive dependency org.apache.felix:org.osgi.foundation:1.2.0
 				that defines java.util collection classes without generics.
 				https://bugs.eclipse.org/bugs/show_bug.cgi?id=343069
