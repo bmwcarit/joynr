@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.8
+
+## API relevant changes
+* **[JS] Fixed potential messages loss when a websocket connection could not be
+  established
+
+## Other changes
+* **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.3
+
+## Configuration property changes
+None.
+
 # joynr 1.8.7
 
 ## API relevant changes
@@ -18,6 +30,9 @@ the versioning scheme [here](JoynrVersioning.md).
   in a future version of the generator. Set the #noVersionGeneration comment
   in the .fidl file instead, see [Disable versioning of generated files](#disable-versioning-of-generated-files).
 
+## Configuration property changes
+None.
+
 # joynr 1.8.6
 
 ## API relevant changes
@@ -27,6 +42,9 @@ None.
 * **[Java, JEE]** HivemqMqttClient now waits for `PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS`
   milliseconds before trying to reconnect when the initial connect fails.
 * **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
+
+## Configuration property changes
+None.
 
 # joynr 1.8.5
 
@@ -81,6 +99,9 @@ None.
   * `TLS_DHE_RSA_WITH_AES_128_GCM_SHA256`
   * `TLS_DHE_DSS_WITH_AES_128_GCM_SHA256`
   * `TLS_EMPTY_RENEGOTIATION_INFO_SCSV`
+
+## Configuration property changes
+None.
 
 # joynr 1.8.4
 
