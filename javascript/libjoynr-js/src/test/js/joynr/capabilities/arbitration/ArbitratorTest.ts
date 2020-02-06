@@ -32,6 +32,7 @@ import Version from "../../../../../main/js/generated/joynr/types/Version";
 import * as UtilInternal from "../../../../../main/js/joynr/util/UtilInternal";
 import * as testUtil from "../../../testUtil";
 import ApplicationException = require("../../../../../main/js/joynr/exceptions/ApplicationException");
+import { FIXED_PARTICIPANT_PARAMETER } from "joynr/joynr/types/ArbitrationConstants";
 
 let capabilities: any, fakeTime: number, staticArbitrationSettings: any, domain: any;
 let interfaceName: string,
@@ -40,6 +41,7 @@ let interfaceName: string,
     arbitrator: Arbitrator,
     discoveryEntries: DiscoveryEntryWithMetaInfo[],
     nrTimes: any;
+let fixedParticipantIdDiscoveryEntryWithMetaInfo: DiscoveryEntryWithMetaInfo;
 let discoveryEntryWithMajor47AndMinor0: any, discoveryEntryWithMajor47AndMinor1: any;
 let discoveryEntryWithMajor47AndMinor2: any, discoveryEntryWithMajor47AndMinor3: any;
 let discoveryEntryWithMajor48AndMinor2: any;
@@ -137,7 +139,8 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         };
 
         capDiscoverySpy = {
-            lookup: jest.fn()
+            lookup: jest.fn(),
+            lookupByParticipantId: jest.fn()
         };
         capDiscoverySpy.lookup.mockReturnValue(Promise.resolve([]));
 
@@ -226,8 +229,6 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
             expiryDateMs: Date.now() + 1e10
         });
 
-        //discoveryQos.arbitrationStrategy.and.returnValue([]);
-
         nrTimes = 5;
         fakeTime = 0;
 
@@ -239,6 +240,88 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
 
     afterEach(() => {
         jest.useRealTimers();
+    });
+
+    describe("ArbitrationStrategy.FixedParticipant", () => {
+        const expectedFixedParticipantId = "expectedFixedParticipantId";
+
+        beforeEach(() => {
+            discoveryQos.arbitrationStrategy = ArbitrationStrategyCollection.FixedParticipant;
+            discoveryQos.additionalParameters = { [FIXED_PARTICIPANT_PARAMETER]: expectedFixedParticipantId };
+
+            const expiryDateMs = Date.now() + 1e10;
+            fixedParticipantIdDiscoveryEntryWithMetaInfo = new DiscoveryEntryWithMetaInfo({
+                providerVersion: new Version({
+                    majorVersion: 47,
+                    minorVersion: 11
+                }),
+                domain,
+                interfaceName,
+                lastSeenDateMs: 111,
+                qos: new ProviderQos({
+                    customParameters: [],
+                    priority: 1,
+                    scope: ProviderScope.GLOBAL,
+                    supportsOnChangeSubscriptions: false
+                }),
+                participantId: expectedFixedParticipantId,
+                isLocal: false,
+                publicKeyId: "",
+                expiryDateMs
+            });
+
+            capDiscoverySpy.lookupByParticipantId.mockReturnValue(
+                Promise.resolve(fixedParticipantIdDiscoveryEntryWithMetaInfo)
+            );
+        });
+
+        it("calls lookup by participantId and returns entry with expected participantId", async () => {
+            // start arbitration
+            const result = await arbitrator.startArbitration({
+                domains: [domain],
+                interfaceName,
+                discoveryQos,
+                proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
+            });
+
+            expect(capDiscoverySpy.lookupByParticipantId).toHaveBeenCalled();
+            expect(capDiscoverySpy.lookupByParticipantId.mock.calls.slice(-1)[0][0]).toEqual(
+                expectedFixedParticipantId
+            );
+            expect(capDiscoverySpy.lookupByParticipantId.mock.calls.slice(-1)[0][1].cacheMaxAge).toEqual(
+                discoveryQos.cacheMaxAgeMs
+            );
+            expect(capDiscoverySpy.lookupByParticipantId.mock.calls.slice(-1)[0][1].discoveryScope.name).toEqual(
+                discoveryQos.discoveryScope.name
+            );
+            expect(capDiscoverySpy.lookupByParticipantId.mock.calls.slice(-1)[0][1].discoveryTimeout).toEqual(
+                discoveryQos.discoveryTimeoutMs
+            );
+            expect(
+                capDiscoverySpy.lookupByParticipantId.mock.calls.slice(-1)[0][1].providerMustSupportOnChange
+            ).toEqual(discoveryQos.providerMustSupportOnChange);
+            expect(capDiscoverySpy.lookupByParticipantId.mock.calls.slice(-1)[0][2]).toEqual([]);
+
+            expect(result).toEqual([fixedParticipantIdDiscoveryEntryWithMetaInfo]);
+        });
+
+        it("calls capabilityDiscovery with provided gbid array", async () => {
+            const gbids = ["joynrtestgbid"];
+
+            // start arbitration
+            await arbitrator.startArbitration({
+                domains: [domain],
+                interfaceName,
+                discoveryQos,
+                proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 }),
+                gbids
+            });
+            expect(capDiscoverySpy.lookupByParticipantId).toHaveBeenCalledWith(
+                expectedFixedParticipantId,
+                expect.any(Object),
+                gbids
+            );
+        });
     });
 
     it("is instantiable", () => {
@@ -273,13 +356,9 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
          * Thus, two discoveryScope objects cannot be compared, as during deep copy
          * complex types are created as pure objects
          */
-        //expect(capDiscoverySpy.lookup.calls.mostRecent().args[0]).toBe([domain]);
         expect(capDiscoverySpy.lookup.mock.calls.slice(-1)[0][0]).toEqual([domain]);
-        //expect(capDiscoverySpy.lookup.calls.mostRecent().args[1]).toBe(interfaceName);
         expect(capDiscoverySpy.lookup.mock.calls.slice(-1)[0][1]).toEqual(interfaceName);
-        //expect(capDiscoverySpy.lookup.calls.mostRecent().args[2].cacheMaxAge).toBe(discoveryQos.cacheMaxAgeMs);
         expect(capDiscoverySpy.lookup.mock.calls.slice(-1)[0][2].cacheMaxAge).toEqual(discoveryQos.cacheMaxAgeMs);
-        //expect(capDiscoverySpy.lookup.calls.mostRecent().args[2].discoveryScope.name).toBe(discoveryQos.discoveryScope.name);
         expect(capDiscoverySpy.lookup.mock.calls.slice(-1)[0][2].discoveryScope.name).toEqual(
             discoveryQos.discoveryScope.name
         );
