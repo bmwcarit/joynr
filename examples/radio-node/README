@@ -4,7 +4,6 @@ to try out the Radio example the following preliminary steps are necessary:
 2. run the following commands in <JOYNR_ROOT>/examples/radio-node
 
 mvn install
-npm run preinstall
 npm install -g npm@latest
 npm install
 
