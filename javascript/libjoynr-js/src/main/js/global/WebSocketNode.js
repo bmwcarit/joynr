@@ -24,7 +24,6 @@
  */
 const JoynrRuntimeException = require("../joynr/exceptions/JoynrRuntimeException");
 const UtilInternal = require("../joynr/util/UtilInternal.js");
-const MessageSerializer = require("../joynr/messaging/MessageSerializer");
 const ws = require("ws");
 
 if (typeof Buffer !== "function") {
@@ -45,23 +44,6 @@ function WebSocketNodeWrapper(remoteUrl, keychain, useUnencryptedTls) {
     }
 
     const webSocketObj = new ws(remoteUrl, clientOptions);
-
-    webSocketObj.encodeString = function(string) {
-        return Buffer.from(string);
-    };
-    webSocketObj.decodeEventData = function(data) {
-        return data;
-    };
-
-    webSocketObj.marshalJoynrMessage = function(data) {
-        return MessageSerializer.stringify(data);
-    };
-    webSocketObj.unmarshalJoynrMessage = function(event, callback) {
-        const joynrMessage = MessageSerializer.parse(event.data);
-        if (joynrMessage) {
-            callback(joynrMessage);
-        }
-    };
 
     return webSocketObj;
 }

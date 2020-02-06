@@ -19,6 +19,8 @@
 require("../../../node-unit-test-helper");
 const SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
 const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const MessageSerializer = require("../../../../../main/js/joynr/messaging/MessageSerializer");
+const Request = require("../../../../../main/js/joynr/dispatching/types/Request");
 const WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
 const WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
 const WebSocket = require("../../../../../test/js/global/WebSocketMock");
@@ -34,8 +36,17 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
     let joynrMessage = null;
 
     beforeEach(done => {
-        function JoynrMessage() {}
-        joynrMessage = new JoynrMessage();
+        const request = Request.create({
+            methodName: "methodName"
+        });
+
+        joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: JSON.stringify(request)
+        });
+        joynrMessage.from = "fromParticipantId";
+        joynrMessage.to = "toParticipantId";
+        joynrMessage.expiryDate = Date.now() + 10000;
 
         function Window() {}
         window = new Window();
@@ -106,7 +117,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
     it("calls websocket.send correctly", done => {
         websocket.readyState = WebSocket.OPEN;
         sharedWebSocket.send(joynrMessage);
-        expect(websocket.send).toHaveBeenCalledWith(websocket.marshalJoynrMessage(joynrMessage), {
+        expect(websocket.send).toHaveBeenCalledWith(MessageSerializer.stringify(joynrMessage), {
             binary: true
         });
 
@@ -122,7 +133,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
         sharedWebSocket.enableShutdownMode();
         sharedWebSocket.send(joynrMessage);
         expect(websocket.send).toHaveBeenCalledWith(
-            websocket.marshalJoynrMessage(joynrMessage),
+            MessageSerializer.stringify(joynrMessage),
             {
                 binary: true
             },
@@ -133,6 +144,55 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket", () => {
         websocket.readyState = WebSocket.CLOSING;
         sharedWebSocket.send(joynrMessage);
         expect(websocket.send).not.toHaveBeenCalled();
+        done();
+    });
+});
+
+describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket2", () => {
+    let localAddress;
+    let ccAddress;
+    let sharedWebSocket = null;
+    let joynrMessage = null;
+
+    beforeEach(done => {
+        const request = Request.create({
+            methodName: "methodName"
+        });
+
+        joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: JSON.stringify(request)
+        });
+        joynrMessage.from = "fromParticipantId";
+        joynrMessage.to = "toParticipantId";
+        joynrMessage.expiryDate = Date.now() + 10000;
+
+        WebSocket.constructorReturnsNull = true;
+        localAddress = new WebSocketClientAddress({
+            id: "1234"
+        });
+        ccAddress = new WebSocketAddress({
+            protocol: "ws",
+            host: "host",
+            port: 1234,
+            path: "/test"
+        });
+
+        sharedWebSocket = new SharedWebSocket({
+            localAddress,
+            remoteAddress: ccAddress
+        });
+        done();
+    });
+
+    afterEach(done => {
+        WebSocket.constructorReturnsNull = false;
+        done();
+    });
+
+    it("queues messages when websocket connection is not available", done => {
+        sharedWebSocket.send(joynrMessage);
+        expect(sharedWebSocket.getNumberOfQueuedMessages()).toBe(1);
         done();
     });
 });

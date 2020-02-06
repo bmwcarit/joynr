@@ -23,7 +23,9 @@ const WebSocket = require("../../../global/WebSocketNode");
 const Typing = require("../../util/Typing");
 const LongTimer = require("../../util/LongTimer");
 const LoggingManager = require("../../system/LoggingManager");
+const MessageSerializer = require("../MessageSerializer");
 const log = LoggingManager.getLogger("joynr.messaging.websocket.SharedWebSocket");
+
 /**
  * @param address
  * @param {WebSocketAddress}
@@ -78,7 +80,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
      *            libjoynr
      */
     function initializeConnection() {
-        websocket.send(websocket.encodeString(JSON.stringify(localAddress)), sendConfig);
+        websocket.send(Buffer.from(JSON.stringify(localAddress)), sendConfig);
     }
 
     /*
@@ -95,12 +97,12 @@ const SharedWebSocket = function SharedWebSocket(settings) {
     this._sendMessage = async function(joynrMessage) {
         let marshaledMessage;
         try {
-            marshaledMessage = websocket.marshalJoynrMessage(joynrMessage);
+            marshaledMessage = MessageSerializer.stringify(joynrMessage);
         } catch (e) {
             log.error(`could not marshal joynrMessage: ${joynrMessage.msgId} ${e}`);
             return Promise.resolve();
         }
-        if (websocket.readyState === WebSocket.OPEN) {
+        if (websocket !== null && websocket.readyState === WebSocket.OPEN) {
             try {
                 await this._sendInternal(marshaledMessage, sendConfig);
                 // Error is thrown if the socket is no longer open, so requeue to the front
@@ -155,7 +157,7 @@ const SharedWebSocket = function SharedWebSocket(settings) {
             return;
         }
         log.error(
-            `error in websocket: ${event.code !== undefined ? ` code: ${event.code}` : ""}${
+            `error in websocket:${event.code !== undefined ? ` code: ${event.code}` : ""}${
                 event.reason !== undefined ? ` reason: ${event.reason}` : ""
             }${event.message !== undefined ? ` message: ${event.message}` : ""}. Resetting connection`
         );
@@ -175,7 +177,9 @@ const SharedWebSocket = function SharedWebSocket(settings) {
         }
         if (event.code !== SharedWebSocket.EVENT_CODE_SHUTDOWN) {
             log.info(
-                `connection closed unexpectedly. code: ${event.code} reason: ${event.reason}. Trying to reconnect...`
+                `connection closed unexpectedly:${event.code !== undefined ? ` code: ${event.code}` : ""}${
+                    event.reason !== undefined && event.reason !== "" ? ` reason: ${event.reason}` : ""
+                }${event.message !== undefined ? ` message: ${event.message}` : ""}. Trying to reconnect...`
             );
             if (reconnectTimer !== undefined) {
                 LongTimer.clearTimeout(reconnectTimer);
@@ -206,6 +210,17 @@ const SharedWebSocket = function SharedWebSocket(settings) {
     }
 
     resetConnection();
+
+    /**
+     *
+     * Returns the number of queued messages, required only for testing purposes
+     *
+     * @name SharedWebSocket#getNumberOfQueuedMessages
+     * @function
+     */
+    this.getNumberOfQueuedMessages = function getNumberOfQueuedMessages() {
+        return queuedMessages.length;
+    };
 
     /**
      * @name SharedWebSocket#send
@@ -256,7 +271,10 @@ const SharedWebSocket = function SharedWebSocket(settings) {
             if (typeof newCallback === "function") {
                 onmessageCallback = function(data) {
                     try {
-                        websocket.unmarshalJoynrMessage(data, newCallback);
+                        const joynrMessage = MessageSerializer.parse(data.data);
+                        if (joynrMessage) {
+                            newCallback(joynrMessage);
+                        }
                     } catch (e) {
                         log.error(`could not unmarshal joynrMessage: ${e}`);
                     }

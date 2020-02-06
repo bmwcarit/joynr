@@ -64,7 +64,7 @@ describe("websocket node", () => {
     it("calls the wscpp constructor with certs  for encrypted Tls communication", () => {
         const useUnencryptedTls = false;
         websocketNode = new WebsocketNode(remoteUrl, keychainWithCerts, useUnencryptedTls);
-
+        expect(websocketNode).toBeDefined();
         expect(wscppSpy).toHaveBeenCalledWith(remoteUrl, {
             cert: keychainWithCerts.tlsCert,
             key: keychainWithCerts.tlsKey,

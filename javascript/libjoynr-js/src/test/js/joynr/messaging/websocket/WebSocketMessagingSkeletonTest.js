@@ -19,6 +19,10 @@
 require("../../../node-unit-test-helper");
 const WebSocketMessagingSkeleton = require("../../../../../main/js/joynr/messaging/websocket/WebSocketMessagingSkeleton");
 const JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
+const JSONSerializer = require("../../../../../main/js/joynr/util/JSONSerializer");
+const MessageSerializer = require("../../../../../main/js/joynr/messaging/MessageSerializer");
+const MulticastPublication = require("../../../../../main/js/joynr/dispatching/types/MulticastPublication");
+const Request = require("../../../../../main/js/joynr/dispatching/types/Request");
 const WebSocketAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketAddress");
 const WebSocketClientAddress = require("../../../../../main/js/generated/joynr/system/RoutingTypes/WebSocketClientAddress");
 const SharedWebSocket = require("../../../../../main/js/joynr/messaging/websocket/SharedWebSocket");
@@ -61,23 +65,38 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", () 
         listener = jasmine.createSpy("listener");
         function MessageEvent() {}
         event = new MessageEvent();
-        data = JoynrMessage.parseMessage({
-            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST
+        const request = Request.create({
+            methodName: "methodName"
         });
+        const joynrMessage = new JoynrMessage({
+            type: JoynrMessage.JOYNRMESSAGE_TYPE_REQUEST,
+            payload: JSON.stringify(request)
+        });
+        joynrMessage.from = "fromParticipantId";
+        joynrMessage.to = "toParticipantId";
+        joynrMessage.expiryDate = Date.now() + 10000;
+        data = joynrMessage;
         multicastEvent = new MessageEvent();
         if (typeof Buffer === "function") {
             // node environment
-            event.data = Buffer.from(JSON.stringify(data));
+            event.data = MessageSerializer.stringify(joynrMessage);
             event.target = {
                 binaryType: "arraybuffer"
             };
-            multicastEvent.data = Buffer.from(
-                JSON.stringify(
-                    new JoynrMessage({
-                        type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST
-                    })
-                )
-            );
+            const multicastId = "multicastId";
+            const publication = MulticastPublication.create({
+                response: ["test"],
+                multicastId
+            });
+
+            const multicastJoynrMessage = new JoynrMessage({
+                type: JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST,
+                payload: JSONSerializer.stringify(publication)
+            });
+            multicastJoynrMessage.from = "fromParticipantId";
+            multicastJoynrMessage.to = "toParticipantId";
+            multicastJoynrMessage.expiryDate = Date.now() + 10000;
+            multicastEvent.data = MessageSerializer.stringify(multicastJoynrMessage);
         } else if (typeof TextEncoder === "function") {
             // browser
             const textEncoder = new TextEncoder();
@@ -155,7 +174,9 @@ describe("libjoynr-js.joynr.messaging.websocket.WebSocketMessagingSkeleton", () 
 
         sharedWebSocket.onmessage(event);
 
-        expect(listener).toHaveBeenCalledWith(data);
+        expect(listener.calls.argsFor(0)[0].id).toBe(data.id);
+        expect(listener.calls.argsFor(0)[0].from).toBe(data.from);
+        expect(listener.calls.argsFor(0)[0].to).toBe(data.to);
         expect(listener.calls.count()).toBe(1);
     });
 
