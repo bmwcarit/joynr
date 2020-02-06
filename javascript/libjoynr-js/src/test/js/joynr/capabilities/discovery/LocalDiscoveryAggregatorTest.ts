@@ -52,6 +52,12 @@ describe(`libjoynr-js.joynr.capabilities.discovery.LocalDiscoveryAggregator`, ()
         expect(result).toEqual(lookupResult.result);
     });
 
+    it(`lookupByParticipantId calls DiscoveryProxy`, async () => {
+        const result = await localDiscoveryAggregator.lookupByParticipantId(participantId, discoveryQos, gbids);
+        expect(discoveryProxy.lookup).toHaveBeenCalledWith({ participantId, discoveryQos, gbids });
+        expect(result).toEqual(lookupResult.result);
+    });
+
     it(`addToAll calls DiscoveryProxy`, () => {
         localDiscoveryAggregator.addToAll(discoveryEntry, awaitGlobalRegistration);
         expect(discoveryProxy.addToAll).toHaveBeenCalledWith({ discoveryEntry, awaitGlobalRegistration });
