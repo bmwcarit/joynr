@@ -625,7 +625,8 @@ void MosquittoConnection::publishMessage(
         const std::string& topic,
         const int qosLevel,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
-        uint32_t payloadlen = 0,
+        const std::uint32_t msgTtlSec,
+        const uint32_t payloadlen = 0,
         const void* payload = nullptr)
 {
     JOYNR_LOG_DEBUG(logger(),
@@ -635,7 +636,19 @@ void MosquittoConnection::publishMessage(
                     topic);
 
     int mid;
-    const mosquitto_property* props = nullptr;
+    mosquitto_property* props = nullptr;
+    int ret = mosquitto_property_add_int32(&props, MQTT_PROP_MESSAGE_EXPIRY_INTERVAL, msgTtlSec);
+    switch (ret) {
+    case MOSQ_ERR_SUCCESS:
+        JOYNR_LOG_TRACE(logger(), "Added MQTT message expiry date in Sec {}", msgTtlSec);
+        break;
+    default:
+        // MOSQ_ERR_INVAL, MOSQ_ERR_NOMEM
+        const std::string errorString(getErrorString(ret));
+        std::string errorMsg = "Adding MQTT message expiry interval property failed: error: " +
+                               std::to_string(ret) + " (" + errorString + ")";
+        throw exceptions::JoynrRuntimeException(errorMsg);
+    }
     int rc = mosquitto_publish_v5(_mosq,
                                   &mid,
                                   topic.c_str(),

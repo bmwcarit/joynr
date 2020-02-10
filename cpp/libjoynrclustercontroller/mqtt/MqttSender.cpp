@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#include <cmath>
+
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 
 #include "joynr/ITransportMessageReceiver.h"
@@ -89,8 +91,16 @@ void MqttSender::sendMessage(
         return;
     }
 
+    std::chrono::milliseconds msgExpiryDate = message->getExpiryDate().relativeFromNow();
+    std::uint32_t ttlSec = 0;
+    if (std::ceil((msgExpiryDate.count() / 1000.0)) > std::numeric_limits<std::uint32_t>::max() ||
+        msgExpiryDate.count() < 0) {
+        ttlSec = std::numeric_limits<std::uint32_t>::max();
+    } else {
+        ttlSec = static_cast<std::uint32_t>(std::ceil(msgExpiryDate.count() / 1000.0));
+    }
     _mosquittoConnection->publishMessage(
-            topic, qosLevel, onFailure, rawMessage.size(), rawMessage.data());
+            topic, qosLevel, onFailure, ttlSec, rawMessage.size(), rawMessage.data());
 }
 
 } // namespace joynr

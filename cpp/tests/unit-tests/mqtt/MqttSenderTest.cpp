@@ -92,7 +92,13 @@ TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
     std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
             mutableMessage.getImmutableMessage();
 
-    EXPECT_CALL(*mockMosquittoConnection, publishMessage(Eq(expectedTopic), Eq(0), _, _, _));
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(
+                    Eq(expectedTopic),
+                    Eq(0),
+                    _,
+                    _,
+                    _,
+                    _));
 
     mqttSender->sendMessage(mqttAddress,
                             immutableMessage,
@@ -116,7 +122,13 @@ TEST_F(MqttSenderTest, multicastMessagePublishedToCorrectTopic)
     std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
             mutableMessage.getImmutableMessage();
 
-    EXPECT_CALL(*mockMosquittoConnection, publishMessage(Eq(expectedTopic), Eq(0), _, _, _));
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(
+                    Eq(expectedTopic),
+                    Eq(0),
+                    _,
+                    _,
+                    _,
+                    _));
 
     mqttSender->sendMessage(mqttAddress,
                             immutableMessage,

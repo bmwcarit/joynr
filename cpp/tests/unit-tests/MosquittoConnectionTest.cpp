@@ -17,6 +17,7 @@
  * #L%
  */
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <memory>
 
@@ -149,10 +150,19 @@ TEST_F(MosquittoConnectionTest, generalTest)
     const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure = nullptr;
     const auto now = TimePoint::now();
     auto immutableMessage = createMessage(now + 10000, recipient2, payload2);
+
+    std::chrono::milliseconds msgTtlMs = immutableMessage->getExpiryDate().relativeFromNow();
+    std::uint32_t msgTtlSec = static_cast<std::uint32_t>(std::ceil(msgTtlMs.count() / 1000.0));
+
     const smrf::ByteVector& rawMessage = immutableMessage->getSerializedMessage();
     const std::string topic = channelId2 + "/low";
     const int qosLevel = mosquittoConnection1->getMqttQos();
-    mosquittoConnection1->publishMessage(topic, qosLevel, onFailure, rawMessage.size(), rawMessage.data());
+    mosquittoConnection1->publishMessage(topic,
+                                         qosLevel,
+                                         onFailure,
+                                         msgTtlSec,
+                                         rawMessage.size(),
+                                         rawMessage.data());
 
     // check the message has been received on mosquittoConnection2
     EXPECT_TRUE(msgReceived2->waitFor(std::chrono::seconds(10)));

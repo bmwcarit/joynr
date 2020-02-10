@@ -84,7 +84,8 @@ public:
             const std::string& topic,
             const int qosLevel,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
-            std::uint32_t payloadlen,
+            const uint32_t msgTtlSec,
+            const uint32_t payloadlen,
             const void* payload);
     virtual void subscribeToTopic(const std::string& topic);
     virtual void unsubscribeFromTopic(const std::string& topic);
