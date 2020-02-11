@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * Copyright 2001-2005 The Apache Software Foundation.
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,58 +38,58 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     /**
      * The maven project.
      * 
-     * @parameter expression="${project}"
+     * @parameter property="project"
      * @readonly
      */
     protected MavenProject project;
 
     /**
      * The model file.
-     * @parameter expression="${joynr.generator.model}"
+     * @parameter property="joynr.generator.model"
      * @required
      */
     protected String model;
 
     /**
      * Properties full name of the root generator.
-     * @parameter expression="${joynr.generator.rootGenerator}"
+     * @parameter property="joynr.generator.rootGenerator"
      */
     protected String rootGenerator;
 
     /**
      * Properties the generation language
-     * @parameter expression="${joynr.generator.generationLanguage}"
+     * @parameter property="joynr.generator.generationLanguage"
      */
     protected String generationLanguage;
 
     /**
      * Properties the generationId
-     * @parameter expression="${joynr.generator.generationId}"
+     * @parameter property="joynr.generator.generationId"
      */
     protected String generationId;
 
     /**
      * Properties where the version shall be included in (package, name, none)
-     * @parameter expression="${joynr.generator.addVersionTo}"
+     * @parameter property="joynr.generator.addVersionTo"
      */
     protected String addVersionTo;
 
     /**
      * Properties path to the output directory.
-     * @parameter expression="${joynr.generator.outputPath}"
+     * @parameter property="joynr.generator.outputPath"
      * @required
      */
     protected String outputPath;
 
     /**
      * Properties map of additional parameters required by the custom generators
-     * @parameter expression="${joynr.generator.parameter}"
+     * @parameter property="joynr.generator.parameter"
      */
     protected Map<String, String> parameter;
 
     /**
      * Properties skips the generation, if set to true
-     * @parameter expression="${joynr.generator.skip}"
+     * @parameter property="joynr.generator.skip"
      */
     protected String skip;
 
