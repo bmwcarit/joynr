@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,10 @@ public class Executor {
                     // Guice does not allow null binding - use an empty string to show there is no generationId
                     bindConstant().annotatedWith(Names.named("generationId")).to("");
                 }
+                bindConstant().annotatedWith(Names.named("generateProxyCode")).to(arguments.getGenerateProxyCode());
+                bindConstant().annotatedWith(Names.named("generateProviderCode"))
+                              .to(arguments.getGenerateProviderCode());
+
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
                                    .toInstance(arguments.generate());
                 bind(Boolean.class).annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN))
