@@ -88,13 +88,25 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected Map<String, String> parameter;
 
     /**
+     * Properties the target
+     * @parameter property="joynr.generator.target"
+     */
+    protected String target;
+
+    /**
      * Properties skips the generation, if set to true
      * @parameter property="joynr.generator.skip"
      */
     protected String skip;
 
     public void execute() throws MojoExecutionException {
-        InvocationArguments arguments = createInvocationArguments();
+        InvocationArguments arguments;
+        try {
+            arguments = createInvocationArguments();
+        } catch (Exception e) {
+            getLog().info(e);
+            throw new MojoExecutionException("Failed to execute joynr generator plugin", e);
+        }
         int executionHashCode = arguments.getHashCodeForParameterCombination();
         String generationDonePropertyName = "generation.done.id[" + executionHashCode + "]";
 
@@ -112,6 +124,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         getLog().info("outputPath " + (outputPath == null ? "not specified" : outputPath));
         getLog().info("addVersionTo " + (addVersionTo == null ? "not specified" : addVersionTo));
         getLog().info("parameter " + (parameter == null ? "not specified" : ":"));
+        getLog().info("target " + (target == null ? "not specified" : target));
         if (parameter != null) {
             for (Map.Entry<String, String> entry : parameter.entrySet()) {
                 getLog().info("   " + entry.getKey() + ": " + entry.getValue());
@@ -132,7 +145,7 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected abstract void invokeGenerator(GeneratorTask task) throws IOException, ClassNotFoundException,
                                                                 InstantiationException, IllegalAccessException;
 
-    protected InvocationArguments createInvocationArguments() {
+    protected InvocationArguments createInvocationArguments() throws MojoExecutionException {
         InvocationArguments arguments = new InvocationArguments();
         arguments.setModelPath(model);
         arguments.setRootGenerator(rootGenerator);
@@ -143,6 +156,9 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         arguments.setParameter(parameter);
         if (parameter == null) {
             parameter = new HashMap<String, String>();
+        }
+        if (target != null) {
+            arguments.setTarget(target);
         }
         return arguments;
     }
