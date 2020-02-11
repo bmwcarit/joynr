@@ -2,7 +2,7 @@ package io.joynr.generator.interfaces
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package io.joynr.generator.interfaces
  */
 
 import com.google.inject.Inject
+import com.google.inject.name.Named
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.util.JavaTemplateFactory
 import io.joynr.generator.util.JoynrJavaGeneratorExtensions
@@ -33,6 +34,10 @@ class InterfaceGenerator {
 	extension NamingUtil
 	@Inject JavaTemplateFactory templateFactory
 
+	@Inject
+	@Named("generateProxyCode")
+	public boolean generateProxyCode;
+
 	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa){
 
 		val path = getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
@@ -42,52 +47,53 @@ class InterfaceGenerator {
 		var interfacesTemplate = templateFactory.createInterfacesTemplate(serviceInterface)
 		generateFile(
 			fsa,
-			path + serviceName + ".java",
-			interfacesTemplate
+			path + serviceName + ".java", interfacesTemplate
 		);
 
-		var interfaceSyncTemplate = templateFactory.createInterfaceSyncTemplate(serviceInterface)
-		generateFile(
-			fsa,
-			path + serviceName + "Sync.java",
-			interfaceSyncTemplate
-		);
-
-		var interfaceAsyncTemplate = templateFactory.createInterfaceAsyncTemplate(serviceInterface)
-		generateFile(
-			fsa,
-			path + serviceName + "Async.java",
-			interfaceAsyncTemplate
-		);
-
-		var interfaceFireAndForgetTemplate = templateFactory.createInterfaceFireAndForgetTemplate(serviceInterface)
-		generateFile(
-			fsa,
-			path + serviceName + "FireAndForget.java",
-			interfaceFireAndForgetTemplate
-		);
-
-		var interfaceStatelessAsyncTemplate = templateFactory.createInterfaceStatelessAsyncTemplate(serviceInterface)
-		generateFile(
-			fsa,
-			path + serviceName + "StatelessAsync.java",
-			interfaceStatelessAsyncTemplate
-		)
-
-		var interfaceStatelessAsyncCallbackTemplate = templateFactory.createInterfaceStatelessAsyncCallbackTemplate(serviceInterface)
-		generateFile(
-			fsa,
-			path + serviceName + "StatelessAsyncCallback.java",
-			interfaceStatelessAsyncCallbackTemplate
-		)
-
-		if (serviceInterface.attributes.size>0){
-			var interfaceSubscriptionTemplate = templateFactory.createInterfaceSubscriptionTemplate(serviceInterface)
+		if (generateProxyCode) {
+			var interfaceSyncTemplate = templateFactory.createInterfaceSyncTemplate(serviceInterface)
 			generateFile(
 				fsa,
-				path + serviceName + "SubscriptionInterface.java",
-				interfaceSubscriptionTemplate
+				path + serviceName + "Sync.java",
+				interfaceSyncTemplate
 			);
+
+			var interfaceAsyncTemplate = templateFactory.createInterfaceAsyncTemplate(serviceInterface)
+			generateFile(
+				fsa,
+				path + serviceName + "Async.java",
+				interfaceAsyncTemplate
+			);
+
+			var interfaceFireAndForgetTemplate = templateFactory.createInterfaceFireAndForgetTemplate(serviceInterface)
+			generateFile(
+				fsa,
+				path + serviceName + "FireAndForget.java",
+				interfaceFireAndForgetTemplate
+			);
+
+			var interfaceStatelessAsyncTemplate = templateFactory.createInterfaceStatelessAsyncTemplate(serviceInterface)
+			generateFile(
+				fsa,
+				path + serviceName + "StatelessAsync.java",
+				interfaceStatelessAsyncTemplate
+			)
+
+			var interfaceStatelessAsyncCallbackTemplate = templateFactory.createInterfaceStatelessAsyncCallbackTemplate(serviceInterface)
+			generateFile(
+				fsa,
+				path + serviceName + "StatelessAsyncCallback.java",
+				interfaceStatelessAsyncCallbackTemplate
+			)
+
+			if (serviceInterface.attributes.size>0){
+				var interfaceSubscriptionTemplate = templateFactory.createInterfaceSubscriptionTemplate(serviceInterface)
+				generateFile(
+					fsa,
+					path + serviceName + "SubscriptionInterface.java",
+					interfaceSubscriptionTemplate
+				);
+			}
 		}
 
 		if (serviceInterface.broadcasts.size>0){

@@ -3,7 +3,7 @@ package io.joynr.generator
 /*
  * !!!
  * 
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,14 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
+	@Inject
+	@Named("generateProxyCode")
+	public boolean generateProxyCode;
+
+	@Inject
+	@Named("generateProviderCode")
+	public boolean generateProviderCode;
+
 	override getLanguageId() {
 		"java"
 	}
@@ -98,9 +106,13 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		for (fInterface : fModel.interfaces) {
 			printVersionWarnings(fInterface, packageWithVersion, nameWithVersion)
 			interfacesGenerator.doGenerate(fInterface, fsa)
-			proxyGenerator.doGenerate(fInterface, fsa)
-			providerGenerator.doGenerate(fInterface, fsa)
-			filterGenerator.doGenerate(fInterface, fsa)
+			if (generateProxyCode) {
+				proxyGenerator.doGenerate(fInterface, fsa)
+			}
+			if (generateProviderCode) {
+				providerGenerator.doGenerate(fInterface, fsa)
+				filterGenerator.doGenerate(fInterface, fsa)
+			}
 		}
 		// cleanDirectory(containerpath)
 		communicationModelGenerator.doGenerate(fModel, fsa)
