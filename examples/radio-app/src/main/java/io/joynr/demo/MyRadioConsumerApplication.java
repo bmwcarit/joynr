@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     private static final Logger LOG = LoggerFactory.getLogger(MyRadioConsumerApplication.class);
     public static final String APP_CONFIG_PROVIDER_DOMAIN = "javademoapp.provider.domain";
     private static final String STATIC_PERSISTENCE_FILE = "consumer-joynr.properties";
+    public static final String MISSING_NAME = "MISSING_NAME";
 
     @Inject
     @Named(APP_CONFIG_PROVIDER_DOMAIN)
@@ -513,7 +514,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                         + errorName);
             } catch (ProviderRuntimeException exception) {
                 String errorName = exception.getMessage();
-                String expectation = errorName.equals(MyRadioProvider.MISSING_NAME) ? "expected" : "unexpected";
+                String expectation = errorName.equals(MISSING_NAME) ? "expected" : "unexpected";
                 LOG.info(PRINT_BORDER + "METHOD: addFavoriteStation failed with the following " + expectation
                         + " exception: " + errorName);
             }
