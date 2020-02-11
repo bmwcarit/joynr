@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,10 @@ public class InvocationArguments {
 
     private String addVersionTo = "none";
 
+    private boolean generateProxyCode = true;
+
+    private boolean generateProviderCode = true;
+
     public InvocationArguments() {
         // allows setting args programmatically
     }
@@ -124,6 +128,8 @@ public class InvocationArguments {
         usageString.append("      Optional, C++ only: \n");
         usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
         usageString.append("       -includePrefix <prefix to use in include statements>\n");
+        usageString.append("      Optional:\n");
+        usageString.append("       -target proxy|provider|both:\n");
         return usageString.toString();
     }
 
@@ -184,7 +190,27 @@ public class InvocationArguments {
             } else if (args[i].equalsIgnoreCase("-requireJSSupport")) {
                 setParameterElement("requireJSSupport", args[i + 1].replace("\"", ""));
                 i++;
+            } else if (args[i].equalsIgnoreCase("-target")) {
+                setTarget(args[i + 1]);
+                i++;
+            } else if (args[i].equalsIgnoreCase("-requireJSSupport")) {
+                setParameterElement("requireJSSupport", args[i + 1].replace("\"", ""));
+                i++;
             }
+        }
+    }
+
+    public void setTarget(String target) {
+        if (target == null) {
+            throw new IllegalArgumentException("-target called with illegal parameter null");
+        } else if (target.equals("proxy")) {
+            setGenerateProviderCode(false);
+        } else if (target.equals("provider")) {
+            setGenerateProxyCode(false);
+        } else if (target.equals("both")) {
+            // no action required, default is already true
+        } else {
+            throw new IllegalArgumentException("-target called with illegal parameter " + target);
         }
     }
 
@@ -338,6 +364,22 @@ public class InvocationArguments {
         sb.append(generate());
         sb.append(clean());
         return sb.toString().hashCode();
+    }
+
+    public void setGenerateProxyCode(boolean generateProxyCode) {
+        this.generateProxyCode = generateProxyCode;
+    }
+
+    public boolean getGenerateProxyCode() {
+        return generateProxyCode;
+    }
+
+    public void setGenerateProviderCode(boolean generateProviderCode) {
+        this.generateProviderCode = generateProviderCode;
+    }
+
+    public boolean getGenerateProviderCode() {
+        return generateProviderCode;
     }
 
 }
