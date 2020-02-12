@@ -107,6 +107,106 @@ TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
                             });
 }
 
+TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
+{
+    const TimePoint now = TimePoint::now();
+    const std::uint32_t expectedRoundedMsgTtlSec = 61;
+    auto onFailure = [] (const exceptions::JoynrRuntimeException& exception) {
+        FAIL() << "sendMessage failed: " << exception.getMessage();
+    };
+
+    MutableMessage mutableMessage;
+
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setSender("testSender");
+    mutableMessage.setRecipient("testRecipient");
+    mutableMessage.setPayload("shortMessage");
+    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(60700)); // 60,7 sec will be rounded to 61 sec
+
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage1 =
+            mutableMessage.getImmutableMessage();
+
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(
+                    _,
+                    _,
+                    _,
+                    Eq(expectedRoundedMsgTtlSec),
+                    _,
+                    _));
+
+    mqttSender->sendMessage(mqttAddress, immutableMessage1, onFailure);
+
+    auto relativeTtl1 = immutableMessage1->getExpiryDate().relativeFromNow().count();
+
+    ASSERT_TRUE(relativeTtl1 % 1000 > 600 && relativeTtl1 % 1000 < 800);
+
+    // Second message with different expiry date
+    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(60200)); // 60,2 sec will be rounded to 61 sec
+
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage2 =
+            mutableMessage.getImmutableMessage();
+
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(
+                    _,
+                    _,
+                    _,
+                    Eq(expectedRoundedMsgTtlSec),
+                    _,
+                    _));
+
+    mqttSender->sendMessage(mqttAddress, immutableMessage2, onFailure);
+
+    auto relativeTtl2 = immutableMessage2->getExpiryDate().relativeFromNow().count();
+
+    ASSERT_TRUE(relativeTtl2 % 1000 > 100 && relativeTtl2 % 1000 < 300);
+}
+
+TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecGreaterThanMaxIntervalAlwaysSetToMaxInterval)
+{
+    const TimePoint now = TimePoint::now();
+    const std::uint32_t MESSAGE_EXPIRY_MAX_INTERVAL = std::numeric_limits<std::uint32_t>::max();
+    const std::uint32_t expectedMaxMsgTtlSec = MESSAGE_EXPIRY_MAX_INTERVAL;
+
+    auto onFailure = [] (const exceptions::JoynrRuntimeException& exception) {
+        FAIL() << "sendMessage failed: " << exception.getMessage();
+    };
+
+    MutableMessage mutableMessage;
+
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setSender("testSender");
+    mutableMessage.setRecipient("testRecipient");
+    mutableMessage.setPayload("shortMessage");
+
+    mutableMessage.setExpiryDate(now + std::chrono::seconds(MESSAGE_EXPIRY_MAX_INTERVAL) +
+                                 std::chrono::seconds(6));
+
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage1 =
+            mutableMessage.getImmutableMessage();
+
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(
+                    _,
+                    _,
+                    _,
+                    Eq(expectedMaxMsgTtlSec),
+                    _,
+                    _)).Times(2);
+
+    mqttSender->sendMessage(mqttAddress, immutableMessage1, onFailure);
+
+    mutableMessage.setExpiryDate(TimePoint::fromAbsoluteMs(-1000));
+
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage2 =
+            mutableMessage.getImmutableMessage();
+
+    mqttSender->sendMessage(mqttAddress, immutableMessage2, onFailure);
+
+}
+
 TEST_F(MqttSenderTest, multicastMessagePublishedToCorrectTopic)
 {
     const std::string expectedTopic = mqttAddress.getTopic();
