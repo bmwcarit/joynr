@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,11 @@ open class JoynrGeneratorPluginExtension(project: Project) {
      * Sets the generation ID (optional).
      */
     val generationId = project.objects.property(String::class.java)!!
+
+    /**
+     * Sets the target (optional).
+     */
+    val target = project.objects.property(String::class.java)!!
 
     /**
      * If set to true, execution of the joynr generator is skipped (optional).

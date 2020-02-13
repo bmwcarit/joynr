@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ class JoynrGeneratorArgumentHandler(
     private var generationLanguage: Property<String>,
     private var rootGenerator: Property<String>,
     private var generationId: Property<String>,
+    private var target: Property<String>,
     /**
      * kotlin.Boolean can not be used as property type here,
      * as this value is set by gradle during runtime to a value of type java.lang.Boolean
@@ -99,6 +100,14 @@ class JoynrGeneratorArgumentHandler(
             it.generationId = generationId.orNull
             if (addVersionTo.isPresent) {
                 it.setAddVersionTo(addVersionTo.get())
+            }
+            if (target.isPresent) {
+                try {
+                    it.setTarget(target.get())
+                } catch (e: IllegalArgumentException) {
+                    logger.error("The specified target is not valid: " + target.get())
+                    e.printStackTrace()
+                }
             }
             extraParametersStringMap.forEach { (key, value) ->
                 run {

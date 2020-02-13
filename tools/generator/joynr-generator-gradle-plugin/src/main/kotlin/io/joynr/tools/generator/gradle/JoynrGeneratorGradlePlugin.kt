@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,8 +68,9 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         val joynrGeneratorArgumentHandler = JoynrGeneratorArgumentHandler(
             project.logger,
             extension.modelPath, extension.outputPath, extension.generationLanguage,
-            extension.rootGenerator, extension.generationId, extension.skip,
-            extension.addVersionTo, extension.extraParameters, project
+            extension.rootGenerator, extension.generationId, extension.target,
+            extension.skip, extension.addVersionTo, extension.extraParameters,
+            project
         )
 
         val task = project.tasks.create(
