@@ -197,6 +197,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     public void addMulticastReceiver(final String multicastId,
                                      String subscriberParticipantId,
                                      String providerParticipantId) {
+        if (!routingTable.containsKey(providerParticipantId)) {
+            logger.error("The provider {} is not known, multicast receiver will not be added.", providerParticipantId);
+            throw new JoynrIllegalStateException("The provider " + providerParticipantId
+                    + " is not known, multicast receiver will not be added.");
+        }
         logger.trace("Adding multicast receiver {} for multicast {} on provider {}",
                      subscriberParticipantId,
                      multicastId,
@@ -215,6 +220,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                         String subscriberParticipantId,
                                         String providerParticipantId) {
         multicastReceiverRegistry.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+        if (!routingTable.containsKey(providerParticipantId)) {
+            logger.error("The provider {} is not known, multicast receiver cannot be removed.", providerParticipantId);
+            throw new JoynrIllegalStateException("The provider " + providerParticipantId
+                    + " is not known, multicast receiver will not be added.");
+        }
         performSubscriptionOperation(multicastId, providerParticipantId, new SubscriptionOperation() {
             @Override
             public void perform(IMessagingMulticastSubscriber messagingMulticastSubscriber) {

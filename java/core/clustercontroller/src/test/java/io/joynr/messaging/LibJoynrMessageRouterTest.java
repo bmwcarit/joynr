@@ -42,6 +42,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.common.ExpiryDate;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.routing.AddressManager;
@@ -208,26 +209,13 @@ public class LibJoynrMessageRouterTest {
     }
 
     @Test
-    public void addMulticastReceiverForUnknownNotInProcessProvider() {
-        final String multicastId = "multicastIdTest";
-        final String subscriberParticipantId = "subscriberParticipantIdTest";
-        final String providerParticipantId = "providerParticipantIdTest";
-        when(routingTable.get(providerParticipantId)).thenReturn(null);
-
-        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-        // we expect this to be called because the provider is not reachable via an InProcessAddress
-        verify(messageRouterParent).addMulticastReceiver(eq(multicastId),
-                                                         eq(subscriberParticipantId),
-                                                         eq(providerParticipantId));
-    }
-
-    @Test
     public void addMulticastReceiverForInProcessProvider() {
         InProcessAddress mockInProcessAddress = mock(InProcessAddress.class);
         final String multicastId = "multicastIdTest";
         final String subscriberParticipantId = "subscriberParticipantIdTest";
         final String providerParticipantId = "providerParticipantIdTest";
         when(routingTable.get(providerParticipantId)).thenReturn(mockInProcessAddress);
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
 
         messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         // we don't expect this to be called
@@ -243,6 +231,7 @@ public class LibJoynrMessageRouterTest {
         final String subscriberParticipantId = "subscriberParticipantIdTest";
         final String providerParticipantId = "providerParticipantIdTest";
         when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
 
         messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         verify(messageRouterParent).addMulticastReceiver(eq(multicastId),
@@ -257,6 +246,7 @@ public class LibJoynrMessageRouterTest {
         final String subscriberParticipantId = "subscriberParticipantIdTest";
         final String providerParticipantId = "providerParticipantIdTest";
         when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
 
         messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
@@ -270,5 +260,55 @@ public class LibJoynrMessageRouterTest {
         final String participantId = "setToKnownParticipantId";
         messageRouter.setToKnown(participantId);
         verify(routingTable).put(participantId, parentAddress, false, Long.MAX_VALUE);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void addMulticastReceiver_throwsWhenAddressIsUnknown() {
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(false);
+
+        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        verify(messagingSkeletonFactory, times(0)).getSkeleton(any());
+    }
+
+    @Test
+    public void addMulticastReceiver_callsMessagingSkeletonFactoryWhenAddressIsKnown() {
+        WebSocketAddress mockWebSocketAddress = mock(WebSocketAddress.class);
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
+
+        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        verify(messagingSkeletonFactory, times(1)).getSkeleton(mockWebSocketAddress);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void removeMulticastRecevier_throwsWhenAddressIsUnknown() {
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(false);
+
+        messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        verify(multicastReceiverRegistry, times(1)).unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+        verify(messagingSkeletonFactory, times(0)).getSkeleton(any());
+    }
+
+    @Test
+    public void removeMulticastReceveiver_callsMessagingSkeletonFactoryWhenAddressIsKnown() {
+        WebSocketAddress mockWebSocketAddress = mock(WebSocketAddress.class);
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
+
+        messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        verify(multicastReceiverRegistry, times(1)).unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+        verify(messagingSkeletonFactory, times(1)).getSkeleton(any());
     }
 }
