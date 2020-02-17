@@ -3,7 +3,7 @@ message(STATUS "Configuring JoynrClusterController...")
 message(STATUS "#############################################\n")
 
 ### Add mosquitto mqtt ###########################################################
-set(JOYNR_REQUIRED_MOSQUITTO_VERSION 1.6.7)
+set(JOYNR_REQUIRED_MOSQUITTO_VERSION 1.6.8)
 if(USE_PLATFORM_MOSQUITTO)
     find_package(mosquitto ${JOYNR_REQUIRED_MOSQUITTO_VERSION} REQUIRED)
 
@@ -22,6 +22,7 @@ else(USE_PLATFORM_MOSQUITTO)
         mosquitto
         ${MOSQUITTO_SOURCE_TYPE} "${MOSQUITTO_SOURCE_URL}"
         GIT_TAG v${JOYNR_REQUIRED_MOSQUITTO_VERSION}
+        PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/../docker/joynr-base/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch
         TIMEOUT 10
         BUILD_BYPRODUCTS("${EXTERNAL_PROJECTS_ROOT}/src/mosquitto-build/lib/${MOSQUITTO_LIBRARY_NAME}")
         NO_PROPAGATE_CXX_FLAGS
