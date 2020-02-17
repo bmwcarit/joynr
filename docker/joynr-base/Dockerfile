@@ -1,7 +1,7 @@
 FROM fedora:30
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2019-12-05-11-20
+ENV REFRESHED_AT 2020-02-17-08-00
 
 ###################################################
 # create data directories and volumes
@@ -67,8 +67,8 @@ RUN dnf update -y \
     libX11-devel \
     libXi-devel \
     libXrender-devel \
-    mosquitto \
-    mosquitto-devel \
+    libuuid-devel \
+    libwebsockets-devel \
     net-tools \
     openssl \
     openssl-devel \
@@ -133,6 +133,20 @@ RUN asadmin start-domain && \
     asadmin --user admin stop-domain --kill=true
 
 RUN chmod -R 777 /opt/payara41
+
+###################################################
+# build and install mosquitto 1.6.8 mqtt broker
+# do not build documentation
+# use default settings
+###################################################
+COPY 0001-Introduce-mosquitto_connect_bind_async_v5-API.patch /tmp/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch
+RUN . /etc/profile \
+    && cd /opt \
+    && git clone https://github.com/eclipse/mosquitto \
+    && cd mosquitto \
+    && git checkout v1.6.8 \
+    && git am -k /tmp/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch \
+    && make WITH_WEBSOCKETS=yes DOCDIRS= prefix=/usr install -j4
 
 ###################################################
 # copy mosquitto.conf
