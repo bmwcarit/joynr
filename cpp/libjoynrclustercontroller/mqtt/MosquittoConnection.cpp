@@ -428,7 +428,11 @@ void MosquittoConnection::start()
                    _host,
                    _port);
 
-    mosquitto_connect_async(_mosq, _host.c_str(), _port, _mqttKeepAliveTimeSeconds.count());
+    mosquitto_property* props = nullptr;
+    mosquitto_property_add_int32(
+            &props, MQTT_PROP_SESSION_EXPIRY_INTERVAL, std::numeric_limits<std::int32_t>::max());
+    mosquitto_connect_bind_async_v5(
+            _mosq, _host.c_str(), _port, _mqttKeepAliveTimeSeconds.count(), nullptr, props);
 
     mosquitto_reconnect_delay_set(_mosq,
                                   _mqttReconnectDelayTimeSeconds.count(),

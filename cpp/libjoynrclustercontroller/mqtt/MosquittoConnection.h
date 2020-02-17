@@ -27,6 +27,7 @@
 #include <mutex>
 
 #include <mosquitto.h>
+#include <mqtt_protocol.h>
 
 #if (LIBMOSQUITTO_VERSION_NUMBER < 1006007)
 #error unsupported libmosquitto version, must be 1.6.7 or later
