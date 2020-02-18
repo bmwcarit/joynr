@@ -59,7 +59,9 @@ Arbitrator::Arbitrator(
           arbitrationFinished(false),
           arbitrationRunning(false),
           keepArbitrationRunning(false),
-          arbitrationThread()
+          arbitrationThread(),
+          startTimePoint(),
+          _onceFlag()
 {
 }
 
@@ -154,13 +156,19 @@ void Arbitrator::startArbitration(
             if (!thisSharedPtr->keepArbitrationRunning) {
                 thisSharedPtr->arbitrationError.setMessage(
                         "Shutting Down Arbitration for interface " + thisSharedPtr->interfaceName);
-                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+                std::call_once(thisSharedPtr->_onceFlag,
+                               thisSharedPtr->onErrorCallback,
+                               thisSharedPtr->arbitrationError);
                 // If this point is reached the arbitration timed out
             } else if (thisSharedPtr->discoveredIncompatibleVersions.empty()) {
-                thisSharedPtr->onErrorCallback(thisSharedPtr->arbitrationError);
+                std::call_once(thisSharedPtr->_onceFlag,
+                               thisSharedPtr->onErrorCallback,
+                               thisSharedPtr->arbitrationError);
             } else {
-                thisSharedPtr->onErrorCallback(exceptions::NoCompatibleProviderFoundException(
-                        thisSharedPtr->discoveredIncompatibleVersions));
+                std::call_once(thisSharedPtr->_onceFlag,
+                               thisSharedPtr->onErrorCallback,
+                               exceptions::NoCompatibleProviderFoundException(
+                                       thisSharedPtr->discoveredIncompatibleVersions));
             }
         }
 
@@ -352,7 +360,7 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         }
         if (!res.getParticipantId().empty()) {
             if (onSuccessCallback) {
-                onSuccessCallback(res);
+                std::call_once(_onceFlag, onSuccessCallback, res);
             }
             arbitrationFinished = true;
         }

@@ -12,6 +12,7 @@ None.
   established
 * **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.3
 * **[Java]** Updated jackson to 2.10.2
+* **[C++]** Prevent Arbitrator/ProxyBuilder from invocing callbacks multiple times
 
 ## Configuration property changes
 None.
