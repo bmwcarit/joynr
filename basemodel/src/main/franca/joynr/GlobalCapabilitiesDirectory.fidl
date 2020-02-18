@@ -46,7 +46,7 @@ import types.* from "DiscoveryTypes.fidl"
 **>
 interface GlobalCapabilitiesDirectory{
 
-	version {major 0 minor 2}
+	version {major 0 minor 3}
 
 	<**
 		@description: Registers several providers with the backend. The providers are registered
@@ -283,10 +283,30 @@ interface GlobalCapabilitiesDirectory{
 	}
 
 
+	<**
+		@description: Unregisters stale providers of a specific cluster controller which have been
+			registered in a previous cluster controller lifecycle from all backends. Only providers
+			with a lower last seen date than the provided maximum shall be removed.
+	**>
+	method removeStale {
+		in {
+			<**
+				@description: Identifies the cluster controller for which GlobalDiscoveryEntries
+					shall be removed
+			**>
+			String clusterControllerId
+
+			<** @description: The largest last seen date for entries to be removed. All entries
+					which have a lower last seen date shall be removed. All other entries have to
+					be kept.
+			**>
+			Int64 maxLastSeenDateMs
+		}
+	}
 
 	<**
 		@description: Updates the last seen date of all GlobalDiscoveryEntries of a specific cluster
-			controller.
+			controller (in all backends).
 	**>
 	method touch {
 		in {
@@ -295,6 +315,31 @@ interface GlobalCapabilitiesDirectory{
 					be updated.
 			**>
 			String clusterControllerId
+		}
+	}
+
+
+	<**
+		@description: Updates the last seen date and the expiry date of the GlobalDiscoveryEntries
+			of a specific cluster controller (in all backends) which correspond to the provided list
+			of participant Ids. <br>
+			The last seen date will be set to the time of the touch call ('now'), the expiry date
+			will be extended, i.e. it will be set to 'now + N', where N is the configured default
+			provider / discovery entry expiry interval (6 weeks by default).
+	**>
+	method touch {
+		in {
+			<**
+				@description: Identifies the cluster controller for which the last seen date and
+					the expiry date shall be updated.
+			**>
+			String clusterControllerId
+
+			<**
+				@description: List of participantIds for which the last seen date and the expiry
+					date shall be updated in the correponding GlobalDiscoveryEntries.
+			**>
+			String[] participantIds
 		}
 	}
 
