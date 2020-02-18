@@ -133,6 +133,7 @@ private:
     std::atomic<bool> _arbitrationStopped;
     std::thread _arbitrationThread;
     std::chrono::steady_clock::time_point _startTimePoint;
+    std::once_flag _onceFlag;
     ADD_LOGGER(Arbitrator)
 };
 
