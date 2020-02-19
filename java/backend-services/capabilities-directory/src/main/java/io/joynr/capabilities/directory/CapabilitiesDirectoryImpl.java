@@ -478,4 +478,14 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         return new Promise<DeferredVoid>(deferred);
     }
 
+    @Override
+    public Promise<DeferredVoid> removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
+        DeferredVoid deferred = new DeferredVoid();
+        final String message = "Error: removeStale method for clusterControllerId: " + clusterControllerId
+                + " and maxLastSeenDateMs: " + maxLastSeenDateMs + " is not yet implemented";
+        logger.error(message);
+        deferred.reject(new ProviderRuntimeException(message));
+        return new Promise<DeferredVoid>(deferred);
+    }
+
 }

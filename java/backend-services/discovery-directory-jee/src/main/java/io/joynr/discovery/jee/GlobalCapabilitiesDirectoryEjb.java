@@ -488,4 +488,12 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         throw new ProviderRuntimeException(message);
     }
 
+    @Override
+    public void removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
+        final String message = "Error: removeStale method for clusterControllerId: " + clusterControllerId
+                + " and maxLastSeenDateMs: " + maxLastSeenDateMs + " is not yet implemented";
+        logger.error(message);
+        throw new ProviderRuntimeException(message);
+    }
+
 }
