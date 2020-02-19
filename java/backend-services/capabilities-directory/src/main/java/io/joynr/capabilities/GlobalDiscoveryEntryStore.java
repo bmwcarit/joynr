@@ -38,6 +38,8 @@ public interface GlobalDiscoveryEntryStore<T extends GlobalDiscoveryEntry> {
 
     public abstract void touch(String clusterControllerId);
 
+    public abstract void touch(String clusterControllerId, String[] participantIds);
+
     public abstract boolean hasDiscoveryEntry(GlobalDiscoveryEntryPersisted discoveryEntry);
 
 }

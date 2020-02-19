@@ -37,6 +37,7 @@ import com.google.inject.Singleton;
 import com.google.inject.persist.PersistService;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
@@ -242,5 +243,13 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
             logger.error("Error updating last seen date for cluster controller with ID {}", clusterControllerId, e);
         }
 
+    }
+
+    @Override
+    public void touch(String clusterControllerId, String[] participantIds) {
+        final String message = "Error: touch method for clusterControllerId: " + clusterControllerId
+                + " and participantIds: " + Arrays.toString(participantIds) + " is not yet implemented";
+        logger.error(message);
+        throw new ProviderRuntimeException(message);
     }
 }

@@ -468,4 +468,14 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         return new Promise<DeferredVoid>(deferred);
     }
 
+    @Override
+    public Promise<DeferredVoid> touch(String clusterControllerId, String[] participantIds) {
+        DeferredVoid deferred = new DeferredVoid();
+        final String message = "Error: touch method for clusterControllerId: " + clusterControllerId
+                + " and participantIds: " + Arrays.toString(participantIds) + " is not yet implemented";
+        logger.error(message);
+        deferred.reject(new ProviderRuntimeException(message));
+        return new Promise<DeferredVoid>(deferred);
+    }
+
 }

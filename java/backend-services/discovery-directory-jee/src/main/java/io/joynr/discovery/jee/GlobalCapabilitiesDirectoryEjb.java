@@ -480,4 +480,12 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         }
     }
 
+    @Override
+    public void touch(String clusterControllerId, String[] participantIds) {
+        final String message = "Error: touch method for clusterControllerId: " + clusterControllerId
+                + " and participantIds: " + Arrays.toString(participantIds) + " is not yet implemented";
+        logger.error(message);
+        throw new ProviderRuntimeException(message);
+    }
+
 }
