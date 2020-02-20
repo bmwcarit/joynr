@@ -1,6 +1,6 @@
 # joynr with multiple backends: Global Capabilities Directory in multiple backends
 
-Examples and additional information for GlobalCapabilitiesDirectory.fidl version 0.2.
+Examples and additional information for GlobalCapabilitiesDirectory.fidl version 0.2 and 0.3
 
 
 ## Abbreviations
@@ -27,7 +27,7 @@ Examples and additional information for GlobalCapabilitiesDirectory.fidl version
 
 * **All interface changes and their implementation must be backward compatible so that old joynr
   applications (cc runtime) are able to interoperate with the new version of the GCD.**
-* GCD implements the new interface version 0.2:
+* GCD implements the new interface version 0.3:
   [GlobalCapabilitiesDirectory.fidl](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl)
 * The new GCD implementation replaces the old implementation:
   * The new GCD service (all instances) replaces the old GCD service (all instances)
@@ -82,6 +82,15 @@ GlobalCapabilitiesDirectory.fidl:
 * Modelled errors for the new methods: see GcdErrors in
   [GlobalCapabilitiesDirectory.fidl](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl)
 
+## Interface changes between version 0.2 and version 0.3
+GlobalCapabilitiesDirectory.fidl:
+* Additional methods
+  * `removeStale` method:
+    * parameters: clusterControllerId, maxLastSeenDateMs
+    * Remove stale providers of a previous CC lifecycle, see below.
+  * new `touch` method
+    * parameters: clusterControllerId, array of participantIds
+    * Update last seen date and expiry date for the list of participantIds, see below.
 
 ## Implementation details
 
@@ -266,7 +275,6 @@ GlobalCapabilitiesDirectory.fidl:
      invoked GCD instance is located
   3. GCD: Remove all found `GlobalDiscoveryEntry`
 
-
 #### New `remove` method
 * Signature: `remove(participantId, gbids[])`
 * Invalid and unknown GBIDs are handled like in the new `add`method (see above)
@@ -288,6 +296,11 @@ GlobalCapabilitiesDirectory.fidl:
   1. CC: Call `remove(participantId1, [GBID1])`
   2. GCD: Nothing found for GBID1: returns error value `NO_ENTRY_FOR_PARTICIPANT`
 
+#### New `removeStale` method (introduced in interface version 0.3)
+  * Signature: `removeStale(clusterControllerId, maxLastSeenDateMs)`
+  * Unregisters stale providers of a specific cluster controller which have been registered in a
+    previous cluster controller lifecycle from all backends. Only providers with a lower last seen
+    date than the provided maximum last seen date shall be removed.
 
 ### `Touch`
 
@@ -296,3 +309,11 @@ GlobalCapabilitiesDirectory.fidl:
 * Update the last seen date of all registrations for all GBIDs of the given clusterControllerId  
   (The clusterControllerId is part of the address of a GDE, in case of an MqttAddress, it is part
   of the topic)
+
+#### New `touch` method (introduced in interface version 0.3)
+  * Signature: `touch(clusterControllerId, participantIds[])`
+  * Update the expiry date of the GlobalDiscoveryEntries of a specific cluster controller
+    (in all backends) which correspond to the provided list of participant Ids.
+  * The last seen date will be set to the time of the touch call ('now'), the expiry date will be
+    extended, i.e. it will be set to 'now + N', where N is the configured default
+    provider / discovery entry expiry interval (6 weeks by default)
