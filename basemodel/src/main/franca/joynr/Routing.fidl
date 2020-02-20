@@ -68,6 +68,12 @@ typeCollection RoutingTypes {
 		String path
 	}
 
+	<** @description: Unix domain socket server address **>
+	struct UdsAddress extends Address {
+		<** @description: Unix domain socket server path **>
+		String path
+	}
+
 	<** @description: MQTT protocol type **>
 	enumeration MqttProtocol  {
 		<** @description: TCP (non-secure) **>
@@ -78,6 +84,12 @@ typeCollection RoutingTypes {
 
 		<** @description: MQTT (secure) **>
 		MQTTS
+	}
+
+	<** @description: Unix domain socket client address **>
+	struct UdsClientAddress extends Address {
+		<** @description: Unix domain socket client ID **>
+		String id
 	}
 
 	<** @description: Websocket client address **>
