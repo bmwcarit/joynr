@@ -520,9 +520,13 @@ Example for the usage of a GuidedProxyBuilder:
 
 ```java
 ...
+// getGuidedProxyBuilder(...) requires some existing proxy class version as parameter
+// (e.g. v4), but the concrete version does not matter since the interfaceName will
+// be derived from it, which is identical for all proxy class versions.
 Set<String> domains = new HashSet<>();
 domains.add(providerDomainOne);
-GuidedProxyBuilder guidedProxyBuilder = serviceLocator.getGuidedProxyBuilder(domains, <Interface>Proxy.class);
+GuidedProxyBuilder guidedProxyBuilder =
+    serviceLocator.getGuidedProxyBuilder(domains, joynr.<Package>.v4.<Interface>Proxy.class);
 DiscoveryResult discoveryResult;
 try {
     discoveryResult = guidedProxyBuilder
@@ -543,7 +547,7 @@ DiscoveryEntry lastSeenEntry = discoveryResult.getLastSeen();
     Collection<DiscoveryEntry> allDiscoveryEntries = discoveryResult.getAllDiscoveryEntries();
     Collection<DiscoveryEntry> discoveryEntriesWithKey = discoveryResult.getWithKeyword(keyword);
 */
-if (lastSeenEntry.getVersion().getMajorVersion() == 4) {
+if (lastSeenEntry.getProviderVersion().getMajorVersion() == 4) {
     // use the generated proxy interface for version 4.x
     joynr.<Package>.v4.<Interface>Proxy proxy = guidedProxyBuilder
         .buildProxy(joynr.<Package>.v4.<Interface>Proxy.class, lastSeenEntry.getParticipantId());
