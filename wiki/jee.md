@@ -482,11 +482,6 @@ The time-to-live for joynr messages can be set through either withTtl(ttl) API
 or inside messagingQos using withMessagingQos(messagingQos) API. Please use only
 one of both APIs, if at all, since they may override each others settings.
 
-It is also possible to target multiple providers with one proxy. You can achieve
-this by either spcifying a set of domains during lookup, or a custom
-`ArbitrationStrategyFunction` in the `DiscoveryQos`, or combine both approaches.
-See the [Java Developer Guide](java.md) for details.
-
 By default providers are looked up in all known backends.  
 In case of global discovery, the default backend connection is used (identified by
 the first GBID configured at the cluster controller).  
@@ -498,6 +493,13 @@ connection to the backend identified by the first gbid in the list of provided G
 __IMPORTANT__: if you intend to have your logic make multiple calls to the same
 provider, then you should locally cache the proxy instance returned by the
 ServiceLocator, as the operation of creating a proxy is expensive.
+
+#### Multi-proxies
+
+It is also possible to target multiple providers with one proxy. You can achieve
+this by specifying a set of domains for the ProxyBuilder / ServiceLocator and a custom
+`ArbitrationStrategyFunction` in the `DiscoveryQos`, that selects a set of providers.
+See the [Java Developer Guide](java.md#multi-proxies) for details.
 
 #### The guided proxy builder
 For enhanced control over the proxy creation process, the GuidedProxyBuilder can be used.

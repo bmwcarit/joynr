@@ -202,7 +202,7 @@ The class ```DiscoveryQos``` configures how the search for a provider will be ha
   provider was found within the given time. A timeout triggers a DiscoveryException or
   NoCompatibleProviderFoundException containing the versions of the discovered incompatible
   providers.  
-  See also [`PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`](#property_discovery_default_timeout_ms).
+  See also [`PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS`](JavaSettings.md#property_discovery_default_timeout_ms).
 * **retryIntervalMs** The time to wait between discovery retries after encountering a discovery error.  
   See also [`PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS`](JavaSettings.md#property_discovery_default_retry_interval_ms)
   and [`PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS`](JavaSettings.md#property_discovery_minimum_retry_interval_ms).
@@ -243,7 +243,7 @@ sorted and / or filtered to select a Provider:
 * **FixedChannel** select provider which matches the participantId provided as custom parameter in
    DiscoveryQos (see below), if existing
 * **Custom** Allows you to provide a `ArbitrationStrategyFunction` to allow custom
-  selection of discovered entries
+  selection of discovered entries (only possible via constructor)
 
 **Default arbitration strategy:** ```LastSeen```
 
@@ -360,26 +360,6 @@ public void run() {
 A callback can also be added to the proxyBuilder.build() call, allowing application code to be
 notified when the discovery process has completed.
 
-It is also possible to obtain a proxy for targeting multiple providers. You can either do
-this by specifying a set of domains, by providing a custom `ArbitrationStrategyFunction`
-(see The discovery quality of service above) or a combination of the two.
-When you create such a multi-proxy, a call to a method on that proxy will result in 'n'
-calls to the providers, where 'n' is the number of providers targeted.
-It is only possible to send calls to multiple providers if the methods are fire-and-forget.
-Attempts to make calls to non-fire-and-forget methods from a multi-proxy will result in an
-exception being thrown.
-
-So, for example, if we change the code above to target two domains, we get:
-
-```java
-...
-	Set<String> domains = new HashSet<>();
-	domains.add(providerDomainOne);
-	domains.add(providerDomainTwo);
-	ProxyBuilder<<Interface>Proxy> proxyBuilder =
-		runtime.getProxyBuilder(domains, <Interface>Proxy.class);
-...
-```
 By default, providers are looked up in all known backends.  
 In case of global discovery, the default backend connection is used (identified by the
 first GBID configured at the cluster controller).  
@@ -387,6 +367,56 @@ The discovery of providers can be restricted to certain backends by specifying o
 global backend ids (GBIDs) using the setGbids(gbids) API.  
 If setGbids(gbids) API is used, then the global discovery will take place over the
 connection to the backend identified by the first GBID in the list of provided GBIDs.
+
+## Multi-proxies
+
+It is also possible to obtain a proxy for targeting multiple providers that implement the same
+interface (multi-proxy). You can achieve this by specifying a set of domains for the ProxyBuilder
+and a custom `ArbitrationStrategyFunction` in the `DiscoveryQos`(see section
+[The discovery quality of service](#the-discovery-quality-of-service) above), that returns a set of
+providers.
+
+> Note: The proxy creation is only successful if at least one provider could be discovered for each
+specified domain.
+
+When you create such a multi-proxy, a call to a method on that proxy will result in 'n'
+calls to the providers, where 'n' is the number of providers targeted.
+It is only possible to send calls to multiple providers if the methods are fire-and-forget.
+Attempts to make calls to non-fire-and-forget methods from a multi-proxy will result in an
+exception being thrown. In case of the async API, the exception will be reported via the callback
+and the future.
+
+So, for example, if we change the code above to target two domains, we get:
+
+```java
+...
+    Set<String> domains = new HashSet<>();
+    domains.add(providerDomainOne);
+    domains.add(providerDomainTwo);
+
+    discoveryQos = new DiscoveryQos(<discoveryTimeoutMs>,
+                                    <retryIntervalMs>,
+                                    new ArbitrationStrategyFunction() {
+        @Override
+        protected Set<DiscoveryEntryWithMetaInfo> select(
+                    Map<String, String> parameters,
+                    Collection<DiscoveryEntryWithMetaInfo> capabilities) {
+            // filter capabilities here as needed
+            // the proxy will be created for the returned entries
+            return new HashSet<>(capabilities);
+        }
+    }, <cacheMaxAgeMs>, <discoveryScope>);
+
+    ProxyBuilder<<Interface>Proxy> proxyBuilder =
+        runtime.getProxyBuilder(domains, <Interface>Proxy.class);
+
+    <interface>Proxy = proxyBuilder.
+    setMessagingQos(messagingQos). // optional
+    setDiscoveryQos(discoveryQos). // mandatory for a multi-proxy
+    setGbids(gbids).               // optional
+    build();
+...
+```
 
 ## The guided proxy builder
 For enhanced control over the proxy creation process, the GuidedProxyBuilder can be used.
