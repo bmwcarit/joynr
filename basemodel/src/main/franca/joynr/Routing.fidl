@@ -231,6 +231,28 @@ interface Routing {
 			<** @description: the ID of the target participant **>
 			String participantId
 			<**
+				@description: the messaging unix domain socket server address of the next hop
+					towards the corresponding participant ID
+			**>
+			RoutingTypes.UdsAddress udsAddress
+			<** @description: true, participant is globally visible
+					  false, otherwise
+			**>
+			Boolean isGloballyVisible
+		}
+	}
+
+	<**
+		@description: Adds a hop to the parent routing table.
+			<br/>
+			The overloaded methods (one for each concrete Address type) is
+			needed since polymorphism is currently not supported by joynr.
+	**>
+	method addNextHop {
+		in {
+			<** @description: the ID of the target participant **>
+			String participantId
+			<**
 				@description: the messaging address of the next hop towards
 					the corresponding participant ID
 			**>
@@ -263,6 +285,29 @@ interface Routing {
 			Boolean isGloballyVisible
 		}
 	}
+
+	<**
+		@description: Adds a hop to the parent routing table.
+			<br/>
+			The overloaded methods (one for each concrete Address type) is
+			needed since polymorphism is currently not supported by joynr.
+	**>
+	method addNextHop {
+		in {
+			<** @description: the ID of the target participant **>
+			String participantId
+			<**
+				@description: the messaging unix domain client address of the next hop towards
+					the corresponding participant ID
+			**>
+			RoutingTypes.UdsClientAddress udsClientAddress
+			<** @description: true, participant is globally visible
+					  false, otherwise
+			**>
+			Boolean isGloballyVisible
+		}
+	}
+
 
 	<** @description: Removes a hop from the parent routing table. **>
 	method removeNextHop {
