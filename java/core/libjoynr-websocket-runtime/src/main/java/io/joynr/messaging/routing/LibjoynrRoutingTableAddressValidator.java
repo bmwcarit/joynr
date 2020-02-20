@@ -25,6 +25,8 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.UdsAddress;
+import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
@@ -37,24 +39,28 @@ public class LibjoynrRoutingTableAddressValidator implements RoutingTableAddress
         if (address instanceof WebSocketAddress || address instanceof InProcessAddress) {
             return true;
         }
-        logger.error("An address which is neither of type WebSocketAddress nor InProcessMessagingAddress"
+        logger.error("An address which is neither of type WebSocketAddress nor InProcessAddress"
                 + " will not be used for libjoynr Routing Table: {}", address);
         return false;
     }
 
     @Override
     public boolean allowUpdate(final RoutingEntry oldEntry, final RoutingEntry newEntry) {
-        // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress > MqttAddress/ChannelAddress
+        // precedence: InProcessAddress > WebSocketAddress/UdsAddress > WebSocketClientAddress/UdsClientAddress > MqttAddress/ChannelAddress
         if (newEntry.address instanceof InProcessAddress) {
             return true;
-        } else if (!(oldEntry.getAddress() instanceof InProcessAddress)) {
-            if (newEntry.address instanceof WebSocketAddress) {
+        }
+        if (!(oldEntry.getAddress() instanceof InProcessAddress)) {
+            if (newEntry.address instanceof WebSocketAddress || newEntry.address instanceof UdsAddress) {
                 return true;
-            } else if (!(oldEntry.getAddress() instanceof WebSocketAddress)) {
-                // old address is WebSocketClientAddress or MqttAddress/ChannelAddress
-                if (newEntry.getAddress() instanceof WebSocketClientAddress) {
+            } else if (!(oldEntry.getAddress() instanceof WebSocketAddress)
+                    && !(oldEntry.getAddress() instanceof UdsAddress)) {
+                // old address is WebSocketClientAddress or UdsClientAddress or MqttAddress/ChannelAddress
+                if (newEntry.getAddress() instanceof WebSocketClientAddress
+                        || newEntry.getAddress() instanceof UdsClientAddress) {
                     return true;
-                } else if (!(oldEntry.getAddress() instanceof WebSocketClientAddress)) {
+                } else if (!(oldEntry.getAddress() instanceof WebSocketClientAddress)
+                        && !(oldEntry.getAddress() instanceof UdsClientAddress)) {
                     // old address is MqttAddress or ChannelAddress
                     if (newEntry.address instanceof MqttAddress || newEntry.address instanceof ChannelAddress) {
                         return true;

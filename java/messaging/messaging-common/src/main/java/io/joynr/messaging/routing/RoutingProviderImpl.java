@@ -24,12 +24,16 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BinderAddress;
@@ -37,6 +41,8 @@ import joynr.system.RoutingTypes.BrowserAddress;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
+import joynr.system.RoutingTypes.UdsAddress;
+import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
@@ -51,6 +57,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     private String replyToAddressString;
     private List<Deferred<String>> unresolvedGlobalAddressDeferreds = new ArrayList<Deferred<String>>();
     private List<Deferred<String>> unresolvedReplyToAddressDeferreds = new ArrayList<Deferred<String>>();
+    private static final Logger logger = LoggerFactory.getLogger(RoutingProviderImpl.class);
 
     /**
      * @param messageRouter handles the logic for the RoutingProvider
@@ -122,6 +129,15 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     }
 
     @Override
+    public Promise<DeferredVoid> addNextHop(String participantId, UdsAddress address, Boolean isGloballyVisible) {
+        final DeferredVoid deferred = new DeferredVoid();
+        final String message = "UdsAddress is not supported in Java";
+        logger.error(message);
+        deferred.reject(new ProviderRuntimeException(message));
+        return new Promise<>(deferred);
+    }
+
+    @Override
     public Promise<DeferredVoid> addNextHop(String participantId,
                                             BinderAddress binderAddress,
                                             Boolean isGloballyVisible) {
@@ -135,6 +151,15 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
                                             Boolean isGloballyVisible) {
         messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
+    }
+
+    @Override
+    public Promise<DeferredVoid> addNextHop(String participantId, UdsClientAddress address, Boolean isGloballyVisible) {
+        final DeferredVoid deferred = new DeferredVoid();
+        final String message = "UdsClientAddress is not supported in Java";
+        logger.error(message);
+        deferred.reject(new ProviderRuntimeException(message));
+        return new Promise<>(deferred);
     }
 
     @Override
@@ -192,4 +217,5 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
         }
         return new Promise<Deferred<String>>(replyToAddressDeferred);
     }
+
 }
