@@ -22,13 +22,16 @@ This project has dependencies to:
   Apache HttpClient under Apache License, Version 2.0
   Apache HttpCore under Apache License, Version 2.0
   Apache Log4j under The Apache Software License, Version 2.0
+  Byte Buddy (without dependencies) under Apache License, Version 2.0
+  ClassMate under Apache License, Version 2.0
   clustercontroller-inprocess-runtime under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Logging under The Apache Software License, Version 2.0
-  Core Hibernate O/RM functionality under GNU Lesser General Public License
   Dagger under Apache 2.0
-  dom4j under BSD License
+  dom4j under BSD 3-clause New License
   ehcache under The Apache Software License, Version 2.0
+  Extended StAX API under Dual license consisting of the CDDL v1.1 and GPL v2
+  fastinfoset under Apache License, Version 2.0
   FindBugs-jsr305 under The Apache Software License, Version 2.0
   FlatBuffers Java API under Apache License V2.0
   Google Guice - Core Library under The Apache Software License, Version 2.0
@@ -36,8 +39,9 @@ This project has dependencies to:
   Google Guice - Extensions - MultiBindings under The Apache Software License, Version 2.0
   Google Guice - Extensions - Persist under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
-  Hibernate Commons Annotations under GNU Lesser General Public License
-  Hibernate JPA Support under GNU Lesser General Public License
+  Hibernate Commons Annotations under GNU Library General Public License v2.1 or later
+  Hibernate ORM - hibernate-core under GNU Library General Public License v2.1 or later
+  Hibernate ORM - hibernate-entitymanager under GNU Library General Public License v2.1 or later
   HiveMQ MQTT Client under The Apache License, Version 2.0
   io.joynr.java.backend-services:capabilities-directory under The Apache Software License, Version 2.0
   io.joynr.java.common:access-control-common under The Apache Software License, Version 2.0
@@ -53,16 +57,20 @@ This project has dependencies to:
   io.joynr.mqtt:mqtt-client under Eclipse Public License - Version 1.0
   io.joynr.smrf.java:smrf under The Apache Software License, Version 2.0
   io.joynr.smrf.java:smrf-api under The Apache Software License, Version 2.0
+  istack common utility code runtime under CDDL 1.1 or GPL2 w/ CPE
   Jackson-annotations under The Apache Software License, Version 2.0
   Jackson-core under The Apache Software License, Version 2.0
   jackson-databind under The Apache Software License, Version 2.0
-  Java Annotation Indexer under AL 2.0
+  Java Annotation Indexer under Apache License, Version 2.0
   Java Concurrency Tools Core Library under Apache License, Version 2.0
-  Java Persistence API, Version 2.1 under Eclipse Public License (EPL), Version 1.0 or Eclipse Distribution License (EDL), Version 1.0
   Java Transaction API under Common Development and Distribution License or GNU General Public License, Version 2 with the Classpath Exception
+  JavaBeans Activation Framework API jar under CDDL/GPLv2+CE
   Javassist under MPL 1.1 or LGPL 2.1 or Apache License 2.0
   javax.inject under The Apache Software License, Version 2.0
   javax.interceptor API under CDDL + GPLv2 with classpath exception
+  javax.persistence-api under Eclipse Public License v1.0 or Eclipse Distribution License v. 1.0
+  JAXB Runtime under CDDL+GPL License
+  jaxb-api under CDDL 1.1 or GPL2 w/ CPE
   JBoss Logging 3 under Apache License, version 2.0
   JetBrains Java Annotations under The Apache Software License, Version 2.0
   JUnit under Eclipse Public License 1.0
@@ -81,5 +89,5 @@ This project has dependencies to:
   SLF4J API Module under MIT License
   SLF4J LOG4J-12 Binding under MIT License
   SpotBugs Annotations under GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
-  XML Commons External Components XML APIs under The Apache Software License, Version 2.0
+  TXW2 Runtime under CDDL+GPL License
 
