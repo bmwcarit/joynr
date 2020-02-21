@@ -44,7 +44,7 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Future;
@@ -299,11 +299,11 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
             if (transport.contains("mqtt")) {
                 configureMqtt(joynrConfig);
-                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+                backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }
             return Modules.override(runtimeModule).with(backendTransportModules);
         }
-        return Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
+        return Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule());
     }
 
     private static void configureWebSocket(String host, int port, Properties joynrConfig) {

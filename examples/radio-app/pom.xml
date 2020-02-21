@@ -69,7 +69,7 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
-			<artifactId>paho-mqtt-client</artifactId>
+			<artifactId>hivemq-mqtt-client</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
 		<!-- Logging used in the demo app -->

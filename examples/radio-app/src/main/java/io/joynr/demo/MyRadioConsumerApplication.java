@@ -49,7 +49,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
@@ -306,13 +306,13 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             if (transport.contains("mqtt")) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
                 joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+                backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }
 
             return Modules.override(runtimeModule).with(backendTransportModules);
         }
 
-        return Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
+        return Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule());
     }
 
     @Override
