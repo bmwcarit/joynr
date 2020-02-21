@@ -46,6 +46,8 @@ import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.UdsAddress;
+import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
@@ -127,6 +129,20 @@ public class RoutingTableImplTest {
     public void testPutAndGetForGcdParticipantId_WebSocketAddress() {
         WebSocketAddress address = new WebSocketAddress();
         WebSocketAddress expectedAddress = new WebSocketAddress(address);
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        subject.put(gcdParticipantId, address, isGloballyVisible, expiryDateMs);
+
+        Address result = subject.get(gcdParticipantId);
+        assertNotNull(result);
+        assertEquals(expectedAddress, result);
+
+    }
+
+    @Test
+    public void testPutAndGetForGcdParticipantId_UdsAddress() {
+        UdsAddress address = new UdsAddress();
+        UdsAddress expectedAddress = new UdsAddress(address);
         final boolean isGloballyVisible = false;
         final long expiryDateMs = Long.MAX_VALUE;
         subject.put(gcdParticipantId, address, isGloballyVisible, expiryDateMs);
@@ -261,6 +277,16 @@ public class RoutingTableImplTest {
         WebSocketAddress expectedWebSocketAddress = new WebSocketAddress(webSocketAddress);
 
         testPutAndGetWithGbid_noGbidReplacement(participantId, webSocketAddress, expectedWebSocketAddress);
+
+        UdsAddress udsAddress = new UdsAddress();
+        UdsAddress expectedUdsAddress = new UdsAddress(udsAddress);
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, udsAddress, expectedUdsAddress);
+
+        UdsClientAddress udsClientAddress = new UdsClientAddress();
+        UdsClientAddress expectedUdsClientAddress = new UdsClientAddress(udsClientAddress);
+
+        testPutAndGetWithGbid_noGbidReplacement(participantId, udsClientAddress, expectedUdsClientAddress);
 
         WebSocketClientAddress webSocketClientAddress = new WebSocketClientAddress();
         WebSocketClientAddress expectedWebSocketClientAddress = new WebSocketClientAddress(webSocketClientAddress);
@@ -497,6 +523,8 @@ public class RoutingTableImplTest {
         final ChannelAddress channelAddress = new ChannelAddress();
         final WebSocketAddress webSocketAddress = new WebSocketAddress();
         final WebSocketClientAddress webSocketClientAddress = new WebSocketClientAddress();
+        final UdsAddress udsAddress = new UdsAddress();
+        final UdsClientAddress udsClientAddress = new UdsClientAddress();
         final InProcessAddress inProcessAddress = new InProcessAddress();
 
         final String participantId = "testParticipantId";
@@ -507,12 +535,16 @@ public class RoutingTableImplTest {
         subject.put(participantId, channelAddress, isGloballyVisible, expiryDateMs);
         subject.put(participantId, webSocketAddress, isGloballyVisible, expiryDateMs);
         subject.put(participantId, webSocketClientAddress, isGloballyVisible, expiryDateMs);
+        subject.put(participantId, udsAddress, isGloballyVisible, expiryDateMs);
+        subject.put(participantId, udsClientAddress, isGloballyVisible, expiryDateMs);
         subject.put(participantId, inProcessAddress, isGloballyVisible, expiryDateMs);
 
         verify(addressValidatorMock).isValidForRoutingTable(mqttAddress);
         verify(addressValidatorMock).isValidForRoutingTable(channelAddress);
         verify(addressValidatorMock).isValidForRoutingTable(webSocketAddress);
         verify(addressValidatorMock).isValidForRoutingTable(webSocketClientAddress);
+        verify(addressValidatorMock).isValidForRoutingTable(udsAddress);
+        verify(addressValidatorMock).isValidForRoutingTable(udsClientAddress);
         verify(addressValidatorMock).isValidForRoutingTable(inProcessAddress);
     }
 

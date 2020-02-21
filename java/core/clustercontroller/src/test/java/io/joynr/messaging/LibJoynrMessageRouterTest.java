@@ -20,6 +20,8 @@ package io.joynr.messaging;
 
 import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -53,10 +55,13 @@ import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
+import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LibJoynrMessageRouterTest {
@@ -68,11 +73,15 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private RoutingProxy messageRouterParent;
     @Mock
+    private RoutingProxy messageRouterParentUdsAddress;
+    @Mock
     private ChannelAddress parentAddress;
     @Mock
     private ChannelAddress nextHopAddress;
     @Mock
-    private WebSocketAddress incomingAddress;
+    private WebSocketClientAddress incomingAddress;
+    @Mock
+    private UdsClientAddress incomingUdsClientAddress;
     @Mock
     private MessagingStubFactory messagingStubFactory;
     @Mock
@@ -92,6 +101,7 @@ public class LibJoynrMessageRouterTest {
 
     private MessageQueue messageQueue;
     private LibJoynrMessageRouter messageRouter;
+    private LibJoynrMessageRouter messageRouterForUdsAddresses;
     private String unknownParticipantId = "unknownParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
     private int maxParallelSends = 10;
@@ -132,6 +142,18 @@ public class LibJoynrMessageRouterTest {
                                                   multicastReceiverRegistry,
                                                   messageQueue,
                                                   shutdownNotifier);
+        messageRouterForUdsAddresses = new LibJoynrMessageRouter(routingTable,
+                                                                 incomingUdsClientAddress,
+                                                                 provideMessageSchedulerThreadPoolExecutor(),
+                                                                 sendMsgRetryIntervalMs,
+                                                                 maxParallelSends,
+                                                                 routingTableCleanupIntervalMs,
+                                                                 messagingStubFactory,
+                                                                 messagingSkeletonFactory,
+                                                                 addressManager,
+                                                                 multicastReceiverRegistry,
+                                                                 messageQueue,
+                                                                 shutdownNotifier);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
     }
 
@@ -156,6 +178,25 @@ public class LibJoynrMessageRouterTest {
         final boolean isGloballyVisible = true;
         messageRouter.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
         verify(messageRouterParent).addNextHop(eq(unknownParticipantId), eq(incomingAddress), eq(isGloballyVisible));
+    }
+
+    @Test(expected = ProviderRuntimeException.class)
+    public void setParentRouter_UdsClientAddress_throws() {
+        // throws because UdsClientAddress is not supported in Java
+        messageRouterForUdsAddresses.setParentRouter(messageRouterParentUdsAddress,
+                                                     parentAddress,
+                                                     "anotherParentParticipantId",
+                                                     "anotherProxyParticipantId");
+    }
+
+    @Test
+    public void passesAddNextHopToParent_UdsClientAddress() {
+        // parent router is not called because UdsClientAddress is not supported
+        final boolean isGloballyVisible = true;
+        messageRouterForUdsAddresses.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
+        verify(messageRouterParentUdsAddress, times(0)).addNextHop(anyString(),
+                                                                   any(UdsClientAddress.class),
+                                                                   anyBoolean());
     }
 
     ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
