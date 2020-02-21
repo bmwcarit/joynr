@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hivemq.client.mqtt.datatypes.MqttQos;
+import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
@@ -37,6 +38,7 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.Mqtt5Unsubscribe;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
@@ -81,7 +83,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     @Override
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the connect via callbacks.")
     public synchronized void start() {
-        logger.info("Initialising MQTT client {} -> {}", this, client);
+        logger.info("Initializing MQTT client {} -> {}", this, client);
         if (!client.getConfig().getState().isConnected()) {
             while (!client.getConfig().getState().isConnected()) {
                 logger.info("Attempting to connect client {} (clean session {}) ...", client, cleanSession);
@@ -93,14 +95,22 @@ public class HivemqMqttClient implements JoynrMqttClient {
                     client.connect(mqtt5Connect)
                           .timeout(connectionTimeoutSec, TimeUnit.SECONDS)
                           .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.", client, connAck))
-                          .doOnError(throwable -> logger.error("Unable to connect MQTT client {}.", client, throwable))
+                          .doOnError(throwable -> {
+                              if (!(throwable instanceof MqttClientStateException)) {
+                                  // ignore MqttClientStateException: MQTT client is already connected or connecting
+                                  logger.error("Unable to connect MQTT client {}.", client, throwable);
+                              }
+                          })
                           .blockingGet();
-                } catch (RuntimeException e) {
-                    logger.error("Exception while connecting MQTT client.", e);
+                } catch (Exception e) {
+                    if (!(e instanceof MqttClientStateException)) {
+                        // ignore MqttClientStateException: MQTT client is already connected or connecting
+                        logger.error("Exception while connecting MQTT client.", e);
+                    }
                     try {
-                        client.wait(reconnectDelayMs);
-                    } catch (InterruptedException interruptedException) {
-                        logger.error("Exception while waiting to reconnect to MQTT client.", interruptedException);
+                        wait(reconnectDelayMs);
+                    } catch (Exception exception) {
+                        logger.error("Exception while waiting to reconnect to MQTT client.", exception);
                     }
                 }
             }
@@ -152,6 +162,10 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
+        if (publishConsumer == null) {
+            logger.debug("Publishing to {} with qos {} failed: publishConsumer not set", topic, qosLevel);
+            throw new JoynrDelayMessageException("MQTT Publish failed: publishConsumer has not been set yet");
+        }
         logger.debug("Publishing to {} with qos {} using {}", topic, qosLevel, publishConsumer);
         Mqtt5Publish mqtt5Publish = Mqtt5Publish.builder()
                                                 .topic(topic)
