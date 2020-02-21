@@ -80,7 +80,7 @@ public class MessagingSkeletonFactory implements ShutdownListener {
                         } catch (Exception e) {
                             logger.error("unable to start skeleton: {}. Reason: {}",
                                          messagingSkeletonFactory.getClass().getSimpleName(),
-                                         e.getMessage());
+                                         e.toString());
                         }
                     }
                 }, 0, TimeUnit.MILLISECONDS);
