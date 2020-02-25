@@ -57,6 +57,8 @@
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/UdsAddress.h"
+#include "joynr/system/RoutingTypes/UdsClientAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
@@ -427,6 +429,12 @@ bool CcMessageRouter::isValidForRoutingTable(
                         address->toString());
         return false;
     }
+    if (dynamic_cast<const system::RoutingTypes::UdsAddress*>(address.get()) != nullptr) {
+        JOYNR_LOG_ERROR(logger(),
+                        "UdsAddress will not be used for CC Routing Table: {}",
+                        address->toString());
+        return false;
+    }
     if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(address.get()) != nullptr &&
         typeid(_ownGlobalAddress) == typeid(system::RoutingTypes::MqttAddress)) {
         const auto mqttAddress =
@@ -449,29 +457,47 @@ bool CcMessageRouter::isValidForRoutingTable(
 bool CcMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
                                               const system::RoutingTypes::Address& newAddress)
 {
-    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress >
-    // WebSocketAddress
+    // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress
+    // > MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
     if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
         return true;
     }
-    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) == nullptr) {
-        if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
-            return true;
-        } else if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(
-                           oldEntry.address.get()) == nullptr) {
-            // old address is MqttAddress/ChannelAddress or WebSocketAddress
-            if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
-                typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
-                return true;
-            } else if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(
-                               oldEntry.address.get()) != nullptr) {
-                // old address is WebSocketAddress
-                if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
-                    return true;
-                }
-            }
-        }
+
+    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) != nullptr) {
+        return false;
     }
+
+    if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress) ||
+        typeid(newAddress) == typeid(system::RoutingTypes::UdsClientAddress)) {
+        return true;
+    }
+
+    if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(oldEntry.address.get()) !=
+                nullptr ||
+        dynamic_cast<const system::RoutingTypes::UdsClientAddress*>(oldEntry.address.get()) !=
+                nullptr) {
+        return false;
+    }
+
+    // this means old address is one of those addresses:
+    // MqttAddress/ChannelAddress/WebSocketAddress/UdsAddress
+    // new address of type MqttAddress/ChannelAddress have precedence, therefore update
+    if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
+        typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
+        return true;
+    }
+
+    // udpate entry when old and new addresses are from the same type
+    if ((dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(oldEntry.address.get()) !=
+                 nullptr ||
+         dynamic_cast<const system::RoutingTypes::UdsAddress*>(oldEntry.address.get()) !=
+                 nullptr) &&
+        (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress) ||
+         typeid(newAddress) == typeid(system::RoutingTypes::UdsAddress))) {
+        return true;
+    }
+
+    // don't update if addresse is unknown
     return false;
 }
 
@@ -613,6 +639,26 @@ void CcMessageRouter::addNextHop(
 // inherited from joynr::system::RoutingProvider
 void CcMessageRouter::addNextHop(
         const std::string& participantId,
+        const system::RoutingTypes::UdsAddress& udsAddress,
+        const bool& isGloballyVisible,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::ignore = onError;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    auto address = std::make_shared<const joynr::system::RoutingTypes::UdsAddress>(udsAddress);
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
+}
+
+// inherited from joynr::system::RoutingProvider
+void CcMessageRouter::addNextHop(
+        const std::string& participantId,
         const system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
         const bool& isGloballyVisible,
         std::function<void()> onSuccess,
@@ -623,6 +669,27 @@ void CcMessageRouter::addNextHop(
     const bool isSticky = false;
     auto address = std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
             webSocketClientAddress);
+    addNextHop(participantId,
+               std::move(address),
+               isGloballyVisible,
+               expiryDateMs,
+               isSticky,
+               std::move(onSuccess));
+}
+
+// inherited from joynr::system::RoutingProvider
+void CcMessageRouter::addNextHop(
+        const std::string& participantId,
+        const system::RoutingTypes::UdsClientAddress& udsClientAddress,
+        const bool& isGloballyVisible,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    std::ignore = onError;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    auto address =
+            std::make_shared<const joynr::system::RoutingTypes::UdsClientAddress>(udsClientAddress);
     addNextHop(participantId,
                std::move(address),
                isGloballyVisible,

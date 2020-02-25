@@ -37,6 +37,8 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/UdsAddress.h"
+#include "joynr/system/RoutingTypes/UdsClientAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
@@ -361,11 +363,12 @@ bool LibJoynrMessageRouter::isValidForRoutingTable(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
     if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(address.get()) != nullptr ||
+        dynamic_cast<const system::RoutingTypes::UdsAddress*>(address.get()) != nullptr ||
         dynamic_cast<const InProcessMessagingAddress*>(address.get()) != nullptr) {
         return true;
     }
     JOYNR_LOG_ERROR(logger(),
-                    "An address which is neither of type WebSocketAddress nor "
+                    "An address which is neither of type WebSocketAddress/UdsAddress nor "
                     "InProcessMessagingAddress will not be used for libjoynr Routing Table: {}",
                     address->toString());
     return false;
@@ -374,29 +377,49 @@ bool LibJoynrMessageRouter::isValidForRoutingTable(
 bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingEntry& oldEntry,
                                                     const system::RoutingTypes::Address& newAddress)
 {
-    // precedence: InProcessAddress > WebSocketAddress > WebSocketClientAddress >
-    // MqttAddress/ChannelAddress
+    // precedence: InProcessAddress > WebSocketAddress/UdsAddress
+    // > WebSocketClientAddress/UdsClientAddress > MqttAddress/ChannelAddress
     if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
         return true;
     }
-    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) == nullptr) {
-        if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress)) {
-            return true;
-        } else if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(
-                           oldEntry.address.get()) == nullptr) {
-            // old address is WebSocketClientAddress or MqttAddress/ChannelAddress
-            if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress)) {
-                return true;
-            } else if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(
-                               oldEntry.address.get()) == nullptr) {
-                // old address is MqttAddress or ChannelAddress
-                if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
-                    typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
-                    return true;
-                }
-            }
-        }
+
+    if (dynamic_cast<const InProcessMessagingAddress*>(oldEntry.address.get()) != nullptr) {
+        return false;
     }
+
+    if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketAddress) ||
+        typeid(newAddress) == typeid(system::RoutingTypes::UdsAddress)) {
+        return true;
+    }
+
+    if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(oldEntry.address.get()) !=
+                nullptr ||
+        dynamic_cast<const system::RoutingTypes::UdsAddress*>(oldEntry.address.get()) != nullptr) {
+        return false;
+    }
+
+    // this means old address is one of those addresses:
+    // WebSocketClientAddress/UdsClientAddress or MqttAddress/ChannelAddress
+    // new address of type WebSocketClientAddress/UdsClientAddress have precedence, therefore update
+    if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress) ||
+        typeid(newAddress) == typeid(system::RoutingTypes::UdsClientAddress)) {
+        return true;
+    }
+
+    if (dynamic_cast<const system::RoutingTypes::WebSocketClientAddress*>(oldEntry.address.get()) !=
+                nullptr ||
+        dynamic_cast<const system::RoutingTypes::UdsClientAddress*>(oldEntry.address.get()) !=
+                nullptr) {
+        return false;
+    }
+
+    // this means old address is MqttAddress or ChannelAddress, latest precedence. Update entry!
+    if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
+        typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
+        return true;
+    }
+
+    // do not update if address is unknown
     return false;
 }
 
