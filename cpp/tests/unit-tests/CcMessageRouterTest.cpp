@@ -44,6 +44,8 @@
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/UdsAddress.h"
+#include "joynr/system/RoutingTypes/UdsClientAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
@@ -74,7 +76,8 @@ public:
     }
 
 protected:
-    void multicastMsgIsSentToAllMulticastReceivers(const bool isGloballyVisible);
+    void multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses(const bool isGloballyVisible);
+    void multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses(const bool isGloballyVisible);
     void routeMessageAndCheckQueue(const std::string& type, bool expectedToBeQueued);
     void addNewRoutingEntry(const std::string& testParticipantId,
                            std::shared_ptr<const system::RoutingTypes::Address> address);
@@ -88,26 +91,34 @@ protected:
     ADD_LOGGER(CcMessageRouterTest)
 };
 
+MATCHER_P(udsClientAddress, expectedId, "") {
+    auto udsClientAddress =
+            std::dynamic_pointer_cast<const system::RoutingTypes::UdsClientAddress>(arg);
+    if (udsClientAddress) {
+        return udsClientAddress->getId() == expectedId;
+    }
+    return false;
+}
+
 MATCHER_P2(addressWithChannelId, addressType, channelId, "")
 {
     if (addressType == std::string("mqtt")) {
         auto mqttAddress = std::dynamic_pointer_cast<const system::RoutingTypes::MqttAddress>(arg);
         if (mqttAddress) {
             return mqttAddress->getTopic() == channelId;
-        } else {
-            return false;
         }
-    } else if (addressType == std::string("http")) {
+        return false;
+    }
+
+    if (addressType == std::string("http")) {
         auto httpAddress =
                 std::dynamic_pointer_cast<const system::RoutingTypes::ChannelAddress>(arg);
         if (httpAddress) {
             return httpAddress->getChannelId() == channelId;
-        } else {
-            return false;
         }
-    } else {
         return false;
     }
+    return false;
 }
 
 TEST_F(CcMessageRouterTest, routeMessageToHttpAddress)
@@ -158,6 +169,28 @@ TEST_F(CcMessageRouterTest, routeMessageToMqttAddress)
     this->routeMessageToAddress();
 }
 
+TEST_F(CcMessageRouterTest, routeMessageToUdsClientAddress)
+{
+    const std::string destinationParticipantId = "TEST_routeMessageToUdsClientAddress";
+    const std::string udsClientId = "TEST_routeMessageToUdsClientAddress_clientAddressId";
+    auto address = std::make_shared<const joynr::system::RoutingTypes::UdsClientAddress>(udsClientId);
+    const bool isGloballyVisible = true;
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+
+    this->_messageRouter->addNextHop(destinationParticipantId,
+                                    address,
+                                    isGloballyVisible,
+                                    expiryDateMs,
+                                    isSticky);
+    this->_mutableMessage.setRecipient(destinationParticipantId);
+
+    EXPECT_CALL(*(this->_messagingStubFactory),
+                create(udsClientAddress(udsClientId))).Times(1);
+
+    this->routeMessageToAddress();
+}
+
 TEST_F(CcMessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAvailable)
 {
     const std::string multicastId("multicastId");
@@ -200,7 +233,7 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiver_failsIfProviderAddressNotAva
     EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
-void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
+void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses(
         const bool isProviderGloballyVisible)
 {
     const std::string subscriberParticipantId1("subscriberPartId1");
@@ -321,13 +354,143 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers(
     _messageRouter->removeNextHop(providerParticipantId);
 }
 
+void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses(
+        const bool isProviderGloballyVisible)
+{
+    const std::string subscriberParticipantId1("subscriberPartId1");
+    const std::string subscriberParticipantId2("subscriberPartId2");
+    const std::string subscriberParticipantId3("subscriberPartId3");
+    const std::string providerParticipantId("providerParticipantId");
+    const std::string multicastNameAndPartitions("multicastName/partition0");
+    const std::string multicastId(providerParticipantId + "/" + multicastNameAndPartitions);
+    const std::string consumerRuntimeUdsClientAddressString(
+            "ConsumerRuntimeUdsAddress");
+
+    // create a new pointer representing the multicast address
+    std::vector<std::shared_ptr<joynr::system::RoutingTypes::MqttAddress>> multicastAddressesVector;
+    for(std::uint8_t i = 0; i < _availableGbids.size(); i++) {
+        multicastAddressesVector.push_back(
+                std::make_shared<joynr::system::RoutingTypes::MqttAddress>(
+                        _availableGbids[i], multicastId));
+    }
+
+    auto expectedAddress1 =
+            std::make_shared<const joynr::system::RoutingTypes::UdsClientAddress>(
+                    consumerRuntimeUdsClientAddressString);
+    auto expectedAddress2 = std::make_shared<const joynr::InProcessMessagingAddress>();
+    auto expectedAddress3 =
+            std::make_shared<const joynr::system::RoutingTypes::UdsClientAddress>(
+                    consumerRuntimeUdsClientAddressString);
+    auto providerAddress =
+            std::make_shared<const joynr::system::RoutingTypes::UdsClientAddress>(
+                    "ProviderRuntimeUdsAddress");
+
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    _messageRouter->addNextHop(
+                subscriberParticipantId1,
+                expectedAddress1,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
+                expiryDateMs,
+                isSticky);
+    _messageRouter->addNextHop(
+                subscriberParticipantId2,
+                expectedAddress2,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
+                expiryDateMs,
+                isSticky);
+    _messageRouter->addNextHop(
+                subscriberParticipantId3,
+                expectedAddress3,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
+                expiryDateMs,
+                isSticky);
+    _messageRouter->addNextHop(
+                providerParticipantId,
+                providerAddress,
+                isProviderGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
+    _multicastMessagingSkeletonDirectory
+            ->registerSkeleton<system::RoutingTypes::UdsClientAddress>(skeleton);
+
+    _messageRouter->addMulticastReceiver(
+            multicastId,
+            subscriberParticipantId1,
+            providerParticipantId,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
+
+    _messageRouter->addMulticastReceiver(
+            multicastId,
+            subscriberParticipantId2,
+            providerParticipantId,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
+
+    _messageRouter->addMulticastReceiver(
+            multicastId,
+            subscriberParticipantId3,
+            providerParticipantId,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException&) { FAIL() << "onError called"; });
+
+    _mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
+    _mutableMessage.setSender(providerParticipantId);
+    _mutableMessage.setRecipient(multicastId);
+
+    // verify that the publication is sent only once to the uds address used by
+    // both subscriberParticipantId1 and subscriberParticipantId3 identified by
+    // consumerRuntimeUdsClientAddressString
+    auto mockMessagingStub = std::make_shared<MockMessagingStub>();
+    EXPECT_CALL(
+            *_messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::UdsClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::UdsClientAddress::getId,
+                                    Eq(consumerRuntimeUdsClientAddressString)))))))
+            .WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*_messagingStubFactory, create(Pointee(Eq(*expectedAddress2))))
+            .WillOnce(Return(mockMessagingStub));
+    size_t count = isProviderGloballyVisible ? 1 : 0;
+
+    for(std::uint8_t i = 0; i < _availableGbids.size(); i++) {
+        EXPECT_CALL(*_messagingStubFactory, create(Pointee(Eq(*multicastAddressesVector[i]))))
+                .Times(count)
+                .WillRepeatedly(Return(mockMessagingStub));
+    }
+
+    _messageRouter->route(_mutableMessage.getImmutableMessage());
+
+    Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
+
+    // cleanup
+    _messageRouter->removeNextHop(subscriberParticipantId1);
+    _messageRouter->removeNextHop(subscriberParticipantId2);
+    _messageRouter->removeNextHop(subscriberParticipantId3);
+    _messageRouter->removeNextHop(providerParticipantId);
+}
+
 TEST_F(CcMessageRouterTest,
-       routeMulticastMessageFromWebSocketProvider_withoutAccessController_multicastMsgIsSentToAllMulticastReceivers)
+       routeMulticastMessageFromWebSocketProvider_withoutAccessController_multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses)
 {
     bool isGloballyVisible = true;
-    multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
+    multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses(isGloballyVisible);
     isGloballyVisible = false;
-    multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
+    multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses(isGloballyVisible);
+}
+
+TEST_F(CcMessageRouterTest,
+       routeMulticastMessageFromUdsProvider_withoutAccessController_multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses)
+{
+    bool isGloballyVisible = true;
+    multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses(isGloballyVisible);
+    isGloballyVisible = false;
+    multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses(isGloballyVisible);
 }
 
 TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
@@ -542,7 +705,7 @@ void invokeConsumerPermissionCallbackWithPermissionRetry(
 }
 
 TEST_F(CcMessageRouterTest,
-       routeMulticastMessageFromWebSocketProvider_withAccessController_multicastMsgIsSentToAllMulticastReceivers)
+       routeMulticastMessageFromWebSocketProvider_withAccessController_multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses)
 {
     auto mockAccessController = std::make_shared<MockAccessController>();
     ON_CALL(*mockAccessController, hasConsumerPermission(_, _))
@@ -550,9 +713,23 @@ TEST_F(CcMessageRouterTest,
     _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
     bool isGloballyVisible = true;
-    multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
+    multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses(isGloballyVisible);
     isGloballyVisible = false;
-    multicastMsgIsSentToAllMulticastReceivers(isGloballyVisible);
+    multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses(isGloballyVisible);
+}
+
+TEST_F(CcMessageRouterTest,
+       routeMulticastMessageFromUdsProvider_withAccessController_multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses)
+{
+    auto mockAccessController = std::make_shared<MockAccessController>();
+    ON_CALL(*mockAccessController, hasConsumerPermission(_, _))
+            .WillByDefault(Invoke(invokeConsumerPermissionCallbackWithPermissionYes));
+    _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
+
+    bool isGloballyVisible = true;
+    multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses(isGloballyVisible);
+    isGloballyVisible = false;
+    multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses(isGloballyVisible);
 }
 
 TEST_F(CcMessageRouterTest, removeMulticastReceiver_NonChildRouter_succeedsIfSkeletonNotAvailable)
@@ -1294,6 +1471,13 @@ TEST_F(CcMessageRouterTest, addressValidation_webSocketAddressIsNotAddedToRoutin
     addressIsNotAddedToRoutingTable(webSocketAddress);
 }
 
+TEST_F(CcMessageRouterTest, addressValidation_udsAddressIsNotAddedToRoutingTable)
+{
+    // see also otherAddressesTypesAreAddedToRoutingTable
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>();
+    addressIsNotAddedToRoutingTable(udsAddress);
+}
+
 TEST_F(CcMessageRouterTest, addressValidation_otherAddressesTypesAreAddedToRoutingTable)
 {
     // see also webSocketAddressIsNotAddedToRoutingTable
@@ -1308,6 +1492,9 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesTypesAreAddedToRouti
 
     auto websocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
     addressIsAddedToRoutingTable(websocketClientAddress);
+
+    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>();
+    addressIsAddedToRoutingTable(udsClientAddress);
 
     auto inprocessAddress = std::make_shared<const InProcessMessagingAddress>();
     addressIsAddedToRoutingTable(inprocessAddress);
@@ -1353,7 +1540,8 @@ void CcMessageRouterTest::testRoutingEntryUpdate(const std::string& participantI
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
 {
     // inProcessAddress can only be replaced with InProcessAddress
-    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
+    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowInProcessUpdateParticipantId";
     auto dispatcher = std::make_shared<MockDispatcher>();
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
@@ -1364,6 +1552,9 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
     auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>();
     testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
 
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>();
+    testRoutingEntryUpdate(testParticipantId, udsAddress, oldAddress);
+
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>();
     testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
 
@@ -1372,6 +1563,9 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
 
     auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
     testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, oldAddress);
+
+    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>();
+    testRoutingEntryUpdate(testParticipantId, udsClientAddress, oldAddress);
 
     auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
     testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
@@ -1382,7 +1576,8 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
 
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddress)
 {
-    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
+    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowWebSocketClientUpdateParticipantId";
     auto oldAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 "testWebSocketId");
@@ -1392,6 +1587,9 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddres
     auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
                 system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
     testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("path");
+    testRoutingEntryUpdate(testParticipantId, udsAddress, oldAddress);
 
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
@@ -1408,6 +1606,59 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddres
     _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
 
+    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
+                "udsId");
+    testRoutingEntryUpdate(testParticipantId, udsClientAddress, udsClientAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    _messageRouter->removeNextHop(testParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfUdsClientAddress)
+{
+    // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
+    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
+    const std::string testParticipantId = "allowUdsClientUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
+                "testUdsId");
+
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
+                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
+    testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("path");
+    testRoutingEntryUpdate(testParticipantId, udsAddress, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
+
+    auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
+                "webSocketId");
+    testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
+                "udsId");
+    testRoutingEntryUpdate(testParticipantId, udsClientAddress, udsClientAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
     auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
     testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
 
@@ -1417,7 +1668,8 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddres
 
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
 {
-    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
+    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowChannelUpdateParticipantId";
     auto oldAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
                 "testEndpointUrl", "testChannelId");
@@ -1427,6 +1679,9 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
     auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
                 system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
     testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("path");
+    testRoutingEntryUpdate(testParticipantId, udsAddress, oldAddress);
 
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
@@ -1438,6 +1693,13 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
     auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
                 "endpointUrl", "channelId");
     testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
+                "udsId");
+    testRoutingEntryUpdate(testParticipantId, udsClientAddress, udsClientAddress);
     // restore oldAddress
     _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
@@ -1456,7 +1718,8 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
 
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfMqttAddress)
 {
-    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
+    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowMqttUpdateParticipantId";
     auto oldAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "testbrokerUri", "testTopic");
@@ -1466,6 +1729,9 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfMqttAddress)
     auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
                 system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
     testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
+
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("path");
+    testRoutingEntryUpdate(testParticipantId, udsAddress, oldAddress);
 
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
@@ -1484,6 +1750,13 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfMqttAddress)
     auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 "webSocketId");
     testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
+                "udsId");
+    testRoutingEntryUpdate(testParticipantId, udsClientAddress, udsClientAddress);
     // restore oldAddress
     _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
@@ -1510,6 +1783,10 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAdd
     auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
                 system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
     testRoutingEntryUpdate(testParticipantId, webSocketAddress, webSocketAddress);
+
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("path");
+    testRoutingEntryUpdate(testParticipantId, udsAddress, udsAddress);
+
     // restore oldAddress
     _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
@@ -1531,6 +1808,10 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAdd
     auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 "webSocketId");
     testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, webSocketClientAddress);
+
+    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
+                "udsId");
+    testRoutingEntryUpdate(testParticipantId, udsClientAddress, udsClientAddress);
     // restore oldAddress
     _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
@@ -1542,7 +1823,53 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAdd
     _messageRouter->removeNextHop(testParticipantId);
 }
 
-TEST_F(CcMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedInRoutingTable)
+TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfUdsAddress)
+{
+    // Disabled: WebSocketAddress/UdsAddress is not allowed in CcMessageRouter
+    // Precedence cannot be tested without refactoring MessageRouter and RoutingTable, e.g. like in Java
+
+    // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
+    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
+    const std::string testParticipantId = "allowUdsUpdateParticipantId";
+    auto oldAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("testPath");
+
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("path");
+    testRoutingEntryUpdate(testParticipantId, udsAddress, udsAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
+                "brokerUri", "topic");
+    testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
+                "endpointUrl", "channelId");
+    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
+                "udsId");
+    testRoutingEntryUpdate(testParticipantId, udsClientAddress, udsClientAddress);
+    // restore oldAddress
+    _messageRouter->removeNextHop(testParticipantId);
+    addNewRoutingEntry(testParticipantId, oldAddress);
+
+    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
+    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
+
+    // cleanup
+    _messageRouter->removeNextHop(testParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, checkIfMessageIsNotSentIfAddressIsNotAllowedInRoutingTable_webSocketAddress)
 {
     const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
 
@@ -1572,7 +1899,36 @@ TEST_F(CcMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedInRoutin
 
 }
 
-TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable)
+TEST_F(CcMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedInRoutingTable_udsAddress)
+{
+    const std::string destinationParticipantId = "TEST_routeMessageToMqttAddress";
+
+    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("path");
+    const bool isGloballyVisible = true;
+    const bool isSticky = false;
+    const TimePoint now = TimePoint::now();
+    this->_mutableMessage.setExpiryDate(now + std::chrono::seconds(500));
+    this->_mutableMessage.setRecipient(destinationParticipantId);
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+
+    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
+    this->_messageRouter->route(immutableMessage);
+
+    EXPECT_EQ(this->_messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(this->_messageRouter->getNumberOfRoutedMessages(), 1);
+
+    this->_messageRouter->addNextHop(destinationParticipantId,
+                                    udsAddress,
+                                    isGloballyVisible,
+                                    expiryDateMs,
+                                    isSticky);
+
+    EXPECT_EQ(this->_messageQueue->getQueueLength(), 1);
+    EXPECT_EQ(this->_messageRouter->getNumberOfRoutedMessages(), 1);
+
+}
+
+TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable_webSocketClientAddress)
 {
     const std::string subscriberParticipantId("subscriberPartId");
     const std::string providerParticipantId("providerParticipantId");
@@ -1635,6 +1991,92 @@ TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable)
                             Pointee(Property(
                                     &joynr::system::RoutingTypes::WebSocketClientAddress::getId,
                                     Eq(consumerRuntimeWebSocketClientAddressString)))))))
+            .Times(1)
+            .WillRepeatedly(Return(std::shared_ptr<IMessagingStub>()));
+
+    // messageSender should be invoked to send faked SubscriptionStop message for same subscriptionId
+    // from subscriber to the provider to end the ghost subscription
+
+    EXPECT_CALL(
+            *mockMessageSender,
+            sendSubscriptionStop(
+                Eq(subscriberParticipantId), // sender participantId
+                Eq(providerParticipantId), // recipient participantId
+                _, // MessagingQos
+                Property(&SubscriptionStop::getSubscriptionId, Eq(subscriptionId)) // SubscriptionStop object to send
+                )).Times(1);
+
+    _messageRouter->route(subscriptionPublicationMutableMessage.getImmutableMessage());
+    Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
+
+    // cleanup
+    _messageRouter->removeNextHop(subscriberParticipantId);
+    _messageRouter->removeNextHop(providerParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable_udsClientAddress)
+{
+    const std::string subscriberParticipantId("subscriberPartId");
+    const std::string providerParticipantId("providerParticipantId");
+    const std::string consumerRuntimeUdsClientAddressString(
+            "ConsumerRuntimeUdsAddress1");
+    const std::string providerRuntimeUdsClientAddressString(
+            "ProviderRuntimeUdsAddress1");
+
+    auto subscriberAddress =
+            std::make_shared<const joynr::system::RoutingTypes::UdsClientAddress>(
+                    consumerRuntimeUdsClientAddressString);
+    auto providerAddress =
+            std::make_shared<const joynr::system::RoutingTypes::UdsClientAddress>(
+                    providerRuntimeUdsClientAddressString);
+
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    const bool isProviderGloballyVisible = false;
+
+    auto mockMessageSender = std::make_shared<MockMessageSender>();
+
+    _messageRouter->setMessageSender(mockMessageSender);
+
+    _messageRouter->addNextHop(
+                subscriberParticipantId,
+                subscriberAddress,
+                _DEFAULT_IS_GLOBALLY_VISIBLE,
+                expiryDateMs,
+                isSticky);
+    _messageRouter->addNextHop(
+                providerParticipantId,
+                providerAddress,
+                isProviderGloballyVisible,
+                expiryDateMs,
+                isSticky);
+
+    // Prepare a SubcriptionPublication message from provider to subscriber
+
+    std::string subscriptionId = "subscriptionId";
+    MutableMessageFactory mutableMessageFactory;
+    MessagingQos qos = MessagingQos(456000);
+    SubscriptionPublication subscriptionPublication;
+    subscriptionPublication.setSubscriptionId(subscriptionId);
+    MutableMessage subscriptionPublicationMutableMessage =
+        mutableMessageFactory.createSubscriptionPublication(
+                providerParticipantId,
+                subscriberParticipantId,
+                qos,
+                subscriptionPublication
+        );
+
+    // consumer runtime is unreachable, so the creation of a UdsMessagingStub fails;
+    // the factory returns an empty IMessagingStub in this case
+
+    EXPECT_CALL(
+            *_messagingStubFactory,
+            create(Property(
+                    &std::shared_ptr<const joynr::system::RoutingTypes::Address>::get,
+                    WhenDynamicCastTo<const joynr::system::RoutingTypes::UdsClientAddress*>(
+                            Pointee(Property(
+                                    &joynr::system::RoutingTypes::UdsClientAddress::getId,
+                                    Eq(consumerRuntimeUdsClientAddressString)))))))
             .Times(1)
             .WillRepeatedly(Return(std::shared_ptr<IMessagingStub>()));
 
