@@ -88,7 +88,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     @Override
     @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the connect via callbacks.")
     public synchronized void start() {
-        logger.info("Initializing MQTT client {} -> {}", this, client);
+        logger.info("Initializing MQTT client {}", client);
         if (!client.getConfig().getState().isConnected()) {
             while (!client.getConfig().getState().isConnected()) {
                 logger.info("Attempting to connect client {} (clean session {}) ...", client, cleanSession);
@@ -119,7 +119,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
                             || client.getConfig().getState() == MqttClientState.DISCONNECTED_RECONNECT);
                 }
             }
-            logger.info("MQTT client {} connected.", client);
         } else {
             logger.info("MQTT client {} already connected - skipping.", client);
         }
@@ -130,7 +129,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                 setPublishConsumer(flowableEmitter::onNext);
                 publisherSetLatch.countDown();
             }, BackpressureStrategy.BUFFER);
-            logger.info("Setting up publishing pipeline using {}", publishFlowable);
+            logger.info("Setting up publishing pipeline for {} using {}", client, publishFlowable);
             client.publish(publishFlowable).subscribe(mqtt5PublishResult -> {
                 logger.debug("Publish result: {}", mqtt5PublishResult);
                 mqtt5PublishResult.getError().ifPresent(e -> {
@@ -140,8 +139,9 @@ public class HivemqMqttClient implements JoynrMqttClient {
             }, throwable -> logger.error("Publish encountered error.", throwable));
             try {
                 publisherSetLatch.await(10L, TimeUnit.SECONDS);
+                logger.info("Set up publishConsumer {} for {}", publishConsumer, client);
             } catch (InterruptedException e) {
-                logger.warn("Unable to set publisher in time. Please check logs for possible cause.");
+                logger.warn("Unable to set publisher in time for {}. Please check logs for possible cause.", client);
                 throw new JoynrRuntimeException("Unable to set publisher in time.", e);
             }
         } else {
@@ -255,12 +255,12 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     private void setPublishConsumer(Consumer<Mqtt5Publish> publishConsumer) {
-        logger.info("Setting publishConsumer to: {}", publishConsumer);
+        logger.info("Setting publishConsumer for client {} to: {}", client, publishConsumer);
         this.publishConsumer = publishConsumer;
     }
 
     private void handleIncomingMessage(Mqtt5Publish mqtt5Publish) {
-        logger.trace("Incoming message {} received by {}", mqtt5Publish, this);
+        logger.trace("Incoming message {} received by {}", mqtt5Publish, client);
         messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(),
                                    throwable -> logger.error("Unable to transmit {}", mqtt5Publish, throwable));
     }
