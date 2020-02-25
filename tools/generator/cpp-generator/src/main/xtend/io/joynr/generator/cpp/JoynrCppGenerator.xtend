@@ -3,7 +3,7 @@ package io.joynr.generator.cpp
 /*
  * !!!
  * 
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,14 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
+	@Inject
+	@Named("generateProxyCode")
+	public boolean generateProxyCode;
+
+	@Inject
+	@Named("generateProviderCode")
+	public boolean generateProviderCode;
+
 	public static final String OUTPUT_HEADER_PATH = "outputHeaderPath";
 	Map<String, String> parameters;
 
@@ -110,45 +118,50 @@ class JoynrCppGenerator implements IJoynrGenerator{
 			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "filter")
 		);
 
-		proxyGenerator.doGenerate(
-			fModel,
-			sourceFileSystem,
-			headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "proxy"),
-			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "proxy")
-		);
+		if (generateProxyCode) {
+			proxyGenerator.doGenerate(
+				fModel,
+				sourceFileSystem,
+				headerFileSystem,
+				getSourceContainerPath(sourceFileSystem, "proxy"),
+				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "proxy")
+			);
 
-		providerGenerator.doGenerate(
-			fModel,
-			sourceFileSystem,
-			headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "provider"),
-			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "provider")
-		);
+			joynrMessagingGenerator.doGenerate(
+				fModel,
+				sourceFileSystem,
+				headerFileSystem,
+				getSourceContainerPath(sourceFileSystem, "joynr-messaging"),
+				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "joynr-messaging")
+			);
+		}
 
-		defaultProviderGenerator.doGenerate(
-			fModel,
-			sourceFileSystem,
-			headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "provider"),
-			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "provider")
-		);
+		if (generateProviderCode) {
+			providerGenerator.doGenerate(
+				fModel,
+				sourceFileSystem,
+				headerFileSystem,
+				getSourceContainerPath(sourceFileSystem, "provider"),
+				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "provider")
+			);
 
-		joynrMessagingGenerator.doGenerate(
-			fModel,
-			sourceFileSystem,
-			headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "joynr-messaging"),
-			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "joynr-messaging")
-		);
+			defaultProviderGenerator.doGenerate(
+				fModel,
+				sourceFileSystem,
+				headerFileSystem,
+				getSourceContainerPath(sourceFileSystem, "provider"),
+				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "provider")
+			);
+		}
 
 		communicationModelGenerator.doGenerate(
-			fModel,
-			sourceFileSystem,
-			headerFileSystem,
-			getSourceContainerPath(sourceFileSystem, "communication-model"),
-			getHeaderContainerPath(sourceFileSystem, headerFileSystem, "communication-model")
-		);
+				fModel,
+				sourceFileSystem,
+				headerFileSystem,
+				getSourceContainerPath(sourceFileSystem, "communication-model"),
+				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "communication-model")
+				);
+
 	}
 
 	def getSourceContainerPath(IFileSystemAccess sourceFileSystem, String directory) {
