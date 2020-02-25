@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -64,7 +63,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private int connectionTimeoutSec;
     private int reconnectDelayMs;
     private volatile boolean shuttingDown;
-    private AtomicInteger disconnectCount = new AtomicInteger(0);
 
     private Map<String, Mqtt5Subscription> subscriptions = new ConcurrentHashMap<>();
 
@@ -213,17 +211,11 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     public void resubscribe() {
-        logger.debug("Resubscribe triggered.");
-        if (disconnectCount.get() > 0) {
-            logger.trace("Disconnect count > 0, performing resubscribe.");
-            disconnectCount.decrementAndGet();
-            subscriptions.forEach((topic, subscription) -> {
-                logger.info("Resubscribing to {}", topic);
-                doSubscribe(subscription);
-            });
-        } else {
-            logger.trace("Disconnect count 0, skipping resubscribe.");
-        }
+        logger.debug("Resubscribe triggered for client {}.", client);
+        subscriptions.forEach((topic, subscription) -> {
+            logger.info("Resubscribing to {}", topic);
+            doSubscribe(subscription);
+        });
     }
 
     @Override
@@ -253,7 +245,4 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                    throwable -> logger.error("Unable to transmit {}", mqtt5Publish, throwable));
     }
 
-    void incrementDisconnectCount() {
-        disconnectCount.incrementAndGet();
-    }
 }

@@ -366,7 +366,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                         context.getSource(),
                         context.getCause());
             mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
-            client.incrementDisconnectCount();
         }
 
     }
