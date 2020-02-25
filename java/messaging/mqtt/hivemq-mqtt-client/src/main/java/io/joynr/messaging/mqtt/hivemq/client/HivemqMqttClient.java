@@ -147,6 +147,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         } else {
             logger.info("publishConsumer already set up for {} - skipping.", client);
         }
+
     }
 
     @Override
@@ -234,15 +235,18 @@ public class HivemqMqttClient implements JoynrMqttClient {
         });
     }
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the subscribe via callbacks.")
     @Override
     public void unsubscribe(String topic) {
-        logger.info("Unsubscribing from {}", topic);
+        logger.info("Unsubscribing from {}, client {}", topic, client);
         subscriptions.remove(topic);
         Mqtt5Unsubscribe unsubscribe = Mqtt5Unsubscribe.builder().addTopicFilter(topic).build();
         client.unsubscribe(unsubscribe)
-              .doOnSuccess((unused) -> logger.debug("Unsubscribed from {}", topic))
-              .doOnError(throwable -> logger.error("Unable to unsubscribe from {}", topic, throwable))
-              .subscribe();
+              .subscribe((unused) -> logger.debug("Client {} unsubscribed from {}", client, topic),
+                         throwable -> logger.error("Unable to unsubscribe from {}, client {}",
+                                                   topic,
+                                                   client,
+                                                   throwable));
     }
 
     @Override
