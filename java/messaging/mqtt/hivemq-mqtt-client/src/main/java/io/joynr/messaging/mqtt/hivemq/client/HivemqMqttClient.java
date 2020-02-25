@@ -151,8 +151,17 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public synchronized void shutdown() {
+        logger.info("Attempting to shutdown connection for {}.", client);
         this.shuttingDown = true;
-        client.disconnect().blockingAwait();
+        client.disconnectWith()
+              .noSessionExpiry()
+              .applyDisconnect()
+              .doOnComplete(() -> logger.debug("Disconnected {}" + client))
+              .onErrorComplete(throwable -> {
+                  logger.error("Error encountered from disconnect for {}.", client, throwable);
+                  return true;
+              })
+              .blockingAwait();
     }
 
     @Override
