@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
@@ -66,6 +67,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     private Map<String, Mqtt5Subscription> subscriptions = new ConcurrentHashMap<>();
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "We handle the subscribe via callbacks.")
     public HivemqMqttClient(Mqtt5RxClient client,
                             int keepAliveTimeSeconds,
                             boolean cleanSession,
@@ -76,6 +78,11 @@ public class HivemqMqttClient implements JoynrMqttClient {
         this.cleanSession = cleanSession;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.reconnectDelayMs = reconnectDelayMs;
+        client.publishes(MqttGlobalPublishFilter.ALL)
+              .subscribe(this::handleIncomingMessage,
+                         throwable -> logger.error("Error encountered for publish callback, client {}.",
+                                                   client,
+                                                   throwable));
     }
 
     @Override
@@ -88,6 +95,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                 Mqtt5Connect mqtt5Connect = Mqtt5Connect.builder()
                                                         .cleanStart(cleanSession)
                                                         .keepAlive(keepAliveTimeSeconds)
+                                                        .noSessionExpiry()
                                                         .build();
                 try {
                     client.connect(mqtt5Connect)
@@ -192,7 +200,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void subscribe(String topic) {
-        logger.info("Subscribing to {}", topic);
+        logger.info("Subscribing to {}, client {}", topic, client);
         Mqtt5Subscription subscription = subscriptions.computeIfAbsent(topic,
                                                                        (t) -> Mqtt5Subscription.builder()
                                                                                                .topicFilter(t)
@@ -205,9 +213,18 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private void doSubscribe(Mqtt5Subscription subscription) {
         Mqtt5Subscribe subscribe = Mqtt5Subscribe.builder().addSubscription(subscription).build();
         client.subscribeStream(subscribe)
-              .doOnSingle(mqtt5SubAck -> logger.debug("Subscribed to {} with result {}", subscription, mqtt5SubAck))
-              .subscribe(this::handleIncomingMessage,
-                         throwable -> logger.error("Error encountered for subscription {}.", subscription, throwable));
+              .doOnSingle(mqtt5SubAck -> logger.debug("Client {} subscribed to {} with result {}",
+                                                      client,
+                                                      subscription,
+                                                      mqtt5SubAck))
+              .subscribe(mqtt5Publish -> logger.trace("Incoming message {} for {} received by {}",
+                                                      mqtt5Publish,
+                                                      subscription,
+                                                      client),
+                         throwable -> logger.error("Error encountered for subscription {}, client {}.",
+                                                   subscription,
+                                                   client,
+                                                   throwable));
     }
 
     public void resubscribe() {
