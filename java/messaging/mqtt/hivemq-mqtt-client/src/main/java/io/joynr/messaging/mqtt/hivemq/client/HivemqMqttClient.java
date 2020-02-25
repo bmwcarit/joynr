@@ -27,9 +27,9 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
-import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
@@ -101,23 +101,22 @@ public class HivemqMqttClient implements JoynrMqttClient {
                     client.connect(mqtt5Connect)
                           .timeout(connectionTimeoutSec, TimeUnit.SECONDS)
                           .doOnSuccess(connAck -> logger.info("MQTT client {} connected: {}.", client, connAck))
-                          .doOnError(throwable -> {
-                              if (!(throwable instanceof MqttClientStateException)) {
-                                  // ignore MqttClientStateException: MQTT client is already connected or connecting
-                                  logger.error("Unable to connect MQTT client {}.", client, throwable);
-                              }
-                          })
                           .blockingGet();
                 } catch (Exception e) {
-                    if (!(e instanceof MqttClientStateException)) {
-                        // ignore MqttClientStateException: MQTT client is already connected or connecting
-                        logger.error("Exception while connecting MQTT client.", e);
-                    }
-                    try {
-                        wait(reconnectDelayMs);
-                    } catch (Exception exception) {
-                        logger.error("Exception while waiting to reconnect to MQTT client.", exception);
-                    }
+                    logger.error("Exception encountered while connecting MQTT client {}.", client, e);
+                    do {
+                        try {
+                            logger.trace("Waiting to reconnect, client: state: {}.",
+                                         client,
+                                         client.getConfig().getState());
+                            wait(reconnectDelayMs);
+                        } catch (Exception exception) {
+                            logger.error("Exception while waiting to reconnect client {}.", client, exception);
+                        }
+                        // do while state != CONNECTED and state != DISCONNECTED
+                    } while (client.getConfig().getState() == MqttClientState.CONNECTING
+                            || client.getConfig().getState() == MqttClientState.CONNECTING_RECONNECT
+                            || client.getConfig().getState() == MqttClientState.DISCONNECTED_RECONNECT);
                 }
             }
             logger.info("MQTT client {} connected.", client);
