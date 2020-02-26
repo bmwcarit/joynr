@@ -48,7 +48,8 @@ public class Reply implements JoynrMessageType {
         this.response = null;
     }
 
-    //The internal implementation has to be exposed here so that RpcUtils can change it (bad design....)
+    //The internal implementation has to be exposed here so that RpcUtils can change it
+    // TODO: redesign to avoid internal implementation of being exposed
     public Object[] getResponse() {
         return response;
     }
