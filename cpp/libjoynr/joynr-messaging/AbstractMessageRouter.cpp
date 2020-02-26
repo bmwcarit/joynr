@@ -297,7 +297,7 @@ void AbstractMessageRouter::scheduleMessage(
             // do not queue a multicast message since it would get stored under
             // the multicast participantId so that it will never be unqueued
             // again.
-            JOYNR_LOG_TRACE(logger(),
+            JOYNR_LOG_ERROR(logger(),
                             "Multicast message {} could not be sent to recipient, {}. Stub "
                             "creation failed. => Discarding "
                             "message.",
@@ -305,7 +305,7 @@ void AbstractMessageRouter::scheduleMessage(
                             destAddress->toString());
             removeMulticastReceiver(message->getRecipient(), destAddress, message->getSender());
         } else if (message->getType() == Message::VALUE_MESSAGE_TYPE_PUBLICATION()) {
-            JOYNR_LOG_TRACE(logger(),
+            JOYNR_LOG_ERROR(logger(),
                             "Publication message {} could not be sent to recipient, {}. Stub "
                             "creation failed. => Discarding "
                             "message & attempting to stop publication.",
