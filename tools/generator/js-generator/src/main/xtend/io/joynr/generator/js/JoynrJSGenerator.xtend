@@ -3,7 +3,7 @@ package io.joynr.generator.js
 /*
  * !!!
  * 
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,14 @@ class JoynrJSGenerator implements IJoynrGenerator {
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
+	@Inject
+	@Named("generateProxyCode")
+	public boolean generateProxyCode;
+
+	@Inject
+	@Named("generateProviderCode")
+	public boolean generateProviderCode;
+
 	override getLanguageId() {
 		"javascript"
 	}
@@ -83,10 +91,19 @@ class JoynrJSGenerator implements IJoynrGenerator {
 
 		for (francaIntf : fModel.interfaces) {
 			printVersionWarnings(francaIntf, packageWithVersion, nameWithVersion)
-			var proxyGenerator = templateFactory.createProxyGenerator(francaIntf)
-			proxyGenerator.generateProxy(fsa)
-			var providerGenerator = templateFactory.createProviderGenerator(francaIntf)
-			providerGenerator.generateProvider(fsa)
+
+			// since the proxy code at the moment contains exported interfaces
+			// required to implement a provider, we have to create the proxy code
+			// also for the provider.
+			if (generateProxyCode || generateProviderCode) {
+				var proxyGenerator = templateFactory.createProxyGenerator(francaIntf)
+				proxyGenerator.generateProxy(fsa)
+			}
+
+			if (generateProviderCode) {
+				var providerGenerator = templateFactory.createProviderGenerator(francaIntf)
+				providerGenerator.generateProvider(fsa)
+			}
 		}
 		fModel.interfaces.forEach [
 			generateTypes(types, fsa)
