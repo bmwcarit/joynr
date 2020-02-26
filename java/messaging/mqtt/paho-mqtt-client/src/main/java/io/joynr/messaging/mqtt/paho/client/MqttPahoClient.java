@@ -228,8 +228,8 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     stamp = mqttClientLock.readLock();
                     continue;
                 default:
-                    //TODO
-                    break;
+                    logger.error("Unable to connect for unknown/unlisted reason.");
+                    throw new JoynrIllegalStateException("Unable connect for unknown/unlisted reason.");
                 }
             } catch (JoynrIllegalStateException e) {
                 Throwable cause = e.getCause();
