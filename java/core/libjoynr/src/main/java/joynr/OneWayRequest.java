@@ -51,13 +51,9 @@ public class OneWayRequest implements JoynrMessageType {
         this.methodName = methodName;
         if (parameterDatatypes != null) {
             this.paramDatatypes = parameterDatatypes.clone();
-        } else {
-            paramDatatypes = null;
         }
         if (params != null) {
             this.params = params.clone();
-        } else {
-            params = null;
         }
     }
 

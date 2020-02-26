@@ -230,8 +230,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                               SubscriptionOperation operation) {
         Address providerAddress = routingTable.get(providerParticipantId);
         Optional<IMessagingSkeleton> messagingSkeleton = messagingSkeletonFactory.getSkeleton(providerAddress);
-        if (messagingSkeleton != null && messagingSkeleton.isPresent()
-                && messagingSkeleton.get() instanceof IMessagingMulticastSubscriber) {
+        if (messagingSkeleton.isPresent() && messagingSkeleton.get() instanceof IMessagingMulticastSubscriber) {
             operation.perform((IMessagingMulticastSubscriber) messagingSkeleton.get());
         } else {
             logger.trace("No messaging skeleton found for address {}, not performing multicast subscription.",

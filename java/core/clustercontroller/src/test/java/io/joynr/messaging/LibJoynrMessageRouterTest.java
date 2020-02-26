@@ -26,6 +26,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -111,6 +112,7 @@ public class LibJoynrMessageRouterTest {
         when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
         when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
+        when(messagingSkeletonFactory.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
 
         messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                         new MessageQueue.MaxTimeoutHolder(),
