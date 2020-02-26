@@ -19,7 +19,9 @@
 package io.joynr.messaging.mqtt.hivemq.client;
 
 import static com.google.inject.util.Modules.override;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -30,6 +32,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -88,15 +91,11 @@ public class HivemqMqttClientTest {
         serializedMessage = new byte[10];
 
         doAnswer(new Answer<String>() {
-            private boolean firstCall = true;
+            private AtomicInteger counter = new AtomicInteger();
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
-                if (firstCall) {
-                    firstCall = false;
-                    return gbids[0];
-                }
-                return gbids[1];
+                return "HivemqMqttClientTest-" + counter.getAndIncrement() + "_" + System.currentTimeMillis();
             }
         }).when(mockMqttClientIdProvider).getClientId();
     }
@@ -138,6 +137,8 @@ public class HivemqMqttClientTest {
         clientReceiver.start();
 
         clientReceiver.subscribe(ownTopic);
+        // wait for subscription to be established
+        Thread.sleep(128);
 
         clientSender.publishMessage(ownTopic, serializedMessage);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
@@ -146,4 +147,154 @@ public class HivemqMqttClientTest {
         clientReceiver.shutdown();
         clientSender.shutdown();
     }
+
+    @Test
+    public void subscribeMultipleTimes_receivesOnlyOnce() throws Exception {
+        createHivemqMqttClientFactory();
+        ownTopic = "testTopic";
+        HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver(gbids[1]);
+        assertNotEquals(clientSender, clientReceiver);
+
+        clientReceiver.setMessageListener(mockReceiver);
+
+        clientSender.start();
+        clientReceiver.start();
+
+        clientReceiver.subscribe(ownTopic);
+        // wait for subscription to be established
+        clientReceiver.subscribe(ownTopic);
+        // wait for subscription to be established
+        clientReceiver.subscribe(ownTopic);
+        // wait for subscription to be established
+        Thread.sleep(128);
+
+        clientSender.publishMessage(ownTopic, serializedMessage);
+        Thread.sleep(512);
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
+
+        clientReceiver.unsubscribe(ownTopic);
+        clientReceiver.shutdown();
+        clientSender.shutdown();
+    }
+
+    @Test
+    public void shutdownTwiceDoesNotThrow() {
+        createHivemqMqttClientFactory();
+        HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        assertFalse(client.isShutdown());
+        client.start();
+
+        assertFalse(client.isShutdown());
+        client.shutdown();
+        assertTrue(client.isShutdown());
+        client.shutdown();
+        assertTrue(client.isShutdown());
+    }
+
+    @Test
+    public void unsubscribeTwiceDoesNotThrow() throws Exception {
+        final String testTopic = "HivemqMqttClientTest-topic";
+        createHivemqMqttClientFactory();
+        HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        client.start();
+
+        client.subscribe(testTopic);
+        Thread.sleep(128);
+        client.unsubscribe(testTopic);
+        Thread.sleep(128);
+        client.unsubscribe(testTopic);
+        Thread.sleep(128);
+        client.shutdown();
+        assertTrue(client.isShutdown());
+    }
+
+    @Test
+    public void subscribeBeforeConnected() throws Exception {
+        createHivemqMqttClientFactory();
+        ownTopic = "testTopic";
+        HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver(gbids[1]);
+        assertNotEquals(clientSender, clientReceiver);
+
+        clientReceiver.setMessageListener(mockReceiver);
+
+        clientSender.start();
+
+        clientReceiver.subscribe(ownTopic);
+        Thread.sleep(128);
+        clientReceiver.start();
+        // wait for subscription to be established
+        Thread.sleep(128);
+
+        clientSender.publishMessage(ownTopic, serializedMessage);
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
+
+        clientReceiver.unsubscribe(ownTopic);
+        clientReceiver.shutdown();
+        clientSender.shutdown();
+    }
+
+    @Test
+    public void subscribeWhenNotConnected() throws Exception {
+        createHivemqMqttClientFactory();
+        ownTopic = "testTopic";
+        HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver(gbids[1]);
+        assertNotEquals(clientSender, clientReceiver);
+
+        clientReceiver.setMessageListener(mockReceiver);
+
+        clientSender.start();
+        clientReceiver.start();
+
+        clientReceiver.shutdown();
+        clientReceiver.subscribe(ownTopic);
+        Thread.sleep(128);
+        clientReceiver.start();
+        // wait for subscription to be established
+        Thread.sleep(128);
+
+        clientSender.publishMessage(ownTopic, serializedMessage);
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
+
+        clientReceiver.unsubscribe(ownTopic);
+        clientReceiver.shutdown();
+        clientSender.shutdown();
+    }
+
+    @Test
+    public void receivePublicationFromPreviousSessionWithoutSubscribe() throws Exception {
+        createHivemqMqttClientFactory();
+        ownTopic = "testTopic";
+        HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver(gbids[1]);
+        assertNotEquals(clientSender, clientReceiver);
+
+        clientReceiver.setMessageListener(mockReceiver);
+
+        clientSender.start();
+
+        clientReceiver.start();
+        clientReceiver.subscribe(ownTopic);
+        // wait for subscription to be established
+        Thread.sleep(128);
+
+        clientReceiver.shutdown();
+        // unsubscribe when disconnected to prevent resubscribe on connect
+        clientReceiver.unsubscribe(ownTopic);
+        Thread.sleep(128);
+
+        clientSender.publishMessage(ownTopic, serializedMessage);
+        Thread.sleep(128);
+        clientReceiver.start();
+
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
+
+        clientReceiver.unsubscribe(ownTopic);
+        Thread.sleep(128);
+        clientReceiver.shutdown();
+        clientSender.shutdown();
+    }
+
 }
