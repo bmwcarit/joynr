@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -57,7 +58,8 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(expectedClient)
                                                                   .publishMessage(eq(gcdTopic),
                                                                                   any(byte[].class),
-                                                                                  anyInt());
+                                                                                  anyInt(),
+                                                                                  anyLong());
 
         ProviderRegistrar registrar = joynrRuntime.getProviderRegistrar(TESTDOMAIN, new DefaulttestProvider())
                                                   .withProviderQos(providerQos)
@@ -68,9 +70,9 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         registrar.register();
 
         assertTrue(publishCountDownLatch.await(500, TimeUnit.MILLISECONDS));
-        verify(otherClient, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
+        verify(otherClient, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(expectedClient).publishMessage(eq(gcdTopic), messageCaptor.capture(), anyInt());
+        verify(expectedClient).publishMessage(eq(gcdTopic), messageCaptor.capture(), anyInt(), anyLong());
         byte[] serializedMessage = messageCaptor.getValue();
         ImmutableMessage capturedMessage = new ImmutableMessage(serializedMessage);
         assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());
@@ -110,7 +112,8 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(joynrMqttClient1)
                                                                   .publishMessage(eq(gcdTopic),
                                                                                   any(byte[].class),
-                                                                                  anyInt());
+                                                                                  anyInt(),
+                                                                                  anyLong());
 
         joynrRuntime.getProviderRegistrar(TESTDOMAIN, new DefaulttestProvider())
                     .withProviderQos(providerQos)
@@ -118,9 +121,9 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
                     .registerInAllBackends();
 
         assertTrue(publishCountDownLatch.await(500, TimeUnit.MILLISECONDS));
-        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
+        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(joynrMqttClient1).publishMessage(eq(gcdTopic), messageCaptor.capture(), anyInt());
+        verify(joynrMqttClient1).publishMessage(eq(gcdTopic), messageCaptor.capture(), anyInt(), anyLong());
         byte[] serializedMessage = messageCaptor.getValue();
         ImmutableMessage capturedMessage = new ImmutableMessage(serializedMessage);
         assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());

@@ -410,6 +410,10 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
+        publishMessage(topic, serializedMessage, qosLevel, Integer.MAX_VALUE);
+    }
+
+    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel, long messageExpiryIntervalSec) {
         assert !separateConnections || (separateConnections && !isReceiver);
 
         if (!separateConnections && messagingSkeleton == null) {

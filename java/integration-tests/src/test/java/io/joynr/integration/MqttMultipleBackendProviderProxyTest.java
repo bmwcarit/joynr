@@ -53,10 +53,10 @@ import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
-import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
@@ -114,19 +114,20 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         ArgumentCaptor<String> topicCaptor = ArgumentCaptor.forClass(String.class);
         testProxy proxy1 = buildProxyForGlobalDiscoveryEntry(globalDiscoveryEntry1);
         testProxy proxy2 = buildProxyForGlobalDiscoveryEntry(globalDiscoveryEntry2);
-        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
-        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
+        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
+        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
 
         CountDownLatch publishCountDownLatch = new CountDownLatch(1);
         doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(joynrMqttClient1)
                                                                   .publishMessage(anyString(),
                                                                                   any(byte[].class),
-                                                                                  anyInt());
+                                                                                  anyInt(),
+                                                                                  anyLong());
         proxy1.methodFireAndForgetWithoutParams();
         assertTrue(publishCountDownLatch.await(100, TimeUnit.MILLISECONDS));
-        verify(joynrMqttClient1).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt());
+        verify(joynrMqttClient1).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt(), anyLong());
         assertTrue(topicCaptor.getValue().startsWith(TESTTOPIC));
-        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
+        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
 
         reset(joynrMqttClient1);
         reset(joynrMqttClient2);
@@ -135,11 +136,12 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(joynrMqttClient2)
                                                                   .publishMessage(anyString(),
                                                                                   any(byte[].class),
-                                                                                  anyInt());
+                                                                                  anyInt(),
+                                                                                  anyLong());
         proxy2.methodFireAndForgetWithoutParams();
         assertTrue(publishCountDownLatch.await(100, TimeUnit.MILLISECONDS));
-        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
-        verify(joynrMqttClient2).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt());
+        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
+        verify(joynrMqttClient2).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt(), anyLong());
         assertTrue(topicCaptor.getValue().startsWith(TESTTOPIC));
     }
 
@@ -290,12 +292,13 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         CountDownLatch replyCountDownLatch = new CountDownLatch(1);
         doAnswer(createVoidCountDownAnswer(replyCountDownLatch)).when(expectedClient).publishMessage(anyString(),
                                                                                                      any(byte[].class),
-                                                                                                     anyInt());
+                                                                                                     anyInt(),
+                                                                                                     anyLong());
         assertTrue(replyCountDownLatch.await(1000, TimeUnit.MILLISECONDS));
 
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(expectedClient).publishMessage(anyString(), messageCaptor.capture(), anyInt());
-        verify(otherClient, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
+        verify(expectedClient).publishMessage(anyString(), messageCaptor.capture(), anyInt(), anyLong());
+        verify(otherClient, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
         byte[] serializedMessage = messageCaptor.getValue();
         checkReplyMessage(serializedMessage,
                           proxyParticipantId,
@@ -386,12 +389,13 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         CountDownLatch replyCountDownLatch = new CountDownLatch(2);
         doAnswer(createVoidCountDownAnswer(replyCountDownLatch)).when(expectedClient).publishMessage(anyString(),
                                                                                                      any(byte[].class),
-                                                                                                     anyInt());
+                                                                                                     anyInt(),
+                                                                                                     anyLong());
         assertTrue(replyCountDownLatch.await(1000, TimeUnit.MILLISECONDS));
 
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(expectedClient, times(2)).publishMessage(anyString(), messageCaptor.capture(), anyInt());
-        verify(otherClient, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
+        verify(expectedClient, times(2)).publishMessage(anyString(), messageCaptor.capture(), anyInt(), anyLong());
+        verify(otherClient, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
         List<byte[]> serializedMessages = messageCaptor.getAllValues();
         checkReplyMessage(serializedMessages.get(0),
                           proxyParticipantId,
@@ -481,20 +485,24 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         String multicastId = providerParticipantId + "/emptyBroadcast";
 
         CountDownLatch countDownLatch = new CountDownLatch(2);
-        doAnswer(createVoidCountDownAnswer(countDownLatch)).when(joynrMqttClient1)
-                                                           .publishMessage(anyString(), any(byte[].class), anyInt());
-        doAnswer(createVoidCountDownAnswer(countDownLatch)).when(joynrMqttClient2)
-                                                           .publishMessage(anyString(), any(byte[].class), anyInt());
-        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
-        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
+        doAnswer(createVoidCountDownAnswer(countDownLatch)).when(joynrMqttClient1).publishMessage(anyString(),
+                                                                                                  any(byte[].class),
+                                                                                                  anyInt(),
+                                                                                                  anyLong());
+        doAnswer(createVoidCountDownAnswer(countDownLatch)).when(joynrMqttClient2).publishMessage(anyString(),
+                                                                                                  any(byte[].class),
+                                                                                                  anyInt(),
+                                                                                                  anyLong());
+        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
+        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
 
         testProvider.fireEmptyBroadcast();
 
         assertTrue(countDownLatch.await(1000, TimeUnit.MILLISECONDS));
         ArgumentCaptor<byte[]> messageCaptor1 = ArgumentCaptor.forClass(byte[].class);
         ArgumentCaptor<byte[]> messageCaptor2 = ArgumentCaptor.forClass(byte[].class);
-        verify(joynrMqttClient1, times(1)).publishMessage(anyString(), messageCaptor1.capture(), anyInt());
-        verify(joynrMqttClient2, times(1)).publishMessage(anyString(), messageCaptor2.capture(), anyInt());
+        verify(joynrMqttClient1, times(1)).publishMessage(anyString(), messageCaptor1.capture(), anyInt(), anyLong());
+        verify(joynrMqttClient2, times(1)).publishMessage(anyString(), messageCaptor2.capture(), anyInt(), anyLong());
 
         checkReplyMessage(messageCaptor1.getValue(),
                           multicastId,

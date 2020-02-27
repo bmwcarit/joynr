@@ -229,6 +229,10 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
+        publishMessage(topic, serializedMessage, qosLevel, Integer.MAX_VALUE);
+    }
+
+    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel, long messageExpiryIntervalSec) {
         assert (isSender);
         if (publishConsumer == null) {
             logger.debug("{}: Publishing to {} with qos {} failed: publishConsumer not set",
@@ -247,6 +251,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                 .topic(topic)
                                                 .qos(safeParseQos(qosLevel))
                                                 .payload(serializedMessage)
+                                                .messageExpiryInterval(messageExpiryIntervalSec)
                                                 .build();
         publishConsumer.accept(mqtt5Publish);
     }
@@ -331,4 +336,8 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                              throwable));
     }
 
+    // for testing
+    Mqtt5RxClient getClient() {
+        return client;
+    }
 }

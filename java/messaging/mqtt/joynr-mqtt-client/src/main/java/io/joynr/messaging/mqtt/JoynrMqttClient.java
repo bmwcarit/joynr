@@ -30,6 +30,8 @@ public interface JoynrMqttClient {
 
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel);
 
+    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel, long messageExpiryDateMs);
+
     public void subscribe(String topic);
 
     public void unsubscribe(String topic);

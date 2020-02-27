@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
@@ -37,7 +38,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
-import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -99,14 +99,14 @@ public class MqttMessagingStubFactoryTest {
         MqttMessagingStub messagingStub2 = subject.createInternal(address2);
 
         messagingStub1.transmit(message, successAction, failureAction);
-        verify(joynrMqttClient1).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt());
-        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
+        verify(joynrMqttClient1).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt(), anyLong());
+        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
         assertTrue(topicCaptor.getValue().startsWith(TESTTOPIC1));
         reset(joynrMqttClient1);
         reset(joynrMqttClient2);
         messagingStub2.transmit(message, successAction, failureAction);
-        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt());
-        verify(joynrMqttClient2).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt());
+        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
+        verify(joynrMqttClient2).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt(), anyLong());
         assertTrue(topicCaptor.getValue().startsWith(TESTTOPIC2));
     }
 

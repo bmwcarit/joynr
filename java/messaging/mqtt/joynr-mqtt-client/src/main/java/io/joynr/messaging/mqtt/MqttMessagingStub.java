@@ -21,6 +21,7 @@ package io.joynr.messaging.mqtt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.common.ExpiryDate;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingQosEffort;
@@ -39,6 +40,7 @@ public class MqttMessagingStub implements IMessagingStub {
     public static final int BEST_EFFORT_QOS_LEVEL = 0;
 
     private static final String PRIORITY_LOW = "/low";
+    private static final long MESSAGE_EXPIRY_MAX_INTERVAL = 4294967295L;
     private MqttAddress address;
     private JoynrMqttClient mqttClient;
 
@@ -61,7 +63,12 @@ public class MqttMessagingStub implements IMessagingStub {
             qosLevel = BEST_EFFORT_QOS_LEVEL;
         }
         try {
-            mqttClient.publishMessage(topic, message.getSerializedMessage(), qosLevel);
+            ExpiryDate expiryDate = ExpiryDate.fromAbsolute(message.getTtlMs());
+            long msgTtlSec = (long) Math.ceil(expiryDate.getRelativeTtl() / 1000.0);
+            if (msgTtlSec > MESSAGE_EXPIRY_MAX_INTERVAL || msgTtlSec < 0) {
+                msgTtlSec = MESSAGE_EXPIRY_MAX_INTERVAL;
+            }
+            mqttClient.publishMessage(topic, message.getSerializedMessage(), qosLevel, msgTtlSec);
             successAction.execute();
         } catch (Exception error) {
             failureAction.execute(error);
