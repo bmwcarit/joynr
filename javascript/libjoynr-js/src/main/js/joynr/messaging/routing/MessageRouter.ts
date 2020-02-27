@@ -37,6 +37,8 @@ import LocalStorageNode = require("../../../global/LocalStorageNode");
 import MessageQueue = require("./MessageQueue");
 import Address = require("../../../generated/joynr/system/RoutingTypes/Address");
 import JoynrCompound = require("../../types/JoynrCompound");
+import UdsClientAddress from "../../../generated/joynr/system/RoutingTypes/UdsClientAddress";
+import UdsAddress from "../../../generated/joynr/system/RoutingTypes/UdsAddress";
 
 const log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
 
@@ -398,7 +400,6 @@ class MessageRouter {
             );
 
             // message is queued until the participant is registered
-            // TODO remove expired messages from queue
             this.settings.messageQueue.putMessage(joynrMessage);
             return Promise.resolve();
         }
@@ -480,6 +481,13 @@ class MessageRouter {
      * @returns promise
      */
     public addNextHopToParentRoutingTable(participantId: string, isGloballyVisible: boolean): Promise<any> {
+        if (this.incomingAddress instanceof UdsClientAddress) {
+            return this.routingProxy.addNextHop({
+                participantId,
+                udsClientAddress: this.incomingAddress,
+                isGloballyVisible
+            });
+        }
         if (this.incomingAddress instanceof WebSocketClientAddress) {
             return this.routingProxy.addNextHop({
                 participantId,
@@ -498,6 +506,13 @@ class MessageRouter {
             return this.routingProxy.addNextHop({
                 participantId,
                 webSocketAddress: this.incomingAddress,
+                isGloballyVisible
+            });
+        }
+        if (this.incomingAddress instanceof UdsAddress) {
+            return this.routingProxy.addNextHop({
+                participantId,
+                udsAddress: this.incomingAddress,
                 isGloballyVisible
             });
         }
