@@ -158,7 +158,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         if (!sendingMqttClients.containsKey(gbid)) {
             if (separateConnections) {
                 logger.info("Creating sender MQTT client for gbid {}", gbid);
-                sendingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId() + "Pub"));
+                sendingMqttClients.put(gbid,
+                                       createClient(gbid, mqttClientIdProvider.getClientId() + "Pub", false, true));
                 logger.debug("Sender MQTT client for gbid {} now: {}", gbid, sendingMqttClients.get(gbid));
             } else {
                 createCombinedClient(gbid);
@@ -172,7 +173,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         if (!receivingMqttClients.containsKey(gbid)) {
             logger.info("Creating receiver MQTT client for gbid {}", gbid);
             if (separateConnections) {
-                receivingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId() + "Sub"));
+                receivingMqttClients.put(gbid,
+                                         createClient(gbid, mqttClientIdProvider.getClientId() + "Sub", true, false));
             } else {
                 createCombinedClient(gbid);
             }
@@ -182,18 +184,18 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     }
 
     private void createCombinedClient(String gbid) {
-        sendingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId()));
+        sendingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId(), true, true));
         receivingMqttClients.put(gbid, sendingMqttClients.get(gbid));
     }
 
-    private JoynrMqttClient createClient(String gbid, String clientId) {
+    private JoynrMqttClient createClient(String gbid, String clientId, boolean isReceiver, boolean isSender) {
         URI serverUri;
         try {
             serverUri = new URI(mqttGbidToBrokerUriMap.get(gbid));
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + mqttGbidToBrokerUriMap.get(gbid), e);
         }
-        logger.info("Connecting to {}:{}", serverUri.getHost(), serverUri.getPort());
+        logger.info("Creating MQTT client for gbid >{}<, uri {}", gbid, serverUri);
         MqttClientExecutorConfig executorConfig = MqttClientExecutorConfig.builder()
                                                                           .nettyExecutor(scheduledExecutorService)
                                                                           .applicationScheduler(Schedulers.from(scheduledExecutorService))
@@ -205,6 +207,12 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                      .identifier(clientId)
                                                      .serverHost(serverUri.getHost())
                                                      .serverPort(serverUri.getPort())
+                                                     // automaticReconnectWithDefaultConfig (see MqttClientAutoReconnectImpl)
+                                                     // uses reconnectDelay = delay + randomDelay
+                                                     // delay: startDelay: 1s, maxDelay: 120s
+                                                     // randomDelay =(long) (delay / 4d / Integer.MAX_VALUE * ThreadLocalRandom.current().nextInt());
+                                                     // => maxRandomDelay = 30s
+                                                     // => maxReconnectDelay = 150s
                                                      .automaticReconnectWithDefaultConfig()
                                                      .addConnectedListener(resubscribeHandler)
                                                      .addDisconnectedListener(disconnectedListener)
@@ -224,7 +232,11 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                        mqttGbidToKeepAliveTimerSecMap.get(gbid),
                                                        cleanSession,
                                                        mqttGbidToConnectionTimeoutSecMap.get(gbid),
-                                                       reconnectDelayMs);
+                                                       reconnectDelayMs,
+                                                       isReceiver,
+                                                       isSender,
+                                                       gbid);
+        logger.info("Created MQTT client for gbid {}, uri {}: clientHash={}", gbid, serverUri, result.hashCode());
         resubscribeHandler.setClient(result);
         resubscribeHandler.setMqttStatusReceiver(mqttStatusReceiver);
         disconnectedListener.setClient(result);
