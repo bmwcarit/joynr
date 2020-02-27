@@ -49,6 +49,7 @@ import com.google.inject.Injector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
+import com.hivemq.client.mqtt.datatypes.MqttQos;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -66,6 +67,8 @@ import io.joynr.messaging.routing.RoutingTable;
 public class HivemqMqttClientTest {
     private static final String[] gbids = new String[]{ "testGbid1", "testGbid2" };
 
+    private static final int DEFAULT_QOS_LEVEL = 1; // AT_LEAST_ONCE
+    private static final int DEFAULT_EXPIRY_INTERVAL_SEC = 60;
     private Injector injector;
     private HivemqMqttClientFactory hivemqMqttClientFactory;
     private String ownTopic;
@@ -144,7 +147,7 @@ public class HivemqMqttClientTest {
         // wait for subscription to be established
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage);
+        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, DEFAULT_EXPIRY_INTERVAL_SEC);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
@@ -175,7 +178,7 @@ public class HivemqMqttClientTest {
         // wait for subscription to be established
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage);
+        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, DEFAULT_EXPIRY_INTERVAL_SEC);
         Thread.sleep(512);
         verify(mockReceiver, times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
@@ -237,7 +240,7 @@ public class HivemqMqttClientTest {
         // wait for subscription to be established
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage);
+        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, DEFAULT_EXPIRY_INTERVAL_SEC);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
@@ -267,7 +270,7 @@ public class HivemqMqttClientTest {
         // wait for subscription to be established
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage);
+        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, DEFAULT_EXPIRY_INTERVAL_SEC);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
@@ -299,7 +302,7 @@ public class HivemqMqttClientTest {
         clientReceiver.unsubscribe(ownTopic);
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage);
+        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, DEFAULT_EXPIRY_INTERVAL_SEC);
         Thread.sleep(128);
         clientReceiver.start();
 

@@ -223,15 +223,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     @Override
-    public void publishMessage(String topic, byte[] serializedMessage) {
-        publishMessage(topic, serializedMessage, MqttQos.AT_LEAST_ONCE.getCode());
-    }
-
-    @Override
-    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
-        publishMessage(topic, serializedMessage, qosLevel, Integer.MAX_VALUE);
-    }
-
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel, long messageExpiryIntervalSec) {
         assert (isSender);
         if (publishConsumer == null) {

@@ -46,7 +46,6 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
-import io.joynr.messaging.mqtt.MqttMessagingStub;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
@@ -404,15 +403,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void publishMessage(String topic, byte[] serializedMessage) {
-        publishMessage(topic, serializedMessage, MqttMessagingStub.DEFAULT_QOS_LEVEL);
-    }
-
-    @Override
-    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
-        publishMessage(topic, serializedMessage, qosLevel, Integer.MAX_VALUE);
-    }
-
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel, long messageExpiryIntervalSec) {
         assert !separateConnections || (separateConnections && !isReceiver);
 
