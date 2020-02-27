@@ -26,6 +26,8 @@ import TypeRegistry from "../../../../../main/js/joynr/start/TypeRegistry";
 import * as UtilInternal from "../../../../../main/js/joynr/util/UtilInternal";
 import nanoid from "nanoid";
 import testUtil = require("../../../testUtil");
+import UdsAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/UdsAddress";
+import UdsClientAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/UdsClientAddress";
 const typeRegistry = require("../../../../../main/js/joynr/types/TypeRegistrySingleton").getInstance();
 typeRegistry.addType(BrowserAddress).addType(ChannelAddress);
 let fakeTime: number;
@@ -43,6 +45,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     let messagingStubSpy: any, messagingSkeletonSpy: any, messagingStubFactorySpy: any;
     let messageQueueSpy: any,
         messageRouter: any,
+        messageRouterWithUdsAddress: any,
         routingProxySpy: any,
         parentMessageRouterAddress: any,
         incomingAddress: any;
@@ -597,6 +600,50 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         expect(messagingStubFactorySpy.createMessagingStub).not.toHaveBeenCalled();
         expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
     });
+
+    describe("ChildMessageRouterWithUdsAddress", () => {
+        beforeEach(done => {
+            incomingAddress = new UdsClientAddress({
+                id: "udsId"
+            });
+            parentMessageRouterAddress = new UdsAddress({
+                path: "path"
+            });
+
+            messageRouterWithUdsAddress = createMessageRouter(
+                persistencySpy,
+                messageQueueSpy,
+                incomingAddress,
+                parentMessageRouterAddress
+            );
+            messageRouterWithUdsAddress.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
+
+            done();
+        });
+
+        it("addNextHop adds UdsClientAddress to local and parent routing table", async () => {
+            const expectedParameters = {
+                participantId: joynrMessage.to,
+                udsClientAddress: incomingAddress,
+                isGloballyVisible: false
+            };
+            await messageRouterWithUdsAddress.setRoutingProxy(routingProxySpy);
+            expect(routingTable[joynrMessage.to]).toBeUndefined();
+            address = new UdsClientAddress({ id: "udsId" });
+            await messageRouterWithUdsAddress.addNextHop(joynrMessage.to, address, false);
+            expect(routingTable[joynrMessage.to].id).toEqual("udsId");
+            expect(routingTable[joynrMessage.to]._typeName).toEqual(address._typeName);
+            expect(() => messageRouterWithUdsAddress.removeNextHop(joynrMessage.to)).not.toThrow();
+            expect(routingProxySpy.addNextHop).toHaveBeenCalledWith(expectedParameters);
+        });
+
+        it("addNextHop persists UdsClientAddress", async () => {
+            await messageRouterWithUdsAddress.setRoutingProxy(routingProxySpy);
+            address = new UdsClientAddress({ id: "udsId" });
+            await messageRouterWithUdsAddress.addNextHop(joynrMessage.to, address, true);
+            expect(persistencySpy.setItem).toHaveBeenCalled();
+        });
+    }); // describe ChildMessageRouterWithUdsAddress
 
     describe("ChildMessageRouter", () => {
         beforeEach(() => {
