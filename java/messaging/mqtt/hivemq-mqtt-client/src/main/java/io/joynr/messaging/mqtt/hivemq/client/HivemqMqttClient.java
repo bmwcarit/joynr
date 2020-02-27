@@ -213,10 +213,8 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                       client,
                                                       subscription,
                                                       mqtt5SubAck))
-              .subscribe(mqtt5Publish -> logger.trace("Incoming message {} for {} received by {}",
-                                                      mqtt5Publish,
-                                                      subscription,
-                                                      client),
+              .subscribe(mqtt5Publish -> {
+                  /* handled in general publish callback */ },
                          throwable -> logger.error("Error encountered for subscription {}, client {}.",
                                                    subscription,
                                                    client,
