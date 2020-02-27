@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
@@ -37,6 +38,13 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
 
     @SuppressWarnings("unused")
     private static final Logger logger = Logger.getLogger(GenerateFireAndForgetMethodsTest.class.getName());
+
+    @Before
+    public void setup() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        super.setup(generateProxy, generateProvider);
+    }
 
     @Test
     public void testGenerateFireAndForgetMethod() {

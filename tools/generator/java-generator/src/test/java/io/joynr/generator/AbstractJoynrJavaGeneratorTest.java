@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,14 +69,18 @@ public abstract class AbstractJoynrJavaGeneratorTest {
     @Inject
     private IFileSystemAccess outputFileSystem;
 
-    @Before
-    public void setup() throws Exception {
+    public void setup(boolean generateProxy, boolean generateProvider) throws Exception {
         temporaryOutputDirectory = Files.createTempDirectory(null).toFile();
         temporaryOutputDirectory.deleteOnExit();
         InvocationArguments arguments = new InvocationArguments();
         arguments.setGenerationLanguage("java");
         arguments.setModelPath("src/test/resources");
         arguments.setOutputPath(temporaryOutputDirectory.getAbsolutePath());
+        if (generateProxy && !generateProvider) {
+            arguments.setTarget("proxy");
+        } else if (!generateProxy && generateProvider) {
+            arguments.setTarget("provider");
+        }
 
         Injector francaInjector = new FrancaIDLStandaloneSetup().createInjectorAndDoEMFRegistration()
                                                                 .createChildInjector(new AbstractModule() {
@@ -91,6 +95,10 @@ public abstract class AbstractJoynrJavaGeneratorTest {
                                                                                       .to(false);
                                                                         bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION))
                                                                                       .to(false);
+                                                                        bindConstant().annotatedWith(Names.named("generateProxyCode"))
+                                                                                      .to(arguments.getGenerateProxyCode());
+                                                                        bindConstant().annotatedWith(Names.named("generateProviderCode"))
+                                                                                      .to(arguments.getGenerateProviderCode());
                                                                         bind(IFileSystemAccess.class).to(JavaIoFileSystemAccess.class);
                                                                     }
                                                                 });

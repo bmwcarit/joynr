@@ -44,27 +44,26 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
 
+import io.joynr.generator.js.JoynrJSGenerator;
 import io.joynr.generator.loading.IUriProvider;
 import io.joynr.generator.loading.ModelStore;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 import io.joynr.generator.templates.util.NamingUtil;
-import io.joynr.generator.templates.util.TypeUtil;
 import io.joynr.generator.util.FileSystemAccessUtil;
 import io.joynr.generator.util.InvocationArguments;
-import io.joynr.generator.cpp.JoynrCppGenerator;
 
 /**
- * Base class for integration testing generation of C++ artifacts from FIDL definitions.
+ * Base class for integration testing generation of Js/Ts artifacts from FIDL definitions.
  * Extend this class for your specific tests, then use the {@link #generate(String)}
  * method in order to trigger generation of all artifacts for the specified FIDL
- * file on the classpath (should be put under src/test/resources/io/joynr/generator/cpp).
+ * file on the classpath (should be put under src/test/resources).
  */
-public abstract class AbstractJoynrCppGeneratorTest {
+public abstract class AbstractJoynrTSGeneratorTest {
 
-    private static final Logger logger = Logger.getLogger(AbstractJoynrCppGeneratorTest.class.getName());
+    private static final Logger logger = Logger.getLogger(AbstractJoynrTSGeneratorTest.class.getName());
 
     protected Executor executor;
-    protected JoynrCppGenerator generator;
+    protected JoynrJSGenerator generator;
 
     private File temporaryOutputDirectory;
 
@@ -75,7 +74,7 @@ public abstract class AbstractJoynrCppGeneratorTest {
         temporaryOutputDirectory = Files.createTempDirectory(null).toFile();
         temporaryOutputDirectory.deleteOnExit();
         InvocationArguments arguments = new InvocationArguments();
-        arguments.setGenerationLanguage("cpp");
+        arguments.setGenerationLanguage("javascript");
         arguments.setModelPath("src/test/resources");
         arguments.setOutputPath(temporaryOutputDirectory.getAbsolutePath());
         if (generateProxy && !generateProvider) {
@@ -97,8 +96,6 @@ public abstract class AbstractJoynrCppGeneratorTest {
                                                                                       .to(false);
                                                                         bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION))
                                                                                       .to(false);
-                                                                        bindConstant().annotatedWith(Names.named("generationId"))
-                                                                                      .to("5");
                                                                         bindConstant().annotatedWith(Names.named("generateProxyCode"))
                                                                                       .to(arguments.getGenerateProxyCode());
                                                                         bindConstant().annotatedWith(Names.named("generateProviderCode"))
@@ -107,7 +104,7 @@ public abstract class AbstractJoynrCppGeneratorTest {
                                                                     }
                                                                 });
         francaInjector.injectMembers(this);
-        generator = new JoynrCppGenerator();
+        generator = new JoynrJSGenerator();
         Injector injector = francaInjector.createChildInjector(generator.getGeneratorModule());
         injector.injectMembers(this);
         injector.injectMembers(generator);
@@ -127,7 +124,7 @@ public abstract class AbstractJoynrCppGeneratorTest {
      */
     protected Map<String, String> generate(String fidlFilename) {
         Map<String, String> result = new HashMap<>();
-        URL resourceUrl = AbstractJoynrCppGeneratorTest.class.getClassLoader().getResource(fidlFilename);
+        URL resourceUrl = AbstractJoynrTSGeneratorTest.class.getClassLoader().getResource(fidlFilename);
         try {
             final URI resourceUri = URI.createFileURI(new File(resourceUrl.toURI()).getAbsolutePath());
             ModelStore modelStore = new ModelStore(new IUriProvider() {
@@ -138,22 +135,22 @@ public abstract class AbstractJoynrCppGeneratorTest {
                 }
             });
             generator.doGenerate(modelStore.getResources().iterator().next(), outputFileSystem);
-            result = readAllCppFilesRecursively(temporaryOutputDirectory);
+            result = readAllTSFilesRecursively(temporaryOutputDirectory);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, "Problem loading file: " + fidlFilename, e);
         }
         return result;
     }
 
-    private Map<String, String> readAllCppFilesRecursively(File inDirectory) {
+    private Map<String, String> readAllTSFilesRecursively(File inDirectory) {
         assert inDirectory != null;
         assert inDirectory.isDirectory();
         Map<String, String> result = new HashMap<>();
         for (File file : inDirectory.listFiles()) {
-            if (file.isFile() && file.getName().endsWith(".cpp")) {
-                result.put(file.getName().replaceAll("\\.cpp$", ""), readContent(file));
+            if (file.isFile() && file.getName().endsWith(".ts")) {
+                result.put(file.getName().replaceAll("\\.ts$", ""), readContent(file));
             } else if (file.isDirectory()) {
-                result.putAll(readAllCppFilesRecursively(file));
+                result.putAll(readAllTSFilesRecursively(file));
             }
         }
         return result;

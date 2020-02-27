@@ -1,7 +1,7 @@
 /*-
  * #%L
  * %%
- * Copyright (C) 2011 - 2018 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,13 @@ import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGeneratorTest {
 
     private static final Logger logger = LoggerFactory.getLogger(GenerateStatelessAsyncInterfaceTest.class);
+
+    @Before
+    public void setup() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        super.setup(generateProxy, generateProvider);
+    }
 
     @Test
     public void testGeneratesStatelessAsyncInterfaceWithAllMethods() throws Exception {

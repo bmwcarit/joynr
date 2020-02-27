@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,19 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.generator.AbstractJoynrCppGeneratorTest;
 
 public class GenerateEnumWithDefaultValueTest extends AbstractJoynrCppGeneratorTest {
+
+    @Before
+    public void setup() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        super.setup(generateProxy, generateProvider);
+    }
 
     @Test
     public void testGeneratesEnumwithDefaultValue() throws Exception {

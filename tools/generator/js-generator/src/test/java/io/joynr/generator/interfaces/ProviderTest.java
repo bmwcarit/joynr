@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2020 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,36 +20,36 @@ package io.joynr.generator.interfaces;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
+import io.joynr.generator.AbstractJoynrTSGeneratorTest;
 
-public class GenerateMultiReturnValuesContainerTest extends AbstractJoynrJavaGeneratorTest {
-
+public class ProviderTest extends AbstractJoynrTSGeneratorTest {
     @Before
     public void setup() throws Exception {
-        final boolean generateProxy = true;
+        final boolean generateProxy = false;
         final boolean generateProvider = true;
         super.setup(generateProxy, generateProvider);
     }
 
     @Test
-    public void testGenerateMultiReturnMethod() {
+    public void testProviderAndProxyCodeFound() {
         Map<String, String> result = generate("multi-out-method-test.fidl");
         assertNotNull(result);
-        boolean containerFound = false;
+        boolean providerFound = false;
+        // since the user code might need parts of the generated proxy code
+        // as well at the moment even for provider implementation, we do not
+        //  check for non-existance of proxy files here.
         for (Map.Entry<String, String> entry : result.entrySet()) {
-            if (entry.getKey().endsWith("Sync")) {
-                assertTrue("Marker interface not added.",
-                           entry.getValue().contains("implements io.joynr.dispatcher.rpc.MultiReturnValuesContainer"));
-                containerFound = true;
+            if (entry.getKey().contains("Provider")) {
+                providerFound = true;
             }
         }
-        assertTrue(containerFound);
+        assertTrue("Expected provider files not found", providerFound);
     }
-
 }
