@@ -119,6 +119,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         logger.info("{}: Initializing HiveMQ MQTT client for address {}.",
                     clientInformation,
                     client.getConfig().getServerAddress());
+        assert (!isReceiver || messagingSkeleton != null);
         if (!client.getConfig().getState().isConnected()) {
             while (!client.getConfig().getState().isConnected()) {
                 logger.info("{}: Attempting to connect client, clean session={} ...", clientInformation, cleanSession);
@@ -185,6 +186,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void setMessageListener(IMqttMessagingSkeleton rawMessaging) {
+        assert (isReceiver && messagingSkeleton == null);
         this.messagingSkeleton = rawMessaging;
     }
 
@@ -210,6 +212,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
+        assert (isSender);
         if (publishConsumer == null) {
             logger.debug("{}: Publishing to {} with qos {} failed: publishConsumer not set",
                          clientInformation,
@@ -245,6 +248,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void subscribe(String topic) {
+        assert (isReceiver);
         logger.info("{}: Subscribing to {}", clientInformation, topic);
         Mqtt5Subscription subscription = subscriptions.computeIfAbsent(topic,
                                                                        (t) -> Mqtt5Subscription.builder()
@@ -279,6 +283,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public void unsubscribe(String topic) {
+        assert (isReceiver);
         logger.info("{}: Unsubscribing from {}", clientInformation, topic);
         subscriptions.remove(topic);
         Mqtt5Unsubscribe unsubscribe = Mqtt5Unsubscribe.builder().addTopicFilter(topic).build();

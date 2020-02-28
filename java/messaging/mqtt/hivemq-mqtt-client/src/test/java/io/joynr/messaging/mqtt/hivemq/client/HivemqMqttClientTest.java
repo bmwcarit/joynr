@@ -26,6 +26,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
@@ -70,6 +71,8 @@ public class HivemqMqttClientTest {
     private String ownTopic;
     @Mock
     private IMqttMessagingSkeleton mockReceiver;
+    @Mock
+    private IMqttMessagingSkeleton mockReceiver2;
     @Mock
     private MessageRouter mockMessageRouter;
     @Mock
@@ -132,6 +135,7 @@ public class HivemqMqttClientTest {
         assertNotEquals(clientSender, clientReceiver);
 
         clientReceiver.setMessageListener(mockReceiver);
+        clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
         clientReceiver.start();
@@ -146,6 +150,7 @@ public class HivemqMqttClientTest {
         clientReceiver.unsubscribe(ownTopic);
         clientReceiver.shutdown();
         clientSender.shutdown();
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), any(FailureAction.class));
     }
 
     @Test
@@ -157,6 +162,7 @@ public class HivemqMqttClientTest {
         assertNotEquals(clientSender, clientReceiver);
 
         clientReceiver.setMessageListener(mockReceiver);
+        clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
         clientReceiver.start();
@@ -171,17 +177,19 @@ public class HivemqMqttClientTest {
 
         clientSender.publishMessage(ownTopic, serializedMessage);
         Thread.sleep(512);
-        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
+        verify(mockReceiver, times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
         clientReceiver.shutdown();
         clientSender.shutdown();
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), any(FailureAction.class));
     }
 
     @Test
     public void shutdownTwiceDoesNotThrow() {
         createHivemqMqttClientFactory();
         HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        client.setMessageListener(mockReceiver2);
         assertFalse(client.isShutdown());
         client.start();
 
@@ -197,6 +205,7 @@ public class HivemqMqttClientTest {
         final String testTopic = "HivemqMqttClientTest-topic";
         createHivemqMqttClientFactory();
         HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        client.setMessageListener(mockReceiver2);
         client.start();
 
         client.subscribe(testTopic);
@@ -218,6 +227,7 @@ public class HivemqMqttClientTest {
         assertNotEquals(clientSender, clientReceiver);
 
         clientReceiver.setMessageListener(mockReceiver);
+        clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
 
@@ -233,6 +243,7 @@ public class HivemqMqttClientTest {
         clientReceiver.unsubscribe(ownTopic);
         clientReceiver.shutdown();
         clientSender.shutdown();
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), any(FailureAction.class));
     }
 
     @Test
@@ -244,6 +255,7 @@ public class HivemqMqttClientTest {
         assertNotEquals(clientSender, clientReceiver);
 
         clientReceiver.setMessageListener(mockReceiver);
+        clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
         clientReceiver.start();
@@ -261,6 +273,7 @@ public class HivemqMqttClientTest {
         clientReceiver.unsubscribe(ownTopic);
         clientReceiver.shutdown();
         clientSender.shutdown();
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), any(FailureAction.class));
     }
 
     @Test
@@ -272,6 +285,7 @@ public class HivemqMqttClientTest {
         assertNotEquals(clientSender, clientReceiver);
 
         clientReceiver.setMessageListener(mockReceiver);
+        clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
 
@@ -295,6 +309,7 @@ public class HivemqMqttClientTest {
         Thread.sleep(128);
         clientReceiver.shutdown();
         clientSender.shutdown();
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), any(FailureAction.class));
     }
 
 }
