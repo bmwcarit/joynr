@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
+import com.hivemq.client.mqtt.exceptions.MqttSessionExpiredException;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
@@ -88,12 +89,24 @@ public class HivemqMqttClient implements JoynrMqttClient {
         clientInformation = createClientInformationString(gbid);
         shuttingDown = false;
         if (isReceiver) {
-            client.publishes(MqttGlobalPublishFilter.ALL)
-                  .subscribe(this::handleIncomingMessage,
-                             throwable -> logger.error("{}: Error encountered in publish callback.",
-                                                       clientInformation,
-                                                       throwable));
+            registerPublishCallback();
         }
+    }
+
+    private void registerPublishCallback() {
+        client.publishes(MqttGlobalPublishFilter.ALL).subscribe(this::handleIncomingMessage, throwable -> {
+            if (!cleanSession && throwable instanceof MqttSessionExpiredException) {
+                logger.warn("{}: MqttSessionExpiredException encountered in publish callback, trying to resubscribe.",
+                            clientInformation,
+                            throwable);
+                registerPublishCallback();
+            } else {
+                logger.error("{}: Error encountered in publish callback, trying to resubscribe.",
+                             clientInformation,
+                             throwable);
+                registerPublishCallback();
+            }
+        });
     }
 
     String getClientInformationString() {
