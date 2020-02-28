@@ -236,10 +236,13 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                        isReceiver,
                                                        isSender,
                                                        gbid);
-        logger.info("Created MQTT client for gbid {}, uri {}: clientHash={}", gbid, serverUri, result.hashCode());
+        logger.info("Created MQTT client for gbid {}, uri {}: {}",
+                    gbid,
+                    serverUri,
+                    result.getClientInformationString());
         resubscribeHandler.setClient(result);
         resubscribeHandler.setMqttStatusReceiver(mqttStatusReceiver);
-        disconnectedListener.setClient(result);
+        disconnectedListener.setClientInformationString(result.getClientInformationString());
         disconnectedListener.setMqttStatusReceiver(mqttStatusReceiver);
         return result;
     }
@@ -359,12 +362,12 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
     static class DisconnectedListener implements MqttClientDisconnectedListener {
 
-        private HivemqMqttClient client;
+        private String clientInformation;
 
         private MqttStatusReceiver mqttStatusReceiver;
 
-        void setClient(HivemqMqttClient client) {
-            this.client = client;
+        void setClientInformationString(String clientInformation) {
+            this.clientInformation = clientInformation;
         }
 
         void setMqttStatusReceiver(MqttStatusReceiver mqttStatusReceiver) {
@@ -373,8 +376,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         @Override
         public void onDisconnected(MqttClientDisconnectedContext context) {
-            logger.info("Hive MQTT Client {} disconnected: source: {}",
-                        client,
+            logger.info("{}: HiveMQ MQTT client disconnected: source: {}",
+                        clientInformation,
                         context.getSource(),
                         context.getCause());
             mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);

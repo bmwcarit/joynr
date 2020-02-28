@@ -96,6 +96,10 @@ public class HivemqMqttClient implements JoynrMqttClient {
         }
     }
 
+    String getClientInformationString() {
+        return clientInformation;
+    }
+
     private String createClientInformationString(final String gbid) {
         StringBuilder clientIdBuilder = new StringBuilder();
         clientIdBuilder.append("(clientHash=");
