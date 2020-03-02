@@ -8,16 +8,27 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
+* **[All]** For global communication, joynr now requires a MQTT broker that supports MQTT 5 and
+  MQTT 3. MQTT 3 is only required for Paho MQTT Client in Java, for JS test execution and for JS
+  InProcessRuntime.
 * **[C++]** ClusterController runtime now uses MQTT 5 protocol and thus connects only to
   MQTT 5 enabled brokers.
-* **[C++]** Updated Mosquitto dependency to 1.6.7
-* **[Java, JEE]** Switched from MQTT 3 to MQTT 5 for HiveMQ MQTT
-  Client. MQTT Paho Client continues to use MQTT 3.
+* **[C++]** Updated Mosquitto dependency to 1.6.8
+* **[C++]** Added patch for Mosquitto 1.6.8 to add missing constructor API
+  `mosquitto_connect_bind_async_v5()`. Joynr cannot be built anymore with unpatched Mosquitto.
+* **[Java, JEE]** Switched from MQTT 3 to MQTT 5 for HiveMQ MQTT Client. MQTT Paho Client continues
+  to use MQTT 3.
+* **[Java]** Fixed and improved reconnect handling and error handling in HivemqMqttClient.
+* **[Java]** Improved logging in HivemqMqttClient.
+* **[Java]** Removed dependency to spotbugs-annotations.
 * **[Java]** Updated jackson to version 2.10.2
-
-* **[All]** Joynr now requires a MQTT broker that supports MQTT 5 and
-  MQTT 3 (for global communication). MQTT 3 is still required for Paho
-  MQTT Client in Java, for JS test execution and for JS InProcessRuntime.
+* **[Java]** Updated javax.interceptor:javax.interceptor-api to 1.2.2 (only required for joynr
+  backend-services examples).
+* **[Java]** Updated hibernate version to 5.4.12.Final (only required for joynr backend-services
+  examples).
+* **[C++]** Fixed memory leaks in MosquittoConnection, AbstractMessageRouter,
+  JoynrClusterControllerRuntime.
+* **[All]** Removed unecessary participantId section from MQTT topic when publishing.
 
 ## Configuration property changes
 None.
