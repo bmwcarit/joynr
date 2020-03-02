@@ -53,7 +53,7 @@ This project has following dependencies:
    │  │  ├─ help-me (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ help-me/package.json
    │  │  │  ├─ callback-stream (1.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ callback-stream/package.json
    │  │  │  └─ glob-stream (6.1.0) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ glob-stream/package.json
-   │  │  │     ├─ extend (3.0.1) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ extend/package.json
+   │  │  │     ├─ extend (3.0.2) ── MIT License (http://www.opensource.org/licenses/MIT) ── node_modules/joynr ~ extend/package.json
    │  │  │     ├─ glob (7.1.4) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ glob/package.json
    │  │  │     │  ├─ fs.realpath (1.0.0) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ fs.realpath/package.json
    │  │  │     │  ├─ inflight (1.0.6) ── ISC License (http://www.isc.org/software/license, http://www.opensource.org/licenses/ISC) ── node_modules/joynr ~ inflight/package.json
