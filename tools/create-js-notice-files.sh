@@ -70,8 +70,8 @@ declare -a PACKAGE_JSON_DIRECTORIES=(
   "$JOYNR_SOURCE_DIR/tests/system-integration-test/sit-node-app"
   "$JOYNR_SOURCE_DIR/examples/radio-node"
   "$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/main/js"
-  "$JOYNR_SOURCE_DIR/javascript/libjoynr-js/joynr-generator-npm"
-  "$JOYNR_SOURCE_DIR/javascript/libjoynr-js/joynr-generator-npm-test"
+  "$JOYNR_SOURCE_DIR/tools/generator/joynr-generator-npm"
+  "$JOYNR_SOURCE_DIR/tools/generator/joynr-generator-npm/joynr-generator-npm-test"
   #"$JOYNR_SOURCE_DIR/tests/inter-language-test"
   #"$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/test/resources/node/shutdown"
   #"$JOYNR_SOURCE_DIR/javascript/libjoynr-js/src/main/browserify"
@@ -94,6 +94,8 @@ do
         licensecheck >> ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
 
         removeVersion "joynr" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
+        removeVersion "joynr-generator" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
+        removeVersion "joynr-generator-test" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
         removeVersion "radio-node" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
         removeVersion "inter-language-test" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
         removeVersion "performance-test" ${PACKAGE_JSON_DIRECTORY}/NOTICE-JS
