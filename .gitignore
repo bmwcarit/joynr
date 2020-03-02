@@ -23,8 +23,10 @@ local.properties
 *.bundle.js
 *.tsbuildinfo
 target/
-javascript/joynr-generator/jars/
-javascript/joynr-generator/src/*.js
+tools/generator/joynr-generator-npm/jars/
+tools/generator/joynr-generator-npm/src/*.js
+tools/generator/joynr-generator-npm/joynr-generator-npm-test/jars/
+tools/generator/joynr-generator-npm/joynr-generator-npm-test/generated/
 
 # Generated files
 /**/src/main/generated*/
