@@ -1347,19 +1347,17 @@ void LocalCapabilitiesDirectory::remove(
                                                            nullptr,
                                                            std::move(onApplicationError),
                                                            std::move(onRuntimeError));
-                JOYNR_LOG_INFO(
-                        logger(),
-                        "After removal of participantId {}: #registeredGlobalCapabilities: {}",
-                        participantId,
-                        countGlobalCapabilities());
             }
         }
-        JOYNR_LOG_INFO(logger(),
-                       "Removing locally registered participantId: {}, #localCapabilities before "
-                       "removal: {}",
-                       participantId,
-                       _locallyRegisteredCapabilities->size());
+        JOYNR_LOG_INFO(logger(), "Removing locally registered participantId: {}", participantId);
         _locallyRegisteredCapabilities->removeByParticipantId(participantId);
+        JOYNR_LOG_INFO(logger(),
+                       "After removal of participantId {}: #localCapabilities {}, "
+                       "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
+                       participantId,
+                       _locallyRegisteredCapabilities->size(),
+                       countGlobalCapabilities(),
+                       _globalLookupCache->size());
         informObserversOnRemove(entry);
 
         if (auto messageRouterSharedPtr = _messageRouter.lock()) {
