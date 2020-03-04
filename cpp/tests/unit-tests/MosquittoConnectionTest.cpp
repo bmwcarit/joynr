@@ -135,7 +135,7 @@ TEST_F(MosquittoConnectionTest, generalTest)
                 );
     mosquittoConnection1->registerReceiveCallback([](smrf::ByteVector&& msg) {
             std::ignore = msg;
-            FAIL() << "We do not expect to receive msgs on connection1";
+            ADD_FAILURE() << "We do not expect to receive msgs on connection1";
     });
 
     // after connection is established, subscription to channel based topic
@@ -307,7 +307,7 @@ TEST_F(MosquittoConnectionTest, noMessageDeliveryWhenExceedingItsExpiryIntervalA
     // set registerReceiveCallback.
     mosquittoConnection1->registerReceiveCallback([](smrf::ByteVector&& msg) {
             std::ignore = msg;
-            FAIL() << "We do not expect to receive msgs on connection1";
+            ADD_FAILURE() << "We do not expect to receive msgs on connection1";
     });
 
     mosquittoConnection1->start();
@@ -326,7 +326,7 @@ TEST_F(MosquittoConnectionTest, noMessageDeliveryWhenExceedingItsExpiryIntervalA
     const std::string anotherDummyPayload = "anotherDummyPayload";
     // check the message has been received on mosquittoConnection2
     auto msgWithExpiryDateReceived = std::make_shared<joynr::Semaphore>(0);
-    mosquittoConnection2->registerReceiveCallback([anotherDummyRecipient, anotherDummyPayload, msgWithExpiryDateReceived](smrf::ByteVector&& msg) {
+    mosquittoConnection2->registerReceiveCallback([msgWithExpiryDateReceived](smrf::ByteVector&& msg) {
             msgWithExpiryDateReceived->notify();
     });
 
