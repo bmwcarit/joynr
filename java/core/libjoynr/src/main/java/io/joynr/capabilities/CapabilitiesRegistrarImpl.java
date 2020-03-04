@@ -91,7 +91,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                          String[] gbids,
                                          boolean awaitGlobalRegistration) {
         DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
-        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback(discoveryEntry.getParticipantId());
+        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback(discoveryEntry);
         return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration, gbids);
     }
 
@@ -101,7 +101,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                    ProviderQos providerQos,
                                                    boolean awaitGlobalRegistration) {
         DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
-        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback(discoveryEntry.getParticipantId());
+        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback(discoveryEntry);
         return localDiscoveryAggregator.addToAll(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
@@ -130,45 +130,70 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         return discoveryEntry;
     }
 
-    private CallbackWithModeledError<Void, DiscoveryError> buildCallback(final String participantId) {
+    private CallbackWithModeledError<Void, DiscoveryError> buildCallback(final DiscoveryEntry discoveryEntry) {
         return new CallbackWithModeledError<Void, DiscoveryError>() {
             @Override
             public void onSuccess(Void result) {
-                logger.trace("Successfully registered provider with participantId={}", participantId);
+                logger.info("Successfully registered provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}",
+                            discoveryEntry.getParticipantId(),
+                            discoveryEntry.getDomain(),
+                            discoveryEntry.getInterfaceName(),
+                            discoveryEntry.getProviderVersion().getMajorVersion(),
+                            discoveryEntry.getProviderVersion().getMinorVersion());
             }
 
             @Override
             public void onFailure(JoynrRuntimeException runtimeException) {
-                logger.error("Error while registering provider with participantId={}:",
-                             participantId,
+                logger.error("Error while registering provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}:",
+                             discoveryEntry.getParticipantId(),
+                             discoveryEntry.getDomain(),
+                             discoveryEntry.getInterfaceName(),
+                             discoveryEntry.getProviderVersion().getMajorVersion(),
+                             discoveryEntry.getProviderVersion().getMinorVersion(),
                              runtimeException);
 
             }
 
             @Override
             public void onFailure(DiscoveryError errorEnum) {
-                logger.error("DiscoveryError while registering provider with participantId={}: {}",
-                             participantId,
+                logger.error("DiscoveryError while registering provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}: {}",
+                             discoveryEntry.getParticipantId(),
+                             discoveryEntry.getDomain(),
+                             discoveryEntry.getInterfaceName(),
+                             discoveryEntry.getProviderVersion().getMajorVersion(),
+                             discoveryEntry.getProviderVersion().getMinorVersion(),
                              errorEnum);
             }
         };
     }
 
     @Override
-    public Future<Void> unregisterProvider(String domain, Object provider) {
+    public Future<Void> unregisterProvider(final String domain, Object provider) {
 
-        final String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                                   ProviderAnnotations.getInterfaceName(provider),
-                                                                                   ProviderAnnotations.getMajorVersion(provider));
+        final String interfaceName = ProviderAnnotations.getInterfaceName(provider);
+        final int majorVersion = ProviderAnnotations.getMajorVersion(provider);
+        final int minorVersion = ProviderAnnotations.getMinorVersion(provider);
+        final String participantId = participantIdStorage.getProviderParticipantId(domain, interfaceName, majorVersion);
         Callback<Void> callback = new Callback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                logger.trace("Successfully unregistered provider with participantId={}", participantId);
+                logger.info("Successfully unregistered provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}",
+                            participantId,
+                            domain,
+                            interfaceName,
+                            majorVersion,
+                            minorVersion);
             }
 
             @Override
             public void onFailure(JoynrRuntimeException error) {
-                logger.error("Error while unregistering provider with participantId={}: ", participantId, error);
+                logger.error("Error while unregistering provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}: ",
+                             participantId,
+                             domain,
+                             interfaceName,
+                             majorVersion,
+                             minorVersion,
+                             error);
             }
         };
         providerDirectory.remove(participantId);
