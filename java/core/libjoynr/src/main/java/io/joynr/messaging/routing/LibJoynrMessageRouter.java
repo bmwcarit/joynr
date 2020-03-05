@@ -167,7 +167,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         } else if (incomingAddress instanceof BinderAddress) {
             parentRouter.addNextHop(participantId, (BinderAddress) incomingAddress, isGloballyVisible);
         } else {
-            throw new ProviderRuntimeException("Failed to add next hop to parent: unknown address type"
+            throw new ProviderRuntimeException("Failed to add next hop to parent: unknown address type "
                     + incomingAddress.getClass().getSimpleName());
         }
     }
