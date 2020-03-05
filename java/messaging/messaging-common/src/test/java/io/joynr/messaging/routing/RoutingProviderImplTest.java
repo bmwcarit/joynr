@@ -18,15 +18,18 @@
  */
 package io.joynr.messaging.routing;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
-import io.joynr.messaging.MulticastReceiverRegistrar;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,15 +42,21 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.joynr.exceptions.JoynrException;
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.provider.Deferred;
+import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingSubscriptionPublisher;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
+import joynr.system.RoutingTypes.UdsAddress;
+import joynr.system.RoutingTypes.UdsClientAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RoutingProviderImplTest {
@@ -208,4 +217,51 @@ public class RoutingProviderImplTest {
         replyToAddressChangedSemaphore.acquire(2);
     }
 
+    @Test
+    public void addNextHop_udsAddress() throws InterruptedException {
+        final String participantId = "testParticipantId";
+        final boolean isGloballyVisible = true;
+        final UdsAddress address = new UdsAddress();
+        Promise<DeferredVoid> addNextHopPromise = routingProvider.addNextHop(participantId, address, isGloballyVisible);
+        assertTrue(addNextHopPromise.isRejected());
+        CountDownLatch cdl = new CountDownLatch(1);
+        addNextHopPromise.then(new PromiseListener() {
+            @Override
+            public void onRejection(JoynrException error) {
+                assertTrue(error instanceof ProviderRuntimeException);
+                assertTrue(((ProviderRuntimeException) error).getMessage().contains("not supported"));
+                cdl.countDown();
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                fail("addNextHop succeeded");
+            }
+        });
+        assertTrue(cdl.await(1, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void addNextHop_udsClientAddress() throws InterruptedException {
+        final String participantId = "testParticipantId";
+        final boolean isGloballyVisible = true;
+        final UdsClientAddress address = new UdsClientAddress();
+        Promise<DeferredVoid> addNextHopPromise = routingProvider.addNextHop(participantId, address, isGloballyVisible);
+        assertTrue(addNextHopPromise.isRejected());
+        CountDownLatch cdl = new CountDownLatch(1);
+        addNextHopPromise.then(new PromiseListener() {
+            @Override
+            public void onRejection(JoynrException error) {
+                assertTrue(error instanceof ProviderRuntimeException);
+                assertTrue(((ProviderRuntimeException) error).getMessage().contains("not supported"));
+                cdl.countDown();
+            }
+
+            @Override
+            public void onFulfillment(Object... values) {
+                fail("addNextHop succeeded");
+            }
+        });
+        assertTrue(cdl.await(1, TimeUnit.SECONDS));
+    }
 }
