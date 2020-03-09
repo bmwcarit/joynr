@@ -367,8 +367,8 @@ public class HivemqMqttClientTest {
 
     @Test
     public void publishWithMessageExpiryInterval_receiveWithDelay() throws Exception {
-        final int sleepTimeMs = 1000;
-        final int expectedExpiryInterval = DEFAULT_EXPIRY_INTERVAL_SEC - sleepTimeMs / 1000;
+        final int sleepTimeSec = 1;
+        final int expectedExpiryInterval = DEFAULT_EXPIRY_INTERVAL_SEC - sleepTimeSec;
         createHivemqMqttClientFactory();
         ownTopic = "testTopic";
         HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
@@ -379,6 +379,8 @@ public class HivemqMqttClientTest {
         setIncomingMessageHandler(clientReceiver.getClient(), mqtt5Publish -> {
             logger.trace("Incoming message {}", mqtt5Publish);
             assertEquals(expectedExpiryInterval, mqtt5Publish.getMessageExpiryInterval().getAsLong());
+            assertTrue(expectedExpiryInterval >= mqtt5Publish.getMessageExpiryInterval().getAsLong());
+            assertTrue(expectedExpiryInterval - mqtt5Publish.getMessageExpiryInterval().getAsLong() <= 2); // tolerance: 2sec
             cdl.countDown();
         });
 
@@ -395,7 +397,7 @@ public class HivemqMqttClientTest {
         clientReceiver.shutdown();
         clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, DEFAULT_EXPIRY_INTERVAL_SEC);
         // wait some time to let the expiry interval decrease at the broker before receiving the message
-        Thread.sleep(sleepTimeMs);
+        Thread.sleep(sleepTimeSec * 1000);
         clientReceiver.start();
 
         assertTrue(cdl.await(10, TimeUnit.SECONDS));
