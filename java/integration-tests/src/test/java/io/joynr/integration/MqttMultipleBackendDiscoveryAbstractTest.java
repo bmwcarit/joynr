@@ -43,7 +43,7 @@ public abstract class MqttMultipleBackendDiscoveryAbstractTest extends AbstractM
         GlobalDiscoveryEntry gcdDiscoveryEntry = injector.getInstance(Key.get(GlobalDiscoveryEntry.class,
                                                                               Names.named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY)));
         String gcdTopic = ((MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(gcdDiscoveryEntry)).getTopic();
-        gcdTopic += "/low/" + gcdDiscoveryEntry.getParticipantId();
+        gcdTopic += "/low";
         return gcdTopic;
     }
 
