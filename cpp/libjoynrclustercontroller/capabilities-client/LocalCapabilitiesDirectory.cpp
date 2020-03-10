@@ -108,7 +108,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           _pendingLookupsLock(),
           _messageRouter(messageRouter),
           _observers(),
-          _pendingLookups(),
+          _pendingLookupsHandler(),
           _accessController(),
           _checkExpiredDiscoveryEntriesTimer(ioService),
           _isLocalCapabilitiesDirectoryPersistencyEnabled(
@@ -248,8 +248,10 @@ void LocalCapabilitiesDirectory::addInternal(
         updatePersistedFile();
         {
             std::lock_guard<std::mutex> lock(_pendingLookupsLock);
-            callPendingLookups(InterfaceAddress(
-                    discoveryEntry.getDomain(), discoveryEntry.getInterfaceName()));
+            InterfaceAddress interfaceAddress =
+                    InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
+            _pendingLookupsHandler.callPendingLookups(
+                    interfaceAddress, searchLocalCache({interfaceAddress}));
         }
     }
 
@@ -338,9 +340,12 @@ void LocalCapabilitiesDirectory::addInternal(
                     thisSharedPtr->updatePersistedFile();
                     {
                         std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
-                        thisSharedPtr->callPendingLookups(
+                        InterfaceAddress interfaceAddress =
                                 InterfaceAddress(globalDiscoveryEntry.getDomain(),
-                                                 globalDiscoveryEntry.getInterfaceName()));
+                                                 globalDiscoveryEntry.getInterfaceName());
+                        thisSharedPtr->_pendingLookupsHandler.callPendingLookups(
+                                interfaceAddress,
+                                thisSharedPtr->searchLocalCache({interfaceAddress}));
                     }
                 }
             }
@@ -690,7 +695,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
-                if (!(thisSharedPtr->isCallbackCalled(
+                if (!(thisSharedPtr->_pendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     if (replaceGdeGbid) {
                         LCDUtil::replaceGbidWithEmptyString(result);
@@ -701,7 +706,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                             callback,
                             discoveryQos.getDiscoveryScope());
                 }
-                thisSharedPtr->callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_pendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
             }
         };
 
@@ -722,11 +727,11 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                 interfaceName,
                                 types::DiscoveryError::getLiteral(error));
                 std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
-                if (!(thisSharedPtr->isCallbackCalled(
+                if (!(thisSharedPtr->_pendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(error);
                 }
-                thisSharedPtr->callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_pendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
             }
         };
 
@@ -748,17 +753,17 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                 exception.getMessage(),
                                 exception.TYPE_NAME());
                 std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
-                if (!(thisSharedPtr->isCallbackCalled(
+                if (!(thisSharedPtr->_pendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(types::DiscoveryError::INTERNAL_ERROR);
                 }
-                thisSharedPtr->callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_pendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
             }
         };
 
         if (discoveryQos.getDiscoveryScope() == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
             std::lock_guard<std::mutex> lock(_pendingLookupsLock);
-            registerPendingLookup(interfaceAddresses, callback);
+            _pendingLookupsHandler.registerPendingLookup(interfaceAddresses, callback);
         }
         _globalCapabilitiesDirectoryClient->lookup(domains,
                                                    interfaceName,
@@ -770,77 +775,9 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
     }
 }
 
-void LocalCapabilitiesDirectory::callPendingLookups(const InterfaceAddress& interfaceAddress)
-{
-    if (_pendingLookups.find(interfaceAddress) == _pendingLookups.cend()) {
-        return;
-    }
-    auto localCapabilities = searchLocalCache({interfaceAddress});
-    if (localCapabilities.empty()) {
-        return;
-    }
-    auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-
-    for (const std::shared_ptr<ILocalCapabilitiesCallback>& callback :
-         _pendingLookups[interfaceAddress]) {
-        callback->capabilitiesReceived(localCapabilitiesWithMetaInfo);
-    }
-    _pendingLookups.erase(interfaceAddress);
-}
-
-void LocalCapabilitiesDirectory::registerPendingLookup(
-        const std::vector<InterfaceAddress>& interfaceAddresses,
-        const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
-{
-    for (const InterfaceAddress& address : interfaceAddresses) {
-        _pendingLookups[address].push_back(callback); // if no entry exists for key address, an
-                                                      // empty list is automatically created
-    }
-}
-
 bool LocalCapabilitiesDirectory::hasPendingLookups()
 {
-    return !_pendingLookups.empty();
-}
-
-bool LocalCapabilitiesDirectory::isCallbackCalled(
-        const std::vector<InterfaceAddress>& interfaceAddresses,
-        const std::shared_ptr<ILocalCapabilitiesCallback>& callback,
-        const joynr::types::DiscoveryQos& discoveryQos)
-{
-    // only if discovery scope is joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL, the
-    // callback can potentially already be called, as a matching capability has been added
-    // to the local capabilities directory while waiting for capabilitiesclient->lookup result
-    if (discoveryQos.getDiscoveryScope() != joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
-        return false;
-    }
-    for (const InterfaceAddress& address : interfaceAddresses) {
-        if (_pendingLookups.find(address) == _pendingLookups.cend()) {
-            return true;
-        }
-        if (std::find(_pendingLookups[address].cbegin(),
-                      _pendingLookups[address].cend(),
-                      callback) == _pendingLookups[address].cend()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void LocalCapabilitiesDirectory::callbackCalled(
-        const std::vector<InterfaceAddress>& interfaceAddresses,
-        const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
-{
-    for (const InterfaceAddress& address : interfaceAddresses) {
-        if (_pendingLookups.find(address) != _pendingLookups.cend()) {
-            std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>& callbacks =
-                    _pendingLookups[address];
-            util::removeAll(callbacks, callback);
-            if (_pendingLookups[address].empty()) {
-                _pendingLookups.erase(address);
-            }
-        }
-    }
+    return _pendingLookupsHandler.hasPendingLookups();
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
