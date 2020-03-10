@@ -32,14 +32,21 @@
 #include <boost/asio/steady_timer.hpp>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
+#include "joynr/CapabilitiesStorage.h"
+#include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/InterfaceAddress.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
+#include "joynr/MessagingSettings.h"
+#include "joynr/PendingLookupsHandler.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
 #include "joynr/system/ProviderReregistrationControllerProvider.h"
+#include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryError.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
@@ -317,8 +324,7 @@ private:
     std::weak_ptr<IMessageRouter> _messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> _observers;
 
-    std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
-            _pendingLookups;
+    PendingLookupsHandler _pendingLookupsHandler;
 
     std::weak_ptr<IAccessController> _accessController;
 
@@ -338,14 +344,6 @@ private:
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
-    void registerPendingLookup(const std::vector<InterfaceAddress>& interfaceAddresses,
-                               const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
-    bool isCallbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
-                          const std::shared_ptr<ILocalCapabilitiesCallback>& callback,
-                          const joynr::types::DiscoveryQos& discoveryQos);
-    void callbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
-                        const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
-    void callPendingLookups(const InterfaceAddress& interfaceAddress);
 
     void addInternal(const joynr::types::DiscoveryEntry& entry,
                      bool awaitGlobalRegistration,
