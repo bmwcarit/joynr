@@ -33,6 +33,7 @@ set(PUBLIC_HEADERS
     include/joynr/ClusterControllerSettings.h
     include/joynr/ITransportMessageReceiver.h
     include/joynr/ITransportMessageSender.h
+    include/joynr/LCDUtil.h
     include/joynr/LocalCapabilitiesDirectory.h
     include/joynr/MqttMessagingSkeleton.h
     include/joynr/MqttReceiver.h

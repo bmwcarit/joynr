@@ -48,12 +48,15 @@
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"
+#include "joynr/LCDUtil.h"
 
 #include "IGlobalCapabilitiesDirectoryClient.h"
 
@@ -223,26 +226,6 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
     clear();
 }
 
-LocalCapabilitiesDirectory::ValidateGBIDsEnum::Enum LocalCapabilitiesDirectory::validateGbids(
-        std::vector<std::string> gbids,
-        std::unordered_set<std::string> validGbids)
-{
-    std::unordered_set<std::string> gbidSet;
-    for (auto gbid : gbids) {
-        if (gbid.empty() || (gbidSet.find(gbid) != gbidSet.cend())) {
-            JOYNR_LOG_ERROR(
-                    logger(), "INVALID_GBID: provided GBID is empty or duplicate: >{}<.", gbid);
-            return ValidateGBIDsEnum::INVALID;
-        }
-        gbidSet.insert(gbid);
-        if (validGbids.find(gbid) == validGbids.cend()) {
-            JOYNR_LOG_ERROR(logger(), "UNKNOWN_GBID: provided GBID is unknown: >{}<.", gbid);
-            return ValidateGBIDsEnum::UNKNOWN;
-        }
-    }
-    return ValidateGBIDsEnum::OK;
-}
-
 void LocalCapabilitiesDirectory::addInternal(
         const types::DiscoveryEntry& discoveryEntry,
         bool awaitGlobalRegistration,
@@ -250,7 +233,7 @@ void LocalCapabilitiesDirectory::addInternal(
         std::function<void()> onSuccess,
         std::function<void(const types::DiscoveryError::Enum&)> onError)
 {
-    const bool isGloballyVisible = isGlobal(discoveryEntry);
+    const bool isGloballyVisible = LCDUtil::isGlobal(discoveryEntry);
 
     if (!isGloballyVisible || !awaitGlobalRegistration) {
         std::lock_guard<std::recursive_mutex> lock1(_cacheLock);
@@ -520,68 +503,13 @@ bool LocalCapabilitiesDirectory::getLocalAndCachedCapabilities(
 
     boost::optional<types::DiscoveryEntry> localOrCachedCapability = searchCaches(
             participantId, scope, gbids, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()));
-    auto localCapabilities = optionalToVector(std::move(localOrCachedCapability));
+    auto localCapabilities = LCDUtil::optionalToVector(std::move(localOrCachedCapability));
     std::vector<types::DiscoveryEntry> globalCapabilities(localCapabilities);
 
     return callReceiverIfPossible(scope,
                                   std::move(localCapabilities),
                                   std::move(globalCapabilities),
                                   std::move(callback));
-}
-
-bool LocalCapabilitiesDirectory::isEntryForGbid(
-        const std::unique_lock<std::recursive_mutex>& cacheLock,
-        const types::DiscoveryEntry& entry,
-        const std::unordered_set<std::string> gbids)
-{
-    assert(cacheLock.owns_lock());
-    std::ignore = cacheLock;
-
-    const auto foundMapping = _globalParticipantIdsToGbidsMap.find(entry.getParticipantId());
-    if (foundMapping != _globalParticipantIdsToGbidsMap.cend() && !foundMapping->second.empty()) {
-        for (const auto& entryGbid : foundMapping->second) {
-            if (gbids.find(entryGbid) != gbids.cend()) {
-                return true;
-            }
-        }
-    } else {
-        JOYNR_LOG_WARN(logger(), "No GBIDs found for DiscoveryEntry {}", entry.getParticipantId());
-    }
-    return false;
-}
-
-std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::filterDiscoveryEntriesByGbids(
-        const std::unique_lock<std::recursive_mutex>& cacheLock,
-        const std::vector<types::DiscoveryEntry>& entries,
-        const std::unordered_set<std::string>& gbids)
-{
-    assert(cacheLock.owns_lock());
-    std::vector<types::DiscoveryEntry> result;
-
-    for (const auto& entry : entries) {
-        if (isEntryForGbid(cacheLock, entry, gbids)) {
-            result.push_back(entry);
-        }
-    }
-    return result;
-}
-
-std::vector<types::DiscoveryEntryWithMetaInfo> LocalCapabilitiesDirectory::filterDuplicates(
-        std::vector<types::DiscoveryEntryWithMetaInfo>&& localCapabilitiesWithMetaInfo,
-        std::vector<types::DiscoveryEntryWithMetaInfo>&& globalCapabilitiesWithMetaInfo)
-{
-    // use custom DiscoveryEntryHash and custom DiscoveryEntryKeyEq to compare only the
-    // participantId and to ignore the isLocal flag of DiscoveryEntryWithMetaInfo.
-    // prefer local entries if there are local and global entries for the same provider.
-    std::unordered_set<types::DiscoveryEntryWithMetaInfo,
-                       joynr::DiscoveryEntryHash,
-                       joynr::DiscoveryEntryKeyEq>
-            resultSet(std::make_move_iterator(localCapabilitiesWithMetaInfo.begin()),
-                      std::make_move_iterator(localCapabilitiesWithMetaInfo.end()));
-    resultSet.insert(std::make_move_iterator(globalCapabilitiesWithMetaInfo.begin()),
-                     std::make_move_iterator(globalCapabilitiesWithMetaInfo.end()));
-    std::vector<types::DiscoveryEntryWithMetaInfo> resultVec(resultSet.begin(), resultSet.end());
-    return resultVec;
 }
 
 bool LocalCapabilitiesDirectory::callReceiverIfPossible(
@@ -618,8 +546,8 @@ bool LocalCapabilitiesDirectory::callReceiverIfPossible(
             auto globalCapabilitiesWithMetaInfo = util::convert(false, globalCapabilities);
 
             // remove duplicates
-            auto resultVec = filterDuplicates(std::move(localCapabilitiesWithMetaInfo),
-                                              std::move(globalCapabilitiesWithMetaInfo));
+            auto resultVec = LCDUtil::filterDuplicates(std::move(localCapabilitiesWithMetaInfo),
+                                                       std::move(globalCapabilitiesWithMetaInfo));
             callback->capabilitiesReceived(std::move(resultVec));
             return true;
         }
@@ -674,8 +602,8 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
         // look if in the meantime there are some local providers registered
         // lookup in the local directory to get local providers which were registered in the
         // meantime.
-        globalEntries =
-                filterDuplicates(std::move(localEntriesWithMetaInfo), std::move(globalEntries));
+        globalEntries = LCDUtil::filterDuplicates(
+                std::move(localEntriesWithMetaInfo), std::move(globalEntries));
     }
     callback->capabilitiesReceived(std::move(globalEntries));
 }
@@ -697,12 +625,12 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
             participantId,
             discoveryScope = discoveryQos.getDiscoveryScope(),
             callback,
-            replaceGdeGbid = containsOnlyEmptyString(gbids)
+            replaceGdeGbid = LCDUtil::containsOnlyEmptyString(gbids)
         ](std::vector<joynr::types::GlobalDiscoveryEntry> result)
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 if (replaceGdeGbid) {
-                    thisSharedPtr->replaceGbidWithEmptyString(result);
+                    LCDUtil::replaceGbidWithEmptyString(result);
                 }
                 thisSharedPtr->capabilitiesReceived(
                         result,
@@ -733,37 +661,6 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     }
 }
 
-bool LocalCapabilitiesDirectory::containsOnlyEmptyString(const std::vector<std::string> gbids)
-{
-    return gbids.size() == 1 && gbids[0] == "";
-}
-
-void LocalCapabilitiesDirectory::replaceGbidWithEmptyString(
-        std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities)
-{
-    JOYNR_LOG_TRACE(logger(), "replacing GBID of GDEs with empty string");
-    for (auto& cap : capabilities) {
-        const auto& serializedAddress = cap.getAddress();
-        std::shared_ptr<system::RoutingTypes::Address> address;
-        try {
-            joynr::serializer::deserializeFromJson(address, serializedAddress);
-        } catch (const std::invalid_argument& e) {
-            JOYNR_LOG_FATAL(
-                    logger(),
-                    "could not deserialize Address for GBID replacement from {} - error: {}",
-                    serializedAddress,
-                    e.what());
-            continue;
-        }
-        if (auto mqttAddress = dynamic_cast<system::RoutingTypes::MqttAddress*>(address.get())) {
-            mqttAddress->setBrokerUri("");
-            cap.setAddress(joynr::serializer::serializeToJson(*mqttAddress));
-        }
-        // other address types do not contain a GBID, default GBID will be used then for
-        // globalParticipantIdsToGbidsMap
-    }
-}
-
 void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                         const std::string& interfaceName,
                                         const std::vector<std::string>& gbids,
@@ -788,7 +685,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             interfaceAddresses,
             callback,
             discoveryQos,
-            replaceGdeGbid = containsOnlyEmptyString(gbids)
+            replaceGdeGbid = LCDUtil::containsOnlyEmptyString(gbids)
         ](std::vector<joynr::types::GlobalDiscoveryEntry> result)
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
@@ -796,7 +693,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                 if (!(thisSharedPtr->isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     if (replaceGdeGbid) {
-                        thisSharedPtr->replaceGbidWithEmptyString(result);
+                        LCDUtil::replaceGbidWithEmptyString(result);
                     }
                     thisSharedPtr->capabilitiesReceived(
                             result,
@@ -950,7 +847,8 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCap
         const std::string& participantId)
 {
     std::lock_guard<std::recursive_mutex> lock5(_cacheLock);
-    return optionalToVector(_locallyRegisteredCapabilities->lookupByParticipantId(participantId));
+    return LCDUtil::optionalToVector(
+            _locallyRegisteredCapabilities->lookupByParticipantId(participantId));
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedLocalCapabilities(
@@ -984,7 +882,7 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
         }
 
         const types::DiscoveryEntry& currentEntry = it->second;
-        const bool isGloballyVisible = isGlobal(currentEntry);
+        const bool isGloballyVisible = LCDUtil::isGlobal(currentEntry);
         if (auto messageRouterSharedPtr = _messageRouter.lock()) {
             constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
             const bool isSticky = false;
@@ -1056,7 +954,7 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const types::DiscoveryError::Enum& errorEnum)> onError)
 {
-    auto result = validateGbids(gbids, _knownGbidsSet);
+    auto result = LCDUtil::validateGbids(gbids, _knownGbidsSet);
     switch (result) {
     case ValidateGBIDsEnum::OK:
         break;
@@ -1140,16 +1038,6 @@ bool LocalCapabilitiesDirectory::hasProviderPermission(const types::DiscoveryEnt
     return false;
 }
 
-std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::optionalToVector(
-        boost::optional<types::DiscoveryEntry> optionalEntry)
-{
-    std::vector<types::DiscoveryEntry> vec;
-    if (optionalEntry) {
-        vec.push_back(std::move(*optionalEntry));
-    }
-    return vec;
-}
-
 void LocalCapabilitiesDirectory::setAccessController(
         std::weak_ptr<IAccessController> accessController)
 {
@@ -1196,7 +1084,7 @@ void LocalCapabilitiesDirectory::lookup(
         throw joynr::exceptions::ProviderRuntimeException("Domains must not be empty.");
     }
 
-    auto result = validateGbids(gbids, _knownGbidsSet);
+    auto result = LCDUtil::validateGbids(gbids, _knownGbidsSet);
     switch (result) {
     case ValidateGBIDsEnum::OK:
         break;
@@ -1279,7 +1167,7 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& result)> onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError)
 {
-    auto result = validateGbids(gbids, _knownGbidsSet);
+    auto result = LCDUtil::validateGbids(gbids, _knownGbidsSet);
     switch (result) {
     case ValidateGBIDsEnum::OK:
         break;
@@ -1357,7 +1245,7 @@ void LocalCapabilitiesDirectory::remove(
         }
         const types::DiscoveryEntry& entry = *optionalEntry;
 
-        if (isGlobal(entry)) {
+        if (LCDUtil::isGlobal(entry)) {
             auto foundGbids = _globalParticipantIdsToGbidsMap.find(participantId);
             std::vector<std::string> gbids;
             if (foundGbids == _globalParticipantIdsToGbidsMap.cend()) {
@@ -1612,7 +1500,8 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchGlobalCache
 
         const auto entries =
                 _globalLookupCache->lookupCacheByDomainAndInterface(domain, interface, maxCacheAge);
-        const auto filteredEntries = filterDiscoveryEntriesByGbids(lock, entries, gbidsSet);
+        const auto filteredEntries = LCDUtil::filterDiscoveryEntriesByGbids(
+                lock, entries, gbidsSet, _globalParticipantIdsToGbidsMap);
         result.insert(result.end(),
                       std::make_move_iterator(filteredEntries.begin()),
                       std::make_move_iterator(filteredEntries.end()));
@@ -1661,7 +1550,7 @@ boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchCaches(
     }
     if (entry) {
         const std::unordered_set<std::string> gbidsSet(gbids.cbegin(), gbids.cend());
-        if (!isEntryForGbid(lock, *entry, gbidsSet)) {
+        if (!LCDUtil::isEntryForGbid(lock, *entry, gbidsSet, _globalParticipantIdsToGbidsMap)) {
             return boost::none;
         }
     }
@@ -1681,11 +1570,6 @@ void LocalCapabilitiesDirectory::informObserversOnRemove(
     for (const std::shared_ptr<IProviderRegistrationObserver>& observer : _observers) {
         observer->onProviderRemove(discoveryEntry);
     }
-}
-
-bool LocalCapabilitiesDirectory::isGlobal(const types::DiscoveryEntry& discoveryEntry) const
-{
-    return discoveryEntry.getQos().getScope() == types::ProviderScope::GLOBAL;
 }
 
 void LocalCapabilitiesDirectory::scheduleCleanupTimer()
@@ -1739,9 +1623,9 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                 JOYNR_LOG_INFO(logger(),
                                "Following discovery entries expired: local: {}, "
                                "#localCapabilities: {}, global: {}, #globalLookupCache: {}",
-                               joinToString(removedLocalCapabilities),
+                               LCDUtil::joinToString(removedLocalCapabilities),
                                _locallyRegisteredCapabilities->size(),
-                               joinToString(removedGlobalCapabilities),
+                               LCDUtil::joinToString(removedGlobalCapabilities),
                                _globalLookupCache->size());
 
                 for (const auto& capability :
@@ -1762,20 +1646,6 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
     }
 
     scheduleCleanupTimer();
-}
-
-std::string LocalCapabilitiesDirectory::joinToString(
-        const std::vector<types::DiscoveryEntry>& discoveryEntries) const
-{
-    std::ostringstream outputStream;
-
-    std::transform(
-            discoveryEntries.cbegin(),
-            discoveryEntries.cend(),
-            std::ostream_iterator<std::string>(outputStream, ", "),
-            [](const types::DiscoveryEntry& discoveryEntry) { return discoveryEntry.toString(); });
-
-    return outputStream.str();
 }
 
 void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(

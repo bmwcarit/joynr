@@ -252,16 +252,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     ClusterControllerSettings& _clusterControllerSettings; // to retrieve info about persistency
 
-    struct ValidateGBIDsEnum
-    {
-        enum Enum : std::uint32_t { OK = 0, INVALID = 1, UNKNOWN = 2 };
-    };
-    static ValidateGBIDsEnum::Enum validateGbids(std::vector<std::string> gbids,
-                                                 std::unordered_set<std::string> validGbids);
-
-    bool containsOnlyEmptyString(const std::vector<std::string> gbids);
-    void replaceGbidWithEmptyString(std::vector<joynr::types::GlobalDiscoveryEntry>& capabilities);
-
     types::GlobalDiscoveryEntry toGlobalDiscoveryEntry(
             const types::DiscoveryEntry& discoveryEntry) const;
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
@@ -337,7 +327,6 @@ private:
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
-    std::string joinToString(const std::vector<types::DiscoveryEntry>& discoveryEntries) const;
     void remove(const types::DiscoveryEntry& discoveryEntry);
     boost::asio::steady_timer _freshnessUpdateTimer;
     std::string _clusterControllerId;
@@ -357,7 +346,6 @@ private:
     void callbackCalled(const std::vector<InterfaceAddress>& interfaceAddresses,
                         const std::shared_ptr<ILocalCapabilitiesCallback>& callback);
     void callPendingLookups(const InterfaceAddress& interfaceAddress);
-    bool isGlobal(const types::DiscoveryEntry& discoveryEntry) const;
 
     void addInternal(const joynr::types::DiscoveryEntry& entry,
                      bool awaitGlobalRegistration,
@@ -366,19 +354,6 @@ private:
                      std::function<void(const joynr::types::DiscoveryError::Enum&)> onError);
     bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
     std::size_t countGlobalCapabilities() const;
-
-    std::vector<types::DiscoveryEntry> optionalToVector(
-            boost::optional<types::DiscoveryEntry> optionalEntry);
-    std::vector<types::DiscoveryEntryWithMetaInfo> filterDuplicates(
-            std::vector<types::DiscoveryEntryWithMetaInfo>&& globalCapabilitiesWithMetaInfo,
-            std::vector<types::DiscoveryEntryWithMetaInfo>&& localCapabilitiesWithMetaInfo);
-    bool isEntryForGbid(const std::unique_lock<std::recursive_mutex>& cacheLock,
-                        const types::DiscoveryEntry& entry,
-                        const std::unordered_set<std::string> gbids);
-    std::vector<types::DiscoveryEntry> filterDiscoveryEntriesByGbids(
-            const std::unique_lock<std::recursive_mutex>& cacheLock,
-            const std::vector<types::DiscoveryEntry>& entries,
-            const std::unordered_set<std::string>& gbids);
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
