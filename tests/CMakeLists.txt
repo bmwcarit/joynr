@@ -17,6 +17,13 @@ if(ENABLE_CCACHE)
     endif(CCACHE_FOUND)
 endif(ENABLE_CCACHE)
 
+######## DEFAULT COMPILER FLAGS #############
+
+set(CMAKE_CXX_STANDARD 14)
+set(CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # this project includes all test subdirectories
 project(joynr-tests)
 add_subdirectory(dummyKeychain)
