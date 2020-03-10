@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
 project(robustness-test-env-1.0.0-SNAPSHOT)

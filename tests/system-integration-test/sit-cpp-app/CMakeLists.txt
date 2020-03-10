@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
 project(jsit-1.14.0-SNAPSHOT)
