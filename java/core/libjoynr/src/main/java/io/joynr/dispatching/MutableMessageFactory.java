@@ -225,7 +225,7 @@ public class MutableMessageFactory {
     }
 
     private byte[] serializePayload(Object payload) {
-        // when using javax.annotatoins.NonNull annotation on capablities parameter it will
+        // when using javax.annotatoins.NonNull annotation on capabilities parameter it will
         // cause a NoSuchMethodError
         assert (payload != null);
 
