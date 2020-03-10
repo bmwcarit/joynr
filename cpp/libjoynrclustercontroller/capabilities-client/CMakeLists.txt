@@ -5,6 +5,7 @@ set(SOURCES
     GlobalCapabilitiesDirectoryClient.h
     IGlobalCapabilitiesDirectoryClient.h
     LocalCapabilitiesDirectory.cpp
+    LCDUtil.cpp
 )
 
 add_library(${PROJECT_NAME} OBJECT ${SOURCES})
