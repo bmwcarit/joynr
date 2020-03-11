@@ -10,7 +10,6 @@ message(STATUS "option USE_PLATFORM_WEBSOCKETPP=" ${USE_PLATFORM_WEBSOCKETPP})
 ### Add websocketpp ###########################################################
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../cpp/CMake")
-#include(AddWebSocketPP)
 if(NOT TARGET websocketpp::websocketpp)
     find_package(websocketpp REQUIRED)
 endif()
@@ -22,7 +21,7 @@ find_package(Boost REQUIRED COMPONENTS system thread program_options)
 add_executable(websocket-server-echo
     WebSocketServerEcho.cpp
 )
-add_dependencies(websocket-server-echo websocketpp)
+add_dependencies(websocket-server-echo websocketpp::websocketpp)
 
 target_include_directories(
     websocket-server-echo
