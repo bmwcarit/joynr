@@ -491,20 +491,5 @@
 				</plugins>
 			</build>
 		</profile>
-
-		<profile>
-			<id>carit-copyright</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jasig.maven</groupId>
-						<artifactId>maven-notice-plugin</artifactId>
-						<configuration>
-							<outputDir>src/main/js/META-INF</outputDir>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 	</profiles>
 </project>

@@ -30,8 +30,7 @@
   },
   "files": [
     "src/joynrGenerator.js",
-    "jars/joynr-generator-standalone-1.14.0-SNAPSHOT.jar",
-    "META-INF/NOTICE"
+    "jars/joynr-generator-standalone-1.14.0-SNAPSHOT.jar"
   ],
   "bin": {
     "generate-joynr-sources": "./src/joynrGenerator.js"

@@ -156,20 +156,4 @@
 			</plugin>
 		</plugins>
 	</build>
-	<profiles>
-		<profile>
-			<id>carit-copyright</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jasig.maven</groupId>
-						<artifactId>maven-notice-plugin</artifactId>
-						<configuration>
-							<outputDir>META-INF</outputDir>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

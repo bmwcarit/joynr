@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext{
+    ext {
         kotlin_version = '1.3.61'
         joynr_version = '1.14.0-SNAPSHOT'
     }
@@ -20,8 +20,6 @@ buildscript {
 
         classpath "io.joynr.tools.generator:joynr-generator-gradle-plugin:${joynr_version}"
         classpath "io.joynr.tools.generator:java-generator:${joynr_version}"
-
-        classpath 'com.github.jk1:gradle-license-report:1.11'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }

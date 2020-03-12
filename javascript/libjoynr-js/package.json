@@ -44,7 +44,7 @@
     "ts:test": "../../node_modules/.bin/jest --config jest.config.js --silent",
     "ts:test:ci": "../../node_modules/.bin/jest --config jest.config.js --coverage",
     "ts:test:sit": "../../node_modules/.bin/jest --config jest.config.integration.js -i --force-exit",
-    "ts:package": "npm run ts:compile:dts && cp src/main/js/package.json .output/src/main/js && cp package.json .output && npm --prefix .output i && npm --prefix .output/src/main/js i && cp -r  src/main/js/META-INF/ .output/src/main/js && cp src/main/js/NOTICE-JS .output/src/main/js/"
+    "ts:package": "npm run ts:compile:dts && cp src/main/js/package.json .output/src/main/js && cp package.json .output && npm --prefix .output i && npm --prefix .output/src/main/js i && cp -r  src/main/js/META-INF/ .output/src/main/js"
   },
   "repository": {
     "type": "git",
