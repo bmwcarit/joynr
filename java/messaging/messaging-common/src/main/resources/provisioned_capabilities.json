@@ -10,7 +10,7 @@
         "providerVersion": {
             "_typeName": "joynr.types.Version",
             "majorVersion": 0,
-            "minorVersion": 2
+            "minorVersion": 3
         },
         "publicKeyId": "",
         "qos": {
