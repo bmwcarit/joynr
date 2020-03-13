@@ -210,7 +210,7 @@ endif(ENABLE_CCACHE)
 
 option(USE_LD_GOLD "Use GNU gold linker" ON)
 if(USE_LD_GOLD)
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version OUTPUT_VARIABLE stdout ERROR_QUIET)
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -fuse-ld=gold -Wl,--version OUTPUT_VARIABLE stdout ERROR_QUIET)
     if("${stdout}" MATCHES "GNU gold")
         if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
             add_link_options("-fuse-ld=gold")
