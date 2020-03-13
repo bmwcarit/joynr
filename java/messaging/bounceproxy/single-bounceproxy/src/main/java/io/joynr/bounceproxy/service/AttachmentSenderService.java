@@ -95,8 +95,10 @@ public class AttachmentSenderService {
             // post message
             try {
                 String msgId = message.getId();
-                log.debug("******POST message {} to cluster controller: {}", msgId, ccid);
-                log.trace("******POST message {} to cluster controller: {} extended info: \r\n {}", ccid, message);
+                log.debug("******POST message {} to cluster controller: {} extended info: \r\n {}",
+                          msgId,
+                          ccid,
+                          message);
 
                 // the location that can be queried to get the message
                 // status
