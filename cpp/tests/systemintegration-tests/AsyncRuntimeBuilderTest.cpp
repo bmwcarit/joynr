@@ -69,6 +69,7 @@ TEST_F(AsyncRuntimeBuilderTest, createRuntime)
     auto onSuccess = []() {};
 
     auto onError = [](const exceptions::JoynrRuntimeException& exception) {
+        std::ignore = exception;
         FAIL();
     };
 
@@ -86,6 +87,7 @@ TEST_F(AsyncRuntimeBuilderTest, createRuntimeThenDelete)
     };
     auto onSuccess = []() {};
     auto onError = [](const exceptions::JoynrRuntimeException& exception) {
+        std::ignore = exception;
         FAIL();
     };
 
@@ -106,6 +108,7 @@ TEST_F(AsyncRuntimeBuilderTest, createRuntimeTemporary)
     auto onSuccess = []() {};
 
     auto onError = [](const exceptions::JoynrRuntimeException& exception) {
+        std::ignore = exception;
         FAIL();
     };
 
