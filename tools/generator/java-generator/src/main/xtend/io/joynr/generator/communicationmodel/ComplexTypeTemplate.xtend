@@ -134,11 +134,11 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 		«ENDIF»
 		«FOR member : getMembers(type)»
 		«IF isArray(member)»
-                if(«member.joynrName» != null) {
-		    this.«member.joynrName» = «member.joynrName».clone();
-                }
+			if(«member.joynrName» != null) {
+				this.«member.joynrName» = «member.joynrName».clone();
+			}
 		«ELSE»
-		this.«member.joynrName» = «member.joynrName»;
+			this.«member.joynrName» = «member.joynrName»;
 		«ENDIF»
 		«ENDFOR»
 	}
@@ -155,13 +155,13 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 	@JsonIgnore
 	public «memberType» get«memberName.toFirstUpper»() {
 		«IF isArray(member)»
-                        if(«member.joynrName» != null) {
-			    return «member.joynrName».clone();
-                        } else {
-                            return null;
-                        }
+		if(«member.joynrName» != null) {
+			return «member.joynrName».clone();
+		} else {
+			return null;
+		}
 		«ELSE»
-			return «member.joynrName»;
+		return «member.joynrName»;
 		«ENDIF»
 	}
 
@@ -173,11 +173,11 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 	@JsonIgnore
 	public void set«memberName.toFirstUpper»(«memberType» «member.joynrName») {
 		«IF !ignoreInvalidNullClassMembersExtension»
-			if («member.joynrName» == null) {
-				throw new IllegalArgumentException("setting «member.joynrName» to null is not allowed");
-			}
+		if («member.joynrName» == null) {
+			throw new IllegalArgumentException("setting «member.joynrName» to null is not allowed");
+		}
 		«ENDIF»
-                «IF isArray(member)»
+		«IF isArray(member)»
 		this.«member.joynrName» = «member.joynrName».clone();
 		«ELSE»
 		this.«member.joynrName» = «member.joynrName»;

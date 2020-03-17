@@ -102,16 +102,16 @@ public class «className» extends «abstractProviderName» {
 			public Promise<DeferredVoid> set«attributeName.toFirstUpper»(«attributeType» «attributeName») {
 				DeferredVoid deferred = new DeferredVoid();
 				«IF (isArray(attribute) || isByteBuffer(attribute.type))»
-                                        if («attributeName» != null) {
-					    this.«attributeName» = «attributeName».clone();
-                                        } else {
-                                            this.«attributeName» = null;
-                                        }
+				if («attributeName» != null) {
+					this.«attributeName» = «attributeName».clone();
+				} else {
+					this.«attributeName» = null;
+				}
 				«ELSE»
-					this.«attributeName» = «attributeName»;
+				this.«attributeName» = «attributeName»;
 				«ENDIF»
 				«IF isNotifiable(attribute)»
-					«attributeName»Changed(«attributeName»);
+				«attributeName»Changed(«attributeName»);
 				«ENDIF»
 				deferred.resolve();
 				return new Promise<>(deferred);
