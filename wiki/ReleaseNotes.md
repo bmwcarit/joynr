@@ -2,6 +2,19 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.11.3
+
+## API relevant changes
+None
+
+## Other changes
+* **[C++]** Fixed memory leaks in MosquittoConnection
+* **[C++]** Prevent ProxyBuilder callbacks to be called multiple times
+  and / or onSuccess and onError callbacks to be both called.
+
+## Configuration property changes
+None.
+
 # joynr 1.11.2
 
 ## API relevant changes
