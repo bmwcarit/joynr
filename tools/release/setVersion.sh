@@ -91,7 +91,7 @@ tests/system-integration-test/docker/onboard/joynr-without-test.spec
 if [[ $newVersion != *"SNAPSHOT"* ]]; then
   echo "It looks like you are about to release a new joynr version: check release notes"
   releaseNotesOK=$(grep -cE "# joynr $newVersion$" wiki/ReleaseNotes.md)
-  if (($releaseNotesOK = 0)); then
+  if (($releaseNotesOK == 0)); then
     echo "ERROR: Release notes do not contain any section for $newVersion. Fix release notes."
     exit -1
   fi
