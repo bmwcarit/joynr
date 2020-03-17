@@ -78,7 +78,7 @@ _sed 's/Version:        '${oldVersionWithoutSuffix}'/Version:        '${newVersi
 cpp/distribution/joynr.spec \
 tests/system-integration-test/docker/onboard/joynr-without-test.spec
 
-{
+(
 	_sed 's/		<joynr.version>'${oldVersion}'<\/joynr.version>/		<joynr.version>'${newVersion}'<\/joynr.version>/g' \
 	examples/hello-world/pom.xml
 	_sed 's/	<version>'${oldVersion}'<\/joynr.version>/	<version>'${newVersion}'<\/joynr.version>/g' \
@@ -86,7 +86,7 @@ tests/system-integration-test/docker/onboard/joynr-without-test.spec
 	cd examples/hello-world
 	mvn versions:set -DnewVersion=${newVersion}
 	mvn versions:commit
-}
+)
 
 if [[ $newVersion != *"SNAPSHOT"* ]]; then
   echo "It looks like you are about to release a new joynr version: check release notes"
