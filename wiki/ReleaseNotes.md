@@ -17,6 +17,11 @@ None.
 * **[All, Generator]** The generator can now be optionally be called via command line
   parameter or plugin configuration to restrict code generation to only proxy or provider
   side. The default is to generate code for both sides. Details can be found [here](generator.md).
+* **[TS]** Introduced ArbitrationStrategy `FixedParticipant`, for details, see
+  [JavaScript documentation](javascript.md#the-discovery-quality-of-service).
+* **[TS]** Introduced ArbitrationConstants to be used for arbitration strategies `Keyword` and
+  `FixedParticipant`, for more details see
+  [JavaScript documentation](javascript.md#the-discovery-quality-of-service).
 
 ## Configuration property changes
 None.

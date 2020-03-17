@@ -92,7 +92,7 @@ against it and it's now recommended to use the types directly.
 * Importing from on top of joynr makes mocking more difficult.
 * Importing from on top of joynr creates unnecessary dependencies to the rest of the joynr code.
 
-Any other objects created by the runtime should be taken from the runtime and not imported directly. 
+Any other objects created by the runtime should be taken from the runtime and not imported directly.
 
 ```typescript
 import joynr = require("joynr");
@@ -200,6 +200,8 @@ the result of `myFunction.bind(myParam)` has to be used as arbitration strategy.
 * **ArbitrationStrategyCollection.Nothing** use DefaultArbitrator which picks the first discovered
    entry with compatible version
 * **ArbitrationStrategyCollection.HighestPriority** Highest priority provider will be selected
+* **ArbitrationStrategyCollection.FixedParticipant** select provider which matches the
+  participantId provided as a custom parameter in DiscoveryQos (see below), if existing
 * **ArbitrationStrategyCollection.Keyword** Only a Provider that has keyword set will be selected
 
 **Default arbitration strategy:** ```ArbitrationStrategyCollection.LastSeen```
@@ -207,16 +209,21 @@ the result of `myFunction.bind(myParam)` has to be used as arbitration strategy.
 The priority used by the arbitration strategy *HighestPriority* is set by the provider in its
 providerQos settings.
 
+**Predefined arbitration constants**
+
+defines keys for the key-value pair for the custom Parameters of discoveryScope:
+
+* ** KEYWORD_PARAMETER**: required custom parameter for ArbitrationStrategy.Keyword
+* ** FIXED_PARTICIPANT_PARAMETER**: required custom parameter for
+  ArbitrationStrategy.FixedParticipant
+
 Example for setting up a ```DiscoveryQos``` object:
 ```typescript
-// additionalParameters unclear
-// there is currently no ArbitrationConstants in Javascript like in Java
-// { "keyword" : "someKeyword" }
-// { "fixedParticipantId" : "someParticipantId" }
-// { }
 import DiscoveryQos from 'joynr/joynr/proxy/DiscoveryQos';
 import {LastSeen} from 'joynr/joynr/types/ArbitrationStrategyCollection';
 import {LOCAL_THEN_GLOBAL} from 'joynr/joynr/types/DiscoveryScope';
+import {KEYWORD_PARAMETER} from "joynr/joynr/types/ArbitrationConstants";
+import {FIXED_PARTICIPANT_PARAMETER} from "joynr/joynr/types/ArbitrationConstants";
 
 const discoveryQos = new DiscoveryQos({
     discoveryTimeoutMs : 30000,
@@ -225,11 +232,17 @@ const discoveryQos = new DiscoveryQos({
     cacheMaxAgeMs : 0,
     discoveryScope : LOCAL_THEN_GLOBAL,
     providerMustSupportOnChange : false,
-    // additional parameters are used for arbitration strategy Keyword (key: "keyword")
+    // additional parameters are used for predefined arbitration strategies:
+    // Keyword and FixedParticipant
     // or can be used for custom arbitration strategies
     additionalParameters : {
+        // required parameter for arbitration strategy FixedParticipant:
+        [FIXED_PARTICIPANT_PARAMETER]: "expectedParticipantId",
+        // required parameter for arbitration strategy Keyword:
+        [KEYWORD_PARAMETER]: "expectedKeyword",
+        // additional parameters for custom arbitration strategy:
         "key1": "value1",
-    //    ...
+        //    ...
         "keyN": "valueN"
     }
 });
