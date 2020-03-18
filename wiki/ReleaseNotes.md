@@ -1,6 +1,7 @@
 # Release Notes
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
+
 # joynr 1.14.0
 
 ## API relevant changes
@@ -10,13 +11,6 @@ None.
 * **[FIDL]** Introduce new touch and removeStale Methods for multiple backends in
   GlobalCapabilitiesDirectory FIDL. See
   `docs/gcd-in-multiple-be.md` for additional documentation.
-
-# joynr 1.14.0
-
-## API relevant changes
-None.
-
-## Other changes
 * **[C++]** Mosquitto MQTT Client now sets message expiry interval of
 * **[Java, JEE]** HiveMQ MQTT Client now sets message expiry interval of
   published MQTT messages.
