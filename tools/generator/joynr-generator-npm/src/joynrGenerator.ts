@@ -58,6 +58,10 @@ async function main(): Promise<void> {
             `$0 -f model fidl-files.json`,
             `compile all .fidl files listed in fidl-files.json and generate includes`
         )
+        .example(
+            `$0 -f -m Radio.fidl -t proxy|provider|both`,
+            "create code from Radio.fidl relevant for proxy|provider|both cases"
+        )
         .option("modelPath", {
             alias: "m",
             desc: "path to a directory with fidl files, or a single fidl file (can be supplied multiple times)"
@@ -77,12 +81,21 @@ async function main(): Promise<void> {
             boolean: true,
             desc: "create joynr includes"
         })
+        .option("target", {
+            alias: "t",
+            desc: "target is proxy|provider|both code"
+        })
         .help()
         .wrap(yargs.terminalWidth()).argv;
 
     const outputPath = argv.outputPath as string;
     const modelPath = argv.modelPath as string | undefined;
     const fidlFile = argv.fidlFile as string | undefined;
+    let target = argv.target as string | undefined;
+
+    if (!target) {
+        target = "";
+    }
 
     if (!modelPath && !fidlFile) {
         error("Please provide either modelPath or fidlFile option");
@@ -101,7 +114,7 @@ async function main(): Promise<void> {
         });
     }
 
-    await generateTSSources(modelPathArray, outputPath);
+    await generateTSSources(modelPathArray, outputPath, target);
     if (fidlFile) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         Object.entries(parsedJson!.interfaces).forEach(([fidlFileGroup, fidlFiles]) => {
@@ -127,12 +140,16 @@ async function main(): Promise<void> {
     process.exit(0);
 }
 
-async function generateTSSources(modelPaths: string | string[], outputPath: string): Promise<void> {
+async function generateTSSources(modelPaths: string | string[], outputPath: string, target: string): Promise<void> {
     ([] as string[]).concat(modelPaths).forEach(path => {
+        let targetCommandParameter = "";
+        if (target != "") {
+            targetCommandParameter = ` -target ${target}`;
+        }
         const command =
             `java -jar ${generatorPath}` +
             ` -modelPath ${path} -outputPath ${outputPath}` +
-            ` -generationLanguage javascript`;
+            ` -generationLanguage javascript${targetCommandParameter}`;
         log(`executing command: ${command}`);
         execSync(command);
     });
