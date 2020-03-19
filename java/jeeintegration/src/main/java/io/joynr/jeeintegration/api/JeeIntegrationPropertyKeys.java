@@ -1,6 +1,5 @@
 /*
  * #%L
- * joynr::java::messaging::bounceproxy::bounceproxy-controller
  * %%
  * Copyright (C) 2011 - 2017 BMW Car IT GmbH
  * %%
@@ -25,6 +24,12 @@ package io.joynr.jeeintegration.api;
 public class JeeIntegrationPropertyKeys {
 
     /**
+     * This key identifies the managed scheduled executor service that is required by joynr. It has to be provided with
+     * this name by the container, e.g. Payara.
+     */
+    public static final String JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE = "concurrent/joynrMessagingScheduledExecutor";
+
+    /**
      * Use this property key to set the value for the URI of the HTTP Bridge
      * endpoint registry used by the JEE integration to register itself
      * as a recipient of joynr messages for a given topic.
@@ -35,11 +40,6 @@ public class JeeIntegrationPropertyKeys {
      * @see io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient
      */
     public static final String JEE_INTEGRATION_ENDPOINTREGISTRY_URI = "joynr.jeeintegration.endpointregistry.uri";
-
-    /**
-     * This property holds the key used to lookup the managed scheduled executor service from the container.
-     */
-    public static final String JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE = "concurrent/joynrMessagingScheduledExecutor";
 
     /**
      * This key is used to check whether the JEE integration should activate
@@ -55,5 +55,32 @@ public class JeeIntegrationPropertyKeys {
      * See {@link io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule}.
      */
     public static final String JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY = "joynr.jeeintegration.enable.httpbridge";
+
+    /**
+     * This key is used to configure the number of provider registration retry attempts for a single provider.
+     * <br>
+     * Joynr JEE integration automatically registers providers during startup (deployment). If the registration fails,
+     * it will retry the registration until it succeeds or the maximum number of retry attempts is reached.
+     * <br>
+     * See also {@link JeeIntegrationPropertyKeys#PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS}.
+     */
+    public static final String PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES = "joynr.jeeintegration.registration.retries";
+    /**
+     * This key is used to configure the wait time between provider registration retry attempts for a single provider.
+     * <br>
+     * Joynr JEE integration automatically registers providers during startup (deployment). If the registration fails,
+     * it will retry the registration until it succeeds or the maximum number of retry attempts is reached.
+     * <br>
+     * See also {@link JeeIntegrationPropertyKeys#PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES}.
+     */
+    public static final String PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS = "joynr.jeeintegration.registration.retryintervalms";
+    /**
+     * This key is used to enable or disable awaitRegistration and registration retries for the automatic provider
+     * registration in joynr JEE.
+     * <br>
+     * See also {@link JeeIntegrationPropertyKeys#PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS} and
+     * {@link JeeIntegrationPropertyKeys#PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES}.
+     */
+    public static final String PROPERTY_JEE_AWAIT_REGISTRATION = "joynr.jeeintegration.awaitregistration";
 
 }
