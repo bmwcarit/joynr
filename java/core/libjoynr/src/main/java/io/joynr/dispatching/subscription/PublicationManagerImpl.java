@@ -106,7 +106,9 @@ public class PublicationManagerImpl
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
     private long ttlUpliftMs = 0;
+
     private SubscriptionRequestStorage subscriptionRequestStorage;
+    private boolean subscriptionRequestPersistency;
 
     static class PublicationInformation {
         private String providerParticipantId;
@@ -187,7 +189,8 @@ public class PublicationManagerImpl
                                   ProviderDirectory providerDirectory,
                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
                                   SubscriptionRequestStorage subscriptionRequestStorage,
-                                  ShutdownNotifier shutdownNotifier) {
+                                  ShutdownNotifier shutdownNotifier,
+                                  @Named(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY) boolean subscriptionRequestPersistency) {
         super();
         this.dispatcher = dispatcher;
         this.providerDirectory = providerDirectory;
@@ -201,8 +204,11 @@ public class PublicationManagerImpl
         this.unregisterBroadcastListeners = new ConcurrentHashMap<>();
         this.multicastListeners = new ConcurrentHashMap<>();
         this.attributePollInterpreter = attributePollInterpreter;
+        this.subscriptionRequestPersistency = subscriptionRequestPersistency;
         providerDirectory.addListener(this);
-        queueSavedSubscriptionRequests();
+        if (subscriptionRequestPersistency) {
+            queueSavedSubscriptionRequests();
+        }
         shutdownNotifier.registerForShutdown(this);
     }
 
@@ -464,9 +470,11 @@ public class PublicationManagerImpl
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest) {
 
-        subscriptionRequestStorage.persistSubscriptionRequest(proxyParticipantId,
-                                                              providerParticipantId,
-                                                              subscriptionRequest);
+        if (subscriptionRequestPersistency) {
+            subscriptionRequestStorage.persistSubscriptionRequest(proxyParticipantId,
+                                                                  providerParticipantId,
+                                                                  subscriptionRequest);
+        }
 
         if (providerDirectory.contains(providerParticipantId)) {
             addSubscriptionRequest(proxyParticipantId,
