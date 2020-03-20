@@ -13,6 +13,7 @@ None.
 * **[Java]** Improved logging in HivemqMqttClient.
 * **[Java]** Fixed HivemqMqttClient to not lose messages: messages were sporadically lost
   because hivemq-mqtt-client was not used in a thread safe way when publishing messages.
+* **[Java]** Added the changes from joynr 1.8.2.1.
 
 ## Configuration property changes
 None.
@@ -160,6 +161,25 @@ None.
   * org.franca:org.franca.core updated from version 0.13.0 to 0.13.1
   * org.franca:org.franca.core.dsl updated from version 0.13.0 to 0.13.1
   * org.franca:org.franca.deploymodel.dsl updated from version 0.13.0 to 0.13.1
+
+# joynr 1.8.2.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Removed unnecessary persistency for MulticastSubscriptionRequests related to
+  subscriptions for non-selective (unfiltered) broadcasts.
+
+## Configuration property changes
+* **[Java, JEE]** Introduced the `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` boolean property, which
+  can be set via `joynr.dispatching.subscription.subscriptionrequests_persistency`. This property
+  allows to disable persistent storage of selective (filtered) broadcast and attribute subscriptions.
+  If disabled, then a provider will not know about any earlier subscriptions from proxies after
+  restart, i.e. publications for those broadcasts will only be sent to proxies which subscribed
+  after the last (re-)start. This setting has no impact on publications for non-selective broadcasts
+  (= multicasts).
+  See [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 1.8.2
 
