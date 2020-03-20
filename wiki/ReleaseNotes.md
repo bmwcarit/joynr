@@ -24,7 +24,14 @@ None.
   [JavaScript documentation](javascript.md#the-discovery-quality-of-service).
 
 ## Configuration property changes
-None.
+* **[Java, JEE]** Introduced the `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` boolean property, which
+  can be set via `joynr.dispatching.subscription.subscriptionrequests_persistency`. This property
+  allows to disable persistent storage of selective (filtered) broadcast and attribute subscriptions.
+  If disabled, then a provider will not know about any earlier subscriptions from proxies after
+  restart, i.e. publications for those broadcasts will only be sent to proxies which subscribed
+  after the last (re-)start. This setting has no impact on publications for non-selective broadcasts
+  (= multicasts).
+  See [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 1.13.0
 

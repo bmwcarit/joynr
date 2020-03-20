@@ -180,16 +180,6 @@ value defined by this property.
 * **User property**: `joynr.messaging.maxttlms`
 * **Default value**: `2592000000` (30 days)
 
-### `PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE`
-If the file based participant ID storage (`PropertiesFileParticipantIdStorage`) is used, participant
-IDs of registered providers are persisted to this file and reused for further registrations to the
-same interface and domain combination.
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.discovery.participantids_persistence_file`
-* **Default value**: `joynr_participantIds.properties`
-
 ### `PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS`
 A routing table entry has an expiry date; once this point in time has been passed, the entry can
 be removed from the routing table. The expiryDateMs is calculated or updated based on the message
@@ -292,6 +282,31 @@ This property has to be provided as one line where the GBIDs are separated by co
 * **Type**: String
 * **User property**: `joynr.messaging.gbids`
 * **Default value**: `joynrdefaultgbid`
+
+### Persistence settings
+
+#### `PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE`
+If the file based participant ID storage (`PropertiesFileParticipantIdStorage`) is used, participant
+IDs of registered providers are persisted to this file and reused for further registrations to the
+same interface and domain combination.
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.discovery.participantids_persistence_file`
+* **Default value**: `joynr_participantIds.properties`
+
+#### `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY`
+Controls whether subscriptions for filtered (=selective) broadcasts and attributes
+will be persisted. Needs to be `true` if a provider after restart should be able to
+continue sending publications for those subscriptions established before the restart.
+For this to work, the routing entries from routing table must be persisted as well.
+Note that unfiltered (=non-selective) broadcasts (=multicasts) are not affected by
+this setting since they are published on a 1:n base and thus need no persistency.
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.dispatching.subscription.subscriptionrequests_persistency`
+* **Default value**: `true`
 
 ### Properties to override the DiscoveryEntries of the joynr backend services
 
