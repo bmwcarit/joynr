@@ -2,6 +2,25 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.2.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Removed unnecessary persistency for MulticastSubscriptionRequests related to
+  subscriptions for non-selective (unfiltered) broadcasts.
+
+## Configuration property changes
+* **[Java, JEE]** Introduced the `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` boolean property, which
+  can be set via `joynr.dispatching.subscription.subscriptionrequests_persistency`. This property
+  allows to disable persistent storage of selective (filtered) broadcast and attribute subscriptions.
+  If disabled, then a provider will not know about any earlier subscriptions from proxies after
+  restart, i.e. publications for those broadcasts will only be sent to proxies which subscribed
+  after the last (re-)start. This setting has no impact on publications for non-selective broadcasts
+  (= multicasts).
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+
 # joynr 1.8.2
 
 ## API relevant changes
@@ -11,6 +30,9 @@ None.
 * **[JEE]** Fixed bug for making stateless-async calls to JEE providers which was resulting in an
   IllegalArgumentException because the method signature was not found in the callback due to the
   void result being wrongly translated to a `null` value.
+
+## Configuration property changes
+None.
 
 # joynr 1.8.1
 
