@@ -469,7 +469,8 @@ public class PublicationManagerImpl
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest) {
 
-        if (subscriptionRequestPersistency) {
+        if (subscriptionRequestPersistency && (!(subscriptionRequest instanceof MulticastSubscriptionRequest))) {
+            // only requests for attribute and selective/filtered broadcast subscriptions get persisted
             subscriptionRequestStorage.persistSubscriptionRequest(proxyParticipantId,
                                                                   providerParticipantId,
                                                                   subscriptionRequest);
