@@ -67,16 +67,10 @@
 				<configuration>
 					<filesets>
 						<fileset>
-							<directory>${basedir}</directory>
-							<includes>
-                                                                <include>generated/communication-model/generated/**</include>
-                                                                <include>generated/joynr-messaging/generated/**</include>
-                                                                <include>generated/provider/generated/**</include>
-                                                                <include>generated/proxy/generated/**</include>
-                                                                <include>generated/include/joynr/infrastructure/**</include>
-                                                                <include>generated/include/joynr/system/**</include>
-                                                                <include>generated/include/joynr/types/**</include>
-							</includes>
+							<directory>${basedir}/basemodel/generated</directory>
+							<excludes>
+								<exclude>CMakeLists.txt</exclude>
+							</excludes>
 						</fileset>
 					</filesets>
 				</configuration>
