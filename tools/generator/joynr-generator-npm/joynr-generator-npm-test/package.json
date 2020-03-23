@@ -6,6 +6,7 @@
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "dependencies": {
+    "joynr": "file:../../../../javascript/libjoynr-js/.output/src/main/js",
     "joynr-generator": "file:.."
   },
   "scripts": {
