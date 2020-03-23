@@ -149,7 +149,8 @@ async function generateTSSources(modelPaths: string | string[], outputPath: stri
         const command =
             `java -jar ${generatorPath}` +
             ` -modelPath ${path} -outputPath ${outputPath}` +
-            ` -generationLanguage javascript${targetCommandParameter}`;
+            ` -generationLanguage javascript` +
+            `${targetCommandParameter}`;
         log(`executing command: ${command}`);
         execSync(command);
     });
