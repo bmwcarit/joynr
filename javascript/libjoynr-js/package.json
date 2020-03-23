@@ -26,7 +26,7 @@
   },
   "scripts": {
     "sig": "cd scripts && node createBuildSignature && cd -",
-    "clean": "rm -rf node_modules package-lock.json src/main/js/node_modules out .output",
+    "clean": "rm -rf node_modules package-lock.json src/main/js/node_modules out .output src/main/js/joynr/buildSignature.ts src/main/js/etc",
     "format:install": "npm i prettier@1.17.1 --no-save && npm run format",
     "format": "prettier --write $npm_package_config_glob",
     "lint": "../../node_modules/.bin/eslint $npm_package_config_glob --max-warnings 0",
