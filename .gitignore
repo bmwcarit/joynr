@@ -22,6 +22,7 @@ tools/generator/joynr-generator-npm/joynr-generator-npm-test/generated/
 # Generated files
 /**/src/main/generated*/
 /**/src/test/generated*/
+cpp/libjoynr/basemodel/generated/*/
 cpp/tests/gen-with-version/
 gen/
 javascript/**/generated/
