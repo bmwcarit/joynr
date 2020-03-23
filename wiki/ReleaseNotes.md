@@ -8,9 +8,9 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
-* **[FIDL]** Introduce new touch and removeStale Methods for multiple backends in
-  GlobalCapabilitiesDirectory FIDL. See
-  `docs/gcd-in-multiple-be.md` for additional documentation.
+* **[FIDL]** Introduce new touch and removeStale methods in GlobalCapabilitiesDirectory FIDL.
+ See [internal documentation of GlobalCapabilitiesDirectory](../docs/gcd-in-multiple-be.md)
+ for for additional information about the new methods.
 * **[C++]** Mosquitto MQTT Client now sets message expiry interval of
 * **[Java, JEE]** HiveMQ MQTT Client now sets message expiry interval of
   published MQTT messages.
