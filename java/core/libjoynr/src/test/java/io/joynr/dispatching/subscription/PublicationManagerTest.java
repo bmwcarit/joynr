@@ -72,6 +72,8 @@ import io.joynr.runtime.ShutdownNotifier;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionQos;
+import joynr.MulticastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
@@ -92,6 +94,7 @@ public class PublicationManagerTest {
 
     private static final String SUBSCRIPTION_ID = "PublicationTest_id";
     private static final boolean SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED = true;
+    private static final boolean SUBSCRIPTIONSREQUEST_PERSISTENCY_DISABLED = false;
 
     ScheduledExecutorService cleanupScheduler;
     PublicationManagerImpl publicationManager;
@@ -863,5 +866,100 @@ public class PublicationManagerTest {
         verifyNoMoreInteractions(dispatcher);
         fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
         assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 5000)
+    public void multicastSubscriptionRequestsAreNeverPersisted() throws Exception {
+        final String persistenceFileName = "target/" + PublicationManagerTest.class.getCanonicalName()
+                + ".test_persistenceSubscriptionRequests";
+
+        final String providerParticipantId = "providerParticipantId";
+        final String proxyParticipantId = "proxyParticipantId";
+        final String multicastId = "multicastId";
+        final String multicastName = "multicastName";
+        final int validityMs = 5000;
+        SubscriptionQos qos = new MulticastSubscriptionQos().setValidityMs(validityMs);
+        SubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest(multicastId,
+                                                                                   SUBSCRIPTION_ID,
+                                                                                   multicastName,
+                                                                                   qos);
+
+        new File(persistenceFileName).delete();
+
+        // pre-fill the persistence file
+        FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
+        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+
+        // run test with generally enabled persistency
+        // no providers are currently registered
+        ProviderDirectory myProviderDirectory = new ProviderDirectory();
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        myProviderDirectory,
+                                                        cleanupScheduler,
+                                                        fileSubscriptionRequestStorage,
+                                                        shutdownNotifier,
+                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+
+        publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
+        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+
+        publicationManager.shutdown();
+
+        // run test with generally disabled persistency
+        // no providers are currently registered
+        myProviderDirectory = new ProviderDirectory();
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        myProviderDirectory,
+                                                        cleanupScheduler,
+                                                        fileSubscriptionRequestStorage,
+                                                        shutdownNotifier,
+                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_DISABLED);
+
+        publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
+        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+
+        publicationManager.shutdown();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 5000)
+    public void subscriptionRequestsAreNotPersistedIfPersistencyIsDisabled() throws Exception {
+        String persistenceFileName = "target/" + PublicationManagerTest.class.getCanonicalName()
+                + ".test_persistenceSubscriptionRequests";
+
+        String providerParticipantId = "providerParticipantId";
+        String proxyParticipantId = "proxyParticipantId";
+        int period = 200;
+        int times = 5;
+        int validityMs = (period * times) + period;
+        long publicationTtl = validityMs;
+        SubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
+                                                           .setValidityMs(validityMs)
+                                                           .setPublicationTtlMs(publicationTtl);
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
+
+        new File(persistenceFileName).delete();
+
+        // pre-fill the persistence file
+        FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
+        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+
+        // no providers are currently registered
+        ProviderDirectory myProviderDirectory = new ProviderDirectory();
+        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
+                                                        dispatcher,
+                                                        myProviderDirectory,
+                                                        cleanupScheduler,
+                                                        fileSubscriptionRequestStorage,
+                                                        shutdownNotifier,
+                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_DISABLED);
+
+        publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
+        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+
+        publicationManager.shutdown();
     }
 }
