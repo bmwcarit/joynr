@@ -5,17 +5,17 @@
       "model/joynr-campaign.fidl"
     ],
     "joynr-includes/test": [
-      "../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions1.fidl",
-      "../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions2.fidl",
-      "../../basemodel/src/test/franca-with-version/TestMultipleTypeVersions1.fidl",
-      "../../basemodel/src/test/franca-with-version/TestMultipleTypeVersions2.fidl",
-      "../../basemodel/src/test/franca/FrancaNameTest.fidl",
-      "../../basemodel/src/test/franca/Localisation.fidl",
-      "../../basemodel/src/test/franca/LocalisationTypes.fidl",
-      "../../basemodel/src/test/franca/Navigation.fidl",
-      "../../basemodel/src/test/franca/Test.fidl",
-      "../../basemodel/src/test/franca/TestTypes.fidl",
-      "../../basemodel/src/test/franca2/TestTypes.fidl"
+      "../../../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions1.fidl",
+      "../../../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions2.fidl",
+      "../../../../basemodel/src/test/franca-with-version/TestMultipleTypeVersions1.fidl",
+      "../../../../basemodel/src/test/franca-with-version/TestMultipleTypeVersions2.fidl",
+      "../../../../basemodel/src/test/franca/FrancaNameTest.fidl",
+      "../../../../basemodel/src/test/franca/Localisation.fidl",
+      "../../../../basemodel/src/test/franca/LocalisationTypes.fidl",
+      "../../../../basemodel/src/test/franca/Navigation.fidl",
+      "../../../../basemodel/src/test/franca/Test.fidl",
+      "../../../../basemodel/src/test/franca/TestTypes.fidl",
+      "../../../../basemodel/src/test/franca2/TestTypes.fidl"
     ]
   }
 }
