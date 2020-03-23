@@ -43,6 +43,7 @@ This project has dependencies to:
   Google Guice - Extensions - AssistedInject under The Apache Software License, Version 2.0
   Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
   Hamcrest Core under New BSD License
+  io.joynr.javascript:libjoynr-js under The Apache Software License, Version 2.0
   io.joynr.tools.generator:cpp-generator under The Apache Software License, Version 2.0
   io.joynr.tools.generator:generator-framework under The Apache Software License, Version 2.0
   io.joynr.tools.generator:java-generator under The Apache Software License, Version 2.0
