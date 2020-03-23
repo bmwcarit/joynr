@@ -303,5 +303,6 @@ function createJoynrIncludes(
 if (!module.parent) {
     main().catch(err => {
         log(err);
+        process.exit(1);
     });
 }
