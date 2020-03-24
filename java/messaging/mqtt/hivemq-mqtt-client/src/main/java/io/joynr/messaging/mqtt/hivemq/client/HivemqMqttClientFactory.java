@@ -195,7 +195,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + mqttGbidToBrokerUriMap.get(gbid), e);
         }
-        logger.info("Creating MQTT client for gbid >{}<, uri {}", gbid, serverUri);
+        logger.info("Creating MQTT client for gbid >{}<, uri {}, clientId {}", gbid, serverUri, clientId);
         MqttClientExecutorConfig executorConfig = MqttClientExecutorConfig.builder()
                                                                           .nettyExecutor(scheduledExecutorService)
                                                                           .applicationScheduler(Schedulers.from(scheduledExecutorService))
