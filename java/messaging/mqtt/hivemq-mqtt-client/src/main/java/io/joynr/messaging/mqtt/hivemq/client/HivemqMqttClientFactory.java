@@ -236,9 +236,10 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                        isReceiver,
                                                        isSender,
                                                        gbid);
-        logger.info("Created MQTT client for gbid {}, uri {}: {}",
+        logger.info("Created MQTT client for gbid {}, uri {}, clientId {}: {}",
                     gbid,
                     serverUri,
+                    clientId,
                     result.getClientInformationString());
         resubscribeHandler.setClient(result);
         resubscribeHandler.setMqttStatusReceiver(mqttStatusReceiver);
