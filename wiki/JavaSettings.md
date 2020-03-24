@@ -295,6 +295,17 @@ same interface and domain combination.
 * **User property**: `joynr.discovery.participantids_persistence_file`
 * **Default value**: `joynr_participantIds.properties`
 
+#### `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE`
+If the file based subscription request storage (`FileSubscriptionRequestStorage`) is used,
+then subscription requests for attributes and filtered (=selective) broadcasts are persisted
+to this file provided subscription requests persistency is enabled
+(see `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY`).
+
+* **OPTIONAL**
+* **Type**: String
+* **User property**: `joynr.dispatching.subscription.subscriptionrequests_persistence_file`
+* **Default value**: `joynr_persistedSubscriptionRequests`
+
 #### `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY`
 Controls whether subscriptions for filtered (=selective) broadcasts and attributes
 will be persisted. Needs to be `true` if a provider after restart should be able to
