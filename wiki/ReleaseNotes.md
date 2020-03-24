@@ -32,6 +32,12 @@ None.
   after the last (re-)start. This setting has no impact on publications for non-selective broadcasts
   (= multicasts).
   See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Renamed property `PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,` to
+  `PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE,`, fixing a typo.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[Java]** Renamed property `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE,` to
+  `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,`, fixing a typo.  
+  See [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 1.13.0
 

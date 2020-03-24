@@ -44,10 +44,10 @@ public class HelloWorldProviderApplication extends Application {
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
                                 getApplicationContext().getCacheDir() + "/" + STATIC_PERSISTENCE_FILE);
-        joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,
+        joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE,
                                 getApplicationContext().getCacheDir() + "/" + STATIC_PARTICIPANTS_FILE);
 
-        joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE,
+        joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,
                                 getApplicationContext().getCacheDir() + "/" + STATIC_SUBSCRIPTION_REQUESTS_FILE);
 
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);

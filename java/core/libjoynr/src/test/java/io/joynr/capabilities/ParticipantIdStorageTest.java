@@ -80,7 +80,7 @@ public class ParticipantIdStorageTest {
             }
         }, new JoynrPropertiesModule(testProperties));
         String persistenceFile = injector.getInstance(Key.get(String.class,
-                                                              Names.named(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE)));
+                                                              Names.named(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE)));
         Files.deleteIfExists(new File(persistenceFile).toPath());
         storage = injector.getInstance(ParticipantIdStorage.class);
     }

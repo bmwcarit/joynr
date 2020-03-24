@@ -1484,7 +1484,7 @@ public void run() {
 ### Register provider with fixed (custom) participantId
 
 By default, joynr generates a participantID for the provider instance. This participantID is
-persisted (see PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE in [Joynr Java Settings](JavaSettings.md))
+persisted (see PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE in [Joynr Java Settings](JavaSettings.md))
 and reused when a provider for the same interface is registered again on the same domain
 (e.g. after a restart).
 

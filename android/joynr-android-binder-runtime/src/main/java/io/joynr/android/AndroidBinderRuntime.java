@@ -163,10 +163,10 @@ public class AndroidBinderRuntime {
         final Properties config = new Properties();
         config.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
                 context.getFilesDir() + "/" + STATIC_PERSISTENCE_FILE);
-        config.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE,
+        config.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE,
                 context.getFilesDir() + "/" + STATIC_PARTICIPANTS_FILE);
 
-        config.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE,
+        config.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,
                 context.getFilesDir() + "/" + STATIC_PERSISTENCE_SUSBCRIPTION_REQUESTS);
 
         return config;

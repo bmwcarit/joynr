@@ -285,7 +285,7 @@ This property has to be provided as one line where the GBIDs are separated by co
 
 ### Persistence settings
 
-#### `PROPERTY_PARTICIPANTIDS_PERSISISTENCE_FILE`
+#### `PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE`
 If the file based participant ID storage (`PropertiesFileParticipantIdStorage`) is used, participant
 IDs of registered providers are persisted to this file and reused for further registrations to the
 same interface and domain combination.

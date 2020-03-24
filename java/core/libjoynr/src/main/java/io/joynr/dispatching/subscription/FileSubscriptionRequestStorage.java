@@ -44,7 +44,7 @@ public class FileSubscriptionRequestStorage implements SubscriptionRequestStorag
     private String persistenceFileName;
 
     @Inject
-    public FileSubscriptionRequestStorage(@Named(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE) String persistenceFileName) {
+    public FileSubscriptionRequestStorage(@Named(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE) String persistenceFileName) {
         this.persistenceFileName = persistenceFileName;
         deserializeFromFile();
     }
