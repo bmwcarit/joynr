@@ -3,7 +3,7 @@ version: '2.0'
 services:
 
   hivemq:
-    image: 'peez/hivemq:${HIVEMQ_IMAGE_VERSION}'
+    image: 'hivemq/hivemq4:${HIVEMQ_IMAGE_VERSION}'
     container_name: mqttbroker
     environment:
       - HIVEMQ_DISABLE_AUTH_PLUGIN=true
