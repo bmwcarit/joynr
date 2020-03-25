@@ -38,6 +38,7 @@
 		<module>inter-language-test</module>
 		<module>inter-language-test-jee</module>
 		<module>system-integration-test</module>
+		<module>standalone-pt</module>
 		<module>graceful-shutdown-test</module>
 		<module>joynr-hivemq-shared-subscriptions</module>
 	</modules>
