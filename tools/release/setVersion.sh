@@ -33,21 +33,31 @@ tests/robustness-test/CMakeLists.txt \
 tests/robustness-test-env/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt
 
+_sed 's/project(\(.*\)VERSION '${oldVersionWithoutSuffix}'\(.*\))/project(\1VERSION '${newVersionWithoutSuffix}'\2)/g' \
+cpp/CMakeLists.txt \
+tests/inter-language-test/CMakeLists.txt \
+tests/performance-test/CMakeLists.txt \
+tests/robustness-test/CMakeLists.txt \
+tests/system-integration-test/sit-cpp-app/CMakeLists.txt \
+examples/radio-app/CMakeLists.txt
+
+_sed 's/project(\(.*\)-'${oldVersion}'\(.*\))/project(\1-'${newVersion}'\2)/g' \
+cpp/CMakeLists.txt \
+tests/inter-language-test/CMakeLists.txt \
+tests/performance-test/CMakeLists.txt \
+tests/robustness-test/CMakeLists.txt \
+tests/system-integration-test/sit-cpp-app/CMakeLists.txt \
+examples/radio-app/CMakeLists.txt
+
 mvn versions:set -P android,javascript -DnewVersion=$2
 mvn versions:commit -P android,javascript
 
 _sed 's/'$oldVersion'/'$newVersion'/g' \
-cpp/CMakeLists.txt \
-tests/inter-language-test/CMakeLists.txt \
 tests/inter-language-test/package.json \
-tests/performance-test/CMakeLists.txt \
 tests/performance-test/package.json \
-tests/robustness-test/CMakeLists.txt \
 tests/robustness-test/package.json \
-tests/system-integration-test/sit-cpp-app/CMakeLists.txt \
 tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/package.json \
-examples/radio-app/CMakeLists.txt \
 android/robolectric-integration-tests/src/test/AndroidManifest.xml \
 android/robolectric-unittests/src/main/AndroidManifest.xml \
 examples/android-location-provider/AndroidManifest.xml \
