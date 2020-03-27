@@ -20,17 +20,34 @@ oldVersionWithoutSuffix=`echo $oldVersion | sed -e "s/-.*//g"`
 newVersionWithoutSuffix=`echo $newVersion | sed -e "s/-.*//g"`
 IFS='.' read -a version <<< "$newVersionWithoutSuffix"
 
+echo "oldVersion=$oldVersion"
+echo "newVersion=$newVersion"
+echo "oldVersionWithoutSuffix=$oldVersionWithoutSuffix"
+echo "newVersionWithoutSuffix=$newVersionWithoutSuffix"
+
 _sed 's/set(JOYNR_MAJOR_VERSION .*)/set(JOYNR_MAJOR_VERSION '${version[0]}')/g' cpp/CMakeLists.txt
 _sed 's/set(JOYNR_MINOR_VERSION .*)/set(JOYNR_MINOR_VERSION '${version[1]}')/g' cpp/CMakeLists.txt
 _sed 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' cpp/CMakeLists.txt
 
-_sed 's/^find_package(Joynr [0-9.]+/find_package(Joynr '${newVersionWithoutSuffix}'/' \
+_sed 's/^find_package(Joynr '${oldVersionWithoutSuffix}'/find_package(Joynr '${newVersionWithoutSuffix}'/' \
 examples/radio-app/CMakeLists.txt \
 tests/dummyKeychain/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
 tests/robustness-test/CMakeLists.txt \
 tests/robustness-test-env/CMakeLists.txt \
+tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
+tests/system-integration-test/sit-cpp-app/CMakeLists.txt
+
+_sed 's/project(\(.*\)VERSION '${oldVersionWithoutSuffix}'\(.*\))/project(\1VERSION '${newVersionWithoutSuffix}'\2)/g' \
+cpp/CMakeLists.txt \
+examples/radio-app/CMakeLists.txt \
+tests/dummyKeychain/CMakeLists.txt \
+tests/inter-language-test/CMakeLists.txt \
+tests/performance-test/CMakeLists.txt \
+tests/robustness-test/CMakeLists.txt \
+tests/robustness-test-env/CMakeLists.txt \
+tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt
 
 mvn versions:set -P android,javascript -DnewVersion=$2
@@ -38,18 +55,11 @@ mvn versions:commit -P android,javascript
 
 _sed 's/'$oldVersion'/'$newVersion'/g' \
 package.json \
-cpp/CMakeLists.txt \
-tests/inter-language-test/CMakeLists.txt \
 tests/inter-language-test/package.json \
-tests/performance-test/CMakeLists.txt \
 tests/performance-test/package.json \
-tests/robustness-test/CMakeLists.txt \
 tests/robustness-test/package.json \
-tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
-tests/system-integration-test/sit-cpp-app/CMakeLists.txt \
 tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/package.json \
-examples/radio-app/CMakeLists.txt \
 examples/radio-node/pom.xml \
 examples/radio-node/package.json \
 javascript/libjoynr-js/package.json \
@@ -69,7 +79,7 @@ android/clustercontroller-android-standalone/app/build.gradle \
 android/joynr-android-binder-runtime/build.gradle \
 android/slf4j-android-bindings/build.gradle \
 examples/android/android-hello-world-binder/android-hello-world-binder-provider/build.gradle \
-examples/android/android-hello-world-binder/android-hello-world-binder-consumer/build.gradle \
+examples/android/android-hello-world-binder/android-hello-world-binder-consumer/build.gradle
 
 _sed 's/clustercontroller-standalone-'${oldVersion}'-jar-with-dependencies.jar/clustercontroller-standalone-'${newVersion}'-jar-with-dependencies.jar/g' \
 java/core/clustercontroller-standalone/README
@@ -98,10 +108,10 @@ if [[ $newVersion != *"SNAPSHOT"* ]]; then
 fi
 
 echo "prepare git patch"
-countFoundOldVersions=$(git grep -F ${oldVersion} * | grep -v ReleaseNotes | wc -l)
+countFoundOldVersions=$(git grep -F ${oldVersion} * | grep -F -v ${newVersion} | grep -v ReleaseNotes | wc -l)
 if (($countFoundOldVersions > 0)); then
     echo "WARNING: a grep over your workspace emphasised that the oldVersion is still present in some of your resources. Please check manually!"
-    git grep -F ${oldVersion} * | grep -v ReleaseNotes
+    git grep -F ${oldVersion} * | grep -F -v ${newVersion} | grep -v ReleaseNotes
 else
     git add -u && git commit -m "[Release] set version to $newVersion"
 fi
