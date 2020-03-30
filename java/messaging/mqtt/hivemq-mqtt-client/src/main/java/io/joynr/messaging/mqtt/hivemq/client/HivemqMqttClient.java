@@ -20,9 +20,7 @@ package io.joynr.messaging.mqtt.hivemq.client;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +28,9 @@ import org.slf4j.LoggerFactory;
 import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
+import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.exceptions.MqttSessionExpiredException;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientConfig;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
@@ -39,11 +39,8 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.Mqtt5Unsubscribe;
 
 import io.joynr.exceptions.JoynrDelayMessageException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
 
 /**
  * This implements the {@link JoynrMqttClient} using the HiveMQ MQTT Client library.
@@ -57,6 +54,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClient.class);
 
     private final Mqtt5RxClient client;
+    private final Mqtt5ClientConfig clientConfig;
     private final boolean cleanSession;
     private final int keepAliveTimeSeconds;
     private final int connectionTimeoutSec;
@@ -65,7 +63,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private final boolean isSender;
     private final String clientInformation;
     private volatile boolean shuttingDown;
-    private Consumer<Mqtt5Publish> publishConsumer;
     private IMqttMessagingSkeleton messagingSkeleton;
 
     private Map<String, Mqtt5Subscription> subscriptions = new ConcurrentHashMap<>();
@@ -80,6 +77,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                             boolean isSender,
                             String gbid) {
         this.client = client;
+        clientConfig = client.getConfig();
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
         this.cleanSession = cleanSession;
         this.connectionTimeoutSec = connectionTimeoutSec;
@@ -172,33 +170,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
         } else {
             logger.info("{}: MQTT client already connected - skipping.", clientInformation);
         }
-        if (publishConsumer == null) {
-            logger.info("{}: Setting up publishConsumer", clientInformation);
-            CountDownLatch publisherSetLatch = new CountDownLatch(1);
-            Flowable<Mqtt5Publish> publishFlowable = Flowable.create(flowableEmitter -> {
-                setPublishConsumer(flowableEmitter::onNext);
-                publisherSetLatch.countDown();
-            }, BackpressureStrategy.BUFFER);
-            logger.info("{}: Setting up publishing pipeline using {}", clientInformation, publishFlowable);
-            client.publish(publishFlowable).subscribe(mqtt5PublishResult -> {
-                logger.debug("{}: Publish result: {}", clientInformation, mqtt5PublishResult);
-                mqtt5PublishResult.getError().ifPresent(e -> {
-                    logger.debug("{}: Retrying {}", clientInformation, mqtt5PublishResult.getPublish());
-                    publishConsumer.accept(mqtt5PublishResult.getPublish());
-                });
-            }, throwable -> logger.error("{}: Publish encountered error.", clientInformation, throwable));
-            try {
-                publisherSetLatch.await(10L, TimeUnit.SECONDS);
-                logger.info("{}: Set up publishConsumer: {}", clientInformation, publishConsumer);
-            } catch (InterruptedException e) {
-                logger.warn("{}: Unable to set publisher in time. Please check logs for possible cause.",
-                            clientInformation);
-                throw new JoynrRuntimeException("Unable to set publisher in time.", e);
-            }
-        } else {
-            logger.info("{}: publishConsumer already set up - skipping.", clientInformation);
-        }
-
     }
 
     @Override
@@ -225,26 +196,46 @@ public class HivemqMqttClient implements JoynrMqttClient {
     @Override
     public void publishMessage(String topic, byte[] serializedMessage, int qosLevel, long messageExpiryIntervalSec) {
         assert (isSender);
-        if (publishConsumer == null) {
-            logger.debug("{}: Publishing to {} with qos {} failed: publishConsumer not set",
-                         clientInformation,
-                         topic,
-                         qosLevel);
-            throw new JoynrDelayMessageException("MQTT Publish failed: publishConsumer has not been set yet");
+        if (!clientConfig.getState().isConnected()) {
+            throw new JoynrDelayMessageException("not connected");
         }
-        logger.debug("{}: Publishing to {}: {}bytes with qos {} using {}",
-                     clientInformation,
-                     topic,
-                     serializedMessage.length,
-                     qosLevel,
-                     publishConsumer);
+
         Mqtt5Publish mqtt5Publish = Mqtt5Publish.builder()
                                                 .topic(topic)
                                                 .qos(safeParseQos(qosLevel))
                                                 .payload(serializedMessage)
                                                 .messageExpiryInterval(messageExpiryIntervalSec)
                                                 .build();
-        publishConsumer.accept(mqtt5Publish);
+        logger.debug("{}: Publishing to {}: {}bytes with qos {}",
+                     clientInformation,
+                     topic,
+                     serializedMessage.length,
+                     qosLevel);
+        client.toAsync().publish(mqtt5Publish).whenComplete((publishResult, throwable) -> {
+            if (throwable != null) {
+                logger.error("{}: Publishing to {}: {}bytes with qos {} failed with exception.",
+                             clientInformation,
+                             topic,
+                             serializedMessage.length,
+                             qosLevel,
+                             throwable);
+            } else if (publishResult.getError().isPresent()) {
+                logger.error("{}: Publishing to {}: {}bytes with qos {} failed with error result: {}",
+                             clientInformation,
+                             topic,
+                             serializedMessage.length,
+                             qosLevel,
+                             publishResult,
+                             publishResult.getError().get());
+            } else {
+                logger.trace("{}: Publishing to {}: {}bytes with qos {} succeeded: {}",
+                             clientInformation,
+                             topic,
+                             serializedMessage.length,
+                             qosLevel,
+                             publishResult);
+            }
+        });
     }
 
     private MqttQos safeParseQos(int qosLevel) {
@@ -311,11 +302,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
     @Override
     public synchronized boolean isShutdown() {
         return shuttingDown;
-    }
-
-    private void setPublishConsumer(Consumer<Mqtt5Publish> publishConsumer) {
-        logger.info("{}: Setting publishConsumer to: {}", clientInformation, publishConsumer);
-        this.publishConsumer = publishConsumer;
     }
 
     private void handleIncomingMessage(Mqtt5Publish mqtt5Publish) {
