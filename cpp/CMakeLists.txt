@@ -4,6 +4,11 @@
 
 cmake_minimum_required(VERSION 3.10)
 
+project(Joynr VERSION 1.14.0 LANGUAGES CXX)
+message(STATUS "-----------------------------------------------------")
+message(STATUS "- PROJECT: Joynr ${Joynr_VERSION}")
+message(STATUS "-----------------------------------------------------")
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 include(FindPkgConfig)
@@ -20,7 +25,6 @@ include(ObjectLibraryTargetUtils)
 include(OutofdirTargetSources)
 
 ######## Project settings ########
-project(Joynr VERSION 1.14.0 LANGUAGES CXX)
 set(Joynr_SOVERSION ${Joynr_VERSION_MAJOR}.${Joynr_VERSION_MINOR})
 
 if(NOT JOYNR_GIT_VERSION)
