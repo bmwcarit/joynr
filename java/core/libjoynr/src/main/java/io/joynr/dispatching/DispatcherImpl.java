@@ -199,15 +199,14 @@ public class DispatcherImpl implements Dispatcher {
         String effortString = message.getEffort();
         if (effortString == null) {
             return null;
-        } else {
-            try {
-                return MessagingQosEffort.valueOf(effortString);
-            } catch (IllegalArgumentException e) {
-                logger.error("received message (id: {}) with invalid effort: {}. Using default effort for reply message.",
-                             message.getId(),
-                             effortString);
-                return null;
-            }
+        }
+        try {
+            return MessagingQosEffort.valueOf(effortString);
+        } catch (IllegalArgumentException e) {
+            logger.error("received message (id: {}) with invalid effort: {}. Using default effort for reply message.",
+                         message.getId(),
+                         effortString);
+            return null;
         }
     }
 
