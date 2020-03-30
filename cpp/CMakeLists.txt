@@ -101,7 +101,7 @@ find_package(smrf ${JOYNR_SMRF_REQUIRED_VERSION} REQUIRED CONFIG)
 find_package(CURL REQUIRED)
 include(CheckCurlImportTargets)
 
-set(JOYNR_MOSQUITTO_REQUIRED_VERSION 1.6.7)
+set(JOYNR_MOSQUITTO_REQUIRED_VERSION 1.6.8)
 find_package(mosquitto ${JOYNR_MOSQUITTO_REQUIRED_VERSION} REQUIRED)
 include(CheckMosquittoImportTargets)
 
