@@ -32,7 +32,7 @@ ADD ${MOCOCRW_RPM_NAME} /tmp/MoCOCrW.rpm
 
 # This line is necessary to ensure that the following dnf
 # call can access the internet.
-RUN curl www.google.de > /dev/null
+RUN . /etc/profile && curl www.google.de > /dev/null
 
 RUN dnf install -y \
 	/tmp/MoCOCrW.rpm \
@@ -47,14 +47,14 @@ RUN dnf install -y \
 ###################################################
 # install js dependencies
 ###################################################
-RUN npm install -g bluebird@3.1.1 jasmine-node
+RUN . /etc/profile && npm install -g bluebird@3.1.1 jasmine-node
 
 ###################################################
 # install js joynr as a global package
 ###################################################
 COPY files/libjoynr-js /tmp/libjoynr-js
 
-RUN cd /tmp/libjoynr-js/target/node-classes \
+RUN . /etc/profile && cd /tmp/libjoynr-js/target/node-classes \
 	&& npm install -g \
 	&& rm -rf /tmp/libjoynr-js
 
@@ -63,7 +63,7 @@ RUN cd /tmp/libjoynr-js/target/node-classes \
 ###################################################
 COPY files/test-base /tmp/test-base
 
-RUN cd /tmp/test-base/ \
+RUN . /etc/profile && cd /tmp/test-base/ \
 	&& npm config set http-proxy ${http_proxy} \
 	&& npm config set https-proxy ${https_proxy} \
 	&& npm install -g \

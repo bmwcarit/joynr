@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ -n "$http_proxy" ]; then 
     if [[ "$http_proxy" =~ .*"@" ]]; then
         read protocol proxy_user proxy_password proxy_host proxy_port <<< $( echo ${http_proxy} | awk -F '://|:|@' '{ print $1, $2, $3, $4, $5 }')
@@ -90,4 +91,24 @@ export MAVEN_OPTS
 echo "use-my-proxy.sh finished"
 EOF
 echo "Proxy configuration finished."
+GRADLE_CONFIG_DIR=/home/joynr/.gradle
+echo "Setting up gradle configuration in $GRADLE_CONFIG_DIR"
+mkdir $GRADLE_CONFIG_DIR
+cat > $GRADLE_CONFIG_DIR/gradle.properties <<EOF
+systemProp.http.proxyHost=$proxy_host
+systemProp.http.proxyPort=$proxy_port
+systemProp.https.proxyHost=$proxy_host
+systemProp.https.proxyPort=$proxy_port
+EOF
+if [ -n "$proxy_user" ]
+then
+cat >> $GRADLE_CONFIG_DIR/gradle.properties <<EOF
+systemProp.http.proxyUser=$proxy_user
+systemProp.http.proxyPassword=$proxy_password
+systemProp.https.proxyUser=$proxy_user
+systemProp.https.proxyPassword=$proxy_password
+EOF
+fi
+chmod a+rx $GRADLE_CONFIG_DIR
+chmod a+r $GRADLE_CONFIG_DIR/gradle.properties
 exit 0

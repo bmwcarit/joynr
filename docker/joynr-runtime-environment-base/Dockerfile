@@ -9,6 +9,12 @@ RUN mkdir /data
 ENV CURL_HOME /etc
 
 ###################################################
+# setup build environment
+###################################################
+RUN mkdir -p /home/joynr/
+RUN mkdir /home/joynr/build
+
+###################################################
 # copy scripts and set start command
 ###################################################
 COPY scripts /data/scripts
@@ -32,6 +38,17 @@ RUN dnf update -y \
 	procps \
 	java-1.8.0-openjdk-headless \
 	&& dnf clean all
+
+###################################################
+# setup extra certs
+###################################################
+RUN /data/scripts/setup-extra-certs.sh
+
+###################################################
+# add git config
+###################################################
+#RUN git config --global user.email "dummy@dummy.com" \
+#    && git config --global user.name "Dummy"
 
 ###################################################
 # install jetty
