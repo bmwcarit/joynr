@@ -267,6 +267,69 @@ None.
   Now, multiple connection timeouts can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
 
+# joynr 1.8.9
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.4
+* **[Java]** Fixed and improved reconnect handling and error handling in HivemqMqttClient.
+* **[Java]** Improved logging in HivemqMqttClient.
+* **[Java]** Fixed HivemqMqttClient to not lose messages: messages were sporadically lost
+  because hivemq-mqtt-client was not used in a thread safe way when publishing messages.
+* **[Java]** Added the changes from joynr 1.8.2.1.
+
+## Configuration property changes
+None.
+
+# joynr 1.8.8
+
+## API relevant changes
+None.
+
+## Other changes
+* **[JS] Fixed potential messages loss when a websocket connection could not be
+  established
+* **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.3
+* **[Java]** Updated jackson to 2.10.2
+* **[C++]** Prevent Arbitrator/ProxyBuilder from invocing callbacks multiple times
+
+## Configuration property changes
+None.
+
+# joynr 1.8.7
+
+## API relevant changes
+* **[Java/JEE]** Introduced the `GuidedProxyBuilder`, which allows extended control
+  over how proxies are built after executing a lookup. In particular, the provider
+  version can be determined before actually building the proxy. The `GuidedProxyBuilder`
+  can be retrieved via the `getGuidedProxyBuilder` method through the `JoynrRuntime` (Java) or
+  the `ServiceLocator`(JEE).
+  See the [Java documentation](java.md#the-guided-proxy-builder) and [JEE documentation](jee.md)
+  for details.
+
+## Other changes
+* **[Generator]** `addVersionTo` / DEPRECATED. The addVersionTo option will be removed
+  in a future version of the generator. Set the #noVersionGeneration comment
+  in the .fidl file instead, see [Disable versioning of generated files](#disable-versioning-of-generated-files).
+
+## Configuration property changes
+None.
+
+# joynr 1.8.6
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** HivemqMqttClient now waits for `PROPERTY_KEY_MQTT_RECONNECT_SLEEP_MS`
+  milliseconds before trying to reconnect when the initial connect fails.
+* **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
+
+## Configuration property changes
+None.
+
 # joynr 1.8.5
 
 ## API relevant changes
@@ -321,6 +384,9 @@ None.
   * `TLS_DHE_DSS_WITH_AES_128_GCM_SHA256`
   * `TLS_EMPTY_RENEGOTIATION_INFO_SCSV`
 
+## Configuration property changes
+None.
+
 # joynr 1.8.4
 
 ## API relevant changes
@@ -360,6 +426,25 @@ None.
   * org.franca:org.franca.core updated from version 0.13.0 to 0.13.1
   * org.franca:org.franca.core.dsl updated from version 0.13.0 to 0.13.1
   * org.franca:org.franca.deploymodel.dsl updated from version 0.13.0 to 0.13.1
+
+# joynr 1.8.2.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Removed unnecessary persistency for MulticastSubscriptionRequests related to
+  subscriptions for non-selective (unfiltered) broadcasts.
+
+## Configuration property changes
+* **[Java, JEE]** Introduced the `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` boolean property, which
+  can be set via `joynr.dispatching.subscription.subscriptionrequests_persistency`. This property
+  allows to disable persistent storage of selective (filtered) broadcast and attribute subscriptions.
+  If disabled, then a provider will not know about any earlier subscriptions from proxies after
+  restart, i.e. publications for those broadcasts will only be sent to proxies which subscribed
+  after the last (re-)start. This setting has no impact on publications for non-selective broadcasts
+  (= multicasts).
+  See [Java Configuration Reference](JavaSettings.md) for more details.
 
 # joynr 1.8.2
 
