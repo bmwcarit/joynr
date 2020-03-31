@@ -588,6 +588,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                     break;
                 }
             }
+            scanner.close();
         } catch (DiscoveryException e) {
             LOG.error("No provider found", e);
         } catch (JoynrCommunicationException e) {
