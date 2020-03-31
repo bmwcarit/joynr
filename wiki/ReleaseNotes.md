@@ -11,6 +11,7 @@ None.
 * **[FIDL]** Introduce new touch and removeStale methods in GlobalCapabilitiesDirectory FIDL.
  See [internal documentation of GlobalCapabilitiesDirectory](../docs/gcd-in-multiple-be.md)
  for for additional information about the new methods.
+* **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.4
 * **[C++]** Mosquitto MQTT Client now sets message expiry interval of
 * **[Java, JEE]** HiveMQ MQTT Client now sets message expiry interval of
   published MQTT messages.
