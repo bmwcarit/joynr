@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -113,8 +112,6 @@ public class AccessControllerEnd2EndTest {
         runtime.shutdown(true);
     }
 
-    // TODO enable again when backend services are fixed
-    @Ignore
     @Test
     public void testAllowedRPCCallSucceeds() {
         createDefaultGDACEntries(TEST_DOMAIN,
@@ -130,8 +127,6 @@ public class AccessControllerEnd2EndTest {
         assertEquals(15, result.intValue());
     }
 
-    // TODO enable again when backend services are fixed
-    @Ignore
     @Test
     public void testForbiddenRPCCallFails() {
         createDefaultGDACEntries(TEST_DOMAIN,
