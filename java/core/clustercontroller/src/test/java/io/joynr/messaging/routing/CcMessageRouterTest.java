@@ -47,7 +47,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -105,7 +104,6 @@ import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
-
 import io.joynr.util.JoynrThreadFactory;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -551,8 +549,8 @@ public class CcMessageRouterTest {
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
     }
 
-    private void testMessageProcessedListenerCalled(MessageRouter messageRouter,
-                                                    Class<? extends Exception> expectedException) throws Exception {
+    private void testMessageProcessedListenerCalledOnError(MessageRouter messageRouter,
+                                                           Class<? extends Exception> expectedException) throws Exception {
         final Semaphore semaphore = new Semaphore(0);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
@@ -586,7 +584,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
         joynrMessage.setTtlAbsolute(true);
 
-        testMessageProcessedListenerCalled(messageRouter, JoynrMessageNotSentException.class);
+        testMessageProcessedListenerCalledOnError(messageRouter, JoynrMessageNotSentException.class);
     }
 
     @Test
@@ -594,7 +592,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(false);
 
-        testMessageProcessedListenerCalled(messageRouter, JoynrRuntimeException.class);
+        testMessageProcessedListenerCalledOnError(messageRouter, JoynrRuntimeException.class);
     }
 
     @Test
@@ -606,7 +604,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
 
-        testMessageProcessedListenerCalled(messageRouter, null);
+        testMessageProcessedListenerCalledOnError(messageRouter, null);
     }
 
     @Test
@@ -621,7 +619,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
 
-        testMessageProcessedListenerCalled(messageRouterWithMaxRetryCount, null);
+        testMessageProcessedListenerCalledOnError(messageRouterWithMaxRetryCount, null);
     }
 
     @Test

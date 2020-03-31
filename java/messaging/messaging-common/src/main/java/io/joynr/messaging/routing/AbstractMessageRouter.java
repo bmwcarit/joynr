@@ -32,6 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Singleton;
 
@@ -351,17 +353,14 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     private FailureAction createFailureAction(final DelayableImmutableMessage delayableMessage) {
         final FailureAction failureAction = new FailureAction() {
             final String messageId = delayableMessage.getMessage().getId();
-            private boolean failureActionExecutedOnce = false;
+            private final AtomicBoolean failureActionExecutedOnce = new AtomicBoolean(false);
 
             @Override
             public void execute(Throwable error) {
-                synchronized (this) {
-                    if (failureActionExecutedOnce) {
-                        logger.trace("Failure action for message with id {} already executed once. Ignoring further call.",
-                                     messageId);
-                        return;
-                    }
-                    failureActionExecutedOnce = true;
+                if (!failureActionExecutedOnce.compareAndSet(false, true)) {
+                    logger.trace("Failure action for message with id {} already executed once. Ignoring further call.",
+                                 messageId);
+                    return;
                 }
                 if (error instanceof JoynrShutdownException) {
                     logger.warn("{}", error.getMessage());
@@ -421,12 +420,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
 
     private SuccessAction createMessageProcessedAction(final String messageId, final int numberOfCalls) {
         final SuccessAction successAction = new SuccessAction() {
-            private int callCount = numberOfCalls;
+            private final AtomicInteger callCount = new AtomicInteger(numberOfCalls);
 
             @Override
             public void execute() {
-                callCount--;
-                if (callCount == 0) {
+                if (callCount.decrementAndGet() == 0) {
                     callMessageProcessedListeners(messageId);
                 }
             }
