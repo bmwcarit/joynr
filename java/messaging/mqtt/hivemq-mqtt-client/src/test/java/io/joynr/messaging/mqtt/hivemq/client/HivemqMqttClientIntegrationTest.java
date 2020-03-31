@@ -65,8 +65,8 @@ import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 
-public class HivemqMqttClientTest {
-    private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientTest.class);
+public class HivemqMqttClientIntegrationTest {
+    private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientIntegrationTest.class);
 
     private static final int DEFAULT_QOS_LEVEL = 1; // AT_LEAST_ONCE
     private Injector injector;
