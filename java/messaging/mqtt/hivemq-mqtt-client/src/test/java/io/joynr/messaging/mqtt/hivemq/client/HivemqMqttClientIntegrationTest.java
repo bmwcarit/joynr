@@ -73,8 +73,8 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.reactivex.functions.Consumer;
 
-public class HivemqMqttClientTest {
-    private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientTest.class);
+public class HivemqMqttClientIntegrationTest {
+    private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientIntegrationTest.class);
 
     private static final String[] gbids = new String[]{ "testGbid1", "testGbid2" };
 
