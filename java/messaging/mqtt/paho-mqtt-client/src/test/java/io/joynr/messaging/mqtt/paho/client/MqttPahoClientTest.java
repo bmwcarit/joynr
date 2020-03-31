@@ -85,6 +85,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttPahoClientTest {
 
+    private static final int DEFAULT_QOS_LEVEL = 1;
     private static int mqttBrokerPort;
     private static int mqttSecureBrokerPort;
     private static final String joynrUser = "joynr";
@@ -307,7 +308,7 @@ public class MqttPahoClientTest {
 
         clientReceiver.subscribe(ownTopic.getTopic());
 
-        clientSender.publishMessage(ownTopic.getTopic(), serializedMessage);
+        clientSender.publishMessage(ownTopic.getTopic(), serializedMessage, DEFAULT_QOS_LEVEL);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.shutdown();
@@ -338,7 +339,7 @@ public class MqttPahoClientTest {
     }
 
     private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
-        joynrMqttClient.publishMessage(ownTopic.getTopic(), serializedMessage);
+        joynrMqttClient.publishMessage(ownTopic.getTopic(), serializedMessage, DEFAULT_QOS_LEVEL);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
@@ -356,7 +357,7 @@ public class MqttPahoClientTest {
         thrown.expectMessage("MQTT Publish failed: maximum allowed message size of " + maxMessageSize
                 + " bytes exceeded, actual size is " + largeSerializedMessage.length + " bytes");
 
-        joynrMqttClient.publishMessage(ownTopic.getTopic(), largeSerializedMessage);
+        joynrMqttClient.publishMessage(ownTopic.getTopic(), largeSerializedMessage, DEFAULT_QOS_LEVEL);
     }
 
     private void mqttClientTestWithDisabledMessageSizeCheck(boolean isSecureConnection) throws Exception {
@@ -549,7 +550,7 @@ public class MqttPahoClientTest {
 
         // use another MqttClient to publish a message for the first topic
         joynrMqttClient = createMqttClientWithoutSubscription();
-        joynrMqttClient.publishMessage(topic, serializedMessage);
+        joynrMqttClient.publishMessage(topic, serializedMessage, DEFAULT_QOS_LEVEL);
         Thread.sleep(100);
         joynrMqttClient.shutdown();
 
@@ -574,7 +575,7 @@ public class MqttPahoClientTest {
 
         // use another MqttClient to publish a message for the first topic
         joynrMqttClient = createMqttClientWithoutSubscription();
-        joynrMqttClient.publishMessage(topic, serializedMessage);
+        joynrMqttClient.publishMessage(topic, serializedMessage, DEFAULT_QOS_LEVEL);
         Thread.sleep(100);
         joynrMqttClient.shutdown();
 

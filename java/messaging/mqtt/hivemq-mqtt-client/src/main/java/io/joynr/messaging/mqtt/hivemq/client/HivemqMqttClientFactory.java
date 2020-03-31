@@ -62,8 +62,6 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
-import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory.DisconnectedListener;
-import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory.ResubscribeHandler;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.reactivex.schedulers.Schedulers;
@@ -87,6 +85,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private final MqttClientIdProvider mqttClientIdProvider;
     private final ScheduledExecutorService scheduledExecutorService;
     private final int keepAliveTimeSeconds;
+
     private final boolean cleanSession;
     private final int connectionTimeoutSec;
     private final MqttStatusReceiver mqttStatusReceiver;
@@ -160,8 +159,12 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             synchronized (this) {
                 if (sender == null) {
                     logger.info("Creating sender MQTT client");
-                    sender = createClient(mqttClientIdProvider.getClientId() + (separateConnections ? "Pub" : ""));
-                    logger.info("Sender MQTT client now: {}", sender);
+                    if (separateConnections) {
+                        sender = createClient(mqttClientIdProvider.getClientId() + "Pub", false, true);
+                    } else {
+                        createCombinedClient();
+                    }
+                    logger.debug("Sender MQTT client now: {}", sender);
                 }
             }
         }
@@ -175,25 +178,30 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                 if (receiver == null) {
                     logger.info("Creating receiver MQTT client");
                     if (separateConnections) {
-                        receiver = createClient(mqttClientIdProvider.getClientId() + "Sub");
+                        receiver = createClient(mqttClientIdProvider.getClientId() + "Sub", true, false);
                     } else {
-                        receiver = createSender();
+                        createCombinedClient();
                     }
-                    logger.info("Receiver MQTT client now: {}", receiver);
+                    logger.debug("Receiver MQTT client now: {}", receiver);
                 }
             }
         }
         return receiver;
     }
 
-    private JoynrMqttClient createClient(String clientId) {
+    private void createCombinedClient() {
+        sender = createClient(mqttClientIdProvider.getClientId(), true, true);
+        receiver = sender;
+    }
+
+    private JoynrMqttClient createClient(String clientId, boolean isReceiver, boolean isSender) {
         URI serverUri;
         try {
             serverUri = new URI(ownAddress.getBrokerUri());
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + ownAddress.getBrokerUri(), e);
         }
-        logger.info("Connecting to {}:{}", serverUri.getHost(), serverUri.getPort());
+        logger.info("Creating MQTT client for uri {}, clientId {}", serverUri, clientId);
         MqttClientExecutorConfig executorConfig = MqttClientExecutorConfig.builder()
                                                                           .nettyExecutor(scheduledExecutorService)
                                                                           .applicationScheduler(Schedulers.from(scheduledExecutorService))
@@ -205,6 +213,12 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                      .identifier(clientId)
                                                      .serverHost(serverUri.getHost())
                                                      .serverPort(serverUri.getPort())
+                                                     // automaticReconnectWithDefaultConfig (see MqttClientAutoReconnectImpl)
+                                                     // uses reconnectDelay = delay + randomDelay
+                                                     // delay: startDelay: 1s, maxDelay: 120s
+                                                     // randomDelay =(long) (delay / 4d / Integer.MAX_VALUE * ThreadLocalRandom.current().nextInt());
+                                                     // => maxRandomDelay = 30s
+                                                     // => maxReconnectDelay = 150s
                                                      .automaticReconnectWithDefaultConfig()
                                                      .addConnectedListener(resubscribeHandler)
                                                      .addDisconnectedListener(disconnectedListener)
@@ -224,10 +238,16 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                        keepAliveTimeSeconds,
                                                        cleanSession,
                                                        connectionTimeoutSec,
-                                                       reconnectDelayMs);
+                                                       reconnectDelayMs,
+                                                       isReceiver,
+                                                       isSender);
+        logger.info("Created MQTT client for uri {}, clientId {}: {}",
+                    serverUri,
+                    clientId,
+                    result.getClientInformationString());
         resubscribeHandler.setClient(result);
         resubscribeHandler.setMqttStatusReceiver(mqttStatusReceiver);
-        disconnectedListener.setClient(result);
+        disconnectedListener.setClientInformationString(result.getClientInformationString());
         disconnectedListener.setMqttStatusReceiver(mqttStatusReceiver);
         return result;
     }
@@ -347,12 +367,12 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
     static class DisconnectedListener implements MqttClientDisconnectedListener {
 
-        private HivemqMqttClient client;
+        private String clientInformation;
 
         private MqttStatusReceiver mqttStatusReceiver;
 
-        void setClient(HivemqMqttClient client) {
-            this.client = client;
+        void setClientInformationString(String clientInformation) {
+            this.clientInformation = clientInformation;
         }
 
         void setMqttStatusReceiver(MqttStatusReceiver mqttStatusReceiver) {
@@ -361,9 +381,11 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         @Override
         public void onDisconnected(MqttClientDisconnectedContext context) {
-            logger.info("Hive MQTT Client {} disconnected: {}", client, context);
+            logger.info("{}: HiveMQ MQTT client disconnected: source: {}",
+                        clientInformation,
+                        context.getSource(),
+                        context.getCause());
             mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
-            client.incrementDisconnectCount();
         }
 
     }

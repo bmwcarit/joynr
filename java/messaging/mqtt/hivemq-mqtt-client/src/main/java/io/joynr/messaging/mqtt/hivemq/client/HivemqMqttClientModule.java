@@ -19,6 +19,7 @@
 package io.joynr.messaging.mqtt.hivemq.client;
 
 import com.google.inject.AbstractModule;
+
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttModule;
 
