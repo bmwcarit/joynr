@@ -24,15 +24,16 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.common.ExpiryDate;
@@ -68,6 +69,7 @@ public class MqttMessagingStubTest {
 
     @Before
     public void setup() {
+        doReturn(new byte[0]).when(joynrMessage).getSerializedMessage();
         subject = new MqttMessagingStub(mqttAddress, mqttClient);
     }
 
@@ -78,10 +80,10 @@ public class MqttMessagingStubTest {
         when(mqttAddress.getTopic()).thenReturn(testTopic);
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(mqttClient).publishMessage(eq(expectedTopic),
-                                                  any(byte[].class),
-                                                  eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                  anyLong());
+        verify(mqttClient).publishMessage(eq(expectedTopic),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          anyLong());
     }
 
     @Test
@@ -92,10 +94,10 @@ public class MqttMessagingStubTest {
         when(joynrMessage.getType()).thenReturn(MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(mqttClient).publishMessage(eq(expectedTopic),
-                                                  any(byte[].class),
-                                                  eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                  anyLong());
+        verify(mqttClient).publishMessage(eq(expectedTopic),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          anyLong());
     }
 
     @Test
@@ -104,8 +106,10 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(mqttClient)
-               .publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL), anyLong());
+        verify(mqttClient).publishMessage(anyString(),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          anyLong());
     }
 
     @Test
@@ -131,10 +135,10 @@ public class MqttMessagingStubTest {
         long relativeTtl2 = ExpiryDate.fromAbsolute(messageTtlMs2).getRelativeTtl();
         assertTrue(relativeTtl2 % 1000 > 100 && relativeTtl2 % 1000 < 300);
 
-        Mockito.verify(mqttClient, times(2)).publishMessage(anyString(),
-                                                            any(byte[].class),
-                                                            eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                            eq(expectedRoundedMsgTtlSec));
+        verify(mqttClient, times(2)).publishMessage(anyString(),
+                                                    any(byte[].class),
+                                                    eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                                    eq(expectedRoundedMsgTtlSec));
     }
 
     @Test
@@ -154,10 +158,10 @@ public class MqttMessagingStubTest {
         when(joynrMessage.getTtlMs()).thenReturn(messageTtlMs2);
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(mqttClient, times(2)).publishMessage(anyString(),
-                                                            any(byte[].class),
-                                                            eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                            eq(expectedMaxMsgTtlSec));
+        verify(mqttClient, times(2)).publishMessage(anyString(),
+                                                    any(byte[].class),
+                                                    eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                                    eq(expectedMaxMsgTtlSec));
     }
 
     @Test
@@ -166,8 +170,10 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(mqttClient)
-               .publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL), anyLong());
+        verify(mqttClient).publishMessage(anyString(),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          anyLong());
     }
 
     @Test
@@ -176,8 +182,10 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(mqttClient)
-               .publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL), anyLong());
+        verify(mqttClient).publishMessage(anyString(),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL),
+                                          anyLong());
     }
 
     @Test
@@ -186,7 +194,7 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(successAction).execute();
+        verify(successAction).execute();
     }
 
     @Test
@@ -197,6 +205,6 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        Mockito.verify(failureAction).execute(exception);
+        verify(failureAction).execute(exception);
     }
 }
