@@ -358,6 +358,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                 break;
             }
         }
+        scanner.close();
     }
 
     @Override
