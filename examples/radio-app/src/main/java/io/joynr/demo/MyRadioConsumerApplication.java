@@ -598,7 +598,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                     }
                     break;
                 default:
-                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
+                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
+                            + " g\tto get the  current station\n" + " m\tto get the location of the current station\n");
                     break;
                 }
             }
