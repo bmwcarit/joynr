@@ -13,7 +13,7 @@ echo '# This script assumes mvn was run.'
 echo '####################################################'
 
 log "start mosquitto"
-mosquitto -c /etc/mosquitto/mosquitto.conf &
+mosquitto -c /data/src/docker/joynr-base/mosquitto.conf &
 MOSQUITTO_PID=$!
 
 # wait a while to allow mosquitto server to initialize

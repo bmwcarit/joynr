@@ -38,7 +38,7 @@ then
     echo '####################################################'
     echo '# start services'
     echo '####################################################'
-    mosquitto -c /etc/mosquitto/mosquitto.conf -v &
+    mosquitto -c /data/src/docker/joynr-base/mosquitto.conf &
     MOSQUITTO_PID=$!
 
     ACCESS_CTRL_WAR_FILE=$(find /data/src/java/backend-services/domain-access-controller-jee/target -iregex ".*domain-access-controller-jee*.war")
