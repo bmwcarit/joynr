@@ -22,16 +22,20 @@ import static com.google.inject.util.Modules.override;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
@@ -40,6 +44,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -60,6 +66,8 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 
 public class HivemqMqttClientTest {
+    private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientTest.class);
+
     private static final int DEFAULT_QOS_LEVEL = 1; // AT_LEAST_ONCE
     private Injector injector;
     private HivemqMqttClientFactory hivemqMqttClientFactory;
@@ -122,7 +130,7 @@ public class HivemqMqttClientTest {
     public void publishAndReceiveWithTwoClients() throws Exception {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
         createHivemqMqttClientFactory();
-        ownTopic = "testTopic";
+        ownTopic = "testTopic-" + System.currentTimeMillis();
         HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender();
         HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver();
         assertNotEquals(clientSender, clientReceiver);
@@ -145,10 +153,104 @@ public class HivemqMqttClientTest {
     }
 
     @Test
+    public void publishMultiThreadedInALoop() throws Exception {
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
+        final int count = 10;
+        final AtomicInteger payloadCounter = new AtomicInteger();
+        final String topicPrefix = "testTopicMt-" + System.currentTimeMillis() + "-";
+        createHivemqMqttClientFactory();
+        HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender();
+        HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver();
+        assertNotEquals(clientSender, clientReceiver);
+
+        clientReceiver.setMessageListener(mockReceiver);
+
+        clientSender.start();
+        clientReceiver.start();
+
+        try {
+            final int runs = 16;
+            for (int run = 1; run <= runs; run++) {
+                logger.info("# run {}", run);
+                final String topic = topicPrefix + run;
+
+                clientReceiver.subscribe(topic);
+                // wait for subscription to be established
+                Thread.sleep(128);
+
+                final CountDownLatch threadsLatch = new CountDownLatch(count);
+                final CountDownLatch publishedLatch = new CountDownLatch(count);
+                final CountDownLatch receivedLatch = new CountDownLatch(count);
+                doAnswer(new Answer<Void>() {
+                    @Override
+                    public Void answer(InvocationOnMock invocation) throws Throwable {
+                        receivedLatch.countDown();
+                        return null;
+                    }
+                }).when(mockReceiver).transmit(any(byte[].class), any(FailureAction.class));
+
+                Object triggerObj = new Object();
+                Thread[] threads = new Thread[count];
+                for (int i = 0; i < count; i++) {
+                    threads[i] = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final byte[] payload = ("test " + payloadCounter.incrementAndGet()).getBytes();
+                            synchronized (triggerObj) {
+                                threadsLatch.countDown();
+                                try {
+                                    triggerObj.wait();
+                                } catch (InterruptedException e) {
+                                    fail("Thread.wait() FAILED: " + e);
+                                }
+                            }
+                            clientSender.publishMessage(topic, payload, DEFAULT_QOS_LEVEL);
+                            publishedLatch.countDown();
+                        }
+                    });
+                }
+                for (Thread t : threads) {
+                    t.start();
+                }
+                threadsLatch.await();
+                synchronized (triggerObj) {
+                    // trigger parallel publish
+                    triggerObj.notifyAll();
+                }
+
+                for (Thread t : threads) {
+                    try {
+                        t.join();
+                    } catch (InterruptedException e) {
+                        fail("Thread.join() FAILED: " + e);
+                    }
+                }
+                if (!publishedLatch.await(5, TimeUnit.SECONDS)) {
+                    fail("PublishLatch.await failed in run " + run);
+                }
+                if (!receivedLatch.await(5, TimeUnit.SECONDS)) {
+                    fail("ReceivedLatch failed in run " + run);
+                }
+
+                clientReceiver.unsubscribe(topic);
+                Thread.sleep(512);
+
+                verify(mockReceiver, times(count)).transmit(any(byte[].class), any(FailureAction.class));
+                reset(mockReceiver);
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            clientSender.shutdown();
+            clientReceiver.shutdown();
+        }
+    }
+
+    @Test
     public void subscribeMultipleTimes_receivesOnlyOnce() throws Exception {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
         createHivemqMqttClientFactory();
-        ownTopic = "testTopic";
+        ownTopic = "testTopic-" + System.currentTimeMillis();
         HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender();
         HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver();
         assertNotEquals(clientSender, clientReceiver);
@@ -212,7 +314,7 @@ public class HivemqMqttClientTest {
     public void subscribeBeforeConnected() throws Exception {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
         createHivemqMqttClientFactory();
-        ownTopic = "testTopic";
+        ownTopic = "testTopic-" + System.currentTimeMillis();
         HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender();
         HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver();
         assertNotEquals(clientSender, clientReceiver);
@@ -239,7 +341,7 @@ public class HivemqMqttClientTest {
     public void subscribeWhenNotConnected() throws Exception {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
         createHivemqMqttClientFactory();
-        ownTopic = "testTopic";
+        ownTopic = "testTopic-" + System.currentTimeMillis();
         HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender();
         HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver();
         assertNotEquals(clientSender, clientReceiver);
@@ -268,7 +370,7 @@ public class HivemqMqttClientTest {
     public void receivePublicationFromPreviousSessionWithoutSubscribe() throws Exception {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
         createHivemqMqttClientFactory();
-        ownTopic = "testTopic";
+        ownTopic = "testTopic-" + System.currentTimeMillis();
         HivemqMqttClient clientSender = (HivemqMqttClient) hivemqMqttClientFactory.createSender();
         HivemqMqttClient clientReceiver = (HivemqMqttClient) hivemqMqttClientFactory.createReceiver();
         assertNotEquals(clientSender, clientReceiver);
