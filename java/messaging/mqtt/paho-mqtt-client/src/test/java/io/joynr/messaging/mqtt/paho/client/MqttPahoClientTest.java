@@ -76,6 +76,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
@@ -107,6 +108,10 @@ public class MqttPahoClientTest {
     private MessageRouter mockMessageRouter;
     @Mock
     private RoutingTable mockRoutingTable;
+    @Mock
+    private SuccessAction mockSuccessAction;
+    @Mock
+    private FailureAction mockFailureAction;
     private JoynrMqttClient joynrMqttClient;
     private Properties properties;
     private byte[] serializedMessage;
@@ -320,7 +325,12 @@ public class MqttPahoClientTest {
 
         clientReceiver.subscribe(ownTopic);
 
-        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, 60);
+        clientSender.publishMessage(ownTopic,
+                                    serializedMessage,
+                                    DEFAULT_QOS_LEVEL,
+                                    60,
+                                    mockSuccessAction,
+                                    mockFailureAction);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.shutdown();
@@ -351,7 +361,12 @@ public class MqttPahoClientTest {
     }
 
     private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
-        joynrMqttClient.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL, 60);
+        joynrMqttClient.publishMessage(ownTopic,
+                                       serializedMessage,
+                                       DEFAULT_QOS_LEVEL,
+                                       60,
+                                       mockSuccessAction,
+                                       mockFailureAction);
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
@@ -369,7 +384,12 @@ public class MqttPahoClientTest {
         thrown.expectMessage("MQTT Publish failed: maximum allowed message size of " + maxMessageSize
                 + " bytes exceeded, actual size is " + largeSerializedMessage.length + " bytes");
 
-        joynrMqttClient.publishMessage(ownTopic, largeSerializedMessage, DEFAULT_QOS_LEVEL, 60);
+        joynrMqttClient.publishMessage(ownTopic,
+                                       largeSerializedMessage,
+                                       DEFAULT_QOS_LEVEL,
+                                       60,
+                                       mockSuccessAction,
+                                       mockFailureAction);
     }
 
     private void mqttClientTestWithDisabledMessageSizeCheck(boolean isSecureConnection) throws Exception {
@@ -562,7 +582,12 @@ public class MqttPahoClientTest {
 
         // use another MqttClient to publish a message for the first topic
         joynrMqttClient = createMqttClientWithoutSubscription();
-        joynrMqttClient.publishMessage(topic, serializedMessage, DEFAULT_QOS_LEVEL, 60);
+        joynrMqttClient.publishMessage(topic,
+                                       serializedMessage,
+                                       DEFAULT_QOS_LEVEL,
+                                       60,
+                                       mockSuccessAction,
+                                       mockFailureAction);
         Thread.sleep(100);
         joynrMqttClient.shutdown();
 
@@ -587,7 +612,12 @@ public class MqttPahoClientTest {
 
         // use another MqttClient to publish a message for the first topic
         joynrMqttClient = createMqttClientWithoutSubscription();
-        joynrMqttClient.publishMessage(topic, serializedMessage, DEFAULT_QOS_LEVEL, 60);
+        joynrMqttClient.publishMessage(topic,
+                                       serializedMessage,
+                                       DEFAULT_QOS_LEVEL,
+                                       60,
+                                       mockSuccessAction,
+                                       mockFailureAction);
         Thread.sleep(100);
         joynrMqttClient.shutdown();
 

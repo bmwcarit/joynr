@@ -99,14 +99,34 @@ public class MqttMessagingStubFactoryTest {
         MqttMessagingStub messagingStub2 = subject.createInternal(address2);
 
         messagingStub1.transmit(message, successAction, failureAction);
-        verify(joynrMqttClient1).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt(), anyLong());
-        verify(joynrMqttClient2, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
+        verify(joynrMqttClient1).publishMessage(topicCaptor.capture(),
+                                                any(byte[].class),
+                                                anyInt(),
+                                                anyLong(),
+                                                any(SuccessAction.class),
+                                                any(FailureAction.class));
+        verify(joynrMqttClient2, times(0)).publishMessage(anyString(),
+                                                          any(byte[].class),
+                                                          anyInt(),
+                                                          anyLong(),
+                                                          any(SuccessAction.class),
+                                                          any(FailureAction.class));
         assertTrue(topicCaptor.getValue().startsWith(TESTTOPIC1));
         reset(joynrMqttClient1);
         reset(joynrMqttClient2);
         messagingStub2.transmit(message, successAction, failureAction);
-        verify(joynrMqttClient1, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
-        verify(joynrMqttClient2).publishMessage(topicCaptor.capture(), any(byte[].class), anyInt(), anyLong());
+        verify(joynrMqttClient1, times(0)).publishMessage(anyString(),
+                                                          any(byte[].class),
+                                                          anyInt(),
+                                                          anyLong(),
+                                                          any(SuccessAction.class),
+                                                          any(FailureAction.class));
+        verify(joynrMqttClient2).publishMessage(topicCaptor.capture(),
+                                                any(byte[].class),
+                                                anyInt(),
+                                                anyLong(),
+                                                any(SuccessAction.class),
+                                                any(FailureAction.class));
         assertTrue(topicCaptor.getValue().startsWith(TESTTOPIC2));
     }
 

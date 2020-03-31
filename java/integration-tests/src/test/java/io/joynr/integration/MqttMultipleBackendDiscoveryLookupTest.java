@@ -37,6 +37,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.proxy.ProxyBuilder;
 import joynr.ImmutableMessage;
@@ -59,7 +61,9 @@ public class MqttMultipleBackendDiscoveryLookupTest extends MqttMultipleBackendD
                                                                   .publishMessage(eq(gcdTopic),
                                                                                   any(byte[].class),
                                                                                   anyInt(),
-                                                                                  anyLong());
+                                                                                  anyLong(),
+                                                                                  any(SuccessAction.class),
+                                                                                  any(FailureAction.class));
 
         ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(TESTDOMAIN, testProxy.class);
         proxyBuilder.setDiscoveryQos(discoveryQos);
@@ -69,9 +73,19 @@ public class MqttMultipleBackendDiscoveryLookupTest extends MqttMultipleBackendD
         proxyBuilder.build();
 
         assertTrue(publishCountDownLatch.await(500, TimeUnit.MILLISECONDS));
-        verify(otherClient, times(0)).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
+        verify(otherClient, times(0)).publishMessage(anyString(),
+                                                     any(byte[].class),
+                                                     anyInt(),
+                                                     anyLong(),
+                                                     any(SuccessAction.class),
+                                                     any(FailureAction.class));
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(expectedClient).publishMessage(eq(gcdTopic), messageCaptor.capture(), anyInt(), anyLong());
+        verify(expectedClient).publishMessage(eq(gcdTopic),
+                                              messageCaptor.capture(),
+                                              anyInt(),
+                                              anyLong(),
+                                              any(SuccessAction.class),
+                                              any(FailureAction.class));
         byte[] serializedMessage = messageCaptor.getValue();
         ImmutableMessage capturedMessage = new ImmutableMessage(serializedMessage);
         assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());

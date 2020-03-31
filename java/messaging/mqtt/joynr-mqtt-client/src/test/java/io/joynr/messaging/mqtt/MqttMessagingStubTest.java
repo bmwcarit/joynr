@@ -85,7 +85,9 @@ public class MqttMessagingStubTest {
         verify(mqttClient).publishMessage(eq(expectedTopic),
                                           any(byte[].class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                          anyLong());
+                                          anyLong(),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -99,7 +101,9 @@ public class MqttMessagingStubTest {
         verify(mqttClient).publishMessage(eq(expectedTopic),
                                           any(byte[].class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                          anyLong());
+                                          anyLong(),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -111,7 +115,9 @@ public class MqttMessagingStubTest {
         verify(mqttClient).publishMessage(anyString(),
                                           any(byte[].class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                          anyLong());
+                                          anyLong(),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -140,7 +146,9 @@ public class MqttMessagingStubTest {
         verify(mqttClient, times(2)).publishMessage(anyString(),
                                                     any(byte[].class),
                                                     eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                    eq(expectedRoundedMsgTtlSec));
+                                                    eq(expectedRoundedMsgTtlSec),
+                                                    any(SuccessAction.class),
+                                                    any(FailureAction.class));
     }
 
     @Test
@@ -163,7 +171,9 @@ public class MqttMessagingStubTest {
         verify(mqttClient, times(2)).publishMessage(anyString(),
                                                     any(byte[].class),
                                                     eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                                    eq(expectedMaxMsgTtlSec));
+                                                    eq(expectedMaxMsgTtlSec),
+                                                    any(SuccessAction.class),
+                                                    any(FailureAction.class));
     }
 
     @Test
@@ -175,7 +185,9 @@ public class MqttMessagingStubTest {
         verify(mqttClient).publishMessage(anyString(),
                                           any(byte[].class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
-                                          anyLong());
+                                          anyLong(),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -187,7 +199,9 @@ public class MqttMessagingStubTest {
         verify(mqttClient).publishMessage(anyString(),
                                           any(byte[].class),
                                           eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL),
-                                          anyLong());
+                                          anyLong(),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -204,7 +218,12 @@ public class MqttMessagingStubTest {
         when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
         JoynrRuntimeException exception = new JoynrRuntimeException("testException");
         JoynrRuntimeException expectedException = new JoynrRuntimeException(exception.getMessage());
-        doThrow(exception).when(mqttClient).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
+        doThrow(exception).when(mqttClient).publishMessage(anyString(),
+                                                           any(byte[].class),
+                                                           anyInt(),
+                                                           anyLong(),
+                                                           any(SuccessAction.class),
+                                                           any(FailureAction.class));
 
         try {
             subject.transmit(joynrMessage, successAction, failureAction);
