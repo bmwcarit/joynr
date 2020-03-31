@@ -69,7 +69,12 @@ mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,andr
 echo '####################################################'
 echo '# start services'
 echo '####################################################'
-mosquitto -c /etc/mosquitto/mosquitto.conf -v &
+cp /data/src/docker/joynr-base/mosquitto.conf /home/joynr/mosquitto.conf
+if [ -d "/data/logs" ]
+then
+    echo "log_dest file /data/logs/mosquitto.log" >> /home/joynr/mosquitto.conf
+fi
+mosquitto -c /home/joynr/mosquitto.conf &
 MOSQUITTO_PID=$!
 
 # Use the default discovery-directory-jee with embedded db. Its name is e.g. discovery-directory-jee-1.10.0-SNAPSHOT.war
