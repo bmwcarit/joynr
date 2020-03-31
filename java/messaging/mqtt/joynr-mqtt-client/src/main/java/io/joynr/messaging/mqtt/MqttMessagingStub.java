@@ -49,7 +49,6 @@ public class MqttMessagingStub implements IMessagingStub {
 
     @Override
     public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
-        LOG.debug(">>> OUTGOING >>> {}", message);
         String topic = address.getTopic();
         if (!Message.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
             topic += PRIORITY_LOW + message.getRecipient();
@@ -61,7 +60,9 @@ public class MqttMessagingStub implements IMessagingStub {
             qosLevel = BEST_EFFORT_QOS_LEVEL;
         }
         try {
-            mqttClient.publishMessage(topic, message.getSerializedMessage(), qosLevel);
+            byte[] serializedMessage = message.getSerializedMessage();
+            LOG.debug(">>> OUTGOING TO {} >>> {}bytes: {}", address.getBrokerUri(), serializedMessage.length, message);
+            mqttClient.publishMessage(topic, serializedMessage, qosLevel);
             successAction.execute();
         } catch (Exception error) {
             failureAction.execute(error);
