@@ -61,18 +61,14 @@ public class MqttMessagingStub implements IMessagingStub {
         if (effortHeaderValue != null && String.valueOf(MessagingQosEffort.BEST_EFFORT).equals(effortHeaderValue)) {
             qosLevel = BEST_EFFORT_QOS_LEVEL;
         }
-        try {
-            ExpiryDate expiryDate = ExpiryDate.fromAbsolute(message.getTtlMs());
-            long msgTtlSec = (long) Math.ceil(expiryDate.getRelativeTtl() / 1000.0);
-            if (msgTtlSec > MESSAGE_EXPIRY_MAX_INTERVAL || msgTtlSec < 0) {
-                msgTtlSec = MESSAGE_EXPIRY_MAX_INTERVAL;
-            }
-            byte[] serializedMessage = message.getSerializedMessage();
-            LOG.debug(">>> OUTGOING TO {} >>> {}bytes: {}", address.getBrokerUri(), serializedMessage.length, message);
-            mqttClient.publishMessage(topic, serializedMessage, qosLevel, msgTtlSec);
-            successAction.execute();
-        } catch (Exception error) {
-            failureAction.execute(error);
+        ExpiryDate expiryDate = ExpiryDate.fromAbsolute(message.getTtlMs());
+        long msgTtlSec = (long) Math.ceil(expiryDate.getRelativeTtl() / 1000.0);
+        if (msgTtlSec > MESSAGE_EXPIRY_MAX_INTERVAL || msgTtlSec < 0) {
+            msgTtlSec = MESSAGE_EXPIRY_MAX_INTERVAL;
         }
+        byte[] serializedMessage = message.getSerializedMessage();
+        LOG.debug(">>> OUTGOING TO {} >>> {}bytes: {}", address.getBrokerUri(), serializedMessage.length, message);
+        mqttClient.publishMessage(topic, serializedMessage, qosLevel, msgTtlSec);
+        successAction.execute();
     }
 }

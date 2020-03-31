@@ -18,7 +18,9 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
@@ -198,13 +200,19 @@ public class MqttMessagingStubTest {
     }
 
     @Test
-    public void testFailureActionCalled() {
+    public void testExceptionIsForwardedToCaller() {
         when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
         JoynrRuntimeException exception = new JoynrRuntimeException("testException");
+        JoynrRuntimeException expectedException = new JoynrRuntimeException(exception.getMessage());
         doThrow(exception).when(mqttClient).publishMessage(anyString(), any(byte[].class), anyInt(), anyLong());
 
-        subject.transmit(joynrMessage, successAction, failureAction);
-
-        verify(failureAction).execute(exception);
+        try {
+            subject.transmit(joynrMessage, successAction, failureAction);
+            fail("expected exception");
+        } catch (Exception e) {
+            assertEquals(expectedException, e);
+        }
+        verify(successAction, times(0)).execute();
+        verify(failureAction, times(0)).execute(exception);
     }
 }
