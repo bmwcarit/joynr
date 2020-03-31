@@ -57,7 +57,7 @@ declare -a listOfImages=(
     "joynr-cpp-clang"
     "joynr-ilt-gcc"
     "joynr-complete-deps"
-    #"joynr-runtime-environment-base"
+    "joynr-runtime-environment-base"
 )
 
 function build
