@@ -8,6 +8,7 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
+* **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.4
 * **[Java]** Fixed and improved reconnect handling and error handling in HivemqMqttClient.
 * **[Java]** Improved logging in HivemqMqttClient.
 
@@ -130,6 +131,7 @@ None.
 * **[Java]** Updated jackson to version 2.9.9, jackson.databind to 2.9.9.2
 * **[Java]** Updated net.sourceforge.htmlunit.htmlunit to 2.35.0
 * **[Java]** Updated smrf to 0.3.3
+* **[Java]** Updated hivemq-mqtt-client to 1.1.2
 
 ## Configuration property changes
 * **[Java, JEE]** Introduced the `PROPERTY_KEY_MQTT_CIPHERSUITES` property, which can be set via
@@ -167,6 +169,9 @@ None.
   IllegalArgumentException because the method signature was not found in the callback due to the
   void result being wrongly translated to a `null` value.
 
+## Configuration property changes
+None.
+
 # joynr 1.8.1
 
 ## API relevant changes
@@ -191,7 +196,7 @@ None.
   Fedora 27 with openssl 1.1.0, MoCOCrW branch openssl1.1, flatbuffers 1.10.0, smrf 0.3.3
   and websocketpp 0.8.1.
 * **[C++, Java, JS]** Updated smrf version to 0.3.3
-* **[C++]** The JOYNR_DEFAULT_RUNTIME_LOG_LEVEL for Release builds has been changed to
+* **[C++]** The `JOYNR_DEFAULT_RUNTIME_LOG_LEVEL` for Release builds has been changed to
   "DEBUG" to support message tracking.
 * **[FIDL]** Introduce support for multiple backends in GlobalCapabilitiesDirectory FIDL. See
   `docs/gcd-in-multiple-be.md` for additional documentation.
@@ -295,7 +300,7 @@ None.
 
 ## API relevant changes
 * **[Java, JEE]** added `prepareForShutdown` lifecycle step
-* **[Java,JEE]** Added stateless async communication API.
+* **[Java, JEE]** Added stateless async communication API.
   See the [Java documentation](java.md) and [JEE documentation](jee.md) for details.
 * **[Java, JEE]** Added `MessagePersister` interface that can be implemented and allows queued
   messages to be persisted in order to prevent message loss. JEE applications can inject a
@@ -433,7 +438,7 @@ None.
   for each proxy method call separately.
 
 ## Other changes
-* **[Java,C++,JS]** Introduced Franca 0.13.0, joynr continues to support
+* **[Java, C++, JS]** Introduced Franca 0.13.0, joynr continues to support
   Franca features that were already supported in previous joynr versions.
 * **[Java]** Orphaned routing entries containing addresses for proxy participantIds
   related to no longer referenced proxy instances are now removed by the Routing Table cleanup
@@ -478,7 +483,7 @@ None.
   to use a very long default timeout for the call to GlobalCapabilitiesDirectory as before.
 
 ## Other changes
-* **[C++,Generator]** Deleted InProcess bypass. Every message has to be now routed
+* **[C++, Generator]** Deleted InProcess bypass. Every message has to be now routed
   through message router.
 * **[C++]** The application thread will not return immediately if persistency is ON. Persistency of subscriptions
   is being loaded in the same thread as registerProvider.
@@ -743,10 +748,10 @@ None.
   * `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`
 
 ## Other changes
-* **[C++,Generator]** Fixed a problem with the generator when empty structures
+* **[C++, Generator]** Fixed a problem with the generator when empty structures
   with extends were specified in the FIDL files.
-* **[C++, JAVA, JS]** Removed DBUS and CommonAPI support
-* **[Java,Generator]** Allow disabling of null checks in complex type member setters
+* **[C++, Java, JS]** Removed DBUS and CommonAPI support
+* **[Java, Generator]** Allow disabling of null checks in complex type member setters
   See the [joynr code Generator Reference](generator.md) for details.
   Note: Using types containing null values is incompatible with joynr C++.
 
@@ -1022,7 +1027,7 @@ None.
 ## Other changes
 * **[JEE]** Applications can inject a MqttClientIdProvider to generate an id for the mqtt client.
   The producer method must be annotated with JoynrMqttClientIdProvider.
-* **[Java,C++,JS]** updated SMRF dependency to 0.2.0 which introduces an incompatibility with any previous version
+* **[Java, C++, JS]** updated SMRF dependency to 0.2.0 which introduces an incompatibility with any previous version
 * **[C++]** Fixed potential crash when a proxy is used after a joynr runtime was deleted.
 
 # joynr 0.27.1
@@ -1069,7 +1074,7 @@ None.
   and ImmutableMessage for incoming messages.
 
 ## Other changes
-* **[Java,C++,JS]** HTTP communication is not supported at the moment
+* **[Java, C++, JS]** HTTP communication is not supported at the moment
 * **[JS]** Browser based environments, e.g. radio-js, are not supported at the moment
 * **[JS]** Direct MQTT based communication is not supported at the moment.
   Please use the WebSocketLibjoynrRuntime to connect to external cluster controller handling
@@ -1741,7 +1746,7 @@ None.
 # joynr 0.15.0
 
 ## Notes
-* **[Java,C++]** Java and C++ cluster controllers are now able to communciate to an MQTT broker as
+* **[Java, C++]** Java and C++ cluster controllers are now able to communciate to an MQTT broker as
   a replacement, or in addition to, the original bounceproxy. Java uses the Eclipse Paho client,
   while C++ uses mosquitto as an MQTT client.
 * **[C++]** There is a new build and runtime dependency for the clustercontroller to mosquitto 1.4.7
@@ -1797,8 +1802,8 @@ None.
 # joynr 0.14.0
 
 ## Notes
-* **[Java,JS,C++]** Franca `ByteBuffer` is supported.
-* **[Java,JS,C++]** Franca `typedef` is supported. For Java and JS, typedefs
+* **[Java, JS, C++]** Franca `ByteBuffer` is supported.
+* **[Java, JS, C++]** Franca `typedef` is supported. For Java and JS, typedefs
   are ignored and the target datatypes are used instead.
 * **[C++]** libjoynr does not depend on Qt anymore.
 * **[C++]** libjoynr uses libwebsockets of the libwebsockets project (http://libwebsockets.org)
@@ -1836,7 +1841,7 @@ None.
   values that can be represented by the signed Java values.
 * **[C++]** Removing QT dependencies from libjoynr stack is almost done. Final cleanup
   is performed in upcoming releases.
-* **[Java,JS,C++]** The JSON serializer in all three languages escapes already escaped
+* **[Java, JS, C++]** The JSON serializer in all three languages escapes already escaped
   quotas in strings incorrectly.
 * **[Java, Android]** The Android runtime now contains all necessary transitive dependencies in an
   uber jar. The total size has been reduced so that a minimal app with joynr capability is
@@ -1850,7 +1855,7 @@ None.
 * **[JS]** Async loading of libjoynr (libjoynr.load()) returns a Promise object instead
   expecting a callback function as input parameter. See the
   [JavaScript Tutorial](JavaScriptTutorial.md) for more details.
-* **[Java,JS,C++]** Support Franca type Map
+* **[Java, JS, C++]** Support Franca type Map
 * **[JS]** Support Franca type Bytebuffer
 * **[C++]** ApplicationException.getError<T>() now expects a template parameter T
   to get access to the real enum value
@@ -1932,9 +1937,9 @@ None.
   as modelled in the Franca model.
 * **[JS]** Method input/output parameters and broadcast parameters are now consistently
   passed as key-value pairs.
-* **[Java,JS,C++]** Harmonized the handling of minimum interval for subscriptions with
+* **[Java, JS, C++]** Harmonized the handling of minimum interval for subscriptions with
   OnChangeSubscriptionQos. Set the MIN value to 0 ms.
-* **[Java,JS,C++]** Harmonized the handling of subscription qos parameters for broadcast
+* **[Java, JS, C++]** Harmonized the handling of subscription qos parameters for broadcast
   subscriptions. If two subsequent broadcasts occur within the minimum interval, the
   latter broadcast will not be sent to the subscribing entity.
 
@@ -1942,7 +1947,7 @@ None.
 * **[C++]** Fixed bug causing a consumer to crash when subscribing to attributes of type
   enumeration
 * **[JS]** Support of methods with multiple output parameters
-* **[Java,C++]** Fixed bug with arrays as return parameter types of methods and
+* **[Java, C++]** Fixed bug with arrays as return parameter types of methods and
   broadcasts and as attribute types of subscriptions
 * **[Tooling]** The joynr generator ignores invalid Franca models, and outputs a list of errors to
   the console.
@@ -1987,14 +1992,14 @@ None.
 * **[Java]** The onError callback of subscriptions expects now a JoynrException as input parameter
   instead of an empty parameter list. In addition, exceptions received from subscription publication
   are now forwarded to the onError callback.
-* **[Java,JS]** Support of exceptions for methods/attributes. Exceptions at provider side are now
+* **[Java, JS]** Support of exceptions for methods/attributes. Exceptions at provider side are now
   communicated via joynr to the consumer, informing him about unexpected behavior. joynr providers
   are able to reject method calls by using error enum values as associated with the method in the
   Franca model.
 * **[JS]** The callback provided at broadcast subscription is now called with key value pairs for
   the broadcast parameters. Previously, the callback has been invoked with individual function
   arguments for each broadcast parameter.
-* **]Java,JS,C++]** Harmonized the handling of expiry dates in SubscriptionQos
+* **[Java, JS, C++]** Harmonized the handling of expiry dates in SubscriptionQos
 
 ## Other changes
 * **[C++]** Replaced QSharedPointer with std::shared_ptr
@@ -2002,9 +2007,9 @@ None.
 * **[C++]** Replaced log4qt with spdlog
 * **[C++]** Fixed bug which prevented the onError callback of async method calls to be called in
   case of unexpected behavior (e.g. timeouts)
-* **[Java,JS,C++]** Fixed bug which caused joynr message loss due to wrong time interpreation in
+* **[Java, JS, C++]** Fixed bug which caused joynr message loss due to wrong time interpreation in
   case of very high expiry dates.
-* **[Java,JS]** Enriched the radio example with exception handling
+* **[Java, JS]** Enriched the radio example with exception handling
 
 # joynr 0.10.2
 
