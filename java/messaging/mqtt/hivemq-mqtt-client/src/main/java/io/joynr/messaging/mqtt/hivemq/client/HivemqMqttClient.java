@@ -40,6 +40,8 @@ import com.hivemq.client.mqtt.mqtt3.message.unsubscribe.Mqtt3Unsubscribe;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 
@@ -191,7 +193,11 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     @Override
-    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
+    public void publishMessage(String topic,
+                               byte[] serializedMessage,
+                               int qosLevel,
+                               SuccessAction successAction,
+                               FailureAction failureAction) {
         assert (isSender);
         if (!clientConfig.getState().isConnected()) {
             throw new JoynrDelayMessageException("not connected");

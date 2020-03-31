@@ -62,7 +62,7 @@ public class MqttMessagingStub implements IMessagingStub {
         try {
             byte[] serializedMessage = message.getSerializedMessage();
             LOG.debug(">>> OUTGOING TO {} >>> {}bytes: {}", address.getBrokerUri(), serializedMessage.length, message);
-            mqttClient.publishMessage(topic, serializedMessage, qosLevel);
+            mqttClient.publishMessage(topic, serializedMessage, qosLevel, successAction, failureAction);
             successAction.execute();
         } catch (Exception error) {
             failureAction.execute(error);

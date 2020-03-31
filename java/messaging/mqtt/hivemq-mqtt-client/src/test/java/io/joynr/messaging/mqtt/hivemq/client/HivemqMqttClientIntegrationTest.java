@@ -59,6 +59,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -82,6 +83,10 @@ public class HivemqMqttClientIntegrationTest {
     private RoutingTable mockRoutingTable;
     @Mock
     private MqttClientIdProvider mockMqttClientIdProvider;
+    @Mock
+    private SuccessAction mockSuccessAction;
+    @Mock
+    private FailureAction mockFailureAction;
     private Properties properties;
     private byte[] serializedMessage;
 
@@ -144,7 +149,11 @@ public class HivemqMqttClientIntegrationTest {
         // wait for subscription to be established
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL);
+        clientSender.publishMessage(ownTopic,
+                                    serializedMessage,
+                                    DEFAULT_QOS_LEVEL,
+                                    mockSuccessAction,
+                                    mockFailureAction);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
@@ -204,7 +213,11 @@ public class HivemqMqttClientIntegrationTest {
                                     fail("Thread.wait() FAILED: " + e);
                                 }
                             }
-                            clientSender.publishMessage(topic, payload, DEFAULT_QOS_LEVEL);
+                            clientSender.publishMessage(topic,
+                                                        payload,
+                                                        DEFAULT_QOS_LEVEL,
+                                                        mockSuccessAction,
+                                                        mockFailureAction);
                             publishedLatch.countDown();
                         }
                     });
@@ -268,7 +281,11 @@ public class HivemqMqttClientIntegrationTest {
         // wait for subscription to be established
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL);
+        clientSender.publishMessage(ownTopic,
+                                    serializedMessage,
+                                    DEFAULT_QOS_LEVEL,
+                                    mockSuccessAction,
+                                    mockFailureAction);
         Thread.sleep(512);
         verify(mockReceiver, times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
@@ -329,7 +346,11 @@ public class HivemqMqttClientIntegrationTest {
         // wait for subscription to be established
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL);
+        clientSender.publishMessage(ownTopic,
+                                    serializedMessage,
+                                    DEFAULT_QOS_LEVEL,
+                                    mockSuccessAction,
+                                    mockFailureAction);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
@@ -358,7 +379,11 @@ public class HivemqMqttClientIntegrationTest {
         // wait for subscription to be established
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL);
+        clientSender.publishMessage(ownTopic,
+                                    serializedMessage,
+                                    DEFAULT_QOS_LEVEL,
+                                    mockSuccessAction,
+                                    mockFailureAction);
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
@@ -389,7 +414,11 @@ public class HivemqMqttClientIntegrationTest {
         clientReceiver.unsubscribe(ownTopic);
         Thread.sleep(128);
 
-        clientSender.publishMessage(ownTopic, serializedMessage, DEFAULT_QOS_LEVEL);
+        clientSender.publishMessage(ownTopic,
+                                    serializedMessage,
+                                    DEFAULT_QOS_LEVEL,
+                                    mockSuccessAction,
+                                    mockFailureAction);
         Thread.sleep(128);
         clientReceiver.start();
 

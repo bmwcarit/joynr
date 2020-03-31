@@ -18,12 +18,15 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -78,7 +81,9 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient).publishMessage(eq(expectedTopic),
                                           any(byte[].class),
-                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -91,7 +96,9 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient).publishMessage(eq(expectedTopic),
                                           any(byte[].class),
-                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -100,7 +107,11 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        verify(mqttClient).publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+        verify(mqttClient).publishMessage(anyString(),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -109,7 +120,11 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        verify(mqttClient).publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.DEFAULT_QOS_LEVEL));
+        verify(mqttClient).publishMessage(anyString(),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -118,7 +133,11 @@ public class MqttMessagingStubTest {
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        verify(mqttClient).publishMessage(anyString(), any(byte[].class), eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL));
+        verify(mqttClient).publishMessage(anyString(),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 
     @Test
@@ -134,7 +153,11 @@ public class MqttMessagingStubTest {
     public void testFailureActionCalled() {
         when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
         JoynrRuntimeException exception = new JoynrRuntimeException("testException");
-        doThrow(exception).when(mqttClient).publishMessage(anyString(), any(byte[].class), anyInt());
+        doThrow(exception).when(mqttClient).publishMessage(anyString(),
+                                                           any(byte[].class),
+                                                           anyInt(),
+                                                           any(SuccessAction.class),
+                                                           any(FailureAction.class));
 
         subject.transmit(joynrMessage, successAction, failureAction);
 

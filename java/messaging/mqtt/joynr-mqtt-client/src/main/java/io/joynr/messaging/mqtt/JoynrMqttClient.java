@@ -18,6 +18,9 @@
  */
 package io.joynr.messaging.mqtt;
 
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.SuccessAction;
+
 public interface JoynrMqttClient {
 
     public void start();
@@ -26,7 +29,11 @@ public interface JoynrMqttClient {
 
     public void shutdown();
 
-    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel);
+    public void publishMessage(String topic,
+                               byte[] serializedMessage,
+                               int qosLevel,
+                               SuccessAction successAction,
+                               FailureAction failureAction);
 
     public void subscribe(String topic);
 

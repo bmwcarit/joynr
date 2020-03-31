@@ -45,6 +45,7 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
@@ -407,7 +408,11 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     }
 
     @Override
-    public void publishMessage(String topic, byte[] serializedMessage, int qosLevel) {
+    public void publishMessage(String topic,
+                               byte[] serializedMessage,
+                               int qosLevel,
+                               SuccessAction successAction,
+                               FailureAction failureAction) {
         assert !separateConnections || (separateConnections && !isReceiver);
 
         if (!separateConnections && messagingSkeleton == null) {
