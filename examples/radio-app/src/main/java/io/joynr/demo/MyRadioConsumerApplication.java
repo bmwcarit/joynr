@@ -575,13 +575,21 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
                 switch (key) {
                 case "s":
-                    radioProxy.shuffleStations();
-                    LOG.info("called shuffleStations");
+                    try {
+                        radioProxy.shuffleStations();
+                        LOG.info("called shuffleStations()");
+                    } catch (Exception e) {
+                        LOG.error("Exception from shuffleStations()", e);
+                    }
                     break;
                 case "m":
-                    GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
-                    LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country
-                            + ", location: " + locationOfCurrentStation.location);
+                    try {
+                        GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
+                        LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country
+                                + ", location: " + locationOfCurrentStation.location);
+                    } catch (Exception e) {
+                        LOG.error("Exception from getLocationOfCurrentStation()", e);
+                    }
                     break;
                 default:
                     LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n");
