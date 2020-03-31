@@ -54,8 +54,6 @@
 				<module>radio-app</module>
 				<module>radio-jee</module>
 				<module>location-tester</module>
-				<module>android-location-consumer</module>
-				<module>android-location-provider</module>
 			</modules>
 		</profile>
 		<profile>
