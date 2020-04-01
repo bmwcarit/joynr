@@ -14,7 +14,7 @@ ADDITIONAL_CMAKE_ARGS=''
 RUN_MAVEN='OFF'
 USE_NINJA='OFF'
 
-TESTS=(inter-language-test performance-test robustness-test robustness-test-env system-integration-test)
+TESTS=(inter-language-test performance-test robustness-test robustness-test-env standalone-pt system-integration-test)
 
 function join_strings
 {
@@ -83,6 +83,11 @@ then
   log "building system-integration-test"
   MAVEN_PROJECT=",io.joynr.tests.system-integration-test:sit-cpp-app"
   SRC_FOLDER="${SRC_FOLDER}/system-integration-test/sit-cpp-app"
+elif [[ "standalone-pt" == ${SELECTED_TEST} ]]
+then
+  log "standalone-pt"
+  MAVEN_PROJECT=",io.joynr.tests.standalone-pt:pt-cpp-apps"
+  SRC_FOLDER="${SRC_FOLDER}/standalone-pt/pt-cpp-apps"
 elif [[ "robustness-test-env" == ${SELECTED_TEST} ]]
 then
   log "building robustness-test-env"
