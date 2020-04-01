@@ -54,6 +54,7 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 public class HivemqMqttClient implements JoynrMqttClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClient.class);
+    private static final long NOT_CONNECTED_RETRY_INTERVAL_MS = 60000;
 
     private final Mqtt5RxClient client;
     private final Mqtt5ClientConfig clientConfig;
@@ -204,7 +205,9 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                FailureAction failureAction) {
         assert (isSender);
         if (!clientConfig.getState().isConnected()) {
-            throw new JoynrDelayMessageException("not connected");
+            failureAction.execute(new JoynrDelayMessageException(NOT_CONNECTED_RETRY_INTERVAL_MS,
+                                                                 "Publish failed: Mqtt client not connected."));
+            return;
         }
 
         Mqtt5Publish mqtt5Publish = Mqtt5Publish.builder()
@@ -226,6 +229,12 @@ public class HivemqMqttClient implements JoynrMqttClient {
                              serializedMessage.length,
                              qosLevel,
                              throwable);
+                if (throwable instanceof MqttClientStateException) {
+                    failureAction.execute(new JoynrDelayMessageException(NOT_CONNECTED_RETRY_INTERVAL_MS,
+                                                                         "Publish failed: " + throwable.toString()));
+                } else {
+                    failureAction.execute(new JoynrDelayMessageException("Publish failed: " + throwable.toString()));
+                }
             } else if (publishResult.getError().isPresent()) {
                 logger.error("{}: Publishing to {}: {}bytes with qos {} failed with error result: {}",
                              clientInformation,
@@ -234,6 +243,8 @@ public class HivemqMqttClient implements JoynrMqttClient {
                              qosLevel,
                              publishResult,
                              publishResult.getError().get());
+                failureAction.execute(new JoynrDelayMessageException("Publish failed: "
+                        + publishResult.getError().get().toString()));
             } else {
                 logger.trace("{}: Publishing to {}: {}bytes with qos {} succeeded: {}",
                              clientInformation,
@@ -241,9 +252,9 @@ public class HivemqMqttClient implements JoynrMqttClient {
                              serializedMessage.length,
                              qosLevel,
                              publishResult);
+                successAction.execute();
             }
         });
-        successAction.execute();
     }
 
     private MqttQos safeParseQos(int qosLevel) {
