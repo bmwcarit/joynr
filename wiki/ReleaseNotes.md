@@ -11,6 +11,8 @@ None.
 * **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.4
 * **[Java]** Fixed and improved reconnect handling and error handling in HivemqMqttClient.
 * **[Java]** Improved logging in HivemqMqttClient.
+* **[Java]** Fixed HivemqMqttClient to not lose messages: messages were sporadically lost
+  because hivemq-mqtt-client was not used in a thread safe way when publishing messages.
 
 ## Configuration property changes
 None.
