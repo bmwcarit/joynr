@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.joynr.examples.android_example"
     android:versionCode="1"
-    android:versionName="1.8.9-SNAPSHOT" >
+    android:versionName="1.8.9" >
   <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="26"/>
     
   
