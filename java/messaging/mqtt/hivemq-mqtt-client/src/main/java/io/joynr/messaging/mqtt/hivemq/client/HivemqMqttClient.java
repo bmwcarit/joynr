@@ -243,6 +243,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                              publishResult);
             }
         });
+        successAction.execute();
     }
 
     private MqttQos safeParseQos(int qosLevel) {

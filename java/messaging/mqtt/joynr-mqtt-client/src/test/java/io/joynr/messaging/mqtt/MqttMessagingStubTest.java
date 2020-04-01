@@ -28,6 +28,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -205,12 +206,19 @@ public class MqttMessagingStubTest {
     }
 
     @Test
-    public void testSuccessActionCalled() {
+    public void testSuccessAndFailureActionForwardedToMqttClient() {
         when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
 
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        verify(successAction).execute();
+        verify(mqttClient).publishMessage(anyString(),
+                                          any(byte[].class),
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          anyLong(),
+                                          same(successAction),
+                                          same(failureAction));
+        verify(successAction, times(0)).execute();
+        verify(failureAction, times(0)).execute(any(Throwable.class));
     }
 
     @Test
