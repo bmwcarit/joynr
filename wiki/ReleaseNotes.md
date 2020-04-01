@@ -15,6 +15,8 @@ None.
 * **[C++]** Mosquitto MQTT Client now sets message expiry interval of
 * **[Java, JEE]** HiveMQ MQTT Client now sets message expiry interval of
   published MQTT messages.
+* **[Java]** Fixed HivemqMqttClient to not lose messages: messages were sporadically lost
+  because hivemq-mqtt-client was not used in a thread safe way when publishing messages.
 * **[All, Generator]** The generator can now be optionally be called via command line
   parameter or plugin configuration to restrict code generation to only proxy or provider
   side. The default is to generate code for both sides. Details can be found [here](generator.md).
