@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="io.joynr.examples.android_location_provider" android:versionCode="1" android:versionName="1.8.8">
+  package="io.joynr.examples.android_location_provider" android:versionCode="1" android:versionName="1.8.9-SNAPSHOT">
 
       	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/> 
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>

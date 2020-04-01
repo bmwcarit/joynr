@@ -22,7 +22,7 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.8.8 REQUIRED)
+find_package(Joynr 1.8.9 REQUIRED)
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
