@@ -60,7 +60,7 @@ have to be provided in the Maven configuration:
                 </parameter>
                 <!-- specify whether the code generation shall be done for only proxy,
                      only provider or both cases. If not provided then code generation is done
-                     for both cases. -->
+                     for both cases. For Jee code generation use value "both" or omit option. -->
                 <target>proxy|provider|both</target>
             </configuration>
         </execution>
@@ -146,7 +146,7 @@ configuration](#maven-configuration) for details):
   in the .fidl file instead, see [Disable versioning of generated files](#disable-versioning-of-generated-files).
 * `extraParameters`
 * `target`: Whether the code generation shall be restricted to `proxy` or `provider` related code or
-  create `both` parts.
+  create `both` parts. For Jee code generation use value `both` or omit parameter.
 
 Example configuration:
 
@@ -343,6 +343,7 @@ to *gen*.
       -target <proxy|provider|both>
         Restrict code generation to only proxy or provider relevant parts or create 'both' parts.
         If not provided, code for both proxy and provider will be generated.
+        For Jee code generation use value 'both' or omit this command line argument.
     Optional, C++ only:
       -outputHeaderPath <path to directory containing header files>
       -includePrefix <prefix to use in include statements>
