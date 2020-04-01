@@ -55,6 +55,7 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 public class HivemqMqttClient implements JoynrMqttClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClient.class);
+    private static final long NOT_CONNECTED_RETRY_INTERVAL_MS = 60000;
 
     private final Mqtt3RxClient client;
     private final Mqtt3ClientConfig clientConfig;
@@ -200,7 +201,9 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                FailureAction failureAction) {
         assert (isSender);
         if (!clientConfig.getState().isConnected()) {
-            throw new JoynrDelayMessageException("not connected");
+            failureAction.execute(new JoynrDelayMessageException(NOT_CONNECTED_RETRY_INTERVAL_MS,
+                                                                 "Publish failed: Mqtt client not connected."));
+            return;
         }
 
         Mqtt3Publish mqtt3Publish = Mqtt3Publish.builder()
@@ -214,23 +217,29 @@ public class HivemqMqttClient implements JoynrMqttClient {
                      serializedMessage.length,
                      qosLevel);
         client.toAsync().publish(mqtt3Publish).whenComplete((publishResult, throwable) -> {
-            if (throwable != null) {
-                logger.error("{}: Publishing to {}: {}bytes with qos {} failed with exception.",
-                             clientInformation,
-                             topic,
-                             serializedMessage.length,
-                             qosLevel,
-                             throwable);
-            } else {
+            if (throwable == null) {
                 logger.trace("{}: Publishing to {}: {}bytes with qos {} succeeded: {}",
                              clientInformation,
                              topic,
                              serializedMessage.length,
                              qosLevel,
                              publishResult);
+                successAction.execute();
+            } else {
+                logger.error("{}: Publishing to {}: {}bytes with qos {} failed with exception.",
+                             clientInformation,
+                             topic,
+                             serializedMessage.length,
+                             qosLevel,
+                             throwable);
+                if (throwable instanceof MqttClientStateException) {
+                    failureAction.execute(new JoynrDelayMessageException(NOT_CONNECTED_RETRY_INTERVAL_MS,
+                                                                         "Publish failed: " + throwable.toString()));
+                } else {
+                    failureAction.execute(new JoynrDelayMessageException("Publish failed: " + throwable.toString()));
+                }
             }
         });
-        successAction.execute();
     }
 
     private MqttQos safeParseQos(int qosLevel) {
