@@ -28,6 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -318,6 +319,8 @@ public class MqttPahoClientTest {
                                     DEFAULT_QOS_LEVEL,
                                     mockSuccessAction,
                                     mockFailureAction);
+        verify(mockSuccessAction).execute();
+        verify(mockFailureAction, times(0)).execute(any(Throwable.class));
         verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.shutdown();
@@ -348,11 +351,14 @@ public class MqttPahoClientTest {
     }
 
     private void joynrMqttClientPublishAndVerifyReceivedMessage(byte[] serializedMessage) {
+        reset(mockSuccessAction);
         joynrMqttClient.publishMessage(ownTopic.getTopic(),
                                        serializedMessage,
                                        DEFAULT_QOS_LEVEL,
                                        mockSuccessAction,
                                        mockFailureAction);
+        verify(mockSuccessAction).execute();
+        verify(mockFailureAction, times(0)).execute(any(Throwable.class));
         verify(mockReceiver, timeout(100).times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
     }
 
@@ -375,6 +381,8 @@ public class MqttPahoClientTest {
                                        DEFAULT_QOS_LEVEL,
                                        mockSuccessAction,
                                        mockFailureAction);
+        verify(mockSuccessAction, times(0)).execute();
+        verify(mockFailureAction, times(0)).execute(any(Throwable.class));
     }
 
     private void mqttClientTestWithDisabledMessageSizeCheck(boolean isSecureConnection) throws Exception {
@@ -572,6 +580,8 @@ public class MqttPahoClientTest {
                                        DEFAULT_QOS_LEVEL,
                                        mockSuccessAction,
                                        mockFailureAction);
+        verify(mockSuccessAction).execute();
+        verify(mockFailureAction, times(0)).execute(any(Throwable.class));
         Thread.sleep(100);
         joynrMqttClient.shutdown();
 
@@ -601,6 +611,8 @@ public class MqttPahoClientTest {
                                        DEFAULT_QOS_LEVEL,
                                        mockSuccessAction,
                                        mockFailureAction);
+        verify(mockSuccessAction).execute();
+        verify(mockFailureAction, times(0)).execute(any(Throwable.class));
         Thread.sleep(100);
         joynrMqttClient.shutdown();
 

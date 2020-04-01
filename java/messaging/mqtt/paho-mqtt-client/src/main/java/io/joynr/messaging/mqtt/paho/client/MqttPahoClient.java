@@ -474,6 +474,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         }
 
         logger.debug("Published message: " + new String(serializedMessage, StandardCharsets.UTF_8));
+        successAction.execute();
     }
 
     @Override
