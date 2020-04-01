@@ -1,0 +1,46 @@
+version: '2.0'
+
+services:
+
+  mqttbroker-1:
+    image: 'hivemq/hivemq4'
+    container_name: mqttbroker-1
+    environment:
+      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+
+  joynrbackend-db:
+    image: "joynr-backend-jee-db:latest"
+    container_name: joynrbackend-db
+
+  joynrbackend-1:
+    image: "joynr-backend-jee-1:latest"
+    container_name: joynrbackend-1
+    depends_on:
+      - "mqttbroker-1"
+      - "joynrbackend-db"
+
+  joynrfakedbackend-1:
+    image: "joynr-faked-backend-jee-1:latest"
+    container_name: joynrfakedbackend-1
+    depends_on:
+      - "mqttbroker-1"
+      - "joynrbackend-db"
+    environment:
+      - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
+
+  # jee consumer container
+  jeeapp-1:
+    image: "joynr-pt-jee-app:latest"
+    container_name: joynr-pt-jee-app-1
+    depends_on:
+      - "mqttbroker-1"
+      - "joynrbackend-1"
+    environment:
+      - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
+      - PT_CONSUMER_DOMAIN=pt-domain.jee.consumer
+      - PT_GBIDS=joynrdefaultgbid
+      - PT_BROKERURIS=tcp://mqttbroker-1:1883
+      - PT_CONNECTION_TIMEOUTS=60
+      - PT_KEEP_ALIVE_TIMERS=60
+      - PT_NUMBER_OF_CALLS=5
+      - PT_NUMBER_OF_REPETITIONS=
