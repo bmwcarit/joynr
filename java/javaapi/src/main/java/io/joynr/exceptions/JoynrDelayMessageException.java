@@ -24,7 +24,7 @@ import com.google.inject.name.Named;
 public class JoynrDelayMessageException extends JoynrRuntimeException {
     private static final long serialVersionUID = 1L;
 
-    private static final long DEFAULT_DELAY_MS = 1000;
+    private static final long DEFAULT_DELAY_MS = 3000;
 
     //TODO should use @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS)
     @Inject(optional = true)
