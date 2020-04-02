@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
-project(robustness-test-env-1.0.0-SNAPSHOT)
+project(robustness-test-env VERSION 1.15.3 LANGUAGES CXX)
 
 # Compile to a bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

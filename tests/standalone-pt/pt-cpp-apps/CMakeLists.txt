@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
-project(pt-cpp-apps-1.15.3-SNAPSHOT)
+project(pt-cpp-apps VERSION 1.15.3 LANGUAGES CXX)
 
 # Compile to a bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
