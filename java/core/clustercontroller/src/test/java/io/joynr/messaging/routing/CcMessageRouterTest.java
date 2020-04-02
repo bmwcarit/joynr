@@ -906,6 +906,68 @@ public class CcMessageRouterTest {
     }
 
     @Test
+    public void messageWorkerUsesSameFailureActionForStubAndThrownException() throws Exception {
+        // route multicast message to two recipients
+        // call failureAction in first stub call
+        // throw exception in second stub call
+        // make sure that the message is rescheduled only once
+        // (multiple executions of the same failure action reschedule only in the first call, further calls are just logged)
+        ChannelAddress receiverAddress1 = new ChannelAddress("http://testUrl", "channelId1");
+        ChannelAddress receiverAddress2 = new ChannelAddress("http://testUrl", "channelId2");
+        prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress2);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        IMessagingStub messagingStubMock1 = mock(IMessagingStub.class);
+        IMessagingStub messagingStubMock2 = mock(IMessagingStub.class);
+        reset(middlewareMessagingStubFactoryMock);
+        doReturn(messagingStubMock1).when(middlewareMessagingStubFactoryMock).create(receiverAddress1);
+        doReturn(messagingStubMock2).when(middlewareMessagingStubFactoryMock).create(receiverAddress2);
+
+        Answer<Void> stubAnswer = new Answer<Void>() {
+            private volatile int callCount = 0;
+
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                callCount++;
+                FailureAction failureAction = invocation.getArgumentAt(2, FailureAction.class);
+                switch (callCount) {
+                case 1:
+                    failureAction.execute(new JoynrDelayMessageException(32, "first stub call, failureAction"));
+                    break;
+                case 2:
+                    throw new JoynrDelayMessageException(32, "first stub call, thrown exception");
+                case 3:
+                    // second stub call of stub 1
+                    break;
+                case 4:
+                    // second stub call of stub 2
+                    break;
+                default:
+                    fail("expected no more calls");
+                }
+                return null;
+            }
+        };
+        doAnswer(stubAnswer).when(messagingStubMock1)
+                            .transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
+        doAnswer(stubAnswer).when(messagingStubMock2)
+                            .transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+
+        Thread.sleep(1000);
+
+        verify(messagingStubMock1, times(2)).transmit(eq(immutableMessage),
+                                                      any(SuccessAction.class),
+                                                      any(FailureAction.class));
+        verify(messagingStubMock2, times(2)).transmit(eq(immutableMessage),
+                                                      any(SuccessAction.class),
+                                                      any(FailureAction.class));
+        verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress1);
+        verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress2);
+    }
+
+    @Test
     public void setToKnownDoesNotChangeRoutingTable() {
         final String participantId = "setToKnownParticipantId";
         messageRouter.setToKnown(participantId);

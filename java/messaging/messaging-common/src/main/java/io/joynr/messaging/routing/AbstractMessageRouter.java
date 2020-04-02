@@ -491,8 +491,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
             Thread.currentThread().setName("joynrMessageWorker-" + number);
 
             while (!stopped) {
-                ImmutableMessage message;
                 DelayableImmutableMessage delayableMessage = null;
+                FailureAction failureAction = null;
 
                 try {
                     delayableMessage = messageQueue.poll(1000, TimeUnit.MILLISECONDS);
@@ -501,7 +501,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                         continue;
                     }
 
-                    message = delayableMessage.getMessage();
+                    ImmutableMessage message = delayableMessage.getMessage();
                     logger.trace("Starting processing of message {}", message);
                     checkExpiry(message);
 
@@ -523,7 +523,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     // Open issue:
                     // If only some stub calls fail, the rescheduled message will be sent to all its recipients again,
                     // no matter if an earlier transmission attempt was already successful or not.
-                    FailureAction failureAction = createFailureAction(delayableMessage);
+                    failureAction = createFailureAction(delayableMessage);
                     for (Address address : addresses) {
                         logger.trace(">>>>> SEND message {} to address {}", message.getId(), address);
 
@@ -535,8 +535,15 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     Thread.currentThread().interrupt();
                     return;
                 } catch (Exception error) {
+                    if (delayableMessage == null) {
+                        logger.error("error in scheduled message router thread: {}, delayableMessage == null, continuing.",
+                                     error.getMessage());
+                        continue;
+                    }
                     logger.error("error in scheduled message router thread: {}", error.getMessage());
-                    FailureAction failureAction = createFailureAction(delayableMessage);
+                    if (failureAction == null) {
+                        failureAction = createFailureAction(delayableMessage);
+                    }
                     failureAction.execute(error);
                 }
             }
