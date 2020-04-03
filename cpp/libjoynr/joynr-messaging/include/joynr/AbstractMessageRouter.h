@@ -219,6 +219,8 @@ protected:
     const std::chrono::milliseconds _messageQueueCleanerTimerPeriodMs;
     SteadyTimer _routingTableCleanerTimer;
     std::vector<std::shared_ptr<ITransportStatus>> _transportStatuses;
+    bool _printRoutedMessages;
+    std::uint32_t _routedMessagePrintIntervalS;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AbstractMessageRouter);
@@ -229,6 +231,7 @@ private:
     std::atomic<bool> _isShuttingDown;
     std::atomic<std::uint64_t> _numberOfRoutedMessages;
     const std::uint64_t _maxAclRetryIntervalMs;
+    std::uint32_t _messageCleaningCycleCounter;
 };
 
 /**

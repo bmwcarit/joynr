@@ -88,6 +88,7 @@ LibJoynrMessageRouter::LibJoynrMessageRouter(
           _parentClusterControllerReplyToAddress(),
           _DEFAULT_IS_GLOBALLY_VISIBLE(false)
 {
+    _printRoutedMessages = false;
 }
 
 void LibJoynrMessageRouter::shutdown()

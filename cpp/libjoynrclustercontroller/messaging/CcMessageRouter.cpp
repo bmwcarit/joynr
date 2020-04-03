@@ -168,6 +168,8 @@ CcMessageRouter::CcMessageRouter(
           _ownGlobalAddress(ownGlobalAddress),
           _messageSender()
 {
+    _printRoutedMessages = true;
+    _routedMessagePrintIntervalS = clusterControllerSettings.getRoutedMessagePrintIntervalS();
     _messageNotificationProvider->addBroadcastFilter(
             std::make_shared<MessageQueuedForDeliveryBroadcastFilter>());
 }

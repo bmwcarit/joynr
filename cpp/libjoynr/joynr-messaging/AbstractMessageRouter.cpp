@@ -78,11 +78,14 @@ AbstractMessageRouter::AbstractMessageRouter(
           _messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
           _routingTableCleanerTimer(ioService),
           _transportStatuses(std::move(transportStatuses)),
+          _printRoutedMessages(false),
+          _routedMessagePrintIntervalS(10),
           _isShuttingDown(false),
           _numberOfRoutedMessages(0),
           _maxAclRetryIntervalMs(
                   60 * 60 *
-                  1000) // Max retry value is empirical and should practically fit many use-case
+                  1000), // Max retry value is empirical and should practically fit many use-case
+          _messageCleaningCycleCounter(0)
 {
 }
 
@@ -381,12 +384,16 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
         const boost::system::error_code& errorCode)
 {
     if (!errorCode) {
+        _messageCleaningCycleCounter++;
         std::stringstream thisAsHexString;
         thisAsHexString << static_cast<void*>(thisSharedPtr.get());
-        JOYNR_LOG_INFO(logger(),
-                       "#routedMessages[this={}]: {}",
-                       thisAsHexString.str(),
-                       thisSharedPtr->_numberOfRoutedMessages);
+        if (_printRoutedMessages && _messageCleaningCycleCounter >= 10) {
+            JOYNR_LOG_INFO(logger(),
+                           "#routedMessages[this={}]: {}",
+                           thisAsHexString.str(),
+                           thisSharedPtr->_numberOfRoutedMessages);
+            _messageCleaningCycleCounter = 0;
+        }
         WriteLocker lock(thisSharedPtr->_messageQueueRetryLock);
         thisSharedPtr->_messageQueue->removeOutdatedMessages();
         thisSharedPtr->_transportNotAvailableQueue->removeOutdatedMessages();
