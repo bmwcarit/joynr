@@ -183,6 +183,11 @@ void ClusterControllerSettings::checkSettings()
                             SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID());
         }
     }
+
+    if (!_settings.contains(SETTING_ROUTED_MESSAGE_PRINT_INTERVAL_S())) {
+        _settings.set(SETTING_ROUTED_MESSAGE_PRINT_INTERVAL_S(),
+                      DEFAULT_ROUTED_MESSAGE_PRINT_INTERVAL_S());
+    }
 }
 
 const std::string& ClusterControllerSettings::
@@ -355,6 +360,12 @@ const std::string& ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPD
     return value;
 }
 
+const std::string& ClusterControllerSettings::SETTING_ROUTED_MESSAGE_PRINT_INTERVAL_S()
+{
+    static const std::string value("cluster-controller/routed-messages-print-interval-s");
+    return value;
+}
+
 int ClusterControllerSettings::DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS()
 {
     return 60 * 60 * 1000; // 1 hour
@@ -458,6 +469,11 @@ const std::string& ClusterControllerSettings::DEFAULT_CLUSTERCONTROLLER_SETTINGS
 {
     static const std::string value("default-clustercontroller.settings");
     return value;
+}
+
+int ClusterControllerSettings::DEFAULT_ROUTED_MESSAGE_PRINT_INTERVAL_S()
+{
+    return 10; // 10 seconds
 }
 
 std::string ClusterControllerSettings::getMulticastReceiverDirectoryPersistenceFilename() const
@@ -798,6 +814,11 @@ void ClusterControllerSettings::setAclEntriesDirectory(const std::string& direct
 std::string ClusterControllerSettings::getAclEntriesDirectory() const
 {
     return _settings.get<std::string>(SETTING_ACL_ENTRIES_DIRECTORY());
+}
+
+int ClusterControllerSettings::getRoutedMessagePrintIntervalS() const
+{
+    return _settings.get<int>(SETTING_ROUTED_MESSAGE_PRINT_INTERVAL_S());
 }
 
 bool ClusterControllerSettings::enableAccessController() const

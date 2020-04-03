@@ -69,6 +69,7 @@ public:
     SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID();
     static const std::string& SETTING_ACL_ENTRIES_DIRECTORY();
     static const std::string& SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED();
+    static const std::string& SETTING_ROUTED_MESSAGE_PRINT_INTERVAL_S();
 
     static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
@@ -93,6 +94,7 @@ public:
     static std::uint64_t DEFAULT_MESSAGE_QUEUE_LIMIT_BYTES();
     static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES();
     static bool DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED();
+    static int DEFAULT_ROUTED_MESSAGE_PRINT_INTERVAL_S();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -197,6 +199,8 @@ public:
 
     void setAclEntriesDirectory(const std::string& directoryPath);
     std::string getAclEntriesDirectory() const;
+
+    int getRoutedMessagePrintIntervalS() const;
 
     void printSettings() const;
 
