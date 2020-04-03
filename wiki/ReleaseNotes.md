@@ -25,6 +25,8 @@ None.
 * **[TS]** Introduced ArbitrationConstants to be used for arbitration strategies `Keyword` and
   `FixedParticipant`, for more details see
   [JavaScript documentation](javascript.md#the-discovery-quality-of-service).
+* **[C++]** Routed messages are now only printed in the cluster controller, with a configurable
+  interval.
 
 ## Configuration property changes
 * **[Java, JEE]** Introduced the `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` boolean property, which
@@ -41,6 +43,8 @@ None.
 * **[Java]** Renamed property `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISISTENCE_FILE,` to
   `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,`, fixing a typo.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
+* **[C++]** Added setting `cluster-controller/routed-messages-print-interval-s` for configuring
+  the interval in seconds, in which the cluster controller prints the total routed messages.
 
 # joynr 1.13.0
 
