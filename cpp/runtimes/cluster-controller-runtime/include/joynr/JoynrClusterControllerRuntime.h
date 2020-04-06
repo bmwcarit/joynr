@@ -39,6 +39,7 @@
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/SystemServicesSettings.h"
+#include "joynr/UdsSettings.h"
 #include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/CustomParameter.h"
@@ -177,6 +178,7 @@ protected:
     std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
     ClusterControllerSettings _clusterControllerSettings;
 
+    UdsSettings _udsSettings;
     WebSocketSettings _wsSettings;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsCcMessagingSkeleton;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsTLSCcMessagingSkeleton;

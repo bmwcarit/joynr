@@ -26,6 +26,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"
         "websocket-libjoynr-non-tls.settings"
+        "uds-cc.settings"
+        "uds-libjoynr.settings"
         "CCSettingsWithAccessControlDisabled.settings"
         "CCSettingsWithAccessControlEnabled.settings"
         "CCSettingsWithAccessControlEnabledAndAclFilePathSet.settings"
@@ -297,6 +299,7 @@ if(${BUILD_UNIT_TESTS})
         GLOB g_UnitTests_SOURCES
         "unit-tests/*.cpp"
         "unit-tests/mqtt/*.cpp"
+        "unit-tests/uds/*.cpp"
         "unit-tests/websocket/*.cpp"
         "unit-tests/jsonserializer/*.cpp"
         "unit-tests/serializer/*.cpp"

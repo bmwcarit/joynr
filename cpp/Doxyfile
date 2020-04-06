@@ -1237,6 +1237,8 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/subscription/SubscriptionRequestInformation.cpp \
                          libjoynr/subscription/SubscriptionRequestInformation.h \
                          libjoynr/subscription/SubscriptionStop.cpp \
+                         libjoynr/uds/UdsSettings.cpp \
+                         libjoynr/uds/include/joynr/UdsSettings.h \
                          libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.cpp \
                          libjoynr/websocket/WebSocketLibJoynrMessagingSkeleton.h \
                          libjoynr/websocket/WebSocketMessagingStub.cpp \

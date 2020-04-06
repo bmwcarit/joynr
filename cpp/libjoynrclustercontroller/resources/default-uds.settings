@@ -1,0 +1,3 @@
+[uds]
+socket-path=/var/run/joynr/cluster-controller.sock
+reconnect-sleep-time-ms=500

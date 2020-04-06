@@ -145,6 +145,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _libjoynrSettings(*(this->_settings)),
           _localDomainAccessController(nullptr),
           _clusterControllerSettings(*(this->_settings)),
+          _udsSettings(*(this->_settings)),
           _wsSettings(*(this->_settings)),
           _wsCcMessagingSkeleton(nullptr),
           _wsTLSCcMessagingSkeleton(nullptr),

@@ -9,6 +9,7 @@ add_subdirectory(basemodel)
 add_subdirectory(capabilities)
 add_subdirectory(joynr-messaging)
 add_subdirectory(in-process)
+add_subdirectory(uds)
 add_subdirectory(websocket)
 
 add_library(${PROJECT_NAME} SHARED "")
@@ -25,6 +26,7 @@ target_link_objlibraries(${PROJECT_NAME}
     PUBLIC Joynr::Capabilities
     PUBLIC Joynr::Messaging
     PUBLIC Joynr::InProcessMessaging
+    PUBLIC Joynr::Uds
     PUBLIC Joynr::WebSocket
 )
 

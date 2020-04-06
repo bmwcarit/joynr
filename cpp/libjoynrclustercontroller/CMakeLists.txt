@@ -101,6 +101,16 @@ if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
         @ONLY
     )
     configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-uds.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-uds.settings
+        @ONLY
+    )
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-uds.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/resources/default-uds.settings
+        @ONLY
+    )
+    configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/resources/default-websocket.settings
         @ONLY
@@ -128,6 +138,11 @@ else()
         @ONLY
     )
     configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-uds.settings
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-uds.settings
+        @ONLY
+    )
+    configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/resources/default-websocket.settings
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
         @ONLY
@@ -141,6 +156,7 @@ else()
     install(
         FILES
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-uds.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-websocket.settings
             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-clustercontroller.settings
         DESTINATION ${JOYNR_INSTALL_FULL_SYSCONFDIR}
