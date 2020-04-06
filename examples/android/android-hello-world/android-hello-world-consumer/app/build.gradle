@@ -20,7 +20,7 @@ android {
         }
     }
 
-    sourceSets.main.java { srcDirs = ["src/main/java", "src/main/generated-java"]}
+    sourceSets.main.java { srcDirs = ["src/main/java", "src/main/generated-java"] }
 
 
 }
@@ -32,4 +32,3 @@ dependencies {
 
     implementation "io.joynr.android:libjoynr-android-websocket-runtime:$rootProject.joynrVersion"
 }
-

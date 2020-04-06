@@ -101,6 +101,8 @@ task copyJarFilesToBuildDir(type: Copy) {
     into('build/libs/')
     include('classes.jar')
     rename('classes.jar', "libjoynr-android-websocket-runtime-${version}.jar")
+    outputs.file("libjoynr-android-websocket-runtime-${version}.jar")
+    outputs.upToDateWhen { false }
 }
 
 build.finalizedBy copyJarFilesToBuildDir

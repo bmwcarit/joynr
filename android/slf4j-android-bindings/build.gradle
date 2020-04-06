@@ -66,6 +66,8 @@ task copyJarFilesToBuildDir(type: Copy) {
     into('build/libs/')
     include('classes.jar')
     rename('classes.jar', "slf4j-android-bindings-${version}.jar")
+    outputs.file("slf4j-android-bindings-${version}.jar")
+    outputs.upToDateWhen { false }
 }
 
 build.finalizedBy copyJarFilesToBuildDir
