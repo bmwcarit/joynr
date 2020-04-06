@@ -387,12 +387,12 @@ void AbstractMessageRouter::onMessageCleanerTimerExpired(
         _messageCleaningCycleCounter++;
         std::stringstream thisAsHexString;
         thisAsHexString << static_cast<void*>(thisSharedPtr.get());
-        if (_printRoutedMessages && _messageCleaningCycleCounter >= 10) {
+        if (_printRoutedMessages &&
+            _messageCleaningCycleCounter % _routedMessagePrintIntervalS == 0) {
             JOYNR_LOG_INFO(logger(),
                            "#routedMessages[this={}]: {}",
                            thisAsHexString.str(),
                            thisSharedPtr->_numberOfRoutedMessages);
-            _messageCleaningCycleCounter = 0;
         }
         WriteLocker lock(thisSharedPtr->_messageQueueRetryLock);
         thisSharedPtr->_messageQueue->removeOutdatedMessages();
