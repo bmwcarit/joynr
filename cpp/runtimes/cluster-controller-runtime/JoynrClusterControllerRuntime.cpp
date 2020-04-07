@@ -146,6 +146,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _localDomainAccessController(nullptr),
           _clusterControllerSettings(*(this->_settings)),
           _udsSettings(*(this->_settings)),
+          // TODO
+          // _udsCcMessagingSkeleton(nullptr),
           _wsSettings(*(this->_settings)),
           _wsCcMessagingSkeleton(nullptr),
           _wsTLSCcMessagingSkeleton(nullptr),
@@ -154,6 +156,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _doMqttMessaging(false),
           _doHttpMessaging(false),
           _wsMessagingStubFactory(),
+          // TODO
+          // _udsMessagingStubFactory(),
           _multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
           _ccMessageRouter(nullptr),
@@ -233,6 +237,7 @@ void JoynrClusterControllerRuntime::init()
     _messagingSettings.printSettings();
     _libjoynrSettings.printSettings();
     _wsSettings.printSettings();
+    _udsSettings.printSettings();
 
     fillAvailableGbidsVector();
 
@@ -459,14 +464,28 @@ void JoynrClusterControllerRuntime::init()
                                                 isGloballyVisible);
     }
 
-    // setup CC WebSocket interface
-    _wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
-    _wsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
-        messagingStubFactory->remove(destinationAddress);
-    });
+    if (_clusterControllerSettings.isWebSocketEnabled()) {
+        // setup CC WebSocket interface
+        _wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
+        _wsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
+                const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                        destinationAddress) { messagingStubFactory->remove(destinationAddress); });
 
-    messagingStubFactory->registerStubFactory(_wsMessagingStubFactory);
+        messagingStubFactory->registerStubFactory(_wsMessagingStubFactory);
+    }
+
+    if (_clusterControllerSettings.isUdsEnabled()) {
+        // TODO setup CC Uds interface
+        JOYNR_LOG_INFO(logger(), "Uds not implemented yet.");
+        //_udsMessagingStubFactory = std::make_shared<UdsMessagingStubFactory>();
+        //_udsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
+        //        const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+        //        destinationAddress) {
+        //    messagingStubFactory->remove(destinationAddress);
+        //});
+
+        // messagingStubFactory->registerStubFactory(_udsMessagingStubFactory);
+    }
 
     /* LibJoynr */
     assert(_ccMessageRouter);
@@ -891,52 +910,58 @@ void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()
 
 void JoynrClusterControllerRuntime::startLocalCommunication()
 {
-    if (_clusterControllerSettings.isWsTLSPortSet()) {
-        std::string certificateAuthorityPemFilename =
-                _wsSettings.getCertificateAuthorityPemFilename();
-        std::string certificatePemFilename = _wsSettings.getCertificatePemFilename();
-        std::string privateKeyPemFilename = _wsSettings.getPrivateKeyPemFilename();
+    if (_clusterControllerSettings.isWebSocketEnabled()) {
+        if (_clusterControllerSettings.isWsTLSPortSet()) {
+            std::string certificateAuthorityPemFilename =
+                    _wsSettings.getCertificateAuthorityPemFilename();
+            std::string certificatePemFilename = _wsSettings.getCertificatePemFilename();
+            std::string privateKeyPemFilename = _wsSettings.getPrivateKeyPemFilename();
 
-        if (checkAndLogCryptoFileExistence(certificateAuthorityPemFilename,
-                                           certificatePemFilename,
-                                           privateKeyPemFilename,
-                                           logger())) {
-            JOYNR_LOG_INFO(logger(), "Using TLS connection");
+            if (checkAndLogCryptoFileExistence(certificateAuthorityPemFilename,
+                                               certificatePemFilename,
+                                               privateKeyPemFilename,
+                                               logger())) {
+                JOYNR_LOG_INFO(logger(), "Using TLS connection");
 
+                system::RoutingTypes::WebSocketAddress wsAddress(
+                        system::RoutingTypes::WebSocketProtocol::WSS,
+                        "localhost",
+                        _clusterControllerSettings.getWsTLSPort(),
+                        "");
+
+                bool useEncryptedTls = _wsSettings.getEncryptedTlsUsage();
+
+                _wsTLSCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonTLS>(
+                        _singleThreadIOService->getIOService(),
+                        _ccMessageRouter,
+                        _wsMessagingStubFactory,
+                        wsAddress,
+                        certificateAuthorityPemFilename,
+                        certificatePemFilename,
+                        privateKeyPemFilename,
+                        useEncryptedTls);
+                _wsTLSCcMessagingSkeleton->init();
+            }
+        }
+
+        if (_clusterControllerSettings.isWsPortSet()) {
             system::RoutingTypes::WebSocketAddress wsAddress(
-                    system::RoutingTypes::WebSocketProtocol::WSS,
+                    system::RoutingTypes::WebSocketProtocol::WS,
                     "localhost",
-                    _clusterControllerSettings.getWsTLSPort(),
+                    _clusterControllerSettings.getWsPort(),
                     "");
 
-            bool useEncryptedTls = _wsSettings.getEncryptedTlsUsage();
-
-            _wsTLSCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonTLS>(
+            _wsCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonNonTLS>(
                     _singleThreadIOService->getIOService(),
                     _ccMessageRouter,
                     _wsMessagingStubFactory,
-                    wsAddress,
-                    certificateAuthorityPemFilename,
-                    certificatePemFilename,
-                    privateKeyPemFilename,
-                    useEncryptedTls);
-            _wsTLSCcMessagingSkeleton->init();
+                    wsAddress);
+            _wsCcMessagingSkeleton->init();
         }
     }
-
-    if (_clusterControllerSettings.isWsPortSet()) {
-        system::RoutingTypes::WebSocketAddress wsAddress(
-                system::RoutingTypes::WebSocketProtocol::WS,
-                "localhost",
-                _clusterControllerSettings.getWsPort(),
-                "");
-
-        _wsCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonNonTLS>(
-                _singleThreadIOService->getIOService(),
-                _ccMessageRouter,
-                _wsMessagingStubFactory,
-                wsAddress);
-        _wsCcMessagingSkeleton->init();
+    if (_clusterControllerSettings.isUdsEnabled()) {
+        // TODO: create and init UdsCcMessagingSkeleton
+        JOYNR_LOG_INFO(logger(), "local uds communication not implemented yet.");
     }
 }
 
@@ -1001,6 +1026,11 @@ void JoynrClusterControllerRuntime::shutdown()
     if (_wsTLSCcMessagingSkeleton) {
         _wsTLSCcMessagingSkeleton->shutdown();
     }
+
+    // TODO
+    // if (_udsCcMessagingSkeleton) {
+    //    _udsCcMessagingSkeleton->shutdown();
+    //}
 
     unregisterInternalSystemServiceProviders();
 

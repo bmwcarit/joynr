@@ -33,6 +33,8 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "CCSettingsWithAccessControlEnabledAndAclFilePathSet.settings"
         "CCSettingsWithGlobalDiscovery.settings"
         "CCSettingsWithMessageQueueLimit.settings"
+        "CCSettingsWithUdsDisabled.settings"
+        "CCSettingsWithWebSocketDisabled.settings"
         "HttpSystemIntegrationTest1.settings"
         "HttpSystemIntegrationTest2.settings"
         "HttpJoynrClusterControllerRuntimeTest.settings"

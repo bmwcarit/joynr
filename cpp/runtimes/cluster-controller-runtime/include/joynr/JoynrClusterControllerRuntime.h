@@ -179,6 +179,8 @@ protected:
     ClusterControllerSettings _clusterControllerSettings;
 
     UdsSettings _udsSettings;
+    // TODO
+    // std::shared_ptr<IUdsCcMessagingSkeleton> _udsCcMessagingSkeleton;
     WebSocketSettings _wsSettings;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsCcMessagingSkeleton;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsTLSCcMessagingSkeleton;
@@ -187,6 +189,8 @@ protected:
     bool _doMqttMessaging;
     bool _doHttpMessaging;
     std::shared_ptr<WebSocketMessagingStubFactory> _wsMessagingStubFactory;
+    // TODO
+    // std::shared_ptr<UdsMessagingStubFactory> _udsMessagingStubFactory;
 
     ADD_LOGGER(JoynrClusterControllerRuntime)
 

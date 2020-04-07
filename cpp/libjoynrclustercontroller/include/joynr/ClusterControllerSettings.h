@@ -62,6 +62,8 @@ public:
     static const std::string& SETTING_WS_PORT();
     static const std::string& SETTING_USE_ONLY_LDAS();
     static const std::string& SETTING_ACCESS_CONTROL_AUDIT();
+    static const std::string& SETTING_UDS_ENABLED();
+    static const std::string& SETTING_WEBSOCKET_ENABLED();
 
     static const std::string& SETTING_ACCESS_CONTROL_ENABLE();
     static const std::string& SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS();
@@ -95,6 +97,8 @@ public:
     static std::uint64_t DEFAULT_TRANSPORT_NOT_AVAILABLE_QUEUE_LIMIT_BYTES();
     static bool DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED();
     static int DEFAULT_ROUTED_MESSAGE_PRINT_INTERVAL_S();
+    static bool DEFAULT_WEBSOCKET_ENABLED();
+    static bool DEFAULT_UDS_ENABLED();
 
     explicit ClusterControllerSettings(Settings& settings);
     ClusterControllerSettings(const ClusterControllerSettings&) = default;
@@ -201,6 +205,12 @@ public:
     std::string getAclEntriesDirectory() const;
 
     int getRoutedMessagePrintIntervalS() const;
+
+    bool isWebSocketEnabled() const;
+    void setWebSocketEnabled(bool enabled);
+
+    bool isUdsEnabled() const;
+    void setUdsEnabled(bool enabled);
 
     void printSettings() const;
 

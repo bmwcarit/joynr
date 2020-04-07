@@ -134,6 +134,32 @@ TEST(ClusterControllerSettingsTest, globalCapabilitiesDirectoryCompressedMessage
               true);
 }
 
+TEST(ClusterControllerSettingsTest, webSocketDisabledFromSettingsButModifiable)
+{
+    Settings testSettings("test-resources/CCSettingsWithWebSocketDisabled.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.isWebSocketEnabled(), false);
+
+    clusterControllerSettings.setWebSocketEnabled(true);
+    EXPECT_EQ(clusterControllerSettings.isWebSocketEnabled(), true);
+}
+
+TEST(ClusterControllerSettingsTest, udsDisabledFromSettingsButModifiable)
+{
+    Settings testSettings("test-resources/CCSettingsWithUdsDisabled.settings");
+    ASSERT_TRUE(testSettings.isLoaded());
+
+    ClusterControllerSettings clusterControllerSettings(testSettings);
+
+    EXPECT_EQ(clusterControllerSettings.isUdsEnabled(), false);
+
+    clusterControllerSettings.setUdsEnabled(true);
+    EXPECT_EQ(clusterControllerSettings.isUdsEnabled(), true);
+}
+
 // check default values
 
 TEST(ClusterControllerSettingsTest, defaultMessageQueueLimitIsSet)
@@ -190,4 +216,20 @@ TEST(ClusterControllerSettingsTest,
     EXPECT_EQ(clusterControllerSettings.isGlobalCapabilitiesDirectoryCompressedMessagesEnabled(),
               ClusterControllerSettings::
                       DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
+}
+
+TEST(ClusterControllerSettingsTest, defaultWebSocketEnabledIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.isWebSocketEnabled(), true);
+}
+
+TEST(ClusterControllerSettingsTest, defaultUdsEnabledIsSet)
+{
+    Settings settings;
+    ClusterControllerSettings clusterControllerSettings(settings);
+
+    EXPECT_EQ(clusterControllerSettings.isUdsEnabled(), true);
 }

@@ -188,6 +188,13 @@ void ClusterControllerSettings::checkSettings()
         _settings.set(SETTING_ROUTED_MESSAGE_PRINT_INTERVAL_S(),
                       DEFAULT_ROUTED_MESSAGE_PRINT_INTERVAL_S());
     }
+
+    if (!_settings.contains(SETTING_WEBSOCKET_ENABLED())) {
+        _settings.set(SETTING_WEBSOCKET_ENABLED(), DEFAULT_WEBSOCKET_ENABLED());
+    }
+    if (!_settings.contains(SETTING_UDS_ENABLED())) {
+        _settings.set(SETTING_UDS_ENABLED(), DEFAULT_UDS_ENABLED());
+    }
 }
 
 const std::string& ClusterControllerSettings::
@@ -238,6 +245,18 @@ const std::string& ClusterControllerSettings::SETTING_WS_TLS_PORT()
 const std::string& ClusterControllerSettings::SETTING_WS_PORT()
 {
     static const std::string value("cluster-controller/ws-port");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_WEBSOCKET_ENABLED()
+{
+    static const std::string value("cluster-controller/ws-enabled");
+    return value;
+}
+
+const std::string& ClusterControllerSettings::SETTING_UDS_ENABLED()
+{
+    static const std::string value("cluster-controller/uds-enabled");
     return value;
 }
 
@@ -399,6 +418,16 @@ const std::string& ClusterControllerSettings::DEFAULT_MQTT_TLS_CIPHERS()
 {
     static const std::string value("");
     return value;
+}
+
+bool ClusterControllerSettings::DEFAULT_UDS_ENABLED()
+{
+    return true;
+}
+
+bool ClusterControllerSettings::DEFAULT_WEBSOCKET_ENABLED()
+{
+    return true;
 }
 
 bool ClusterControllerSettings::DEFAULT_ACCESS_CONTROL_AUDIT()
@@ -663,6 +692,26 @@ void ClusterControllerSettings::setMqttTlsCiphers(const std::string& tlsCiphers)
 std::string ClusterControllerSettings::getMqttTlsCiphers() const
 {
     return _settings.get<std::string>(SETTING_MQTT_TLS_CIPHERS());
+}
+
+void ClusterControllerSettings::setUdsEnabled(bool enabled)
+{
+    _settings.set<bool>(SETTING_UDS_ENABLED(), enabled);
+}
+
+bool ClusterControllerSettings::isUdsEnabled() const
+{
+    return _settings.get<bool>(SETTING_UDS_ENABLED());
+}
+
+void ClusterControllerSettings::setWebSocketEnabled(bool enabled)
+{
+    _settings.set<bool>(SETTING_WEBSOCKET_ENABLED(), enabled);
+}
+
+bool ClusterControllerSettings::isWebSocketEnabled() const
+{
+    return _settings.get<bool>(SETTING_WEBSOCKET_ENABLED());
 }
 
 bool ClusterControllerSettings::isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const
@@ -1017,6 +1066,10 @@ void ClusterControllerSettings::printSettings() const
     } else {
         JOYNR_LOG_INFO(logger(), "SETTING: {} = NOT SET", SETTING_MQTT_PASSWORD());
     }
+
+    JOYNR_LOG_INFO(logger(), "SETTING: {} = {}", SETTING_WEBSOCKET_ENABLED(), isWebSocketEnabled());
+
+    JOYNR_LOG_INFO(logger(), "SETTING: {} = {}", SETTING_UDS_ENABLED(), isUdsEnabled());
 
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
