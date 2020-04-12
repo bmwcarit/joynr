@@ -44,3 +44,20 @@ services:
       - PT_KEEP_ALIVE_TIMERS=60
       - PT_NUMBER_OF_CALLS=5
       - PT_NUMBER_OF_REPETITIONS=
+
+  # cpp consumer containers
+  cppapp:
+    image: "joynr-installed-with-consumer-app:latest"
+    depends_on:
+      - "mqttbroker-1"
+      - "joynrbackend-1"
+    environment:
+      - JOYNR_LOG_LEVEL=ERROR
+    volumes:
+      - ./results:/home/joynr/build
+    command: |
+     sh -c "cd /home/joynr; \
+            ./start-me-up.sh \
+            --calls 10000 \
+            --maxInflightCalls 100; \
+           "

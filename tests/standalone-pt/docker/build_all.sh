@@ -5,7 +5,7 @@
 #for BUILD_DIR in onboard joynr-backend-jee-1 joynr-backend-jee-2 joynr-pt-jee-app
 #joynr-backend-jee-db
 
-for BUILD_DIR in joynr-backend-jee-1 joynr-faked-backend-jee-1 joynr-pt-jee-app
+for BUILD_DIR in joynr-backend-jee-1 joynr-faked-backend-jee-1 joynr-pt-jee-app joynr-pt-cpp-app
 do
     pushd $BUILD_DIR
     ./build_docker_image.sh
