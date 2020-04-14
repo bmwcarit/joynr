@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.AbstractGlobalMessagingSkeleton;
 import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;

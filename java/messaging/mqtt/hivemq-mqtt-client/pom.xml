@@ -45,6 +45,11 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>status-metrics</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.hivemq</groupId>
 			<artifactId>hivemq-mqtt-client</artifactId>
 		</dependency>

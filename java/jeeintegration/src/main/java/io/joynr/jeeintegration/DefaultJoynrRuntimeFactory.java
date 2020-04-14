@@ -67,7 +67,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.provider.JoynrInterface;

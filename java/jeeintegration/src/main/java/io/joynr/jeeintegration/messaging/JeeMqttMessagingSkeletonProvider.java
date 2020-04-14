@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;

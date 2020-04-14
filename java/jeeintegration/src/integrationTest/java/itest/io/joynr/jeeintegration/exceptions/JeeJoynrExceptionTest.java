@@ -36,7 +36,7 @@ import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JeeJoynrServiceLocator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import itest.io.joynr.jeeintegration.JeeIntegrationJoynrTestConfigurationProvider;
 

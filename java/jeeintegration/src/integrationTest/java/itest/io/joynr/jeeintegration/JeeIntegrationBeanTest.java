@@ -46,11 +46,11 @@ import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.jeeintegration.JoynrStatusMetrics;
-import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
-import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.JoynrInjectionConstants;
 

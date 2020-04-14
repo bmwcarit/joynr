@@ -34,5 +34,6 @@
 		<module>infrastructure-common</module>
 		<module>discovery-common</module>
 		<module>access-control-common</module>
+                <module>status-metrics</module>
 	</modules>
 </project>

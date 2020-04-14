@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.jeeintegration;
+package io.joynr.statusmetrics;
+
+import java.util.List;
 
 /**
  * Can be injected to receive status metrics from joynr. These metrics are useful to monitor the state of a service.
@@ -39,4 +41,10 @@ public interface JoynrStatusMetrics {
      * The timestamp is provided as a Unix time (milliseconds since January 1, 1970 UTC (midnight)).
      */
     long getDisconnectedFromMqttBrokerSinceTimestamp();
+
+    List<ConnectionStatusMetrics> getAllConnectionStatusMetrics();
+
+    List<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid);
+
+    boolean addConnectionStatusMetrics(ConnectionStatusMetrics metrics);
 }

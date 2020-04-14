@@ -47,7 +47,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
-import io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver;
+import io.joynr.statusmetrics.MqttStatusReceiver;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 

@@ -185,6 +185,11 @@
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>status-metrics</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
