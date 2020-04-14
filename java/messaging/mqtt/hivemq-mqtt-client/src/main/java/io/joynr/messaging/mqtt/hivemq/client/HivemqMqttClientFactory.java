@@ -64,6 +64,8 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.reactivex.schedulers.Schedulers;
 
@@ -90,6 +92,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
     private final boolean cleanSession;
     private final MqttStatusReceiver mqttStatusReceiver;
+    private final JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -140,7 +143,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider,
-                                   MqttStatusReceiver mqttStatusReceiver) {
+                                   MqttStatusReceiver mqttStatusReceiver,
+                                   JoynrStatusMetricsAggregator joynrStatusMetricsAggregator) {
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
         this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
         this.mqttGbidToConnectionTimeoutSecMap = mqttGbidToConnectionTimeoutSecMap;
@@ -151,6 +155,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         receivingMqttClients = new HashMap<>(); // gbid to client
         this.cleanSession = cleanSession;
         this.mqttStatusReceiver = mqttStatusReceiver;
+        this.joynrStatusMetricsAggregator = joynrStatusMetricsAggregator;
     }
 
     @Override
@@ -200,8 +205,14 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                                           .nettyExecutor(scheduledExecutorService)
                                                                           .applicationScheduler(Schedulers.from(scheduledExecutorService))
                                                                           .build();
-        ResubscribeHandler resubscribeHandler = new ResubscribeHandler();
-        DisconnectedListener disconnectedListener = new DisconnectedListener();
+        ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
+        connectionStatusMetrics.setGbid(gbid);
+        connectionStatusMetrics.setSender(isSender);
+        connectionStatusMetrics.setReceiver(isReceiver);
+        connectionStatusMetrics.setUrl(mqttGbidToBrokerUriMap.get(gbid));
+        joynrStatusMetricsAggregator.addConnectionStatusMetrics(connectionStatusMetrics);
+        ResubscribeHandler resubscribeHandler = new ResubscribeHandler(connectionStatusMetrics);
+        DisconnectedListener disconnectedListener = new DisconnectedListener(connectionStatusMetrics);
         Mqtt5ClientBuilder clientBuilder = MqttClient.builder()
                                                      .useMqttVersion5()
                                                      .identifier(clientId)
@@ -235,7 +246,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                                        reconnectDelayMs,
                                                        isReceiver,
                                                        isSender,
-                                                       gbid);
+                                                       gbid,
+                                                       connectionStatusMetrics);
         logger.info("Created MQTT client for gbid {}, uri {}, clientId {}: {}",
                     gbid,
                     serverUri,
@@ -345,6 +357,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         private MqttStatusReceiver mqttStatusReceiver;
 
+        private ConnectionStatusMetricsImpl connectionStatusMetrics;
+
         void setClient(HivemqMqttClient client) {
             this.client = client;
         }
@@ -353,9 +367,14 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             this.mqttStatusReceiver = mqttStatusReceiver;
         }
 
+        public ResubscribeHandler(ConnectionStatusMetricsImpl connectionStatusMetrics) {
+            this.connectionStatusMetrics = connectionStatusMetrics;
+        }
+
         @Override
         public void onConnected(MqttClientConnectedContext context) {
             client.resubscribe();
+            connectionStatusMetrics.setConnected(true);
             mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
         }
 
@@ -365,7 +384,12 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         private String clientInformation;
 
+        private ConnectionStatusMetricsImpl connectionStatusMetrics;
         private MqttStatusReceiver mqttStatusReceiver;
+
+        DisconnectedListener(ConnectionStatusMetricsImpl connectionStatusMetrics) {
+            this.connectionStatusMetrics = connectionStatusMetrics;
+        }
 
         void setClientInformationString(String clientInformation) {
             this.clientInformation = clientInformation;
@@ -381,6 +405,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                         clientInformation,
                         context.getSource(),
                         context.getCause());
+            connectionStatusMetrics.setConnected(false);
+            connectionStatusMetrics.increaseConnectionDrops();
             mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
         }
 

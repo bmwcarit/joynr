@@ -43,6 +43,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
+import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 
 /**
  * This implements the {@link JoynrMqttClient} using the HiveMQ MQTT Client library.
@@ -67,6 +68,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private final String clientInformation;
     private volatile boolean shuttingDown;
     private IMqttMessagingSkeleton messagingSkeleton;
+    private ConnectionStatusMetricsImpl connectionStatusMetrics;
 
     private Map<String, Mqtt5Subscription> subscriptions = new ConcurrentHashMap<>();
 
@@ -78,7 +80,8 @@ public class HivemqMqttClient implements JoynrMqttClient {
                             int reconnectDelayMs,
                             boolean isReceiver,
                             boolean isSender,
-                            String gbid) {
+                            String gbid,
+                            ConnectionStatusMetricsImpl connectionStatusMetrics) {
         this.client = client;
         clientConfig = client.getConfig();
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
@@ -88,6 +91,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         this.isReceiver = isReceiver;
         this.isSender = isSender;
         clientInformation = createClientInformationString(gbid);
+        this.connectionStatusMetrics = connectionStatusMetrics;
         shuttingDown = false;
         if (isReceiver) {
             registerPublishCallback();
@@ -147,11 +151,12 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                         .noSessionExpiry()
                                                         .build();
                 try {
+                    connectionStatusMetrics.increaseConnectionAttempts();
                     client.connect(mqtt5Connect)
                           .timeout(connectionTimeoutSec, TimeUnit.SECONDS)
-                          .doOnSuccess(connAck -> logger.info("{}: MQTT client connected: {}.",
-                                                              clientInformation,
-                                                              connAck))
+                          .doOnSuccess(connAck -> {
+                              logger.info("{}: MQTT client connected: {}.", clientInformation, connAck);
+                          })
                           .blockingGet();
                 } catch (Exception e) {
                     logger.error("{}: Exception encountered while connecting MQTT client.", clientInformation, e);
@@ -185,15 +190,12 @@ public class HivemqMqttClient implements JoynrMqttClient {
     public synchronized void shutdown() {
         logger.info("{}: Attempting to shutdown connection.", clientInformation);
         this.shuttingDown = true;
-        client.disconnectWith()
-              .noSessionExpiry()
-              .applyDisconnect()
-              .doOnComplete(() -> logger.debug("{}: Disconnected.", clientInformation))
-              .onErrorComplete(throwable -> {
-                  logger.error("{}: Error encountered from disconnect.", clientInformation, throwable);
-                  return true;
-              })
-              .blockingAwait();
+        client.disconnectWith().noSessionExpiry().applyDisconnect().doOnComplete(() -> {
+            logger.debug("{}: Disconnected.", clientInformation);
+        }).onErrorComplete(throwable -> {
+            logger.error("{}: Error encountered from disconnect.", clientInformation, throwable);
+            return true;
+        }).blockingAwait();
     }
 
     @Override
@@ -246,6 +248,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                 failureAction.execute(new JoynrDelayMessageException("Publish failed: "
                         + publishResult.getError().get().toString()));
             } else {
+                connectionStatusMetrics.increaseSentMessages();
                 logger.trace("{}: Publishing to {}: {}bytes with qos {} succeeded: {}",
                              clientInformation,
                              topic,
@@ -325,6 +328,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     private void handleIncomingMessage(Mqtt5Publish mqtt5Publish) {
         logger.trace("{}: Incoming: {}.", clientInformation, mqtt5Publish);
+        connectionStatusMetrics.increaseReceivedMessages();
         messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(),
                                    throwable -> logger.error("{}: Unable to transmit {}",
                                                              clientInformation,

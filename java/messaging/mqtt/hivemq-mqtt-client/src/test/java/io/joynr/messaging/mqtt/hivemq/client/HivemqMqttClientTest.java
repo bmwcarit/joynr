@@ -46,6 +46,7 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PublishResult;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
+import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 import io.reactivex.Flowable;
 
 public class HivemqMqttClientTest {
@@ -75,6 +76,9 @@ public class HivemqMqttClientTest {
     private long testExpiryIntervalSec;
     private CompletableFuture<Mqtt5PublishResult> publishFuture;
 
+    @Mock
+    private ConnectionStatusMetricsImpl mockConnectionStatusMetrics;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -99,7 +103,8 @@ public class HivemqMqttClientTest {
                                       defaultReconnectDelayMs,
                                       true,
                                       true,
-                                      defaultGbid);
+                                      defaultGbid,
+                                      mockConnectionStatusMetrics);
     }
 
     @Test
