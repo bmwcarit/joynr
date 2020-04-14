@@ -1809,17 +1809,36 @@ public class <Filter>BroadcastFilter extends <Interface><Broadcast>BroadcastFilt
 
 # <a name="status_monitoring"></a> Joynr Status Monitoring
 
-Joynr provides metrics to monitor the connectivity status of the Mqtt connection
-which can be used to detect invalid states and situations which require
-a restart of an instance. In order to access this information,
+Joynr provides metrics to monitor the connectivity status of its connections which can be used to
+detect invalid states and situations which require a restart of an instance. Currently,
+ConnectionStatusMetrics are only available for HivemqMqttClient. In order to access this information,
 inject an implementation of the following interface via Guice:
+* `io.joynr.statusmetrics.JoynrStatusMetrics`
 
-* `io.joynr.messaging.mqtt.statusmetrics.MqttStatusReceiver`
-
-Joynr provides `io.joynr.messaging.mqtt.statusmetrics.DefaultMqttStatusReceiver`
+Joynr provides `io.joynr.statusmetrics.JoynrStatusMetricsAggregator`
 as implementation for this interface by default.
 
-See the documentation of the interface more information.
+Via the JoynrStatusMetrics interface, you can call the method `getConnectionStatusMetrics(gbid)`
+to retrieve a list of ConnectionStatusMetrics objects for all connections that are established
+to the specified gbid. You can also retrieve all available metrics (independent of a GBID) via the method `getAllConnectionStatusMetrics()`.  
+JoynrStatusMetrics also offers the method `getNumDroppedMessages()` that returns the accumulated
+amount of messages dropped by all connections.
+
+The ConnectionStatusMetrics class offers the following metrics:
+* boolean isSender() // Returns whether the represented connection is configured to be a sender.
+* boolean isReceiver() // Returns whether the represented connection is configured to be a receiver.
+* boolean isConnected() // Returns whether the represented connection is currently connected.
+* Instant getLastStateChange() // Returns the point in time where the connection state of the
+  represented connection last changed.
+* long getReceivedMessages() // Returns the total amount of messages received via this connection.
+* long getSentMessages() // Returns the total amount of messages sent via this connection.
+* long getConnectionDrops() // Returns the number of times this connection dropped.
+* long getConnectionAttempts() // Returns the total number of performed connection attempts on the
+  represented connection.  
+  NOTE: HivemqMqttClient currently only reports initial connection attempts. Reconnect attempts after
+  a connection loss are not available.
+
+See the documentation of the `JoynrStatusMetrics` interface for more information.
 
 # <a name="message_persistence"></a> Message Persistence
 

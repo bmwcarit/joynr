@@ -777,13 +777,14 @@ fire-and-forget semantics for outgoing messages.
 
 ## <a name="status_monitoring"></a> Joynr Status Monitoring
 
-Joynr provides metrics which can be used to detect invalid states and situations
-which require a restart of an instance. In order to access this information,
-inject an object of type ```JoynrStatusMetrics```. See the documentation of
-```JoynrStatusMetrics``` for more information.
+Joynr provides metrics which can be used to detect invalid states and situations which require a
+restart of an instance. In order to access this information, inject an object of type
+`JoynrStatusMetrics`. See the documentation of `JoynrStatusMetrics` and the
+[Java Developer Guide](java.md#status_monitoring) for more information.
 
 ```java
 import io.joynr.jeeintegration;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
 
 @Stateless
 public class MyHealthCheck {

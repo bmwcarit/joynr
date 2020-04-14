@@ -5,7 +5,12 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.14.0
 
 ## API relevant changes
-None.
+* **[Java, JEE]** Changed `JoynrStatusMetrics` to support multiple backends and separate
+  connections. `JoynrStatusMetrics` now provide additional connection information.  
+  See [Java documentation](java.md#status_monitoring) and
+  [JEE documentation](jee.md#status_monitoring) for more details.  
+  NOTE: ConnectionStatusMetrics are only available for HivemqMqttClient.
+* **[Java]** Replaced `MqttStatusReceiver` with `JoynrStatusMetrics`, see above.
 
 ## Other changes
 * **[FIDL]** Introduce new touch and removeStale methods in GlobalCapabilitiesDirectory FIDL.

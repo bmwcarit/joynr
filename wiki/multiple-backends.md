@@ -102,16 +102,15 @@ Please refer to the language specific developer guides for further details on th
 * Javascript: [JavaScript Developer Guide](wiki/javascript.md#building-a-proxy)
 
 
+## Mqtt Status Metrics for multiple backends (Java/JEE)
+
+The joynr status metrics for MQTT (Java, JEE) are retrieved via the JoynrStatusMetrics interface.
+There, you can call the method `getAllConnectionStatusMetrics()` or
+`getConnectionStatusMetrics(gbid)` to retrieve up to two ConnectionStatusMetrics objects per GBID,
+depending on whether separate sending and receiving connections are configured.  
+See [Java Developer Guide](java.md#status_monitoring) for more information.
+
 ## Known limitations and issues of multiple backends support in joynr
-
-
-### Mqtt Status Metrics are broken for multiple backends (Java/JEE)
-
-The joynr status metrics for MQTT (Java, JEE) are broken if multiple backends are configured:  
-The MQTT connection status for every backend is reported to the same status receiver. The different connections are not distinguished in the status receiver. I.e., ConnectionStatus.CONNECTED does not mean that the CC is connected to all configured backends and ConnectionStatus.NOT_CONNECTED does not mean that the CC is disconnected from all backends.
-
-Status metrics will be fixed in an upcoming release.
-
 
 ### Diamond discovery
 
