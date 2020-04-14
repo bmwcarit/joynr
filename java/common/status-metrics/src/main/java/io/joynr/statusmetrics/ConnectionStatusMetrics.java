@@ -21,103 +21,55 @@ package io.joynr.statusmetrics;
 import java.util.Date;
 import java.util.Optional;
 
-public class ConnectionStatusMetrics {
+public interface ConnectionStatusMetrics {
 
-    private Object isConnectedLock = new Object();
-    private Optional<String> gbid;
-    private String url;
+    /**
+     * @return Returns an optional containing the gbid the connection connects to.
+     */
+    Optional<String> getGbid();
 
-    private boolean isSender;
-    private boolean isReceiver;
+    /**
+     * @return Returns the broker url the connection connects to.
+     */
+    String getUrl();
 
-    private boolean isConnected;
-    private Date lastStateChange;
+    /**
+     * @return Returns whether the connection is configured for sending messages.
+     */
+    boolean isSender();
 
-    private long receivedMessages;
-    private long sentMessages;
+    /**
+     * @return Returns whether the connection is configured for receiving messages.
+     */
+    boolean isReceiver();
 
-    private long connectionDrops;
-    private long connectionAttempts;
+    /**
+     * @return Returns true if the connection is currently connected.
+     */
+    boolean isConnected();
 
-    public void setGbid(String gbid) {
-        this.gbid = Optional.of(gbid);
-    }
+    /**
+     * @return Returns the date of the last connection state change.
+     */
+    Date getLastConnectionStateChangeDate();
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+    /**
+     * @return Returns the number of messages received by this connection.
+     */
+    long getReceivedMessages();
 
-    public void setSender(boolean isSender) {
-        this.isSender = isSender;
-    }
+    /**
+     * @return Returns the number messages sent by this connection.
+     */
+    long getSentMessages();
 
-    public void setReceiver(boolean isReceiver) {
-        this.isReceiver = isReceiver;
-    }
+    /**
+     * @return Returns the number of times the connection was dropped.
+     */
+    long getConnectionDrops();
 
-    public void setConnected(boolean isConnected) {
-        synchronized (isConnectedLock) {
-            this.isConnected = isConnected;
-        }
-    }
-
-    public void setLastStateChange(Date lastStateChange) {
-        this.lastStateChange = Date.from(lastStateChange.toInstant());
-    }
-
-    public void increaseReceivedMessages() {
-        receivedMessages++;
-    }
-
-    public void increaseSentMessages() {
-        sentMessages++;
-    }
-
-    public void increaseConnectionDrops() {
-        connectionDrops++;
-    }
-
-    public void increaseConnectionAttempts() {
-        connectionAttempts++;
-    }
-
-    public Optional<String> getGbid() {
-        return gbid;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public boolean isSender() {
-        return isSender;
-    }
-
-    public boolean isReceiver() {
-        return isReceiver;
-    }
-
-    public boolean isConnected() {
-        return isConnected;
-    }
-
-    public Date getLastStateChange() {
-        return Date.from(lastStateChange.toInstant());
-    }
-
-    public long getReceivedMessages() {
-        return receivedMessages;
-    }
-
-    public long getSentMessages() {
-        return sentMessages;
-    }
-
-    public long getConnectionDrops() {
-        return connectionDrops;
-    }
-
-    public long getConnectionAttempts() {
-        return connectionAttempts;
-    }
+    /**
+     * @return Returns the number of connection attempts made with this connection.
+     */
+    long getConnectionAttempts();
 }

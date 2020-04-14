@@ -23,110 +23,49 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.ejb.Singleton;
 
 @Singleton
-public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics, MqttStatusReceiver {
-    private AtomicInteger numDiscardedMqttRequest = new AtomicInteger();
-    private Object connectionStatusChangedLock = new Object();
-    private AtomicBoolean isConnectedToMqttBroker = new AtomicBoolean();
-    private AtomicLong disconnectedFromMqttBrokerSinceTimestamp = new AtomicLong();
-    private Map<String, ConnectionStatusMetrics> connectionStatusMetricsSendersMap = new HashMap<String, ConnectionStatusMetrics>();
-    private Map<String, ConnectionStatusMetrics> connectionStatusMetricsReceiversMap = new HashMap<String, ConnectionStatusMetrics>();
-    private Map<String, ConnectionStatusMetrics> connectionStatusMetricsCombinedMap = new HashMap<String, ConnectionStatusMetrics>();
+public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics {
+    private Map<String, List<ConnectionStatusMetrics>> gbidToConnectionStatusMetricsListMap = new HashMap<String, List<ConnectionStatusMetrics>>();
 
-    @Override
-    public void notifyMessageDropped() {
-        numDiscardedMqttRequest.incrementAndGet();
-    }
-
-    @Override
-    public void notifyConnectionStatusChanged(ConnectionStatus connectionStatus) {
-        switch (connectionStatus) {
-        case CONNECTED:
-            synchronized (connectionStatusChangedLock) {
-                isConnectedToMqttBroker.set(true);
-                disconnectedFromMqttBrokerSinceTimestamp.set(-1);
-            }
-            break;
-        case NOT_CONNECTED:
-            synchronized (connectionStatusChangedLock) {
-                if (isConnectedToMqttBroker.get()) {
-                    isConnectedToMqttBroker.set(false);
-                    disconnectedFromMqttBrokerSinceTimestamp.set(System.currentTimeMillis());
-                }
-            }
-            break;
-        }
-    }
-
-    @Override
-    public int getNumDiscardedMqttRequests() {
-        return numDiscardedMqttRequest.get();
-    }
-
-    @Override
-    public boolean isConnectedToMqttBroker() {
-        return isConnectedToMqttBroker.get();
-    }
-
-    @Override
-    public long getDisconnectedFromMqttBrokerSinceTimestamp() {
-        return disconnectedFromMqttBrokerSinceTimestamp.get();
-    }
+    private volatile AtomicLong droppedMessages = new AtomicLong();
 
     @Override
     public List<ConnectionStatusMetrics> getAllConnectionStatusMetrics() {
         List<ConnectionStatusMetrics> returnList = new ArrayList<ConnectionStatusMetrics>();
-        for (Entry<String, ConnectionStatusMetrics> entry : connectionStatusMetricsCombinedMap.entrySet()) {
-            returnList.add(entry.getValue());
-        }
-        for (Entry<String, ConnectionStatusMetrics> entry : connectionStatusMetricsSendersMap.entrySet()) {
-            returnList.add(entry.getValue());
-        }
-        for (Entry<String, ConnectionStatusMetrics> entry : connectionStatusMetricsReceiversMap.entrySet()) {
-            returnList.add(entry.getValue());
+        for (Entry<String, List<ConnectionStatusMetrics>> entry : gbidToConnectionStatusMetricsListMap.entrySet()) {
+            returnList.addAll(entry.getValue());
         }
         return returnList;
     }
 
     @Override
     public List<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid) {
-        List<ConnectionStatusMetrics> returnList = new ArrayList<ConnectionStatusMetrics>();
-        if (connectionStatusMetricsCombinedMap.containsKey(gbid)) {
-            returnList.add(connectionStatusMetricsCombinedMap.get(gbid));
+        if (gbidToConnectionStatusMetricsListMap.containsKey(gbid)) {
+            return gbidToConnectionStatusMetricsListMap.get(gbid);
         }
-        if (connectionStatusMetricsSendersMap.containsKey(gbid)) {
-            returnList.add(connectionStatusMetricsSendersMap.get(gbid));
+        return new ArrayList<>();
+    }
+
+    public void addConnectionStatusMetrics(ConnectionStatusMetrics metrics) {
+        if (gbidToConnectionStatusMetricsListMap.containsKey(metrics.getGbid().get())) {
+            gbidToConnectionStatusMetricsListMap.get(metrics.getGbid().get()).add(metrics);
+        } else {
+            List<ConnectionStatusMetrics> newList = new ArrayList<>();
+            newList.add(metrics);
+            gbidToConnectionStatusMetricsListMap.put(metrics.getGbid().get(), newList);
         }
-        if (connectionStatusMetricsReceiversMap.containsKey(gbid)) {
-            returnList.add(connectionStatusMetricsReceiversMap.get(gbid));
-        }
-        return returnList;
+    }
+
+    public void notifyMessageDropped() {
+        droppedMessages.incrementAndGet();
     }
 
     @Override
-    public boolean addConnectionStatusMetrics(ConnectionStatusMetrics metrics) {
-        if (metrics.isReceiver() && metrics.isSender()) {
-            if (connectionStatusMetricsCombinedMap.containsKey(metrics.getGbid().get())) {
-                return false;
-            }
-            connectionStatusMetricsCombinedMap.put(metrics.getGbid().get(), metrics);
-        } else if (metrics.isSender()) {
-            if (connectionStatusMetricsSendersMap.containsKey(metrics.getGbid().get())) {
-                return false;
-            }
-            connectionStatusMetricsSendersMap.put(metrics.getGbid().get(), metrics);
-        } else if (metrics.isReceiver()) {
-            if (connectionStatusMetricsReceiversMap.containsKey(metrics.getGbid().get())) {
-                return false;
-            }
-            connectionStatusMetricsReceiversMap.put(metrics.getGbid().get(), metrics);
-        }
-        return false;
+    public long getNumDroppedMessages() {
+        return droppedMessages.get();
     }
 }

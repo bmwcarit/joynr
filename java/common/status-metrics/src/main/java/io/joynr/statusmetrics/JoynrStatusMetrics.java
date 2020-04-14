@@ -25,26 +25,17 @@ import java.util.List;
  */
 public interface JoynrStatusMetrics {
     /**
-     * @return Returns the number of request messages which were discarded because the message queue reached its upper limit.
+     * @return Returns an unfiltered list with all status metrics objects.
      */
-    int getNumDiscardedMqttRequests();
-
-    /**
-     * @return Returns whether or not there is a valid connection to the MQTT broker.
-     */
-    boolean isConnectedToMqttBroker();
-
-    /**
-     * @return Returns a timestamp at which the MQTT connection became unavailable. If the connection has never been
-     * established because the instance just started, the method returns the timestamp of the first connection attempt.
-     * When there is an active connection, the return value is undefined.
-     * The timestamp is provided as a Unix time (milliseconds since January 1, 1970 UTC (midnight)).
-     */
-    long getDisconnectedFromMqttBrokerSinceTimestamp();
-
     List<ConnectionStatusMetrics> getAllConnectionStatusMetrics();
 
+    /**
+     * @return Returns a list with the status metric objects for the given gbid.
+     */
     List<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid);
 
-    boolean addConnectionStatusMetrics(ConnectionStatusMetrics metrics);
+    /**
+     * @return Returns the number of request messages which were discarded because the message queue reached its upper limit.
+     */
+    long getNumDroppedMessages();
 }
