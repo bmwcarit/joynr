@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.inject.Singleton;
+import javax.ejb.Singleton;
 
 @Singleton
 public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics, MqttStatusReceiver {

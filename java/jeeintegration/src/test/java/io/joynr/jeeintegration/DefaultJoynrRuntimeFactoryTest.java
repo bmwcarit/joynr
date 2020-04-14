@@ -58,6 +58,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
 import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
@@ -160,7 +161,8 @@ public class DefaultJoynrRuntimeFactoryTest {
                                                  mqttClientIdProviderInstance,
                                                  messagePersisterInstance,
                                                  beanManager,
-                                                 mock(MqttStatusReceiver.class));
+                                                 mock(MqttStatusReceiver.class),
+                                                 mock(JoynrStatusMetrics.class));
         scheduledExecutorService = mock(ScheduledExecutorService.class);
         Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
         executorField.setAccessible(true);

@@ -67,6 +67,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
 import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
@@ -102,6 +103,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private BeanManager beanManager;
 
     private MqttStatusReceiver mqttStatusReceiver;
+
+    private JoynrStatusMetrics joynrStatusMetrics;
 
     /**
      * The scheduled executor service to use for providing to the joynr runtime.
@@ -140,7 +143,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
                                       @JoynrMessagePersister Instance<MessagePersister> messagePersister,
                                       BeanManager beanManager,
-                                      MqttStatusReceiver mqttStatusReceiver) {
+                                      MqttStatusReceiver mqttStatusReceiver,
+                                      JoynrStatusMetrics joynrStatusMetrics) {
         // CHECKSTYLE:ON
         if (joynrLocalDomain.isUnsatisfied()) {
             String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
@@ -205,6 +209,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
         this.beanManager = beanManager;
         this.mqttStatusReceiver = mqttStatusReceiver;
+        this.joynrStatusMetrics = joynrStatusMetrics;
     }
 
     @Override
@@ -250,6 +255,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                     }
 
                     bind(MqttStatusReceiver.class).toInstance(mqttStatusReceiver);
+                    bind(JoynrStatusMetrics.class).toInstance(joynrStatusMetrics);
                 }
             });
 
