@@ -19,45 +19,41 @@
 package io.joynr.statusmetrics;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.ejb.Singleton;
 
 @Singleton
 public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics {
-    private Map<String, List<ConnectionStatusMetrics>> gbidToConnectionStatusMetricsListMap = new HashMap<String, List<ConnectionStatusMetrics>>();
+    private List<ConnectionStatusMetrics> connectionStatusMetricsList = new CopyOnWriteArrayList<ConnectionStatusMetrics>();
 
     private volatile AtomicLong droppedMessages = new AtomicLong();
 
     @Override
-    public List<ConnectionStatusMetrics> getAllConnectionStatusMetrics() {
-        List<ConnectionStatusMetrics> returnList = new ArrayList<ConnectionStatusMetrics>();
-        for (Entry<String, List<ConnectionStatusMetrics>> entry : gbidToConnectionStatusMetricsListMap.entrySet()) {
-            returnList.addAll(entry.getValue());
-        }
+    public Collection<ConnectionStatusMetrics> getAllConnectionStatusMetrics() {
+        List<ConnectionStatusMetrics> returnList = new ArrayList<ConnectionStatusMetrics>(connectionStatusMetricsList);
         return returnList;
     }
 
     @Override
-    public List<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid) {
-        if (gbidToConnectionStatusMetricsListMap.containsKey(gbid)) {
-            return gbidToConnectionStatusMetricsListMap.get(gbid);
+    public Collection<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid) {
+        List<ConnectionStatusMetrics> returnList = new ArrayList<ConnectionStatusMetrics>();
+        for (ConnectionStatusMetrics metrics : connectionStatusMetricsList) {
+            if (metrics.getGbid().isPresent() && metrics.getGbid().get().equals(gbid)) {
+                returnList.add(metrics);
+            }
         }
-        return new ArrayList<>();
+        return returnList;
     }
 
     public void addConnectionStatusMetrics(ConnectionStatusMetrics metrics) {
-        if (gbidToConnectionStatusMetricsListMap.containsKey(metrics.getGbid().get())) {
-            gbidToConnectionStatusMetricsListMap.get(metrics.getGbid().get()).add(metrics);
-        } else {
-            List<ConnectionStatusMetrics> newList = new ArrayList<>();
-            newList.add(metrics);
-            gbidToConnectionStatusMetricsListMap.put(metrics.getGbid().get(), newList);
-        }
+        connectionStatusMetricsList.add(metrics);
     }
 
     public void notifyMessageDropped() {

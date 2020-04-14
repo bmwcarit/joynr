@@ -62,7 +62,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.MqttStatusReceiver;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.ImmutableMessage;
@@ -97,7 +97,7 @@ public class MqttMessagingSkeletonTest {
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Mock
-    private MqttStatusReceiver mqttStatusReceiver;
+    private JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
 
     @Before
     public void setup() throws Exception {
@@ -111,7 +111,7 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mqttStatusReceiver,
+                                            joynrStatusMetricsAggregator,
                                             ownGbid,
                                             routingTable);
         when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClientReceiver);
@@ -222,7 +222,7 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             rawMessagingPreprocessorMock,
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mqttStatusReceiver,
+                                            joynrStatusMetricsAggregator,
                                             ownGbid,
                                             routingTable);
 
@@ -250,7 +250,7 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(Arrays.asList(processorMock)),
-                                            mqttStatusReceiver,
+                                            joynrStatusMetricsAggregator,
                                             ownGbid,
                                             routingTable);
 
@@ -304,7 +304,7 @@ public class MqttMessagingSkeletonTest {
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
         subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
 
-        verify(mqttStatusReceiver, times(1)).notifyMessageDropped();
+        verify(joynrStatusMetricsAggregator, times(1)).notifyMessageDropped();
     }
 
     @Test
@@ -366,7 +366,7 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mqttStatusReceiver,
+                                            joynrStatusMetricsAggregator,
                                             ownGbid,
                                             routingTable);
         subject.init();

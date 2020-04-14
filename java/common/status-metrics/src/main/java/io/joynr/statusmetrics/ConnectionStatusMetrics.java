@@ -18,9 +18,13 @@
  */
 package io.joynr.statusmetrics;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Optional;
 
+/**
+ * Status metrics for a single connection.
+ * Currently, only HivemqMqttClient provides ConnectionStatusMetrics.
+ */
 public interface ConnectionStatusMetrics {
 
     /**
@@ -29,7 +33,7 @@ public interface ConnectionStatusMetrics {
     Optional<String> getGbid();
 
     /**
-     * @return Returns the broker url the connection connects to.
+     * @return Returns the url of the connection.
      */
     String getUrl();
 
@@ -51,25 +55,27 @@ public interface ConnectionStatusMetrics {
     /**
      * @return Returns the date of the last connection state change.
      */
-    Date getLastConnectionStateChangeDate();
+    Instant getLastConnectionStateChangeDate();
 
     /**
-     * @return Returns the number of messages received by this connection.
+     * @return Returns the number of messages received via this connection.
      */
     long getReceivedMessages();
 
     /**
-     * @return Returns the number messages sent by this connection.
+     * @return Returns the number of messages sent via this connection.
      */
     long getSentMessages();
 
     /**
-     * @return Returns the number of times the connection was dropped.
+     * @return Returns the number of times the connection was lost.
      */
     long getConnectionDrops();
 
     /**
-     * @return Returns the number of connection attempts made with this connection.
+     * @return Returns the number of connection attempts made with this connection.<br/>
+     *     <b>NOTE:</b> HivemqMqttClient currently only reports initial connection attempts. (Automatic) Reconnect attempts
+     *     after a connection loss are not available.
      */
     long getConnectionAttempts();
 }

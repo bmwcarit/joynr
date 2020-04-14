@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.MqttStatusReceiver;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.messaging.routing.AbstractGlobalMessagingSkeleton;
 import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
@@ -63,7 +63,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     private final Set<JoynrMessageProcessor> messageProcessors;
     private final Set<String> incomingMqttRequests;
     private final AtomicLong droppedMessagesCount;
-    private final MqttStatusReceiver mqttStatusReceiver;
+    private final JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
     private final String ownGbid;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -74,7 +74,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors,
-                                 MqttStatusReceiver mqttStatusReceiver,
+                                 JoynrStatusMetricsAggregator joynrStatusMetricsAggregator,
                                  String ownGbid,
                                  RoutingTable routingTable) {
         super(routingTable);
@@ -88,7 +88,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
         this.droppedMessagesCount = new AtomicLong();
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
-        this.mqttStatusReceiver = mqttStatusReceiver;
+        this.joynrStatusMetricsAggregator = joynrStatusMetricsAggregator;
         this.ownGbid = ownGbid;
     }
 
@@ -166,7 +166,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
 
             if (dropMessage(message)) {
                 droppedMessagesCount.incrementAndGet();
-                mqttStatusReceiver.notifyMessageDropped();
+                joynrStatusMetricsAggregator.notifyMessageDropped();
                 return;
             }
 

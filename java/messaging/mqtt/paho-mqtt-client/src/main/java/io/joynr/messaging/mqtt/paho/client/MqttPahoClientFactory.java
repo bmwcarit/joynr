@@ -34,7 +34,6 @@ import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
-import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
@@ -56,7 +55,6 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
     private boolean separateConnections;
     private ScheduledExecutorService scheduledExecutorService;
     private MqttClientIdProvider clientIdProvider;
-    private MqttStatusReceiver mqttStatusReceiver;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -103,7 +101,6 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                  @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                  @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                  MqttClientIdProvider mqttClientIdProvider,
-                                 MqttStatusReceiver mqttStatusReceiver,
                                  ShutdownNotifier shutdownNotifier) {
         this.reconnectSleepMs = reconnectSleepMs;
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
@@ -116,7 +113,6 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
         this.separateConnections = separateConnections;
         this.scheduledExecutorService = scheduledExecutorService;
         this.clientIdProvider = mqttClientIdProvider;
-        this.mqttStatusReceiver = mqttStatusReceiver;
         shutdownNotifier.registerForShutdown(this);
         sendingMqttClients = new HashMap<>(); // gbid to client
         receivingMqttClients = new HashMap<>(); // gbid to client
@@ -202,8 +198,7 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                             keyStorePWD,
                                             trustStorePWD,
                                             username,
-                                            password,
-                                            mqttStatusReceiver);
+                                            password);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

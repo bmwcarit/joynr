@@ -18,21 +18,21 @@
  */
 package io.joynr.statusmetrics;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Can be injected to receive status metrics from joynr. These metrics are useful to monitor the state of a service.
  */
 public interface JoynrStatusMetrics {
     /**
-     * @return Returns an unfiltered list with all status metrics objects.
+     * @return Returns an unfiltered collection with all status metrics objects.
      */
-    List<ConnectionStatusMetrics> getAllConnectionStatusMetrics();
+    Collection<ConnectionStatusMetrics> getAllConnectionStatusMetrics();
 
     /**
-     * @return Returns a list with the status metric objects for the given gbid.
+     * @return Returns a collection with the status metrics objects for the given gbid.
      */
-    List<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid);
+    Collection<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid);
 
     /**
      * @return Returns the number of request messages which were discarded because the message queue reached its upper limit.

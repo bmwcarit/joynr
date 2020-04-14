@@ -36,7 +36,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
 
@@ -60,8 +59,6 @@ public class MqttPahoClientFactoryTest {
 
     @Mock
     private MqttClientIdProvider mqttClientIdProvider;
-    @Mock
-    private MqttStatusReceiver mqttStatusReceiver;
     @Mock
     private ShutdownNotifier shutdownNotifier;
 
@@ -113,7 +110,6 @@ public class MqttPahoClientFactoryTest {
                                             separateConnections,
                                             executorService,
                                             mqttClientIdProvider,
-                                            mqttStatusReceiver,
                                             shutdownNotifier);
     }
 

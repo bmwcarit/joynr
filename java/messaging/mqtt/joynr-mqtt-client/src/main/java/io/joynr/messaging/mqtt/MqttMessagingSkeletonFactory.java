@@ -22,7 +22,7 @@ import java.util.Set;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.MqttStatusReceiver;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -38,7 +38,7 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                         MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                         RawMessagingPreprocessor rawMessagingPreprocessor,
                                         Set<JoynrMessageProcessor> messageProcessors,
-                                        MqttStatusReceiver mqttStatusReceiver,
+                                        JoynrStatusMetricsAggregator joynrStatusMetricsAggregator,
                                         RoutingTable routingTable) {
         super();
         for (String gbid : gbids) {
@@ -50,7 +50,7 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                                                  mqttTopicPrefixProvider,
                                                                  rawMessagingPreprocessor,
                                                                  messageProcessors,
-                                                                 mqttStatusReceiver,
+                                                                 joynrStatusMetricsAggregator,
                                                                  gbid,
                                                                  routingTable));
         }

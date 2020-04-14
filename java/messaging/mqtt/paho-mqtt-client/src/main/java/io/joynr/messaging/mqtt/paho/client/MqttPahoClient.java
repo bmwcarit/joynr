@@ -47,7 +47,6 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
-import io.joynr.statusmetrics.MqttStatusReceiver;
 
 public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
@@ -72,7 +71,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
     private String trustStorePWD;
     private String username;
     private String password;
-    private MqttStatusReceiver mqttStatusReceiver;
     private boolean separateConnections;
     private boolean isSecureConnection;
 
@@ -104,8 +102,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                           String keyStorePWD,
                           String trustStorePWD,
                           String username,
-                          String password,
-                          MqttStatusReceiver mqttStatusReceiver) throws MqttException {
+                          String password) throws MqttException {
 
         this.brokerUri = brokerUri;
         this.clientId = clientId;
@@ -126,7 +123,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         this.trustStorePWD = trustStorePWD;
         this.username = username;
         this.password = password;
-        this.mqttStatusReceiver = mqttStatusReceiver;
         this.separateConnections = separateConnections;
 
         mqttClientLock = new StampedLock();
@@ -169,7 +165,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClient.setTimeToWait(timeToWaitMs);
                 mqttClient.connect(getConnectOptions());
                 logger.info("Connected client");
-                mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
                 reestablishSubscriptions();
             } catch (MqttException mqttError) {
                 logger.error("Connect failed. Error code {}", mqttError.getReasonCode(), mqttError);
@@ -392,7 +387,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         long stamp = mqttClientLock.writeLock();
         try {
             if (mqttClient != null) {
-                mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
                 final boolean forcibly = false;
                 MqttClient clientToDisconnect = mqttClient;
                 mqttClient = null;
@@ -479,7 +473,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
         logger.info("connectionLost: {}", error.getMessage());
 
         if (error instanceof MqttException) {
-            mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
             MqttException mqttError = (MqttException) error;
             int reason = mqttError.getReasonCode();
 

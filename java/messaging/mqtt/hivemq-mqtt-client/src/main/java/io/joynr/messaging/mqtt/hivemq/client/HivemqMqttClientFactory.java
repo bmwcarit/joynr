@@ -66,7 +66,6 @@ import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
-import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -91,7 +90,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap;
     private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
     private final boolean cleanSession;
-    private final MqttStatusReceiver mqttStatusReceiver;
     private final JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
 
     @Inject(optional = true)
@@ -143,7 +141,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider,
-                                   MqttStatusReceiver mqttStatusReceiver,
                                    JoynrStatusMetricsAggregator joynrStatusMetricsAggregator) {
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
         this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
@@ -154,7 +151,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         sendingMqttClients = new HashMap<>(); // gbid to client
         receivingMqttClients = new HashMap<>(); // gbid to client
         this.cleanSession = cleanSession;
-        this.mqttStatusReceiver = mqttStatusReceiver;
         this.joynrStatusMetricsAggregator = joynrStatusMetricsAggregator;
     }
 
@@ -254,9 +250,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                     clientId,
                     result.getClientInformationString());
         resubscribeHandler.setClient(result);
-        resubscribeHandler.setMqttStatusReceiver(mqttStatusReceiver);
         disconnectedListener.setClientInformationString(result.getClientInformationString());
-        disconnectedListener.setMqttStatusReceiver(mqttStatusReceiver);
         return result;
     }
 
@@ -355,16 +349,10 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         private HivemqMqttClient client;
 
-        private MqttStatusReceiver mqttStatusReceiver;
-
         private ConnectionStatusMetricsImpl connectionStatusMetrics;
 
         void setClient(HivemqMqttClient client) {
             this.client = client;
-        }
-
-        void setMqttStatusReceiver(MqttStatusReceiver mqttStatusReceiver) {
-            this.mqttStatusReceiver = mqttStatusReceiver;
         }
 
         public ResubscribeHandler(ConnectionStatusMetricsImpl connectionStatusMetrics) {
@@ -375,7 +363,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         public void onConnected(MqttClientConnectedContext context) {
             client.resubscribe();
             connectionStatusMetrics.setConnected(true);
-            mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.CONNECTED);
         }
 
     }
@@ -385,7 +372,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         private String clientInformation;
 
         private ConnectionStatusMetricsImpl connectionStatusMetrics;
-        private MqttStatusReceiver mqttStatusReceiver;
 
         DisconnectedListener(ConnectionStatusMetricsImpl connectionStatusMetrics) {
             this.connectionStatusMetrics = connectionStatusMetrics;
@@ -393,10 +379,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         void setClientInformationString(String clientInformation) {
             this.clientInformation = clientInformation;
-        }
-
-        void setMqttStatusReceiver(MqttStatusReceiver mqttStatusReceiver) {
-            this.mqttStatusReceiver = mqttStatusReceiver;
         }
 
         @Override
@@ -407,7 +389,6 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                         context.getCause());
             connectionStatusMetrics.setConnected(false);
             connectionStatusMetrics.increaseConnectionDrops();
-            mqttStatusReceiver.notifyConnectionStatusChanged(MqttStatusReceiver.ConnectionStatus.NOT_CONNECTED);
         }
 
     }

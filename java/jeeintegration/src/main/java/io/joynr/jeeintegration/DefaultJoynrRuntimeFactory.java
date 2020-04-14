@@ -68,7 +68,6 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.statusmetrics.JoynrStatusMetrics;
-import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.provider.JoynrInterface;
@@ -101,8 +100,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private final String joynrLocalDomain;
 
     private BeanManager beanManager;
-
-    private MqttStatusReceiver mqttStatusReceiver;
 
     private JoynrStatusMetrics joynrStatusMetrics;
 
@@ -143,7 +140,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
                                       @JoynrMessagePersister Instance<MessagePersister> messagePersister,
                                       BeanManager beanManager,
-                                      MqttStatusReceiver mqttStatusReceiver,
                                       JoynrStatusMetrics joynrStatusMetrics) {
         // CHECKSTYLE:ON
         if (joynrLocalDomain.isUnsatisfied()) {
@@ -208,7 +204,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         }
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
         this.beanManager = beanManager;
-        this.mqttStatusReceiver = mqttStatusReceiver;
         this.joynrStatusMetrics = joynrStatusMetrics;
     }
 
@@ -254,7 +249,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                         bind(MqttClientIdProvider.class).toInstance(mqttClientIdProvider);
                     }
 
-                    bind(MqttStatusReceiver.class).toInstance(mqttStatusReceiver);
                     bind(JoynrStatusMetrics.class).toInstance(joynrStatusMetrics);
                 }
             });

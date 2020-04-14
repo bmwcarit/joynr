@@ -50,7 +50,6 @@ import io.joynr.statusmetrics.JoynrStatusMetrics;
 import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
-import io.joynr.statusmetrics.MqttStatusReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.JoynrInjectionConstants;
 
@@ -112,7 +111,7 @@ public class JeeIntegrationBeanTest {
     public void testJoynrStatusMetricsObjectIsUsedAsJoynrStatusReceiver() {
         Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
 
-        MqttStatusReceiver mqttStatusReceiver = joynrInjector.getInstance(MqttStatusReceiver.class);
+        JoynrStatusMetricsAggregator mqttStatusReceiver = joynrInjector.getInstance(JoynrStatusMetricsAggregator.class);
 
         assertNotNull(joynrStatusMetrics);
 
