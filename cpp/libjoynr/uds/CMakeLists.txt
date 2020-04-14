@@ -1,7 +1,7 @@
 project(Uds)
 
 set(SOURCES
-    # UdsLibJoynrMessagingSkeleton.cpp
+    UdsLibJoynrMessagingSkeleton.cpp
     # UdsMessagingStub.cpp
     # UdsMessagingStubFactory.cpp
     # UdsClient.cpp
@@ -10,7 +10,7 @@ set(SOURCES
 
 set(PRIVATE_HEADERS
     # IUdsClient.h
-    # UdsLibJoynrMessagingSkeleton.h
+    UdsLibJoynrMessagingSkeleton.h
     # UdsMessagingStub.h
     # UdsMessagingStubFactory.h
     # UdsClient.h
@@ -32,6 +32,7 @@ objlibrary_target_link_libraries(${PROJECT_NAME}
     #PRIVATE udspp::udspp
 )
 target_link_objlibraries(${PROJECT_NAME}
+    PUBLIC Joynr::Interface
     PUBLIC Joynr::Messaging
 )
 
