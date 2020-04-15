@@ -154,13 +154,17 @@ public class DefaultJoynrRuntimeFactoryTest {
         Instance<MqttClientIdProvider> mqttClientIdProviderInstance = mock(Instance.class);
         when(mqttClientIdProviderInstance.get()).thenReturn(mqttClientIdProvider);
 
+        JoynrStatusMetrics joynrStatusMetrics = mock(JoynrStatusMetrics.class);
+        Instance<JoynrStatusMetrics> joynrStatusMetricsInstance = mock(Instance.class);
+        when(joynrStatusMetricsInstance.get()).thenReturn(joynrStatusMetrics);
+
         fixture = new DefaultJoynrRuntimeFactory(joynrProperties,
                                                  joynrLocalDomain,
                                                  rawMessageProcessor,
                                                  mqttClientIdProviderInstance,
                                                  messagePersisterInstance,
                                                  beanManager,
-                                                 mock(JoynrStatusMetrics.class));
+                                                 joynrStatusMetricsInstance);
         scheduledExecutorService = mock(ScheduledExecutorService.class);
         Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
         executorField.setAccessible(true);

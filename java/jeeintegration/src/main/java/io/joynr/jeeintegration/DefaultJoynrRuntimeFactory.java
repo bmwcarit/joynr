@@ -140,7 +140,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
                                       @JoynrMessagePersister Instance<MessagePersister> messagePersister,
                                       BeanManager beanManager,
-                                      JoynrStatusMetrics joynrStatusMetrics) {
+                                      Instance<JoynrStatusMetrics> joynrStatusMetrics) {
         // CHECKSTYLE:ON
         if (joynrLocalDomain.isUnsatisfied()) {
             String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
@@ -204,7 +204,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         }
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
         this.beanManager = beanManager;
-        this.joynrStatusMetrics = joynrStatusMetrics;
+        this.joynrStatusMetrics = joynrStatusMetrics.get();
     }
 
     @Override
