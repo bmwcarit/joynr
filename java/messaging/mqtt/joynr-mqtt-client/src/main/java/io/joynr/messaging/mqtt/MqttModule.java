@@ -33,8 +33,6 @@ import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.statusmetrics.JoynrStatusMetrics;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
@@ -168,6 +166,5 @@ public class MqttModule extends AbstractModule {
 
         bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
         bind(MqttTopicPrefixProvider.class).to(DefaultMqttTopicPrefixProvider.class);
-        bind(JoynrStatusMetrics.class).to(JoynrStatusMetricsAggregator.class);
     }
 }

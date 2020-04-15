@@ -87,6 +87,8 @@ import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.ProxyInvocationHandlerImpl;
 import io.joynr.proxy.StatelessAsyncIdCalculator;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectoryImpl;
 import joynr.system.DiscoveryAsync;
@@ -153,6 +155,8 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
         bind(StatelessAsyncRequestReplyIdManager.class).to(DefaultStatelessAsyncRequestReplyIdManagerImpl.class);
         bind(MessagePersister.class).to(NoOpMessagePersister.class);
+        bind(JoynrStatusMetrics.class).to(JoynrStatusMetricsAggregator.class);
+        bind(JoynrStatusMetricsAggregator.class).in(Singleton.class);
 
         install(new StaticCapabilitiesProvisioningModule());
 
