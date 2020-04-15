@@ -32,7 +32,7 @@ public class ConnectionStatusMetricsImpl implements ConnectionStatusMetrics {
     private boolean isReceiver;
 
     private AtomicBoolean isConnected = new AtomicBoolean();
-    private volatile Instant lastStateChange;
+    private volatile Instant lastStateChange = Instant.now();
 
     private AtomicLong receivedMessages = new AtomicLong();
     private AtomicLong sentMessages = new AtomicLong();
