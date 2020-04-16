@@ -155,9 +155,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         subscriptionStates.put(subscriptionId, subState);
 
         long expiryDate = qos.getExpiryDateMs();
-        logger.trace("subscription: {} expiryDate: "
-                + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate - System.currentTimeMillis()),
-                     subscriptionId);
+        logger.trace("SubscriptionId: {} expiryDate: {}", subscriptionId, expiryDate);
 
         if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
             SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
@@ -179,8 +177,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                  @Override
                                  public SubscriptionRequest execute() {
                                      SubscriptionQos qos = request.getQos();
-                                     logger.trace("Attribute subscription registered with Id: "
-                                             + request.getSubscriptionId());
+                                     logger.trace("Attribute subscription registered with subscriptionId: {}",
+                                                  request.getSubscriptionId());
                                      subscriptionTypes.put(request.getSubscriptionId(),
                                                            request.getAttributeTypeReference());
                                      subscriptionListenerDirectory.put(request.getSubscriptionId(),
@@ -224,7 +222,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                  @Override
                                  public SubscriptionRequest execute() {
                                      String subscriptionId = request.getSubscriptionId();
-                                     logger.trace("Broadcast subscription registered with Id: " + subscriptionId);
+                                     logger.trace("Broadcast subscription registered with subscriptionId: {}",
+                                                  subscriptionId);
                                      unicastBroadcastTypes.put(subscriptionId, request.getOutParameterTypes());
                                      broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                 request.getBroadcastSubscriptionListener());
@@ -244,14 +243,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             final String multicastId = MulticastIdUtil.createMulticastId(toDiscoveryEntry.getParticipantId(),
                                                                          multicastSubscribeInvocation.getSubscriptionName(),
                                                                          multicastSubscribeInvocation.getPartitions());
-            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {},"
-                    + " proxy participantId: {}, provider participantId: {}",
+            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider participantId: {}, provider domain: {}",
                          multicastSubscribeInvocation.getSubscriptionId(),
                          multicastId,
                          multicastSubscribeInvocation.getSubscriptionName(),
                          multicastSubscribeInvocation.getQos(),
                          fromParticipantId,
-                         toDiscoveryEntry.getParticipantId());
+                         toDiscoveryEntry.getParticipantId(),
+                         toDiscoveryEntry.getDomain());
             registerSubscription(fromParticipantId,
                                  toDiscoveryEntries,
                                  multicastSubscribeInvocation,
@@ -259,7 +258,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                      @Override
                                      public SubscriptionRequest execute() {
                                          String subscriptionId = multicastSubscribeInvocation.getSubscriptionId();
-                                         logger.trace("Multicast subscription registered with Id: " + subscriptionId);
+                                         logger.trace("Multicast subscription registered with Id: {}", subscriptionId);
                                          Pattern multicastIdPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
                                          if (!multicastSubscribersDirectory.containsKey(multicastIdPattern)) {
                                              multicastSubscribersDirectory.putIfAbsent(multicastIdPattern,
@@ -314,10 +313,11 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                        MessagingQos qosSettings) {
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
-            logger.trace("Called unregister / unsubscribe on subscription id= " + subscriptionId);
+            logger.trace("Called unregister / unsubscribe on subscriptionId {}", subscriptionId);
             removeSubscription(subscriptionId);
         } else {
-            logger.trace("Called unregister on a non/no longer existent subscription, used id= " + subscriptionId);
+            logger.trace("Called unregister on a non/no longer existent subscription, used subscriptionId was {}",
+                         subscriptionId);
         }
 
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
@@ -404,7 +404,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             } else if (broadcastSubscriptionListenerDirectory.containsKey(subscriptionId)) {
                 broadcastSubscriptionListenerDirectory.get(subscriptionId).onSubscribed(subscriptionId);
             } else {
-                logger.warn("No subscription listener found for incoming subscription reply for subscription ID {}!",
+                logger.warn("No subscription listener found for incoming subscription reply for subscriptionId {}!",
                             subscriptionId);
             }
         } else {
@@ -418,7 +418,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             } else if (broadcastSubscriptionListenerDirectory.containsKey(subscriptionId)) {
                 broadcastSubscriptionListenerDirectory.remove(subscriptionId).onError(subscriptionReply.getError());
             } else {
-                logger.warn("No subscription listener found for incoming subscription reply for subscription ID {}! Error message: {}",
+                logger.warn("No subscription listener found for incoming subscription reply for subscriptionId {}! Error message: {}",
                             subscriptionId,
                             subscriptionReply.getError().getMessage());
             }
@@ -428,9 +428,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
 
     @Override
     public void touchSubscriptionState(final String subscriptionId) {
-        logger.trace("Touching subscription state for id=" + subscriptionId);
+        logger.trace("Touching subscription state for subscriptionId {}", subscriptionId);
         if (!subscriptionStates.containsKey(subscriptionId)) {
-            logger.trace("No subscription state found for id: " + subscriptionId);
+            logger.trace("No subscription state found for subscriptionId {}", subscriptionId);
             return;
         }
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
@@ -442,7 +442,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     public <T> Optional<AttributeSubscriptionListener<T>> getSubscriptionListener(final String subscriptionId) {
         if (!subscriptionStates.containsKey(subscriptionId)
                 || !subscriptionListenerDirectory.containsKey(subscriptionId)) {
-            logger.error("Received publication for not existing subscription callback with id=" + subscriptionId);
+            logger.error("Received publication for not existing subscription callback with subscriptionId {}",
+                         subscriptionId);
         }
         return Optional.ofNullable((AttributeSubscriptionListener<T>) subscriptionListenerDirectory.get(subscriptionId));
 
@@ -452,7 +453,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     public BroadcastSubscriptionListener getBroadcastSubscriptionListener(String subscriptionId) {
         if (!subscriptionStates.containsKey(subscriptionId)
                 || !broadcastSubscriptionListenerDirectory.containsKey(subscriptionId)) {
-            logger.error("Received publication for not existing subscription callback with id=" + subscriptionId);
+            logger.error("Received publication for not existing subscription callback with subscriptionId {}",
+                         subscriptionId);
         }
         return broadcastSubscriptionListenerDirectory.get(subscriptionId);
 

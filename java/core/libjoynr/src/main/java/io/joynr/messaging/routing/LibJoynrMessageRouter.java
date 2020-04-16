@@ -123,9 +123,9 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
 
     @Override
     public void setToKnown(final String participantId) {
-        logger.trace("setToKnown called for participantId {}", participantId);
+        logger.trace("SetToKnown called for participantId {}", participantId);
         if (parentRouterMessagingAddress == null) {
-            logger.debug("setToKnown called before parentRouterAddress is available");
+            logger.debug("SetToKnown called before parentRouterAddress is available");
             return;
         }
         // isGloballyVisible has no influence in libjoynr runtime
@@ -155,7 +155,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     }
 
     private void addNextHopToParent(String participantId, boolean isGloballyVisible) {
-        logger.trace("Adding next hop with participant id " + participantId + " to parent router");
+        logger.trace("Adding next hop with participantId {} to parent router", participantId);
         if (incomingAddress instanceof ChannelAddress) {
             parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof BrowserAddress) {
@@ -173,7 +173,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     }
 
     private void removeNextHopFromParent(String participantId) {
-        logger.trace("Removing next hop with participant id " + participantId + " from parent router");
+        logger.trace("Removing next hop with participantId {} from parent router", participantId);
         parentRouter.removeNextHop(participantId);
     }
 

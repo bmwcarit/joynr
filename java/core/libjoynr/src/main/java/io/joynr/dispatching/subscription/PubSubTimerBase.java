@@ -66,17 +66,19 @@ public abstract class PubSubTimerBase {
                 logger.trace("Rescheduling PubSubTimer with delay {}.", delay);
                 timer.schedule(getTimerTask(), delay);
             } else {
-                logger.trace("Will not reschedule PubSubTimer: " + (isExpiredNow ? "endDate is reached"
-                        : (isExpiredBeforeNextPublication ? "endDate will be reached before next publication"
-                                : "publication stopped"))
-                        + ".");
-                logger.trace("SubscriptionEndDate: "
-                        + (expiryDate == SubscriptionQos.NO_EXPIRY_DATE ? "never" : expiryDate));
-                logger.trace("CurrentSystemTime: " + System.currentTimeMillis());
-                logger.trace("Delay: ", delay);
+                if (logger.isTraceEnabled()) {
+                    if (isExpiredNow) {
+                        logger.trace("Will not reschedule PubSubTimer, expiryDate {} has been reached", expiryDate);
+                    } else if (isExpiredBeforeNextPublication) {
+                        logger.trace("Will not reschedule PubSubTimer, endDate {} will be reached before next publication (delay {})",
+                                     expiryDate,
+                                     delay);
+                    } else {
+                        logger.trace("Will not reschedule PubSubTimer, publication was stopped");
+                    }
+                }
             }
         }
-
     }
 
     protected abstract TimerTask getTimerTask();

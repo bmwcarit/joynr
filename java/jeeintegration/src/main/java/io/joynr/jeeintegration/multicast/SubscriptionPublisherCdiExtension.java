@@ -41,7 +41,7 @@ public class SubscriptionPublisherCdiExtension implements Extension {
 
     public void alterSubscriptionPublishInjectionPoints(@Observes ProcessInjectionPoint processInjectionPoint) {
         final InjectionPoint injectionPoint = processInjectionPoint.getInjectionPoint();
-        logger.info("Looking at injection point: " + injectionPoint);
+        logger.info("Looking at injection point: {}", injectionPoint);
         if (injectionPoint.getType() instanceof Class
                 && SubscriptionPublisher.class.isAssignableFrom((Class) injectionPoint.getType())) {
             logger.info("Re-writing injection point type from {} to {} on bean {}",

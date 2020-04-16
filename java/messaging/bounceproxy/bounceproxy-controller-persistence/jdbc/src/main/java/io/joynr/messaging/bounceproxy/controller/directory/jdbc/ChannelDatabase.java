@@ -58,9 +58,6 @@ public class ChannelDatabase implements ChannelDirectory {
 
     @Override
     public List<Channel> getChannels() {
-
-        logger.trace("getChannels()");
-
         List<Channel> channels = new LinkedList<Channel>();
 
         EntityManager em = emf.createEntityManager();
@@ -74,7 +71,7 @@ public class ChannelDatabase implements ChannelDirectory {
             channels.add(result.convertToChannel());
         }
 
-        logger.debug("retrieved {} channels", channels.size());
+        logger.debug("Retrieved {} channels", channels.size());
         return channels;
     }
 
@@ -85,15 +82,15 @@ public class ChannelDatabase implements ChannelDirectory {
         if (ccid.isPresent()) {
             channelId = ccid.get();
         } else {
-            logger.debug("no channel found for ID NULL");
+            logger.debug("No channel found for ID NULL");
             return null;
         }
-        logger.trace("getChannel({})", channelId);
+        logger.trace("GetChannel({})", channelId);
 
         EntityManager em = emf.createEntityManager();
         ChannelEntity channelEntity = em.find(ChannelEntity.class, channelId);
         if (channelEntity == null) {
-            logger.debug("no channel found for ID {}", channelId);
+            logger.debug("No channel found for ID {}", channelId);
             return null;
         }
 
@@ -103,7 +100,7 @@ public class ChannelDatabase implements ChannelDirectory {
     @Override
     public void addChannel(Channel channel) {
 
-        logger.trace("add channel {}", channel);
+        logger.trace("Add channel {}", channel);
 
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -129,7 +126,7 @@ public class ChannelDatabase implements ChannelDirectory {
 
             tx.commit();
         } catch (RuntimeException ex) {
-            logger.error("Error persisting channel with ID {}: error: {}", channel.getChannelId(), ex.getMessage());
+            logger.error("Error persisting channel with ID {}. Error:", channel.getChannelId(), ex);
             if (tx != null && tx.isActive())
                 tx.rollback();
             throw ex;

@@ -95,7 +95,7 @@ public class BounceProxyPerformanceReporter {
         }
 
         if (scheduledFuture != null) {
-            logger.error("only one performance reporting thread can be started");
+            logger.error("Only one performance reporting thread can be started");
             return;
         }
 

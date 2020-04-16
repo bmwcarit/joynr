@@ -42,7 +42,7 @@ public class DefaultServletWrapper extends HttpServlet {
             RequestDispatcher requestDispatcher = getServletContext().getNamedDispatcher("default");
             requestDispatcher.forward(req, resp);
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Error:", e);
         }
     }
 }

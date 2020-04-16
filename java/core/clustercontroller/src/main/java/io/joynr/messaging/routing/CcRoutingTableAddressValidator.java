@@ -85,7 +85,9 @@ public class CcRoutingTableAddressValidator implements RoutingTableAddressValida
     public boolean isValidForRoutingTable(final Address address) {
         if (address instanceof WebSocketAddress || address instanceof UdsAddress) {
             final String addressType = address instanceof WebSocketAddress ? "WebSocketAddress" : "UdsAddress";
-            logger.error(addressType + " will not be used for CC Routing Table: {}", address);
+            logger.error("{} will not be used for CC Routing Table: {}",
+                         addressType.getClass().getSimpleName(),
+                         address);
             return false;
         }
         ownAddressReadLock.lock();

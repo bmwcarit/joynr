@@ -54,7 +54,7 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSocketEndpoint {
-    private static final Logger logger = LoggerFactory.getLogger(JoynrWebSocketEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketJettyClient.class);
 
     private Timer reconnectTimer = new Timer();
     private AtomicBoolean reconnectTimerRunning = new AtomicBoolean(false);
@@ -99,14 +99,14 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
             sessionFuture = jettyClient.connect(this, toUrl(serverAddress));
             sendInitializationMessage();
         } catch (JoynrShutdownException | JoynrIllegalStateException e) {
-            logger.error("unrecoverable error starting WebSocket client: {}", e);
+            logger.error("Unrecoverable error starting WebSocket client: {}", e);
             return;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             // TODO which exceptions are recoverable? Only catch those ones
             // JoynrCommunicationExeption is thrown if the initialization message could not be sent
-            logger.debug("error starting WebSocket client. Will retry", e);
+            logger.debug("Error starting WebSocket client. Will retry", e);
             if (shutdown) {
                 return;
             }
@@ -193,7 +193,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
             }
         } catch (ExecutionException e) {
             // continue reconnecting if there was a problem
-            logger.debug("error getting session future", e);
+            logger.debug("Error getting session future", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -207,12 +207,14 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
     @Override
     public void onWebSocketBinary(byte[] payload, int offset, int len) {
-        logger.trace(this.getClass().getSimpleName() + ": Received message: " + new String(payload, CHARSET));
+        if (logger.isTraceEnabled()) {
+            logger.trace("Received message: {}", new String(payload, CHARSET));
+        }
         messageListener.transmit(Arrays.copyOfRange(payload, offset, offset + len), new FailureAction() {
 
             @Override
             public void execute(Throwable error) {
-                logger.error("WebSocket message not processed: {}", error.getMessage());
+                logger.error("WebSocket message not processed: ", error);
             }
         });
     }

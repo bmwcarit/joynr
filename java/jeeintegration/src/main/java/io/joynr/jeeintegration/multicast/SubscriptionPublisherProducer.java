@@ -43,13 +43,14 @@ public class SubscriptionPublisherProducer {
     @Produces
     @io.joynr.jeeintegration.api.SubscriptionPublisher
     public SubscriptionPublisher getSubscriptionPublisher(InjectionPoint injectionPoint) {
-        logger.info("Looking for subscription publisher for: " + injectionPoint);
-        logger.info("Type is: " + injectionPoint.getType());
-        logger.info("Member is: " + injectionPoint.getMember());
-        logger.info("Annotated is: " + injectionPoint.getAnnotated());
+        logger.info("Looking for subscription publisher for: {}", injectionPoint);
+        logger.trace("Type {}, Member {}, Annotated {} ",
+                     injectionPoint.getType(),
+                     injectionPoint.getMember(),
+                     injectionPoint.getAnnotated());
         Class beanClass = injectionPoint.getBean() == null ? injectionPoint.getMember().getDeclaringClass()
                 : injectionPoint.getBean().getBeanClass();
-        logger.info("Bean class is: " + beanClass);
+        logger.info("Bean class is: {}", beanClass);
         if (!subscriptionPublishers.containsKey(beanClass)) {
             Class subscriptionPublisherClass = (Class) injectionPoint.getAnnotated().getBaseType();
             SubscriptionPublisher newSubscriptionPublisher = (SubscriptionPublisher) Proxy.newProxyInstance(subscriptionPublisherClass.getClassLoader(),

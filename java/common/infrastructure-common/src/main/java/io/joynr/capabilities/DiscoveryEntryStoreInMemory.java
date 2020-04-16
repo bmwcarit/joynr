@@ -18,6 +18,8 @@
  */
 package io.joynr.capabilities;
 
+import static java.lang.String.format;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,7 +59,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
 
     @Inject
     public DiscoveryEntryStoreInMemory(CapabilitiesProvisioning staticProvisioning) {
-        logger.trace("creating CapabilitiesStore {} with static provisioning", this);
+        logger.trace("Creating CapabilitiesStore with static provisioning");
         //add(staticProvisioning.getCapabilityEntries());
     }
 
@@ -70,7 +72,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     public synchronized void add(T discoveryEntry) {
         if (discoveryEntry.getDomain() == null || discoveryEntry.getInterfaceName() == null
                 || discoveryEntry.getParticipantId() == null) {
-            String message = "discoveryEntry being registered is not complete: " + discoveryEntry;
+            String message = format("discoveryEntry being registered is not complete: %s", discoveryEntry);
             logger.error(message);
             throw new JoynrCommunicationException(message);
         }

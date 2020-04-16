@@ -161,9 +161,10 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         try {
             if (waitForConnectorFinished() && throwable == null) {
                 if (connector == null) {
-                    final String errorMsg = "connector was null although arbitration finished successfully";
-                    logger.error("Failed to execute sync method {}: {}", method.getName(), errorMsg);
-                    throw new IllegalStateException(errorMsg);
+                    final String msg = String.format("Failed to execute sync method %s: Connector was null although arbitration finished successfully.",
+                                                     method.getName());
+                    logger.error(msg);
+                    throw new IllegalStateException(msg);
                 }
                 return connectorCaller.call(method, args);
             }
@@ -175,8 +176,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         }
 
         if (throwable != null) {
-            logger.error("Failed to execute sync method {}: arbitration and Connector failed: domain: \"{}\" interface: "
-                    + "\"{}\" qos: \"{}\": Arbitration could not be finished in time.",
+            logger.error("Failed to execute sync method {}: arbitration and Connector failed: domain: \"{}\" interface: \"{}\" qos: \"{}\": Arbitration could not be finished in time.\"",
                          method.getName(),
                          domains,
                          interfaceName,
@@ -188,8 +188,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                 throw new JoynrRuntimeException(throwable);
             }
         } else {
-            logger.error("Failed to execute sync method {}: arbitration and Connector failed: domain: \"{}\" interface: "
-                    + "\"{}\" qos: \"{}\": Arbitration could not be finished in time.",
+            logger.error("Failed to execute sync method {}: arbitration and Connector failed: domain: \"{}\" interface: \"{}\" qos: \"{}\": Arbitration could not be finished in time.\"",
                          method.getName(),
                          domains,
                          interfaceName,
@@ -313,7 +312,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             try {
                 connector.executeStatelessAsyncMethod(invocation.getMethod(), invocation.getArgs());
             } catch (Exception e) {
-                logger.error("Unable to perform stateless async call {}", invocation, e);
+                logger.error("Unable to perform stateless async call {}:", invocation, e);
             }
         }
     }
@@ -426,14 +425,10 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         try {
             subscriptionMethodExecutor.subscribe();
         } catch (JoynrRuntimeException e) {
-            logger.error("error executing subscription: {} : {}",
-                         subscriptionInvocation.getSubscriptionName(),
-                         e.getMessage());
+            logger.error("Error executing subscription: {}:", subscriptionInvocation.getSubscriptionName(), e);
             setFutureErrorState(subscriptionInvocation, e);
         } catch (Exception e) {
-            logger.error("error executing subscription: {} : {}",
-                         subscriptionInvocation.getSubscriptionName(),
-                         e.getMessage());
+            logger.error("Error executing subscription: {}:", subscriptionInvocation.getSubscriptionName(), e);
             setFutureErrorState(subscriptionInvocation, new JoynrRuntimeException(e));
         }
     }
@@ -488,21 +483,17 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         try {
             connector.executeSubscriptionMethod(unsubscribeInvocation);
         } catch (JoynrRuntimeException e) {
-            logger.error("error executing unsubscription: {} : {}",
-                         unsubscribeInvocation.getSubscriptionId(),
-                         e.getMessage());
+            logger.error("Error executing unsubscription: {}:", unsubscribeInvocation.getSubscriptionId(), e);
             setFutureErrorState(unsubscribeInvocation, e);
         } catch (Exception e) {
-            logger.error("error executing unsubscription: {} : {}",
-                         unsubscribeInvocation.getSubscriptionId(),
-                         e.getMessage());
+            logger.error("Error executing unsubscription: {}:", unsubscribeInvocation.getSubscriptionId(), e);
             setFutureErrorState(unsubscribeInvocation, new JoynrRuntimeException(e));
         }
         return unsubscribeInvocation;
     }
 
     public Object invokeInternal(Object proxy, Method method, Object[] args) throws ApplicationException {
-        logger.trace("calling proxy.{}({}) on domain: {} and interface {}, proxy participant ID: {}",
+        logger.trace("Calling proxy.{}({}) on domain: {} and interface {}, proxy participant ID: {}",
                      method.getName(),
                      args,
                      domains,
@@ -556,8 +547,8 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                     callback.onFailure(exception);
                 }
             } catch (Exception metaInfoException) {
-                logger.error("aborting call to method: " + invocation.getMethod().getName()
-                        + " but unable to call onError callback because of: " + metaInfoException.getMessage(),
+                logger.error("Aborting call to method: {} but unable to call onError callback because of: ",
+                             invocation.getMethod().getName(),
                              metaInfoException);
             }
             invocation.getFuture().onFailure(exception);
@@ -598,7 +589,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             return invokeInternal(proxy, method, args);
         } catch (Exception e) {
             if (this.throwable != null) {
-                logger.debug("exception caught: {} overridden by: {}", e.getMessage(), throwable.getMessage());
+                logger.debug("Exception caught: {} overridden by: {}", e.getMessage(), throwable.getMessage());
                 throw throwable;
             } else {
                 throw e;

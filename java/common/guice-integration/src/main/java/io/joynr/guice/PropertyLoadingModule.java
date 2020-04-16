@@ -63,8 +63,10 @@ public class PropertyLoadingModule extends AbstractModule {
     protected void logProperties() {
         Properties filteredProperties = getFilteredProperties("joynr.");
         filteredProperties.putAll(getFilteredProperties("javax.net.ssl"));
-        String formattedPropertiesOutput = filteredProperties.toString().replaceAll(",", "\r\n");
-        logger.info("\r\n\r\nProperties loaded\r\n" + formattedPropertiesOutput);
+        if (logger.isInfoEnabled()) {
+            String formattedPropertiesOutput = filteredProperties.toString().replaceAll(",", "\n");
+            logger.info("Properties loaded:\n{}", formattedPropertiesOutput);
+        }
     }
 
     protected Properties getFilteredProperties(String prefix) {

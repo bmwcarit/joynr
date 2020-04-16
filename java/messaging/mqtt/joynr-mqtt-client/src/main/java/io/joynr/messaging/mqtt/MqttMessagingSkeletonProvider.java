@@ -107,7 +107,9 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.gbids = gbids.clone();
         this.routingTable = routingTable;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}",
-                     new Object[]{ sharedSubscriptionsEnabled, this.ownAddress, this.channelId });
+                     sharedSubscriptionsEnabled,
+                     ownAddress,
+                     channelId);
     }
 
     @Override

@@ -201,16 +201,13 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
 
             @Override
             public void onProxyCreationFinished(T result) {
-                logger.trace("proxy created: interface: {} domains: {}", interfaceName, domains);
+                logger.trace("Proxy created: interface: {} domains: {}", interfaceName, domains);
             }
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 errorHolder[0] = error;
-                logger.error("error creating proxy: interface: {} domains: {}, error: {}",
-                             interfaceName,
-                             domains,
-                             error.getMessage());
+                logger.error("Error creating proxy: interface: {} domains: {}, Error:", interfaceName, domains, error);
             }
         });
         if (errorHolder[0] != null) {
@@ -246,7 +243,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             arbitrator.scheduleArbitration();
             return proxy;
         } catch (JoynrRuntimeException e) {
-            logger.debug("error building proxy", e);
+            logger.debug("Error building proxy", e);
             callback.onProxyCreationError(e);
             return null;
         }
@@ -273,7 +270,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
         proxyInvocationHandler.registerProxy(proxy);
         proxyInvocationHandler.createConnector(result);
-        logger.trace("proxy created: interface: {} domains: {}", interfaceName, domains);
+        logger.trace("Proxy created: interface: {} domains: {}", interfaceName, domains);
         return proxy;
     }
 
@@ -307,7 +304,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
             @Override
             public void onSuccess(ArbitrationResult arbitrationResult) {
-                logger.debug("DISCOVERY proxy created for:{}", arbitrationResult.getDiscoveryEntries());
+                logger.debug("DISCOVERY proxy created for: {}", arbitrationResult.getDiscoveryEntries());
                 proxyInvocationHandler.createConnector(arbitrationResult);
                 callback.onProxyCreationFinished(proxy);
             }

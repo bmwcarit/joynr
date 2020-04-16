@@ -64,7 +64,7 @@ public abstract class AbstractJoynrInjectorFactory extends InjectorFactory<Joynr
 
         String channelId = fullInjector.getInstance(Key.get(String.class,
                                                             Names.named(MessagingPropertyKeys.CHANNELID)));
-        logger.info("Application using channelId: " + channelId);
+        logger.info("Application using channelId {}.", channelId);
 
         IApplication result = fullInjector.getInstance(IApplication.class);
         if (result instanceof JoynrApplication) {

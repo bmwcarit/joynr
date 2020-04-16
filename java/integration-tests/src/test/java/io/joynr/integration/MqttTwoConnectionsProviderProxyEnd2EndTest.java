@@ -114,7 +114,7 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
     public void baseSetup() throws Exception {
         // prints the tests name in the log so we know what we are testing
         String methodName = name.getMethodName();
-        logger.info(methodName + " setup beginning...");
+        logger.info("{} setup beginning...", methodName);
 
         domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
         provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(TestProvider.class));
@@ -151,7 +151,7 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
                        .register()
                        .get(CONST_DEFAULT_TEST_TIMEOUT);
 
-        logger.info("setup finished");
+        logger.info("Setup finished");
 
     }
 

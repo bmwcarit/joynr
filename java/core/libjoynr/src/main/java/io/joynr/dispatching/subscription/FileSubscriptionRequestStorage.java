@@ -77,7 +77,7 @@ public class FileSubscriptionRequestStorage implements SubscriptionRequestStorag
             inputStream = new ObjectInputStream(new FileInputStream(persistenceFileName));
             persistedSubscriptionRequests = (MultiMap<String, PersistedSubscriptionRequest>) inputStream.readObject();
         } catch (Exception e) {
-            logger.warn("unable to read saved subscription requests: " + e.getMessage());
+            logger.warn("Unable to read saved subscription requests: ", e);
             deleteCorruptedPersistenceFile();
             persistedSubscriptionRequests = new MultiMap<>();
         } finally {
@@ -86,7 +86,7 @@ public class FileSubscriptionRequestStorage implements SubscriptionRequestStorag
                     inputStream.close();
 
                 } catch (IOException e) {
-                    logger.error("unable to close subscription requests persistence file", e);
+                    logger.error("Unable to close subscription requests persistence file", e);
                 }
             }
         }
@@ -96,7 +96,7 @@ public class FileSubscriptionRequestStorage implements SubscriptionRequestStorag
         try {
             new File(persistenceFileName).delete();
         } catch (Exception e) {
-            logger.error("unable to delete unparsable persistence file: " + persistenceFileName, e);
+            logger.error("Unable to delete unparsable persistence file: {}", persistenceFileName, e);
         }
     }
 
@@ -106,13 +106,13 @@ public class FileSubscriptionRequestStorage implements SubscriptionRequestStorag
             outputStream = new ObjectOutputStream(new FileOutputStream(persistenceFileName, false));
             outputStream.writeObject(persistedSubscriptionRequests);
         } catch (Exception e) {
-            logger.error("unable to write to saved subscripton requests", e);
+            logger.error("Unable to write to saved subscripton requests", e);
         } finally {
             if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (Exception e) {
-                    logger.error("unable to close saved subscripton requests", e);
+                    logger.error("Unable to close saved subscripton requests", e);
                 }
             }
         }

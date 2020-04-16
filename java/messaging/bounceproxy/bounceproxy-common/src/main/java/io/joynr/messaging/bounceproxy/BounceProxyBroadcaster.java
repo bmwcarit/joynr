@@ -50,7 +50,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     public void cacheLostMessage(AtmosphereResource r) {
         synchronized (resources) {
-            logger.trace("cacheLostMessage 1");
             super.cacheLostMessage(r);
         }
     }
@@ -58,7 +57,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     public void cacheLostMessage(AtmosphereResource r, AsyncWriteToken token) {
         synchronized (resources) {
-            logger.trace("cacheLostMessage 2");
             super.cacheLostMessage(r, token);
         }
     }
@@ -66,7 +64,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     public void cacheLostMessage(AtmosphereResource r, AsyncWriteToken token, boolean force) {
         synchronized (resources) {
-            logger.trace("cacheLostMessage 3");
             super.cacheLostMessage(r, token, force);
         }
     }
@@ -74,7 +71,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     public void cacheLostMessage(AtmosphereResource r, boolean force) {
         synchronized (resources) {
-            logger.trace("cacheLostMessage 4");
             super.cacheLostMessage(r, force);
         }
     }
@@ -82,7 +78,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     public Future<Object> broadcast(Object msg) {
         synchronized (resources) {
-            logger.trace("broadcast 1");
             return super.broadcast(msg);
         }
     }
@@ -90,7 +85,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     public Future<Object> broadcast(Object msg, AtmosphereResource r) {
         synchronized (resources) {
-            logger.trace("broadcast 2");
             return super.broadcast(msg, r);
         }
     }
@@ -98,7 +92,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     public Future<Object> broadcast(Object msg, Set<AtmosphereResource> subset) {
         synchronized (resources) {
-            logger.trace("broadcast 3");
             return super.broadcast(msg, subset);
         }
     }
@@ -106,7 +99,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     public Future<Object> broadcastOnResume(Object msg) {
         synchronized (resources) {
-            logger.trace("broadcastOnResume 1");
             return super.broadcastOnResume(msg);
         }
     }
@@ -114,7 +106,6 @@ public class BounceProxyBroadcaster extends SimpleBroadcaster {
     @Override
     protected void cacheAndSuspend(AtmosphereResource r) {
         synchronized (resources) {
-            logger.trace("cacheAndSuspend 1");
             super.cacheAndSuspend(r);
         }
     }

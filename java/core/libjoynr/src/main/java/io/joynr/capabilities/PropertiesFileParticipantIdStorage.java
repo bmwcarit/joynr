@@ -120,7 +120,7 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
                     try {
                         fileOutputStream.close();
                     } catch (IOException e) {
-                        logger.debug("error closing output stream", e);
+                        logger.debug("Error closing output stream", e);
                     }
                 }
             }

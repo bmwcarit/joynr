@@ -131,7 +131,7 @@ public class LongPollingChannelLifecycle {
 
                         // If it was not possible to create the channel exit
                         if (!isChannelCreated()) {
-                            String message = "registerMessageReceiver channelId: " + channelId
+                            String message = "RegisterMessageReceiver channelId: " + channelId
                                     + " error occured. Exiting.";
                             logger.error(message);
                             // signal that the channel is in exception
@@ -213,7 +213,7 @@ public class LongPollingChannelLifecycle {
             try {
 
                 if (channelUrl == null) {
-                    logger.error("openChannel channelId: {} channelUrl cannot be NULL", channelId);
+                    logger.error("OpenChannel channelId: {} channelUrl cannot be NULL", channelId);
                     throw new IllegalArgumentException("openChannel channelId: " + channelId
                             + " channelUrl cannot be NULL");
                 }
@@ -360,7 +360,7 @@ public class LongPollingChannelLifecycle {
                 break;
 
             default:
-                logger.error("createChannel channelId: {} failed. status: {} reason: {}",
+                logger.error("CreateChannel channelId: {} failed. status: {} reason: {}",
                              channelId,
                              statusCode,
                              reasonPhrase);
@@ -368,18 +368,18 @@ public class LongPollingChannelLifecycle {
             }
 
             created = true;
-            logger.info("createChannel channelId: {} returned channelUrl {}", channelId, channelUrl);
+            logger.info("CreateChannel channelId: {} returned channelUrl {}", channelId, channelUrl);
 
         } catch (ClientProtocolException e) {
-            logger.error("createChannel ERROR reason: {}", e.getMessage());
+            logger.error("CreateChannel ERROR reason: {}", e.getMessage());
         } catch (IOException e) {
-            logger.error("createChannel ERROR reason: {}", e.getMessage());
+            logger.error("CreateChannel ERROR reason: {}", e.getMessage());
         } finally {
             if (response != null) {
                 try {
                     response.close();
                 } catch (IOException e) {
-                    logger.error("createChannel ERROR reason: {}", e.getMessage());
+                    logger.error("CreateChannel ERROR reason: {}", e.getMessage());
                 }
             }
         }
@@ -395,11 +395,11 @@ public class LongPollingChannelLifecycle {
         }
 
         if (retries < 0) {
-            logger.info("delete channel: {} retries expired ", channelUrl);
+            logger.info("Delete channel: {} retries expired ", channelUrl);
             return false;
         }
 
-        logger.info("trying to delete channel: " + channelUrl);
+        logger.info("Trying to delete channel: " + channelUrl);
 
         try {
             while (retries > 0) {

@@ -39,19 +39,19 @@ public class LastSeenArbitrationStrategyFunction extends ArbitrationStrategyFunc
     @Override
     public final Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
                                                         final Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-        logger.trace("starting select Provider by lastSeenDateMs");
+        logger.trace("Starting select Provider by lastSeenDateMs");
         DiscoveryEntryWithMetaInfo latestSeenCapability = null;
         long latestSeenDateMs = -1L;
         for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             // Search for the provider with the highest lastSeenDateMs
             Long lastSeenDateMs = discoveryEntry.getLastSeenDateMs();
-            logger.trace("Looking at capability with lastSeenDateMs " + lastSeenDateMs);
+            logger.trace("Looking at capability with lastSeenDateMs {}", lastSeenDateMs);
             if (latestSeenDateMs < lastSeenDateMs) {
                 latestSeenDateMs = lastSeenDateMs;
                 latestSeenCapability = discoveryEntry;
             }
         }
-        logger.trace("capability with lastSeenMs: " + latestSeenDateMs + "\r\n" + latestSeenCapability);
+        logger.trace("Capability with lastSeenMs: {}: {}", latestSeenDateMs, latestSeenCapability);
 
         return latestSeenCapability == null ? null
                 : new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(latestSeenCapability));

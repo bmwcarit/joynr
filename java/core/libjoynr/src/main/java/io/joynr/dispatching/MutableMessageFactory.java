@@ -235,7 +235,7 @@ public class MutableMessageFactory {
                 serializedPayload = (String) payload;
             } else {
                 serializedPayload = objectMapper.writeValueAsString(payload);
-                logger.trace("serializePayload as: {}", serializedPayload);
+                logger.trace("SerializePayload as: {}", serializedPayload);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

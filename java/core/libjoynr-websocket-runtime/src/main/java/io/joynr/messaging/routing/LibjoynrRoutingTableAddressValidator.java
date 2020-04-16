@@ -39,8 +39,9 @@ public class LibjoynrRoutingTableAddressValidator implements RoutingTableAddress
         if (address instanceof WebSocketAddress || address instanceof InProcessAddress) {
             return true;
         }
-        logger.error("An address which is neither of type WebSocketAddress nor InProcessAddress"
-                + " will not be used for libjoynr Routing Table: {}", address);
+        logger.error("The address {} of type {} will not be used for libjoynr Routing Table",
+                     address,
+                     address.getClass().getSimpleName());
         return false;
     }
 

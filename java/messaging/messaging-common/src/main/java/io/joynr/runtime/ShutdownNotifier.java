@@ -102,11 +102,11 @@ public class ShutdownNotifier {
     public void shutdown() {
         synchronized (shutdownListenerList) {
             shutdownListenerList.forEach(shutdownListener -> {
-                logger.trace("shutting down {}", shutdownListener);
+                logger.trace("Shutting down {}", shutdownListener);
                 try {
                     shutdownListener.shutdown();
                 } catch (Exception e) {
-                    logger.error("error shutting down {}: {}", shutdownListener, e.getMessage());
+                    logger.error("Error shutting down {}:", shutdownListener, e);
                 }
             });
         }

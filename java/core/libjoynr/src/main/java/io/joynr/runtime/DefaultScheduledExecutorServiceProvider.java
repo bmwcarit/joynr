@@ -88,7 +88,7 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.error("Message Scheduler shutdown interrupted: {}", e.getMessage());
+            logger.error("Message Scheduler shutdown interrupted:", e);
         }
     }
 }

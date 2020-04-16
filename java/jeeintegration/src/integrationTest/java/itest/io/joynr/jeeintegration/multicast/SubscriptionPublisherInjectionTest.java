@@ -76,7 +76,7 @@ public class SubscriptionPublisherInjectionTest {
     private MyServiceSubscriptionPublisher myServiceSubscriptionPublisher = new MyServiceSubscriptionPublisher() {
         @Override
         public void fireMyMulticast(String someValue, String... partitions) {
-            logger.info("Multicast fired: " + someValue);
+            logger.info("Multicast fired: {}", someValue);
             multicastFired = true;
         }
 

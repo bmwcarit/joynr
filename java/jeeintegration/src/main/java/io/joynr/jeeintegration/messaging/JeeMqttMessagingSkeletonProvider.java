@@ -97,7 +97,9 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               routingTable);
         httpBridgeEnabled = enableHttpBridge;
         logger.debug("Created with httpBridgeEnabled: {} ownAddress: {} channelId: {}",
-                     new Object[]{ httpBridgeEnabled, ownAddress, channelId });
+                     httpBridgeEnabled,
+                     ownAddress,
+                     channelId);
     }
 
     @Override

@@ -36,7 +36,7 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
     public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
                                                   Collection<DiscoveryEntryWithMetaInfo> capabilities) {
         String participantId = parameters.get(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD);
-        logger.trace("starting select Provider by participant Id: {}", participantId);
+        logger.trace("Starting select Provider by participant Id: {}", participantId);
         DiscoveryEntryWithMetaInfo capabilityWithParticipantId = null;
         for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             if (discoveryEntry.getParticipantId().equals(participantId)) {
@@ -44,7 +44,7 @@ public class FixedParticipantArbitrationStrategyFunction extends ArbitrationStra
                 break;
             }
         }
-        logger.trace("capability with participantId: {}: {}" + participantId, capabilityWithParticipantId);
+        logger.trace("Capability with participantId: {}: {}", participantId, capabilityWithParticipantId);
 
         return capabilityWithParticipantId == null ? null
                 : new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(capabilityWithParticipantId));

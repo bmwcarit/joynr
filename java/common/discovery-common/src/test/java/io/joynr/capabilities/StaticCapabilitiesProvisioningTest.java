@@ -167,7 +167,7 @@ public class StaticCapabilitiesProvisioningTest {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
 
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
-        logger.debug("Serialised entries: " + serializedDiscoveryEntries);
+        logger.debug("Serialized entries: {}", serializedDiscoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries, properties);
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);

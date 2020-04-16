@@ -66,7 +66,7 @@ public class AddressManager {
                           PrimaryGlobalTransportHolder primaryGlobalTransport,
                           Set<MulticastAddressCalculator> multicastAddressCalculators,
                           MulticastReceiverRegistry multicastReceiverRegistry) {
-        logger.trace("Initialised with routingTable: {} primaryGlobalTransport: {} multicastAddressCalculators: {} multicastReceiverRegistry: {}",
+        logger.trace("Initialised with routingTable: {}, primaryGlobalTransport: {}, multicastAddressCalculators: {}, multicastReceiverRegistry: {}",
                      routingTable,
                      primaryGlobalTransport.get(),
                      multicastAddressCalculators,
@@ -115,7 +115,7 @@ public class AddressManager {
                 result.add(address);
             }
         }
-        logger.trace("Found the following addresses for {}: {}", new Object[]{ message, result });
+        logger.trace("Found the following addresses for {}: {}", message, result);
 
         return result;
     }
@@ -144,8 +144,8 @@ public class AddressManager {
             isGloballyVisible = routingTable.getIsGloballyVisible(participantId);
         } catch (JoynrRuntimeException e) {
             // This should never happen
-            logger.error("No routing entry found for Multicast Provider {}. "
-                    + "The message will not be published globally.", participantId);
+            logger.error("No routing entry found for Multicast Provider {}. The message will not be published globally.",
+                         participantId);
         }
         return isGloballyVisible;
     }

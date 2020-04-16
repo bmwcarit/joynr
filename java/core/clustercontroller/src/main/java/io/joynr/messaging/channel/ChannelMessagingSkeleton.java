@@ -81,16 +81,14 @@ public class ChannelMessagingSkeleton extends AbstractGlobalMessagingSkeleton {
                 forwardMessage(message, new FailureAction() {
                     @Override
                     public void execute(Throwable error) {
-                        logger.error("error processing incoming message: {} error: {}",
-                                     message.getId(),
-                                     error.getMessage());
+                        logger.error("Error processing incoming message with ID {}. Error: ", message.getId(), error);
                     }
                 });
             }
 
             @Override
             public void error(ImmutableMessage message, Throwable error) {
-                logger.error("error receiving incoming message: {} error: {}", message.getId(), error.getMessage());
+                logger.error("Error receiving incoming message with ID {}. Error: ", message.getId(), error);
             }
         }, new ReceiverStatusListener() {
 
@@ -101,7 +99,7 @@ public class ChannelMessagingSkeleton extends AbstractGlobalMessagingSkeleton {
 
             @Override
             public void receiverException(Throwable e) {
-                logger.error("error in long polling message receiver error: {}", e.getMessage());
+                logger.error("Error in long polling message receiver error: ", e);
                 shutdown();
             }
         });

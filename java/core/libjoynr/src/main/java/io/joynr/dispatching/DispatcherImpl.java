@@ -21,7 +21,6 @@ package io.joynr.dispatching;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,8 +138,7 @@ public class DispatcherImpl implements Dispatcher {
                                                                            subscriptionStop,
                                                                            messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
-            logger.debug("UNREGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, proxy participantId: {}, "
-                    + "provider participantId: {}",
+            logger.debug("UNREGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}",
                          subscriptionStop.getSubscriptionId(),
                          message.getId(),
                          fromParticipantId,
@@ -203,7 +201,7 @@ public class DispatcherImpl implements Dispatcher {
         try {
             return MessagingQosEffort.valueOf(effortString);
         } catch (IllegalArgumentException e) {
-            logger.error("received message (id: {}) with invalid effort: {}. Using default effort for reply message.",
+            logger.error("Received message (id: {}) with invalid effort: {}. Using default effort for reply message.",
                          message.getId(),
                          effortString);
             return null;
@@ -213,12 +211,12 @@ public class DispatcherImpl implements Dispatcher {
     @Override
     public void messageArrived(final ImmutableMessage message) {
         if (message == null) {
-            logger.error("received message was null");
+            logger.error("Received message was null");
             return;
         }
 
         if (!message.isTtlAbsolute()) {
-            logger.error("received message with relative ttl (not supported)");
+            logger.error("Received message with relative ttl (not supported)");
             return;
         }
 
@@ -234,8 +232,11 @@ public class DispatcherImpl implements Dispatcher {
         try {
             payload = new String(message.getUnencryptedBody(), StandardCharsets.UTF_8);
         } catch (EncodingException e) {
-            logger.error("Error reading SMRF message. msgId: {}. from: {} to: {}. Reason: {}. Discarding joynr message.",
-                         new Object[]{ message.getSender(), message.getRecipient(), message.getId(), e.getMessage() });
+            logger.error("Error reading SMRF message. msgId: {}. from: {} to: {}. Discarding joynr message. Error:",
+                         message.getId(),
+                         message.getSender(),
+                         message.getRecipient(),
+                         e);
             return;
         }
 
@@ -246,18 +247,18 @@ public class DispatcherImpl implements Dispatcher {
                 if (reply.getRequestReplyId().contains(StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR)) {
                     addStatelessCallback(message, reply);
                 }
-                logger.trace("Parsed reply from message payload :" + payload);
+                logger.trace("Parsed reply from message payload: {}", payload);
                 handle(reply);
             } else if (Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(type)) {
                 SubscriptionReply subscriptionReply = objectMapper.readValue(payload, SubscriptionReply.class);
-                logger.trace("Parsed subscription reply from message payload :" + payload);
+                logger.trace("Parsed subscription reply from message payload: {}", payload);
                 handle(subscriptionReply);
             } else if (Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST.equals(type)) {
                 MessagingQosEffort effort = getEffort(message);
                 final Request request = objectMapper.readValue(payload, Request.class);
                 request.setCreatorUserId(message.getCreatorUserId());
                 request.setContext(createMessageContext(message));
-                logger.trace("Parsed request from message payload :" + payload);
+                logger.trace("Parsed request from message payload: {}", payload);
                 handle(request,
                        message.getSender(),
                        message.getRecipient(),
@@ -269,21 +270,21 @@ public class DispatcherImpl implements Dispatcher {
                 OneWayRequest oneWayRequest = objectMapper.readValue(payload, OneWayRequest.class);
                 oneWayRequest.setCreatorUserId(message.getCreatorUserId());
                 oneWayRequest.setContext(createMessageContext(message));
-                logger.trace("Parsed one way request from message payload :" + payload);
+                logger.trace("Parsed one way request from message payload: {}", payload);
                 handle(oneWayRequest, message.getRecipient(), expiryDate);
             } else if (Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST.equals(type)
                     || Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST.equals(type)
                     || Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST.equals(type)) {
                 SubscriptionRequest subscriptionRequest = objectMapper.readValue(payload, SubscriptionRequest.class);
-                logger.trace("Parsed subscription request from message payload :" + payload);
+                logger.trace("Parsed subscription request from message payload: {}", payload);
                 handle(subscriptionRequest, message.getSender(), message.getRecipient());
             } else if (Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP.equals(type)) {
                 SubscriptionStop subscriptionStop = objectMapper.readValue(payload, SubscriptionStop.class);
-                logger.trace("Parsed subscription stop from message payload :" + payload);
+                logger.trace("Parsed subscription stop from message payload: {}", payload);
                 handle(subscriptionStop);
             } else if (Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION.equals(type)) {
                 SubscriptionPublication publication = objectMapper.readValue(payload, SubscriptionPublication.class);
-                logger.trace("Parsed publication from message payload :" + payload);
+                logger.trace("Parsed publication from message payload: {}", payload);
                 handle(publication);
             } else if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(type)) {
                 MulticastPublication multicastPublication = objectMapper.readValue(payload, MulticastPublication.class);
@@ -336,10 +337,10 @@ public class DispatcherImpl implements Dispatcher {
                     } else {
                         logger.error("Error: reply {} is not send to caller, as the expiryDate of the reply message {} has been reached.",
                                      reply,
-                                     new Date(expiryDate));
+                                     expiryDate);
                     }
                 } catch (Exception error) {
-                    logger.error("Error processing reply: \r\n {} : error : {}", reply, error);
+                    logger.error("Error processing reply {}: error:", reply, error);
                 }
             }
 
@@ -347,13 +348,13 @@ public class DispatcherImpl implements Dispatcher {
             public void onFailure(JoynrException error) {
                 // do not log ApplicationExceptions as errors: these are not a sign of a system error
                 if (error instanceof JoynrRuntimeException) {
-                    logger.error("Error processing request: {}", request, error);
+                    logger.error("Error processing request {}:", request, error);
                 }
                 Reply reply = new Reply(request.getRequestReplyId(), error);
                 try {
                     sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, effort, compress);
                 } catch (Exception e) {
-                    logger.error("Error sending error reply: \r\n {}", reply, e);
+                    logger.error("Error sending error reply {}:", reply, e);
                 }
             }
         }, toParticipantId, request, expiryDate);
@@ -380,7 +381,7 @@ public class DispatcherImpl implements Dispatcher {
     @Override
     public void error(ImmutableMessage message, Throwable error) {
         if (message == null) {
-            logger.error("error: ", error);
+            logger.error("Error: ", error);
             return;
         }
 
@@ -390,8 +391,7 @@ public class DispatcherImpl implements Dispatcher {
         try {
             payload = new String(message.getUnencryptedBody(), StandardCharsets.UTF_8);
         } catch (EncodingException e) {
-            logger.error("Error extracting payload for message {}. Reason: {}",
-                         new Object[]{ message.getId(), e.getMessage() });
+            logger.error("Error extracting payload for message with ID {}:", message.getId(), e);
             return;
         }
 
@@ -401,8 +401,10 @@ public class DispatcherImpl implements Dispatcher {
                 requestReplyManager.handleError(request, error);
             }
         } catch (IOException e) {
-            logger.error("Error extracting payload for message " + message.getId() + ", raw payload: " + payload,
-                         e.getMessage());
+            logger.error("Error extracting payload for message with ID {}, raw payload: {}. Error: ",
+                         message.getId(),
+                         payload,
+                         e);
         }
     }
 
@@ -446,7 +448,7 @@ public class DispatcherImpl implements Dispatcher {
                 }
             }
         } catch (Exception e) {
-            logger.error("Error delivering publication: {} : {}", e.getClass(), e.getMessage());
+            logger.error("Error delivering publication: ", e);
         }
     }
 
@@ -456,8 +458,7 @@ public class DispatcherImpl implements Dispatcher {
                                                    (List<?>) multicastPublication.getResponse());
             subscriptionManager.handleMulticastPublication(multicastPublication.getMulticastId(), values);
         } catch (Exception e) {
-            logger.error("Error delivering multicast publication: {} : {}", e.getClass(), e.getMessage());
-            logger.trace("Full exception.", e);
+            logger.error("Error delivering multicast publication: {}", e);
         }
     }
 

@@ -97,11 +97,11 @@ public class UnicastSubscriptionQos extends SubscriptionQos {
     public SubscriptionQos setPublicationTtlMs(final long publicationTtlMs) {
         if (publicationTtlMs < MIN_PUBLICATION_TTL_MS) {
             this.publicationTtlMs = MIN_PUBLICATION_TTL_MS;
-            logger.warn("publicationTtlMs < MIN_PUBLICATION_TTL. Using MIN_PUBLICATION_TTL: {}",
+            logger.warn("PublicationTtlMs < MIN_PUBLICATION_TTL. Using MIN_PUBLICATION_TTL: {}",
                         MIN_PUBLICATION_TTL_MS);
         } else if (publicationTtlMs > MAX_PUBLICATION_TTL_MS) {
             this.publicationTtlMs = MAX_PUBLICATION_TTL_MS;
-            logger.warn("publicationTtlMs > MAX_PUBLICATION_TTL. Using MAX_PUBLICATION_TTL: {}",
+            logger.warn("PublicationTtlMs > MAX_PUBLICATION_TTL. Using MAX_PUBLICATION_TTL: {}",
                         MAX_PUBLICATION_TTL_MS);
         } else {
             this.publicationTtlMs = publicationTtlMs;

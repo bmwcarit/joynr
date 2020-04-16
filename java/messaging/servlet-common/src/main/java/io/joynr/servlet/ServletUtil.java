@@ -37,12 +37,12 @@ public class ServletUtil {
         try {
             in = servletContext.getResourceAsStream("/WEB-INF/" + filename);
             if (in == null) {
-                logger.error("properties file not found");
+                logger.error("Properties file not found");
             } else {
                 properties.load(in);
             }
         } catch (IOException e) {
-            logger.error("properties file not loaded", e);
+            logger.error("Properties file not loaded: {}", e);
         }
         return properties;
     }

@@ -91,7 +91,7 @@ public class JoynrConfigurationProvider {
     private String readCapabilitiesDirectoryParticipantIdFromProperties() {
         Properties joynrDefaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
         if (!joynrDefaultProperties.containsKey(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID)) {
-            logger.trace("Default properties loaded: " + joynrDefaultProperties);
+            logger.trace("Default properties loaded: {}", joynrDefaultProperties);
             throw new IllegalStateException("No capabilities directory participant ID found in properties.");
         }
         return joynrDefaultProperties.getProperty(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID);

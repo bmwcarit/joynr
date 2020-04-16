@@ -18,8 +18,6 @@
  */
 package io.joynr.arbitration;
 
-import static java.lang.String.format;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -447,10 +445,10 @@ public class Arbitrator {
                                                                          discoveryEntriesSet,
                                                                          discoveredVersionsByDomainMap);
                 if (discoveryEntriesSet.isEmpty()) {
-                    logger.debug(format("No discovery entries left after filtering while looking for %s in version %s.%nEntries found: %s",
-                                        interfaceName,
-                                        interfaceVersion,
-                                        Arrays.toString(discoveryEntries)));
+                    logger.debug("No discovery entries left after filtering while looking for interface {} in version {}. Entries found: {}",
+                                 interfaceName,
+                                 interfaceVersion,
+                                 Arrays.toString(discoveryEntries));
                 }
             }
             return discoveryEntriesSet;

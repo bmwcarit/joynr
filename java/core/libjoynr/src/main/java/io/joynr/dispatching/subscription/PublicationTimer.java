@@ -102,14 +102,13 @@ public class PublicationTimer extends PubSubTimerBase {
                 long delayUntilNextPublication;
 
                 if (timeSinceLast < period) {
-                    logger.debug("no publication necessary. MaxInterval: " + period + "TimeSinceLast: "
-                            + timeSinceLast);
+                    logger.debug("No publication necessary. MaxInterval: {}, TimeSinceLast: {}", period, timeSinceLast);
                     delayUntilNextPublication = period - timeSinceLast;
                     assert (delayUntilNextPublication >= 0);
 
                 } else {
-                    logger.debug("run: executing attributePollInterpreter for attribute "
-                            + publicationInformation.getSubscribedToName());
+                    logger.debug("Executing attributePollInterpreter for attribute {}",
+                                 publicationInformation.getSubscribedToName());
                     try {
                         Optional<Promise<?>> optionalPromise = attributePollInterpreter.execute(providerContainer,
                                                                                                 method);
@@ -146,7 +145,7 @@ public class PublicationTimer extends PubSubTimerBase {
                 }
 
                 if (delayUntilNextPublication >= 0) {
-                    logger.debug("Rescheduling PublicationTimer with delay: " + delayUntilNextPublication);
+                    logger.debug("Rescheduling PublicationTimer with delay: {}", delayUntilNextPublication);
                     rescheduleTimer(delayUntilNextPublication);
                 } else {
                     logger.info("Negative maxInterval: PublicationTimer is not scheduled. Publications will be sent on change only.");
@@ -166,11 +165,11 @@ public class PublicationTimer extends PubSubTimerBase {
 
         if (timeSinceLast >= minInterval) {
             // publish
-            logger.trace("sending subscriptionreply");
+            logger.trace("Sending subscriptionreply");
             try {
                 publicationManager.sendSubscriptionPublication(publication, publicationInformation);
             } catch (IOException e) {
-                logger.error("sendPublication error.", e);
+                logger.error("SendPublication error.", e);
             }
             synchronized (PublicationTimer.this) {
                 if (pendingPublication) {
@@ -178,7 +177,7 @@ public class PublicationTimer extends PubSubTimerBase {
                     PublicationTimer.this.notify();
                 }
             }
-            logger.trace("sent subscriptionreply @ " + state.getTimeOfLastPublication());
+            logger.trace("Sent subscriptionreply @{}", state.getTimeOfLastPublication());
         } else {
             synchronized (PublicationTimer.this) {
                 if (!pendingPublication) {
@@ -203,7 +202,7 @@ public class PublicationTimer extends PubSubTimerBase {
                         }
                     }).start();
                 } else {
-                    logger.trace("ignored attribute change. Mininterval {} not yet reached since timeSinceLast: {}",
+                    logger.trace("Ignored attribute change. Mininterval {} not yet reached since timeSinceLast: {}",
                                  minInterval,
                                  timeSinceLast);
                 }
@@ -228,7 +227,7 @@ public class PublicationTimer extends PubSubTimerBase {
         // Only send the publication if the subscription has not expired
         // and the TTL is in the future.
         if (publicationTtl < 0) {
-            logger.info("sendPublicationNow, dropping publication because TTL is in the past");
+            logger.info("SendPublicationNow, dropping publication because TTL is in the past");
             return;
         }
 

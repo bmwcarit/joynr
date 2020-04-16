@@ -48,15 +48,15 @@ public class MqttCiphersuiteListFactory {
                                             .map(a -> a.trim())
                                             .collect(Collectors.toList());
         if (tempCipherList.size() == 0) {
-            String errorMsg = "Cipher list has no entries. This shouldn't be possible!";
-            logger.error(errorMsg);
-            throw new JoynrIllegalStateException(errorMsg);
+            final String msg = "Cipher list has no entries. This should not be possible!";
+            logger.error(msg);
+            throw new JoynrIllegalStateException(msg);
         } else {
             for (String cipher : tempCipherList) {
                 if (cipher.isEmpty()) {
-                    String errorMsg = "Cipher must not be empty!";
-                    logger.error(errorMsg);
-                    throw new JoynrIllegalStateException(errorMsg);
+                    final String msg = "Cipher must not be empty";
+                    logger.error(msg);
+                    throw new JoynrIllegalStateException(msg);
                 }
             }
         }

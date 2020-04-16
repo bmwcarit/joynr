@@ -115,7 +115,7 @@ public class BounceProxyShutdownReporter {
                 // bounce proxy responds that the client could not be
                 // de-registered. Then we won't have to try to register forever.
                 // Do a more detailed error handling here!
-                logger.error("error notifying of Bounce Proxy shutdown: message: {}", e.getMessage());
+                logger.error("Error notifying Bounce Proxy shutdown. Error:", e);
             }
             try {
                 Thread.sleep(sendReportRetryIntervalMs);

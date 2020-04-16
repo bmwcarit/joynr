@@ -78,7 +78,7 @@ public abstract class AbstractLocalCommunicationTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        logger.info("setup beginning...");
+        logger.info("Setup beginning...");
 
         String channelId = createUuidString() + "-end2endA";
 

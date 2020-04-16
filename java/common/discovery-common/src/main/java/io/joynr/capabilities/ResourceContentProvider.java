@@ -51,7 +51,7 @@ public class ResourceContentProvider {
             }
             result = readFromUri(uri);
         } catch (URISyntaxException e) {
-            logger.trace("{} is not  URL. Trying to read from filesystem / classpath.",
+            logger.trace("{} is not a URL. Trying to read from filesystem/classpath.",
                          provisionedCapabilitiesJsonFilename,
                          e);
         } catch (IOException e) {

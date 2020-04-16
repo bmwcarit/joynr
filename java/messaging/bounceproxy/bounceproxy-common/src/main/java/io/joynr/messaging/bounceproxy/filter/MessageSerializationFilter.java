@@ -38,10 +38,10 @@ public class MessageSerializationFilter implements PerRequestBroadcastFilter {
     @Override
     public BroadcastAction filter(Object originalMessage, Object message) {
         if (message instanceof MutableMessage) {
-            logger.trace("filter {}", message);
+            logger.trace("Filter {}", message);
             return new BroadcastAction(ACTION.CONTINUE, serialize((MutableMessage) message));
         } else if (message instanceof ImmutableMessage) {
-            logger.trace("filter {}", message);
+            logger.trace("Filter {}", message);
             return new BroadcastAction(ACTION.CONTINUE, ((ImmutableMessage) message).getSerializedMessage());
         }
         return new BroadcastAction(ACTION.CONTINUE, message);
@@ -51,7 +51,7 @@ public class MessageSerializationFilter implements PerRequestBroadcastFilter {
         try {
             return message.getImmutableMessage().getSerializedMessage();
         } catch (Exception e) {
-            logger.error("error serializing message", e);
+            logger.error("Error serializing message", e);
         }
         return message;
     }

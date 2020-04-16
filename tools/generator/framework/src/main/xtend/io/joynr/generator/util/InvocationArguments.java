@@ -43,7 +43,7 @@ public class InvocationArguments {
                 IJoynrGenerator instance = generator.newInstance();
                 languages.put(instance.getLanguageId(), generator.getName());
             } catch (Exception e) {
-                logger.error("unable to load language generator:" + generator.getName(), e);
+                logger.error("Unable to load language generator:" + generator.getName(), e);
             }
         }
     }

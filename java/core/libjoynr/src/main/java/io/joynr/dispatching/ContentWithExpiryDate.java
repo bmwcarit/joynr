@@ -18,8 +18,6 @@
  */
 package io.joynr.dispatching;
 
-import java.text.MessageFormat;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,15 +39,6 @@ public class ContentWithExpiryDate<T> {
     }
 
     boolean isExpired() {
-        long currentTimeMillis = System.currentTimeMillis();
-        boolean expired = currentTimeMillis > expiryDate.getValue();
-        if (expired && logger.isDebugEnabled()) {
-            String msg = MessageFormat.format("\r\ncurrentTime: {0,time,hh:mm:ss.mmm}\r\nttl:{1,time,hh:mm:ss.mmm}",
-                                              currentTimeMillis,
-                                              expiryDate.getValue());
-            logger.debug(msg);
-        }
-        return expired;
+        return (System.currentTimeMillis() > expiryDate.getValue());
     }
-
 }

@@ -65,16 +65,13 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
 
     @Override
     public List<BounceProxyRecord> getAssignableBounceProxies() {
-
-        logger.trace("getAssignableBounceProxies()");
-
         List<BounceProxyRecord> bounceProxyList = new LinkedList<BounceProxyRecord>();
 
         for (BounceProxyEntity entity : getBounceProxyEntityList(getSqlWhereClauseForAssignableBounceProxies())) {
             bounceProxyList.add(entity.convertToBounceProxyRecord());
         }
 
-        logger.debug("found {} assignable bounce proxies", bounceProxyList.size());
+        logger.debug("Found {} assignable bounce proxies", bounceProxyList.size());
 
         return bounceProxyList;
     }
@@ -82,7 +79,7 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
     @Override
     public void updateChannelAssignment(String ccid, BounceProxyInformation bpInfo) throws IllegalArgumentException {
 
-        logger.trace("updateChannelAssignment(ccid={}, bpId={})", ccid, bpInfo.getId());
+        logger.trace("UpdateChannelAssignment(ccid={}, bpId={})", ccid, bpInfo.getId());
 
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -110,7 +107,7 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
             tx.commit();
 
         } catch (RuntimeException ex) {
-            logger.error("Channel assignment could not be persisted. error: {}", ex.getMessage());
+            logger.error("Channel assignment could not be persisted. Error:", ex);
             if (tx != null && tx.isActive())
                 tx.rollback();
             throw ex;
@@ -120,7 +117,7 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
     @Override
     public BounceProxyRecord getBounceProxy(String bpId) throws IllegalArgumentException {
 
-        logger.trace("getBounceProxy(bpid={})", bpId);
+        logger.trace("GetBounceProxy(bpid={})", bpId);
 
         EntityManager em = emf.createEntityManager();
         BounceProxyEntity bounceProxyEntity = em.find(BounceProxyEntity.class, bpId);
@@ -135,7 +132,7 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
     @Override
     public boolean containsBounceProxy(String bpId) {
 
-        logger.trace("containsBounceProxy(bpid={})", bpId);
+        logger.trace("ContainsBounceProxy(bpid={})", bpId);
 
         EntityManager em = emf.createEntityManager();
         BounceProxyEntity bounceProxyEntity = em.find(BounceProxyEntity.class, bpId);
@@ -145,7 +142,7 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
     @Override
     public void addBounceProxy(ControlledBounceProxyInformation bpInfo) throws IllegalArgumentException {
 
-        logger.trace("addBounceProxy(bpid={})", bpInfo.getId());
+        logger.trace("AddBounceProxy(bpid={})", bpInfo.getId());
 
         BounceProxyRecord record = new BounceProxyRecord(bpInfo);
         record.setFreshness(timestampProvider.getCurrentTime());
@@ -159,7 +156,7 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
             em.persist(bpEntity);
             tx.commit();
         } catch (RuntimeException ex) {
-            logger.error("Bounce proxy {} could not be persisted. error: {}", bpInfo.getId(), ex.getMessage());
+            logger.error("Bounce proxy {} could not be persisted. Error:", bpInfo.getId(), ex);
             if (tx != null && tx.isActive())
                 tx.rollback();
             throw ex;
@@ -169,7 +166,7 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
     @Override
     public void updateBounceProxy(BounceProxyRecord bpRecord) throws IllegalArgumentException {
 
-        logger.trace("updateBounceProxy(bpid={})", bpRecord.getBounceProxyId());
+        logger.trace("UpdateBounceProxy(bpid={})", bpRecord.getBounceProxyId());
 
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -183,9 +180,7 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
 
             tx.commit();
         } catch (RuntimeException ex) {
-            logger.error("Bounce proxy {} could not be updated. error: {}",
-                         bpRecord.getBounceProxyId(),
-                         ex.getMessage());
+            logger.error("Bounce proxy {} could not be updated. Error:", bpRecord.getBounceProxyId(), ex);
             if (tx != null && tx.isActive())
                 tx.rollback();
             throw ex;
@@ -194,16 +189,13 @@ public class BounceProxyDatabase implements BounceProxyDirectory {
 
     @Override
     public List<BounceProxyStatusInformation> getBounceProxyStatusInformation() {
-
-        logger.trace("getBounceProxyStatusInformation()");
-
         List<BounceProxyStatusInformation> result = new LinkedList<BounceProxyStatusInformation>();
 
         for (BounceProxyEntity bp : getBounceProxyEntityList()) {
             result.add(bp.convertToBounceProxyRecord());
         }
 
-        logger.debug("found {} bounce proxies", result.size());
+        logger.debug("Found {} bounce proxies", result.size());
         return result;
     }
 

@@ -86,9 +86,9 @@ public class PropertyLoader {
                 urlStream = url.openStream();
                 properties.load(urlStream);
 
-                logger.info("Properties from classpath loaded file: " + fileName);
+                logger.info("Properties from classpath loaded file {}", fileName);
             } catch (IOException e) {
-                logger.info("Properties from classpath not loaded because file not found: " + fileName);
+                logger.info("Properties from classpath file {} could not be loaded. Error:", fileName, e);
             } finally {
                 if (urlStream != null) {
                     try {
@@ -114,9 +114,9 @@ public class PropertyLoader {
         try {
             fileInputStream = new FileInputStream(file);
             properties.load(fileInputStream);
-            logger.info("Properties from runtime directory loaded file: " + file.getAbsolutePath());
+            logger.info("Properties from runtime directory loaded file: {}", file.getAbsolutePath());
         } catch (IOException e) {
-            logger.info("Properties from runtime directory not loaded because: " + e.getMessage());
+            logger.info("Properties from runtime directory not loaded because: {}", e.getMessage());
         } finally {
             if (fileInputStream != null)
                 try {

@@ -97,7 +97,7 @@ public class WebSocketTest {
         Mockito.doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                logger.debug("message arrived: " + invocationOnMock.getArguments().toString());
+                logger.debug("Message arrived: {}", invocationOnMock.getArguments().toString());
                 return null;
             }
         }).when(messageRouterMock).route(Mockito.any(ImmutableMessage.class));
@@ -140,7 +140,7 @@ public class WebSocketTest {
         logger.debug("Stopping websockets...");
         ccWebSocketMessagingSkeleton.shutdown();
         libWebSocketMessagingSkeleton.shutdown();
-        logger.debug("websockets stopped");
+        logger.debug("Websockets stopped");
     }
 
     @Test
@@ -162,7 +162,7 @@ public class WebSocketTest {
         configure(maxMessageSize, reconnectDelay, websocketIdleTimeout, new HashSet<JoynrMessageProcessor>());
 
         sendMessage();
-        logger.info("Waiting for " + millis + "ms to cause websocket idle timeout");
+        logger.info("Waiting for {}ms to cause websocket idle timeout", millis);
         Thread.sleep(millis);
         sendMessage();
     }

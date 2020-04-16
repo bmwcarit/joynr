@@ -67,7 +67,7 @@ public abstract class JoynrEmbeddedDatabase {
                 }
             }
         } catch (SQLException e) {
-            logger.debug("error checking if table exists", e);
+            logger.debug("Error checking if table exists:", e);
         }
         return false;
     }

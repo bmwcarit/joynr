@@ -95,7 +95,7 @@ public class BounceProxyStartupReporter {
 
         // make sure we report the lifecycle event only once
         if (startupEventReported == true) {
-            logger.error("startup event has already been reported or is being reported now");
+            logger.error("Startup event has already been reported or is being reported now");
             return;
         }
 
@@ -224,9 +224,7 @@ public class BounceProxyStartupReporter {
                 // registered. It could be that two clients try to register with
                 // the same ID. Then we won't have to try to register forever.
                 // Do a more detailed error handling here!
-                logger.error("error notifying of Bounce Proxy startup: exception: {}, message: {}",
-                             e.getClass(),
-                             e.getMessage());
+                logger.error("Error notifying of Bounce Proxy startup. Error:", e);
             }
             try {
                 Thread.sleep(sendReportRetryIntervalMs);

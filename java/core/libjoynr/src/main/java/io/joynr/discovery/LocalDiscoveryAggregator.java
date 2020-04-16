@@ -178,14 +178,14 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
-                    logger.trace("discoveryProxy.lookup onFailure: {}", error);
+                    logger.trace("DiscoveryProxy.lookup onFailure: {}", error);
                     callback.onFailure(error);
                     discoveryEntryFuture.onFailure(error);
                 }
 
                 @Override
                 public void onFailure(DiscoveryError error) {
-                    logger.trace("discoveryProxy.lookup onFailure: {}", error);
+                    logger.trace("DiscoveryProxy.lookup onFailure: {}", error);
                     callback.onFailure(error);
                     discoveryEntryFuture.onFailure(new ApplicationException(error));
                 }

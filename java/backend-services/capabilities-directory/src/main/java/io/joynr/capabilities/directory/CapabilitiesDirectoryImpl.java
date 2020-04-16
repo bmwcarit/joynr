@@ -18,6 +18,8 @@
  */
 package io.joynr.capabilities.directory;
 
+import static java.lang.String.format;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -123,8 +125,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         }).toArray(String[]::new);
         if (globalDiscoveryEntry.getDomain() == null || globalDiscoveryEntry.getInterfaceName() == null
                 || globalDiscoveryEntry.getParticipantId() == null || globalDiscoveryEntry.getAddress() == null) {
-            String message = "DiscoveryEntry being registered is not complete: " + globalDiscoveryEntry;
-            logger.error(message);
+            String message = format("DiscoveryEntry being registered is incomplete: %s", globalDiscoveryEntry);
             throw new ProviderRuntimeException(message);
         }
 
@@ -136,8 +137,9 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         } else if (address instanceof ChannelAddress) {
             clusterControllerId = ((ChannelAddress) address).getChannelId();
         } else {
-            logger.error("Error adding DiscoveryEntry for " + globalDiscoveryEntry.getParticipantId()
-                    + ". Unknown address type: " + globalDiscoveryEntry.getAddress());
+            logger.error("Error adding DiscoveryEntry for {}. Unknown address type: {}",
+                         globalDiscoveryEntry.getParticipantId(),
+                         globalDiscoveryEntry.getAddress());
             throw new ProviderRuntimeException("Unable to add DiscoveryEntry for "
                     + globalDiscoveryEntry.getParticipantId() + ". Unknown address type: "
                     + globalDiscoveryEntry.getAddress());
@@ -150,7 +152,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                                                                                    gcdGbid);
             discoveryEntryStore.add(gdep, gbids);
         } catch (Exception e) {
-            logger.error("Error adding discoveryEntry for {} and gbids {}: {}",
+            logger.error("Error adding discoveryEntry for {} and gbids {}:",
                          globalDiscoveryEntry.getParticipantId(),
                          Arrays.toString(gbids),
                          e);
@@ -265,7 +267,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                     deferred.resolve();
                 }
             } catch (Exception e) {
-                logger.error("Error removing discoveryEntry for {} and gbids {}: {}",
+                logger.error("Error removing discoveryEntry for {} and gbids {}:",
                              participantId,
                              Arrays.toString(gbids),
                              e);
@@ -293,7 +295,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             public void onRejection(JoynrException exception) {
                 if (exception instanceof ApplicationException) {
                     DiscoveryError error = ((ApplicationException) exception).getError();
-                    logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}: {}",
+                    logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}:",
                                  Arrays.toString(domains),
                                  interfaceName,
                                  gcdGbid,
@@ -359,7 +361,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                                                                                                                                 gcdGbid);
                 deferred.resolve(globalDiscoveryEntriesArray);
             } catch (Exception e) {
-                logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and Gbids {}: {}",
+                logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and Gbids {}:",
                              Arrays.toString(domains),
                              interfaceName,
                              Arrays.toString(gbids),
@@ -381,7 +383,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             public void onRejection(JoynrException exception) {
                 if (exception instanceof ApplicationException) {
                     DiscoveryError error = ((ApplicationException) exception).getError();
-                    logger.error("Error looking up global discovery entry for participantId {} and own Gbid {}: {}",
+                    logger.error("Error looking up global discovery entry for participantId {} and own Gbid {}:",
                                  participantId,
                                  gcdGbid,
                                  exception);
@@ -450,7 +452,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                 }
                 deferred.resolve(GcdUtilities.chooseOneGlobalDiscoveryEntry(filteredResult, gcdGbid));
             } catch (Exception e) {
-                logger.error("Error looking up global discovery entry for participantId {} and Gbids {}: {}",
+                logger.error("Error looking up global discovery entry for participantId {} and Gbids {}:",
                              participantId,
                              Arrays.toString(gbids),
                              e);
@@ -471,8 +473,9 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<DeferredVoid> touch(String clusterControllerId, String[] participantIds) {
         DeferredVoid deferred = new DeferredVoid();
-        final String message = "Error: touch method for clusterControllerId: " + clusterControllerId
-                + " and participantIds: " + Arrays.toString(participantIds) + " is not yet implemented";
+        String message = format("Error: touch method for ccId %s and participantIds %s not yet implemented",
+                                clusterControllerId,
+                                Arrays.toString(participantIds));
         logger.error(message);
         deferred.reject(new ProviderRuntimeException(message));
         return new Promise<DeferredVoid>(deferred);
@@ -481,8 +484,9 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     @Override
     public Promise<DeferredVoid> removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
         DeferredVoid deferred = new DeferredVoid();
-        final String message = "Error: removeStale method for clusterControllerId: " + clusterControllerId
-                + " and maxLastSeenDateMs: " + maxLastSeenDateMs + " is not yet implemented";
+        String message = format("Error: removeStale method for ccId %s and maxLastSeenDateMs %d is not yet implemented",
+                                clusterControllerId,
+                                maxLastSeenDateMs);
         logger.error(message);
         deferred.reject(new ProviderRuntimeException(message));
         return new Promise<DeferredVoid>(deferred);

@@ -196,7 +196,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         // prints the tests name in the log so we know what we are testing
         String methodName = name.getMethodName();
-        logger.info(methodName + " setup beginning...");
+        logger.info("{} setup beginning...", methodName);
 
         domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
         domainAsync = domain + "Async";
@@ -258,7 +258,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         // this sleep greatly speeds up the tests (400 ms vs 2500 / test) by
         // making sure the channel is created before first messages sent.
         Thread.sleep(100);
-        logger.info("setup finished");
+        logger.info("Setup finished");
 
     }
 
@@ -608,7 +608,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
             @Override
             public void onFailure(JoynrRuntimeException error) {
-                logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
+                logger.error("Error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
             }
 
             @Override
@@ -644,7 +644,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         Future<MethodWithMultipleOutputParametersReturned> future = proxy.methodWithMultipleOutputParameters(new MethodWithMultipleOutputParametersCallback() {
             @Override
             public void onFailure(JoynrRuntimeException error) {
-                logger.error("error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
+                logger.error("Error in calledMethodReturnsMultipleOutputParametersAsyncCallback", error);
             }
 
             @Override

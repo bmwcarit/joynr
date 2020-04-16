@@ -125,7 +125,7 @@ public class RemoteBounceProxyFacade {
                 return sendCreateChannelHttpRequest(bpInfo, ccid, trackingId);
             } catch (IOException e) {
                 // failed to establish communication with the bounce proxy
-                logger.error("creating a channel on bounce proxy {} failed due to communication errors: message: {}",
+                logger.error("Creating a channel on bounce proxy {} failed due to communication errors: message: {}",
                              bpInfo.getId(),
                              e.getMessage());
             }

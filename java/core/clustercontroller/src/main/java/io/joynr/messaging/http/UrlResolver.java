@@ -101,7 +101,7 @@ public class UrlResolver {
         try {
             sendUrl = mapHost(sendUrl);
         } catch (Exception e) {
-            logger.error("error in URL mapping while sending to url: {} reason: {}", url, e.getMessage());
+            logger.error("Error in URL mapping while sending to url: {} reason: {}", url, e.getMessage());
         }
         return Optional.ofNullable(sendUrl);
     }

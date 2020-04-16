@@ -91,7 +91,7 @@ public class ChannelServicesTest {
             longPoll.get();
         } catch (ExecutionException e) {
             if (e.getCause() instanceof SocketTimeoutException) {
-                logger.info("long poll finished with expected timeout");
+                logger.info("Long poll finished with expected timeout");
             } else {
                 assertThat("invalid exception was thrown: " + e.getMessage(), false);
             }

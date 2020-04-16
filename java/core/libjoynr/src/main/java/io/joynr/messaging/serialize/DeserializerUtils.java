@@ -64,7 +64,7 @@ class DeserializerUtils {
                 try {
                     params[i] = objectMapper.treeToValue(paramNode, javaClasses[i]);
                 } catch (Exception e) {
-                    logger.error("unable to deserialize to " + javaClasses[i] + " reason: " + e.getMessage());
+                    logger.error("Unable to deserialize to {}. Reason:", javaClasses[i], e);
                     params[i] = null;
                 }
                 i++;

@@ -156,9 +156,9 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     @Override
     public Promise<DeferredVoid> addNextHop(String participantId, UdsClientAddress address, Boolean isGloballyVisible) {
         final DeferredVoid deferred = new DeferredVoid();
-        final String message = "UdsClientAddress is not supported in Java";
-        logger.error(message);
-        deferred.reject(new ProviderRuntimeException(message));
+        final String msg = "UdsClientAddress is not supported in Java";
+        logger.error(msg);
+        deferred.reject(new ProviderRuntimeException(msg));
         return new Promise<>(deferred);
     }
 

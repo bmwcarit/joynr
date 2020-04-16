@@ -217,7 +217,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     logger.debug("Updating last seen date ms.");
                     globalCapabilitiesDirectoryClient.touch();
                 } catch (JoynrRuntimeException e) {
-                    logger.error("error sending freshness update", e);
+                    logger.error("Error sending freshness update", e);
                 }
             }
         };
@@ -374,7 +374,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             try {
                 globalAddress = globalAddressProvider.get();
             } catch (Exception e) {
-                logger.debug("error getting global address", e);
+                logger.debug("Error getting global address", e);
                 globalAddress = null;
             }
 
@@ -392,16 +392,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                               globalAddress);
         if (globalDiscoveryEntry != null) {
 
-            logger.info("starting global registration for " + globalDiscoveryEntry.getDomain() + " : "
-                    + globalDiscoveryEntry.getInterfaceName());
+            logger.debug("Global registration for participantId {}, domain {}, interface {} started",
+                         globalDiscoveryEntry.getParticipantId(),
+                         globalDiscoveryEntry.getDomain(),
+                         globalDiscoveryEntry.getInterfaceName());
 
             globalCapabilitiesDirectoryClient.add(new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
                 public void onSuccess(Void nothing) {
-                    logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
-                            + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
-                            + " completed");
+                    logger.info("Global Registration for participantId {}, domain {}, interface {} successful",
+                                globalDiscoveryEntry.getParticipantId(),
+                                globalDiscoveryEntry.getDomain(),
+                                globalDiscoveryEntry.getInterfaceName());
                     synchronized (globalDiscoveryEntryCache) {
                         mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
                         globalDiscoveryEntryCache.add(globalDiscoveryEntry);
@@ -411,9 +414,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException exception) {
-                    logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
-                            + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
-                            + " failed");
+                    logger.error("Global registration for participantId {}, domain {}, interface {} failed",
+                                 globalDiscoveryEntry.getParticipantId(),
+                                 globalDiscoveryEntry.getDomain(),
+                                 globalDiscoveryEntry.getInterfaceName());
                     if (awaitGlobalRegistration == true) {
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
@@ -422,9 +426,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(DiscoveryError errorEnum) {
-                    logger.info("global registration for " + globalDiscoveryEntry.getParticipantId() + ", "
-                            + globalDiscoveryEntry.getDomain() + " : " + globalDiscoveryEntry.getInterfaceName()
-                            + " failed");
+                    logger.error("Global registration for participantId {}, domain {}, interface {} failed",
+                                 globalDiscoveryEntry.getParticipantId(),
+                                 globalDiscoveryEntry.getDomain(),
+                                 globalDiscoveryEntry.getInterfaceName());
                     if (awaitGlobalRegistration == true) {
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
@@ -600,7 +605,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         try {
             entryAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(entry);
         } catch (Exception e) {
-            logger.error("Error reading address from GlobalDiscoveryEntry: " + entry);
+            logger.error("Error reading address from GlobalDiscoveryEntry: {}", entry);
             return false;
         }
         if (entryAddress instanceof MqttAddress) {
@@ -1090,7 +1095,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         }
                     }
                 } catch (DiscoveryException e) {
-                    logger.debug("error removing discovery entries", e);
+                    logger.debug("Error removing discovery entries", e);
                 }
             }
         }

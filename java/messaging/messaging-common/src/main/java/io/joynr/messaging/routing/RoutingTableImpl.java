@@ -93,47 +93,22 @@ public class RoutingTableImpl implements RoutingTable {
                 address = mqttAddress;
             }
         }
-        logger.trace("leaving get(participantId={}, gbid={}) = {}", participantId, gbid, address);
         return address;
     }
 
     private Address getInternal(String participantId) {
-        logger.trace("entering getInternal(participantId={})", participantId);
-        dumpRoutingTableEntry();
         RoutingEntry routingEntry = hashMap.get(participantId);
         if (routingEntry == null) {
-            logger.trace("leaving getInternal(participantId={}) = null", participantId);
+            logger.warn("No routing table entry found for participantId {}", participantId);
             return null;
         }
-        logger.trace("leaving getInternal(participantId={}) = {}", participantId, routingEntry.getAddress());
         return routingEntry.getAddress();
-    }
-
-    private void dumpRoutingTableEntry() {
-        if (logger.isTraceEnabled()) {
-            StringBuilder message = new StringBuilder("Routing table entries:\n");
-            for (Entry<String, RoutingEntry> eachEntry : hashMap.entrySet()) {
-                message.append("\t> ")
-                       .append(eachEntry.getKey())
-                       .append("\t-\t")
-                       .append(eachEntry.getValue().address)
-                       .append("\t-\t")
-                       .append(eachEntry.getValue().isGloballyVisible)
-                       .append("\t-\t")
-                       .append(eachEntry.getValue().expiryDateMs)
-                       .append("\t-\t")
-                       .append(eachEntry.getValue().isSticky)
-                       .append("\n");
-            }
-            logger.trace(message.toString());
-        }
     }
 
     private void updateRoutingEntry(final String participantId,
                                     final RoutingEntry oldRoutingEntry,
                                     final RoutingEntry newRoutingEntry) {
-        logger.debug("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}). Replacing "
-                + "previous entry with address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}",
+        logger.debug("Updating existing routing entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {} with new entry with address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                      participantId,
                      newRoutingEntry.address,
                      newRoutingEntry.isGloballyVisible,
@@ -145,6 +120,31 @@ public class RoutingTableImpl implements RoutingTable {
                      oldRoutingEntry.isSticky);
         mergeRoutingEntryAttributes(newRoutingEntry, oldRoutingEntry.getExpiryDateMs(), oldRoutingEntry.getIsSticky());
         hashMap.put(participantId, newRoutingEntry);
+    }
+
+    /**
+     * This is only to be used for debugging purposes during development!
+     * 
+     * @deprecated
+     */
+    private void dumpRoutingTable() {
+        if (logger.isTraceEnabled()) {
+            StringBuilder message = new StringBuilder("Routing table entries:\n");
+            for (Entry<String, RoutingEntry> entry : hashMap.entrySet()) {
+                message.append("\t> ")
+                       .append(entry.getKey())
+                       .append("\t-\t")
+                       .append(entry.getValue().address)
+                       .append("\t-\t")
+                       .append(entry.getValue().isGloballyVisible)
+                       .append("\t-\t")
+                       .append(entry.getValue().expiryDateMs)
+                       .append("\t-\t")
+                       .append(entry.getValue().isSticky)
+                       .append("\n");
+            }
+            logger.trace(message.toString());
+        }
     }
 
     @Override
@@ -164,7 +164,7 @@ public class RoutingTableImpl implements RoutingTable {
                     long expiryDateMs,
                     final boolean sticky) {
         if (!addressValidator.isValidForRoutingTable(address)) {
-            logger.trace("participantId={} has an unsupported address within this process.", participantId);
+            logger.trace("ParticipantId {} has an unsupported address within this process.", participantId);
             return;
         }
         try {
@@ -179,8 +179,7 @@ public class RoutingTableImpl implements RoutingTable {
             final boolean routingEntryAlreadyPresent = oldRoutingEntry != null;
 
             if (!routingEntryAlreadyPresent) {
-                logger.debug("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) "
-                        + "successfully into routing table",
+                logger.debug("Put entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {} into the routing table successfully",
                              participantId,
                              address,
                              isGloballyVisible,
@@ -194,22 +193,18 @@ public class RoutingTableImpl implements RoutingTable {
 
             if (addressOrVisibilityOfRoutingEntryChanged) {
                 if (oldRoutingEntry.isSticky) {
-                    logger.error("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={},"
-                            + " sticky={}) into routing table, since the participant ID is already associated with "
-                            + "STICKY routing entry address={}, isGloballyVisible={}",
+                    logger.error("Sticky routing entry for participantId {}, address {}, isGloballyVisible {}, will not be updated by new entry with address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                                  participantId,
+                                 oldRoutingEntry.address,
+                                 oldRoutingEntry.isGloballyVisible,
                                  address,
                                  isGloballyVisible,
                                  expiryDateMs,
-                                 sticky,
-                                 oldRoutingEntry.address,
-                                 oldRoutingEntry.isGloballyVisible);
+                                 sticky);
                 } else if (addressValidator.allowUpdate(oldRoutingEntry, newRoutingEntry)) {
                     updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                 } else {
-                    logger.warn("unable to update(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, "
-                            + "sticky={}) into routing table, since the participant ID is already associated with "
-                            + "routing entry address={}, isGloballyVisible={}",
+                    logger.warn("Unable to update routing entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, since the participant ID is already associated with a routing entry with address {}, isGloballyVisible {}",
                                 participantId,
                                 address,
                                 isGloballyVisible,
@@ -220,8 +215,7 @@ public class RoutingTableImpl implements RoutingTable {
                 }
             } else {
                 // only expiryDate or sticky flag of routing entry changed
-                logger.trace("put(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}): "
-                        + "Entry exists. Updating expiryDate and sticky-flag",
+                logger.trace("Routing table entrz with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {} already exists. Updating expiryDate and sticky-flag",
                              participantId,
                              address,
                              isGloballyVisible,
@@ -250,10 +244,7 @@ public class RoutingTableImpl implements RoutingTable {
     @Override
     public boolean containsKey(String participantId) {
         boolean containsKey = hashMap.containsKey(participantId);
-        logger.trace("checking for participant: {} success: {}", participantId, containsKey);
-        if (!containsKey) {
-            dumpRoutingTableEntry();
-        }
+        logger.trace("Checking for participant: {} success: {}", participantId, containsKey);
         return containsKey;
     }
 
@@ -289,22 +280,21 @@ public class RoutingTableImpl implements RoutingTable {
         RoutingEntry routingEntry = hashMap.get(participantId);
         if (routingEntry != null) {
             if (routingEntry.isSticky) {
-                logger.warn("Cannot remove sticky routing entry (participantId={}, address={}, isGloballyVisible={}, "
-                        + "expiryDateMs={}, sticky={}) from routing table",
+                logger.warn("Cannot remove sticky routing entry (participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) from routing table",
                             participantId,
                             routingEntry.getAddress(),
                             routingEntry.getIsGloballyVisible(),
                             routingEntry.getExpiryDateMs(),
                             routingEntry.getIsSticky());
             } else {
-                logger.debug("removing(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) "
-                        + "from routing table",
+                hashMap.remove(participantId);
+                logger.debug("Removed routing table entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                              participantId,
                              routingEntry.getAddress(),
                              routingEntry.getIsGloballyVisible(),
                              routingEntry.getExpiryDateMs(),
                              routingEntry.getIsSticky());
-                hashMap.remove(participantId);
+
             }
         }
     }
@@ -320,31 +310,24 @@ public class RoutingTableImpl implements RoutingTable {
     }
 
     public void purge() {
-        logger.trace("purge: begin");
         Iterator<Entry<String, RoutingEntry>> it = hashMap.entrySet().iterator();
         long currentTimeMillis = System.currentTimeMillis();
         while (it.hasNext()) {
             Entry<String, RoutingEntry> e = it.next();
-            if (logger.isTraceEnabled()) {
-                logger.trace("check: participantId = {}, sticky = {}, expiryDateMs = {}, now = {}",
-                             e.getKey(),
-                             e.getValue().getIsSticky(),
-                             e.getValue().getExpiryDateMs(),
-                             currentTimeMillis);
-            }
+            logger.trace("Check: participantId {}, sticky {}, expiryDateMs {}",
+                         e.getKey(),
+                         e.getValue().getIsSticky(),
+                         e.getValue().getExpiryDateMs());
 
             if (!e.getValue().getIsSticky() && e.getValue().expiryDateMs < currentTimeMillis) {
-                if (logger.isTraceEnabled()) {
-                    logger.trace("purging(participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) from routing table",
-                                 e.getKey(),
-                                 e.getValue().getAddress(),
-                                 e.getValue().getIsGloballyVisible(),
-                                 e.getValue().getExpiryDateMs(),
-                                 e.getValue().getIsSticky());
-                }
                 it.remove();
+                logger.trace("Purged routing entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
+                             e.getKey(),
+                             e.getValue().getAddress(),
+                             e.getValue().getIsGloballyVisible(),
+                             e.getValue().getExpiryDateMs(),
+                             e.getValue().getIsSticky());
             }
         }
-        logger.trace("purge: end");
     }
 }

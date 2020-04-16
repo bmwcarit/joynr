@@ -50,8 +50,9 @@ public class StaticDomainAccessControlProvisioning implements DomainAccessContro
                 domainRoleEntries.add(domainRole);
             }
         } catch (Exception e) {
-            logger.error("unable to load provisioned domain roles. "
-                    + (newEntries != null ? "to be processed entry: " + newEntries : ""), e);
+            logger.error("Unable to load provisioned domain roles. Entries to process: {}:",
+                         ((newEntries == null) ? "" : newEntries),
+                         e);
         }
     }
 
@@ -66,8 +67,9 @@ public class StaticDomainAccessControlProvisioning implements DomainAccessContro
                 masterControlEntries.add(masterControlEntry);
             }
         } catch (Exception e) {
-            logger.error("unable to load provisioned master access control entries. "
-                    + (newEntries != null ? "to be processed entry: " + newEntries : ""), e);
+            logger.error("Unable to load provisioned master access control entries. Entries to process: {}:",
+                         ((newEntries == null) ? "" : newEntries),
+                         e);
         }
     }
 

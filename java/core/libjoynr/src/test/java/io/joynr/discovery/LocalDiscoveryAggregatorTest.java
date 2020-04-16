@@ -337,7 +337,7 @@ public class LocalDiscoveryAggregatorTest {
 
         assertNotNull(discoveryEntriesFuture);
         DiscoveryEntry[] result = discoveryEntriesFuture.get();
-        logger.info("Got discovery entries: " + Arrays.toString(result));
+        logger.info("Got discovery entries: {}", Arrays.toString(result));
         assertNotNull(result);
         assertEquals(2, result.length);
         assertTrue(containsByInterfaceDomain(result,

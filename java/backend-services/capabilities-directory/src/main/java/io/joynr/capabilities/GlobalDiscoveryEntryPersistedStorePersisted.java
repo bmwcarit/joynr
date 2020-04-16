@@ -60,12 +60,12 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
         persistService.start();
         entityManager = entityManagerProvider.get();
 
-        logger.debug("creating CapabilitiesStore {} with static provisioning", this);
+        logger.debug("Creating CapabilitiesStore with static provisioning");
     }
 
     @Override
     public synchronized void add(GlobalDiscoveryEntryPersisted globalDiscoveryEntry, String[] gbids) {
-        logger.debug("adding discovery entry: {}", globalDiscoveryEntry);
+        logger.debug("Adding discovery entry: {}", globalDiscoveryEntry);
 
         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId AND gdep.gbid = :gbid";
@@ -97,17 +97,17 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                 }
 
                 if (queryResult.isEmpty()) {
-                    logger.trace("adding new discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
+                    logger.trace("Adding new discoveryEntry {} to the persisted entries.", globalDiscoveryEntry);
                     entityManager.persist(entity);
                 } else {
-                    logger.trace("merging discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
+                    logger.trace("Merging discoveryEntry {} to the persisted entries.", globalDiscoveryEntry);
                     entityManager.merge(entity);
                 }
             }
             transaction.commit();
-            logger.trace("add transaction for {} committed successfully", participantId);
+            logger.trace("Add transaction for {} committed successfully", participantId);
         } catch (Exception e) {
-            logger.trace("add transaction for {} failed: ", participantId, e);
+            logger.trace("Add transaction for {} failed: ", participantId, e);
             if (transaction.isActive()) {
                 transaction.rollback();
             }
@@ -118,8 +118,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
     @Override
     public synchronized int remove(String participantId, String[] gbids) {
         int deletedCount = 0;
-        String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE "
-                + "gdep.participantId = :participantId AND gdep.gbid IN :gbids";
+        String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId AND gdep.gbid IN :gbids";
 
         EntityTransaction transaction = entityManager.getTransaction();
         try {
@@ -135,8 +134,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                             participantId,
                             Arrays.toString(gbids));
 
-                String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep " + "WHERE "
-                        + "gdep.participantId = :participantId";
+                String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId";
                 long numberOfEntriesInAllGbids = entityManager.createQuery(queryCountString, Long.class)
                                                               .setParameter("participantId", participantId)
                                                               .getSingleResult();
@@ -150,9 +148,9 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
             }
 
             transaction.commit();
-            logger.trace("remove transaction for {} committed successfully", participantId);
+            logger.trace("Remove transaction for {} committed successfully", participantId);
         } finally {
-            logger.trace("remove transaction for {} failed", participantId);
+            logger.trace("Remove transaction for {} failed", participantId);
             if (transaction.isActive()) {
                 transaction.rollback();
             }
@@ -208,7 +206,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                                                                             .getResultList();
 
         if (capabilitiesList.size() > 1) {
-            logger.warn("There is {} discoveries entries for {}",
+            logger.warn("There are {} discovery entries for {}",
                         capabilitiesList.size(),
                         discoveryEntry.getParticipantId());
         }
@@ -227,12 +225,11 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                                                                                               clusterControllerId)
                                                                                 .getResultList();
             for (GlobalDiscoveryEntryPersisted discoveryEntry : capabilitiesList) {
-                logger.trace("  --> BEFORE entry {} last seen {}",
-                             discoveryEntry.getParticipantId(),
-                             discoveryEntry.getLastSeenDateMs());
+                long previousLastSeenDateMs = ((GlobalDiscoveryEntryPersisted) discoveryEntry).getLastSeenDateMs();
                 ((GlobalDiscoveryEntryPersisted) discoveryEntry).setLastSeenDateMs(System.currentTimeMillis());
-                logger.trace("  --> AFTER  entry {} last seen {}",
+                logger.trace("Updated discovery entry for participantId {}, last seen date old {} -> new {}",
                              discoveryEntry.getParticipantId(),
+                             previousLastSeenDateMs,
                              discoveryEntry.getLastSeenDateMs());
             }
             transaction.commit();
@@ -247,9 +244,10 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
 
     @Override
     public void touch(String clusterControllerId, String[] participantIds) {
-        final String message = "Error: touch method for clusterControllerId: " + clusterControllerId
-                + " and participantIds: " + Arrays.toString(participantIds) + " is not yet implemented";
-        logger.error(message);
-        throw new ProviderRuntimeException(message);
+        final String msg = String.format("Error: touch method for clusterControllerId %s and participantIds %s is not implemented yet.",
+                                         clusterControllerId,
+                                         Arrays.toString(participantIds));
+        logger.error(msg);
+        throw new ProviderRuntimeException(msg);
     }
 }

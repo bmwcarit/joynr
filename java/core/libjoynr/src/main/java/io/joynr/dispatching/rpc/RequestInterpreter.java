@@ -84,11 +84,11 @@ public class RequestInterpreter {
 
     public void execute(final ProviderCallback<Reply> callback, RequestCaller requestCaller, final Request request) {
         Promise<? extends AbstractDeferred> promise;
-        logger.debug("execute request on provider: {}", request);
+        logger.debug("Execute request on provider: {}", request);
         try {
             promise = (Promise<?>) invokeMethod(requestCaller, request);
         } catch (MethodInvocationException | ProviderRuntimeException e) {
-            logger.warn("execute request on provider failed with exception: {}, request: {}", e, request);
+            logger.warn("Execute request on provider failed with exception: {}, request: {}", e, request);
             callback.onFailure(e);
             return;
         } catch (Exception e) {
@@ -97,7 +97,7 @@ public class RequestInterpreter {
             MethodInvocationException methodInvocationException = new MethodInvocationException(e,
                                                                                                 new Version(joynrVersion.major(),
                                                                                                             joynrVersion.minor()));
-            logger.warn("execute request on provider failed with exception: {}, request: {}",
+            logger.warn("Execute request on provider failed with exception: {}, request: {}",
                         methodInvocationException,
                         request);
             callback.onFailure(methodInvocationException);
@@ -107,13 +107,13 @@ public class RequestInterpreter {
 
             @Override
             public void onRejection(JoynrException error) {
-                logger.debug("execute request on provider onRejection: {}, request: {}", error, request);
+                logger.debug("Execute request on provider onRejection: {}, request: {}", error, request);
                 callback.onFailure(error);
             }
 
             @Override
             public void onFulfillment(Object... values) {
-                logger.debug("execute request on provider onFulfillment: {}, request: {}", values, request);
+                logger.debug("Execute request on provider onFulfillment: {}, request: {}", values, request);
                 callback.onSuccess(createReply(request, values));
             }
         });
@@ -139,7 +139,7 @@ public class RequestInterpreter {
             joynrMessageScope.activate();
             setContext(requestCaller, request);
 
-            logger.trace("invoke provider method {}({})", method.getName(), params == null ? "" : params);
+            logger.trace("Invoke provider method {}({})", method.getName(), params);
             return requestCaller.invoke(method, params);
         } catch (IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}", request);
@@ -148,7 +148,7 @@ public class RequestInterpreter {
             throw new MethodInvocationException(e, new Version(joynrVersion.major(), joynrVersion.minor()));
 
         } catch (InvocationTargetException e) {
-            logger.debug("invokeMethod error", e);
+            logger.debug("InvokeMethod error", e);
             Throwable cause = e.getCause();
             logger.error("RequestInterpreter: Could not perform an RPC invocation: {}",
                          cause == null ? e.toString() : cause.getMessage());
@@ -187,7 +187,10 @@ public class RequestInterpreter {
                 methodSignatureToMethodMap.putIfAbsent(methodSignature, method);
             }
         } catch (NoSuchMethodException e) {
-            logger.error("RequestInterpreter: Received an RPC invocation for a non existing method " + request, e);
+            logger.error("RequestInterpreter: Received an RPC invocation for the non existing method {} in request {}. Error:",
+                         request.getMethodName(),
+                         request,
+                         e);
             JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
                                                                      JoynrVersion.class);
             throw new MethodInvocationException(e.toString(), new Version(joynrVersion.major(), joynrVersion.minor()));

@@ -304,12 +304,12 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
             // wait till all unregister provider calls are finished
             while (unregisterProviderQueue.peek() != null) {
                 try {
-                    logger.trace("unregister Provider Requests pending: " + unregisterProviderQueue.size());
+                    logger.trace("Unregister Provider Requests pending: {}", unregisterProviderQueue.size());
                     // while this waits till a provider is unregistered in the local discovery it won't wait for global
                     Future<Void> unregisterFinished = unregisterProviderQueue.poll();
                     unregisterFinished.get(5000);
                 } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
-                    logger.error("unregister Provider failed", e);
+                    logger.error("Unregister Provider failed", e);
                     break; // break if unregistering a provider takes more than 5s
                 }
             }

@@ -196,7 +196,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         } catch (URISyntaxException e) {
             throw new JoynrIllegalStateException("Invalid MQTT broker URI: " + mqttGbidToBrokerUriMap.get(gbid), e);
         }
-        logger.info("Creating MQTT client for gbid >{}<, uri {}, clientId {}", gbid, serverUri, clientId);
+        logger.info("Creating MQTT client for gbid \"{}\", uri {}, clientId {}", gbid, serverUri, clientId);
         MqttClientExecutorConfig executorConfig = MqttClientExecutorConfig.builder()
                                                                           .nettyExecutor(scheduledExecutorService)
                                                                           .applicationScheduler(Schedulers.from(scheduledExecutorService))
@@ -278,7 +278,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                     trustManagerFactory.init(trustStore);
                     sslConfig.trustManagerFactory(trustManagerFactory);
                 } catch (NoSuchAlgorithmException | KeyStoreException e) {
-                    logger.error("Unable to create trust store factory.", e);
+                    logger.error("Unable to create trust store factory:", e);
                 }
             }
         }
@@ -291,7 +291,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                     keyManagerFactory.init(keyStore, keyStorePWD.toCharArray());
                     sslConfig.keyManagerFactory(keyManagerFactory);
                 } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException e) {
-                    logger.error("Unable to create key manager factory.", e);
+                    logger.error("Unable to create key manager factory:", e);
                 }
             }
         }
@@ -318,7 +318,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             return keyStore;
         } catch (SecurityException | KeyStoreException | IOException | NoSuchAlgorithmException
                 | CertificateException e) {
-            logger.error("Unable to load keystore from {} / {} (password omitted)", storePath, storeType, e);
+            logger.error("Unable to load keystore from {} / {} (password omitted):", storePath, storeType, e);
         }
         return null;
     }
@@ -383,7 +383,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
 
         @Override
         public void onDisconnected(MqttClientDisconnectedContext context) {
-            logger.info("{}: HiveMQ MQTT client disconnected: source: {}",
+            logger.info("{}: HiveMQ MQTT client disconnected: source: {}, cause: {}",
                         clientInformation,
                         context.getSource(),
                         context.getCause());

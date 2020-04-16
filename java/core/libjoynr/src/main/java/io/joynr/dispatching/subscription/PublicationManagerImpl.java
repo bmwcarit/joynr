@@ -229,7 +229,7 @@ public class PublicationManagerImpl
                 }
             }
         } catch (Exception e) {
-            logger.error("unable to queue saved subscription requests: " + e.getMessage());
+            logger.error("Unable to queue saved subscription requests: ", e);
         }
     }
 
@@ -318,7 +318,7 @@ public class PublicationManagerImpl
                                                     String providerParticipantId,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
-        logger.trace("adding broadcast publication: {}", subscriptionRequest);
+        logger.trace("Adding broadcast publication: {}", subscriptionRequest);
 
         BroadcastListener broadcastListener = new BroadcastListenerImpl(subscriptionRequest.getSubscriptionId(), this);
         String broadcastName = subscriptionRequest.getSubscribedToName();
@@ -382,7 +382,7 @@ public class PublicationManagerImpl
             }
 
             addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
-            logger.trace("publication added: " + subscriptionRequest.toString());
+            logger.trace("Publication added: {}", subscriptionRequest.toString());
         } catch (SubscriptionException e) {
             sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
         }
@@ -426,10 +426,10 @@ public class PublicationManagerImpl
     private void removePublicationIfItExists(SubscriptionRequest subscriptionRequest) {
         String subscriptionId = subscriptionRequest.getSubscriptionId();
         if (publicationExists(subscriptionId)) {
-            logger.trace("updating publication: {}", subscriptionRequest);
+            logger.trace("Updating publication: {}", subscriptionRequest);
             removePublication(subscriptionId);
         } else {
-            logger.trace("adding publication: {}", subscriptionRequest);
+            logger.trace("Adding publication: {}", subscriptionRequest);
         }
     }
 
@@ -598,7 +598,7 @@ public class PublicationManagerImpl
     private boolean isExpired(PublicationInformation publicationInformation) {
         SubscriptionQos subscriptionQos = publicationInformation.subscriptionRequest.getQos();
         long subscriptionEndDelay = getSubscriptionEndDelay(subscriptionQos);
-        logger.trace("ExpiryDate - System.currentTimeMillis: " + subscriptionEndDelay);
+        logger.trace("ExpiryDate - System.currentTimeMillis: {}", subscriptionEndDelay);
         return (subscriptionEndDelay != SubscriptionQos.NO_EXPIRY_DATE && subscriptionEndDelay <= 0);
     }
 
@@ -642,12 +642,12 @@ public class PublicationManagerImpl
                     sendPublication(publication, publicationInformation);
                 }
 
-                logger.trace("attribute changed for subscription id: {} sending publication if delay > minInterval.",
+                logger.trace("Attribute changed for subscription id: {} sending publication if delay > minInterval.",
                              subscriptionId);
             }
 
         } else {
-            logger.trace("subscription {} has expired but attributeValueChanged has been called", subscriptionId);
+            logger.trace("Subscription {} has expired but attributeValueChanged has been called", subscriptionId);
         }
 
     }
@@ -663,17 +663,16 @@ public class PublicationManagerImpl
                         - publicationInformation.getState().getTimeOfLastPublication()) {
                     sendPublication(prepareBroadcastPublication(Arrays.asList(values), subscriptionId),
                                     publicationInformation);
-                    logger.trace("event occured changed for subscription id: {} sending publication: ", subscriptionId);
+                    logger.trace("Event occured changed for subscription id: {} sending publication: ", subscriptionId);
                 } else {
-                    logger.trace("Two subsequent broadcasts of event " + publicationInformation.getSubscribedToName()
-                            + " occured within minInterval of subscription with id "
-                            + publicationInformation.getSubscriptionId()
-                            + ". Event will not be sent to the subscribing client.");
+                    logger.trace("Two subsequent broadcasts of event {} occured within minInterval of subscription with id {}. Event will not be sent to the subscribing client.",
+                                 publicationInformation.getSubscribedToName(),
+                                 publicationInformation.getSubscriptionId());
                 }
             }
 
         } else {
-            logger.trace("subscription {} has expired but eventOccurred has been called", subscriptionId);
+            logger.trace("Subscription {} has expired but eventOccurred has been called", subscriptionId);
         }
 
     }
@@ -715,7 +714,7 @@ public class PublicationManagerImpl
                         return false;
                     }
                 } catch (Exception e) {
-                    logger.error("processFilterChain error: {}", e.getMessage());
+                    logger.error("ProcessFilterChain error:", e);
                     throw new IllegalStateException("processFilterChain: Error in reflection calling filters.", e);
                 }
             }
@@ -736,7 +735,7 @@ public class PublicationManagerImpl
             sendSubscriptionPublication(publication, publicationInformation);
             // TODO handle exceptions during publication. See JOYNR-2113
         } catch (JoynrRuntimeException | IOException e) {
-            logger.error("sendPublication error.", e);
+            logger.error("SendPublication error: ", e);
         }
     }
 

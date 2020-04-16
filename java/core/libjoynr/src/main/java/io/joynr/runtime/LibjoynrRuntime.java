@@ -89,7 +89,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
-                logger.error("Routing proxy creation failed: " + error);
+                logger.error("Routing proxy creation failed:", error);
             }
         };
         proxyBuilder.build(routingProxyCreatedCallback);

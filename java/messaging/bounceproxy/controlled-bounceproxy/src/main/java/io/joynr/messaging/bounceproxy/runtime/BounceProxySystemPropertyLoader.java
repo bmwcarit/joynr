@@ -101,14 +101,14 @@ public class BounceProxySystemPropertyLoader {
     private static Optional<String> loadPropertyFromFile(String key) {
 
         if (systemPropertiesFromFile == null) {
-            logger.info("Loading system properties file " + CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES);
+            logger.info("Loading system properties file {}", CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES);
             systemPropertiesFromFile = PropertyLoader.loadProperties(CONTROLLED_BOUNCE_PROXY_SYSTEM_PROPERTIES);
         }
 
         if (systemPropertiesFromFile != null) {
             String value = systemPropertiesFromFile.getProperty(key);
 
-            logger.info("Trying to load property '" + key + "' from system properties file");
+            logger.info("Trying to load property '{}' from system properties file", key);
 
             if (value != null) {
                 return replaceVariableBySystemProperty(value);

@@ -262,7 +262,7 @@ public class LongPollChannel {
             try {
                 httpclient.close();
             } catch (IOException e) {
-                logger.error("error closing http client", e);
+                logger.error("Error closing http client", e);
             }
         }
         logger.debug("LongPollingChannel CHANNEL: {} SHUT DOWN", id);

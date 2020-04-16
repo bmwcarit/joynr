@@ -33,7 +33,7 @@ public class TestRawMessagingProcessor extends RawMessagingPreprocessor {
 
     @Override
     public byte[] process(byte[] rawMessage, Optional<Map<String, Serializable>> context) {
-        logger.info("raw message received: " + new String(rawMessage, StandardCharsets.UTF_8));
+        logger.info("Raw message received: {}", new String(rawMessage, StandardCharsets.UTF_8));
         return rawMessage;
     }
 }

@@ -99,7 +99,7 @@ public class ExpiredDiscoveryEntryCacheCleaner {
                 }
             }
         }
-        logger.debug("The following expired participant IDs will be cleaned from the caches {}:\n{}",
+        logger.debug("The following expired participant IDs will be cleaned from the caches {}: {}",
                      Arrays.toString(caches),
                      expiredDiscoveryEntries);
         cleanupAction.cleanup(expiredDiscoveryEntries);

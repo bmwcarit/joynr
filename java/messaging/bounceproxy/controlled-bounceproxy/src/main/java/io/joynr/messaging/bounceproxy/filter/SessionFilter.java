@@ -84,9 +84,9 @@ public class SessionFilter implements Filter {
 
         if (!hasSession(httpRequest)) {
             HttpSession session = httpRequest.getSession(true);
-            logger.info("creating new session for request: session ID: {}", session.getId());
+            logger.info("Creating new session for request: session ID: {}", session.getId());
         } else {
-            logger.debug("request with existing session: {}", httpRequest.getSession().getId());
+            logger.debug("Request with existing session: {}", httpRequest.getSession().getId());
         }
 
         chain.doFilter(request, new UrlRewritingResponseWrapper((HttpServletResponse) response, httpRequest));

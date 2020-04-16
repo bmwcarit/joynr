@@ -45,7 +45,7 @@ public class GcdUtilities {
     public static String[] loadDefaultGbidsFromDefaultMessagingProperties() {
         Properties joynrDefaultProperties = PropertyLoader.loadProperties(DEFAULT_MESSAGING_PROPERTIES_FILE);
         if (!joynrDefaultProperties.containsKey(PROPERTY_GBIDS)) {
-            logger.error("No GBIDs found in default properties: " + joynrDefaultProperties);
+            logger.error("No GBIDs found in default properties: {}", joynrDefaultProperties);
             throw new JoynrIllegalStateException("No GBIDs found in default properties.");
         }
 

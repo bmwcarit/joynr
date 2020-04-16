@@ -275,8 +275,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
         StrippedArguments strippedArguments = getStrippedArguments(args, method.getParameterTypes());
 
-        logger.debug("ONEWAYREQUEST call proxy: method: {}, params: {}, proxy participantId: {},"
-                + " provider discovery entries: {}",
+        logger.debug("ONEWAYREQUEST call proxy: method: {}, params: {}, proxy participantId: {}, provider discovery entries: {}",
                      method.getName(),
                      strippedArguments.params,
                      fromParticipantId,
@@ -310,8 +309,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
         }
 
-        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {},"
-                + " proxy participantId: {}, provider discovery entries: {}",
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy participantId: {}, provider discovery entries: {}",
                      attributeSubscription.getSubscriptionId(),
                      attributeSubscription.getSubscriptionName(),
                      attributeSubscription.getQos(),
@@ -327,8 +325,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
         }
 
-        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {},"
-                + " proxy participantId: {}, provider discovery entries: {}",
+        logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider discovery entries: {}",
                      broadcastSubscription.getSubscriptionId(),
                      broadcastSubscription.getBroadcastName(),
                      broadcastSubscription.getQos(),

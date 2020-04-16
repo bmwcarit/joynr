@@ -32,7 +32,7 @@ public class TestMessagePersister implements MessagePersister {
 
     @Override
     public boolean persist(String messageQueueId, DelayableImmutableMessage message) {
-        logger.info("adding message {} to persistence for queue {}",
+        logger.info("Adding message {} to persistence for queue {}",
                     message.getMessage().toLogMessage(),
                     messageQueueId);
         return true;
@@ -40,13 +40,13 @@ public class TestMessagePersister implements MessagePersister {
 
     @Override
     public Set<DelayableImmutableMessage> fetchAll(String messageQueueId) {
-        logger.info("fetching all persisted messages for queue {}", messageQueueId);
+        logger.info("Fetching all persisted messages for queue {}", messageQueueId);
         return new HashSet<DelayableImmutableMessage>();
     }
 
     @Override
     public void remove(String messageQueueId, DelayableImmutableMessage message) {
-        logger.info("removing message {} from persistence for queue {}",
+        logger.info("Removing message {} from persistence for queue {}",
                     message.getMessage().toLogMessage(),
                     messageQueueId);
     }

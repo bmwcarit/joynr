@@ -157,7 +157,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                 }
                 while (r != null) {
                     ProxyInformation proxyInformation = proxyMap.get(r);
-                    logger.debug("removing garbage collected proxy participantId {}", proxyInformation.participantId);
+                    logger.debug("Removing garbage collected proxy participantId {}", proxyInformation.participantId);
                     removeNextHop(proxyInformation.participantId);
                     shutdownNotifier.unregister(proxyInformation.shutdownListener);
                     proxyMap.remove(r);
@@ -284,25 +284,22 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     }
 
     private void routeInternal(final ImmutableMessage message, long delayMs, final int retriesCount) {
-        logger.trace("Scheduling message {} with delay {} and retries {}",
-                     new Object[]{ message, delayMs, retriesCount });
+        logger.trace("Scheduling message {} with delay {} and retries {}", message, delayMs, retriesCount);
 
         Set<Address> addresses = getAddresses(message);
         try {
             checkFoundAddresses(addresses, message);
         } catch (JoynrMessageNotSentException error) {
-            logger.error(" ERROR SENDING: aborting send of messageId: {}. Error: {}",
-                         new Object[]{ message.getId(), error.getMessage() });
+            logger.error("ERROR SENDING: aborting send of messageId: {}. Error:", message.getId(), error);
             callMessageProcessedListeners(message.getId());
             return;
         } catch (Exception error) {
-            logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}",
-                        new Object[]{ message.getId(), error.getClass().getName(), error.getMessage() });
             delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs, retriesCount);
-            logger.error("Rescheduling messageId: {} with delay {} ms, TTL is: {}",
+            logger.error("Rescheduling messageId: {} with delay {} ms, TTL is: {}. Error:",
                          message.getId(),
                          delayMs,
-                         dateFormatter.format(message.getTtlMs()));
+                         dateFormatter.format(message.getTtlMs()),
+                         error);
         }
 
         DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message,
@@ -317,7 +314,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         if (maxRetryCount > -1) {
             final int retriesCount = delayableMessage.getRetriesCount();
             if (retriesCount > maxRetryCount) {
-                logger.error("Max-retry-count (" + maxRetryCount + ") reached. Dropping message " + messageId);
+                logger.error("Max-retry-count ({}) reached. Dropping message {}", maxRetryCount, messageId);
                 callMessageProcessedListeners(messageId);
                 return;
             }
@@ -363,16 +360,14 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     return;
                 }
                 if (error instanceof JoynrShutdownException) {
-                    logger.warn("{}", error.getMessage());
+                    logger.warn("Caught an exception:", error);
                     return;
                 } else if (error instanceof JoynrMessageNotSentException) {
-                    logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}",
-                                 new Object[]{ messageId, error.getMessage() });
+                    logger.error("ERROR SENDING: Aborting send of messageId: {}. Error:", messageId, error);
                     callMessageProcessedListeners(messageId);
                     return;
                 }
-                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}",
-                            new Object[]{ messageId, error.getClass().getName(), error.getMessage() });
+                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error:", messageId, error);
 
                 long delayMs;
                 if (error instanceof JoynrDelayMessageException) {
@@ -459,13 +454,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     }
 
     private long createDelayWithExponentialBackoff(long sendMsgRetryIntervalMs, int retries) {
-        logger.trace("TRIES: " + retries);
         long millis = sendMsgRetryIntervalMs + (long) ((2 ^ (retries)) * sendMsgRetryIntervalMs * Math.random());
         if (maxDelayMs >= sendMsgRetryIntervalMs && millis > maxDelayMs) {
             millis = maxDelayMs;
-            logger.trace("set MILLIS to " + millis + " since maxDelayMs is " + maxDelayMs);
         }
-        logger.trace("MILLIS: " + millis);
+        logger.trace("Created delay of {}ms in retry {}", millis, retries);
         return millis;
     }
 
@@ -536,11 +529,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     return;
                 } catch (Exception error) {
                     if (delayableMessage == null) {
-                        logger.error("error in scheduled message router thread: {}, delayableMessage == null, continuing.",
-                                     error.getMessage());
+                        logger.error("Error in scheduled message router thread. delayableMessage == null, continuing. Error:",
+                                     error);
                         continue;
                     }
-                    logger.error("error in scheduled message router thread: {}", error.getMessage());
+                    logger.error("Error in scheduled message router thread:", error);
                     if (failureAction == null) {
                         failureAction = createFailureAction(delayableMessage);
                     }

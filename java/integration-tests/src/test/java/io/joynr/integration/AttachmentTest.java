@@ -78,7 +78,7 @@ public class AttachmentTest {
         try {
             bpMock.createChannel(channelId);
         } catch (Exception e) {
-            logger.error("Exception :", e);
+            logger.error("Exception: ", e);
         }
 
         sendAttachmentMessage(channelId);
@@ -102,7 +102,7 @@ public class AttachmentTest {
                                    .when()
                                    .post("/channels/" + channelId + "/messageWithAttachment");
 
-        logger.debug("Response : " + response);
+        logger.debug("Response: ", response);
         return Optional.ofNullable(response);
     }
 
@@ -127,7 +127,7 @@ public class AttachmentTest {
         assertTrue(message.getUnencryptedBody() != null);
 
         Response attachment = getAttachment(channelId, msgId);
-        logger.debug("received attachment: " + convertStreamToString(attachment.getBody().asInputStream()));
+        logger.debug("Received attachment: ", convertStreamToString(attachment.getBody().asInputStream()));
     }
 
     public static String convertStreamToString(java.io.InputStream is) {

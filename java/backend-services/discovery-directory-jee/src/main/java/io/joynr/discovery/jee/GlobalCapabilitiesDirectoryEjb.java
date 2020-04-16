@@ -99,9 +99,9 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     private boolean addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) {
         if (globalDiscoveryEntry.getDomain() == null || globalDiscoveryEntry.getInterfaceName() == null
                 || globalDiscoveryEntry.getParticipantId() == null || globalDiscoveryEntry.getAddress() == null) {
-            String message = "DiscoveryEntry being registered is not complete: " + globalDiscoveryEntry;
-            logger.error(message);
-            throw new ProviderRuntimeException(message);
+            final String msg = String.format("DiscoveryEntry being registered is incomplete: %s", globalDiscoveryEntry);
+            logger.error(msg);
+            throw new ProviderRuntimeException(msg);
         }
 
         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
@@ -112,9 +112,10 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         } else if (address instanceof ChannelAddress) {
             clusterControllerId = ((ChannelAddress) address).getChannelId();
         } else {
-            logger.error("Error adding DiscoveryEntry for " + globalDiscoveryEntry.getParticipantId()
-                    + ". Unknown address type: " + globalDiscoveryEntry.getAddress());
-            throw new ProviderRuntimeException("Unable to add DiscoveryEntry for "
+            logger.error("Error adding DiscoveryEntry for participantId {}. Unknown address type: {}",
+                         globalDiscoveryEntry.getParticipantId(),
+                         globalDiscoveryEntry.getAddress());
+            throw new ProviderRuntimeException("Unable to add DiscoveryEntry for participantId "
                     + globalDiscoveryEntry.getParticipantId() + ". Unknown address type: "
                     + globalDiscoveryEntry.getAddress());
         }
@@ -125,8 +126,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
             for (String gbid : gbids) {
                 String toAddGbid;
                 if (gbid.isEmpty()) {
-                    logger.warn("Received add with empty gbid for participantId: " + participantId
-                            + " treating as ownGbid.");
+                    logger.warn("Received add with empty gbid for participantId: {} treating as ownGbid.",
+                                participantId);
                     toAddGbid = gcdGbid;
                 } else {
                     toAddGbid = gbid;
@@ -155,15 +156,15 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                                                                          clusterControllerId,
                                                                                          toAddGbid);
                 if (queryResult.isEmpty()) {
-                    logger.trace("adding new discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
+                    logger.trace("Adding new discoveryEntry {} to the persisted entries.", globalDiscoveryEntry);
                     entityManager.persist(entity);
                 } else {
-                    logger.trace("merging discoveryEntry {} to the persisted entries: " + globalDiscoveryEntry);
+                    logger.trace("Merging discoveryEntry {} to the persisted entries.", globalDiscoveryEntry);
                     entityManager.merge(entity);
                 }
             }
         } catch (Exception e) {
-            logger.error("Error adding discoveryEntry for {} and gbids {}: {}",
+            logger.error("Error adding discoveryEntry for participantId {} and gbids {}:",
                          participantId,
                          Arrays.toString(gbids),
                          e);
@@ -207,7 +208,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         try {
             globalDiscoveryEntries = lookup(domains, interfaceName, gcdGbidArray);
         } catch (ApplicationException e) {
-            logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}: {}",
+            logger.error("Error looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}:",
                          Arrays.toString(domains),
                          interfaceName,
                          gcdGbid,
@@ -297,7 +298,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         try {
             return lookup(participantId, gcdGbidArray);
         } catch (ApplicationException e) {
-            logger.error("Error looking up global discovery entry for participantId {} and own Gbid {}: {}",
+            logger.error("Error looking up global discovery entry for participantId {} and own Gbid {}:",
                          participantId,
                          gcdGbid,
                          e);
@@ -359,7 +360,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         } catch (ApplicationException e) {
             throw e;
         } catch (Exception e) {
-            logger.error("Error looking up global discovery entry for participantId {} and Gbids {}: {}",
+            logger.error("Error looking up global discovery entry for participantId {} and Gbids {}:",
                          participantId,
                          Arrays.toString(gbids),
                          e);
@@ -391,8 +392,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
             logger.debug("Removing global discovery entries with participantIds {} from gbids {}",
                          Arrays.toString(participantIds),
                          Arrays.toString(addaptedGbidArray));
-            String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE "
-                    + "gdep.participantId IN :participantIds AND gdep.gbid IN :gbids";
+            String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId IN :participantIds AND gdep.gbid IN :gbids";
             deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
                                         .setParameter("participantIds",
                                                       new HashSet<String>(Arrays.asList(participantIds)))
@@ -402,8 +402,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
             logger.debug("Removing global discovery entries with participantIds {} from own Gbid {}",
                          Arrays.toString(participantIds),
                          gcdGbid);
-            String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE "
-                    + "gdep.participantId IN :participantIds AND gdep.gbid = :gbid";
+            String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId IN :participantIds AND gdep.gbid = :gbid";
             deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
                                         .setParameter("participantIds",
                                                       new HashSet<String>(Arrays.asList(participantIds)))
@@ -442,16 +441,15 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                             participantId,
                             Arrays.toString(gbids));
 
-                String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep " + "WHERE "
-                        + "gdep.participantId = :participantId";
+                String queryCountString = "SELECT count(gdep) FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId";
                 numberOfEntriesInAllGbids = entityManager.createQuery(queryCountString, Long.class)
                                                          .setParameter("participantId", participantId)
                                                          .getSingleResult();
             } else {
-                logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
+                logger.debug("Deleted {} entries for participantId {}", deletedCount, participantId);
             }
         } catch (Exception e) {
-            logger.error("Error removing discoveryEntry for {} and gbids {}: {}",
+            logger.error("Error removing discoveryEntry for participantId {} and gbids {}:",
                          participantId,
                          Arrays.toString(gbids),
                          e);
@@ -468,8 +466,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void touch(String clusterControllerId) {
-        logger.debug("Touch called. Updating discovery entries from cluster controller with id: "
-                + clusterControllerId);
+        logger.debug("Touch called. Updating discovery entries from cluster controller with id {}",
+                     clusterControllerId);
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.clusterControllerId = :clusterControllerId";
         long now = System.currentTimeMillis();
         TypedQuery<GlobalDiscoveryEntryPersisted> query = entityManager.createQuery(queryString,
@@ -482,18 +480,20 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void touch(String clusterControllerId, String[] participantIds) {
-        final String message = "Error: touch method for clusterControllerId: " + clusterControllerId
-                + " and participantIds: " + Arrays.toString(participantIds) + " is not yet implemented";
-        logger.error(message);
-        throw new ProviderRuntimeException(message);
+        final String msg = String.format("Error: touch method for clusterControllerId %s and participantIds %s is not implemented",
+                                         clusterControllerId,
+                                         Arrays.toString(participantIds));
+        logger.error(msg);
+        throw new ProviderRuntimeException(msg);
     }
 
     @Override
     public void removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
-        final String message = "Error: removeStale method for clusterControllerId: " + clusterControllerId
-                + " and maxLastSeenDateMs: " + maxLastSeenDateMs + " is not yet implemented";
-        logger.error(message);
-        throw new ProviderRuntimeException(message);
+        final String msg = String.format("Error: removeStael method for clusterControllerId %s and maxLastSeenDateMs %s is not yet implemented",
+                                         clusterControllerId,
+                                         maxLastSeenDateMs);
+        logger.error(msg);
+        throw new ProviderRuntimeException(msg);
     }
 
 }

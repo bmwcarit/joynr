@@ -136,7 +136,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
             cache.put(new Element(dreKey, updatedEntry));
             updateSuccess = true;
         } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
-            logger.error("updateDomainRole failed.", e);
+            logger.error("UpdateDomainRole failed.", e);
         }
 
         return updateSuccess;
@@ -479,7 +479,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
             cache.put(new Element(aceKey, accessControlEntry));
             updateSuccess = true;
         } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
-            logger.error("update " + cacheId + "failed.", e);
+            logger.error("Update {} failed:", cacheId, e);
         }
 
         return updateSuccess;
@@ -491,7 +491,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         try {
             removeResult = cache.remove(aceKey);
         } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
-            logger.error("remove " + cacheId + " failed.", e);
+            logger.error("Remove {} failed.", cacheId, e);
         }
 
         return removeResult;

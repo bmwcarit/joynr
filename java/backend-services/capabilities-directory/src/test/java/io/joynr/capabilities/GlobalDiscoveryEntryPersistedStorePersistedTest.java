@@ -133,7 +133,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     @Test
     public void testVersionPersistedAndRetrieved() throws Exception {
         GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
-        logger.info("Discovery entry: " + discoveryEntry);
+        logger.info("Discovery entry: {}", discoveryEntry);
         GlobalDiscoveryEntryPersisted expectedDiscoveryEntry = new GlobalDiscoveryEntryPersisted(discoveryEntry,
                                                                                                  discoveryEntry.getClusterControllerId(),
                                                                                                  discoveryEntry.getGbid());
@@ -146,7 +146,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertNotNull(lookupResult);
         assertEquals(1, lookupResult.size());
         DiscoveryEntry persistedEntry = lookupResult.iterator().next();
-        logger.info("Persisted entry: " + persistedEntry);
+        logger.info("Persisted entry: {}", persistedEntry);
         assertNotEquals(System.identityHashCode(discoveryEntry), System.identityHashCode(persistedEntry));
         assertNotEquals(System.identityHashCode(expectedDiscoveryEntry), System.identityHashCode(persistedEntry));
         assertNotNull(persistedEntry);

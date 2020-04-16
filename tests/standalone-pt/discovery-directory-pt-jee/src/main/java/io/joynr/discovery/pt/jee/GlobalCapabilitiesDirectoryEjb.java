@@ -166,7 +166,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void remove(String participantId, String[] gbids) throws ApplicationException {
-        logger.debug("calling remove entries for participantId {} and gbids )", participantId, Arrays.toString(gbids));
+        logger.debug("Calling remove entries for participantId {} and gbids )", participantId, Arrays.toString(gbids));
     }
 
     @Override

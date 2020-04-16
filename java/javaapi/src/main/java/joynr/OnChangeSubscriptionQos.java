@@ -150,10 +150,10 @@ public class OnChangeSubscriptionQos extends UnicastSubscriptionQos {
     private OnChangeSubscriptionQos setMinIntervalMsInternal(final long minIntervalMs) {
         if (minIntervalMs < MIN_MIN_INTERVAL_MS) {
             this.minIntervalMs = MIN_MIN_INTERVAL_MS;
-            logger.warn("minIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: {}", MIN_MIN_INTERVAL_MS);
+            logger.warn("MinIntervalMs < MIN_MIN_INTERVAL_MS. Using MIN_MIN_INTERVAL_MS: {}", MIN_MIN_INTERVAL_MS);
         } else if (minIntervalMs > MAX_MIN_INTERVAL_MS) {
             this.minIntervalMs = MAX_MIN_INTERVAL_MS;
-            logger.warn("minIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: {}", MAX_MIN_INTERVAL_MS);
+            logger.warn("MinIntervalMs > MAX_MIN_INTERVAL_MS. Using MAX_MIN_INTERVAL_MS: {}", MAX_MIN_INTERVAL_MS);
         } else {
             this.minIntervalMs = minIntervalMs;
         }

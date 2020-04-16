@@ -223,7 +223,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                     stamp = mqttClientLock.readLock();
                     continue;
                 default:
-                    logger.error("Unable to connect for unknown/unlisted reason.");
+                    logger.error("Unable to connect for unknown/unlisted reason.", mqttError);
                     throw new JoynrIllegalStateException("Unable connect for unknown/unlisted reason.");
                 }
             } catch (JoynrIllegalStateException e) {
@@ -249,7 +249,6 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
                 mqttClientLock.unlockRead(stamp);
             }
         }
-        logger.info("Leaving start");
     }
 
     private MqttClient createMqttClient() throws MqttException {
@@ -464,14 +463,12 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             mqttClientLock.unlockRead(stamp);
         }
 
-        logger.debug("Published message: " + new String(serializedMessage, StandardCharsets.UTF_8));
+        logger.debug("Published message: {}", serializedMessage);
         successAction.execute();
     }
 
     @Override
     public void connectionLost(Throwable error) {
-        logger.info("connectionLost: {}", error.getMessage());
-
         if (error instanceof MqttException) {
             MqttException mqttError = (MqttException) error;
             int reason = mqttError.getReasonCode();
@@ -555,7 +552,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             disconnect(clientToDisconnect, forcibly);
         }
         if (shutdown.get()) {
-            logger.debug("joynr is shutting down. Will not attempt a reconnect.");
+            logger.debug("Joynr is shutting down. Will not attempt a reconnect.");
             return;
         }
         if (reconnectSleepMs > 0) {

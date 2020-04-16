@@ -118,9 +118,6 @@ public class RequestReplyManagerImpl
                             final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
                             Request request,
                             MessagingQos messagingQos) {
-
-        logger.trace("SEND USING RequestReplySenderImpl with Id: " + System.identityHashCode(this));
-
         MutableMessage message = messageFactory.createRequest(fromParticipantId,
                                                               toDiscoveryEntry.getParticipantId(),
                                                               request,
@@ -128,13 +125,13 @@ public class RequestReplyManagerImpl
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
         message.setStatelessAsync(request.getStatelessAsyncCallbackMethodId() != null);
 
-        logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, "
-                + "provider participantId: {}, params: {}",
+        logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, provider domain: {}, params: {}",
                      request.getMethodName(),
                      request.getRequestReplyId(),
                      message.getId(),
                      fromParticipantId,
                      toDiscoveryEntry.getParticipantId(),
+                     toDiscoveryEntry.getDomain(),
                      request.getParams());
         messageSender.sendMessage(message);
     }
@@ -280,7 +277,7 @@ public class RequestReplyManagerImpl
     }
 
     private void handleRequest(ProviderCallback<Reply> replyCallback, RequestCaller requestCaller, Request request) {
-        logger.trace("executing request {}", request.getRequestReplyId());
+        logger.trace("Executing request {}", request.getRequestReplyId());
         requestInterpreter.execute(replyCallback, requestCaller, request);
     }
 
@@ -291,7 +288,7 @@ public class RequestReplyManagerImpl
         final ReplyCaller callBack = stateless ? replyCallerDirectory.get(callbackId)
                 : replyCallerDirectory.remove(callbackId);
         if (callBack == null) {
-            logger.warn("No reply caller found for id: " + callbackId);
+            logger.warn("No reply caller found for id: {}", callbackId);
             return;
         }
         callBack.messageCallBack(reply);
@@ -355,7 +352,7 @@ public class RequestReplyManagerImpl
         running = false;
         synchronized (outstandingRequestThreads) {
             for (Thread thread : outstandingRequestThreads) {
-                logger.debug("shutting down. Interrupting thread: " + thread);
+                logger.debug("Shutting down. Interrupting thread: {}", thread.getName());
                 thread.interrupt();
             }
         }

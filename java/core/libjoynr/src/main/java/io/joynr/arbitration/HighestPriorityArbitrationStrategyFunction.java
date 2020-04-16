@@ -40,19 +40,19 @@ public class HighestPriorityArbitrationStrategyFunction extends ArbitrationStrat
     @Override
     public final Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
                                                         final Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-        logger.trace("starting select Provider by priority");
+        logger.trace("Starting select Provider by priority");
         DiscoveryEntryWithMetaInfo highestPriorityCapability = null;
         long highestPriority = -1L;
         for (DiscoveryEntryWithMetaInfo discoveryEntry : capabilities) {
             // Search for the provider with the highest priority
             Long priority = discoveryEntry.getQos().getPriority();
-            logger.trace("Looking at capability with priority " + priority.toString());
+            logger.trace("Looking at capability with priority {}", priority.toString());
             if (highestPriority < priority) {
                 highestPriority = priority;
                 highestPriorityCapability = discoveryEntry;
             }
         }
-        logger.trace("capability with highest priority: " + highestPriority + "\r\n" + highestPriorityCapability);
+        logger.trace("Capability with highest priority ({}): {}", highestPriority, highestPriorityCapability);
 
         return highestPriorityCapability == null ? null
                 : new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(highestPriorityCapability));

@@ -72,7 +72,6 @@ public class SubscriptionPublisherInjectionWrapper implements InvocationHandler 
     }
 
     public static SubscriptionPublisherInjectionWrapper createInvocationHandler(Bean<?> bean, BeanManager beanManager) {
-        logger.trace("Called with {} and {}", bean, beanManager);
         SubscriptionPublisherProducer subscriptionPublisherProducer = getSubscriptionPublisherProducerReference(beanManager);
         Class proxiedInterface = SubscriptionPublisherInjection.class;
         Class subscriptionPublisherClass = null;
@@ -103,7 +102,6 @@ public class SubscriptionPublisherInjectionWrapper implements InvocationHandler 
         SubscriptionPublisherProducer reference = (SubscriptionPublisherProducer) beanManager.getReference(bean,
                                                                                                            SubscriptionPublisherProducer.class,
                                                                                                            beanManager.createCreationalContext(bean));
-        logger.trace("Got subscriptionPublisherProducer reference: {}", reference);
         return reference;
     }
 

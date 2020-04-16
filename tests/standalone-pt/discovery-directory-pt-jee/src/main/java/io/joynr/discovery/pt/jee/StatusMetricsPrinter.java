@@ -80,11 +80,11 @@ public class StatusMetricsPrinter {
         final Runnable command = new Runnable() {
             public void run() {
                 try {
-                    logger.debug("write results each: {}", printUpdateIntervalMs);
+                    logger.debug("Write results each: {}", printUpdateIntervalMs);
                     printMetrics();
-                    logger.debug("write results each: {} DONE", printUpdateIntervalMs);
+                    logger.debug("Write results each: {} DONE", printUpdateIntervalMs);
                 } catch (Exception e) {
-                    logger.error("error in writting", e);
+                    logger.error("Error in writting", e);
                 }
             }
         };

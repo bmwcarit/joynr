@@ -39,12 +39,12 @@ public class RegisterJoynrJeeMessageContextExtension implements Extension {
 
     public void afterBeanDiscovery(@Observes AfterBeanDiscovery event, BeanManager beanManager) {
         JoynrJeeMessageContext context = JoynrJeeMessageContext.getInstance();
-        logger.info("Created new JoynrJeeMessageContext " + context + " and adding to event " + event);
+        logger.info("Created new JoynrJeeMessageContext {} and adding to event {}", context, event);
         event.addContext(context);
     }
 
     public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event) {
-        logger.info("Adding JoynrJeeMessageScoped scope to event " + event);
+        logger.info("Adding JoynrJeeMessageScoped scope to event {}", event);
         event.addScope(JoynrJeeMessageScoped.class, true, false);
     }
 

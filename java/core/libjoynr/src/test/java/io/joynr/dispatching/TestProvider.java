@@ -53,7 +53,7 @@ public class TestProvider extends DefaulttestProvider {
     public Promise<MethodWithStringsDeferred> methodWithStrings(String payload) {
 
         MethodWithStringsDeferred deferred = new MethodWithStringsDeferred();
-        logger.info("Responding to payload: " + payload.toString());
+        logger.info("Responding to payload: {}", payload.toString());
         String response = "response to " + payload.toString();
         sentPayloads.put(payload, response);
 

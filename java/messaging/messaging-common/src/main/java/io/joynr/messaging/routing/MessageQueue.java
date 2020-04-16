@@ -127,7 +127,7 @@ public class MessageQueue {
      */
     void waitForQueueToDrain() {
         int remainingMessages = delayableImmutableMessages.size();
-        logger.info("joynr message queue stopping. Contains {} remaining messages.", remainingMessages);
+        logger.info("Joynr message queue stopping. Contains {} remaining messages.", remainingMessages);
         if (remainingMessages > 0) {
             long shutdownStart = System.currentTimeMillis();
             while (System.currentTimeMillis() - shutdownStart < shutdownTimeoutMs) {
@@ -144,9 +144,9 @@ public class MessageQueue {
         }
         remainingMessages = delayableImmutableMessages.size();
         if (remainingMessages == 0) {
-            logger.info("joynr message queue successfully emptied.");
+            logger.info("Joynr message queue successfully emptied.");
         } else {
-            logger.info("joynr message queue still contained " + remainingMessages + " messages at shutdown.");
+            logger.info("Joynr message queue still contained {} messages at shutdown.", remainingMessages);
         }
     }
 

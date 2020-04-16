@@ -165,7 +165,7 @@ public final class ArbitratorFactory {
 
                     logger.trace("ArbitratorRunnable interrupted. Continuing in a new cycle.");
                 } catch (Exception e) {
-                    logger.error("Unexpected exception in ArbitratorRunnable: " + e);
+                    logger.error("Unexpected exception in ArbitratorRunnable: ", e);
                     if (delayableArbitration != null) {
                         delayableArbitration.getArbitration().arbitrationFailed(e);
                     }

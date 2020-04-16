@@ -114,7 +114,7 @@ public class PeriodicSubscriptionQos extends UnicastSubscriptionQos implements H
     public PeriodicSubscriptionQos setAlertAfterIntervalMs(final long alertAfterIntervalMs) {
         if (alertAfterIntervalMs > MAX_ALERT_AFTER_INTERVAL_MS) {
             this.alertAfterIntervalMs = MAX_ALERT_AFTER_INTERVAL_MS;
-            logger.warn("alertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: {}",
+            logger.warn("AlertAfterInterval_ms > MAX_ALERT_AFTER_INTERVAL_MS. Using MAX_ALERT_AFTER_INTERVAL_MS: {}",
                         MAX_ALERT_AFTER_INTERVAL_MS);
         } else {
             this.alertAfterIntervalMs = alertAfterIntervalMs;
@@ -122,7 +122,7 @@ public class PeriodicSubscriptionQos extends UnicastSubscriptionQos implements H
 
         if (this.alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL && this.alertAfterIntervalMs < periodMs) {
             this.alertAfterIntervalMs = periodMs;
-            logger.warn("alertAfterInterval_ms < MIN_ALERT_AFTER_INTERVAL and will therefore be set to the period: {}",
+            logger.warn("AlertAfterInterval_ms < MIN_ALERT_AFTER_INTERVAL and will therefore be set to the period: {}",
                         periodMs);
         }
         return this;
@@ -171,17 +171,17 @@ public class PeriodicSubscriptionQos extends UnicastSubscriptionQos implements H
     public PeriodicSubscriptionQos setPeriodMs(long periodMs) {
         if (periodMs < MIN_PERIOD_MS) {
             this.periodMs = MIN_PERIOD_MS;
-            logger.warn("periodMs < MIN_PERIOD_MS. Using MIN_PERIOD_MS: {}", MIN_PERIOD_MS);
+            logger.warn("PeriodMs < MIN_PERIOD_MS. Using MIN_PERIOD_MS: {}", MIN_PERIOD_MS);
         } else if (periodMs > MAX_PERIOD_MS) {
             this.periodMs = MAX_PERIOD_MS;
-            logger.warn("periodMs > MAX_PERIOD_MS. Using MAX_PERIOD_MS: {}", MAX_PERIOD_MS);
+            logger.warn("PeriodMs > MAX_PERIOD_MS. Using MAX_PERIOD_MS: {}", MAX_PERIOD_MS);
         } else {
             this.periodMs = periodMs;
         }
 
         if (this.alertAfterIntervalMs != NO_ALERT_AFTER_INTERVAL && this.alertAfterIntervalMs < this.periodMs) {
             this.alertAfterIntervalMs = this.periodMs;
-            logger.warn("alertAfterIntervalMs < periodMs. Setting alertAfterIntervalMs = periodMs: {}", this.periodMs);
+            logger.warn("AlertAfterIntervalMs < periodMs. Setting alertAfterIntervalMs = periodMs: {}", this.periodMs);
         }
 
         return this;

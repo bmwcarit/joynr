@@ -85,13 +85,13 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
 
                                              @Override
                                              public void onProxyCreationFinished(testProxy result) {
-                                                 logger.debug("proxy created successfully for domain: " + domain);
+                                                 logger.debug("Proxy created successfully for domain: {}", domain);
                                                  proxyCreatedSemaphore.release();
                                              }
 
                                              @Override
                                              public void onProxyCreationError(JoynrRuntimeException error) {
-                                                 logger.error("proxy creation failed: " + error);
+                                                 logger.error("Proxy creation failed: {}", error);
                                              }
                                          });
         assertTrue(proxyCreatedSemaphore.tryAcquire(60, TimeUnit.SECONDS));

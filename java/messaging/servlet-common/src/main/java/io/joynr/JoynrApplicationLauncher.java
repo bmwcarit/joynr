@@ -89,7 +89,7 @@ public class JoynrApplicationLauncher {
                     continue;
                 }
 
-                logger.info("Running app: " + appClass.getName());
+                logger.info("Running app: {}", appClass.getName());
                 final JoynrApplication app = injectorFactory.createApplication(new JoynrApplicationModule(appClass));
                 apps.add(app);
                 executionQueue.submit(app);
@@ -123,7 +123,7 @@ public class JoynrApplicationLauncher {
                 try {
                     app.shutdown();
                 } catch (Exception e) {
-                    logger.debug("error shutting down app: " + app.getClass(), e);
+                    logger.debug("Error shutting down app {}: {}", app.getClass(), e);
                 }
             }
             servletReceiver.shutdown(clear);

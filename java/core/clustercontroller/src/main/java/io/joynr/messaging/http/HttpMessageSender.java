@@ -182,7 +182,7 @@ public class HttpMessageSender implements ShutdownListener {
         try {
             httpclient.close();
         } catch (IOException e) {
-            logger.error("error closing HTTP client: {}", e.getMessage());
+            logger.error("Error closing HTTP client: {}", e.getMessage());
         }
     }
 }

@@ -103,7 +103,7 @@ public class ServersUtil {
             tmpFile.deleteOnExit();
             try (FileWriter writer = new FileWriter(tmpFile)) {
                 String provisionedCapabilitiesJson = createJsonFor(directoriesUrl);
-                logger.debug("Writing capabilities JSON:\n{}\nto file: {}",
+                logger.debug("Writing capabilities JSON: {} to file: {}",
                              provisionedCapabilitiesJson,
                              tmpFile.getAbsolutePath());
                 writer.write(provisionedCapabilitiesJson);
@@ -260,7 +260,7 @@ public class ServersUtil {
         jettyServer.setHandler(contexts);
         jettyServer.start();
 
-        logger.trace("Started jetty server:\n{}", jettyServer.dump());
+        logger.trace("Started jetty server: {}", jettyServer.dump());
 
         return jettyServer;
     }

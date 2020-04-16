@@ -89,7 +89,7 @@ public class BounceProxySystemTest {
 
         logger.info("1) Channel Creation");
         String channelUrl = createChannel(channelId, trackingId);
-        logger.info("Channel location: " + channelUrl);
+        logger.info("Channel location: {}", channelUrl);
 
         logger.info("2) Message Sending");
 
@@ -126,7 +126,7 @@ public class BounceProxySystemTest {
         CloseableHttpResponse response = null;
         try {
             response = httpclient.execute(postCreateChannel);
-            logger.info("returned {}", response.getStatusLine());
+            logger.info("Returned {}", response.getStatusLine());
 
             int statusCode = response.getStatusLine().getStatusCode();
             switch (statusCode) {
@@ -160,7 +160,7 @@ public class BounceProxySystemTest {
 
         CloseableHttpResponse response = httpclient.execute(postMessage);
         int statusCode = response.getStatusLine().getStatusCode();
-        logger.info(" returned {}", response.getStatusLine());
+        logger.info("Returned {}", response.getStatusLine());
         response.close();
 
         return statusCode == HttpStatus.SC_CREATED;
@@ -178,7 +178,7 @@ public class BounceProxySystemTest {
         try {
 
             response = httpclient.execute(getMessages);
-            logger.info("returned {}", response.getStatusLine());
+            logger.info("Returned {}", response.getStatusLine());
 
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 return null;
@@ -203,14 +203,14 @@ public class BounceProxySystemTest {
 
     private void deleteChannel(String channelUrl) throws Exception {
 
-        logger.info("delete channel {} ...", channelUrl);
+        logger.info("Delete channel {} ...", channelUrl);
 
         HttpDelete httpDelete = new HttpDelete(channelUrl);
         CloseableHttpResponse response = null;
 
         try {
             response = httpclient.execute(httpDelete);
-            logger.info("returned {}", response.getStatusLine());
+            logger.info("Returned {}", response.getStatusLine());
         } finally {
             if (response != null)
                 response.close();
@@ -320,7 +320,7 @@ public class BounceProxySystemTest {
         try {
             test.run();
         } catch (Exception e) {
-            logger.error("Error running tests: " + e.getMessage(), e);
+            logger.error("Error running tests: ", e);
         }
 
     }

@@ -229,7 +229,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                 try {
                     WebSocketClientAddress webSocketClientAddress = objectMapper.readValue(serializedMessage,
                                                                                            WebSocketClientAddress.class);
-                    logger.debug("Registering WebSocketClientAddress: " + webSocketClientAddress);
+                    logger.debug("Registering WebSocketClientAddress: {}", webSocketClientAddress);
                     sessionMap.put(webSocketClientAddress.getId(), getSession());
                 } catch (IOException e) {
                     logger.error("Error parsing WebSocketClientAddress: ", e);

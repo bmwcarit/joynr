@@ -50,7 +50,7 @@ public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFac
     protected MqttMessagingStub createInternal(MqttAddress address) {
         String gbid = address.getBrokerUri();
         if (!gbidToMqttClientMap.containsKey(gbid)) {
-            logger.error("Gbid " + gbid + " is not known in MqttMessagingStubFactory.");
+            logger.error("Gbid {} is not known in MqttMessagingStubFactory.", gbid);
             return null;
         }
         return new MqttMessagingStub(address, gbidToMqttClientMap.get(gbid));

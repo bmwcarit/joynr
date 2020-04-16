@@ -109,7 +109,7 @@ public abstract class AbstractSSLEnd2EndTest extends JoynrEnd2EndTest {
 
         // Make sure the channel is created before the first messages sent.
         Thread.sleep(200);
-        logger.info("setup finished");
+        logger.info("Setup finished");
     }
 
     @After
