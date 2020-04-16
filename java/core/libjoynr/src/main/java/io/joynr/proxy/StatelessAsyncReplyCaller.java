@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import io.joynr.dispatching.rpc.RpcUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,8 +87,10 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
         }
         try {
             if (success) {
+                Object[] callbackParams = RpcUtils.convertResponseForStatelessCallbackToCorrectTypes(callbackMethod,
+                                                                                                     payload);
                 callbackMethod.invoke(statelessAsyncCallback,
-                                      addReplyContext(payload.getResponse(), payload.getRequestReplyId()));
+                                      addReplyContext(callbackParams, payload.getRequestReplyId()));
             } else { // withException or withApplicationError
                 callbackMethod.invoke(statelessAsyncCallback,
                                       addReplyContext(extractError(payload), payload.getRequestReplyId()));

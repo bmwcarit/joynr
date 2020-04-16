@@ -92,6 +92,20 @@ public class RpcUtils {
         return responsePayload;
     }
 
+    public static Object[] convertResponseForStatelessCallbackToCorrectTypes(Method statelessCallbackMethod,
+                                                                             Reply reply) {
+        Object[] response = reply.getResponse();
+        int returnValuesCount = response.length;
+        Object[] returnValues = new Object[returnValuesCount];
+        Class<?>[] returnValuesTypes = statelessCallbackMethod.getParameterTypes();
+
+        for (int i = 0; i < returnValuesCount; i++) {
+            returnValues[i] = objectMapper.convertValue(response[i], returnValuesTypes[i]);
+        }
+
+        return returnValues;
+    }
+
     private static void convertMultioutResponseToCorrectTypes(Method method, Object... response) {
         Method getDatatypes;
         try {

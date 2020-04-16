@@ -30,6 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import io.joynr.dispatching.rpc.RpcUtils;
+import io.joynr.messaging.JsonMessageSerializerModule;
+import joynr.types.Localisation.GpsLocation;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -93,6 +98,11 @@ public class StatelessAsyncReplyCallerTest {
         public void getTripFailed(GetTripErrors error, ReplyContext replyContext) {
             resultHolder.put(replyContext.getMessageId(), true);
         }
+
+        @Override
+        public void getSavedTripsSuccess(Trip[] result, ReplyContext replyContext) {
+            resultHolder.put(replyContext.getMessageId(), true);
+        }
     }
 
     private NavigationCallback callback = new NavigationCallback();
@@ -100,6 +110,10 @@ public class StatelessAsyncReplyCallerTest {
     @Before
     public void setup() {
         resultHolder.clear();
+
+        Guice.createInjector(new JsonMessageSerializerModule(),
+                             binder -> binder.requestStaticInjection(RpcUtils.class));
+
     }
 
     @Test
@@ -110,6 +124,23 @@ public class StatelessAsyncReplyCallerTest {
     @Test
     public void testCallRequestGuidanceSuccess() throws Exception {
         testCall("requestGuidance", requestReplyId -> new Reply(requestReplyId, Boolean.TRUE));
+    }
+
+    @Test
+    public void testCallMethodWithArrayReturnValue() throws Exception {
+        testCall("getSavedTrips", requestReplyId -> {
+            Object[] trips = new Object[]{ new Trip(new GpsLocation[0], "testTripTitle_1"),
+                    new Trip(new GpsLocation[0], "testTripTitle_2") };
+            return new Reply(requestReplyId, (Object) trips);
+        });
+    }
+
+    @Test
+    public void testCallMethodWithEmptyArrayReturnValue() throws Exception {
+        testCall("getSavedTrips", requestReplyId -> {
+            Object[] trips = new Object[0];
+            return new Reply(requestReplyId, (Object) trips);
+        });
     }
 
     @Test
