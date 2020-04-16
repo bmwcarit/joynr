@@ -100,13 +100,6 @@ export interface Provisioning {
     };
     persistency?: Persistency;
     shutdownSettings?: ShutdownSettings;
-    websocket?: {
-        /**
-         * time in milliseconds between websocket reconnect attempts
-         * @default 1000
-         */
-        reconnectSleepTimeMs: number;
-    };
 }
 
 export interface InProcessProvisioning extends Provisioning {
@@ -126,8 +119,11 @@ export interface InProcessProvisioning extends Provisioning {
     gbids: string[];
 }
 
-export interface WebSocketLibjoynrProvisioning extends Provisioning {
+export interface LibJoynrProvisioning extends Provisioning {
     capabilities?: DiscoveryEntryWithMetaInfoMembers[];
+}
+
+export interface WebSocketLibjoynrProvisioning extends LibJoynrProvisioning {
     keychain?: {
         tlsCert: string;
         tlsKey: string;
@@ -140,5 +136,12 @@ export interface WebSocketLibjoynrProvisioning extends Provisioning {
         host: string;
         /** @default "" */
         path: string;
+    };
+    websocket?: {
+        /**
+         * time in milliseconds between websocket reconnect attempts
+         * @default 1000
+         */
+        reconnectSleepTimeMs: number;
     };
 }
