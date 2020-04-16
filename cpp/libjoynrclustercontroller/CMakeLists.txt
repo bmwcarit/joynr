@@ -20,6 +20,7 @@ add_subdirectory(httpnetworking)
 add_subdirectory(http-communication-manager)
 add_subdirectory(messaging)
 add_subdirectory(mqtt)
+add_subdirectory(uds)
 add_subdirectory(websocket)
 
 set(PUBLIC_HEADERS
@@ -58,6 +59,7 @@ target_link_objlibraries(${PROJECT_NAME}
     PUBLIC JoynrCCLib::CcJoynrMessaging
     PUBLIC JoynrCCLib::CcMessaging
     PUBLIC JoynrCCLib::Mqtt
+    PUBLIC JoynrCCLib::CcUds
     PUBLIC JoynrCCLib::CcWebsocket
 )
 

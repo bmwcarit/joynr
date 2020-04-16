@@ -71,6 +71,7 @@ class MqttReceiver;
 class MulticastMessagingSkeletonDirectory;
 class Settings;
 class SubscriptionManager;
+class UdsCcMessagingSkeleton;
 class WebSocketMessagingStubFactory;
 
 namespace capabilities
@@ -179,8 +180,7 @@ protected:
     ClusterControllerSettings _clusterControllerSettings;
 
     UdsSettings _udsSettings;
-    // TODO
-    // std::shared_ptr<IUdsCcMessagingSkeleton> _udsCcMessagingSkeleton;
+    std::shared_ptr<UdsCcMessagingSkeleton> _udsCcMessagingSkeleton;
     WebSocketSettings _wsSettings;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsCcMessagingSkeleton;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsTLSCcMessagingSkeleton;

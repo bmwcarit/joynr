@@ -111,6 +111,7 @@
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
 #include "libjoynrclustercontroller/mqtt/MqttTransportStatus.h"
+#include "libjoynrclustercontroller/uds/UdsCcMessagingSkeleton.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeleton.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
@@ -146,8 +147,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _localDomainAccessController(nullptr),
           _clusterControllerSettings(*(this->_settings)),
           _udsSettings(*(this->_settings)),
-          // TODO
-          // _udsCcMessagingSkeleton(nullptr),
+          _udsCcMessagingSkeleton(nullptr),
           _wsSettings(*(this->_settings)),
           _wsCcMessagingSkeleton(nullptr),
           _wsTLSCcMessagingSkeleton(nullptr),
@@ -520,7 +520,6 @@ void JoynrClusterControllerRuntime::init()
             JOYNR_LOG_DEBUG(logger(),
                             "The http message sender supplied is NULL, creating the default "
                             "http MessageSender");
-
             _httpMessageSender = std::make_shared<HttpSender>(
                     _messagingSettings.getBrokerUrl(),
                     std::chrono::milliseconds(_messagingSettings.getSendMsgMaxTtl()),
@@ -960,8 +959,7 @@ void JoynrClusterControllerRuntime::startLocalCommunication()
         }
     }
     if (_clusterControllerSettings.isUdsEnabled()) {
-        // TODO: create and init UdsCcMessagingSkeleton
-        JOYNR_LOG_INFO(logger(), "local uds communication not implemented yet.");
+        _udsCcMessagingSkeleton = std::make_shared<UdsCcMessagingSkeleton>(_ccMessageRouter);
     }
 }
 
@@ -1027,7 +1025,7 @@ void JoynrClusterControllerRuntime::shutdown()
         _wsTLSCcMessagingSkeleton->shutdown();
     }
 
-    // TODO
+    // TODO shutdown UdsClient / UdsSender / UdsReceiver ?!?
     // if (_udsCcMessagingSkeleton) {
     //    _udsCcMessagingSkeleton->shutdown();
     //}
