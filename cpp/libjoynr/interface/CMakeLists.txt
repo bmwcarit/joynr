@@ -47,6 +47,7 @@ set(PUBLIC_HEADERS
     include/joynr/ISubscriptionManager.h
     include/joynr/ITimeoutListener.h
     include/joynr/ITransportStatus.h
+    include/joynr/IUdsSender.h
     include/joynr/IWebSocketSendInterface.h
     include/joynr/JoynrMessagingConnectorFactory.h
     include/joynr/MessagingQos.h
