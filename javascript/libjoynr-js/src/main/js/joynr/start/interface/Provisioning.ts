@@ -145,3 +145,23 @@ export interface WebSocketLibjoynrProvisioning extends LibJoynrProvisioning {
         reconnectSleepTimeMs: number;
     };
 }
+
+export interface UdsLibJoynrProvisioning extends LibJoynrProvisioning {
+    uds?: {
+        /**
+         * socket path to the uds (server) address
+         * @default "/var/run/joynr/cluster-controller.sock"
+         */
+        socketPath?: string;
+        /**
+         * clientId of the uds connection
+         * @default "uuid value will be auto generated"
+         */
+        clientId?: number;
+        /**
+         * time in milliseconds between reconnect attempts for the uds connection
+         * @default 500
+         */
+        reconnectSleepTimeMs?: number;
+    };
+}
