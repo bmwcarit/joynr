@@ -1,6 +1,5 @@
 #!/bin/bash
-
-set -ex
+set -Eeuxo pipefail
 
 base_image=joynr-complete-with-joynr
 intermediate_container=joynr-installed-with-consumer-app-tmp

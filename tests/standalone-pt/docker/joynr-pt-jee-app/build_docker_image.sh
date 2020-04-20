@@ -1,8 +1,7 @@
 #!/bin/bash
+set -Eeuxo pipefail
 
 echo "### start build_docker_image.sh for joynr-pt-jee-app ###"
-
-set -e -x
 
 if [ ! -d ../../pt-jee-app/target ] || [ ! -f ../../pt-jee-app/target/pt-jee-app.war ]; then
 	echo "ERROR: You have to have built the project with 'mvn package' first."

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -Eeuxo pipefail
 
 # reset network pool before deploying
 docker network prune -f
@@ -87,4 +88,4 @@ fi
   exit 0
 }
 
-while true; do :; done
+while true; do sleep 1; done

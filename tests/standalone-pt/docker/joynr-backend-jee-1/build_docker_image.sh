@@ -1,10 +1,9 @@
 #!/bin/bash
+set -Eeuxo pipefail
 
 echo "### start build_docker_image.sh for joynr-backend-jee-1 ###"
 
 EXTRA_OPTIONS="--no-cache"
-
-set -e -x
 
 if [ -d target ]; then
 	rm -Rf target
