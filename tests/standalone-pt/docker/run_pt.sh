@@ -76,11 +76,10 @@ function stop_me {
   # clean up
   docker-compose rm -f
   docker system prune -f
-  rm pt-result.log
 
 if [ -d results ]; then
     echo "Collecting results"
-    cat ./results/* > ./results/mergeResults.csv
+    cat ./results/results_cont_* > ./results/mergeResults.csv
     awk '!unique[$1$2$3$4$5$6$7$8$9]++' ./results/mergeResults.csv > ./results/resultsOfAllContainers.csv
     rm ./results/mergeResults.csv
 fi

@@ -56,7 +56,7 @@ echo "CONTAINERID: $(hostname)"
 printf "\n\n >>>  STARTING cpp consumer test app <<<\n\n"
 
 # give the broker and backend some time to startup
-sleep 25
+sleep 40
 
 num=1
 while true

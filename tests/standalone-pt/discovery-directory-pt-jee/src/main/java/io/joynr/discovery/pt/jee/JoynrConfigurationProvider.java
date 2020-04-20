@@ -16,9 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.discovery.jee;
-
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID;
+package io.joynr.discovery.pt.jee;
 
 import java.util.Map;
 import java.util.Properties;

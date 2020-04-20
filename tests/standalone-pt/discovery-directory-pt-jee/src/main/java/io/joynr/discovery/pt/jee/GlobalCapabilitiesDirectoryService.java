@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.discovery.jee;
+package io.joynr.discovery.pt.jee;
 
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 

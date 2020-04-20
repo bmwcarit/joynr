@@ -5,7 +5,7 @@
 asadmin --interactive=false start-domain --debug --verbose &
 PID=$!
 # sleep a few seconds to give the broker to bootup
-sleep 20
+sleep 40
 asadmin --user admin --passwordfile=/opt/payara41/pwdfile deploy /discovery-directory-pt-jee.war
 
 # should we have a tail -f here?

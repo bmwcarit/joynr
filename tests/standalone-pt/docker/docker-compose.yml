@@ -27,6 +27,10 @@ services:
       - "joynrbackend-db"
     environment:
       - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
+      - PT_LOGGING_INTERVAL_MS=1000
+      - PT_RESULTS=/home/joynr/build/results_backend.csv
+    volumes:
+      - ./results:/home/joynr/build
 
   # jee consumer container
   jeeapp-1:

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.discovery.jee;
+package io.joynr.discovery.pt.jee;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,6 +57,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Inject
     public GlobalCapabilitiesDirectoryEjb(@SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher) {
+        logger.trace("### CONSTRUCTOR called");
         this.gcdSubPublisher = gcdSubPublisher;
     }
 
