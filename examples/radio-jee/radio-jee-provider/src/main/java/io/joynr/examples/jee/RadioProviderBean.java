@@ -18,15 +18,21 @@
  */
 package io.joynr.examples.jee;
 
+import java.time.Instant;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
 import joynr.exceptions.ApplicationException;
 import joynr.vehicle.RadioStation;
 import joynr.vehicle.RadioSubscriptionPublisher;
@@ -39,18 +45,24 @@ import joynr.vehicle.RadioSync;
 @ServiceProvider(serviceInterface = RadioSync.class)
 public class RadioProviderBean implements RadioService {
 
+    private final static Logger LOG = LoggerFactory.getLogger(RadioProviderBean.class);
+
     private RadioStationDatabase radioStationDatabase;
 
     private GeoLocationService geoLocationService;
 
     private RadioSubscriptionPublisher radioSubscriptionPublisher;
 
+    private JoynrStatusMetrics statusMetrics;
+
     @Inject
     public RadioProviderBean(RadioStationDatabase radioStationDatabase,
                              GeoLocationService geoLocationService,
+                             JoynrStatusMetrics statusMetrics,
                              @SubscriptionPublisher RadioSubscriptionPublisher radioSubscriptionPublisher) {
         this.radioStationDatabase = radioStationDatabase;
         this.geoLocationService = geoLocationService;
+        this.statusMetrics = statusMetrics;
         this.radioSubscriptionPublisher = radioSubscriptionPublisher;
     }
 
@@ -89,6 +101,35 @@ public class RadioProviderBean implements RadioService {
             throw new IllegalStateException("No subscription publisher available.");
         }
         radioSubscriptionPublisher.fireWeakSignal(radioStationDatabase.getCurrentStation());
+    }
+
+    @Override
+    public String printMetrics() {
+        StringBuilder statusMetricsStringBuilder = new StringBuilder();
+        statusMetricsStringBuilder.append("******************************\n");
+        statusMetricsStringBuilder.append(" *** Joynr Status Metrics ***\n");
+        statusMetricsStringBuilder.append(" *** (");
+        statusMetricsStringBuilder.append(Instant.now());
+        statusMetricsStringBuilder.append(") ***\n");
+        statusMetricsStringBuilder.append("\tDropped messages: " + statusMetrics.getNumDroppedMessages() + "\n");
+        statusMetricsStringBuilder.append(statusMetrics.getAllConnectionStatusMetrics().stream().map(m -> {
+            String connectionMetricsString = " *** ConnectionStatusMetrics ***\n";
+            connectionMetricsString += "\tGBID: >" + m.getGbid().orElse("NULL") + "<\n";
+            connectionMetricsString += "\tURL: " + m.getUrl() + "\n";
+            connectionMetricsString += "\tisSender?: " + m.isSender() + "\n";
+            connectionMetricsString += "\tisReceiver: " + m.isReceiver() + "\n";
+            connectionMetricsString += "\tconnection attempts: " + m.getConnectionAttempts() + "\n";
+            connectionMetricsString += "\tconnection drops: " + m.getConnectionDrops() + "\n";
+            connectionMetricsString += "\tRECEIVED messages: " + m.getReceivedMessages() + "\n";
+            connectionMetricsString += "\tSENT messages: " + m.getSentMessages() + "\n";
+            connectionMetricsString += "\tlast connection state change: " + m.getLastConnectionStateChangeDate() + "\n";
+            connectionMetricsString += "\tisConnected?: " + m.isConnected() + "\n";
+            connectionMetricsString += "******************************\n";
+            return connectionMetricsString;
+        }).collect(Collectors.joining()));
+        String statusMetricsString = statusMetricsStringBuilder.toString();
+        LOG.info(statusMetricsString);
+        return statusMetricsString;
     }
 
 }

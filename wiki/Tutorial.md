@@ -221,7 +221,9 @@ The following keyboard commands can be used to control the provider application:
 * `q` to quit
 * `s` to shuffle stations
 * `w` to fire weak signal event
+* `p` to fire weak signal event with country of current station as partition
 * `n` to fire new station discovered event
+* `m` to print status metrics (Note: ConnectionStatusMetrics are only available for HivemqMqttClient)
 
 ## Consumers
 A consumer is a class that wants to retrieve data from providers, they can either subscribe to data
@@ -417,6 +419,9 @@ The following keyboard commands can be used to control the consumer application:
 
 * `q` to quit
 * `s` to shuffle stations
+* `g` to get the current station
+* `l` to get the location of the current station
+* `m` to print status metrics (Note: ConnectionStatusMetrics are only available for HivemqMqttClient)
 
 ## In Action
 The radio app can be run in all combinations of consumer and provider: java-java, cpp-cpp, java-cpp,

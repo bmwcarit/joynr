@@ -18,8 +18,10 @@
  */
 package io.joynr.demo;
 
+import java.time.Instant;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -59,6 +61,7 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
 import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OnChangeWithKeepAliveSubscriptionQos;
@@ -93,6 +96,8 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
     private ObjectMapper objectMapper;
     @Inject
     private DiscoveryScope discoveryScope;
+    @Inject
+    private JoynrStatusMetrics statusMetrics;
 
     /**
      * Main method. This method is responsible for: 1. Instantiating the consumer application. 2. Injecting the instance
@@ -588,7 +593,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                         LOG.error("Exception from getCurrentStation()", e);
                     }
                     break;
-                case "m":
+                case "l":
                     try {
                         GetLocationOfCurrentStationReturned locationOfCurrentStation = radioProxy.getLocationOfCurrentStation();
                         LOG.info("called getLocationOfCurrentStation. country: " + locationOfCurrentStation.country
@@ -597,9 +602,42 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                         LOG.error("Exception from getLocationOfCurrentStation()", e);
                     }
                     break;
+                case "m":
+                    StringBuilder statusMetricsStringBuilder = new StringBuilder();
+                    statusMetricsStringBuilder.append("******************************\n");
+                    statusMetricsStringBuilder.append(" *** Joynr Status Metrics ***\n");
+                    statusMetricsStringBuilder.append(" *** (");
+                    statusMetricsStringBuilder.append(Instant.now());
+                    statusMetricsStringBuilder.append(") ***\n");
+                    statusMetricsStringBuilder.append("\tDropped messages: " + statusMetrics.getNumDroppedMessages()
+                            + "\n");
+                    statusMetricsStringBuilder.append(statusMetrics.getAllConnectionStatusMetrics().stream().map(m -> {
+                        String connectionMetricsString = " *** ConnectionStatusMetrics ***\n";
+                        connectionMetricsString += "\tGBID: >" + m.getGbid().orElse("NULL") + "<\n";
+                        connectionMetricsString += "\tURL: " + m.getUrl() + "\n";
+                        connectionMetricsString += "\tisSender?: " + m.isSender() + "\n";
+                        connectionMetricsString += "\tisReceiver: " + m.isReceiver() + "\n";
+                        connectionMetricsString += "\tconnection attempts: " + m.getConnectionAttempts() + "\n";
+                        connectionMetricsString += "\tconnection drops: " + m.getConnectionDrops() + "\n";
+                        connectionMetricsString += "\tRECEIVED messages: " + m.getReceivedMessages() + "\n";
+                        connectionMetricsString += "\tSENT messages: " + m.getSentMessages() + "\n";
+                        connectionMetricsString += "\tlast connection state change: "
+                                + m.getLastConnectionStateChangeDate() + "\n";
+                        connectionMetricsString += "\tisConnected?: " + m.isConnected() + "\n";
+                        connectionMetricsString += "******************************\n";
+                        return connectionMetricsString;
+                    }).collect(Collectors.joining()));
+                    LOG.info(statusMetricsStringBuilder.toString());
+                    break;
                 default:
-                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
-                            + " g\tto get the  current station\n" + " m\tto get the location of the current station\n");
+                    StringBuilder usageStringBuilder = new StringBuilder();
+                    usageStringBuilder.append("\n\nUSAGE press\n");
+                    usageStringBuilder.append(" q\tto quit\n");
+                    usageStringBuilder.append(" s\tto shuffle stations\n");
+                    usageStringBuilder.append(" g\tto get the  current station\n");
+                    usageStringBuilder.append(" l\tto get the location of the current station\n");
+                    usageStringBuilder.append(" m\tto print status metrics (Note: ConnectionStatusMetrics are only available for HivemqMqttClient)\n");
+                    LOG.info(usageStringBuilder.toString());
                     break;
                 }
             }

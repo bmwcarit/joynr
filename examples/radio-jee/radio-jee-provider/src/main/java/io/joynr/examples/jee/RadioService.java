@@ -24,4 +24,6 @@ public interface RadioService extends RadioSync {
 
     void fireWeakSignal();
 
+    String printMetrics();
+
 }

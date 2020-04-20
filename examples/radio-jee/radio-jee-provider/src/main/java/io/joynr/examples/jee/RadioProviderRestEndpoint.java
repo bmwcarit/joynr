@@ -19,6 +19,7 @@
 package io.joynr.examples.jee;
 
 import javax.inject.Inject;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -39,5 +40,11 @@ public class RadioProviderRestEndpoint {
     @Path("/fire-weak-signal")
     public void fireWeakSignal() {
         radioProviderBean.fireWeakSignal();
+    }
+
+    @GET
+    @Path("/metrics")
+    public String printMetrics() {
+        return radioProviderBean.printMetrics();
     }
 }

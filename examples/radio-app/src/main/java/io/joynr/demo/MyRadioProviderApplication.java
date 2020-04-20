@@ -18,8 +18,10 @@
  */
 package io.joynr.demo;
 
+import java.time.Instant;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -53,6 +55,7 @@ import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -66,6 +69,8 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
     private MyRadioProvider provider = null;
 
+    @Inject
+    private JoynrStatusMetrics statusMetrics;
     @Inject
     private ObjectMapper jsonSerializer;
 
@@ -341,20 +346,52 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             case "s":
                 provider.shuffleStations();
                 break;
-            case "p":
-                provider.fireWeakSignalEventWithPartition();
-                break;
             case "w":
                 provider.fireWeakSignalEvent();
+                break;
+            case "p":
+                provider.fireWeakSignalEventWithPartition();
                 break;
             case "n":
                 provider.fireNewStationDiscoveredEvent();
                 break;
+            case "m":
+                StringBuilder statusMetricsStringBuilder = new StringBuilder();
+                statusMetricsStringBuilder.append("******************************\n");
+                statusMetricsStringBuilder.append(" *** Joynr Status Metrics ***\n");
+                statusMetricsStringBuilder.append(" *** (");
+                statusMetricsStringBuilder.append(Instant.now());
+                statusMetricsStringBuilder.append(") ***\n");
+                statusMetricsStringBuilder.append("\tDropped messages: " + statusMetrics.getNumDroppedMessages()
+                        + "\n");
+                statusMetricsStringBuilder.append(statusMetrics.getAllConnectionStatusMetrics().stream().map(m -> {
+                    String connectionMetricsString = " *** ConnectionStatusMetrics ***\n";
+                    connectionMetricsString += "\tGBID: >" + m.getGbid().orElse("NULL") + "<\n";
+                    connectionMetricsString += "\tURL: " + m.getUrl() + "\n";
+                    connectionMetricsString += "\tisSender?: " + m.isSender() + "\n";
+                    connectionMetricsString += "\tisReceiver: " + m.isReceiver() + "\n";
+                    connectionMetricsString += "\tconnection attempts: " + m.getConnectionAttempts() + "\n";
+                    connectionMetricsString += "\tconnection drops: " + m.getConnectionDrops() + "\n";
+                    connectionMetricsString += "\tRECEIVED messages: " + m.getReceivedMessages() + "\n";
+                    connectionMetricsString += "\tSENT messages: " + m.getSentMessages() + "\n";
+                    connectionMetricsString += "\tlast connection state change: " + m.getLastConnectionStateChangeDate()
+                            + "\n";
+                    connectionMetricsString += "\tisConnected?: " + m.isConnected() + "\n";
+                    connectionMetricsString += "******************************\n";
+                    return connectionMetricsString;
+                }).collect(Collectors.joining()));
+                LOG.info(statusMetricsStringBuilder.toString());
+                break;
             default:
-                LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " s\tto shuffle stations\n"
-                        + " w\tto fire weak signal event\n"
-                        + " p\tto fire weak signal event with country of current station as partition\n"
-                        + " n\tto fire station discovered event\n");
+                StringBuilder usageStringBuilder = new StringBuilder();
+                usageStringBuilder.append("\n\nUSAGE press\n");
+                usageStringBuilder.append(" q\tto quit\n");
+                usageStringBuilder.append(" s\tto shuffle stations\n");
+                usageStringBuilder.append(" w\tto fire weak signal event\n");
+                usageStringBuilder.append(" p\tto fire weak signal event with country of current station as partition\n");
+                usageStringBuilder.append(" n\tto fire station discovered event\n");
+                usageStringBuilder.append(" m\tto print status metrics (Note: ConnectionStatusMetrics are only available for HivemqMqttClient)\n");
+                LOG.info(usageStringBuilder.toString());
                 break;
             }
         }
