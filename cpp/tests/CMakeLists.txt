@@ -226,6 +226,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockProvider.cpp
         mock/MockProvider.h
         mock/MockDispatcher.h
+        mock/MockIMessagingSkeleton.h
         mock/MockMessagingStub.h
         mock/MockMessagingStubFactory.h
         mock/MockMessageRouter.h
