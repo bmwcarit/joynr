@@ -174,19 +174,26 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             throw new JoynrRuntimeException(e);
         }
 
-        logger.error("Failed to execute sync method {}: arbitration and Connector failed: domain: \"{}\" interface: "
-                + "\"{}\" qos: \"{}\": Arbitration could not be finished in time.\"",
-                     method.getName(),
-                     domains,
-                     interfaceName,
-                     discoveryQos);
         if (throwable != null) {
+            logger.error("Failed to execute sync method {}: arbitration and Connector failed: domain: \"{}\" interface: "
+                    + "\"{}\" qos: \"{}\": Arbitration could not be finished in time.",
+                         method.getName(),
+                         domains,
+                         interfaceName,
+                         discoveryQos,
+                         throwable);
             if (throwable instanceof JoynrRuntimeException) {
                 throw (JoynrRuntimeException) throwable;
             } else {
                 throw new JoynrRuntimeException(throwable);
             }
         } else {
+            logger.error("Failed to execute sync method {}: arbitration and Connector failed: domain: \"{}\" interface: "
+                    + "\"{}\" qos: \"{}\": Arbitration could not be finished in time.",
+                         method.getName(),
+                         domains,
+                         interfaceName,
+                         discoveryQos);
             throw new DiscoveryException("Arbitration and Connector failed: domain: " + domains + " interface: "
                     + interfaceName + " qos: " + discoveryQos + ": Arbitration could not be finished in time.");
         }
