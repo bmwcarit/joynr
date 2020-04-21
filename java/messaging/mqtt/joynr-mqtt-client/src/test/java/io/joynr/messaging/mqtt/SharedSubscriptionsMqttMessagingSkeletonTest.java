@@ -42,7 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.Message;
@@ -79,7 +79,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Mock
-    private JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
+    private JoynrStatusMetricsReceiver mockJoynrStatusMetrics;
 
     private SharedSubscriptionsMqttMessagingSkeleton subject;
 
@@ -105,7 +105,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
                                                                new HashSet<JoynrMessageProcessor>(),
-                                                               joynrStatusMetricsAggregator,
+                                                               mockJoynrStatusMetrics,
                                                                ownGbid,
                                                                routingTable);
         subject.init();

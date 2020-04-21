@@ -42,7 +42,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -68,7 +68,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     private Set<JoynrMessageProcessor> messageProcessors;
-    private JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
+    private JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
     protected final String[] gbids;
     protected final RoutingTable routingTable;
 
@@ -88,7 +88,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
                                          Set<JoynrMessageProcessor> messageProcessors,
-                                         JoynrStatusMetricsAggregator joynrStatusMetricsAggregator,
+                                         JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                          RoutingTable routingTable) {
         sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
@@ -103,7 +103,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.mqttClientFactory = mqttClientFactory;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
-        this.joynrStatusMetricsAggregator = joynrStatusMetricsAggregator;
+        this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.gbids = gbids.clone();
         this.routingTable = routingTable;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}",
@@ -126,7 +126,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                        mqttTopicPrefixProvider,
                                                                        rawMessagingPreprocessor,
                                                                        messageProcessors,
-                                                                       joynrStatusMetricsAggregator,
+                                                                       joynrStatusMetricsReceiver,
                                                                        routingTable);
         }
         return new MqttMessagingSkeletonFactory(gbids,
@@ -137,7 +137,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                 mqttTopicPrefixProvider,
                                                 rawMessagingPreprocessor,
                                                 messageProcessors,
-                                                joynrStatusMetricsAggregator,
+                                                joynrStatusMetricsReceiver,
                                                 routingTable);
     }
 

@@ -36,7 +36,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -61,7 +61,7 @@ public class MqttMessagingSkeletonFactoryTest {
     @Mock
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     @Mock
-    private JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
+    private JoynrStatusMetricsReceiver mockJoynrStatusMetricsReceiver;
 
     @Test
     public void getSkeletonReturnsCorrectSkeleton() {
@@ -73,7 +73,7 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
-                                                                                joynrStatusMetricsAggregator,
+                                                                                mockJoynrStatusMetricsReceiver,
                                                                                 routingTable);
 
         JoynrMqttClient mqttClient1 = mock(JoynrMqttClient.class);
@@ -163,7 +163,7 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
-                                                                                joynrStatusMetricsAggregator,
+                                                                                mockJoynrStatusMetricsReceiver,
                                                                                 routingTable);
         testInitAllSkeletons(factory);
     }
@@ -188,7 +188,7 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                                                       mqttTopicPrefixProvider,
                                                                                                                       rawMessagingPreprocessor,
                                                                                                                       messageProcessors,
-                                                                                                                      joynrStatusMetricsAggregator,
+                                                                                                                      mockJoynrStatusMetricsReceiver,
                                                                                                                       routingTable);
         testInitAllSkeletons(factory);
     }

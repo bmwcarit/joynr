@@ -65,7 +65,7 @@ import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -90,7 +90,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap;
     private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
     private final boolean cleanSession;
-    private final JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
+    private final JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -141,7 +141,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider,
-                                   JoynrStatusMetricsAggregator joynrStatusMetricsAggregator) {
+                                   JoynrStatusMetricsReceiver joynrStatusMetricsReceiver) {
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
         this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
         this.mqttGbidToConnectionTimeoutSecMap = mqttGbidToConnectionTimeoutSecMap;
@@ -151,7 +151,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         sendingMqttClients = new HashMap<>(); // gbid to client
         receivingMqttClients = new HashMap<>(); // gbid to client
         this.cleanSession = cleanSession;
-        this.joynrStatusMetricsAggregator = joynrStatusMetricsAggregator;
+        this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
     }
 
     @Override
@@ -206,7 +206,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         connectionStatusMetrics.setSender(isSender);
         connectionStatusMetrics.setReceiver(isReceiver);
         connectionStatusMetrics.setUrl(mqttGbidToBrokerUriMap.get(gbid));
-        joynrStatusMetricsAggregator.addConnectionStatusMetrics(connectionStatusMetrics);
+        joynrStatusMetricsReceiver.addConnectionStatusMetrics(connectionStatusMetrics);
         ResubscribeHandler resubscribeHandler = new ResubscribeHandler(connectionStatusMetrics);
         DisconnectedListener disconnectedListener = new DisconnectedListener(connectionStatusMetrics);
         Mqtt5ClientBuilder clientBuilder = MqttClient.builder()

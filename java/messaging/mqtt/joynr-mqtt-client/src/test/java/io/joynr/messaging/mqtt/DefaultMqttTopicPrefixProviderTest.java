@@ -45,6 +45,8 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.PropertyLoader;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 
 /**
  * Unit tests for {@link DefaultMqttTopicPrefixProvider}.
@@ -87,6 +89,7 @@ public class DefaultMqttTopicPrefixProviderTest {
                                                     .toInstance(Executors.newScheduledThreadPool(10));
                 bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
                                     .toInstance(new String[]{ "testGbid" });
+                bind(JoynrStatusMetricsReceiver.class).to(JoynrStatusMetricsAggregator.class);
             }
         });
         Injector injector = Guice.createInjector(testModule, new JoynrPropertiesModule(properties));

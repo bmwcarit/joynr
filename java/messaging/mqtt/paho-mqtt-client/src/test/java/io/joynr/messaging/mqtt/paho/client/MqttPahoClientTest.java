@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging.mqtt.paho.client;
 
-import static com.google.inject.util.Modules.override;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -27,7 +26,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
@@ -53,7 +51,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -86,6 +83,8 @@ import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class MqttPahoClientTest {
@@ -292,6 +291,7 @@ public class MqttPahoClientTest {
                                                                          });
                                                 bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
                                                                     .toInstance(gbids);
+                                                bind(JoynrStatusMetricsReceiver.class).to(JoynrStatusMetricsAggregator.class);
                                             }
                                         });
 
@@ -646,6 +646,7 @@ public class MqttPahoClientTest {
                                                                          });
                                                 bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
                                                                     .toInstance(gbids);
+                                                bind(JoynrStatusMetricsReceiver.class).to(JoynrStatusMetricsAggregator.class);
                                             }
                                         });
 

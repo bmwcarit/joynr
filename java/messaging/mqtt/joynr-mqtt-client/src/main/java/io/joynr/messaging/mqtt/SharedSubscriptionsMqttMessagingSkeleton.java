@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 
@@ -68,7 +68,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                     RawMessagingPreprocessor rawMessagingPreprocessor,
                                                     Set<JoynrMessageProcessor> messageProcessors,
-                                                    JoynrStatusMetricsAggregator joynrStatusMetricsAggregator,
+                                                    JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                     String ownGbid,
                                                     RoutingTable routingTable) {
         super(ownTopic,
@@ -78,7 +78,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors,
-              joynrStatusMetricsAggregator,
+              joynrStatusMetricsReceiver,
               ownGbid,
               routingTable);
         this.replyToTopic = replyToTopic;

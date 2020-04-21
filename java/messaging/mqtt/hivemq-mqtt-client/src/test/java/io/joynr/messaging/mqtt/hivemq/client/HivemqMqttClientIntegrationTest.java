@@ -73,7 +73,7 @@ import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.reactivex.functions.Consumer;
 
 public class HivemqMqttClientIntegrationTest {
@@ -101,7 +101,7 @@ public class HivemqMqttClientIntegrationTest {
     @Mock
     private FailureAction mockFailureAction;
     @Mock
-    private JoynrStatusMetricsAggregator joynrStatusMetricsAggregator;
+    private JoynrStatusMetricsReceiver mockJoynrStatusMetrics;
     private Properties properties;
     private byte[] serializedMessage;
 
@@ -140,7 +140,7 @@ public class HivemqMqttClientIntegrationTest {
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(Executors.newScheduledThreadPool(10));
                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
-                bind(JoynrStatusMetricsAggregator.class).toInstance(joynrStatusMetricsAggregator);
+                bind(JoynrStatusMetricsReceiver.class).toInstance(mockJoynrStatusMetrics);
                 Multibinder.newSetBinder(binder(), new TypeLiteral<JoynrMessageProcessor>() {
                 });
                 bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY)).toInstance(gbids);

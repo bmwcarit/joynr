@@ -22,7 +22,7 @@ import java.util.Set;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -43,7 +43,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                            MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                            RawMessagingPreprocessor rawMessagingPreprocessor,
                                                            Set<JoynrMessageProcessor> messageProcessors,
-                                                           JoynrStatusMetricsAggregator joynrStatusMetricsAggregator,
+                                                           JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                            RoutingTable routingTable) {
         super();
         for (String gbid : gbids) {
@@ -60,7 +60,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                                                     mqttTopicPrefixProvider,
                                                                                     rawMessagingPreprocessor,
                                                                                     messageProcessors,
-                                                                                    joynrStatusMetricsAggregator,
+                                                                                    joynrStatusMetricsReceiver,
                                                                                     gbid,
                                                                                     routingTable));
         }

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.inject.Singleton;
 
 @Singleton
-public class JoynrStatusMetricsAggregator implements JoynrStatusMetrics {
+public class JoynrStatusMetricsAggregator implements JoynrStatusMetricsReceiver {
     private List<ConnectionStatusMetrics> connectionStatusMetricsList = new CopyOnWriteArrayList<ConnectionStatusMetrics>();
 
     private volatile AtomicLong droppedMessages = new AtomicLong();
