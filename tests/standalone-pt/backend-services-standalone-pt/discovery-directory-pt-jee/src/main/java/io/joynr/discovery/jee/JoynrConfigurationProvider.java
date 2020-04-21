@@ -33,7 +33,6 @@ import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.runtime.PropertyLoader;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 
 /**
@@ -75,19 +74,8 @@ public class JoynrConfigurationProvider {
         readAndSetProperty(joynrProperties,
                            ParticipantIdKeyUtil.getProviderParticipantIdKey(getJoynrLocalDomain(),
                                                                             GlobalCapabilitiesDirectoryProvider.class),
-                           readCapabilitiesDirectoryParticipantIdFromProperties());
+                           "pt-fakeGcdParticipantId");
         return joynrProperties;
-    }
-
-    private String readCapabilitiesDirectoryParticipantIdFromProperties() {
-        Properties joynrDefaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
-        if (!joynrDefaultProperties.containsKey(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID)) {
-            logger.trace("Default properties loaded: " + joynrDefaultProperties);
-            throw new IllegalStateException("No capabilities directory participant ID found in properties.");
-        }
-        String participantIdOfCapabilitiesDirectoryPT = joynrDefaultProperties.getProperty(PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID)
-                + "_pt";
-        return participantIdOfCapabilitiesDirectoryPT;
     }
 
     private void readAndSetProperty(Properties joynrProperties, String propertyKey, String defaultValue) {

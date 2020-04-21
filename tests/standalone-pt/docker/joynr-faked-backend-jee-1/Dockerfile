@@ -1,5 +1,5 @@
 FROM payaradocker/payaraserver:4.1.1.161.1
-COPY target/discovery-directory-pt-jee-shared-db.war /discovery-directory-pt-jee-shared-db.war
+COPY target/discovery-directory-pt-jee.war /discovery-directory-pt-jee.war
 COPY start-me-up.sh /start-me-up.sh
 
 ENV PATH ${PATH}:/opt/payara41/glassfish/bin

@@ -66,58 +66,7 @@
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 					<warName>discovery-directory-pt-jee-${project.version}</warName>
-					<webResources>
-						<resource>
-							<directory>${basedir}</directory>
-							<includes>
-								<include>*LICENSE*</include>
-								<include>NOTICE*</include>
-							</includes>
-						</resource>
-						<resource>
-							<directory>${project.build.directory}</directory>
-							<includes>
-								<include>LICENSE</include>
-							</includes>
-						</resource>
-					</webResources>
 				</configuration>
-				<executions>
-					<execution>
-						<id>with-shared-db</id>
-						<phase>install</phase>
-						<goals>
-							<goal>war</goal>
-						</goals>
-						<configuration>
-							<warName>discovery-directory-pt-jee-shared-db-${project.version}</warName>
-							<webResources>
-								<!-- use resources as for the regular .war -->
-								<resource>
-									<directory>${basedir}</directory>
-									<includes>
-										<include>*LICENSE*</include>
-										<include>NOTICE*</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>${project.build.directory}</directory>
-									<includes>
-										<include>LICENSE</include>
-									</includes>
-								</resource>
-								<!-- only replace the persistence.xml from the regular .war -->
-								<resource>
-									<directory>${basedir}/src/main/resources_for_shared_db</directory>
-									<targetPath>WEB-INF/classes</targetPath>
-									<includes>
-										<include>**/*.xml</include>
-									</includes>
-								</resource>
-							</webResources>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

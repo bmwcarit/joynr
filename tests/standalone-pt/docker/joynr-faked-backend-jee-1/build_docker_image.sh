@@ -20,9 +20,9 @@ function copy_war {
 }
 
 # here is the fake one
-DISCOVERY_WAR_FILE=../../backend-services-standalone-pt/discovery-directory-pt-jee/target/discovery-directory-pt-jee-shared-db*.war
+DISCOVERY_WAR_FILE=../../backend-services-standalone-pt/discovery-directory-pt-jee/target/discovery-directory-pt-jee*.war
 
-copy_war $DISCOVERY_WAR_FILE target/discovery-directory-pt-jee-shared-db.war
+copy_war $DISCOVERY_WAR_FILE target/discovery-directory-pt-jee.war
 
 if [ -z "$(docker version 2>/dev/null)" ]; then
 	echo "ERROR: The docker command seems to be unavailable."
