@@ -44,8 +44,8 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
+import io.joynr.jeeintegration.JeeJoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.messaging.JeeMessagingApplication;
 import io.joynr.jeeintegration.messaging.JeeMessagingEndpoint;
@@ -72,7 +72,7 @@ public class JeeMessagingEndpointTest {
                                                         JoynrIntegrationBean.class,
                                                         JeeMessagingApplication.class,
                                                         JeeMessagingEndpoint.class,
-                                                        JoynrStatusMetricsAggregator.class)
+                                                        JeeJoynrStatusMetricsAggregator.class)
                                             .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
         // @formatter:on
         return ShrinkWrap.create(WebArchive.class).addAsLibraries(javaArchive);

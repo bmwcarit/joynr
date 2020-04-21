@@ -31,6 +31,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
 import javax.annotation.Resource;
+import javax.ejb.DependsOn;
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
@@ -68,6 +69,7 @@ import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.statusmetrics.JoynrStatusMetrics;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.provider.JoynrInterface;
@@ -88,6 +90,7 @@ import joynr.infrastructure.DacTypes.TrustLevel;
  * <b>IMPORTANT</b>: This class requires the EE runtime to have been configured with a ManagedScheduledExecutorService
  * resource which has been given the name 'concurrent/joynrMessagingScheduledExecutor'.
  */
+@DependsOn("JeeJoynrStatusMetricsAggregator")
 @Singleton
 public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
@@ -101,7 +104,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     private BeanManager beanManager;
 
-    private JoynrStatusMetrics joynrStatusMetrics;
+    private JoynrStatusMetricsReceiver joynrStatusMetrics;
 
     /**
      * The scheduled executor service to use for providing to the joynr runtime.
@@ -140,7 +143,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                                       @JoynrMqttClientIdProvider Instance<MqttClientIdProvider> mqttClientIdProvider,
                                       @JoynrMessagePersister Instance<MessagePersister> messagePersister,
                                       BeanManager beanManager,
-                                      Instance<JoynrStatusMetrics> joynrStatusMetrics) {
+                                      JoynrStatusMetricsReceiver joynrStatusMetrics) {
         // CHECKSTYLE:ON
         if (joynrLocalDomain.isUnsatisfied()) {
             String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
@@ -204,7 +207,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         }
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
         this.beanManager = beanManager;
-        this.joynrStatusMetrics = joynrStatusMetrics.get();
+        this.joynrStatusMetrics = joynrStatusMetrics;
     }
 
     @Override
@@ -250,6 +253,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                     }
 
                     bind(JoynrStatusMetrics.class).toInstance(joynrStatusMetrics);
+                    bind(JoynrStatusMetricsReceiver.class).toInstance(joynrStatusMetrics);
                 }
             });
 

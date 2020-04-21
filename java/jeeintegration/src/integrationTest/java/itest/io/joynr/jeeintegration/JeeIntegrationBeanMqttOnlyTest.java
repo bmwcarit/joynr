@@ -37,8 +37,8 @@ import org.junit.runner.RunWith;
 
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
+import io.joynr.jeeintegration.JeeJoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 
@@ -60,7 +60,7 @@ public class JeeIntegrationBeanMqttOnlyTest {
                                      MqttOnlyJoynrConfigurationProvider.class,
                                      JoynrIntegrationBean.class,
                                      TestResult.class,
-                                     JoynrStatusMetricsAggregator.class)
+                                     JeeJoynrStatusMetricsAggregator.class)
                          .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
         // @formatter:on
     }

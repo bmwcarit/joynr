@@ -45,9 +45,11 @@ import com.google.inject.name.Names;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
+import io.joynr.jeeintegration.JeeJoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.statusmetrics.JoynrStatusMetrics;
 import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
@@ -71,7 +73,7 @@ public class JeeIntegrationBeanTest {
                                      JeeIntegrationJoynrTestConfigurationProvider.class,
                                      JoynrIntegrationBean.class,
                                      TestResult.class,
-                                     JoynrStatusMetricsAggregator.class)
+                                     JeeJoynrStatusMetricsAggregator.class)
                          .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
         // @formatter:on
     }
@@ -111,13 +113,13 @@ public class JeeIntegrationBeanTest {
     public void testJoynrStatusMetricsObjectIsUsedAsJoynrStatusReceiver() {
         Injector joynrInjector = joynrIntegrationBean.getJoynrInjector();
 
-        JoynrStatusMetricsAggregator mqttStatusReceiver = joynrInjector.getInstance(JoynrStatusMetricsAggregator.class);
+        JoynrStatusMetricsReceiver statusMetricsReceiver = joynrInjector.getInstance(JoynrStatusMetricsReceiver.class);
 
         assertNotNull(joynrStatusMetrics);
 
         // We cannot compare these objects directly using the == operator. The reason is that the joynrStatusMetrics object is
         // wrapped by a java proxy. Therefore the objects are different. However, the toString() method is called on the
         // underlying object.
-        assertEquals(mqttStatusReceiver.toString(), joynrStatusMetrics.toString());
+        assertEquals(statusMetricsReceiver.toString(), joynrStatusMetrics.toString());
     }
 }

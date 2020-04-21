@@ -18,24 +18,18 @@
  */
 package io.joynr.jeeintegration;
 
-import javax.annotation.PostConstruct;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.Local;
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
 
 import io.joynr.statusmetrics.JoynrStatusMetrics;
 import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 
 @Singleton
-@Startup
-public class JeeJoynrStatusMetricsAggregator extends JoynrStatusMetricsAggregator implements JoynrStatusMetrics {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JoynrIntegrationBean.class);
-
-    @PostConstruct
-    public void notifyPostConstruct() {
-        LOG.debug("JeeJoynrStatusMetricsAggregator constructed.");
-    }
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@Local({ JoynrStatusMetrics.class, JoynrStatusMetricsReceiver.class })
+public class JeeJoynrStatusMetricsAggregator extends JoynrStatusMetricsAggregator {
+    // This class adds JEE annotation to allow injection of (non JEE) JoynrStatusMetrics by CDI
 }

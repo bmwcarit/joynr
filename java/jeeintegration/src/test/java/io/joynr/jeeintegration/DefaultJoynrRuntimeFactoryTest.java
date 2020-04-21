@@ -58,11 +58,11 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.statusmetrics.JoynrStatusMetrics;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 import joynr.Request;
@@ -154,9 +154,7 @@ public class DefaultJoynrRuntimeFactoryTest {
         Instance<MqttClientIdProvider> mqttClientIdProviderInstance = mock(Instance.class);
         when(mqttClientIdProviderInstance.get()).thenReturn(mqttClientIdProvider);
 
-        JoynrStatusMetrics joynrStatusMetrics = mock(JoynrStatusMetrics.class);
-        Instance<JoynrStatusMetrics> joynrStatusMetricsInstance = mock(Instance.class);
-        when(joynrStatusMetricsInstance.get()).thenReturn(joynrStatusMetrics);
+        JoynrStatusMetricsReceiver joynrStatusMetrics = mock(JoynrStatusMetricsReceiver.class);
 
         fixture = new DefaultJoynrRuntimeFactory(joynrProperties,
                                                  joynrLocalDomain,
@@ -164,7 +162,7 @@ public class DefaultJoynrRuntimeFactoryTest {
                                                  mqttClientIdProviderInstance,
                                                  messagePersisterInstance,
                                                  beanManager,
-                                                 joynrStatusMetricsInstance);
+                                                 joynrStatusMetrics);
         scheduledExecutorService = mock(ScheduledExecutorService.class);
         Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
         executorField.setAccessible(true);

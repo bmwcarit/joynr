@@ -35,8 +35,8 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JeeJoynrServiceLocator;
+import io.joynr.jeeintegration.JeeJoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import itest.io.joynr.jeeintegration.JeeIntegrationJoynrTestConfigurationProvider;
 
@@ -54,7 +54,7 @@ public class JeeJoynrExceptionTest {
                                      DefaultJoynrRuntimeFactory.class,
                                      JeeIntegrationJoynrTestConfigurationProvider.class,
                                      JoynrIntegrationBean.class,
-                                     JoynrStatusMetricsAggregator.class,
+                                     JeeJoynrStatusMetricsAggregator.class,
                                      JeeJoynrServiceLocator.class,
                                      JoynrRuntimeException.class,
                                      TestBean.class)
