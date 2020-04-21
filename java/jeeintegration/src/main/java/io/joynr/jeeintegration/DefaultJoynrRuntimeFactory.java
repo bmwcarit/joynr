@@ -155,6 +155,11 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             throw new JoynrIllegalStateException(message);
         }
         this.joynrLocalDomain = joynrLocalDomain.get();
+        if (this.joynrLocalDomain == null || this.joynrLocalDomain.isEmpty()) {
+            String message = "Local domain name is NULL or EMPTY. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
+            LOG.error(message);
+            throw new JoynrIllegalStateException(message);
+        }
 
         if (!rawMessagePreprocessor.isUnsatisfied()) {
             if (!rawMessagePreprocessor.isAmbiguous()) {
