@@ -3,7 +3,7 @@ project(Uds)
 set(SOURCES
     UdsLibJoynrMessagingSkeleton.cpp
     UdsMessagingStub.cpp
-    # UdsMessagingStubFactory.cpp
+    UdsMessagingStubFactory.cpp
     # UdsClient.cpp
     UdsSettings.cpp
 )
@@ -12,7 +12,7 @@ set(PRIVATE_HEADERS
     # IUdsClient.h
     UdsLibJoynrMessagingSkeleton.h
     UdsMessagingStub.h
-    # UdsMessagingStubFactory.h
+    UdsMessagingStubFactory.h
     # UdsClient.h
     # UdsReceiver.h
     # UdsSender.h
