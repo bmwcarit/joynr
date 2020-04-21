@@ -20,7 +20,7 @@ function copy_war {
 }
 
 # here is the fake one
-DISCOVERY_WAR_FILE=../../backend-services-standalone-pt/discovery-directory-pt-jee/target/discovery-directory-pt-jee*.war
+DISCOVERY_WAR_FILE=../../discovery-directory-pt-jee/target/discovery-directory-pt-jee*.war
 
 copy_war $DISCOVERY_WAR_FILE target/discovery-directory-pt-jee.war
 

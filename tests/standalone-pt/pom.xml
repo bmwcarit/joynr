@@ -31,7 +31,7 @@
 
 	<modules>
 		<module>pt-jee-app</module>
-		<module>backend-services-standalone-pt</module>
+		<module>discovery-directory-pt-jee</module>
 	</modules>
 
 	<build>
