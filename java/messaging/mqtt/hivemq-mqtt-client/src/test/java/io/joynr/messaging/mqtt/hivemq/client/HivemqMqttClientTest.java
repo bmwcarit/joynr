@@ -20,16 +20,24 @@ package io.joynr.messaging.mqtt.hivemq.client;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
 import com.hivemq.client.internal.mqtt.message.publish.MqttPublishResult.MqttQos1Result;
@@ -40,14 +48,19 @@ import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientConfig;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
+import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
+import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAck;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PublishResult;
 
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
+import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 import io.reactivex.Flowable;
+import io.reactivex.Single;
+import io.reactivex.functions.Consumer;
 
 public class HivemqMqttClientTest {
 
@@ -67,10 +80,18 @@ public class HivemqMqttClientTest {
     private Mqtt5ClientConfig mockClientConfig;
     @Mock
     private Flowable<Mqtt5Publish> mockPublishesFlowable;
+    @Captor
+    ArgumentCaptor<Consumer<? super Mqtt5Publish>> publishesFlowableOnNextCaptor;
+    @Captor
+    ArgumentCaptor<Consumer<? super Throwable>> publishesFlowableOnErrorCaptor;
+    @Mock
+    private IMqttMessagingSkeleton mockSkeleton;
     @Mock
     private SuccessAction mockSuccessAction;
     @Mock
     private FailureAction mockFailureAction;
+    @Mock
+    private Single<Mqtt5ConnAck> mockConnectSingle;
     private String testTopic;
     private byte[] testPayload;
     private long testExpiryIntervalSec;
@@ -90,6 +111,7 @@ public class HivemqMqttClientTest {
 
         doReturn(mockClientConfig).when(mockRxClient).getConfig();
         doReturn(mockPublishesFlowable).when(mockRxClient).publishes(eq(MqttGlobalPublishFilter.ALL));
+
         doReturn(mockAsyncClient).when(mockRxClient).toAsync();
         doReturn(publishFuture).when(mockAsyncClient).publish(any(Mqtt5Publish.class));
         createDefaultClient();
@@ -125,12 +147,14 @@ public class HivemqMqttClientTest {
                               mockSuccessAction,
                               mockFailureAction);
 
+        verify(mockConnectionStatusMetrics, times(0)).increaseSentMessages();
         verify(mockSuccessAction, times(0)).execute();
         verify(mockAsyncClient, times(1)).publish(expectedPublish);
 
         publishFuture.complete(mockResult);
 
         verify(mockSuccessAction, times(1)).execute();
+        verify(mockConnectionStatusMetrics, times(1)).increaseSentMessages();
         verify(mockFailureAction, times(0)).execute(any(Throwable.class));
     }
 
@@ -148,6 +172,7 @@ public class HivemqMqttClientTest {
         verify(mockFailureAction, times(1)).execute(eq(expectedException));
         verify(mockSuccessAction, times(0)).execute();
         verify(mockAsyncClient, times(0)).publish(any(Mqtt5Publish.class));
+        verify(mockConnectionStatusMetrics, times(0)).increaseSentMessages();
     }
 
     @Test
@@ -197,6 +222,7 @@ public class HivemqMqttClientTest {
 
         verify(mockSuccessAction, times(0)).execute();
         verify(mockFailureAction, times(1)).execute(eq(expectedException));
+        verify(mockConnectionStatusMetrics, times(0)).increaseSentMessages();
     }
 
     @Test
@@ -247,6 +273,62 @@ public class HivemqMqttClientTest {
 
         verify(mockSuccessAction, times(0)).execute();
         verify(mockFailureAction, times(1)).execute(eq(expectedException));
+        verify(mockConnectionStatusMetrics, times(0)).increaseSentMessages();
     }
 
+    @Test
+    public void incomingMessageIncreasesReceivedMessagesCount() throws Exception {
+        // Capturing the real publishes Consumers did not work because verify() with ArgumentCaptor calls
+        // the real implementation with null values which is not allowed:
+        // java.lang.NullPointerException: onNext is null
+        //     at io.reactivex.internal.functions.ObjectHelper.requireNonNull(ObjectHelper.java)
+        //     at io.reactivex.Flowable.subscribe(Flowable.java)
+        //     at io.reactivex.Flowable.subscribe(Flowable.java)
+        //     at io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientTest.incomingMessageIncreasesReceivedMessagesCount
+        // verify(mockPublishesFlowable).subscribe(publishesFlowableOnNextCaptor.capture(), publishesFlowableOnErrorCaptor.capture());
+        // publishesFlowableOnNextCaptor.getValue().accept(mockPublish);
+
+        client.setMessageListener(mockSkeleton);
+        verify(mockConnectionStatusMetrics, times(0)).increaseReceivedMessages();
+
+        Mqtt5Publish mockPublish = mock(Mqtt5Publish.class);
+        doReturn(new byte[0]).when(mockPublish).getPayloadAsBytes();
+        Method handleIncomingMessage = client.getClass().getDeclaredMethod("handleIncomingMessage", Mqtt5Publish.class);
+        handleIncomingMessage.setAccessible(true);
+        handleIncomingMessage.invoke(client, mockPublish);
+
+        verify(mockConnectionStatusMetrics, times(1)).increaseReceivedMessages();
+    }
+
+    @Test
+    public void startIncreasesNumberOfConnectionAttempts() {
+        doAnswer(new Answer<MqttClientState>() {
+            int callCount = 0;
+
+            @Override
+            public MqttClientState answer(InvocationOnMock invocation) throws Throwable {
+                if (callCount < 2) {
+                    callCount++;
+                    return MqttClientState.DISCONNECTED;
+                }
+                return MqttClientState.CONNECTED;
+            }
+        }).when(mockClientConfig).getState();
+        client.setMessageListener(mockSkeleton);
+        verify(mockConnectionStatusMetrics, times(0)).increaseConnectionAttempts();
+
+        // Mocking the connect behavior did not work because doReturn() calls the real implementation of timeout():
+        // java.lang.NullPointerException: unit is null
+        //     at io.reactivex.internal.functions.ObjectHelper.requireNonNull(ObjectHelper.java)
+        //     at io.reactivex.Single.timeout0(Single.java)
+        //     at io.reactivex.Single.timeout(Single.java)
+        //     at io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientTest.startIncreasesNumberOfConnectionAttempts
+        // doReturn(mockConnectSingle).when(mockRxClient).connect(any(Mqtt5Connect.class));
+        // doReturn(mockConnectSingle).when(mockConnectSingle).timeout(anyLong(), any(TimeUnit.class));
+        // doReturn(mockConnectSingle).when(mockConnectSingle).doOnSuccess(Matchers.<Consumer<? super Mqtt5ConnAck>>any());
+
+        doThrow(new RuntimeException()).when(mockRxClient).connect(any(Mqtt5Connect.class));
+        client.start();
+        verify(mockConnectionStatusMetrics, times(1)).increaseConnectionAttempts();
+    }
 }
