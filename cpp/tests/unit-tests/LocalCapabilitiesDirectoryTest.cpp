@@ -128,7 +128,7 @@ public:
               _settingsForPersistencyTests(),
               _clusterControllerSettings(_settings),
               _clusterControllerSettingsForPersistencyTests(_settingsForPersistencyTests),
-              _purgeExpiredDiscoveryEntriesIntervalMs(100),
+              _purgeExpiredDiscoveryEntriesIntervalMs(1000),
               _globalCapabilitiesDirectoryClient(std::make_shared<MockGlobalCapabilitiesDirectoryClient>()),
               _locallyRegisteredCapabilities(std::make_shared<capabilities::Storage>()),
               _globalLookupCache(std::make_shared<capabilities::CachingStorage>()),
