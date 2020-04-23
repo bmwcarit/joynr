@@ -157,9 +157,13 @@ public final class ArbitratorFactory {
                         delayableArbitration.getArbitration().attemptArbitration();
                     }
                 } catch (InterruptedException e) {
-                    logger.trace("ArbitratorRunnable interrupted. Stopping.");
-                    Thread.currentThread().interrupt();
-                    return;
+                    if (stopped) {
+                        logger.info("ArbitratorRunnable interrupted during shutdown. Terminating...");
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+
+                    logger.trace("ArbitratorRunnable interrupted. Continuing in a new cycle.");
                 } catch (Exception e) {
                     logger.error("Unexpected exception in ArbitratorRunnable: " + e);
                     if (delayableArbitration != null) {
