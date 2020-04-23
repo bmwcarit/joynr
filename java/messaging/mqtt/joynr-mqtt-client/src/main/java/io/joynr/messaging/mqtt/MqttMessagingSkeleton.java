@@ -187,6 +187,9 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
             LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
             failureAction.execute(e);
+        } catch (Exception e) {
+            LOG.error("Message {} could not be transmitted:", serializedMessage, e);
+            failureAction.execute(e);
         }
     }
 
