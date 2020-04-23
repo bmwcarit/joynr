@@ -132,6 +132,17 @@ void AbstractMessageRouter::addProvisionedNextHop(
     addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
 }
 
+void AbstractMessageRouter::removeRoutingEntries(
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
+{
+    JOYNR_LOG_TRACE(logger(), "removeRoutingEntries: removing entries for {}", address->toString());
+    WriteLocker lock(_routingTableLock);
+    auto participantIdSet = _routingTable.lookupParticipantIdsByAddress(address);
+    for (const auto& participantId : participantIdSet) {
+        _routingTable.remove(participantId);
+    }
+}
+
 AbstractMessageRouter::AddressUnorderedSet AbstractMessageRouter::lookupAddresses(
         const std::unordered_set<std::string>& participantIds)
 {

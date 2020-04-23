@@ -84,6 +84,7 @@ public:
     void saveRoutingTable();
     void loadRoutingTable(std::string fileName);
     std::uint64_t getNumberOfRoutedMessages() const;
+    void removeRoutingEntries(std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
     void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
     virtual void shutdown();
