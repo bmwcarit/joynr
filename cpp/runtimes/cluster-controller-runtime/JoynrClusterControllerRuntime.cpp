@@ -467,9 +467,15 @@ void JoynrClusterControllerRuntime::init()
     if (_clusterControllerSettings.isWebSocketEnabled()) {
         // setup CC WebSocket interface
         _wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
-        _wsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-                const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
-                        destinationAddress) { messagingStubFactory->remove(destinationAddress); });
+        _wsMessagingStubFactory->registerOnMessagingStubClosedCallback([
+            messagingStubFactory,
+            ccMessageRouterWeakPtr = joynr::util::as_weak_ptr(_ccMessageRouter)
+        ](const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
+            if (auto ccMessageRouterSharedPtr = ccMessageRouterWeakPtr.lock()) {
+                ccMessageRouterSharedPtr->removeRoutingEntries(destinationAddress);
+            }
+            messagingStubFactory->remove(destinationAddress);
+        });
 
         messagingStubFactory->registerStubFactory(_wsMessagingStubFactory);
     }
