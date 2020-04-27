@@ -6,7 +6,7 @@ wait $PID
 
 function call_consumer {
     # sleep a few seconds to give Payara some time to startup
-    sleep 25
+    sleep 40
     printf "\n\n >>>  STARTING consumer of standalone performance test  <<<\n\n" && \
     PT_RESULT=$(curl -f -s http://localhost:8080/pt-jee-app/performance-tests/test)
     EXIT_CODE=$?

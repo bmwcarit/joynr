@@ -112,18 +112,19 @@ public class ConsumerRestEndpoint {
             logResult.append("future.get() which gets built proxy called successfully, => \n");
 
             GlobalDiscoveryEntry[] lookupResult1 = null;
-            Integer totalFoundEntries = 0;
-            for (int i = 0; i < calls; ++i) {
+            int totalFoundEntries = 0;
+            int executedLookups;
+            for (executedLookups = 0; executedLookups < calls; ++executedLookups) {
                 lookupResult1 = proxy.lookup(domains, interfaceName, configuredGbids); // expected 2
                 totalFoundEntries += (lookupResult1 == null ? 0 : lookupResult1.length);
             }
 
             logResult.append("calling proxy.lookup(s) successfully, => \n");
 
-            if (totalFoundEntries != calls * NUM_EXPECTED_FOUND_ENTRIES) {
+            if (totalFoundEntries != executedLookups * NUM_EXPECTED_FOUND_ENTRIES) {
                 logResult.append("throwing IllegalArgumentException \n");
-                throw new Exception("number of expected found entries should be: " + calls * NUM_EXPECTED_FOUND_ENTRIES
-                        + ", got: " + totalFoundEntries);
+                throw new Exception("number of expected found entries should be: "
+                        + executedLookups * NUM_EXPECTED_FOUND_ENTRIES + ", got: " + totalFoundEntries);
             }
             logResult.append("PT RESULT success: JEE consumer ").append(configuredDomain).append(" -> ").append(domain);
         } catch (Exception e) {
