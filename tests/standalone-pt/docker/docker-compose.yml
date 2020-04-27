@@ -32,22 +32,22 @@ services:
     volumes:
       - ./results:/home/joynr/build
 
-  # jee consumer container
-  jeeapp-1:
-    image: "joynr-pt-jee-app:latest"
-    container_name: joynr-pt-jee-app-1
-    depends_on:
-      - "mqttbroker-1"
-      - "joynrbackend-1"
-    environment:
-      - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
-      - PT_CONSUMER_DOMAIN=pt-domain.jee.consumer
-      - PT_GBIDS=joynrdefaultgbid
-      - PT_BROKERURIS=tcp://mqttbroker-1:1883
-      - PT_CONNECTION_TIMEOUTS=60
-      - PT_KEEP_ALIVE_TIMERS=60
-      - PT_NUMBER_OF_CALLS=5
-      - PT_NUMBER_OF_REPETITIONS=
+  # # jee consumer container
+  # jeeapp-1:
+  #   image: "joynr-pt-jee-app:latest"
+  #   container_name: joynr-pt-jee-app-1
+  #   depends_on:
+  #     - "mqttbroker-1"
+  #     - "joynrbackend-1"
+  #   environment:
+  #     - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
+  #     - PT_CONSUMER_DOMAIN=pt-domain.jee.consumer
+  #     - PT_GBIDS=joynrdefaultgbid
+  #     - PT_BROKERURIS=tcp://mqttbroker-1:1883
+  #     - PT_CONNECTION_TIMEOUTS=60
+  #     - PT_KEEP_ALIVE_TIMERS=60
+  #     - PT_NUMBER_OF_CALLS=5
+  #     - PT_NUMBER_OF_REPETITIONS=
 
   # cpp consumer containers
   cppapp:
