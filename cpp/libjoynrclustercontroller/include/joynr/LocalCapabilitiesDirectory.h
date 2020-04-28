@@ -32,10 +32,8 @@
 #include <boost/asio/steady_timer.hpp>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
-#include "joynr/CapabilitiesStorage.h"
 #include "joynr/CapabilitiesCache.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/InterfaceAddress.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
@@ -46,7 +44,6 @@
 #include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryError.h"
-#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 

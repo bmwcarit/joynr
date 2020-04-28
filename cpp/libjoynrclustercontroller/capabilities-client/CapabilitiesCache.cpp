@@ -18,10 +18,20 @@
  */
 
 #include <boost/algorithm/string/join.hpp>
+#include <boost/optional.hpp>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 #include "joynr/CapabilitiesCache.h"
+#include "joynr/CapabilitiesStorage.h"
 #include "joynr/CapabilityUtils.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/InterfaceAddress.h"
 #include "joynr/LCDUtil.h"
+#include "joynr/Util.h"
 
 namespace joynr
 {

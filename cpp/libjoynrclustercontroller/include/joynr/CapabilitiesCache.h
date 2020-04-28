@@ -17,16 +17,28 @@
  * #L%
  */
 
+#include <boost/optional.hpp>
+#include <memory>
 #include <mutex>
+#include <string>
 #include <unordered_map>
-#include "joynr/CapabilitiesStorage.h"
-#include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/InterfaceAddress.h"
+#include <vector>
+
+//#include "joynr/CapabilitiesStorage.h"
+//#include "joynr/ILocalCapabilitiesCallback.h"
+//#include "joynr/InterfaceAddress.h"
 #include "joynr/Logger.h"
-#include "joynr/types/DiscoveryQos.h"
+//#include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
 {
+class DiscoveryEntry;
+class InterfaceAddress;
+class ILocalCapabilitiesCallback;
+namespace types {
+class DiscoveryQos;
+}
+class DiscoveryScope;
 
 class CapabilitiesCache
 {
