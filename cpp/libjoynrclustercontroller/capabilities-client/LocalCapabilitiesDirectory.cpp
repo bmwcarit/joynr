@@ -225,8 +225,7 @@ void LocalCapabilitiesDirectory::addInternal(
         updatePersistedFile();
         {
             std::lock_guard<std::mutex> lock(_pendingLookupsLock);
-            InterfaceAddress interfaceAddress =
-                    InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
+            InterfaceAddress interfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
             _lcdPendingLookupsHandler.callPendingLookups(
                     interfaceAddress, _capabilitiesCache.searchLocalCache({interfaceAddress}));
         }
@@ -320,8 +319,7 @@ void LocalCapabilitiesDirectory::addInternal(
                     thisSharedPtr->updatePersistedFile();
                     {
                         std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
-                        InterfaceAddress interfaceAddress =
-                                InterfaceAddress(globalDiscoveryEntry.getDomain(),
+                        InterfaceAddress interfaceAddress(globalDiscoveryEntry.getDomain(),
                                                  globalDiscoveryEntry.getInterfaceName());
                         thisSharedPtr->_lcdPendingLookupsHandler.callPendingLookups(
                                 interfaceAddress,
@@ -391,33 +389,32 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                 auto foundGbids = _capabilitiesCache.getGbidsForParticipantId(participantId);
                 if (!foundGbids.empty()) {
                     // update local store
-                    auto gbids = foundGbids;
                     _capabilitiesCache.getLocallyRegisteredCapabilities()->insert(
-                            capability, gbids);
+                            capability, foundGbids);
                     // update global cache
                     _capabilitiesCache.getGlobalLookupCache()->insert(capability);
                     // send entries to JDS again
                     auto onApplicationError =
-                            [participantId, gbids](const types::DiscoveryError::Enum& error) {
+                            [participantId, foundGbids](const types::DiscoveryError::Enum& error) {
                         JOYNR_LOG_WARN(logger(),
                                        "Global provider reregistration for participantId {} and "
                                        "gbids >{}< failed: {} (DiscoveryError)",
                                        participantId,
-                                       boost::algorithm::join(gbids, ", "),
+                                       boost::algorithm::join(foundGbids, ", "),
                                        types::DiscoveryError::getLiteral(error));
                     };
-                    auto onRuntimeError = [participantId, gbids](
+                    auto onRuntimeError = [participantId, foundGbids](
                             const exceptions::JoynrRuntimeException& exception) {
                         JOYNR_LOG_WARN(logger(),
                                        "Global provider reregistration for participantId {} and "
                                        "gbids >{}< failed: {} ({})",
                                        participantId,
-                                       boost::algorithm::join(gbids, ", "),
+                                       boost::algorithm::join(foundGbids, ", "),
                                        exception.getMessage(),
                                        exception.getTypeName());
                     };
                     _globalCapabilitiesDirectoryClient->add(toGlobalDiscoveryEntry(capability),
-                                                            gbids,
+                                                            foundGbids,
                                                             nullptr,
                                                             std::move(onApplicationError),
                                                             std::move(onRuntimeError));
@@ -1025,15 +1022,13 @@ void LocalCapabilitiesDirectory::remove(
 
         if (LCDUtil::isGlobal(entry)) {
             auto foundGbids = _capabilitiesCache.getGbidsForParticipantId(participantId);
-            std::vector<std::string> gbids;
             if (foundGbids.empty()) {
                 JOYNR_LOG_FATAL(logger(),
                                 "Global remove failed because participantId to GBIDs mapping is "
                                 "missing for participantId {}",
                                 participantId);
             } else {
-                gbids = foundGbids;
-                const std::string gbidString = boost::algorithm::join(gbids, ", ");
+                const std::string gbidString = boost::algorithm::join(foundGbids, ", ");
                 JOYNR_LOG_INFO(logger(),
                                "Removing globally registered participantId: {} from GBIDs: >{}<",
                                participantId,
@@ -1042,26 +1037,26 @@ void LocalCapabilitiesDirectory::remove(
                 _capabilitiesCache.eraseParticipantIdToGbidMapping(participantId);
                 _capabilitiesCache.getGlobalLookupCache()->removeByParticipantId(participantId);
                 auto onApplicationError =
-                        [participantId, gbids](const types::DiscoveryError::Enum& error) {
+                        [participantId, foundGbids](const types::DiscoveryError::Enum& error) {
                     JOYNR_LOG_WARN(logger(),
                                    "Error removing participantId {} globally for GBIDs >{}<: {}",
                                    participantId,
-                                   boost::algorithm::join(gbids, ", "),
+                                   boost::algorithm::join(foundGbids, ", "),
                                    types::DiscoveryError::getLiteral(error));
                 };
                 auto onRuntimeError =
-                        [participantId, gbids](const exceptions::JoynrRuntimeException& exception) {
+                        [participantId, foundGbids](const exceptions::JoynrRuntimeException& exception) {
                     JOYNR_LOG_WARN(
                             logger(),
                             "Failed to remove participantId {} globally for GBIDs >{}<: {} ({})",
                             participantId,
-                            boost::algorithm::join(gbids, ", "),
+                            boost::algorithm::join(foundGbids, ", "),
                             exception.getMessage(),
                             exception.getTypeName());
                 };
 
                 _globalCapabilitiesDirectoryClient->remove(participantId,
-                                                           gbids,
+                                                           foundGbids,
                                                            nullptr,
                                                            std::move(onApplicationError),
                                                            std::move(onRuntimeError));
