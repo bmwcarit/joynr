@@ -201,7 +201,6 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 {
     _freshnessUpdateTimer.cancel();
     _checkExpiredDiscoveryEntriesTimer.cancel();
-    _capabilitiesCache.clear();
 }
 
 void LocalCapabilitiesDirectory::addInternal(
@@ -444,72 +443,6 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDi
     return _capabilitiesCache.getCachedGlobalDiscoveryEntries();
 }
 
-bool LocalCapabilitiesDirectory::callReceiverIfPossible(
-        joynr::types::DiscoveryScope::Enum& scope,
-        std::vector<types::DiscoveryEntry>&& localCapabilities,
-        std::vector<types::DiscoveryEntry>&& globalCapabilities,
-        std::shared_ptr<ILocalCapabilitiesCallback> callback)
-{
-    // return only local capabilities
-    if (scope == joynr::types::DiscoveryScope::LOCAL_ONLY) {
-        auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-        callback->capabilitiesReceived(std::move(localCapabilitiesWithMetaInfo));
-        return true;
-    }
-
-    // return local then global capabilities
-    if (scope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
-        auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-        auto globalCapabilitiesWithMetaInfo = util::convert(false, globalCapabilities);
-        if (!localCapabilities.empty()) {
-            callback->capabilitiesReceived(std::move(localCapabilitiesWithMetaInfo));
-            return true;
-        }
-        if (!globalCapabilities.empty()) {
-            callback->capabilitiesReceived(std::move(globalCapabilitiesWithMetaInfo));
-            return true;
-        }
-    }
-
-    // return local and global capabilities
-    if (scope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
-        if (!globalCapabilities.empty()) {
-            auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-            auto globalCapabilitiesWithMetaInfo = util::convert(false, globalCapabilities);
-
-            // remove duplicates
-            auto resultVec = LCDUtil::filterDuplicates(std::move(localCapabilitiesWithMetaInfo),
-                                                       std::move(globalCapabilitiesWithMetaInfo));
-            callback->capabilitiesReceived(std::move(resultVec));
-            return true;
-        }
-    }
-
-    // return the global cached entries
-    if (scope == joynr::types::DiscoveryScope::GLOBAL_ONLY) {
-        auto resultWithDuplicates = util::convert(false, globalCapabilities);
-        auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-        for (const auto& entry : localCapabilitiesWithMetaInfo) {
-            if (entry.getQos().getScope() == joynr::types::ProviderScope::GLOBAL) {
-                resultWithDuplicates.push_back(entry);
-            }
-        }
-        if (!resultWithDuplicates.empty()) {
-            // remove duplicates
-            std::unordered_set<types::DiscoveryEntryWithMetaInfo,
-                               joynr::DiscoveryEntryHash,
-                               joynr::DiscoveryEntryKeyEq>
-                    resultSet(std::make_move_iterator(resultWithDuplicates.begin()),
-                              std::make_move_iterator(resultWithDuplicates.end()));
-            std::vector<types::DiscoveryEntryWithMetaInfo> result(
-                    resultSet.begin(), resultSet.end());
-            callback->capabilitiesReceived(std::move(result));
-            return true;
-        }
-    }
-    return false;
-}
-
 void LocalCapabilitiesDirectory::capabilitiesReceived(
         const std::vector<types::GlobalDiscoveryEntry>& results,
         std::vector<types::DiscoveryEntry>&& localEntries,
@@ -707,12 +640,6 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
 bool LocalCapabilitiesDirectory::hasPendingLookups()
 {
     return _lcdPendingLookupsHandler.hasPendingLookups();
-}
-
-// TODO: ist this required outside of tests?
-void LocalCapabilitiesDirectory::clear()
-{
-    _capabilitiesCache.clear();
 }
 
 void LocalCapabilitiesDirectory::registerReceivedCapabilities(

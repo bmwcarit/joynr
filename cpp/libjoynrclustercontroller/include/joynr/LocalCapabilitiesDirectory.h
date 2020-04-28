@@ -109,11 +109,6 @@ public:
     void shutdown();
 
     /*
-     * removes all discovery entries
-     */
-    void clear();
-
-    /*
      * Call back methods which will update the local capabilities cache and call the
      * original callback with the results, this indirection was needed because we
      * need to convert a CapabilitiesInformation object into a DiscoveryEntry object.
@@ -273,11 +268,6 @@ private:
                         const types::DiscoveryQos& discoveryQos,
                         const std::vector<std::string>& gbids,
                         std::shared_ptr<ILocalCapabilitiesCallback> callback);
-
-    bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
-                                std::vector<types::DiscoveryEntry>&& localCapabilities,
-                                std::vector<types::DiscoveryEntry>&& globalCapabilities,
-                                std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<IGlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
