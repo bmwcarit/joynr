@@ -57,6 +57,7 @@
 #include "tests/mock/MockMessagingMulticastSubscriber.h"
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Invoke;
@@ -359,12 +360,22 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers_webSocketCli
     size_t count = isProviderGloballyVisible ? 1 : 0;
 
     for(std::uint8_t i = 0; i < _availableGbids.size(); i++) {
-        EXPECT_CALL(*_messagingStubFactory, create(Pointee(Eq(*multicastAddressesVector[i]))))
-                .Times(count)
-                .WillRepeatedly(Return(mockMessagingStub));
+        if (count) {
+            EXPECT_CALL(*_messagingStubFactory, create(Pointee(Eq(*multicastAddressesVector[i]))))
+                    .Times(count)
+                    .WillRepeatedly(Return(mockMessagingStub));
+        } else {
+            EXPECT_CALL(*_messagingStubFactory, create(Pointee(Eq(*multicastAddressesVector[i]))))
+                    .Times(0);
+        }
     }
 
+    Semaphore semaphore(0);
+    EXPECT_CALL(*mockMessagingStub, transmit(_, _)).Times(AtLeast(1)).WillOnce(ReleaseSemaphore(&semaphore));
+
     _messageRouter->route(_mutableMessage.getImmutableMessage());
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2000)));
 
     Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
@@ -485,8 +496,12 @@ void CcMessageRouterTest::multicastMsgIsSentToAllMulticastReceivers_udsClientAdd
                 .WillRepeatedly(Return(mockMessagingStub));
     }
 
+    Semaphore semaphore(0);
+    EXPECT_CALL(*mockMessagingStub, transmit(_, _)).Times(AtLeast(1)).WillOnce(ReleaseSemaphore(&semaphore));
+
     _messageRouter->route(_mutableMessage.getImmutableMessage());
 
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(2000)));
     Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
     // cleanup
@@ -630,7 +645,16 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
             .Times(1)
             .WillRepeatedly(Return(mockMessagingStub2));
 
+    Semaphore semaphore1(0);
+    Semaphore semaphore2(0);
+    EXPECT_CALL(*mockMessagingStub1, transmit(_, _)).Times(AtLeast(1)).WillOnce(ReleaseSemaphore(&semaphore1));
+    EXPECT_CALL(*mockMessagingStub2, transmit(_, _)).Times(AtLeast(1)).WillOnce(ReleaseSemaphore(&semaphore2));
+
     _messageRouter->route(_mutableMessage.getImmutableMessage());
+
+    EXPECT_TRUE(semaphore1.waitFor(std::chrono::milliseconds(2000)));
+    EXPECT_TRUE(semaphore2.waitFor(std::chrono::milliseconds(2000)));
+
     Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
     // now the first runtime becomes unreachable, so the creation of a WebSocketMessagingStub fails;
@@ -661,7 +685,12 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
     // the CcMessageRouter should then automatically remove the participantIds realated to
     // the unreachable runtime from the multicastReceiverDirectory
 
+    Semaphore semaphore3(0);
+    EXPECT_CALL(*mockMessagingStub2, transmit(_, _)).Times(AtLeast(1)).WillOnce(ReleaseSemaphore(&semaphore3));
+
     _messageRouter->route(_mutableMessage.getImmutableMessage());
+
+    EXPECT_TRUE(semaphore3.waitFor(std::chrono::milliseconds(2000)));
 
     Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
@@ -690,8 +719,12 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
             .Times(1)
             .WillRepeatedly(Return(mockMessagingStub2));
 
+    Semaphore semaphore4(0);
+    EXPECT_CALL(*mockMessagingStub2, transmit(_, _)).Times(AtLeast(1)).WillOnce(ReleaseSemaphore(&semaphore4));
+
     _messageRouter->route(_mutableMessage.getImmutableMessage());
 
+    EXPECT_TRUE(semaphore4.waitFor(std::chrono::milliseconds(2000)));
     Mock::VerifyAndClearExpectations(_messagingStubFactory.get());
 
     // cleanup
@@ -731,6 +764,7 @@ TEST_F(CcMessageRouterTest,
     auto mockAccessController = std::make_shared<MockAccessController>();
     ON_CALL(*mockAccessController, hasConsumerPermission(_, _))
             .WillByDefault(Invoke(invokeConsumerPermissionCallbackWithPermissionYes));
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _)).Times(AtLeast(1));
     _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
     bool isGloballyVisible = true;
@@ -745,6 +779,7 @@ TEST_F(CcMessageRouterTest,
     auto mockAccessController = std::make_shared<MockAccessController>();
     ON_CALL(*mockAccessController, hasConsumerPermission(_, _))
             .WillByDefault(Invoke(invokeConsumerPermissionCallbackWithPermissionYes));
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _)).Times(AtLeast(1));
     _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
     bool isGloballyVisible = true;
@@ -766,6 +801,8 @@ TEST_F(CcMessageRouterTest, removeMulticastReceiver_NonChildRouter_succeedsIfSke
     auto skeleton = std::make_shared<MockMessagingMulticastSubscriber>();
     _multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
             skeleton);
+
+    EXPECT_CALL(*skeleton, registerMulticastSubscription(multicastId)).Times(1);
 
     _messageRouter->addMulticastReceiver(
             multicastId,
@@ -802,6 +839,8 @@ TEST_F(CcMessageRouterTest,
 
     _multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
             skeleton);
+
+    EXPECT_CALL(*skeleton, registerMulticastSubscription(multicastId)).Times(1);
 
     _messageRouter->addMulticastReceiver(
             multicastId,
@@ -1023,9 +1062,11 @@ TEST_F(CcMessageRouterTest, persistMulticastReceiverDirectory)
             multicastSubscriber);
     _messageRouter->addNextHop(
             providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
+    EXPECT_CALL(*multicastSubscriber, registerMulticastSubscription(multicastId)).Times(1);
     _messageRouter->addMulticastReceiver(
             multicastId, subscriberParticipantId, providerParticipantId, []() {}, nullptr);
 
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
     _messageRouter->addNextHop(
@@ -1050,6 +1091,7 @@ TEST_F(CcMessageRouterTest, doNotSaveInProcessMessagingAddressToFile)
                 providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
     }
 
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
     _messageRouter->loadRoutingTable(routingTablePersistenceFilename);
@@ -1086,6 +1128,7 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned)
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch()).count() +
             4000;
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
     _messageRouter->addNextHop(
@@ -1203,6 +1246,7 @@ TEST_F(CcMessageRouterTest, testAccessControlRetryWithDelay)
     Semaphore semaphore(0);
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     ON_CALL(*_messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
+    EXPECT_CALL(*_messagingStubFactory, create(_)).Times(AtLeast(1));
 
     const std::string providerParticipantId("providerParticipantId");
     auto providerAddress =
@@ -1329,6 +1373,7 @@ TEST_F(CcMessageRouterTest, checkSubscriptionStopToNonExistingRecipientIsQueued)
 
 TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsDiscardedWhenEnabled)
 {
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
     _messageRouter = createMessageRouter();
@@ -1338,6 +1383,7 @@ TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsDiscardedWhenEnabled)
 
 TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsDiscardedWhenEnabled)
 {
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
     _messageRouter = createMessageRouter();
@@ -1347,6 +1393,7 @@ TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsDiscar
 
 TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsDiscardedWhenEnabled)
 {
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
     _messageRouter = createMessageRouter();
@@ -1451,6 +1498,7 @@ TEST_F(CcMessageRouterTest, addressValidation_globalAddressMustNotReferToOurClus
     // see also addressValidation_otherAddressesOfOwnAddressTypeAreAddedToRoutingTable
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
 
@@ -1473,6 +1521,7 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesOfOwnAddressTypeAreA
     // see also addressValidation_globalAddressMustNotReferToOurClusterController
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
 
@@ -1504,6 +1553,7 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesTypesAreAddedToRouti
     // see also webSocketAddressIsNotAddedToRoutingTable
     auto ownAddress = std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
     addressIsNotAddedToRoutingTable(ownAddress);

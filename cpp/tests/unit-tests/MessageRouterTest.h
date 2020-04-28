@@ -91,6 +91,7 @@ public:
 
     ~MessageRouterTest() override
     {
+        EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
         _messageRouter->shutdown();
         _singleThreadedIOService->stop();
         std::remove(_settingsFileName.c_str());
