@@ -46,9 +46,7 @@ class CapabilitiesCache
 public:
     CapabilitiesCache(std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities,
                       std::shared_ptr<capabilities::CachingStorage> globalLookupCache);
-    ~CapabilitiesCache()
-    {
-    }
+    ~CapabilitiesCache();
 
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used
