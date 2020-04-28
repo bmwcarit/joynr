@@ -87,7 +87,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           _pendingLookupsLock(),
           _messageRouter(messageRouter),
           _observers(),
-          _pendingLookupsHandler(),
+          _lcdPendingLookupsHandler(),
           _accessController(),
           _checkExpiredDiscoveryEntriesTimer(ioService),
           _isLocalCapabilitiesDirectoryPersistencyEnabled(
@@ -229,7 +229,7 @@ void LocalCapabilitiesDirectory::addInternal(
             std::lock_guard<std::mutex> lock(_pendingLookupsLock);
             InterfaceAddress interfaceAddress =
                     InterfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
-            _pendingLookupsHandler.callPendingLookups(
+            _lcdPendingLookupsHandler.callPendingLookups(
                     interfaceAddress, _capabilitiesCache.searchLocalCache({interfaceAddress}));
         }
     }
@@ -325,7 +325,7 @@ void LocalCapabilitiesDirectory::addInternal(
                         InterfaceAddress interfaceAddress =
                                 InterfaceAddress(globalDiscoveryEntry.getDomain(),
                                                  globalDiscoveryEntry.getInterfaceName());
-                        thisSharedPtr->_pendingLookupsHandler.callPendingLookups(
+                        thisSharedPtr->_lcdPendingLookupsHandler.callPendingLookups(
                                 interfaceAddress,
                                 thisSharedPtr->_capabilitiesCache.searchLocalCache(
                                         {interfaceAddress}));
@@ -623,7 +623,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
-                if (!(thisSharedPtr->_pendingLookupsHandler.isCallbackCalled(
+                if (!(thisSharedPtr->_lcdPendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     if (replaceGdeGbid) {
                         LCDUtil::replaceGbidWithEmptyString(result);
@@ -635,7 +635,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                             callback,
                             discoveryQos.getDiscoveryScope());
                 }
-                thisSharedPtr->_pendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
             }
         };
 
@@ -656,11 +656,11 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                 interfaceName,
                                 types::DiscoveryError::getLiteral(error));
                 std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
-                if (!(thisSharedPtr->_pendingLookupsHandler.isCallbackCalled(
+                if (!(thisSharedPtr->_lcdPendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(error);
                 }
-                thisSharedPtr->_pendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
             }
         };
 
@@ -682,17 +682,17 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                 exception.getMessage(),
                                 exception.TYPE_NAME());
                 std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
-                if (!(thisSharedPtr->_pendingLookupsHandler.isCallbackCalled(
+                if (!(thisSharedPtr->_lcdPendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(types::DiscoveryError::INTERNAL_ERROR);
                 }
-                thisSharedPtr->_pendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
             }
         };
 
         if (discoveryQos.getDiscoveryScope() == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
             std::lock_guard<std::mutex> lock(_pendingLookupsLock);
-            _pendingLookupsHandler.registerPendingLookup(interfaceAddresses, callback);
+            _lcdPendingLookupsHandler.registerPendingLookup(interfaceAddresses, callback);
         }
         _globalCapabilitiesDirectoryClient->lookup(domains,
                                                    interfaceName,
@@ -707,7 +707,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
 // TODO: ist this required outside of tests?
 bool LocalCapabilitiesDirectory::hasPendingLookups()
 {
-    return _pendingLookupsHandler.hasPendingLookups();
+    return _lcdPendingLookupsHandler.hasPendingLookups();
 }
 
 // TODO: ist this required outside of tests?

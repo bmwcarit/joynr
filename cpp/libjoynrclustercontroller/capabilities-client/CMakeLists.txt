@@ -7,7 +7,7 @@ set(SOURCES
     IGlobalCapabilitiesDirectoryClient.h
     LocalCapabilitiesDirectory.cpp
     LCDUtil.cpp
-    PendingLookupsHandler.cpp
+    LcdPendingLookupsHandler.cpp
 )
 
 add_library(${PROJECT_NAME} OBJECT ${SOURCES})
