@@ -75,6 +75,27 @@ public:
     {
     }
 
+
+    void checkResolveNextHop(const std::string& participantId, bool expectProviderResolved)
+    {
+        Semaphore successCallbackCalled;
+        _messageRouter->resolveNextHop(
+            participantId,
+            [&successCallbackCalled, expectProviderResolved](const bool& resolved) {
+                if (resolved == expectProviderResolved) {
+                    successCallbackCalled.notify();
+                } else {
+                    FAIL() << "resolve delivered unexpected result";
+                    successCallbackCalled.notify();
+                }
+            },
+            [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
+                FAIL() << "resolveNextHop did not succeed.";
+                successCallbackCalled.notify();
+            });
+        EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
+    }
+
 protected:
     void multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses(const bool isGloballyVisible);
     void multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses(const bool isGloballyVisible);
@@ -2098,4 +2119,49 @@ TEST_F(CcMessageRouterTest, subscriptionStopIsSentWhenProxyIsUnreachable_udsClie
     // cleanup
     _messageRouter->removeNextHop(subscriberParticipantId);
     _messageRouter->removeNextHop(providerParticipantId);
+}
+
+TEST_F(CcMessageRouterTest, routingTableRemoveEntriesWorks)
+{
+    const std::string providerParticipantId1("providerParticipantId1");
+    const std::string providerParticipantId2("providerParticipantId2");
+    const std::string providerParticipantId3("providerParticipantId3");
+    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
+    std::remove(routingTablePersistenceFilename.c_str());
+
+    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
+    _messageRouter->shutdown();
+    _messageRouter = createMessageRouter();
+
+    auto wsClientAddress1 =
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("ws-client-id-1");
+    auto wsClientAddress2 =
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>("ws-client-id-2");
+
+    const bool isGloballyVisible = true;
+    const bool isSticky = false;
+    std::int64_t expiryDateMs =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count() +
+            4000;
+    _messageRouter->addNextHop(
+            providerParticipantId1, wsClientAddress1, isGloballyVisible, expiryDateMs, isSticky);
+    _messageRouter->addNextHop(
+            providerParticipantId2, wsClientAddress1, isGloballyVisible, expiryDateMs, isSticky);
+    _messageRouter->addNextHop(
+            providerParticipantId3, wsClientAddress2, isGloballyVisible, expiryDateMs, isSticky);
+
+    // all providers should be around
+    checkResolveNextHop(providerParticipantId1, true);
+    checkResolveNextHop(providerParticipantId2, true);
+    checkResolveNextHop(providerParticipantId3, true);
+
+    _messageRouter->removeRoutingEntries(wsClientAddress1);
+
+    // providerParticipantId1 and 2 should have been removed
+    checkResolveNextHop(providerParticipantId1, false);
+    checkResolveNextHop(providerParticipantId2, false);
+
+    // providerParticipantId3 should still be around
+    checkResolveNextHop(providerParticipantId3, true);
 }
