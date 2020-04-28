@@ -18,19 +18,29 @@
  */
 
 #include <unordered_map>
-#include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/InterfaceAddress.h"
-#include "joynr/types/DiscoveryQos.h"
+#include <vector>
+#include <memory>
+//#include "joynr/ILocalCapabilitiesCallback.h"
+//#include "joynr/InterfaceAddress.h"
+//#include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
 {
 
-class PendingLookupsHandler
+namespace types
+{
+    class DiscoveryQos;
+}
+
+class ILocalCapabilitiesCallback;
+class InterfaceAddress;
+
+class LcdPendingLookupsHandler
 {
 
 public:
-    PendingLookupsHandler();
-    ~PendingLookupsHandler()
+    LcdPendingLookupsHandler();
+    ~LcdPendingLookupsHandler()
     {
     }
 

@@ -16,17 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PendingLookupsHandler.h"
+#include "joynr/LcdPendingLookupsHandler.h"
 #include "joynr/CapabilityUtils.h"
 
 namespace joynr
 {
 
-PendingLookupsHandler::PendingLookupsHandler() : _pendingLookups()
+LcdPendingLookupsHandler::LcdPendingLookupsHandler() : _pendingLookups()
 {
 }
 
-void PendingLookupsHandler::callPendingLookups(const InterfaceAddress& interfaceAddress,
+void LcdPendingLookupsHandler::callPendingLookups(const InterfaceAddress& interfaceAddress,
                                                std::vector<types::DiscoveryEntry> localCapabilities)
 {
     if (_pendingLookups.find(interfaceAddress) == _pendingLookups.cend()) {
@@ -44,7 +44,7 @@ void PendingLookupsHandler::callPendingLookups(const InterfaceAddress& interface
     _pendingLookups.erase(interfaceAddress);
 }
 
-void PendingLookupsHandler::registerPendingLookup(
+void LcdPendingLookupsHandler::registerPendingLookup(
         const std::vector<InterfaceAddress>& interfaceAddresses,
         const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
 {
@@ -54,12 +54,12 @@ void PendingLookupsHandler::registerPendingLookup(
     }
 }
 
-bool PendingLookupsHandler::hasPendingLookups()
+bool LcdPendingLookupsHandler::hasPendingLookups()
 {
     return !_pendingLookups.empty();
 }
 
-bool PendingLookupsHandler::isCallbackCalled(
+bool LcdPendingLookupsHandler::isCallbackCalled(
         const std::vector<InterfaceAddress>& interfaceAddresses,
         const std::shared_ptr<ILocalCapabilitiesCallback>& callback,
         const joynr::types::DiscoveryQos& discoveryQos)
@@ -83,7 +83,7 @@ bool PendingLookupsHandler::isCallbackCalled(
     return false;
 }
 
-void PendingLookupsHandler::callbackCalled(
+void LcdPendingLookupsHandler::callbackCalled(
         const std::vector<InterfaceAddress>& interfaceAddresses,
         const std::shared_ptr<ILocalCapabilitiesCallback>& callback)
 {

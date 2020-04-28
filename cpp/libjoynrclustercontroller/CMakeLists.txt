@@ -38,7 +38,7 @@ set(PUBLIC_HEADERS
     include/joynr/LocalCapabilitiesDirectory.h
     include/joynr/MqttMessagingSkeleton.h
     include/joynr/MqttReceiver.h
-    include/joynr/PendingLookupsHandler.h
+    include/joynr/LcdPendingLookupsHandler.h
 )
 
 target_sources(${PROJECT_NAME} PRIVATE

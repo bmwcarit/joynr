@@ -39,7 +39,7 @@
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/PendingLookupsHandler.h"
+#include "joynr/LcdPendingLookupsHandler.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
@@ -291,7 +291,7 @@ private:
     std::weak_ptr<IMessageRouter> _messageRouter;
     std::vector<std::shared_ptr<IProviderRegistrationObserver>> _observers;
 
-    PendingLookupsHandler _pendingLookupsHandler;
+    LcdPendingLookupsHandler _lcdPendingLookupsHandler;
 
     std::weak_ptr<IAccessController> _accessController;
 
