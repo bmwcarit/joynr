@@ -69,10 +69,6 @@ public:
                                        const joynr::types::DiscoveryQos& discoveryQos,
                                        const std::vector<std::string>& gbids,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
-    bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
-                                std::vector<types::DiscoveryEntry>&& localCapabilities,
-                                std::vector<types::DiscoveryEntry>&& globalCapabilities,
-                                std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     /*
      * removes all discovery entries
@@ -100,6 +96,11 @@ public:
     std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities();
 
 private:
+    bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
+                                std::vector<types::DiscoveryEntry>&& localCapabilities,
+                                std::vector<types::DiscoveryEntry>&& globalCapabilities,
+                                std::shared_ptr<ILocalCapabilitiesCallback> callback);
+
     std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
     std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
     std::unordered_map<std::string, std::vector<std::string>> _globalParticipantIdsToGbidsMap;
