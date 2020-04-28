@@ -21,14 +21,19 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <ostream>
+#include <memory>
+#include <vector>
+#include <string>
+#include <boost/optional.hpp>
 
 #include "joynr/LCDUtil.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/types/ProviderScope.h"
-
-#include "joynr/Util.h"
+#include "joynr/serializer/Serializer.h"
 
 namespace joynr
 {

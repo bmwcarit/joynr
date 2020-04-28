@@ -52,7 +52,6 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"

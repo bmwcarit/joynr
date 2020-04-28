@@ -23,13 +23,25 @@
 #include <unordered_map>
 #include <vector>
 
+#include <mutex>
+#include <string>
+
+#include <boost/optional.hpp>
+
+
 #include "joynr/Logger.h"
 
-#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
+//#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
+//#include "joynr/types/GlobalDiscoveryEntry.h"
 
 namespace joynr
 {
+
+namespace types
+{
+    class DiscoveryEntryWithMetaInfo;
+    class GlobalDiscoveryEntry;
+}
 
 struct DiscoveryEntryHash
 {
