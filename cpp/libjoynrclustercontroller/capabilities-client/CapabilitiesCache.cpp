@@ -45,6 +45,11 @@ CapabilitiesCache::CapabilitiesCache(
 {
 }
 
+CapabilitiesCache::~CapabilitiesCache()
+{
+    clear();
+}
+
 std::vector<types::DiscoveryEntry> CapabilitiesCache::getCachedGlobalDiscoveryEntries() const
 {
     std::lock_guard<std::recursive_mutex> lock4(_cacheLock);
