@@ -48,17 +48,19 @@ class UdsMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     UdsMessagingStubFactory();
-    std::shared_ptr<IMessagingStub> create(
+    virtual ~UdsMessagingStubFactory() = default;
+    virtual std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
-    bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
-    void addClient(const joynr::system::RoutingTypes::UdsClientAddress& clientAddress,
-                   std::shared_ptr<IUdsSender> udsSender);
-    void addServer(const joynr::system::RoutingTypes::UdsAddress& serverAddress,
-                   std::shared_ptr<IUdsSender> udsSender);
-    void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
-    void registerOnMessagingStubClosedCallback(std::function<
+    virtual bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
+    virtual void addClient(const joynr::system::RoutingTypes::UdsClientAddress& clientAddress,
+                           std::shared_ptr<IUdsSender> udsSender);
+    virtual void addServer(const joynr::system::RoutingTypes::UdsAddress& serverAddress,
+                           std::shared_ptr<IUdsSender> udsSender);
+    virtual void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
+    virtual void registerOnMessagingStubClosedCallback(std::function<
             void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
-                                                       _onMessagingStubClosedCallback) override;
+                                                               _onMessagingStubClosedCallback)
+            override;
 
 private:
     std::unordered_map<joynr::system::RoutingTypes::UdsAddress, std::shared_ptr<IMessagingStub>>
