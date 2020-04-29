@@ -84,12 +84,20 @@ public class CcMessageRouter extends AbstractMessageRouter {
                 @Override
                 public void hasConsumerPermission(boolean hasPermission) {
                     if (hasPermission) {
-                        CcMessageRouter.super.route(message);
+                        try {
+                            CcMessageRouter.super.route(message);
+                        } catch (Exception e) {
+                            logger.error("Error processing message. Message {} is dropped: {}",
+                                         message.getId(),
+                                         e.getMessage());
+                            CcMessageRouter.super.callMessageProcessedListeners(message.getId());
+                        }
                     } else {
                         logger.warn("Dropping message {} from {} to {} because of insufficient access rights",
                                     message.getId(),
                                     message.getSender(),
                                     message.getRecipient());
+                        CcMessageRouter.super.callMessageProcessedListeners(message.getId());
                     }
                 }
             });

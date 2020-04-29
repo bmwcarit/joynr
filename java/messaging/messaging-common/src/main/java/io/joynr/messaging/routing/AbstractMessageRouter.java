@@ -405,7 +405,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         return failureAction;
     }
 
-    private void callMessageProcessedListeners(final String messageId) {
+    protected void callMessageProcessedListeners(final String messageId) {
         synchronized (messageProcessedListeners) {
             for (MessageProcessedListener messageProcessedListener : messageProcessedListeners) {
                 messageProcessedListener.messageProcessed(messageId);
