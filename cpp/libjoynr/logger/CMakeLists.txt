@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME}
 )
 objlibrary_target_link_libraries(${PROJECT_NAME}
     PUBLIC spdlog::spdlog_header_only
-    PUBLIC $<$<BOOL:${JOYNR_ENABLE_DLT_LOGGING}>:DLT::DLT>
+    PUBLIC $<$<BOOL:${JOYNR_ENABLE_DLT_LOGGING}>:PkgConfig::DLT>
 )
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC "$<$<BOOL:${JOYNR_ENABLE_STDOUT_LOGGING}>:JOYNR_ENABLE_STDOUT_LOGGING>"

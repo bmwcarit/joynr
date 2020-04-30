@@ -80,8 +80,7 @@ find_package(Boost ${JOYNR_BOOST_REQUIRED_VERSION} REQUIRED
 
 set(JOYNR_DLT_REQUIRED_VERSION 2.15.0)
 if(JOYNR_ENABLE_DLT_LOGGING)
-    pkg_check_modules(DLT REQUIRED automotive-dlt>=${JOYNR_DLT_REQUIRED_VERSION})
-    include(CheckDltImportTargets)
+    pkg_check_modules(DLT REQUIRED IMPORTED_TARGET automotive-dlt>=${JOYNR_DLT_REQUIRED_VERSION})
 endif()
 
 set(JOYNR_SPDLOG_REQUIRED_VERSION 1.4.2)
