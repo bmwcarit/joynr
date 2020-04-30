@@ -32,7 +32,7 @@ import joynr.types.Version;
 public class MultiDomainNoCompatibleProviderFoundException extends JoynrRuntimeException {
 
     /**
-     * For serialisation.
+     * For serialization.
      */
     private static final long serialVersionUID = 1L;
 

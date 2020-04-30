@@ -369,7 +369,7 @@ public class StaticCapabilitiesProvisioningTest {
     private Injector createInjectorForJsonValue(final String jsonValue,
                                                 final LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder provisioningProperties) throws IOException {
         final File tmpFile = File.createTempFile("capprovtest", "json");
-        logger.trace("Writing serialised JSON {} to file {}", jsonValue, tmpFile);
+        logger.trace("Writing serialized JSON {} to file {}", jsonValue, tmpFile);
         tmpFile.deleteOnExit();
         try (FileWriter writer = new FileWriter(tmpFile)) {
             writer.write(jsonValue + "\n");
