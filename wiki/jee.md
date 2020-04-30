@@ -252,7 +252,7 @@ Here's an example of what the plugin configuration might look like:
 Note the `<parameter><jee>true</jee></parameter>` part. This is essential for
 generating artefacts which are compatible with the JEE integration.
 
-### Implementing services
+### Implementing services (joynr providers)
 
 Annotate your business beans with `@ServiceProvider` additionally to the usual
 JEE annotations (e.g. `@Stateless`).
@@ -362,6 +362,36 @@ public class MyBean implements MyServiceSync {
 See also the
 [Radio JEE provider bean](../examples/radio-jee/radio-jee-provider/src/main/java/io/joynr/examples/jee/RadioProviderBean.java)
 for a working example.
+
+#### Error handling
+
+Joynr provider are expected to throw only `ProviderRuntimeException`.
+If errors are modeled in the corresponding Franca interface, also `ApplicationException` can be
+thrown.
+
+All other (unexpected) exceptions (e.g. NullPointerException), are caught by joynr and wrapped in a
+`ProviderRuntimeException`. Usually, exceptions should be handled by the provider implementation.
+Errors shall be reported via `ProviderRuntimeException` or `ApplicationException`.
+
+Providers are not expected to throw any other joynr internal exceptions (e.g. JoynrRuntimeException)
+though this is possible and might happen when a joynr provider calls another joynr service.
+These exceptions are then also wrapped by joynr in a ProviderRuntimeException.
+
+Errors from providers are reported by joynr to the calling proxies in the consumer application.
+In case of async calls, the errors are reported to the Callback/Future, in case of sync calls, the
+exceptions are thrown and have to be handled in the consumer application.
+
+> NOTE:
+> Since joynr 1.9.0, `JoynrRuntimeException` is annotated with `@ApplicationException` to allow
+> better error handling in JEE.  
+> Because of this annotation, `JoynrRuntimeException`and all of its subtypes (except
+> `ProviderRuntimeException`) are not reported correctly. Instead, a
+> `java.lang.reflect.UndeclaredThrowableException` is reported to the calling proxy (joynr consumer
+> application), wrapped in a `ProviderRuntimeException`.  
+> All other exception types (in particular the joynr exceptions `ProviderRuntimeException` and
+> `ApplicationException`) work as expected.  
+> Even though a provider should not throw other JoynrRuntimeException types than
+> ProviderRuntimeException, this bug will be fixed in the near future.
 
 #### Injecting the calling principal
 
@@ -1059,3 +1089,4 @@ You'll also likely want to change the way the FIDL file is included in the API p
 example it is obtained from the `radio-app` Maven dependency, but you will probably want to have it
 in, e.g., `${project.root}/my-api/src/main/model/my.fidl`, and then reference that file directly
 in the generator configuration. See the [joynr Generator Documentation](generator.md) for details.
+
