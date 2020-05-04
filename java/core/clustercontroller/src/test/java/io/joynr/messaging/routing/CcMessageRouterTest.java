@@ -80,6 +80,7 @@ import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
 import io.joynr.accesscontrol.AccessController;
+import io.joynr.accesscontrol.HasConsumerPermissionCallback;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrDelayMessageException;
@@ -154,6 +155,9 @@ public class CcMessageRouterTest {
     @Mock
     private MessagePersister messagePersisterMock;
 
+    @Mock
+    private AccessController accessControllerMock;
+
     private MessageQueue messageQueue;
 
     private MessageRouter messageRouter;
@@ -213,7 +217,7 @@ public class CcMessageRouterTest {
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
 
-                bind(AccessController.class).toInstance(mock(AccessController.class));
+                bind(AccessController.class).toInstance(accessControllerMock);
                 bind(MessagePersister.class).toInstance(messagePersisterMock);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
@@ -975,5 +979,117 @@ public class CcMessageRouterTest {
         verify(routingTable,
                times(0)).put(eq(participantId), any(Address.class), anyBoolean(), anyLong(), anyBoolean());
         assertFalse(routingTable.containsKey(participantId));
+    }
+
+    private MessageRouter getMessageRouterWithEnabledAccessControl() {
+        // Reconfigure testModule to enable access control
+        // return messageRouter with an enabled access control
+        Module testTryCatchModule = Modules.override(testModule).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
+                              .to(true);
+            }
+        });
+        Injector injector5 = Guice.createInjector(testTryCatchModule);
+        return injector5.getInstance(MessageRouter.class);
+    }
+
+    @Test
+    public void testMessageProcessedCalledWhenHasConsumerPermissionTrue() throws Exception {
+        // Test whether try_catch inside "hasConsumerPermission" callback in CcMessageRouter.route works as expected
+        // pre-conditions: access control is enabled and permission is granted
+        // Expected behaviour: The method messageProcessed is called at least once when JoynrMessageNotSentException is thrown
+        // and the message will be dropped after the catch.
+        MessageRouter messageRouterWithAccessControl = getMessageRouterWithEnabledAccessControl();
+
+        final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
+        messageRouterWithAccessControl.registerMessageProcessedListener(mockMessageProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
+                                                                                  HasConsumerPermissionCallback.class);
+                callback.hasConsumerPermission(true);
+                return null;
+            }
+        }).when(accessControllerMock).hasConsumerPermission(any(ImmutableMessage.class),
+                                                            any(HasConsumerPermissionCallback.class));
+
+        // JoynrMessageNotSentException will be thrown because of expired message.
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouterWithAccessControl.route(immutableMessage);
+
+        verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
+                                                                     any(HasConsumerPermissionCallback.class));
+        verify(mockMessageProcessedListener, atLeast(1)).messageProcessed(eq(immutableMessage.getId()));
+    }
+
+    @Test
+    public void testMessageProcessedCalledWhenHasConsumerPermissionTrueWithRelativeTtl() throws Exception {
+        // Test whether try_catch inside "hasConsumerPermission" callback in CcMessageRouter.route works as expected
+        // pre-conditions: access control is enabled and permission is granted
+        // Expected behaviour: The method messageProcessed is called at least once when JoynrRuntimeException is thrown
+        // and the message will be dropped after the catch.
+        MessageRouter messageRouterWithAccessControl = getMessageRouterWithEnabledAccessControl();
+
+        final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
+        messageRouterWithAccessControl.registerMessageProcessedListener(mockMessageProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
+                                                                                  HasConsumerPermissionCallback.class);
+                callback.hasConsumerPermission(true);
+                return null;
+            }
+        }).when(accessControllerMock).hasConsumerPermission(any(ImmutableMessage.class),
+                                                            any(HasConsumerPermissionCallback.class));
+
+        // JoynrRuntimeException will be thrown because relative ttl is not supported
+        joynrMessage.setTtlAbsolute(false);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouterWithAccessControl.route(immutableMessage);
+
+        verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
+                                                                     any(HasConsumerPermissionCallback.class));
+        verify(mockMessageProcessedListener, atLeast(1)).messageProcessed(eq(immutableMessage.getId()));
+    }
+
+    @Test
+    public void testMessageProcessedCalledWhenHasConsumerPermissionFalse() throws Exception {
+        // Test whether try_catch inside "hasConsumerPermission" callback in CcMessageRouter.route works as expected
+        // pre-conditions: access control is enabled and permission is denied
+        // Expected behaviour: The method messageProcessed is called only once when hasPermission = false
+        // and the message will be dropped.
+        MessageRouter messageRouterWithAccessControl = getMessageRouterWithEnabledAccessControl();
+
+        final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
+        messageRouterWithAccessControl.registerMessageProcessedListener(mockMessageProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
+                                                                                  HasConsumerPermissionCallback.class);
+                callback.hasConsumerPermission(false);
+                return null;
+            }
+        }).when(accessControllerMock).hasConsumerPermission(any(ImmutableMessage.class),
+                                                            any(HasConsumerPermissionCallback.class));
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        messageRouterWithAccessControl.route(immutableMessage);
+
+        verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
+                                                                     any(HasConsumerPermissionCallback.class));
+        verify(mockMessageProcessedListener, times(1)).messageProcessed(eq(immutableMessage.getId()));
     }
 }
