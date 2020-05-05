@@ -18,6 +18,8 @@
  */
 #include "joynr/LcdPendingLookupsHandler.h"
 #include "joynr/CapabilityUtils.h"
+#include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
 {
@@ -26,8 +28,9 @@ LcdPendingLookupsHandler::LcdPendingLookupsHandler() : _pendingLookups()
 {
 }
 
-void LcdPendingLookupsHandler::callPendingLookups(const InterfaceAddress& interfaceAddress,
-                                               std::vector<types::DiscoveryEntry> localCapabilities)
+void LcdPendingLookupsHandler::callPendingLookups(
+        const InterfaceAddress& interfaceAddress,
+        std::vector<types::DiscoveryEntry> localCapabilities)
 {
     if (_pendingLookups.find(interfaceAddress) == _pendingLookups.cend()) {
         return;

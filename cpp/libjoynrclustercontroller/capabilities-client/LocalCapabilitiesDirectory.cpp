@@ -43,6 +43,7 @@
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
+#include "joynr/InterfaceAddress.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
@@ -225,7 +226,8 @@ void LocalCapabilitiesDirectory::addInternal(
         updatePersistedFile();
         {
             std::lock_guard<std::mutex> lock(_pendingLookupsLock);
-            InterfaceAddress interfaceAddress(discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
+            InterfaceAddress interfaceAddress(
+                    discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
             _lcdPendingLookupsHandler.callPendingLookups(
                     interfaceAddress, _capabilitiesCache.searchLocalCache({interfaceAddress}));
         }
@@ -320,7 +322,7 @@ void LocalCapabilitiesDirectory::addInternal(
                     {
                         std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
                         InterfaceAddress interfaceAddress(globalDiscoveryEntry.getDomain(),
-                                                 globalDiscoveryEntry.getInterfaceName());
+                                                          globalDiscoveryEntry.getInterfaceName());
                         thisSharedPtr->_lcdPendingLookupsHandler.callPendingLookups(
                                 interfaceAddress,
                                 thisSharedPtr->_capabilitiesCache.searchLocalCache(
@@ -564,7 +566,8 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                             callback,
                             discoveryQos.getDiscoveryScope());
                 }
-                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
+                        interfaceAddresses, callback);
             }
         };
 
@@ -589,7 +592,8 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(error);
                 }
-                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
+                        interfaceAddresses, callback);
             }
         };
 
@@ -615,7 +619,8 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(types::DiscoveryError::INTERNAL_ERROR);
                 }
-                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(interfaceAddresses, callback);
+                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
+                        interfaceAddresses, callback);
             }
         };
 
@@ -1044,8 +1049,8 @@ void LocalCapabilitiesDirectory::remove(
                                    boost::algorithm::join(foundGbids, ", "),
                                    types::DiscoveryError::getLiteral(error));
                 };
-                auto onRuntimeError =
-                        [participantId, foundGbids](const exceptions::JoynrRuntimeException& exception) {
+                auto onRuntimeError = [participantId, foundGbids](
+                        const exceptions::JoynrRuntimeException& exception) {
                     JOYNR_LOG_WARN(
                             logger(),
                             "Failed to remove participantId {} globally for GBIDs >{}<: {} ({})",

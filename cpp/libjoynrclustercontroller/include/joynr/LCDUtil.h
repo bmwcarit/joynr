@@ -19,28 +19,25 @@
 #ifndef LCDUTIL_H
 #define LCDUTIL_H
 
-#include <unordered_set>
-#include <unordered_map>
-#include <vector>
-
 #include <mutex>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include <boost/optional.hpp>
 
-
 #include "joynr/Logger.h"
-
-//#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-//#include "joynr/types/GlobalDiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntry.h"
 
 namespace joynr
 {
 
 namespace types
 {
-    class DiscoveryEntryWithMetaInfo;
-    class GlobalDiscoveryEntry;
+class DiscoveryEntry;
+class DiscoveryEntryWithMetaInfo;
+class GlobalDiscoveryEntry;
 }
 
 struct DiscoveryEntryHash
