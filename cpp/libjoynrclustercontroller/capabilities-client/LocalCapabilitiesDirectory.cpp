@@ -82,7 +82,7 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           std::enable_shared_from_this<LocalCapabilitiesDirectory>(),
           _clusterControllerSettings(clusterControllerSettings),
           _globalCapabilitiesDirectoryClient(std::move(globalCapabilitiesDirectoryClient)),
-          _capabilitiesCache(locallyRegisteredCapabilities, globalLookupCache),
+          _localCapabilitiesDirectoryStore(localCapabilitiesDirectoryStore),
           _localAddress(localAddress),
           _pendingLookupsLock(),
           _messageRouter(messageRouter),
@@ -214,12 +214,13 @@ void LocalCapabilitiesDirectory::addInternal(
     const bool isGloballyVisible = LCDUtil::isGlobal(discoveryEntry);
 
     if (!isGloballyVisible || !awaitGlobalRegistration) {
-        std::lock_guard<std::recursive_mutex> lock1(_capabilitiesCache.getCacheLock());
+        std::lock_guard<std::recursive_mutex> lock1(
+                _localCapabilitiesDirectoryStore->getCacheLock());
         if (isGloballyVisible) {
-            _capabilitiesCache.insertInGlobalLookupCache(discoveryEntry, gbids);
+            _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(discoveryEntry, gbids);
         }
         // register locally
-        _capabilitiesCache.insertInLocalCapabilitiesStorage(discoveryEntry);
+        _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(discoveryEntry);
         // Inform observers
         informObserversOnAdd(discoveryEntry);
 
@@ -229,7 +230,8 @@ void LocalCapabilitiesDirectory::addInternal(
             InterfaceAddress interfaceAddress(
                     discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
             _lcdPendingLookupsHandler.callPendingLookups(
-                    interfaceAddress, _capabilitiesCache.searchLocalCache({interfaceAddress}));
+                    interfaceAddress,
+                    _localCapabilitiesDirectoryStore->searchLocalCache({interfaceAddress}));
         }
     }
 
@@ -299,18 +301,19 @@ void LocalCapabilitiesDirectory::addInternal(
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::recursive_mutex> lock2(
-                        thisSharedPtr->_capabilitiesCache.getCacheLock());
-                JOYNR_LOG_INFO(logger(),
-                               "Global capability '{}' added successfully for GBIDs >{}<, "
-                               "#registeredGlobalCapabilities {}",
-                               globalDiscoveryEntry.toString(),
-                               boost::algorithm::join(gbids, ", "),
-                               thisSharedPtr->_capabilitiesCache.countGlobalCapabilities());
+                        thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
+                JOYNR_LOG_INFO(
+                        logger(),
+                        "Global capability '{}' added successfully for GBIDs >{}<, "
+                        "#registeredGlobalCapabilities {}",
+                        globalDiscoveryEntry.toString(),
+                        boost::algorithm::join(gbids, ", "),
+                        thisSharedPtr->_localCapabilitiesDirectoryStore->countGlobalCapabilities());
                 if (awaitGlobalRegistration) {
-                    thisSharedPtr->_capabilitiesCache.insertInGlobalLookupCache(
+                    thisSharedPtr->_localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
                             globalDiscoveryEntry, gbids);
-                    thisSharedPtr->_capabilitiesCache.insertInLocalCapabilitiesStorage(
-                            globalDiscoveryEntry);
+                    thisSharedPtr->_localCapabilitiesDirectoryStore
+                            ->insertInLocalCapabilitiesStorage(globalDiscoveryEntry);
                     if (onSuccess) {
                         onSuccess();
                     }
@@ -325,7 +328,7 @@ void LocalCapabilitiesDirectory::addInternal(
                                                           globalDiscoveryEntry.getInterfaceName());
                         thisSharedPtr->_lcdPendingLookupsHandler.callPendingLookups(
                                 interfaceAddress,
-                                thisSharedPtr->_capabilitiesCache.searchLocalCache(
+                                thisSharedPtr->_localCapabilitiesDirectoryStore->searchLocalCache(
                                         {interfaceAddress}));
                     }
                 }
@@ -365,7 +368,8 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
     std::ignore = onError;
 
     {
-        std::lock_guard<std::recursive_mutex> lock3(_capabilitiesCache.getCacheLock());
+        std::lock_guard<std::recursive_mutex> lock3(
+                _localCapabilitiesDirectoryStore->getCacheLock());
         JOYNR_LOG_DEBUG(logger(), "triggerGlobalProviderReregistration");
         std::vector<types::DiscoveryEntry> entries;
         const std::int64_t now =
@@ -376,7 +380,8 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         // copy existing global entries, update lastSeenDateMs and
         // increase expiryDateMs unless it already references a time
         // which is beyond newExpiryDate/updatedExpiryDate
-        for (auto capability : *(_capabilitiesCache.getLocallyRegisteredCapabilities())) {
+        for (auto capability :
+             *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
             if (capability.getExpiryDateMs() < newExpiryDateMs) {
                 capability.setExpiryDateMs(newExpiryDateMs);
             }
@@ -388,13 +393,14 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         for (const auto& capability : entries) {
             if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
                 const std::string& participantId = capability.getParticipantId();
-                auto foundGbids = _capabilitiesCache.getGbidsForParticipantId(participantId);
+                auto foundGbids =
+                        _localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantId);
                 if (!foundGbids.empty()) {
                     // update local store
-                    _capabilitiesCache.getLocallyRegisteredCapabilities()->insert(
+                    _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->insert(
                             capability, foundGbids);
                     // update global cache
-                    _capabilitiesCache.getGlobalLookupCache()->insert(capability);
+                    _localCapabilitiesDirectoryStore->getGlobalLookupCache()->insert(capability);
                     // send entries to JDS again
                     auto onApplicationError =
                             [participantId, foundGbids](const types::DiscoveryError::Enum& error) {
@@ -428,7 +434,8 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                 }
             } else {
                 // update local cache
-                _capabilitiesCache.getLocallyRegisteredCapabilities()->insert(capability);
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->insert(
+                        capability);
             }
         }
     }
@@ -439,7 +446,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDiscoveryEntries()
         const
 {
-    return _capabilitiesCache.getCachedGlobalDiscoveryEntries();
+    return _localCapabilitiesDirectoryStore->getCachedGlobalDiscoveryEntries();
 }
 
 void LocalCapabilitiesDirectory::capabilitiesReceived(
@@ -478,7 +485,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                                         std::shared_ptr<ILocalCapabilitiesCallback> callback)
 {
     // get the local and cached entries
-    bool receiverCalled = _capabilitiesCache.getLocalAndCachedCapabilities(
+    bool receiverCalled = _localCapabilitiesDirectoryStore->getLocalAndCachedCapabilities(
             participantId, discoveryQos, gbids, callback);
 
     // if no receiver is called, use the global capabilities directory
@@ -498,7 +505,8 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                 }
                 thisSharedPtr->capabilitiesReceived(
                         result,
-                        thisSharedPtr->_capabilitiesCache.getCachedLocalCapabilities(participantId),
+                        thisSharedPtr->_localCapabilitiesDirectoryStore->getCachedLocalCapabilities(
+                                participantId),
                         callback,
                         discoveryScope);
             }
@@ -538,7 +546,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
     }
 
     // get the local and cached entries
-    bool receiverCalled = _capabilitiesCache.getLocalAndCachedCapabilities(
+    bool receiverCalled = _localCapabilitiesDirectoryStore->getLocalAndCachedCapabilities(
             interfaceAddresses, discoveryQos, gbids, callback);
 
     // if no receiver is called, use the global capabilities directory
@@ -561,8 +569,8 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                     }
                     thisSharedPtr->capabilitiesReceived(
                             result,
-                            thisSharedPtr->_capabilitiesCache.getCachedLocalCapabilities(
-                                    interfaceAddresses),
+                            thisSharedPtr->_localCapabilitiesDirectoryStore
+                                    ->getCachedLocalCapabilities(interfaceAddresses),
                             callback,
                             discoveryQos.getDiscoveryScope());
                 }
@@ -686,7 +694,8 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
             // use default GBID for all other address types
             gbids.push_back(_knownGbids[0]);
         }
-        _capabilitiesCache.insertInGlobalLookupCache(std::move(currentEntry), std::move(gbids));
+        _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
+                std::move(currentEntry), std::move(gbids));
     }
 }
 
@@ -1008,11 +1017,12 @@ void LocalCapabilitiesDirectory::remove(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     {
-        std::lock_guard<std::recursive_mutex> lock7(_capabilitiesCache.getCacheLock());
+        std::lock_guard<std::recursive_mutex> lock7(
+                _localCapabilitiesDirectoryStore->getCacheLock());
 
         boost::optional<types::DiscoveryEntry> optionalEntry =
-                _capabilitiesCache.getLocallyRegisteredCapabilities()->lookupByParticipantId(
-                        participantId);
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
+                        ->lookupByParticipantId(participantId);
         if (!optionalEntry) {
             JOYNR_LOG_INFO(
                     logger(), "participantId '{}' not found, cannot be removed", participantId);
@@ -1026,7 +1036,8 @@ void LocalCapabilitiesDirectory::remove(
         const types::DiscoveryEntry& entry = *optionalEntry;
 
         if (LCDUtil::isGlobal(entry)) {
-            auto foundGbids = _capabilitiesCache.getGbidsForParticipantId(participantId);
+            auto foundGbids =
+                    _localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantId);
             if (foundGbids.empty()) {
                 JOYNR_LOG_FATAL(logger(),
                                 "Global remove failed because participantId to GBIDs mapping is "
@@ -1039,8 +1050,9 @@ void LocalCapabilitiesDirectory::remove(
                                participantId,
                                gbidString);
 
-                _capabilitiesCache.eraseParticipantIdToGbidMapping(participantId);
-                _capabilitiesCache.getGlobalLookupCache()->removeByParticipantId(participantId);
+                _localCapabilitiesDirectoryStore->eraseParticipantIdToGbidMapping(participantId);
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache()->removeByParticipantId(
+                        participantId);
                 auto onApplicationError =
                         [participantId, foundGbids](const types::DiscoveryError::Enum& error) {
                     JOYNR_LOG_WARN(logger(),
@@ -1068,14 +1080,15 @@ void LocalCapabilitiesDirectory::remove(
             }
         }
         JOYNR_LOG_INFO(logger(), "Removing locally registered participantId: {}", participantId);
-        _capabilitiesCache.getLocallyRegisteredCapabilities()->removeByParticipantId(participantId);
+        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->removeByParticipantId(
+                participantId);
         JOYNR_LOG_INFO(logger(),
                        "After removal of participantId {}: #localCapabilities {}, "
                        "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
                        participantId,
-                       _capabilitiesCache.getLocallyRegisteredCapabilities()->size(),
-                       _capabilitiesCache.countGlobalCapabilities(),
-                       _capabilitiesCache.getGlobalLookupCache()->size());
+                       _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->size(),
+                       _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
+                       _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
         informObserversOnRemove(entry);
 
         if (auto messageRouterSharedPtr = _messageRouter.lock()) {
@@ -1121,11 +1134,12 @@ void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& 
     }
 
     try {
-        std::lock_guard<std::recursive_mutex> lock8(_capabilitiesCache.getCacheLock());
+        std::lock_guard<std::recursive_mutex> lock8(
+                _localCapabilitiesDirectoryStore->getCacheLock());
         joynr::util::saveStringToFile(
                 fileName,
                 joynr::serializer::serializeToJson(
-                        _capabilitiesCache.getLocallyRegisteredCapabilities()));
+                        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger(), ex.what());
     }
@@ -1155,20 +1169,21 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
         return;
     }
 
-    std::lock_guard<std::recursive_mutex> lock9(_capabilitiesCache.getCacheLock());
+    std::lock_guard<std::recursive_mutex> lock9(_localCapabilitiesDirectoryStore->getCacheLock());
 
     try {
         std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities =
-                _capabilitiesCache.getLocallyRegisteredCapabilities();
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities();
         joynr::serializer::deserializeFromJson(locallyRegisteredCapabilities, jsonString);
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger(), ex.what());
     }
 
     // insert all global capability entries into global cache
-    for (const auto& entry : *(_capabilitiesCache.getLocallyRegisteredCapabilities())) {
+    for (const auto& entry :
+         *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
         if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
-            _capabilitiesCache.insertInGlobalLookupCache(entry, entry.gbids);
+            _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(entry, entry.gbids);
         }
     }
 }
@@ -1272,11 +1287,14 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 
     bool fileUpdateRequired = false;
     {
-        std::lock_guard<std::recursive_mutex> lock13(_capabilitiesCache.getCacheLock());
+        std::lock_guard<std::recursive_mutex> lock13(
+                _localCapabilitiesDirectoryStore->getCacheLock());
 
         auto removedLocalCapabilities =
-                _capabilitiesCache.getLocallyRegisteredCapabilities()->removeExpired();
-        auto removedGlobalCapabilities = _capabilitiesCache.getGlobalLookupCache()->removeExpired();
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
+                        ->removeExpired();
+        auto removedGlobalCapabilities =
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache()->removeExpired();
 
         if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
             fileUpdateRequired = true;
@@ -1285,14 +1303,15 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                                "Following discovery entries expired: local: {}, "
                                "#localCapabilities: {}, global: {}, #globalLookupCache: {}",
                                LCDUtil::joinToString(removedLocalCapabilities),
-                               _capabilitiesCache.getLocallyRegisteredCapabilities()->size(),
+                               _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
+                                       ->size(),
                                LCDUtil::joinToString(removedGlobalCapabilities),
-                               _capabilitiesCache.getGlobalLookupCache()->size());
+                               _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
 
                 for (const auto& capability :
                      boost::join(removedLocalCapabilities, removedGlobalCapabilities)) {
                     messageRouterSharedPtr->removeNextHop(capability.getParticipantId());
-                    _capabilitiesCache.eraseParticipantIdToGbidMapping(
+                    _localCapabilitiesDirectoryStore->eraseParticipantIdToGbidMapping(
                             capability.getParticipantId());
                 }
             } else {

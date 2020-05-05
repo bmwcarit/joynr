@@ -32,7 +32,7 @@
 #include <boost/asio/steady_timer.hpp>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
-#include "joynr/CapabilitiesCache.h"
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
@@ -271,7 +271,7 @@ private:
 
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<IGlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
-    CapabilitiesCache _capabilitiesCache;
+    std::shared_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
     std::string _localAddress;
     std::mutex _pendingLookupsLock;
 
