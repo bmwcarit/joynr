@@ -28,7 +28,7 @@ set(PUBLIC_HEADERS
 
     include/joynr/AbstractGlobalMessagingSkeleton.h
     include/joynr/CapabilitiesStorage.h
-    include/joynr/CapabilitiesCache.h
+    include/joynr/LocalCapabilitiesDirectoryStore.h
     include/joynr/CcMessageRouter.h
     include/joynr/ClusterControllerDirectories.h
     include/joynr/ClusterControllerSettings.h

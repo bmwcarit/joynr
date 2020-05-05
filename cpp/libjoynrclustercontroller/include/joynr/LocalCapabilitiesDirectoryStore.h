@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#ifndef LOCALCAPABILITIESDIRECTORYSTORE_H
+#define LOCALCAPABILITIESDIRECTORYSTORE_H
 
 #include <boost/optional.hpp>
 #include <memory>
@@ -24,9 +26,6 @@
 #include <unordered_map>
 #include <vector>
 
-//#include "joynr/CapabilitiesStorage.h"
-//#include "joynr/ILocalCapabilitiesCallback.h"
-//#include "joynr/InterfaceAddress.h"
 #include "joynr/Logger.h"
 #include "joynr/types/DiscoveryScope.h"
 
@@ -48,20 +47,20 @@ class DiscoveryEntry;
 class DiscoveryQos;
 }
 
-class CapabilitiesCache
+class LocalCapabilitiesDirectoryStore
 {
 
 public:
-    CapabilitiesCache(std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities,
-                      std::shared_ptr<capabilities::CachingStorage> globalLookupCache);
-    ~CapabilitiesCache();
+    LocalCapabilitiesDirectoryStore();
+    virtual ~LocalCapabilitiesDirectoryStore();
 
     /*
       * Returns a list of locally cached capabilitiy entries. This method is used
       * when capabilities from the global directory are received, to check if a new
       * local provider was registered in the meantime.
       */
-    std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(const std::string& participantId);
+    virtual std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(
+            const std::string& participantId);
     std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(
             const std::vector<InterfaceAddress>& interfaceAddress);
 
@@ -73,19 +72,20 @@ public:
                                        const joynr::types::DiscoveryQos& discoveryQos,
                                        const std::vector<std::string>& gbids,
                                        std::shared_ptr<ILocalCapabilitiesCallback> callback);
-    bool getLocalAndCachedCapabilities(const std::string& participantId,
-                                       const joynr::types::DiscoveryQos& discoveryQos,
-                                       const std::vector<std::string>& gbids,
-                                       std::shared_ptr<ILocalCapabilitiesCallback> callback);
+    virtual bool getLocalAndCachedCapabilities(
+            const std::string& participantId,
+            const joynr::types::DiscoveryQos& discoveryQos,
+            const std::vector<std::string>& gbids,
+            std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     /*
      * removes all discovery entries
      */
     void clear();
 
-    void insertInLocalCapabilitiesStorage(const types::DiscoveryEntry& entry);
-    void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
-                                   const std::vector<std::string>& gbids);
+    virtual void insertInLocalCapabilitiesStorage(const types::DiscoveryEntry& entry);
+    virtual void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
+                                           const std::vector<std::string>& gbids);
 
     std::vector<types::DiscoveryEntry> searchGlobalCache(
             const std::vector<InterfaceAddress>& interfaceAddress,
@@ -113,6 +113,8 @@ private:
     std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
     std::unordered_map<std::string, std::vector<std::string>> _globalParticipantIdsToGbidsMap;
     mutable std::recursive_mutex _cacheLock;
-    ADD_LOGGER(CapabilitiesCache)
+    ADD_LOGGER(LocalCapabilitiesDirectoryStore)
 };
-}
+} // namespace joynr
+
+#endif // LOCALCAPABILITIESDIRECTORYSTORE_H
