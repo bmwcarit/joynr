@@ -28,17 +28,25 @@
 //#include "joynr/ILocalCapabilitiesCallback.h"
 //#include "joynr/InterfaceAddress.h"
 #include "joynr/Logger.h"
-//#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/DiscoveryScope.h"
 
 namespace joynr
 {
 class DiscoveryEntry;
 class InterfaceAddress;
 class ILocalCapabilitiesCallback;
-namespace types {
+
+namespace capabilities
+{
+class Storage;
+class CachingStorage;
+}
+
+namespace types
+{
+class DiscoveryEntry;
 class DiscoveryQos;
 }
-class DiscoveryScope;
 
 class CapabilitiesCache
 {

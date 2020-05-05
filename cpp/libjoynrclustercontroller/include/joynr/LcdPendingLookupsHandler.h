@@ -20,29 +20,24 @@
 #include <unordered_map>
 #include <vector>
 #include <memory>
-//#include "joynr/ILocalCapabilitiesCallback.h"
-//#include "joynr/InterfaceAddress.h"
-//#include "joynr/types/DiscoveryQos.h"
+#include "joynr/InterfaceAddress.h"
 
 namespace joynr
 {
 
 namespace types
 {
-    class DiscoveryQos;
+class DiscoveryEntry;
+class DiscoveryQos;
 }
 
 class ILocalCapabilitiesCallback;
-class InterfaceAddress;
-
 class LcdPendingLookupsHandler
 {
 
 public:
     LcdPendingLookupsHandler();
-    ~LcdPendingLookupsHandler()
-    {
-    }
+    ~LcdPendingLookupsHandler() = default;
 
     /*
      * returns true if lookup calls with discovery scope LOCAL_THEN_GLOBAL are ongoing
