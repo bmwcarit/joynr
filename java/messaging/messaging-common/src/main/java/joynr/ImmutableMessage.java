@@ -150,6 +150,7 @@ public class ImmutableMessage extends Message {
         return messageDeserializer.getMessageSize();
     }
 
+    @JsonIgnore
     public String toLogMessage() {
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
@@ -206,5 +207,22 @@ public class ImmutableMessage extends Message {
         final Message.MessageType messageType = getType();
         return MessageType.VALUE_MESSAGE_TYPE_REPLY.equals(messageType)
                 || MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY.equals(messageType);
+    }
+
+    public String getTrackingInfo() {
+        String requestReplyId = getCustomHeaders().get(Message.CUSTOM_HEADER_REQUEST_REPLY_ID);
+        StringBuilder trackingInfo = new StringBuilder(256).append("messageId: ")
+                                                           .append(getId())
+                                                           .append(", type: ")
+                                                           .append(getType())
+                                                           .append(", sender: ")
+                                                           .append(getSender())
+                                                           .append(", recipient: ")
+                                                           .append(getRecipient());
+        if (requestReplyId != null) {
+            trackingInfo.append(", requestReplyId: ").append(requestReplyId);
+        }
+        trackingInfo.append(", expiryDate: ").append(getTtlMs()).append(", size: ").append(getMessageSize());
+        return trackingInfo.toString();
     }
 }
