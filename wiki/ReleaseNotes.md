@@ -425,11 +425,7 @@ None.
 ## Other changes
 * **[Java, JEE]** Integration for HiveMQ MQTT Client. Also, the mqtt module is split up into the
   base implementation, the Paho implementation and the new HiveMQ MQTT Client integration. The JEE
-  integration now uses the HiveMQ MQTT Client integration. IMPORTANT: JEE 7 based applications need
-  to exclude the HiveMQ MQTT Client library from CDI scanning
-  (see
-  examples/stateless-async/stateless-async-jee-consumer/src/main/webapp/WEB-INF/glassfish-web.xml
-  for an example of how to do this for Payara / Glassfish 5.x)
+  integration now uses the HiveMQ MQTT Client integration.
 * **[Docs]** Added documentation of configuring the [Java MQTT Clients](./java_mqtt_clients.md)
 * **[All]** Franca dependencies were updated and are now fetched from Maven Central. These  
   dependencies are no longer packaged with joynr and should be fetched from Maven Central. Please  
