@@ -79,7 +79,7 @@ AbstractMessageRouter::AbstractMessageRouter(
           _routingTableCleanerTimer(ioService),
           _transportStatuses(std::move(transportStatuses)),
           _printRoutedMessages(false),
-          _routedMessagePrintIntervalS(10),
+          _routedMessagePrintIntervalS(10u),
           _isShuttingDown(false),
           _numberOfRoutedMessages(0),
           _maxAclRetryIntervalMs(

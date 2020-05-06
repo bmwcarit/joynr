@@ -204,7 +204,7 @@ public:
     void setAclEntriesDirectory(const std::string& directoryPath);
     std::string getAclEntriesDirectory() const;
 
-    int getRoutedMessagePrintIntervalS() const;
+    std::uint32_t getRoutedMessagePrintIntervalS() const;
 
     bool isWebSocketEnabled() const;
     void setWebSocketEnabled(bool enabled);

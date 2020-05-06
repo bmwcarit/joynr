@@ -200,6 +200,65 @@ add_compile_options(
     "$<IF:$<CXX_COMPILER_ID:GNU>,,-Wno-unknown-warning-option>" # For: #pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
 )
 
+if(NOT CMAKE_BUILD_TYPE MATCHES "(Debug)|(Coverage)")
+    add_definitions(-D_FORTIFY_SOURCE=2)
+endif()
+
+add_compile_options(
+    -Walloc-zero
+    -Walloca
+    -Wcast-align
+    -Wcast-qual
+    -Wduplicated-branches
+    -Wduplicated-cond
+    -Werror=all
+    -Werror=alloc-zero
+    -Werror=alloca
+    -Werror=cast-align
+    -Werror=cast-qual
+    -Werror=duplicated-branches
+    -Werror=duplicated-cond
+    -Werror=extra
+    -Werror=float-equal
+    -Werror=format
+    -Werror=format-security
+    -Werror=format-security
+    -Werror=format-signedness
+    -Werror=implicit-fallthrough
+    -Werror=logical-op
+    -Werror=missing-include-dirs
+    -Werror=redundant-decls
+    -Werror=shadow
+    -Werror=sign-conversion
+    -Werror=uninitialized
+    -Werror=unused-parameter
+    -Wfloat-equal
+    -Wformat-security
+    -Wformat-signedness
+    -Wformat=2
+    -Wimplicit-fallthrough=5
+    -Wlogical-op
+    -Wmissing-include-dirs
+    -Wredundant-decls
+    -Wshadow
+    -Wsign-conversion
+    -Wuninitialized
+    -Wunused-parameter
+    -fstack-protector-strong
+    -fwrapv
+)
+
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-D_GLIBCXX_ASSERTIONS>)
+
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wdeclaration-after-statement>)
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-Werror=declaration-after-statement>)
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-Werror=missing-prototypes>)
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-Werror=nested-externs>)
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-Werror=old-style-definition>)
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wmissing-prototypes>)
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wnested-externs>)
+add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wold-style-definition>)
+
 option(ENABLE_CCACHE "Should ccache be used?" OFF)
 if(ENABLE_CCACHE)
     find_program(CCACHE_FOUND ccache)

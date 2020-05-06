@@ -865,9 +865,9 @@ std::string ClusterControllerSettings::getAclEntriesDirectory() const
     return _settings.get<std::string>(SETTING_ACL_ENTRIES_DIRECTORY());
 }
 
-int ClusterControllerSettings::getRoutedMessagePrintIntervalS() const
+std::uint32_t ClusterControllerSettings::getRoutedMessagePrintIntervalS() const
 {
-    return _settings.get<int>(SETTING_ROUTED_MESSAGE_PRINT_INTERVAL_S());
+    return _settings.get<std::uint32_t>(SETTING_ROUTED_MESSAGE_PRINT_INTERVAL_S());
 }
 
 bool ClusterControllerSettings::enableAccessController() const
