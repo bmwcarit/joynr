@@ -43,7 +43,7 @@ import joynr.io.joynr.sharedsubscriptions.test.PingServiceSync;
 @Consumes(MediaType.APPLICATION_JSON)
 public class MonitorRestEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MonitorRestEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(MonitorRestEndpoint.class);
 
     private ServiceLocator serviceLocator;
     private PingServiceSync pingServiceClient;
@@ -62,12 +62,12 @@ public class MonitorRestEndpoint {
         for (int count = 0; count < numberOfPings; count++) {
             try {
                 String result = getService().ping();
-                LOG.info("Successfully pinged {}", result);
+                logger.info("Successfully pinged {}", result);
                 successCount++;
                 increaseCount(successCountByResult, result);
             } catch (RuntimeException e) {
                 errorCount++;
-                LOG.error("Unable to call ping service.", e);
+                logger.error("Unable to call ping service.", e);
             }
         }
         return format("Triggered %d pings. %d were successful, %d failed.%n%s%n",

@@ -32,7 +32,7 @@ import android.content.Intent;
 public class PropertyChangeReceiver extends BroadcastReceiver {
     public static final String ACTION_LOG_LEVEL_CHANGE = "io.joynr.android.LOG_LEVEL_CHANGE";
     public static final String LOG_LEVEL_TAG = "setlevel";
-    private static final Logger LOG = LoggerFactory.getLogger(PropertyChangeReceiver.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropertyChangeReceiver.class);
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
@@ -42,7 +42,7 @@ public class PropertyChangeReceiver extends BroadcastReceiver {
                 final @AndroidLogger.LogLevel int logLevel = StaticLoggerBinder.getValidLogLevel(logLevelExtra);
                 StaticLoggerBinder.setLogLevel(logLevel);
 
-                LOG.info(String.format("Set log level to %1$s", logLevelExtra));
+                logger.info(String.format("Set log level to %1$s", logLevelExtra));
             }
         }
     }

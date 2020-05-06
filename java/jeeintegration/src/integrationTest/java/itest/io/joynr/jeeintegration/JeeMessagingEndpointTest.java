@@ -59,7 +59,7 @@ public class JeeMessagingEndpointTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
-    private static final Logger LOG = LoggerFactory.getLogger(JeeMessagingEndpointTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(JeeMessagingEndpointTest.class);
 
     @Deployment
     public static WebArchive createTestArchive() {
@@ -85,7 +85,7 @@ public class JeeMessagingEndpointTest {
     public void testEndpointAvailable() throws Throwable {
         assertNotNull(baseUrl);
         WebTarget webTarget = ClientBuilder.newClient().target(baseUrl.toURI()).path("/messaging/channels");
-        LOG.info("Trying to access: " + webTarget.getUri().toString());
+        logger.info("Trying to access: " + webTarget.getUri().toString());
         Response response = webTarget.request().get();
         assertNotNull(response);
         assertEquals(200, response.getStatus());

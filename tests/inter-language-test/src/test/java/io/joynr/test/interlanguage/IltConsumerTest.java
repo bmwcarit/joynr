@@ -54,7 +54,7 @@ import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import joynr.interlanguagetest.TestInterfaceProxy;
 
 public abstract class IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerTest.class);
 
     public static final String INTER_LANGUAGE_PROVIDER_DOMAIN = "inter-language-test.provider.domain";
     private static final String STATIC_PERSISTENCE_FILE = "java-consumer.persistence_file";
@@ -83,57 +83,57 @@ public abstract class IltConsumerTest {
     protected static ObjectMapper objectMapper;
 
     public static void generalTearDown() throws InterruptedException {
-        LOG.info("generalTearDown: Entering");
+        logger.info("generalTearDown: Entering");
         if (consumerRuntime != null) {
             consumerRuntime.shutdown(true);
         }
-        LOG.info("generalTearDown: Leaving");
+        logger.info("generalTearDown: Leaving");
     }
 
     private static Module getRuntimeModule(Properties joynrConfig) {
-        LOG.info("getRuntimeModule: Entering");
+        logger.info("getRuntimeModule: Entering");
         Module runtimeModule;
         String transport = System.getProperty("transport");
         if (transport == null) {
             throw new IllegalArgumentException("property \"transport\" not set");
         }
-        LOG.info("getRuntimeModule: transport = " + transport);
+        logger.info("getRuntimeModule: transport = " + transport);
         if (transport.contains("websocket")) {
-            LOG.info("getRuntimeModule: websocket host = "
+            logger.info("getRuntimeModule: websocket host = "
                     + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST));
-            LOG.info("getRuntimeModule: websocket port = "
+            logger.info("getRuntimeModule: websocket port = "
                     + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT));
-            LOG.info("getRuntimeModule: websocket protocol = "
+            logger.info("getRuntimeModule: websocket protocol = "
                     + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL));
-            LOG.info("getRuntimeModule: websocket path = "
+            logger.info("getRuntimeModule: websocket path = "
                     + joynrConfig.getProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH));
-            LOG.info("getRuntimeModule: selecting LibjoynrWebSocketRuntimeModule");
+            logger.info("getRuntimeModule: selecting LibjoynrWebSocketRuntimeModule");
             runtimeModule = new LibjoynrWebSocketRuntimeModule();
         } else {
-            LOG.info("getRuntimeModule: selecting CCInProcessRuntimeModule");
+            logger.info("getRuntimeModule: selecting CCInProcessRuntimeModule");
             runtimeModule = new CCInProcessRuntimeModule();
         }
 
         Module backendTransportModules = Modules.EMPTY_MODULE;
         if (transport.contains("http")) {
-            LOG.info("getRuntimeModule: using AtmosphereMessagingModule");
+            logger.info("getRuntimeModule: using AtmosphereMessagingModule");
             backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
         }
 
         if (transport.contains("mqtt")) {
-            LOG.info("getRuntimeModule: using MqttPahoModule");
+            logger.info("getRuntimeModule: using MqttPahoModule");
             joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
             backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
         }
 
-        LOG.info("getRuntimeModule: Leaving");
+        logger.info("getRuntimeModule: Leaving");
         return Modules.override(runtimeModule).with(backendTransportModules);
     }
 
     protected static JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
-        LOG.info("getRuntime: Entering");
+        logger.info("getRuntime: Entering");
         providerDomain = joynrConfig.getProperty("provider.domain");
-        LOG.info("getRuntime: providerDomain = " + providerDomain);
+        logger.info("getRuntime: providerDomain = " + providerDomain);
         Properties appConfig = new Properties();
         appConfig.setProperty(INTER_LANGUAGE_PROVIDER_DOMAIN, providerDomain);
 
@@ -143,32 +143,32 @@ public abstract class IltConsumerTest {
                                                                                                                                appConfig);
 
         objectMapper = application.getObjectMapper();
-        LOG.info("getRuntime: Leaving");
+        logger.info("getRuntime: Leaving");
         return application.getRuntime();
     }
 
     protected static void setupConsumerRuntime(boolean msgQosCompressed) throws DiscoveryException,
                                                                          JoynrIllegalStateException,
                                                                          InterruptedException {
-        LOG.info("setupConsumerRuntime: Entering");
+        logger.info("setupConsumerRuntime: Entering");
         final String configFileName = "ilt-consumer-test.settings";
 
         InputStream resourceStream;
         try {
             resourceStream = new FileInputStream("src/main/resources/" + configFileName);
         } catch (IOException e) {
-            LOG.error("setupConsumerRuntime: Error", e);
+            logger.error("setupConsumerRuntime: Error", e);
             resourceStream = null;
         }
 
         Properties joynrConfig = new Properties();
         try {
             if (resourceStream != null) {
-                LOG.info("setupConsumerRuntime: resources from " + configFileName);
+                logger.info("setupConsumerRuntime: resources from " + configFileName);
                 joynrConfig.load(resourceStream);
             }
         } catch (IOException ex) {
-            LOG.info("setupConsumerRuntime: not load the configuration file: " + configFileName + ": " + ex);
+            logger.info("setupConsumerRuntime: not load the configuration file: " + configFileName + ": " + ex);
         }
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
@@ -187,27 +187,27 @@ public abstract class IltConsumerTest {
 
         MessagingQos messagingQos = new MessagingQos(10000);
         messagingQos.setCompress(msgQosCompressed);
-        LOG.info("setupConsumerRuntime: msgQosCompression = " + msgQosCompressed);
+        logger.info("setupConsumerRuntime: msgQosCompression = " + msgQosCompressed);
 
         testInterfaceProxy = proxyBuilder.setMessagingQos(messagingQos)
                                          .setDiscoveryQos(discoveryQos)
                                          .build(new ProxyCreatedCallback<TestInterfaceProxy>() {
                                              @Override
                                              public void onProxyCreationFinished(TestInterfaceProxy result) {
-                                                 LOG.info("proxy created");
+                                                 logger.info("proxy created");
                                                  proxyCreated.release();
 
                                              }
 
                                              @Override
                                              public void onProxyCreationError(JoynrRuntimeException error) {
-                                                 LOG.info("error creating proxy");
+                                                 logger.info("error creating proxy");
                                              }
                                          });
         if (testInterfaceProxy == null) {
-            LOG.info("setupConsumerRuntime: proxy = null");
+            logger.info("setupConsumerRuntime: proxy = null");
         } else {
-            LOG.info("setupConsumerRuntime: proxy is set != null");
+            logger.info("setupConsumerRuntime: proxy is set != null");
         }
         // wait until proxy creation is finished or discovery timeout +
         // 1 second grace period have passed

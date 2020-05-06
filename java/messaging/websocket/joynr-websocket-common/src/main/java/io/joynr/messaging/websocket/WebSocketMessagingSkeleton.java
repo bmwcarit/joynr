@@ -35,7 +35,7 @@ import joynr.Message;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
 public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWebSocketMessagingSkeleton {
-    private static final Logger LOG = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
 
     public final static String WEBSOCKET_IS_MAIN_TRANSPORT = "io.joynr.websocket.is.main.transport";
 
@@ -78,7 +78,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
 
     @Override
     public void init() {
-        LOG.debug("Initializing Websocket skeleton ...");
+        logger.debug("Initializing Websocket skeleton ...");
         webSocketEndpoint = webSocketEndpointFactory.create(serverAddress);
         webSocketEndpoint.setMessageListener(this);
         webSocketEndpoint.start();
@@ -89,7 +89,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
         try {
             ImmutableMessage message = new ImmutableMessage(serializedMessage);
 
-            LOG.debug("<<< INCOMING <<< {}", message);
+            logger.debug("<<< INCOMING <<< {}", message);
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {

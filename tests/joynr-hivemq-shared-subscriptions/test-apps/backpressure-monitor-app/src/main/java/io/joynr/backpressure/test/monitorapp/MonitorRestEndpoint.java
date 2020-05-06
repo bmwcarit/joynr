@@ -50,7 +50,7 @@ import joynr.io.joynr.sharedsubscriptions.test.PingServiceAsync;
 @Consumes(MediaType.APPLICATION_JSON)
 public class MonitorRestEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MonitorRestEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(MonitorRestEndpoint.class);
 
     private ServiceLocator serviceLocator;
     private PingServiceAsync pingServiceClient;
@@ -204,12 +204,12 @@ public class MonitorRestEndpoint {
                 @Override
                 public void onFailure(JoynrRuntimeException arg0) {
                     totalErrorCount.incrementAndGet();
-                    LOG.error("Unable to call ping service.", arg0);
+                    logger.error("Unable to call ping service.", arg0);
                 }
 
                 @Override
                 public void onSuccess(String arg0) {
-                    LOG.info("Successfully pinged {}", arg0);
+                    logger.info("Successfully pinged {}", arg0);
                     totalSuccessCount.incrementAndGet();
                     increaseCount(responseCounterMap, arg0);
                 }

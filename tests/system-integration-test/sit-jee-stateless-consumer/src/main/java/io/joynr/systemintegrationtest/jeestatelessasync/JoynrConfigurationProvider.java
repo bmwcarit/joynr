@@ -38,7 +38,7 @@ import joynr.test.SitControllerSync;
 @Singleton
 public class JoynrConfigurationProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
     static final String SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
     private static final String CHANNEL_ID = SIT_DOMAIN_PREFIX + ".jeestatelessconsumer";
     private static final String RECEIVER_ID = System.getenv("RECEIVER_ID");
@@ -51,9 +51,9 @@ public class JoynrConfigurationProvider {
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        LOG.debug("Using CHANNEL_ID: " + CHANNEL_ID);
+        logger.debug("Using CHANNEL_ID: " + CHANNEL_ID);
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
-        LOG.debug("Using RECEIVER_ID: " + RECEIVER_ID);
+        logger.debug("Using RECEIVER_ID: " + RECEIVER_ID);
         joynrProperties.setProperty(MessagingPropertyKeys.RECEIVERID, RECEIVER_ID);
         joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URIS);
         joynrProperties.setProperty(PROPERTY_GBIDS, "joynrdefaultgbid,othergbid");
@@ -70,9 +70,9 @@ public class JoynrConfigurationProvider {
     @Produces
     @JoynrLocalDomain
     public String joynrLocalDomain() {
-        LOG.debug("Using domain prefix: " + SIT_DOMAIN_PREFIX);
+        logger.debug("Using domain prefix: " + SIT_DOMAIN_PREFIX);
         String domain = SIT_DOMAIN_PREFIX + ".jee-stateless-consumer";
-        LOG.debug("Using domain: " + domain);
+        logger.debug("Using domain: " + domain);
         return domain;
     }
 

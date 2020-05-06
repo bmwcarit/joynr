@@ -48,7 +48,7 @@ import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.ProviderQos;
 
 public class MyGpsProviderApplication extends AbstractJoynrApplication {
-    private static final Logger LOG = LoggerFactory.getLogger(MyGpsProviderApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(MyGpsProviderApplication.class);
     public static final String STATIC_PERSISTENCE_FILE = "gps-provider-joynr.properties";
 
     private MyGpsProvider provider = null;
@@ -58,12 +58,12 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<local-domain>"
         // Get the provider domain from the command line
         if (args.length != 1 && args.length != 2) {
-            LOG.error("\n\nUSAGE: java {} <local-domain> [websocket] \n\n NOTE: Providers are registered on the local domain.",
-                      MyGpsProviderApplication.class.getName());
+            logger.error("\n\nUSAGE: java {} <local-domain> [websocket] \n\n NOTE: Providers are registered on the local domain.",
+                         MyGpsProviderApplication.class.getName());
             return;
         }
         String localDomain = args[0];
-        LOG.debug("Registering provider on domain \"{}\"", localDomain);
+        logger.debug("Registering provider on domain \"{}\"", localDomain);
 
         // joynr config properties are used to set joynr configuration at
         // compile time. They are set on the
@@ -139,7 +139,7 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
         } else {
             runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
         }
-        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        logger.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
 
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
                                                                      new StaticDomainAccessControlProvisioningModule(),
@@ -167,23 +167,23 @@ public class MyGpsProviderApplication extends AbstractJoynrApplication {
                     provider.notifyLocationUpdate();
                     break;
                 default:
-                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n" + " l\tto update location\n");
+                    logger.info("\n\nUSAGE press\n" + " q\tto quit\n" + " l\tto update location\n");
                     break;
                 }
             }
         } else {
-            LOG.info("\n\nNon-interactive mode detected.\n");
+            logger.info("\n\nNon-interactive mode detected.\n");
         }
     }
 
     @Override
     public void shutdown() {
-        LOG.info("shutting down");
+        logger.info("shutting down");
         if (provider != null) {
             try {
                 runtime.unregisterProvider(localDomain, provider);
             } catch (JoynrRuntimeException e) {
-                LOG.error("unable to unregister capabilities", e);
+                logger.error("unable to unregister capabilities", e);
             }
         }
         runtime.shutdown(true);

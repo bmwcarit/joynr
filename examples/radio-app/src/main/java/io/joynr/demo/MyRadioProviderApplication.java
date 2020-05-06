@@ -64,7 +64,7 @@ import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
 public class MyRadioProviderApplication extends AbstractJoynrApplication {
-    private static final Logger LOG = LoggerFactory.getLogger(MyRadioProviderApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(MyRadioProviderApplication.class);
     public static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
 
     private MyRadioProvider provider = null;
@@ -116,26 +116,26 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
             if (line.hasOption('d')) {
                 localDomain = line.getOptionValue('d');
-                LOG.info("found domain = " + localDomain);
+                logger.info("found domain = " + localDomain);
             }
             if (line.hasOption('H')) {
                 host = line.getOptionValue('H');
-                LOG.info("found host = " + host);
+                logger.info("found host = " + host);
             }
             if (line.hasOption('l')) {
                 tmpProviderScope = ProviderScope.LOCAL;
-                LOG.info("found scope local");
+                logger.info("found scope local");
             }
             if (line.hasOption('p')) {
                 port = Integer.parseInt(line.getOptionValue('p'));
-                LOG.info("found port = " + port);
+                logger.info("found port = " + port);
             }
             if (line.hasOption('t')) {
                 transport = line.getOptionValue('t').toLowerCase();
-                LOG.info("found transport = " + transport);
+                logger.info("found transport = " + transport);
             }
         } catch (ParseException e) {
-            LOG.error("failed to parse command line: " + e);
+            logger.error("failed to parse command line: " + e);
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(MyRadioProviderApplication.class.getName(), options, true);
             System.exit(1);
@@ -144,9 +144,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         Properties joynrConfig = new Properties();
         Module runtimeModule = getRuntimeModule(transport, host, port, joynrConfig);
         final ProviderScope providerScope = tmpProviderScope;
-        LOG.info("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
-        LOG.info("Registering provider with the following scope: " + providerScope.name());
-        LOG.info("Registering provider on domain \"{}\"", localDomain);
+        logger.info("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        logger.info("Registering provider with the following scope: " + providerScope.name());
+        logger.info("Registering provider on domain \"{}\"", localDomain);
 
         // joynr config properties are used to set joynr configuration at
         // compile time. They are set on the
@@ -333,7 +333,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         try {
             future.get();
         } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {
-            LOG.error("runtime.registerProvider failed: ", e);
+            logger.error("runtime.registerProvider failed: ", e);
             return;
         }
 
@@ -380,7 +380,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                     connectionMetricsString += "******************************\n";
                     return connectionMetricsString;
                 }).collect(Collectors.joining()));
-                LOG.info(statusMetricsStringBuilder.toString());
+                logger.info(statusMetricsStringBuilder.toString());
                 break;
             default:
                 StringBuilder usageStringBuilder = new StringBuilder();
@@ -391,7 +391,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                 usageStringBuilder.append(" p\tto fire weak signal event with country of current station as partition\n");
                 usageStringBuilder.append(" n\tto fire station discovered event\n");
                 usageStringBuilder.append(" m\tto print status metrics (Note: ConnectionStatusMetrics are only available for HivemqMqttClient)\n");
-                LOG.info(usageStringBuilder.toString());
+                logger.info(usageStringBuilder.toString());
                 break;
             }
         }
@@ -400,12 +400,12 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
     @Override
     public void shutdown() {
-        LOG.info("shutting down");
+        logger.info("shutting down");
         if (provider != null) {
             try {
                 runtime.unregisterProvider(localDomain, provider);
             } catch (JoynrRuntimeException e) {
-                LOG.error("unable to unregister capabilities {}", e.getMessage());
+                logger.error("unable to unregister capabilities {}", e.getMessage());
             }
         }
         runtime.shutdown(true);

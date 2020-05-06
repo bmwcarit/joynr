@@ -56,7 +56,7 @@ import joynr.types.ProviderQos;
 @Startup
 public class JoynrIntegrationBean {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JoynrIntegrationBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(JoynrIntegrationBean.class);
 
     private BeanManager beanManager;
 
@@ -88,7 +88,7 @@ public class JoynrIntegrationBean {
 
     @PostConstruct
     public void initialise() {
-        LOG.debug("Initializing joynr integration bean");
+        logger.debug("Initializing joynr integration bean");
         Set<Bean<?>> serviceProviderBeans = serviceProviderDiscovery.findServiceProviderBeans();
         joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
         registerProviders(serviceProviderBeans, joynrRuntime);
@@ -108,11 +108,11 @@ public class JoynrIntegrationBean {
             Class<?> beanClass = bean.getBeanClass();
             Class<?> serviceInterface = beanClass.getAnnotation(ServiceProvider.class).serviceInterface();
             Class<?> providerInterface = serviceProviderDiscovery.getProviderInterfaceFor(serviceInterface);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(format("Registering in joynr runtime the bean %s as provider %s for service %s.",
-                                 bean,
-                                 providerInterface,
-                                 serviceInterface));
+            if (logger.isDebugEnabled()) {
+                logger.debug(format("Registering in joynr runtime the bean %s as provider %s for service %s.",
+                                    bean,
+                                    providerInterface,
+                                    serviceInterface));
             }
             JoynrProvider provider = (JoynrProvider) Proxy.newProxyInstance(beanClass.getClassLoader(),
                                                                             new Class<?>[]{ providerInterface,
@@ -189,7 +189,7 @@ public class JoynrIntegrationBean {
                 try {
                     joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
                 } catch (Exception e) {
-                    LOG.error("Error unregistering provider", e);
+                    logger.error("Error unregistering provider", e);
                 }
             }
         }

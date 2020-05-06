@@ -32,7 +32,7 @@ import joynr.test.SystemIntegrationTestSync;
 @ServiceProvider(serviceInterface = SystemIntegrationTestSync.class)
 public class SystemIntegrationTestBean implements SystemIntegrationTestSync {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SystemIntegrationTestBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemIntegrationTestBean.class);
 
     private JoynrCallingPrincipal joynrCallerPrincipal;
 
@@ -43,7 +43,7 @@ public class SystemIntegrationTestBean implements SystemIntegrationTestSync {
 
     @Override
     public Integer add(Integer addendA, Integer addendB) {
-        LOG.info("SIT INFO Being called by: " + joynrCallerPrincipal.getUsername());
+        logger.info("SIT INFO Being called by: " + joynrCallerPrincipal.getUsername());
         return addendA + addendB;
     }
 

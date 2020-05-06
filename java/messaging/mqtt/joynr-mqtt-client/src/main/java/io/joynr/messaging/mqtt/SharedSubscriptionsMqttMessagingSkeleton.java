@@ -42,7 +42,7 @@ import io.joynr.messaging.routing.RoutingTable;
  * @see io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS
  */
 public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkeleton {
-    private static final Logger LOG = LoggerFactory.getLogger(SharedSubscriptionsMqttMessagingSkeleton.class);
+    private static final Logger logger = LoggerFactory.getLogger(SharedSubscriptionsMqttMessagingSkeleton.class);
 
     private static final String NON_ALPHA_REGEX_PATTERN = "[^a-zA-Z]";
     private final String channelId;
@@ -99,41 +99,41 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
 
             if (maxIncomingMqttRequests <= 0) {
                 invalidPropertyValueDetected = true;
-                LOG.error("Invalid value {} for {}, expecting a limit greater than 0 when backpressure is activated",
-                          maxIncomingMqttRequests,
-                          PROPERTY_MAX_INCOMING_MQTT_REQUESTS);
+                logger.error("Invalid value {} for {}, expecting a limit greater than 0 when backpressure is activated",
+                             maxIncomingMqttRequests,
+                             PROPERTY_MAX_INCOMING_MQTT_REQUESTS);
             }
 
             if (backpressureIncomingMqttRequestsUpperThreshold <= 0
                     || backpressureIncomingMqttRequestsUpperThreshold > 100) {
                 invalidPropertyValueDetected = true;
-                LOG.error("Invalid value {} for {}, expecting percentage value in range (0,100]",
-                          backpressureIncomingMqttRequestsUpperThreshold,
-                          PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD);
+                logger.error("Invalid value {} for {}, expecting percentage value in range (0,100]",
+                             backpressureIncomingMqttRequestsUpperThreshold,
+                             PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD);
             }
 
             if (backpressureIncomingMqttRequestsLowerThreshold < 0
                     || backpressureIncomingMqttRequestsLowerThreshold >= 100) {
                 invalidPropertyValueDetected = true;
-                LOG.error("Invalid value {} for {}, expecting percentage value in range [0,100)",
-                          backpressureIncomingMqttRequestsLowerThreshold,
-                          PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD);
+                logger.error("Invalid value {} for {}, expecting percentage value in range [0,100)",
+                             backpressureIncomingMqttRequestsLowerThreshold,
+                             PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD);
             }
 
             if (backpressureIncomingMqttRequestsLowerThreshold >= backpressureIncomingMqttRequestsUpperThreshold) {
                 invalidPropertyValueDetected = true;
-                LOG.error("Lower threshold percentage {} must be stricly below the upper threshold percentage {}. Change the value of {} or {}",
-                          backpressureIncomingMqttRequestsLowerThreshold,
-                          backpressureIncomingMqttRequestsUpperThreshold,
-                          PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD,
-                          PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD);
+                logger.error("Lower threshold percentage {} must be stricly below the upper threshold percentage {}. Change the value of {} or {}",
+                             backpressureIncomingMqttRequestsLowerThreshold,
+                             backpressureIncomingMqttRequestsUpperThreshold,
+                             PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD,
+                             PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD);
             }
 
             // disable backpressure in case of detected problems and throw an exception
             if (invalidPropertyValueDetected) {
                 backpressureEnabled = false;
                 String disablingBackpressureMessage = "Disabling backpressure mechanism because of invalid property settings";
-                LOG.error(disablingBackpressureMessage);
+                logger.error(disablingBackpressureMessage);
                 throw new IllegalArgumentException(disablingBackpressureMessage);
             }
         }
@@ -141,11 +141,11 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
 
     @Override
     protected void subscribe() {
-        LOG.info("Subscribing to shared topic: {}", sharedSubscriptionsTopic);
+        logger.info("Subscribing to shared topic: {}", sharedSubscriptionsTopic);
         getClient().subscribe(sharedSubscriptionsTopic);
         subscribedToSharedSubscriptionsTopic.set(true);
         String topic = replyToTopic + "/#";
-        LOG.info("Subscribing to reply-to topic: {}", topic);
+        logger.info("Subscribing to reply-to topic: {}", topic);
         getClient().subscribe(topic);
     }
 
@@ -158,7 +158,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
             // try to stop further incoming requests
             if (subscribedToSharedSubscriptionsTopic.compareAndSet(true, false)) {
                 getClient().unsubscribe(sharedSubscriptionsTopic);
-                LOG.info("Unsubscribed from topic {} due to enabled backpressure mechanism "
+                logger.info("Unsubscribed from topic {} due to enabled backpressure mechanism "
                         + "and passed upper threshold of unprocessed MQTT requests", sharedSubscriptionsTopic);
             }
         }
@@ -173,7 +173,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
             // try to get further incoming requests
             if (subscribedToSharedSubscriptionsTopic.compareAndSet(false, true)) {
                 getClient().subscribe(sharedSubscriptionsTopic);
-                LOG.info("Subscribed again to topic {} due to enabled backpressure mechanism "
+                logger.info("Subscribed again to topic {} due to enabled backpressure mechanism "
                         + "and passed lower threshold of unprocessed MQTT requests", sharedSubscriptionsTopic);
             }
         }

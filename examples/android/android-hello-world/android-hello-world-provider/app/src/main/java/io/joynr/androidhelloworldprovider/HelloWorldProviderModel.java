@@ -15,7 +15,7 @@ import joynr.types.ProviderScope;
 
 public class HelloWorldProviderModel {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HelloWorldProviderApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(HelloWorldProviderApplication.class);
     private HelloWorldProvider provider;
 
     private HelloWorldProviderApplication app;
@@ -33,7 +33,7 @@ public class HelloWorldProviderModel {
         try {
             future.get();
         } catch (final JoynrRuntimeException | ApplicationException | InterruptedException e) {
-            LOG.error("runtime.registerProvider failed: ", e);
+            logger.error("runtime.registerProvider failed: ", e);
         }
     }
 

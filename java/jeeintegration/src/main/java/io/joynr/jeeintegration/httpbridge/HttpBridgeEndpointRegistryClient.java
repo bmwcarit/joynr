@@ -54,7 +54,7 @@ import io.joynr.messaging.routing.MessageRouter;
  */
 public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClient {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HttpBridgeEndpointRegistryClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpBridgeEndpointRegistryClient.class);
 
     private final HttpClient httpClient;
 
@@ -85,10 +85,10 @@ public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClien
     public HttpBridgeEndpointRegistryClient(HttpClient httpClient,
                                             EndpointRegistryUriHolder endpointRegistryUriHolder,
                                             @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(format("Initialising HTTP Bridge Endpoint Registry Client with: %s and %s.",
-                             httpClient,
-                             endpointRegistryUriHolder.get()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(format("Initialising HTTP Bridge Endpoint Registry Client with: %s and %s.",
+                                httpClient,
+                                endpointRegistryUriHolder.get()));
         }
         this.httpClient = httpClient;
         this.endpointRegistryUri = endpointRegistryUriHolder.get();
@@ -97,11 +97,11 @@ public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClien
 
     @Override
     public CompletionStage<Void> register(String endpointUrl, String channelId) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(format("Registering endpoint %s with registry %s for channel ID %s",
-                             endpointUrl,
-                             endpointRegistryUri,
-                             channelId));
+        if (logger.isDebugEnabled()) {
+            logger.debug(format("Registering endpoint %s with registry %s for channel ID %s",
+                                endpointUrl,
+                                endpointRegistryUri,
+                                channelId));
         }
         CompletableFuture<Void> result = new CompletableFuture<>();
         scheduleWithRetries(result, 0L, 10, endpointUrl, channelId);
@@ -135,9 +135,9 @@ public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClien
         if (remainingRetries <= 0) {
             result.completeExceptionally(new JoynrRuntimeException("Unable to register channel. Too many unsuccessful retries."));
         } else {
-            LOG.debug("Scheduling execution of HTTP post for registering endpoint {} for channel {}.",
-                      endpointUrl,
-                      channelId);
+            logger.debug("Scheduling execution of HTTP post for registering endpoint {} for channel {}.",
+                         endpointUrl,
+                         channelId);
             scheduledExecutorService.schedule(() -> {
                 String topic = channelId;
                 HttpPost message = new HttpPost(endpointRegistryUri);
@@ -153,11 +153,11 @@ public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClien
                         return;
                     }
                 } catch (IOException e) {
-                    LOG.error(format("Unable to register endpoint %s / channel ID %s with broker at %s.",
-                                     endpointUrl,
-                                     channelId,
-                                     endpointRegistryUri),
-                              e);
+                    logger.error(format("Unable to register endpoint %s / channel ID %s with broker at %s.",
+                                        endpointUrl,
+                                        channelId,
+                                        endpointRegistryUri),
+                                 e);
                 }
                 scheduleWithRetries(result, 10L, remainingRetries - 1, endpointUrl, channelId);
             }, delay, TimeUnit.SECONDS);
@@ -165,8 +165,8 @@ public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClien
     }
 
     private boolean executeRequest(HttpPost message) throws IOException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("About to send message: " + message);
+        if (logger.isDebugEnabled()) {
+            logger.debug("About to send message: " + message);
         }
         HttpResponse response = httpClient.execute(message);
         boolean result = false;
@@ -175,7 +175,7 @@ public class HttpBridgeEndpointRegistryClient implements HttpBridgeRegistryClien
             result = true;
         } else {
             String errorMessage = format("Response from registration endpoint was not successful.%n%s", response);
-            LOG.error(errorMessage);
+            logger.error(errorMessage);
         }
         return result;
     }

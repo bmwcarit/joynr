@@ -41,7 +41,7 @@ import joynr.examples.statelessasync.VehicleConfiguration;
 @Produces(MediaType.APPLICATION_JSON)
 public class RestEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RestEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(RestEndpoint.class);
 
     @Inject
     private DataAccess dataAccess;
@@ -87,8 +87,8 @@ public class RestEndpoint {
     @Path("/numberOfConfigs")
     public void triggerGetNumberOfConfigs() {
         vehicleStateClientBean.getService()
-                              .getNumberOfConfigs(messageId -> LOG.info("Triggered get number of configs with message ID: {}",
-                                                                        messageId));
+                              .getNumberOfConfigs(messageId -> logger.info("Triggered get number of configs with message ID: {}",
+                                                                           messageId));
     }
 
     @GET
@@ -115,8 +115,8 @@ public class RestEndpoint {
     public void triggerCallWithException(@PathParam("message") String message) {
         vehicleStateClientBean.getService()
                               .callWithExceptionTest(message,
-                                                     messageId -> LOG.info("Triggered callWithException for {}",
-                                                                           messageId));
+                                                     messageId -> logger.info("Triggered callWithException for {}",
+                                                                              messageId));
     }
 
     @GET

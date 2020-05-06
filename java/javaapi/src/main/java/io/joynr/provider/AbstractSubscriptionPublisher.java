@@ -33,7 +33,7 @@ import io.joynr.pubsub.publication.BroadcastListener;
 import io.joynr.pubsub.publication.MulticastListener;
 
 public abstract class AbstractSubscriptionPublisher implements SubscriptionPublisherObservable, SubscriptionPublisher {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractSubscriptionPublisher.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractSubscriptionPublisher.class);
 
     ConcurrentHashMap<String, List<AttributeListener>> attributeListeners;
     ConcurrentHashMap<String, List<BroadcastListener>> broadcastListeners;
@@ -144,14 +144,14 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     public void unregisterAttributeListener(String attributeName, AttributeListener attributeListener) {
         List<AttributeListener> listeners = attributeListeners.get(attributeName);
         if (listeners == null) {
-            LOG.error("trying to unregister an attribute listener for attribute \"" + attributeName
+            logger.error("trying to unregister an attribute listener for attribute \"" + attributeName
                     + "\" that was never registered");
             return;
         }
         synchronized (listeners) {
             boolean success = listeners.remove(attributeListener);
             if (!success) {
-                LOG.error("trying to unregister an attribute listener for attribute \"" + attributeName
+                logger.error("trying to unregister an attribute listener for attribute \"" + attributeName
                         + "\" that was never registered");
                 return;
             }
@@ -186,14 +186,14 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
     public void unregisterBroadcastListener(String broadcastName, BroadcastListener broadcastListener) {
         List<BroadcastListener> listeners = broadcastListeners.get(broadcastName);
         if (listeners == null) {
-            LOG.error("trying to unregister a listener for broadcast \"" + broadcastName
+            logger.error("trying to unregister a listener for broadcast \"" + broadcastName
                     + "\" that was never registered");
             return;
         }
         synchronized (listeners) {
             boolean success = listeners.remove(broadcastListener);
             if (!success) {
-                LOG.error("trying to unregister a listener for broadcast \"" + broadcastName
+                logger.error("trying to unregister a listener for broadcast \"" + broadcastName
                         + "\" that was never registered");
                 return;
             }

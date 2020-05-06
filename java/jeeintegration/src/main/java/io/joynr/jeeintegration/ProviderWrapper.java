@@ -66,7 +66,7 @@ import joynr.exceptions.ProviderRuntimeException;
  */
 public class ProviderWrapper implements InvocationHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProviderWrapper.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProviderWrapper.class);
 
     private static final List<Method> OBJECT_METHODS = Arrays.asList(Object.class.getMethods());
 
@@ -77,10 +77,10 @@ public class ProviderWrapper implements InvocationHandler {
             SubscriptionPublisherInjection.class.getMethod(SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME,
                                                            SubscriptionPublisher.class);
         } catch (NoSuchMethodException e) {
-            LOG.error("Expecting to find method named {} with one argument of type {}, but not found on {}",
-                      SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME,
-                      SubscriptionPublisher.class,
-                      SubscriptionPublisherInjection.class);
+            logger.error("Expecting to find method named {} with one argument of type {}, but not found on {}",
+                         SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME,
+                         SubscriptionPublisher.class,
+                         SubscriptionPublisherInjection.class);
         }
     }
 
@@ -177,9 +177,9 @@ public class ProviderWrapper implements InvocationHandler {
             }
         }
         if (joynrException != null) {
-            LOG.debug("Provider method invocation resulted in provider runtime exception - rejecting the deferred {} with {}",
-                      deferred,
-                      joynrException);
+            logger.debug("Provider method invocation resulted in provider runtime exception - rejecting the deferred {} with {}",
+                         deferred,
+                         joynrException);
             if (joynrException instanceof ApplicationException) {
                 try {
                     Method rejectMethod = AbstractDeferred.class.getDeclaredMethod("reject",
@@ -187,9 +187,9 @@ public class ProviderWrapper implements InvocationHandler {
                     rejectMethod.setAccessible(true);
                     rejectMethod.invoke(deferred, new Object[]{ joynrException });
                 } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                    LOG.warn("Unable to set {} as rejection reason on {}. Wrapping in ProviderRuntimeException instead.",
-                             joynrException,
-                             deferred);
+                    logger.warn("Unable to set {} as rejection reason on {}. Wrapping in ProviderRuntimeException instead.",
+                                joynrException,
+                                deferred);
                     deferred.reject(new ProviderRuntimeException(((ApplicationException) joynrException).getMessage()));
                 }
             } else if (joynrException instanceof ProviderRuntimeException) {
@@ -218,7 +218,7 @@ public class ProviderWrapper implements InvocationHandler {
         if (joynrException == null) {
             throw e;
         }
-        LOG.trace("Returning joynr exception: {}", joynrException);
+        logger.trace("Returning joynr exception: {}", joynrException);
         return joynrException;
     }
 
@@ -235,7 +235,7 @@ public class ProviderWrapper implements InvocationHandler {
         JoynrCallingPrincipal reference = getUniqueBeanReference(JoynrCallingPrincipal.class);
 
         String messageCreatorId = joynrMessageCreator.getMessageCreatorId();
-        LOG.trace("Setting user '{}' for message processing context.", messageCreatorId);
+        logger.trace("Setting user '{}' for message processing context.", messageCreatorId);
         reference.setUsername(messageCreatorId);
     }
 
@@ -243,7 +243,7 @@ public class ProviderWrapper implements InvocationHandler {
         JoynrMessageMetaInfo joynrMessageContext = injector.getInstance(JoynrMessageMetaInfo.class);
         JoynrJeeMessageMetaInfo jeeMessageContext = getUniqueBeanReference(JoynrJeeMessageMetaInfo.class);
 
-        LOG.trace("Setting message context for message processing context.");
+        logger.trace("Setting message context for message processing context.");
         jeeMessageContext.setMessageContext(joynrMessageContext.getMessageContext());
     }
 
@@ -288,8 +288,8 @@ public class ProviderWrapper implements InvocationHandler {
                         break;
                     }
                 } catch (NoSuchMethodException | SecurityException e) {
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace(format("Method %s not found on interface %s", name, interfaceClass));
+                    if (logger.isTraceEnabled()) {
+                        logger.trace(format("Method %s not found on interface %s", name, interfaceClass));
                     }
                 }
             }

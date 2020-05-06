@@ -36,7 +36,7 @@ import joynr.interlanguagetest.TestInterfaceBroadcastInterface.BroadcastWithSing
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 
 public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerMulticastSubscriptionTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerMulticastSubscriptionTest.class);
 
     volatile boolean subscribeBroadcastWithSingleEnumerationParameterCallbackDone = false;
     volatile boolean subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
@@ -44,16 +44,16 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        LOG.info("setUp: Entering");
+        logger.info("setUp: Entering");
         setupConsumerRuntime(false);
-        LOG.info("setUp: Leaving");
+        logger.info("setUp: Leaving");
     }
 
     @AfterClass
     public static void tearDown() throws InterruptedException {
-        LOG.info("tearDown: Entering");
+        logger.info("tearDown: Entering");
         generalTearDown();
-        LOG.info("tearDown: Leaving");
+        logger.info("tearDown: Leaving");
     }
 
     @Test
@@ -66,7 +66,7 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
             BroadcastWithSingleEnumerationParameterBroadcastAdapter adapter = new BroadcastWithSingleEnumerationParameterBroadcastAdapter() {
                 @Override
                 public void onReceive(ExtendedTypeCollectionEnumerationInTypeCollection enumerationOut) {
-                    LOG.info(name.getMethodName() + " - callback - got broadcast");
+                    logger.info(name.getMethodName() + " - callback - got broadcast");
                     subscribeBroadcastWithSingleEnumerationParameterCallbackResult = true;
                     subscribeBroadcastWithSingleEnumerationParameterCallbackDone = true;
                     synchronized (callbackCalledSemaphore) {
@@ -76,7 +76,7 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
 
                 @Override
                 public void onError(SubscriptionException error) {
-                    LOG.info(name.getMethodName() + " - callback - error");
+                    logger.info(name.getMethodName() + " - callback - error");
                     subscribeBroadcastWithSingleEnumerationParameterCallbackResult = false;
                     subscribeBroadcastWithSingleEnumerationParameterCallbackDone = true;
                     synchronized (callbackCalledSemaphore) {
@@ -90,9 +90,9 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
                                                                                                                                  subscribeToPartitions);
 
             String subscriptionId = subscriptionIdFuture.get(10000);
-            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
+            logger.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
 
-            LOG.info(name.getMethodName() + " - Invoking fire method with not matching partitions");
+            logger.info(name.getMethodName() + " - Invoking fire method with not matching partitions");
             testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter(broadcastPartitions);
 
             synchronized (callbackCalledSemaphore) {
@@ -101,7 +101,7 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
 
             Assert.assertEquals(false, subscribeBroadcastWithSingleEnumerationParameterCallbackDone);
 
-            LOG.info(name.getMethodName() + " - Invoking fire method with matching partitions");
+            logger.info(name.getMethodName() + " - Invoking fire method with matching partitions");
             testInterfaceProxy.methodToFireBroadcastWithSingleEnumerationParameter(subscribeToPartitions);
 
             synchronized (callbackCalledSemaphore) {
@@ -110,7 +110,7 @@ public class IltConsumerMulticastSubscriptionTest extends IltConsumerTest {
 
             Assert.assertEquals(true, subscribeBroadcastWithSingleEnumerationParameterCallbackDone);
             Assert.assertEquals(true, subscribeBroadcastWithSingleEnumerationParameterCallbackResult);
-            LOG.info(name.getMethodName() + " - received expected broadcast");
+            logger.info(name.getMethodName() + " - received expected broadcast");
 
             testInterfaceProxy.unsubscribeFromBroadcastWithSingleEnumerationParameterBroadcast(subscriptionId);
         } catch (Exception e) {

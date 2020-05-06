@@ -58,7 +58,7 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionTimersTest {
-    private static final Logger LOG = LoggerFactory.getLogger(SubscriptionTimersTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(SubscriptionTimersTest.class);
 
     private SubscriptionManager subscriptionManager;
 
@@ -113,7 +113,7 @@ public class SubscriptionTimersTest {
     public void missedPublicationRunnableIsStopped() throws InterruptedException, JoynrSendBufferFullException,
                                                      JoynrMessageNotSentException, JsonGenerationException,
                                                      JsonMappingException, IOException {
-        LOG.debug("Starting missedPublicationRunnableIsStopped test");
+        logger.debug("Starting missedPublicationRunnableIsStopped test");
 
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
                                                                    .setValidityMs(subscriptionLength)
@@ -147,7 +147,7 @@ public class SubscriptionTimersTest {
                                                                       JoynrMessageNotSentException,
                                                                       JsonGenerationException, JsonMappingException,
                                                                       IOException {
-        LOG.debug("Starting noMissedPublicationWarningWhenPublicationIsReceived test");
+        logger.debug("Starting noMissedPublicationWarningWhenPublicationIsReceived test");
 
         // there should be at least one successful publication, so (numberOfPublications-1)
         int numberOfMissedPublications = (int) (Math.random() * (numberOfPublications - 1));
@@ -184,7 +184,7 @@ public class SubscriptionTimersTest {
                 // publication successfully received
                 subscriptionManager.touchSubscriptionState(subscriptionId);
                 successfulPublicationsCounter++;
-                LOG.trace("\nSUCCESSFUL publication");
+                logger.trace("\nSUCCESSFUL publication");
             } else {
                 Thread.sleep(period);
                 // publication missed
@@ -197,11 +197,11 @@ public class SubscriptionTimersTest {
                 if (i == numberOfPublications - 1) {
                     lastPublicationIsMissedPublication = true;
                 }
-                LOG.trace("\nMISSED publication");
+                logger.trace("\nMISSED publication");
             }
         }
 
-        LOG.trace("No more calls are expected now.");
+        logger.trace("No more calls are expected now.");
 
         // wait some additional time to see whether there are unwanted publications
         Thread.sleep(2 * period);
@@ -214,6 +214,6 @@ public class SubscriptionTimersTest {
                atMost(missedPublicationsCounter)).onError(new PublicationMissedException(subscriptionId));
         // verify callback is not called
         verifyNoMoreInteractions(attributeSubscriptionCallback);
-        LOG.trace("finishing test.");
+        logger.trace("finishing test.");
     }
 }

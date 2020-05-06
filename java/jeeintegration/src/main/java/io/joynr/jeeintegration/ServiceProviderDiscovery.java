@@ -42,7 +42,7 @@ import io.joynr.jeeintegration.api.ServiceProvider;
  */
 public class ServiceProviderDiscovery {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ServiceProviderDiscovery.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServiceProviderDiscovery.class);
 
     private final BeanManager beanManager;
 
@@ -61,15 +61,15 @@ public class ServiceProviderDiscovery {
                 ProvidedBy providedBy = getProvidedByAnnotation(serviceProvider.serviceInterface());
                 verifyProvidedBy(providedBy, serviceProvider.serviceInterface(), bean);
                 result.add(bean);
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace(format("Bean %s is a service provider. Adding to result.", bean));
+                if (logger.isTraceEnabled()) {
+                    logger.trace(format("Bean %s is a service provider. Adding to result.", bean));
                 }
-            } else if (LOG.isTraceEnabled()) {
-                LOG.trace(format("Ignoring bean: %s", bean));
+            } else if (logger.isTraceEnabled()) {
+                logger.trace(format("Ignoring bean: %s", bean));
             }
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(format("Found the following service provider beans:%n%s", result));
+        if (logger.isDebugEnabled()) {
+            logger.debug(format("Found the following service provider beans:%n%s", result));
         }
         return result;
     }
@@ -98,8 +98,8 @@ public class ServiceProviderDiscovery {
      * @return the provider interface, if found, or the interface passed in if not.
      */
     public Class<?> getProviderInterfaceFor(Class<?> businessInterface) {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(format("Looking for provider interface for business interface %s", businessInterface));
+        if (logger.isTraceEnabled()) {
+            logger.trace(format("Looking for provider interface for business interface %s", businessInterface));
         }
         assert businessInterface != null : "businessInterface must not be null";
         ProvidedBy providedBy = getProvidedByAnnotation(businessInterface);
@@ -109,8 +109,8 @@ public class ServiceProviderDiscovery {
                                                       businessInterface));
         } else {
             Class<?> result = providedBy.value();
-            if (LOG.isTraceEnabled()) {
-                LOG.trace(format("Returning: %s", result));
+            if (logger.isTraceEnabled()) {
+                logger.trace(format("Returning: %s", result));
             }
             return result;
         }

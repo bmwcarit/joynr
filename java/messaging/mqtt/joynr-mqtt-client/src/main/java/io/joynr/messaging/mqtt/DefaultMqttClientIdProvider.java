@@ -29,7 +29,7 @@ import com.google.inject.name.Named;
 
 @Singleton
 public class DefaultMqttClientIdProvider implements MqttClientIdProvider {
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultMqttClientIdProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultMqttClientIdProvider.class);
     private static final String DEFAULT_CLIENT_ID_PREFIX = "";
 
     static class ClientIdPrefixHolder {
@@ -45,7 +45,7 @@ public class DefaultMqttClientIdProvider implements MqttClientIdProvider {
                                        ClientIdPrefixHolder clientIdPrefixHolder) {
         String clientIdPrefix = clientIdPrefixHolder.clientIdPrefix;
         if (receiverId.length() != 16) {
-            LOG.warn("ReceiverId " + receiverId + " is not a UUID of expected length 16");
+            logger.warn("ReceiverId " + receiverId + " is not a UUID of expected length 16");
         }
         this.clientId = clientIdPrefix + "joynr:" + receiverId.substring(0, Math.min(16, receiverId.length()));
     }

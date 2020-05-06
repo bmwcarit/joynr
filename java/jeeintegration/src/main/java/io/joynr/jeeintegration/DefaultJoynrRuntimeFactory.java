@@ -94,7 +94,7 @@ import joynr.infrastructure.DacTypes.TrustLevel;
 @Singleton
 public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultJoynrRuntimeFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultJoynrRuntimeFactory.class);
 
     private static final String MQTT = "mqtt";
 
@@ -147,17 +147,17 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         // CHECKSTYLE:ON
         if (joynrLocalDomain.isUnsatisfied()) {
             String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
-            LOG.error(message);
+            logger.error(message);
             throw new JoynrIllegalStateException(message);
         } else if (joynrLocalDomain.isAmbiguous()) {
             String message = "Multiple local domain names specified. Please provide only one configuration EJB containing a value for the local domain via @JoynrLocalDomain.";
-            LOG.error(message);
+            logger.error(message);
             throw new JoynrIllegalStateException(message);
         }
         this.joynrLocalDomain = joynrLocalDomain.get();
         if (this.joynrLocalDomain == null || this.joynrLocalDomain.isEmpty()) {
             String message = "Local domain name is NULL or EMPTY. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
-            LOG.error(message);
+            logger.error(message);
             throw new JoynrIllegalStateException(message);
         }
 
@@ -166,7 +166,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                 this.rawMessagePreprocessor = rawMessagePreprocessor.get();
             } else {
                 String message = "Only one RawMessagePreprocessor may be provided.";
-                LOG.error(message);
+                logger.error(message);
                 throw new JoynrIllegalStateException(message);
             }
         } else {
@@ -178,7 +178,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                 this.mqttClientIdProvider = mqttClientIdProvider.get();
             } else {
                 String message = "Only one MqttClientIdProvider may be provided";
-                LOG.error(message);
+                logger.error(message);
                 throw new JoynrIllegalStateException(message);
             }
         } else {
@@ -190,7 +190,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                 this.messagePersister = messagePersister.get();
             } else {
                 String message = "Only one MessagePersister may be provided.";
-                LOG.error(message);
+                logger.error(message);
                 throw new JoynrIllegalStateException(message);
             }
         } else {
@@ -203,11 +203,11 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                 configuredProperties = joynrProperties.get();
             } else {
                 String message = "Multiple joynrProperties specified. Please provide only one configuration EJB containing a value for the joynrProperties via @JoynrProperties.";
-                LOG.error(message);
+                logger.error(message);
                 throw new JoynrIllegalStateException(message);
             }
         } else {
-            LOG.info("No custom joynr properties provided. Will use default properties.");
+            logger.info("No custom joynr properties provided. Will use default properties.");
             configuredProperties = new Properties();
         }
         this.joynrProperties = prepareJoynrProperties(configuredProperties);
@@ -217,13 +217,13 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
 
     @Override
     public JoynrRuntime create(Set<Class<?>> providerInterfaceClasses) {
-        LOG.info("Creating clusterable participant IDs for discovered providers.");
+        logger.info("Creating clusterable participant IDs for discovered providers.");
         createClusterableParticipantIds(providerInterfaceClasses);
-        LOG.info("Provisioning access control for {}", providerInterfaceClasses);
+        logger.info("Provisioning access control for {}", providerInterfaceClasses);
         provisionAccessControl(joynrProperties, joynrLocalDomain, getProviderInterfaceNames(providerInterfaceClasses));
-        LOG.info(format("Creating application with joynr properties:%n%s", joynrProperties));
+        logger.info(format("Creating application with joynr properties:%n%s", joynrProperties));
         JoynrRuntime runtime = getInjector().getInstance(JoynrRuntime.class);
-        LOG.info("Created runtime: {}", runtime);
+        logger.info("Created runtime: {}", runtime);
         return runtime;
     }
 
@@ -321,7 +321,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             JoynrInterface joynrInterface = providedBy.value().getAnnotation(JoynrInterface.class);
             return joynrInterface.name() + ".v" + ProviderAnnotations.getMajorVersion(providedBy.value());
         } catch (SecurityException | IllegalArgumentException e) {
-            LOG.debug("error getting interface details", e);
+            logger.debug("error getting interface details", e);
             return providerInterfaceClass.getSimpleName();
         }
     }
@@ -353,7 +353,7 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
                                    provisionedAccessControlEntriesAsJson);
         } catch (JsonProcessingException e) {
-            LOG.error("Error parsing JSON.", e);
+            logger.error("Error parsing JSON.", e);
         }
     }
 

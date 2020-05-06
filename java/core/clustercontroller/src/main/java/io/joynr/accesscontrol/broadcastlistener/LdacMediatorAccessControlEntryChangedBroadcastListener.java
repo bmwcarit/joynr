@@ -29,7 +29,7 @@ import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.Media
 
 public class LdacMediatorAccessControlEntryChangedBroadcastListener
         extends MediatorAccessControlEntryChangedBroadcastAdapter {
-    private static final Logger LOG = LoggerFactory.getLogger(LdacMediatorAccessControlEntryChangedBroadcastListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(LdacMediatorAccessControlEntryChangedBroadcastListener.class);
 
     private DomainAccessControlStore localDomainAccessStore;
 
@@ -41,21 +41,21 @@ public class LdacMediatorAccessControlEntryChangedBroadcastListener
     public void onReceive(ChangeType typeOfChange, MasterAccessControlEntry newMediatorAce) {
         if (!typeOfChange.equals(ChangeType.REMOVE)) {
             localDomainAccessStore.updateMediatorAccessControlEntry(newMediatorAce);
-            LOG.debug("Updated mediator ACE: {}", newMediatorAce.toString());
+            logger.debug("Updated mediator ACE: {}", newMediatorAce.toString());
         } else {
             // removes are notified using entries where all fields except the key fields are null
             localDomainAccessStore.removeMediatorAccessControlEntry(newMediatorAce.getUid(),
                                                                     newMediatorAce.getDomain(),
                                                                     newMediatorAce.getInterfaceName(),
                                                                     newMediatorAce.getOperation());
-            LOG.debug("Removed mediator ACE: {}", newMediatorAce.toString());
+            logger.debug("Removed mediator ACE: {}", newMediatorAce.toString());
         }
     }
 
     @Override
     public void onError(SubscriptionException error) {
-        LOG.error("Subscription to mediatorAce failed! SubscriptionId: {}, error: {}",
-                  error.getSubscriptionId(),
-                  error.getMessage());
+        logger.error("Subscription to mediatorAce failed! SubscriptionId: {}, error: {}",
+                     error.getSubscriptionId(),
+                     error.getMessage());
     }
 }

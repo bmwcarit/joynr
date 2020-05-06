@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
      * the CC is automatically started with the value of this extra.
      */
     public static final String EXTRA_BROKER_URI = "EXTRA_BROKER_URI";
-    private static final Logger LOG = LoggerFactory.getLogger(MainActivity.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
     private Button button;
     private EditText edittext;
     private final View.OnClickListener buttonClickListener = v -> {
@@ -26,12 +26,12 @@ public class MainActivity extends AppCompatActivity {
             startService();
             button.setText(R.string.stop);
             edittext.setEnabled(false);
-            LOG.debug("Started Android CC");
+            logger.debug("Started Android CC");
         } else {
             stopService();
             button.setText(R.string.start);
             edittext.setEnabled(true);
-            LOG.debug("Stopped Android CC");
+            logger.debug("Stopped Android CC");
         }
     };
 

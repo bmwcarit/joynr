@@ -47,7 +47,7 @@ import joynr.examples.statelessasync.VehicleConfiguration;
 @Transactional
 public class DataAccess {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataAccess.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataAccess.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
                                                                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
@@ -62,7 +62,7 @@ public class DataAccess {
         newConfig.setMessageId(messageId);
         newConfig.setVehicleConfigurationId(configurationId);
         entityManager.persist(newConfig);
-        LOG.info("Persisted known config: {}", newConfig);
+        logger.info("Persisted known config: {}", newConfig);
     }
 
     public void updateKnownConfiguration(String messageId, boolean success) {
@@ -105,7 +105,7 @@ public class DataAccess {
         Query query = entityManager.createQuery("select gr from GetResult gr where gr.messageId = :messageId");
         query.setParameter("messageId", messageId);
         List<GetResult> resultList = query.getResultList();
-        LOG.trace("Get result for {}:\n{}", messageId, resultList);
+        logger.trace("Get result for {}:\n{}", messageId, resultList);
         if (resultList.isEmpty()) {
             return Optional.empty();
         }
@@ -120,7 +120,7 @@ public class DataAccess {
             try {
                 return objectMapper.readValue(getResult.getPayload(), VehicleConfiguration.class);
             } catch (IOException e) {
-                LOG.warn("Invalid payload:\n{}\nreturning null.", e);
+                logger.warn("Invalid payload:\n{}\nreturning null.", e);
                 return null;
             }
         });

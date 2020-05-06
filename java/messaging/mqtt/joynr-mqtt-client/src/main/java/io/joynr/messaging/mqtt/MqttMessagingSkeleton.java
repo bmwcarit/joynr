@@ -50,7 +50,7 @@ import joynr.Message;
  */
 public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         implements IMqttMessagingSkeleton, MessageProcessedListener {
-    private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
+    private static final Logger logger = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
 
     protected final int maxIncomingMqttRequests;
     private final MessageRouter messageRouter;
@@ -94,7 +94,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
 
     @Override
     public void init() {
-        LOG.debug("Initializing MQTT skeleton (ownGbid={}) ...", ownGbid);
+        logger.debug("Initializing MQTT skeleton (ownGbid={}) ...", ownGbid);
 
         messageRouter.registerMessageProcessedListener(this);
 
@@ -156,7 +156,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
             ImmutableMessage message = new ImmutableMessage(processedMessage);
             message.setContext(context);
 
-            LOG.debug("<<< INCOMING FROM {} <<< {}", ownGbid, message);
+            logger.debug("<<< INCOMING FROM {} <<< {}", ownGbid, message);
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {
@@ -180,15 +180,17 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                 registerGlobalRoutingEntry(message, ownGbid);
                 messageRouter.route(message);
             } catch (Exception e) {
-                LOG.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
+                logger.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
                 messageProcessed(message.getId());
                 failureAction.execute(e);
             }
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
-            LOG.error("Message: \"{}\", could not be deserialized, exception: {}", serializedMessage, e.getMessage());
+            logger.error("Message: \"{}\", could not be deserialized, exception: {}",
+                         serializedMessage,
+                         e.getMessage());
             failureAction.execute(e);
         } catch (Exception e) {
-            LOG.error("Message {} could not be transmitted:", serializedMessage, e);
+            logger.error("Message {} could not be transmitted:", serializedMessage, e);
             failureAction.execute(e);
         }
     }
@@ -198,9 +200,9 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         // if there are already too many requests still not processed
         if (maxIncomingMqttRequests > 0 && incomingMqttRequests.size() >= maxIncomingMqttRequests) {
             if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
-                LOG.warn("Incoming MQTT message with id {} will be dropped as limit of {} requests is reached",
-                         message.getId(),
-                         maxIncomingMqttRequests);
+                logger.warn("Incoming MQTT message with id {} will be dropped as limit of {} requests is reached",
+                            message.getId(),
+                            maxIncomingMqttRequests);
                 return true;
             }
         }
@@ -251,7 +253,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     }
 
     protected void requestProcessed(String messageId) {
-        LOG.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
+        logger.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
     }
 
 }

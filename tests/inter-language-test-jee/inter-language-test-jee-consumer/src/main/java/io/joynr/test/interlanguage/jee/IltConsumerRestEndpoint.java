@@ -34,7 +34,7 @@ import io.joynr.jeeintegration.api.ServiceLocator;
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 public class IltConsumerRestEndpoint {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerRestEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerRestEndpoint.class);
 
     @Inject
     public IltConsumerRestEndpoint(ServiceLocator serviceLocator) {
@@ -46,13 +46,13 @@ public class IltConsumerRestEndpoint {
     public TestResult startTests() {
         TestResult testResult;
 
-        LOG.info("startTests: entering");
+        logger.info("startTests: entering");
         JUnitCore runner = new JUnitCore();
         IltConsumerJUnitListener listener = new IltConsumerJUnitListener();
         runner.addListener(listener);
         runner.run(IltConsumerTestSuite.class);
         testResult = listener.getTestResult();
-        LOG.info("startTests: leaving");
+        logger.info("startTests: leaving");
         return testResult;
     }
 }

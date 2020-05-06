@@ -39,7 +39,7 @@ import io.joynr.messaging.mqtt.MqttModule;
 @Singleton
 public class JoynrConfigurationProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(JoynrConfigurationProvider.class);
     private static final String SIT_JEE_LOCAL_DOMAIN_PREFIX_KEY = "SIT_JEE_LOCAL_DOMAIN_PREFIX";
     private static final String DEFAULT_SIT_DOMAIN_PREFIX = "io.joynr.systemintegrationtest";
     private static final String MQTT_BROKER_URIS = "tcp://mqttbroker-1:1883,tcp://mqttbroker-2:1883";
@@ -77,9 +77,9 @@ public class JoynrConfigurationProvider {
         } else {
             domainPrefix = localDomainPrefix;
         }
-        LOG.debug("Using domain prefix: " + domainPrefix);
+        logger.debug("Using domain prefix: " + domainPrefix);
         String domain = domainPrefix + ".jee";
-        LOG.debug("Using domain: " + domain);
+        logger.debug("Using domain: " + domain);
         return domain;
     }
 

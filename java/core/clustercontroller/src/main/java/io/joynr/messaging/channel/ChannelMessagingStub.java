@@ -29,7 +29,7 @@ import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.ChannelAddress;
 
 public class ChannelMessagingStub implements IMessagingStub {
-    private static final Logger LOG = LoggerFactory.getLogger(ChannelMessagingStub.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChannelMessagingStub.class);
 
     private ChannelAddress address;
     private HttpMessageSender httpMessageSender;
@@ -41,7 +41,7 @@ public class ChannelMessagingStub implements IMessagingStub {
 
     @Override
     public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
-        LOG.debug(">>> OUTGOING >>> {}", message);
+        logger.debug(">>> OUTGOING >>> {}", message);
         httpMessageSender.sendMessage(address, message.getSerializedMessage(), successAction, failureAction);
     }
 }

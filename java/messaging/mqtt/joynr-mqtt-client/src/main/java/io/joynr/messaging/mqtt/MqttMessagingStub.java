@@ -34,7 +34,7 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Messaging stub used to send messages to a MQTT Broker
  */
 public class MqttMessagingStub implements IMessagingStub {
-    private static final Logger LOG = LoggerFactory.getLogger(MqttMessagingStub.class);
+    private static final Logger logger = LoggerFactory.getLogger(MqttMessagingStub.class);
 
     public static final int DEFAULT_QOS_LEVEL = 1;
     public static final int BEST_EFFORT_QOS_LEVEL = 0;
@@ -67,7 +67,7 @@ public class MqttMessagingStub implements IMessagingStub {
             msgTtlSec = MESSAGE_EXPIRY_MAX_INTERVAL;
         }
         byte[] serializedMessage = message.getSerializedMessage();
-        LOG.debug(">>> OUTGOING TO {} >>> {}bytes: {}", address.getBrokerUri(), serializedMessage.length, message);
+        logger.debug(">>> OUTGOING TO {} >>> {}bytes: {}", address.getBrokerUri(), serializedMessage.length, message);
         mqttClient.publishMessage(topic, serializedMessage, qosLevel, msgTtlSec, successAction, failureAction);
     }
 }

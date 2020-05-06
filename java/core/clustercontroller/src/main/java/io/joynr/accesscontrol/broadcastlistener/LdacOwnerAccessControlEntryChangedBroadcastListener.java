@@ -29,7 +29,7 @@ import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.Owner
 
 public class LdacOwnerAccessControlEntryChangedBroadcastListener
         extends OwnerAccessControlEntryChangedBroadcastAdapter {
-    private static final Logger LOG = LoggerFactory.getLogger(LdacOwnerAccessControlEntryChangedBroadcastListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(LdacOwnerAccessControlEntryChangedBroadcastListener.class);
 
     private DomainAccessControlStore localDomainAccessStore;
 
@@ -40,20 +40,20 @@ public class LdacOwnerAccessControlEntryChangedBroadcastListener
     public void onReceive(ChangeType typeOfChange, OwnerAccessControlEntry newOwnerAce) {
         if (!typeOfChange.equals(ChangeType.REMOVE)) {
             localDomainAccessStore.updateOwnerAccessControlEntry(newOwnerAce);
-            LOG.debug("Updated owner ACE: {}", newOwnerAce.toString());
+            logger.debug("Updated owner ACE: {}", newOwnerAce.toString());
         } else {
             // removes are notified using entries where all fields except the key fields are null
             localDomainAccessStore.removeOwnerAccessControlEntry(newOwnerAce.getUid(),
                                                                  newOwnerAce.getDomain(),
                                                                  newOwnerAce.getInterfaceName(),
                                                                  newOwnerAce.getOperation());
-            LOG.debug("Removed owner ACE: {}", newOwnerAce.toString());
+            logger.debug("Removed owner ACE: {}", newOwnerAce.toString());
         }
     }
 
     public void onError(SubscriptionException error) {
-        LOG.error("Subscription to ownerAce failed! SubscriptionId: {}, error: {}",
-                  error.getSubscriptionId(),
-                  error.getMessage());
+        logger.error("Subscription to ownerAce failed! SubscriptionId: {}, error: {}",
+                     error.getSubscriptionId(),
+                     error.getMessage());
     }
 }

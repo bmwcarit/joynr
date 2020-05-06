@@ -44,7 +44,7 @@ import joynr.vehicle.RadioSync;
 @Produces(MediaType.APPLICATION_JSON)
 public class RadioConsumerRestEndpoint {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(RadioConsumerRestEndpoint.class);
+    private final static Logger logger = LoggerFactory.getLogger(RadioConsumerRestEndpoint.class);
 
     private ServiceLocator serviceLocator;
 
@@ -107,7 +107,7 @@ public class RadioConsumerRestEndpoint {
                     try {
                         radioClient = future.get();
                     } catch (Exception e) {
-                        LOGGER.error("Unable to create a proxy for the radio provider. All calls will fail.", e);
+                        logger.error("Unable to create a proxy for the radio provider. All calls will fail.", e);
                         throw new RuntimeException("Radio proxy creation failed.", e);
                     }
                 }

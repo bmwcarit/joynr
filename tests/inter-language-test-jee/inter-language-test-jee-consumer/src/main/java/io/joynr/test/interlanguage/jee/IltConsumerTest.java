@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import joynr.interlanguagetest.TestInterfaceSync;
 
 public abstract class IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerTest.class);
 
     @Rule
     public TestName name = new TestName();
@@ -42,25 +42,25 @@ public abstract class IltConsumerTest {
 
     @BeforeClass
     public static void generalSetUp() throws Exception {
-        LOG.info("generalSetUp: Entering");
-        LOG.info("generalSetUp: Leaving");
+        logger.info("generalSetUp: Entering");
+        logger.info("generalSetUp: Leaving");
     }
 
     @Before
     public void setUp() {
-        LOG.info("setUp: Entering");
+        logger.info("setUp: Entering");
         if (testInterfaceProxy == null) {
-            LOG.info("setUp: testInterfaceProxy == null");
+            logger.info("setUp: testInterfaceProxy == null");
             testInterfaceProxy = IltConsumerHelper.getServiceLocator().get(TestInterfaceSync.class,
                                                                            "joynr-inter-language-test-domain");
         }
-        LOG.info("setUp: Leaving");
+        logger.info("setUp: Leaving");
     }
 
     @AfterClass
     public static void generalTearDown() throws InterruptedException {
-        LOG.info("generalTearDown: Entering");
-        LOG.info("generalTearDown: Leaving");
+        logger.info("generalTearDown: Entering");
+        logger.info("generalTearDown: Leaving");
     }
 
     @After

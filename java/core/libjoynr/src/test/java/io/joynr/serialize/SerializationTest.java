@@ -104,7 +104,7 @@ import joynr.types.Version;
 public class SerializationTest {
     private static final int ONE_MINUTE_IN_MS = 60 * 1000;
 
-    private static final Logger LOG = LoggerFactory.getLogger(SerializationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(SerializationTest.class);
 
     private ObjectMapper objectMapper;
     private Injector injector;
@@ -370,7 +370,7 @@ public class SerializationTest {
 
         String valueAsString = objectMapper.writeValueAsString(oneway);
 
-        LOG.debug(valueAsString);
+        logger.debug(valueAsString);
 
         OneWayRequest oneway2 = objectMapper.readValue(valueAsString, OneWayRequest.class);
         assertEquals(oneway, oneway2);
@@ -427,7 +427,7 @@ public class SerializationTest {
 
         String serializedContent = objectMapper.writeValueAsString(gps1);
 
-        LOG.debug("Serialized TestGpsLocation={}", serializedContent);
+        logger.debug("Serialized TestGpsLocation={}", serializedContent);
         assertTrue(serializedContent.startsWith("{\"_typeName\""));
         GpsLocation gps2 = objectMapper.readValue(serializedContent, GpsLocation.class);
         Assert.assertEquals(gps1, gps2);

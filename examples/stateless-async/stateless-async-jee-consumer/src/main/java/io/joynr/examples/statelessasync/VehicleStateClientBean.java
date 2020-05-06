@@ -36,7 +36,7 @@ import joynr.examples.statelessasync.VehicleStateStatelessAsync;
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class VehicleStateClientBean {
 
-    private static final Logger LOG = LoggerFactory.getLogger(VehicleStateClientBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(VehicleStateClientBean.class);
 
     @Inject
     private ServiceLocator serviceLocator;
@@ -45,11 +45,11 @@ public class VehicleStateClientBean {
 
     @PostConstruct
     public void initialise() {
-        LOG.info("START initialisation of vehicle service proxy.");
+        logger.info("START initialisation of vehicle service proxy.");
         service = serviceLocator.builder(VehicleStateStatelessAsync.class, "io.joynr.examples.statelessasync.carsim")
                                 .withUseCase("jee-consumer-test")
                                 .build();
-        LOG.info("FINISHED initialisation vehicle service proxy.");
+        logger.info("FINISHED initialisation vehicle service proxy.");
     }
 
     public VehicleStateStatelessAsync getService() {

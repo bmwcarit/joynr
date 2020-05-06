@@ -30,7 +30,7 @@ import joynr.jeeintegration.servicelocator.MyServiceSync;
 @Stateless
 public class TestBean {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestBean.class);
 
     @Inject
     private ServiceLocator serviceLocator;

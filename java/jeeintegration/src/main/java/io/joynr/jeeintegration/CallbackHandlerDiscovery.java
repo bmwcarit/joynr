@@ -37,7 +37,7 @@ import io.joynr.proxy.StatelessAsyncCallback;
 @Singleton
 public class CallbackHandlerDiscovery {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CallbackHandlerDiscovery.class);
+    private static final Logger logger = LoggerFactory.getLogger(CallbackHandlerDiscovery.class);
 
     @Inject
     private BeanManager beanManager;
@@ -51,7 +51,7 @@ public class CallbackHandlerDiscovery {
                 if (StatelessAsyncCallback.class.isAssignableFrom(interfaceClass)) {
                     UsedBy usedBy = interfaceClass.getAnnotation(UsedBy.class);
                     if (usedBy == null) {
-                        LOG.warn("Stateless async callback interface " + interfaceClass + " implemented by "
+                        logger.warn("Stateless async callback interface " + interfaceClass + " implemented by "
                                 + callbackHandlerBean
                                 + " is not annotated with @UsedBy. Please ensure you have the jee = true property set on the joynr code generator.");
                         continue;

@@ -67,7 +67,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     // The LDAC subscribes to broadcasts of ACL changes, below are the subscriptionQos parameters
     private static final long QOS_DURATION_MS = 10 * 365 * 24 * 3600 * 1000L; // 10 years
 
-    private static final Logger LOG = LoggerFactory.getLogger(LocalDomainAccessControllerImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocalDomainAccessControllerImpl.class);
     private static final String SINGLE_LEVEL_WILDCARD = "+";
 
     private final String discoveryDirectoriesDomain;
@@ -153,7 +153,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                                                                                     domain,
                                                                                                     interfaceName,
                                                                                                     null);
-        LOG.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
+        logger.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
 
         // Handle special cases which should not require a lookup or a subscription
         Optional<Permission> specialPermission = handleSpecialCases(domain, interfaceName);
@@ -227,7 +227,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                             String interfaceName,
                                             String operation,
                                             TrustLevel trustLevel) {
-        LOG.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
+        logger.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
         MasterAccessControlEntry masterAce;
         MasterAccessControlEntry mediatorAce;
         OwnerAccessControlEntry ownerAce;
@@ -518,16 +518,16 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                 globalDomainAccessControllerClient.unsubscribeFromMediatorAccessControlEntryChangedBroadcast(subscriptions.getMediatorSubscriptionId());
                 globalDomainAccessControllerClient.unsubscribeFromOwnerAccessControlEntryChangedBroadcast(subscriptions.getOwnerSubscriptionId());
             } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
-                LOG.warn("unsubscribe from AceChanges failed due to the following error: {}", e.getMessage());
+                logger.warn("unsubscribe from AceChanges failed due to the following error: {}", e.getMessage());
                 return;
             }
         } else {
             /*
              * This can be the case, when no consumer request has been performed during the lifetime of the provider
              */
-            LOG.debug("Subscription for ace subscription for interface '{}' domain '{}' not found",
-                      interfaceName,
-                      domain);
+            logger.debug("Subscription for ace subscription for interface '{}' domain '{}' not found",
+                         interfaceName,
+                         domain);
         }
     }
 
@@ -570,7 +570,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     }
 
     private void queryDomainRoles(String userId) {
-        LOG.debug("queryDomainRoles on userId {}", userId);
+        logger.debug("queryDomainRoles on userId {}", userId);
 
         globalDomainAccessControllerClient.getDomainRoles(new Callback<DomainRoleEntry[]>() {
             @Override
@@ -593,14 +593,14 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private void queryAccessControlEntries(String domain,
                                            String interfaceName,
                                            QueryAccessControlEntriesCallback callback) {
-        LOG.debug("queryAccessControlEntries on domain {}, interface {}", domain, interfaceName);
+        logger.debug("queryAccessControlEntries on domain {}, interface {}", domain, interfaceName);
 
         final AceQuerySync querySync = new AceQuerySync(callback);
 
         globalDomainAccessControllerClient.getMasterAccessControlEntries(new Callback<MasterAccessControlEntry[]>() {
             @Override
             public void onFailure(JoynrRuntimeException runtimeException) {
-                LOG.error("Failed to query master access control entries: {}", runtimeException.toString());
+                logger.error("Failed to query master access control entries: {}", runtimeException.toString());
                 querySync.registerException();
             }
 
@@ -620,7 +620,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         globalDomainAccessControllerClient.getMediatorAccessControlEntries(new Callback<MasterAccessControlEntry[]>() {
             @Override
             public void onFailure(JoynrRuntimeException runtimeException) {
-                LOG.error("Failed to query mediator access control entries: {}", runtimeException.toString());
+                logger.error("Failed to query mediator access control entries: {}", runtimeException.toString());
                 querySync.registerException();
             }
 
@@ -640,7 +640,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         globalDomainAccessControllerClient.getOwnerAccessControlEntries(new Callback<OwnerAccessControlEntry[]>() {
             @Override
             public void onFailure(JoynrRuntimeException runtimeException) {
-                LOG.error("Failed to query owner access control entries: {}", runtimeException.toString());
+                logger.error("Failed to query owner access control entries: {}", runtimeException.toString());
                 querySync.registerException();
             }
 
@@ -657,7 +657,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             }
         }, domain, interfaceName);
 
-        LOG.debug("Finished initializeLocalDomainAccessStore on domain {}, interface {}", domain, interfaceName);
+        logger.debug("Finished initializeLocalDomainAccessStore on domain {}, interface {}", domain, interfaceName);
     }
 
     static class AceQuerySync {

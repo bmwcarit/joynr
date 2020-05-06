@@ -34,7 +34,7 @@ import joynr.examples.statelessasync.VehicleConfiguration;
 @Stateless
 public class WaitForGetResultBean {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WaitForGetResultBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(WaitForGetResultBean.class);
 
     @Inject
     private DataAccess dataAccess;
@@ -51,16 +51,16 @@ public class WaitForGetResultBean {
                 while (System.currentTimeMillis() - startTime < 2000L) {
                     Optional<VehicleConfiguration> result = dataAccess.getVehicleConfigurationForMessageId(messageId);
                     if (result.isPresent()) {
-                        LOG.info("Get result found: {}", result);
+                        logger.info("Get result found: {}", result);
                         result.ifPresent(callback);
                         break;
                     } else {
-                        LOG.trace("No get result found for {}. Will continue waiting.", messageId);
+                        logger.trace("No get result found for {}. Will continue waiting.", messageId);
                     }
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
-                        LOG.warn("Interrupted while waiting for GetResult for messageId {}", messageId, e);
+                        logger.warn("Interrupted while waiting for GetResult for messageId {}", messageId, e);
                         break;
                     }
                 }

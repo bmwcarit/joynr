@@ -35,7 +35,7 @@ import joynr.examples.statelessasync.VehicleStateStatelessAsyncCallback;
 @CallbackHandler
 public class VehicleStateCallbackBean implements VehicleStateStatelessAsyncCallback {
 
-    private static final Logger LOG = LoggerFactory.getLogger(VehicleStateCallbackBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(VehicleStateCallbackBean.class);
 
     @Inject
     private DataAccess dataAccess;
@@ -47,28 +47,28 @@ public class VehicleStateCallbackBean implements VehicleStateStatelessAsyncCallb
 
     @Override
     public void getCurrentConfigSuccess(VehicleConfiguration result, ReplyContext replyContext) {
-        LOG.info("Got config for {}:\n{}", replyContext, result);
+        logger.info("Got config for {}:\n{}", replyContext, result);
         dataAccess.updateGetResult(replyContext.getMessageId(), result);
     }
 
     @Override
     public void getCurrentConfigFailed(VehicleState.GetCurrentConfigErrorEnum error, ReplyContext replyContext) {
-        LOG.error("Unable to get config {} / {}", replyContext, error);
+        logger.error("Unable to get config {} / {}", replyContext, error);
     }
 
     @Override
     public void addConfigurationSuccess(ReplyContext replyContext) {
-        LOG.info("Successfully persisted {}", replyContext);
+        logger.info("Successfully persisted {}", replyContext);
         dataAccess.updateKnownConfiguration(replyContext.getMessageId(), true);
     }
 
     @Override
     public void getNumberOfConfigsSuccess(Integer numberOfConfigs, ReplyContext replyContext) {
-        LOG.info("Number of configs for message ID {} is {}", replyContext, numberOfConfigs);
+        logger.info("Number of configs for message ID {} is {}", replyContext, numberOfConfigs);
     }
 
     @Override
     public void callWithExceptionTestFailed(JoynrRuntimeException runtimeException, ReplyContext replyContext) {
-        LOG.info("Expected failure occurred: {} for {}", runtimeException, replyContext);
+        logger.info("Expected failure occurred: {} for {}", runtimeException, replyContext);
     }
 }

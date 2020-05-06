@@ -55,7 +55,7 @@ import joynr.OnChangeSubscriptionQos;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerFireAndForgetMethodTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerFireAndForgetMethodTest.class);
     private Integer attributeFireAndForgetValue = -1;
     private OnChangeSubscriptionQos subscriptionQos;
     //private Future<String> attributeFireAndForgetSubscriptionId = new Future<String>();
@@ -85,9 +85,9 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
 
     @BeforeClass
     public static void testClassSetUp() throws Exception {
-        LOG.info("testClassSetUp: Entering");
+        logger.info("testClassSetUp: Entering");
         setupConsumerRuntime(false);
-        LOG.info("testClassSetUp: Leaving");
+        logger.info("testClassSetUp: Leaving");
     }
 
     @Before
@@ -99,9 +99,9 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
 
     @AfterClass
     public static void testClassTearDown() throws InterruptedException {
-        LOG.info("testClassTearDown: Entering");
+        logger.info("testClassTearDown: Entering");
         generalTearDown();
-        LOG.info("testClassTearDown: Leaving");
+        logger.info("testClassTearDown: Leaving");
     }
 
     @After
@@ -125,7 +125,7 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
                                                        .setExpiryDateMs(expiryDateMs)
                                                        .setPublicationTtlMs(publicationTtlMs);
 
-        LOG.info(name.getMethodName() + ": subscribeToAttributeFireAndForget");
+        logger.info(name.getMethodName() + ": subscribeToAttributeFireAndForget");
 
         try {
             // set attributeFireAndForget do a defined value
@@ -138,11 +138,11 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
                                                                             subscriptionQos);
 
             attributeFireAndForgetSubscriptionId = myFuture.get(10000);
-            LOG.info(name.getMethodName() + ": subscribeToAttributeFireAndForget - subscription successful");
+            logger.info(name.getMethodName() + ": subscribeToAttributeFireAndForget - subscription successful");
             assertTrue(publicationReceivedSemaphore.tryAcquire(5000, TimeUnit.MILLISECONDS));
             assertEquals(expected, attributeFireAndForgetValue);
 
-            LOG.info(name.getMethodName() + ": subscribeToAttributeFireAndForget - first publication received");
+            logger.info(name.getMethodName() + ": subscribeToAttributeFireAndForget - first publication received");
         } catch (Exception e) {
             fail(name.getMethodName() + ": subscribeToAttributeFireAndForget - FAILED - caught unexpected exception: "
                     + e.getMessage());
@@ -150,12 +150,12 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
     }
 
     private void unsubscribeFromAttributeFireAndForget() {
-        LOG.info(name.getMethodName() + ": unsubscribeFromAttributeFireAndForget");
+        logger.info(name.getMethodName() + ": unsubscribeFromAttributeFireAndForget");
         try {
             testInterfaceProxy.unsubscribeFromAttributeFireAndForget(attributeFireAndForgetSubscriptionId);
             // wait some time for unsubscribe call to to be processed at the provider
             Thread.sleep(2000);
-            LOG.info(name.getMethodName() + ": unsubscribeFromAttributeFireAndForget - OK");
+            logger.info(name.getMethodName() + ": unsubscribeFromAttributeFireAndForget - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName()
@@ -169,7 +169,7 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
         subscribeToAttributeFireAndForget();
         Integer expected = attributeFireAndForgetValue + 1;
         try {
-            LOG.info(name.getMethodName() + " - CALL");
+            logger.info(name.getMethodName() + " - CALL");
             testInterfaceProxy.methodFireAndForgetWithoutParameter();
             assertTrue(publicationReceivedSemaphore.tryAcquire(5000, TimeUnit.MILLISECONDS));
             assertEquals(expected, attributeFireAndForgetValue);
@@ -177,7 +177,7 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
             fail(name.getMethodName() + " - FAILED: " + e.getMessage());
             return;
         }
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
@@ -185,7 +185,7 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
         subscribeToAttributeFireAndForget();
         Integer expected = 1337;
         try {
-            LOG.info(name.getMethodName() + " - CALL");
+            logger.info(name.getMethodName() + " - CALL");
             testInterfaceProxy.methodFireAndForgetWithInputParameter(expected);
             assertTrue(publicationReceivedSemaphore.tryAcquire(5000, TimeUnit.MILLISECONDS));
             assertEquals(expected, attributeFireAndForgetValue);
@@ -193,7 +193,7 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
             fail(name.getMethodName() + " - FAILED: " + e.getMessage());
             return;
         }
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
 }

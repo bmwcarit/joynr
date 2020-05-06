@@ -50,7 +50,7 @@ import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.ProviderQos;
 
 public class IltProviderApplication extends AbstractJoynrApplication {
-    private static final Logger LOG = LoggerFactory.getLogger(IltProviderApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltProviderApplication.class);
     public static final String STATIC_PERSISTENCE_FILE = "java-provider.persistence_file";
 
     private IltProvider provider = null;
@@ -61,18 +61,18 @@ public class IltProviderApplication extends AbstractJoynrApplication {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1 && args.length != 2) {
-            LOG.error("\n\nUSAGE: java {} <local-domain>\n\n NOTE: Providers are registered on the local domain.",
-                      IltProviderApplication.class.getName());
+            logger.error("\n\nUSAGE: java {} <local-domain>\n\n NOTE: Providers are registered on the local domain.",
+                         IltProviderApplication.class.getName());
             return;
         }
         String localDomain = args[0];
-        LOG.debug("Registering provider on domain \"{}\"", localDomain);
+        logger.debug("Registering provider on domain \"{}\"", localDomain);
 
         Properties joynrConfig = new Properties();
         Module runtimeModule = getRuntimeModule(args, joynrConfig);
 
-        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
-        LOG.debug("Registering provider on domain \"{}\"", localDomain);
+        logger.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        logger.debug("Registering provider on domain \"{}\"", localDomain);
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
@@ -103,12 +103,12 @@ public class IltProviderApplication extends AbstractJoynrApplication {
 
             Module backendTransportModules = Modules.EMPTY_MODULE;
             if (transport.contains("http")) {
-                LOG.info("Configuring HTTP...");
+                logger.info("Configuring HTTP...");
                 backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
             }
 
             if (transport.contains("mqtt")) {
-                LOG.info("Configuring MQTT...");
+                logger.info("Configuring MQTT...");
                 joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
             }
@@ -144,12 +144,12 @@ public class IltProviderApplication extends AbstractJoynrApplication {
 
     @Override
     public void shutdown() {
-        LOG.info("shutting down");
+        logger.info("shutting down");
         if (provider != null) {
             try {
                 runtime.unregisterProvider(localDomain, provider);
             } catch (JoynrRuntimeException e) {
-                LOG.error("unable to unregister capabilities {}", e.getMessage());
+                logger.error("unable to unregister capabilities {}", e.getMessage());
             }
         }
         runtime.shutdown(true);

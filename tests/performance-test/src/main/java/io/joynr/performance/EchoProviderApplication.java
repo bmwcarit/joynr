@@ -48,7 +48,7 @@ import joynr.tests.performance.EchoProvider;
 import joynr.types.ProviderQos;
 
 public class EchoProviderApplication extends AbstractJoynrApplication {
-    private static final Logger LOG = LoggerFactory.getLogger(EchoProviderApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(EchoProviderApplication.class);
     private static final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
     private static EchoProviderInvocationParameters invocationParams = null;
 
@@ -96,7 +96,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
             try {
                 runtime.unregisterProvider(localDomain, provider);
             } catch (JoynrRuntimeException exception) {
-                LOG.error("Failed to unregister provider", exception);
+                logger.error("Failed to unregister provider", exception);
             }
         }
 

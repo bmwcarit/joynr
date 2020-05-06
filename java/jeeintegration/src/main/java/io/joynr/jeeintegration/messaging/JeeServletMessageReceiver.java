@@ -46,7 +46,7 @@ import joynr.ImmutableMessage;
 @Singleton
 public class JeeServletMessageReceiver implements ServletMessageReceiver {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JeeServletMessageReceiver.class);
+    private static final Logger logger = LoggerFactory.getLogger(JeeServletMessageReceiver.class);
 
     private final String channelId;
 
@@ -68,12 +68,12 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
                                      @Named(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH) String hostPath,
                                      HttpBridgeRegistryClient httpBridgeRegistryClient,
                                      @Named(JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY) String httpBridgeEnabled) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(format("Initialising with:%n\tchannelId: %s%n\tcontextRoot: %s%n\thostPath: %s%n\thttpBridgeRegistryClient: %s",
-                             channelId,
-                             contextRoot,
-                             hostPath,
-                             httpBridgeRegistryClient));
+        if (logger.isDebugEnabled()) {
+            logger.debug(format("Initialising with:%n\tchannelId: %s%n\tcontextRoot: %s%n\thostPath: %s%n\thttpBridgeRegistryClient: %s",
+                                channelId,
+                                contextRoot,
+                                hostPath,
+                                httpBridgeRegistryClient));
         }
         this.channelId = channelId;
         this.hostPath = hostPath;
@@ -90,7 +90,7 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
     @Override
     public void shutdown(boolean clear) {
         if (registered) {
-            LOG.info("Shutting down servlet message receiver.");
+            logger.info("Shutting down servlet message receiver.");
             registered = false;
         }
     }
@@ -102,26 +102,26 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
 
     @Override
     public boolean deleteChannel() {
-        LOG.info(format("Deleting channel %s", channelId));
+        logger.info(format("Deleting channel %s", channelId));
         return false;
     }
 
     @Override
     public boolean isStarted() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(format("isStarted called - returning %s", registered));
+        if (logger.isDebugEnabled()) {
+            logger.debug(format("isStarted called - returning %s", registered));
         }
         return registered;
     }
 
     @Override
     public void suspend() {
-        LOG.info(format("Suspend called on channel %s, but functionality not supported. Ignoring.", channelId));
+        logger.info(format("Suspend called on channel %s, but functionality not supported. Ignoring.", channelId));
     }
 
     @Override
     public void resume() {
-        LOG.info(format("Resume called on channel %s, but functionality not supported. Ignoring.", channelId));
+        logger.info(format("Resume called on channel %s, but functionality not supported. Ignoring.", channelId));
     }
 
     @Override
@@ -130,7 +130,7 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
         if (messageArrivedListener == null) {
             throw new IllegalStateException();
         }
-        LOG.info("Starting JeeServletMessageReceiver with listener {}", messageArrivedListener);
+        logger.info("Starting JeeServletMessageReceiver with listener {}", messageArrivedListener);
         this.messageListener = messageArrivedListener;
         if (!registered) {
             registerChannelUrl();
@@ -140,19 +140,19 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
 
     @Override
     public boolean switchToLongPolling() {
-        LOG.info(format("JEE servlet message receiver does not support long polling. Ignoring."));
+        logger.info(format("JEE servlet message receiver does not support long polling. Ignoring."));
         return false;
     }
 
     @Override
     public void receive(ImmutableMessage message) {
         if (message != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(format(">>>>>> Message arrived on channel %s:%n\t%s%n", channelId, message));
+            if (logger.isDebugEnabled()) {
+                logger.debug(format(">>>>>> Message arrived on channel %s:%n\t%s%n", channelId, message));
             }
             messageListener.messageArrived(message);
         } else {
-            LOG.warn(format("Received null message on channel %s", channelId));
+            logger.warn(format("Received null message on channel %s", channelId));
         }
     }
 
@@ -161,10 +161,10 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
         if (messageListener != null) {
             messageListener.error(message, error);
         } else {
-            LOG.warn(format("Channel %s dropped message %s because no message listener available.%nError received: %s",
-                            channelId,
-                            message,
-                            error));
+            logger.warn(format("Channel %s dropped message %s because no message listener available.%nError received: %s",
+                               channelId,
+                               message,
+                               error));
         }
     }
 
@@ -173,21 +173,21 @@ public class JeeServletMessageReceiver implements ServletMessageReceiver {
             if (hostPath == null) {
                 String message = "The system property hostPath must be set with name:port eg. http://localhost:8080";
                 IllegalArgumentException illegalArgumentException = new IllegalArgumentException(message);
-                LOG.error(message, illegalArgumentException);
+                logger.error(message, illegalArgumentException);
                 throw illegalArgumentException;
             }
             if (httpBridgeEnabled) {
-                LOG.debug("HTTP Bridge enabled - registering channel with endpoint registry.");
+                logger.debug("HTTP Bridge enabled - registering channel with endpoint registry.");
                 String endpointUrl = hostPath + contextRoot + "/channels/" + channelId + "/";
                 CompletionStage<Void> registrationResult = httpBridgeRegistryClient.register(endpointUrl, channelId);
                 registrationResult.thenAccept((v) -> {
                     registered = true;
                 }).exceptionally((t) -> {
-                    LOG.error("Unable to register channel URL.", t);
+                    logger.error("Unable to register channel URL.", t);
                     return null;
                 });
             } else {
-                LOG.debug("HTTP Bridge disabled.");
+                logger.debug("HTTP Bridge disabled.");
                 registered = true;
             }
         }

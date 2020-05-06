@@ -35,7 +35,7 @@ import io.joynr.messaging.MessagingQos;
 @Produces(MediaType.APPLICATION_JSON)
 public class RestEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RestEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(RestEndpoint.class);
 
     @Inject
     private HeaderPingClient headerPingClient;
@@ -44,11 +44,11 @@ public class RestEndpoint {
     @Path("/trigger")
     public String trigger() {
         String customHeaderValue = CustomHeaderUtils.APP_CUSTOM_HEADER_VALUE_PREFIX + createUuidString();
-        LOG.info("Calling header ping service with application custom header: {}.", customHeaderValue);
+        logger.info("Calling header ping service with application custom header: {}.", customHeaderValue);
         MessagingQos messagingQos = new MessagingQos();
         messagingQos.getCustomMessageHeaders().put(CustomHeaderUtils.APP_CUSTOM_HEADER_KEY, customHeaderValue);
         String res = headerPingClient.get().ping(messagingQos);
-        LOG.info("Return result is {}", res);
+        logger.info("Return result is {}", res);
         return res;
     }
 

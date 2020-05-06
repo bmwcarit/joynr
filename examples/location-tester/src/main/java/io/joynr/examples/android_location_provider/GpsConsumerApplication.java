@@ -50,7 +50,7 @@ import joynr.vehicle.GpsProxy;
 
 public class GpsConsumerApplication extends AbstractJoynrApplication {
     private static final String PRINT_BORDER = "\n####################\n";
-    private static final Logger LOG = LoggerFactory.getLogger(GpsConsumerApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(GpsConsumerApplication.class);
     public static final String APP_CONFIG_PROVIDER_DOMAIN = "javademoapp.provider.domain";
     private static final String STATIC_PERSISTENCE_FILE = "gps-consumer-joynr.properties";
 
@@ -71,11 +71,11 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.classpathScope="test" -Dexec.mainClass="io.joynr.public_examples.android_location_provider.GpsConsumerApplication" -Dexec.args="<provider-domain>"
         if (args.length != 1) {
-            LOG.error("USAGE: java {} <provider-domain>", GpsConsumerApplication.class.getName());
+            logger.error("USAGE: java {} <provider-domain>", GpsConsumerApplication.class.getName());
             return;
         }
         String providerDomain = args[0];
-        LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
+        logger.debug("Searching for providers on domain \"{}\"", providerDomain);
 
         // joynr config properties are used to set joynr configuration at compile time. They are set on the
         // JoynInjectorFactory.
@@ -142,7 +142,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
                     String subscriptionIdLocation = subscriptionFuture.get();
                     gpsProxy.unsubscribeFromLocation(subscriptionIdLocation);
                 } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
-                    LOG.error(e.toString());
+                    logger.error(e.toString());
                 }
             }
         }
@@ -216,12 +216,12 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
 
             @Override
             public void onReceive(GpsLocation value) {
-                LOG.info(PRINT_BORDER + "SUBSCRIPTION: location: " + value + PRINT_BORDER);
+                logger.info(PRINT_BORDER + "SUBSCRIPTION: location: " + value + PRINT_BORDER);
             }
 
             @Override
             public void onError(JoynrRuntimeException error) {
-                LOG.info(PRINT_BORDER + "SUBSCRIPTION: location, publication missed " + PRINT_BORDER);
+                logger.info(PRINT_BORDER + "SUBSCRIPTION: location, publication missed " + PRINT_BORDER);
             }
         }, subscriptionQos);
     }
@@ -233,7 +233,7 @@ public class GpsConsumerApplication extends AbstractJoynrApplication {
         } catch (InterruptedException e) {
             // nothing to do
         }
-        LOG.info("\n\n\n************************************************\n Please press \"q + <Enter>\" to quit application\n************************************************\n\n");
+        logger.info("\n\n\n************************************************\n Please press \"q + <Enter>\" to quit application\n************************************************\n\n");
         Scanner input = new Scanner(System.in);
         Pattern pattern = Pattern.compile("q");
         // wait until the user types q to quit

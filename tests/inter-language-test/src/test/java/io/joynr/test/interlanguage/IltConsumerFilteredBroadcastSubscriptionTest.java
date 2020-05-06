@@ -41,20 +41,20 @@ import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 
 public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerFilteredBroadcastSubscriptionTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerFilteredBroadcastSubscriptionTest.class);
 
     @BeforeClass
     public static void setUp() throws Exception {
-        LOG.info("setUp: Entering");
+        logger.info("setUp: Entering");
         setupConsumerRuntime(false);
-        LOG.info("setUp: Leaving");
+        logger.info("setUp: Leaving");
     }
 
     @AfterClass
     public static void tearDown() throws InterruptedException {
-        LOG.info("tearDown: Entering");
+        logger.info("tearDown: Entering");
         generalTearDown();
-        LOG.info("tearDown: Leaving");
+        logger.info("tearDown: Leaving");
     }
 
     // variables that are to be changed inside callbacks must be declared global
@@ -78,7 +78,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
 
         try {
             BroadcastWithFilteringBroadcastFilterParameters filterParameters = new BroadcastWithFilteringBroadcastFilterParameters();
@@ -88,8 +88,8 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             String[] stringArrayOfInterest = { "Hello", "World" };
             String json;
             try {
-                LOG.info(name.getMethodName() + " - objectMapper is " + objectMapper);
-                LOG.info(name.getMethodName() + " - objectMapper stringArrayOfInterest " + stringArrayOfInterest);
+                logger.info(name.getMethodName() + " - objectMapper is " + objectMapper);
+                logger.info(name.getMethodName() + " - objectMapper stringArrayOfInterest " + stringArrayOfInterest);
                 json = objectMapper.writeValueAsString(stringArrayOfInterest);
             } catch (JsonProcessingException je) {
                 fail(name.getMethodName() + " - FAILED - got exception when serializing stringArrayOfInterest"
@@ -137,22 +137,22 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                                       StructWithStringArray structWithStringArrayOut,
                                       StructWithStringArray[] structWithStringArrayArrayOut) {
 
-                    LOG.info(name.getMethodName() + " - callback - got broadcast");
+                    logger.info(name.getMethodName() + " - callback - got broadcast");
 
                     String[] stringArray = { "Hello", "World" };
                     if (!Arrays.equals(stringArray, stringArrayOut)) {
                         subscribeBroadcastWithFilteringCallbackResult = false;
                     } else if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-                        LOG.info(name.getMethodName() + " - callback - invalid content");
+                        logger.info(name.getMethodName() + " - callback - invalid content");
                         subscribeBroadcastWithFilteringCallbackResult = false;
                     } else if (!IltUtil.checkStructWithStringArray(structWithStringArrayOut)) {
-                        LOG.info(name.getMethodName() + " - callback - invalid content");
+                        logger.info(name.getMethodName() + " - callback - invalid content");
                         subscribeBroadcastWithFilteringCallbackResult = false;
                     } else if (!IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
-                        LOG.info(name.getMethodName() + " - callback - invalid content");
+                        logger.info(name.getMethodName() + " - callback - invalid content");
                         subscribeBroadcastWithFilteringCallbackResult = false;
                     } else {
-                        LOG.info(name.getMethodName() + " - callback - content OK");
+                        logger.info(name.getMethodName() + " - callback - content OK");
                         subscribeBroadcastWithFilteringCallbackResult = true;
                     }
                     subscribeBroadcastWithFilteringCallbackDone = true;
@@ -160,34 +160,34 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
 
                 @Override
                 public void onError(SubscriptionException error) {
-                    LOG.info(name.getMethodName() + " - callback - error");
+                    logger.info(name.getMethodName() + " - callback - error");
                     subscribeBroadcastWithFilteringCallbackResult = false;
                     subscribeBroadcastWithFilteringCallbackDone = true;
                 }
             }, subscriptionQos, filterParameters);
             subscriptionId = subscriptionIdFuture.get(10000);
-            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
-            LOG.info(name.getMethodName() + " - Waiting one second");
+            logger.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
+            logger.info(name.getMethodName() + " - Waiting one second");
             Thread.sleep(1000);
-            LOG.info(name.getMethodName() + " - Wait done, invoking fire method");
+            logger.info(name.getMethodName() + " - Wait done, invoking fire method");
             String stringArg = "fireBroadcast";
             testInterfaceProxy.methodToFireBroadcastWithFiltering(stringArg);
-            LOG.info(name.getMethodName() + " - fire method invoked");
+            logger.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
             if (subscribeBroadcastWithFilteringCallbackDone == false) {
-                LOG.info(name.getMethodName() + " - about to wait for a second for callback");
+                logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
-                LOG.info(name.getMethodName() + " - wait for callback is over");
+                logger.info(name.getMethodName() + " - wait for callback is over");
             } else {
-                LOG.info(name.getMethodName() + " - callback already done");
+                logger.info(name.getMethodName() + " - callback already done");
             }
             if (!subscribeBroadcastWithFilteringCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
                 result = false;
             } else if (subscribeBroadcastWithFilteringCallbackResult) {
-                LOG.info(name.getMethodName() + " - callback got called and received expected publication");
+                logger.info(name.getMethodName() + " - callback got called and received expected publication");
                 result = true;
             } else {
                 fail(name.getMethodName()
@@ -204,22 +204,22 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             subscribeBroadcastWithFilteringCallbackResult = false;
             subscribeBroadcastWithFilteringCallbackDone = false;
 
-            LOG.info(name.getMethodName() + " - invoking fire method with wrong stringArg");
+            logger.info(name.getMethodName() + " - invoking fire method with wrong stringArg");
             stringArg = "doNotfireBroadcast";
             testInterfaceProxy.methodToFireBroadcastWithFiltering(stringArg);
-            LOG.info(name.getMethodName() + " - fire method invoked");
+            logger.info(name.getMethodName() + " - fire method invoked");
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
             if (subscribeBroadcastWithFilteringCallbackDone == false) {
-                LOG.info(name.getMethodName() + " - about to wait for a second for callback");
+                logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
-                LOG.info(name.getMethodName() + " - wait for callback is over");
+                logger.info(name.getMethodName() + " - wait for callback is over");
             } else {
-                LOG.info(name.getMethodName() + " - callback already done");
+                logger.info(name.getMethodName() + " - callback already done");
             }
             if (!subscribeBroadcastWithFilteringCallbackDone) {
-                LOG.info(name.getMethodName() + " - callback did not get called in time (expected)");
+                logger.info(name.getMethodName() + " - callback did not get called in time (expected)");
                 result = true;
             } else {
                 fail(name.getMethodName() + " - FAILED - callback got called unexpectedly");
@@ -229,7 +229,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             // try to unsubscribe
             try {
                 testInterfaceProxy.unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
-                LOG.info(name.getMethodName() + " - unsubscribe successful");
+                logger.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
@@ -237,9 +237,9 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             }
 
             if (!result) {
-                LOG.info(name.getMethodName() + " - FAILED");
+                logger.info(name.getMethodName() + " - FAILED");
             } else {
-                LOG.info(name.getMethodName() + " - OK");
+                logger.info(name.getMethodName() + " - OK");
             }
             return;
         } catch (Exception e) {

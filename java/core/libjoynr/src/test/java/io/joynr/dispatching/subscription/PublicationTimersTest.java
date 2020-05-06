@@ -67,7 +67,7 @@ import joynr.tests.DefaulttestProvider;
 @RunWith(MockitoJUnitRunner.class)
 public class PublicationTimersTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PublicationTimersTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(PublicationTimersTest.class);
     private final String attributeName = "notifyReadWrite";
     private static final boolean SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED = true;
 
@@ -112,7 +112,7 @@ public class PublicationTimersTest {
     public void publicationsSentUntilExpiryDate() throws InterruptedException, JoynrSendBufferFullException,
                                                   JoynrMessageNotSentException, JsonGenerationException,
                                                   JsonMappingException, IOException {
-        LOG.debug("Starting PublicationTimersTest.timerIsStoppedWhenEnddateIsReached test");
+        logger.debug("Starting PublicationTimersTest.timerIsStoppedWhenEnddateIsReached test");
         int period = 500;
         int subscriptionLength = 1100;
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();

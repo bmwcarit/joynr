@@ -57,7 +57,7 @@ import joynr.tests.performance.EchoProxy;
 import joynr.tests.performance.Types.ComplexStruct;
 
 public class ConsumerApplication extends AbstractJoynrApplication {
-    private static final Logger LOG = LoggerFactory.getLogger(ConsumerApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerApplication.class);
     private static final String STATIC_PERSISTENCE_FILE = "java-consumer.persistence_file";
     private static final int ASYNCTEST_RESPONSE_SAMPLEINTERVAL_MS = 10; // 10 milliseconds
 
@@ -75,7 +75,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             consumerApp.run();
             consumerApp.shutdown();
         } catch (Exception exception) {
-            LOG.error("Unexpected exception: ", exception);
+            logger.error("Unexpected exception: ", exception);
             System.exit(1);
         }
     }
@@ -116,7 +116,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         try {
             echoProxy = createEchoProxy();
         } catch (Exception e) {
-            LOG.error("Proxy creation failed: ", e);
+            logger.error("Proxy creation failed: ", e);
             exitCode = 1;
             return;
         }
@@ -133,7 +133,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 performSyncSendByteArrayTest(echoProxy);
                 break;
             default:
-                LOG.error("Unknown test type used");
+                logger.error("Unknown test type used");
                 exitCode = 1;
                 break;
             }
@@ -149,12 +149,12 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 performAsyncSendByteArrayTest(echoProxy);
                 break;
             default:
-                LOG.error("Unknown test type used");
+                logger.error("Unknown test type used");
                 exitCode = 1;
                 break;
             }
         } else {
-            LOG.error("Unknown communication mode used");
+            logger.error("Unknown communication mode used");
             exitCode = 1;
         }
     }

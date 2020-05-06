@@ -46,7 +46,7 @@ import io.joynr.messaging.websocket.WebsocketModule;
 import joynr.types.DiscoveryEntry;
 
 public class ClusterController {
-    private static final Logger LOG = LoggerFactory.getLogger(ClusterController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClusterController.class);
     private static Properties webSocketConfig;
     private static JoynrRuntime runtime;
 
@@ -82,22 +82,22 @@ public class ClusterController {
 
             if (line.hasOption('p')) {
                 port = Integer.parseInt(line.getOptionValue('p'));
-                LOG.info("found port = " + port);
+                logger.info("found port = " + port);
             }
             if (line.hasOption('H')) {
                 host = line.getOptionValue('H');
-                LOG.info("found host = " + host);
+                logger.info("found host = " + host);
             }
             if (line.hasOption('t')) {
                 transport = line.getOptionValue('t').toLowerCase();
-                LOG.info("found transport = " + transport);
+                logger.info("found transport = " + transport);
             }
             if (line.hasOption('b')) {
                 brokerUri = line.getOptionValue('b');
-                LOG.info("found brokerUri = " + brokerUri);
+                logger.info("found brokerUri = " + brokerUri);
             }
         } catch (ParseException e) {
-            LOG.error("failed to parse command line: " + e);
+            logger.error("failed to parse command line: " + e);
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(ClusterController.class.getName(), options, true);
             System.exit(1);
@@ -147,17 +147,17 @@ public class ClusterController {
         Thread shutdownHook = new Thread() {
             @Override
             public void run() {
-                LOG.info("executing shutdown hook");
+                logger.info("executing shutdown hook");
                 synchronized (this) {
-                    LOG.info("notifying any waiting thread from shutdown hook");
+                    logger.info("notifying any waiting thread from shutdown hook");
                     notifyAll();
                 }
-                LOG.info("shutting down");
+                logger.info("shutting down");
                 runtime.shutdown(false);
-                LOG.info("shutdown completed");
+                logger.info("shutdown completed");
             }
         };
-        LOG.info("adding shutdown hook");
+        logger.info("adding shutdown hook");
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
         Console console = System.console();
@@ -172,18 +172,18 @@ public class ClusterController {
                     for (DiscoveryEntry capability : allLocalDiscoveryEntries) {
                         discoveryEntriesAsText.append(capability.toString()).append('\n');
                     }
-                    LOG.info(discoveryEntriesAsText.toString());
+                    logger.info(discoveryEntriesAsText.toString());
                 } else {
-                    LOG.info("\n\nUSAGE press\n" + " q\tto quit\n caps\tto list registered providers\n");
+                    logger.info("\n\nUSAGE press\n" + " q\tto quit\n caps\tto list registered providers\n");
                 }
             }
         } else {
-            LOG.info("\n\nNon-interactive mode detected.\n"
+            logger.info("\n\nNon-interactive mode detected.\n"
                     + "This cluster controller will continue to run until its JVM gets terminated\n"
                     + "by the operating system. This can be triggered by sending a SIGTERM signal\n"
                     + "to the process running the JVM.");
             synchronized (shutdownHook) {
-                LOG.info("waiting on shutdown hook");
+                logger.info("waiting on shutdown hook");
                 try {
                     shutdownHook.wait();
                 } catch (InterruptedException e) {

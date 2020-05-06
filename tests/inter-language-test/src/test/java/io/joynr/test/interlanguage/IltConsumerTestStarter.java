@@ -27,7 +27,7 @@ import io.joynr.test.interlanguage.testresults.TestResult;
 import io.joynr.test.interlanguage.testresults.TestSuiteResult;
 
 public class IltConsumerTestStarter {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTestStarter.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerTestStarter.class);
 
     public static void main(String argv[]) {
         IltConsumerTestStarter t = new IltConsumerTestStarter();
@@ -50,12 +50,12 @@ public class IltConsumerTestStarter {
         ObjectMapper mapper = new ObjectMapper();
         try {
             String jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(testResult);
-            LOG.info("runTests: serialized test results:");
-            LOG.info(jsonString);
+            logger.info("runTests: serialized test results:");
+            logger.info(jsonString);
         } catch (Exception e) {
             // ignore
-            LOG.info("runTests: failed to serialize test results");
-            LOG.info("runTests: TEST FAILED");
+            logger.info("runTests: failed to serialize test results");
+            logger.info("runTests: TEST FAILED");
             return false;
         }
 
@@ -67,12 +67,12 @@ public class IltConsumerTestStarter {
             failures += testSuiteResult.getFailures();
         }
 
-        LOG.info("runTests: #errors: " + errors + ", #failures: " + failures);
+        logger.info("runTests: #errors: " + errors + ", #failures: " + failures);
         if (errors > 0 || failures > 0) {
-            LOG.info("runTests: TEST FAILED");
+            logger.info("runTests: TEST FAILED");
             return false;
         }
-        LOG.info("runTests: TEST SUCCEEDED");
+        logger.info("runTests: TEST SUCCEEDED");
         return true;
     }
 }

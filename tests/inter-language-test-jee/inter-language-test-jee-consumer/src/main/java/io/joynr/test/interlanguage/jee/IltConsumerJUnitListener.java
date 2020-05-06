@@ -37,7 +37,7 @@ import io.joynr.ilt.testresults.TestResult;
 import io.joynr.ilt.testresults.TestSuiteResult;
 
 public class IltConsumerJUnitListener extends RunListener {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerJUnitListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerJUnitListener.class);
     private TestResult testResult = null;
     ArrayList<TestCaseResult> testCaseResults = new ArrayList<TestCaseResult>();
 
@@ -57,8 +57,8 @@ public class IltConsumerJUnitListener extends RunListener {
 
     // for manual invocation after the test is finished
     public TestResult getTestResult() {
-        LOG.info(">>> getTestResult called");
-        LOG.info("<<< getTestResult called");
+        logger.info(">>> getTestResult called");
+        logger.info("<<< getTestResult called");
         return testResult;
     }
 
@@ -66,21 +66,21 @@ public class IltConsumerJUnitListener extends RunListener {
     public void printDescription(Description description, int level) {
         String spaces = new String(new char[level * 2]).replace('\0', ' ');
         if (description == null) {
-            LOG.info(spaces + "description is null");
+            logger.info(spaces + "description is null");
         } else {
-            LOG.info(spaces + "description is set");
+            logger.info(spaces + "description is set");
 
-            LOG.info(spaces + "- description.getDisplayName() = " + description.toString());
-            LOG.info(spaces + "- description.isEmpty() = " + description.isEmpty());
-            LOG.info(spaces + "- description.isSuite() = " + description.isSuite());
-            LOG.info(spaces + "- description.isTest() = " + description.isTest());
-            LOG.info(spaces + "- description.testCount() = " + description.testCount());
+            logger.info(spaces + "- description.getDisplayName() = " + description.toString());
+            logger.info(spaces + "- description.isEmpty() = " + description.isEmpty());
+            logger.info(spaces + "- description.isSuite() = " + description.isSuite());
+            logger.info(spaces + "- description.isTest() = " + description.isTest());
+            logger.info(spaces + "- description.testCount() = " + description.testCount());
             ArrayList<Description> children = description.getChildren();
             for (int i = 0; i < children.size(); i++) {
                 printDescription(children.get(i), level + 1);
             }
 
-            LOG.info(spaces + "- description.toString() = " + description.toString());
+            logger.info(spaces + "- description.toString() = " + description.toString());
         }
     }
 
@@ -132,29 +132,29 @@ public class IltConsumerJUnitListener extends RunListener {
     // that is false
     @Override
     public void testAssumptionFailure(Failure failure) {
-        LOG.info(">>> testAssumptionFailure called");
+        logger.info(">>> testAssumptionFailure called");
         Description description = failure.getDescription();
         printDescription(description, 1);
         // should have been created already in previous call to testStarted
         TestSuiteResultsStore store = getStore(description);
         store.errors++;
-        LOG.info("<<< testAssumptionFailure called");
+        logger.info("<<< testAssumptionFailure called");
     }
 
     // called when an atomic test fails
     @Override
     public void testFailure(Failure failure) {
-        LOG.info(">>> testFailure called");
+        logger.info(">>> testFailure called");
 
         Description description = failure.getDescription();
         printDescription(description, 1);
-        LOG.info("- failure.getException() = " + failure.getException());
-        LOG.info("- failure.getMessage() = " + failure.getMessage());
-        LOG.info("- failure.getTestHeader() = " + failure.getTestHeader());
-        LOG.info("- failure.getTrace() = " + failure.getTrace());
+        logger.info("- failure.getException() = " + failure.getException());
+        logger.info("- failure.getMessage() = " + failure.getMessage());
+        logger.info("- failure.getTestHeader() = " + failure.getTestHeader());
+        logger.info("- failure.getTrace() = " + failure.getTrace());
 
         if (description == null || description.getDisplayName() == null) {
-            LOG.info("<<< testFinished called");
+            logger.info("<<< testFinished called");
             return;
         }
 
@@ -177,14 +177,14 @@ public class IltConsumerJUnitListener extends RunListener {
         // everything else will be done in testFinished, which is also
         // called for failed tests as well.
 
-        LOG.info("<<< testFailure called");
+        logger.info("<<< testFailure called");
     }
 
     // called when an atomic test is to be started
     @Override
     public void testStarted(Description description) {
         // A Description describes a test which is to be run or has been run. Descriptions can be atomic (a single test) or compound (containing children tests).
-        LOG.info(">>> testStarted called");
+        logger.info(">>> testStarted called");
 
         // assume that one tests runs at a time.
         // it is then sufficient to store a global start time instead of a
@@ -192,17 +192,17 @@ public class IltConsumerJUnitListener extends RunListener {
         startTimeTestCase = System.currentTimeMillis();
 
         printDescription(description, 1);
-        LOG.info("<<< testStarted called");
+        logger.info("<<< testStarted called");
     }
 
     // called when a test has finished, whether the test succeeds or fails
     @Override
     public void testFinished(Description description) {
-        LOG.info(">>> testFinished called");
+        logger.info(">>> testFinished called");
         printDescription(description, 1);
 
         if (description == null || description.getDisplayName() == null) {
-            LOG.info("<<< testFinished called");
+            logger.info("<<< testFinished called");
             return;
         }
 
@@ -237,16 +237,16 @@ public class IltConsumerJUnitListener extends RunListener {
         }
         store.tests++;
         store.consumedTime += (endTimeTestCase - startTimeTestCase);
-        LOG.info("<<< testFinished called");
+        logger.info("<<< testFinished called");
     }
 
     // called when a test will not run due to annotation @Ignore
     @Override
     public void testIgnored(Description description) {
-        LOG.info(">>> testIgnored called");
+        logger.info(">>> testIgnored called");
         printDescription(description, 1);
         if (description == null || description.getDisplayName() == null) {
-            LOG.info("<<< testFinished called");
+            logger.info("<<< testFinished called");
             return;
         }
 
@@ -263,7 +263,7 @@ public class IltConsumerJUnitListener extends RunListener {
         store.testCaseResults.add(testCaseResult);
         store.skipped++;
 
-        LOG.info("<<< testIgnored called");
+        logger.info("<<< testIgnored called");
     }
 
     // called when all tests are finished
@@ -271,11 +271,11 @@ public class IltConsumerJUnitListener extends RunListener {
     public void testRunFinished(Result result) {
         ArrayList<TestSuiteResult> testSuiteResults = new ArrayList<TestSuiteResult>();
 
-        LOG.info(">>> testRunFinished called");
+        logger.info(">>> testRunFinished called");
 
-        LOG.info("testRunFinished  testSuitesMap.size() = " + testSuitesMap.size());
+        logger.info("testRunFinished  testSuitesMap.size() = " + testSuitesMap.size());
         for (Map.Entry<String, TestSuiteResultsStore> testSuiteEntry : testSuitesMap.entrySet()) {
-            LOG.info("testRunFinished testSuiteName = " + testSuiteEntry.getKey());
+            logger.info("testRunFinished testSuiteName = " + testSuiteEntry.getKey());
             TestSuiteResultsStore store = testSuiteEntry.getValue();
             TestSuiteResult testSuiteResult = new TestSuiteResult(testSuiteEntry.getKey(),
                                                                   getFormattedDuration(store.consumedTime),
@@ -287,18 +287,18 @@ public class IltConsumerJUnitListener extends RunListener {
 
             testSuiteResults.add(testSuiteResult);
         }
-        LOG.info("testRunFinished  after for loop");
+        logger.info("testRunFinished  after for loop");
 
         testResult = new TestResult(testSuiteResults.toArray(new TestSuiteResult[testSuiteResults.size()]));
 
-        LOG.info("<<< testRunFinished called");
+        logger.info("<<< testRunFinished called");
     }
 
     // called before any tests have been run
     @Override
     public void testRunStarted(Description description) {
-        LOG.info(">>> testRunStarted called");
+        logger.info(">>> testRunStarted called");
         printDescription(description, 1);
-        LOG.info("<<< testRunStarted called");
+        logger.info("<<< testRunStarted called");
     }
 }

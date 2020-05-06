@@ -55,7 +55,7 @@ import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
 public class ProviderApplication extends AbstractJoynrApplication {
-    private static final Logger LOG = LoggerFactory.getLogger(ProviderApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProviderApplication.class);
     public static final String STATIC_PERSISTENCE_FILE = "java-provider.persistence_file";
 
     private Provider provider = null;
@@ -95,26 +95,26 @@ public class ProviderApplication extends AbstractJoynrApplication {
 
             if (line.hasOption('d')) {
                 localDomain = line.getOptionValue('d');
-                LOG.info("found domain = " + localDomain);
+                logger.info("found domain = " + localDomain);
             }
             if (line.hasOption('g')) {
                 gbidsParameter = line.getOptionValue('g');
-                LOG.info("found gbids = " + gbidsParameter);
+                logger.info("found gbids = " + gbidsParameter);
             }
             if (line.hasOption('r')) {
                 runForever = true;
-                LOG.info("found runForever = " + runForever);
+                logger.info("found runForever = " + runForever);
             }
             if (line.hasOption('G')) {
                 registerGlobally = true;
-                LOG.info("registerGlobally = " + registerGlobally);
+                logger.info("registerGlobally = " + registerGlobally);
             }
             if (line.hasOption('f')) {
                 expectedFailure = true;
-                LOG.info("expectedFailure = " + expectedFailure);
+                logger.info("expectedFailure = " + expectedFailure);
             }
         } catch (ParseException e) {
-            LOG.error("failed to parse command line: " + e);
+            logger.error("failed to parse command line: " + e);
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(ProviderApplication.class.getName(), options, true);
             System.exit(1);
@@ -125,13 +125,13 @@ public class ProviderApplication extends AbstractJoynrApplication {
         } else {
             gbids = new String[0];
         }
-        LOG.info("gbidsParameter = " + gbidsParameter + ", gbids = " + Arrays.toString(gbids));
+        logger.info("gbidsParameter = " + gbidsParameter + ", gbids = " + Arrays.toString(gbids));
 
         Properties joynrConfig = new Properties();
         Module runtimeModule = getRuntimeModule(joynrConfig);
 
-        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
-        LOG.debug("Registering provider on domain \"{}\"", localDomain);
+        logger.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        logger.debug("Registering provider on domain \"{}\"", localDomain);
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
@@ -231,31 +231,31 @@ public class ProviderApplication extends AbstractJoynrApplication {
         Thread shutdownHook = new Thread() {
             @Override
             public void run() {
-                LOG.info("executing shutdown hook");
+                logger.info("executing shutdown hook");
                 synchronized (this) {
-                    LOG.info("notifying any waiting thread from shutdown hook");
+                    logger.info("notifying any waiting thread from shutdown hook");
                     shutdownHookCondition = true;
                     notifyAll();
                 }
-                LOG.info("shutting down");
+                logger.info("shutting down");
                 if (provider != null) {
                     try {
                         runtime.unregisterProvider(localDomain, provider);
                     } catch (JoynrRuntimeException e) {
-                        LOG.error("unable to unregister capabilities {}", e.getMessage());
+                        logger.error("unable to unregister capabilities {}", e.getMessage());
                     }
                 }
                 runtime.shutdown(false);
-                LOG.info("shutdown completed");
+                logger.info("shutdown completed");
             }
         };
-        LOG.info("adding shutdown hook");
+        logger.info("adding shutdown hook");
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
         ProviderRegistrar providerRegistrar = runtime.getProviderRegistrar(localDomain, provider)
                                                      .withProviderQos(providerQos);
         if (gbids.length > 0) {
-            LOG.info("gbids.length > 0, gbids.length = " + gbids.length);
+            logger.info("gbids.length > 0, gbids.length = " + gbids.length);
             providerRegistrar.withGbids(gbids);
         }
 
@@ -269,16 +269,16 @@ public class ProviderApplication extends AbstractJoynrApplication {
             try {
                 registrationFuture.get(30000);
             } catch (Exception e) {
-                LOG.info("SIT RESULT success: Java provider failed as expected!");
+                logger.info("SIT RESULT success: Java provider failed as expected!");
                 return;
             }
         }
 
         if (expectedFailure) {
             if (registrationFuture.getStatus().successful()) {
-                LOG.info("SIT RESULT failure: Java provider did not fail as expected!");
+                logger.info("SIT RESULT failure: Java provider did not fail as expected!");
             } else {
-                LOG.info("SIT RESULT success: Java provider failed as expected!");
+                logger.info("SIT RESULT success: Java provider failed as expected!");
                 return;
             }
         }

@@ -35,7 +35,7 @@ import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumer
 import joynr.interlanguagetest.namedTypeCollection2.StructOfPrimitives;
 
 public class IltUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(IltUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltUtil.class);
 
     private static boolean useRestricted64BitRange = true;
 
@@ -460,49 +460,49 @@ public class IltUtil {
     @SuppressWarnings("checkstyle:methodlength")
     public static boolean checkStructOfPrimitives(StructOfPrimitives structOfPrimitives) {
         if (structOfPrimitives.getBooleanElement() != true) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter booleanElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter booleanElement "
                     + structOfPrimitives.getBooleanElement());
             return false;
         }
 
         if (!cmpDouble(structOfPrimitives.getDoubleElement(), 1.1d)) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter doubleElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter doubleElement "
                     + structOfPrimitives.getDoubleElement());
             return false;
         }
 
         if (!cmpFloat(structOfPrimitives.getFloatElement(), 1.1f)) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter floatElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter floatElement "
                     + structOfPrimitives.getFloatElement());
             return false;
         }
 
         if (structOfPrimitives.getInt8MinElement() != Byte.MIN_VALUE) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter int8MinElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter int8MinElement "
                     + structOfPrimitives.getInt8MinElement());
             return false;
         }
 
         if (structOfPrimitives.getInt8MaxElement() != Byte.MAX_VALUE) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter int8MaxElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter int8MaxElement "
                     + structOfPrimitives.getInt8MaxElement());
             return false;
         }
 
         if (structOfPrimitives.getInt16MinElement() != (int) Short.MIN_VALUE) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter int16MinElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter int16MinElement "
                     + structOfPrimitives.getInt16MinElement());
             return false;
         }
 
         if (structOfPrimitives.getInt32MinElement() != Integer.MIN_VALUE) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter int32MinElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter int32MinElement "
                     + structOfPrimitives.getInt32MinElement());
             return false;
         }
 
         if (structOfPrimitives.getInt32MaxElement() != Integer.MAX_VALUE) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter int32MaxElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter int32MaxElement "
                     + structOfPrimitives.getInt32MaxElement());
             return false;
         }
@@ -512,75 +512,75 @@ public class IltUtil {
             // value range here. The values have thus been reduced to the safe
             // integer number range of Javascript.
             if (structOfPrimitives.getInt64MinElement() != -9007199254740991L) {
-                LOG.warn("methodWithMultipleStructParameters: invalid parameter int64MinElement "
+                logger.warn("methodWithMultipleStructParameters: invalid parameter int64MinElement "
                         + structOfPrimitives.getInt64MinElement());
                 return false;
             }
 
             if (structOfPrimitives.getInt64MaxElement() != 9007199254740991L) {
-                LOG.warn("methodWithMultipleStructParameters: invalid parameter int64MaxElement "
+                logger.warn("methodWithMultipleStructParameters: invalid parameter int64MaxElement "
                         + structOfPrimitives.getInt64MaxElement());
                 return false;
             }
         } else {
             // Java and C++
             if (structOfPrimitives.getInt64MinElement() != Long.MIN_VALUE) {
-                LOG.warn("methodWithMultipleStructParameters: invalid parameter int64MinElement "
+                logger.warn("methodWithMultipleStructParameters: invalid parameter int64MinElement "
                         + structOfPrimitives.getInt64MinElement());
                 return false;
             }
 
             if (structOfPrimitives.getInt64MaxElement() != Long.MAX_VALUE) {
-                LOG.warn("methodWithMultipleStructParameters: invalid parameter int64MaxElement "
+                logger.warn("methodWithMultipleStructParameters: invalid parameter int64MaxElement "
                         + structOfPrimitives.getInt64MaxElement());
                 return false;
             }
         }
 
         if (!structOfPrimitives.getConstString().equals("Hiya")) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter constString "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter constString "
                     + structOfPrimitives.getConstString());
             return false;
         }
 
         if (structOfPrimitives.getUInt8MinElement() != (byte) 0) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt8MinElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter uInt8MinElement "
                     + structOfPrimitives.getUInt8MinElement());
             return false;
         }
 
         if (structOfPrimitives.getUInt8MaxElement() != Byte.MAX_VALUE) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt8MaxElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter uInt8MaxElement "
                     + structOfPrimitives.getUInt8MaxElement());
             return false;
         }
 
         if (structOfPrimitives.getUInt16MinElement() != 0) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt16MinElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter uInt16MinElement "
                     + structOfPrimitives.getUInt16MinElement());
             return false;
         }
 
         if (structOfPrimitives.getUInt16MaxElement() != Short.MAX_VALUE) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt16MaxElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter uInt16MaxElement "
                     + structOfPrimitives.getUInt16MaxElement());
             return false;
         }
 
         if (structOfPrimitives.getUInt32MinElement() != 0) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt32MinElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter uInt32MinElement "
                     + structOfPrimitives.getUInt32MinElement());
             return false;
         }
 
         if (structOfPrimitives.getUInt32MaxElement() != Integer.MAX_VALUE) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt32MaxElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter uInt32MaxElement "
                     + structOfPrimitives.getUInt32MaxElement());
             return false;
         }
 
         if (structOfPrimitives.getUInt64MinElement() != 0L) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt64MinElement "
+            logger.warn("methodWithMultipleStructParameters: invalid parameter uInt64MinElement "
                     + structOfPrimitives.getUInt64MinElement());
             return false;
         }
@@ -604,14 +604,14 @@ public class IltUtil {
         if (useRestricted64BitRange) {
             // Javascript
             if (structOfPrimitives.getUInt64MaxElement() != 9007199254740991L) {
-                LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt64MaxElement "
+                logger.warn("methodWithMultipleStructParameters: invalid parameter uInt64MaxElement "
                         + structOfPrimitives.getUInt64MaxElement());
                 return false;
             }
         } else {
             // Java and C++
             if (structOfPrimitives.getUInt64MaxElement() != Long.MAX_VALUE) {
-                LOG.warn("methodWithMultipleStructParameters: invalid parameter uInt64MaxElement "
+                logger.warn("methodWithMultipleStructParameters: invalid parameter uInt64MaxElement "
                         + structOfPrimitives.getUInt64MaxElement());
                 return false;
             }
@@ -619,73 +619,73 @@ public class IltUtil {
 
         if (structOfPrimitives.getBooleanArray().length != 2 || structOfPrimitives.getBooleanArray()[0] != true
                 || structOfPrimitives.getBooleanArray()[1] != false) {
-            LOG.warn("invalid parameter structOfPrimitives: invalid boolean array");
+            logger.warn("invalid parameter structOfPrimitives: invalid boolean array");
             return false;
         }
 
         if (structOfPrimitives.getDoubleArray().length != 2 || !cmpDouble(structOfPrimitives.getDoubleArray()[0], 1.1d)
                 || !cmpDouble(structOfPrimitives.getDoubleArray()[1], 2.2d)) {
-            LOG.warn("invalid parameter structOfPrimitives: invalid double array");
+            logger.warn("invalid parameter structOfPrimitives: invalid double array");
             return false;
         }
 
         if (structOfPrimitives.getFloatArray().length != 2 || !cmpFloat(structOfPrimitives.getFloatArray()[0], 1.1f)
                 || !cmpFloat(structOfPrimitives.getFloatArray()[1], 2.2f)) {
-            LOG.warn("invalid parameter structOfPrimitives: invalid float array");
+            logger.warn("invalid parameter structOfPrimitives: invalid float array");
             return false;
         }
 
         if (structOfPrimitives.getInt16Array().length != 2 || structOfPrimitives.getInt16Array()[0] != 1
                 || structOfPrimitives.getInt16Array()[1] != 2) {
-            LOG.warn("invalid parameter structOfPrimitives: invalid int16 array");
+            logger.warn("invalid parameter structOfPrimitives: invalid int16 array");
             return false;
         }
 
         if (structOfPrimitives.getInt32Array().length != 2 || structOfPrimitives.getInt32Array()[0] != 1
                 || structOfPrimitives.getInt32Array()[1] != 2) {
-            LOG.warn("invalid parameter structOfPrimitives: invalid int32 array");
+            logger.warn("invalid parameter structOfPrimitives: invalid int32 array");
             return false;
         }
 
         if (structOfPrimitives.getInt64Array().length != 2 || structOfPrimitives.getInt64Array()[0] != 1L
                 || structOfPrimitives.getInt64Array()[1] != 2L) {
-            LOG.warn("invalid parameter structOfPrimitives: invalid int64 array");
+            logger.warn("invalid parameter structOfPrimitives: invalid int64 array");
             return false;
         }
 
         if (structOfPrimitives.getInt8Array().length != 2 || structOfPrimitives.getInt8Array()[0] != (byte) 1
                 || structOfPrimitives.getInt8Array()[1] != (byte) 2) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid int8 array");
+            logger.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid int8 array");
             return false;
         }
 
         if (structOfPrimitives.getStringArray().length != 2 || !structOfPrimitives.getStringArray()[0].equals("Hello")
                 || !structOfPrimitives.getStringArray()[1].equals("World")) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid string array");
+            logger.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid string array");
             return false;
         }
 
         if (structOfPrimitives.getUInt16Array().length != 2 || structOfPrimitives.getUInt16Array()[0] != 1
                 || structOfPrimitives.getUInt16Array()[1] != 2) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid uint16 array");
+            logger.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid uint16 array");
             return false;
         }
 
         if (structOfPrimitives.getUInt32Array().length != 2 || structOfPrimitives.getUInt32Array()[0] != 1
                 || structOfPrimitives.getUInt32Array()[1] != 2) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid uint32 array");
+            logger.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid uint32 array");
             return false;
         }
 
         if (structOfPrimitives.getUInt64Array().length != 2 || structOfPrimitives.getUInt64Array()[0] != 1L
                 || structOfPrimitives.getUInt64Array()[1] != 2L) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid uint64 array");
+            logger.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid uint64 array");
             return false;
         }
 
         if (structOfPrimitives.getUInt8Array().length != 2 || structOfPrimitives.getUInt8Array()[0] != (byte) 1
                 || structOfPrimitives.getUInt8Array()[1] != (byte) 2) {
-            LOG.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid uint8 array");
+            logger.warn("methodWithMultipleStructParameters: invalid parameter structOfPrimitives: invalid uint8 array");
             return false;
         }
         return true;

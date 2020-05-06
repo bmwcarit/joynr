@@ -31,7 +31,7 @@ import joynr.interlanguagetest.namedTypeCollection1.StructWithStringArray;
 import joynr.interlanguagetest.namedTypeCollection2.ExtendedTypeCollectionEnumerationInTypeCollection;
 
 public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilteringBroadcastFilter {
-    private static final Logger LOG = LoggerFactory.getLogger(IltStringBroadcastFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltStringBroadcastFilter.class);
     private ObjectMapper jsonSerializer;
 
     public IltStringBroadcastFilter(ObjectMapper jsonSerializer) {
@@ -45,28 +45,28 @@ public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilterin
                           StructWithStringArray structWithStringArrayOut,
                           StructWithStringArray[] structWithStringArrayArrayOut,
                           TestInterfaceBroadcastInterface.BroadcastWithFilteringBroadcastFilterParameters filterParameters) {
-        LOG.info("IltStringBroadcastFilter: invoked");
+        logger.info("IltStringBroadcastFilter: invoked");
         String[] stringArray = { "Hello", "World" };
 
         // check output parameter contents
         if (!Arrays.equals(stringArray, stringArrayOut)) {
-            LOG.info("IltStringBroadcastFilter: invalid stringArrayOut value");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: invalid stringArrayOut value");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
         if (enumerationOut != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-            LOG.info("IltStringBroadcastFilter: invalid enumerationOut value");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: invalid enumerationOut value");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
         if (!IltUtil.checkStructWithStringArray(structWithStringArrayOut)) {
-            LOG.info("IltStringBroadcastFilter: invalid structWithStringArrayOut value");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: invalid structWithStringArrayOut value");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
         if (!IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOut)) {
-            LOG.info("IltStringBroadcastFilter: invalid structWithStringArrayArrayOut value");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: invalid structWithStringArrayArrayOut value");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
 
@@ -82,13 +82,13 @@ public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilterin
             stringArrayOfInterest = jsonSerializer.readValue(filterParameters.getStringArrayOfInterest(),
                                                              String[].class);
         } catch (IOException e) {
-            LOG.info("IltStringBroadcastFilter: got exception while deserializing stringArrayOfInterest");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: got exception while deserializing stringArrayOfInterest");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
         if (!Arrays.equals(stringArray, stringArrayOfInterest)) {
-            LOG.info("IltStringBroadcastFilter: invalid stringArrayOfInterest filter parameter value");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: invalid stringArrayOfInterest filter parameter value");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
 
@@ -96,13 +96,13 @@ public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilterin
             enumerationOfInterest = jsonSerializer.readValue(filterParameters.getEnumerationOfInterest(),
                                                              ExtendedTypeCollectionEnumerationInTypeCollection.class);
         } catch (IOException e) {
-            LOG.info("IltStringBroadcastFilter: got exception while deserializing enumerationOfInterest");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: got exception while deserializing enumerationOfInterest");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
         if (enumerationOfInterest != ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION) {
-            LOG.info("IltStringBroadcastFilter: invalid enumerationOfInterest filter parameter value");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: invalid enumerationOfInterest filter parameter value");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
 
@@ -110,13 +110,13 @@ public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilterin
             structWithStringArrayOfInterest = jsonSerializer.readValue(filterParameters.getStructWithStringArrayOfInterest(),
                                                                        StructWithStringArray.class);
         } catch (IOException e) {
-            LOG.info("IltStringBroadcastFilter: got exception while deserializing structWithStringArrayOfInterest");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: got exception while deserializing structWithStringArrayOfInterest");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
         if (!IltUtil.checkStructWithStringArray(structWithStringArrayOfInterest)) {
-            LOG.info("IltStringBroadcastFilter: invalid structWithStringArrayOfInterest filter parameter value");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: invalid structWithStringArrayOfInterest filter parameter value");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
 
@@ -124,22 +124,22 @@ public class IltStringBroadcastFilter extends TestInterfaceBroadcastWithFilterin
             structWithStringArrayArrayOfInterest = jsonSerializer.readValue(filterParameters.getStructWithStringArrayArrayOfInterest(),
                                                                             StructWithStringArray[].class);
         } catch (IOException e) {
-            LOG.info("IltStringBroadcastFilter: got exception while deserializing structWithStringArrayOfInterest");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: got exception while deserializing structWithStringArrayOfInterest");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
         if (!IltUtil.checkStructWithStringArrayArray(structWithStringArrayArrayOfInterest)) {
-            LOG.info("IltStringBroadcastFilter: invalid structWithStringArrayArrayOfInterest filter parameter value");
-            LOG.info("IltStringBroadcastFilter: FAILED");
+            logger.info("IltStringBroadcastFilter: invalid structWithStringArrayArrayOfInterest filter parameter value");
+            logger.info("IltStringBroadcastFilter: FAILED");
             return false;
         }
 
         // decision for publication is made based on stringOfInterest
         if (stringOut.equals(filterParameters.getStringOfInterest())) {
-            LOG.info("IltStringBroadcastFilter: OK - publication should be sent");
+            logger.info("IltStringBroadcastFilter: OK - publication should be sent");
             return true;
         } else {
-            LOG.info("IltStringBroadcastFilter: OK - publication should NOT Be sent");
+            logger.info("IltStringBroadcastFilter: OK - publication should NOT Be sent");
             return false;
         }
     }

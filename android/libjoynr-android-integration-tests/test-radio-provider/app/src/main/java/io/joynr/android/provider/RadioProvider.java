@@ -25,7 +25,7 @@ public class RadioProvider extends RadioAbstractProvider {
 
     public static final String MISSING_NAME = "MISSING_NAME";
     private static final String PRINT_BORDER = "\n####################\n";
-    private static final Logger LOG = LoggerFactory.getLogger(RadioProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(RadioProvider.class);
     private static final long DELAY_MS = 2000;
 
     private RadioStation currentStation;
@@ -51,7 +51,7 @@ public class RadioProvider extends RadioAbstractProvider {
     @Override
     public Promise<Deferred<RadioStation>> getCurrentStation() {
         Deferred<RadioStation> deferred = new Deferred<RadioStation>();
-        LOG.info(PRINT_BORDER + "getCurrentSation -> " + currentStation + PRINT_BORDER);
+        logger.info(PRINT_BORDER + "getCurrentSation -> " + currentStation + PRINT_BORDER);
         // actions that take no time can be returned immediately by resolving the deferred.
         deferred.resolve(currentStation);
         return new Promise<Deferred<RadioStation>>(deferred);
@@ -71,7 +71,7 @@ public class RadioProvider extends RadioAbstractProvider {
                 currentStationIndex = currentStationIndex % stationsList.size();
                 currentStation = stationsList.get(currentStationIndex);
                 currentStationChanged(currentStation);
-                LOG.info(PRINT_BORDER + "shuffleStations: " + oldStation + " -> " + currentStation + PRINT_BORDER);
+                logger.info(PRINT_BORDER + "shuffleStations: " + oldStation + " -> " + currentStation + PRINT_BORDER);
                 deferred.resolve();
             }
         }, DELAY_MS, TimeUnit.MILLISECONDS);
@@ -100,7 +100,7 @@ public class RadioProvider extends RadioAbstractProvider {
                     }
                 }
                 if (!duplicateFound) {
-                    LOG.info(PRINT_BORDER + "addFavoriteStation(" + radioStation + ")" + PRINT_BORDER);
+                    logger.info(PRINT_BORDER + "addFavoriteStation(" + radioStation + ")" + PRINT_BORDER);
                     stationsList.add(radioStation);
                     deferred.resolve(true);
                 }
@@ -112,19 +112,19 @@ public class RadioProvider extends RadioAbstractProvider {
     }
 
     public void fireWeakSignalEvent() {
-        LOG.info(PRINT_BORDER + "fire weakSignalEvent: " + currentStation + PRINT_BORDER);
+        logger.info(PRINT_BORDER + "fire weakSignalEvent: " + currentStation + PRINT_BORDER);
         fireWeakSignal(currentStation);
     }
 
     public void fireWeakSignalEventWithPartition() {
-        LOG.info(PRINT_BORDER + "fire weakSignalEvent with partition: " + currentStation + PRINT_BORDER);
+        logger.info(PRINT_BORDER + "fire weakSignalEvent with partition: " + currentStation + PRINT_BORDER);
         fireWeakSignal(currentStation, currentStation.getCountry().name());
     }
 
     public void fireNewStationDiscoveredEvent() {
         RadioStation discoveredStation = currentStation;
         GeoPosition geoPosition = countryGeoPositionMap.get(discoveredStation.getCountry());
-        LOG.info(PRINT_BORDER + "fire newStationDiscoveredEvent: " + discoveredStation + " at " + geoPosition
+        logger.info(PRINT_BORDER + "fire newStationDiscoveredEvent: " + discoveredStation + " at " + geoPosition
                 + PRINT_BORDER);
         fireNewStationDiscovered(discoveredStation, geoPosition);
     }
@@ -133,7 +133,7 @@ public class RadioProvider extends RadioAbstractProvider {
     public Promise<GetLocationOfCurrentStationDeferred> getLocationOfCurrentStation() {
         Country country = currentStation.getCountry();
         GeoPosition location = countryGeoPositionMap.get(country);
-        LOG.info(PRINT_BORDER + "getLocationOfCurrentStation: country: " + country.name() + ", location: " + location
+        logger.info(PRINT_BORDER + "getLocationOfCurrentStation: country: " + country.name() + ", location: " + location
                 + PRINT_BORDER);
         RadioProvider.GetLocationOfCurrentStationDeferred deferred = new GetLocationOfCurrentStationDeferred();
         // actions that take no time can be returned immediately by resolving the deferred.

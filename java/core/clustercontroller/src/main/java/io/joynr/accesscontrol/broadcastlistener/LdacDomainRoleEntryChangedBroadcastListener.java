@@ -28,7 +28,7 @@ import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.GlobalDomainRoleControllerBroadcastInterface.DomainRoleEntryChangedBroadcastAdapter;
 
 public class LdacDomainRoleEntryChangedBroadcastListener extends DomainRoleEntryChangedBroadcastAdapter {
-    private static final Logger LOG = LoggerFactory.getLogger(LdacDomainRoleEntryChangedBroadcastListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(LdacDomainRoleEntryChangedBroadcastListener.class);
     private final DomainAccessControlStore localDomainAccessStore;
 
     public LdacDomainRoleEntryChangedBroadcastListener(DomainAccessControlStore domainAccessControlStore) {
@@ -39,18 +39,18 @@ public class LdacDomainRoleEntryChangedBroadcastListener extends DomainRoleEntry
     public void onReceive(ChangeType typeOfChange, DomainRoleEntry newDomainRoleEntry) {
         if (!typeOfChange.equals(ChangeType.REMOVE)) {
             localDomainAccessStore.updateDomainRole(newDomainRoleEntry);
-            LOG.debug("Updated DRE: {}", newDomainRoleEntry.toString());
+            logger.debug("Updated DRE: {}", newDomainRoleEntry.toString());
         } else {
             // removes are notified using entries where all fields except the key fields are null
             localDomainAccessStore.removeDomainRole(newDomainRoleEntry.getUid(), newDomainRoleEntry.getRole());
-            LOG.debug("Removed DRE: {}", newDomainRoleEntry.toString());
+            logger.debug("Removed DRE: {}", newDomainRoleEntry.toString());
         }
     }
 
     @Override
     public void onError(SubscriptionException error) {
-        LOG.error("Subscription to DRE failed! SubscriptionId: {}, error: {}",
-                  error.getSubscriptionId(),
-                  error.getMessage());
+        logger.error("Subscription to DRE failed! SubscriptionId: {}, error: {}",
+                     error.getSubscriptionId(),
+                     error.getMessage());
     }
 }

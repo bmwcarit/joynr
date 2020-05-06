@@ -55,7 +55,7 @@ import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import joynr.test.SystemIntegrationTestProxy;
 
 public class ConsumerApplication extends AbstractJoynrApplication {
-    private static final Logger LOG = LoggerFactory.getLogger(ConsumerApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerApplication.class);
     public static final String SYSTEMINTEGRATIONTEST_PROVIDER_DOMAIN = "system-integration-test.provider.domain";
     private static final String STATIC_PERSISTENCE_FILE = "java-consumer.persistence_file";
 
@@ -101,22 +101,22 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
             if (line.hasOption('d')) {
                 providerDomain = line.getOptionValue('d');
-                LOG.info("found domain = " + providerDomain);
+                logger.info("found domain = " + providerDomain);
             }
             if (line.hasOption('g')) {
                 gbidsParameter = line.getOptionValue('g');
-                LOG.info("found gbids = " + gbidsParameter);
+                logger.info("found gbids = " + gbidsParameter);
             }
             if (line.hasOption('G')) {
                 globalOnly = true;
-                LOG.info("globalOnly = " + globalOnly);
+                logger.info("globalOnly = " + globalOnly);
             }
             if (line.hasOption('f')) {
                 expectedFailure = true;
-                LOG.info("expectedFailure = " + expectedFailure);
+                logger.info("expectedFailure = " + expectedFailure);
             }
         } catch (ParseException e) {
-            LOG.error("failed to parse command line: " + e);
+            logger.error("failed to parse command line: " + e);
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(ProviderApplication.class.getName(), options, true);
             System.exit(1);
@@ -124,16 +124,16 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
         if (!gbidsParameter.isEmpty()) {
             gbids = Arrays.stream(gbidsParameter.split(",")).map(a -> a.trim()).toArray(String[]::new);
-            LOG.debug("Searching for providers on domain \"{}\", gbids \"{}\"", providerDomain, gbids);
+            logger.debug("Searching for providers on domain \"{}\", gbids \"{}\"", providerDomain, gbids);
         } else {
             gbids = new String[0];
-            LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
+            logger.debug("Searching for providers on domain \"{}\"", providerDomain);
         }
 
         Properties joynrConfig = new Properties();
         Module runtimeModule = getRuntimeModule(args, joynrConfig);
-        LOG.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
-        LOG.debug("Searching for providers on domain \"{}\"", providerDomain);
+        logger.debug("Using the following runtime module: " + runtimeModule.getClass().getSimpleName());
+        logger.debug("Searching for providers on domain \"{}\"", providerDomain);
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, providerDomain);
@@ -247,7 +247,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             systemIntegrationTestProxy = proxyBuilder.build(new ProxyCreatedCallback<SystemIntegrationTestProxy>() {
                 @Override
                 public void onProxyCreationFinished(SystemIntegrationTestProxy result) {
-                    LOG.info("proxy created");
+                    logger.info("proxy created");
                     proxyCreated.release();
                 }
 
@@ -256,7 +256,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                     if (expectedFailure) {
                         expectedAsyncFailure.release();
                     } else {
-                        LOG.error("error creating proxy");
+                        logger.error("error creating proxy");
                     }
                 }
             });
@@ -265,7 +265,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                     if (expectedAsyncFailure.tryAcquire(11000, TimeUnit.MILLISECONDS) == false) {
                         throw new DiscoveryException("proxy not created in time");
                     } else {
-                        LOG.info("SIT RESULT success: Java consumer failed as expected!");
+                        logger.info("SIT RESULT success: Java consumer failed as expected!");
                         success = true;
                         System.exit((success) ? 0 : 1);
                     }
@@ -280,9 +280,9 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 Integer sum = systemIntegrationTestProxy.add(addendA, addendB);
                 if (sum != null && sum == (addendA + addendB)) {
                     if (expectedFailure) {
-                        LOG.info("SIT RESULT failure: Java consumer did not fail as expected!");
+                        logger.info("SIT RESULT failure: Java consumer did not fail as expected!");
                     } else {
-                        LOG.info("SIT RESULT success: Java consumer -> " + providerDomain + " (" + addendA + " + "
+                        logger.info("SIT RESULT success: Java consumer -> " + providerDomain + " (" + addendA + " + "
                                 + addendB + " =  " + sum + ")");
                         success = true;
                     }
@@ -293,12 +293,12 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         } catch (DiscoveryException | JoynrCommunicationException e) {
             // fallthrough
             if (expectedFailure) {
-                LOG.info("SIT RESULT success: Java consumer failed as expected!");
+                logger.info("SIT RESULT success: Java consumer failed as expected!");
                 success = true;
             }
         }
         if (!success) {
-            LOG.info("SIT RESULT error: Java consumer -> " + providerDomain);
+            logger.info("SIT RESULT error: Java consumer -> " + providerDomain);
         }
         System.exit((success) ? 0 : 1);
     }

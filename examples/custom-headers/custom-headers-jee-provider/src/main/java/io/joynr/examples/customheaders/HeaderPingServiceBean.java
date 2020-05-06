@@ -32,7 +32,7 @@ import joynr.examples.customheaders.HeaderPingSync;
 @ServiceProvider(serviceInterface = HeaderPingSync.class)
 public class HeaderPingServiceBean implements HeaderPingSync {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HeaderPingServiceBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeaderPingServiceBean.class);
 
     @Inject
     private JoynrJeeMessageMetaInfo jeeMessageMetaInfo;
@@ -40,11 +40,11 @@ public class HeaderPingServiceBean implements HeaderPingSync {
     @Override
     public String ping() {
         String customHeaderValue = (String) jeeMessageMetaInfo.getMessageContext().get("application-custom-header");
-        LOG.info("Got application custom header {}", customHeaderValue);
+        logger.info("Got application custom header {}", customHeaderValue);
 
         String processorCustomHeaderValue = (String) jeeMessageMetaInfo.getMessageContext()
                                                                        .get("processor-custom-header");
-        LOG.info("Got processor custom header {}", processorCustomHeaderValue);
+        logger.info("Got processor custom header {}", processorCustomHeaderValue);
         return String.format("msgQos[%s] / proc[%s]", customHeaderValue, processorCustomHeaderValue);
     }
 }

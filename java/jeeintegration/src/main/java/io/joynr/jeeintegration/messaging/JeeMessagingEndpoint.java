@@ -63,7 +63,7 @@ import joynr.ImmutableMessage;
 @Path("/channels")
 public class JeeMessagingEndpoint {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JeeMessagingEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(JeeMessagingEndpoint.class);
 
     private Injector injector;
 
@@ -77,7 +77,7 @@ public class JeeMessagingEndpoint {
 
     @GET
     public Response status() {
-        LOG.info("Status called.");
+        logger.info("Status called.");
         return Response.status(200).build();
     }
 
@@ -122,8 +122,8 @@ public class JeeMessagingEndpoint {
     public Response postMessage(@PathParam("channelId") String channelId,
                                 byte[] serializedMessage,
                                 @Context UriInfo uriInfo) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Incoming message:\n" + new String(serializedMessage, StandardCharsets.UTF_8));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Incoming message:\n" + new String(serializedMessage, StandardCharsets.UTF_8));
         }
         try {
             ImmutableMessage message;
@@ -131,34 +131,36 @@ public class JeeMessagingEndpoint {
             try {
                 message = new ImmutableMessage(serializedMessage);
             } catch (EncodingException | UnsuppportedVersionException exception) {
-                LOG.error("Failed to deserialize message for channelId {}: {}", channelId, exception.getMessage());
+                logger.error("Failed to deserialize message for channelId {}: {}", channelId, exception.getMessage());
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_DESERIALIZATIONFAILED);
             }
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("POST to channel: {} message: {}", channelId, message);
+            if (logger.isDebugEnabled()) {
+                logger.debug("POST to channel: {} message: {}", channelId, message);
             }
 
             if (channelId == null) {
-                LOG.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set",
-                          message);
+                logger.error("POST message to channel: NULL. message: {} dropped because: channel Id was not set",
+                             message);
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_CHANNELNOTSET);
             }
 
             if (message.getTtlMs() == 0) {
-                LOG.error("POST message to channel: {} message: {} dropped because: TTL not set", channelId, message);
+                logger.error("POST message to channel: {} message: {} dropped because: TTL not set",
+                             channelId,
+                             message);
                 throw new JoynrHttpException(Status.BAD_REQUEST, JOYNRMESSAGINGERROR_EXPIRYDATENOTSET);
             }
 
             if (messageReceiver == null) {
-                LOG.error("POST message to channel: {} message: {} no receiver for the given channel",
-                          channelId,
-                          message);
+                logger.error("POST message to channel: {} message: {} no receiver for the given channel",
+                             channelId,
+                             message);
                 return Response.noContent().build();
             }
 
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("passing off message to messageReceiver: {}", channelId);
+            if (logger.isTraceEnabled()) {
+                logger.trace("passing off message to messageReceiver: {}", channelId);
             }
             messageReceiver.receive(message);
 
@@ -167,7 +169,7 @@ public class JeeMessagingEndpoint {
         } catch (WebApplicationException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error(format("POST message to channel: %s error: %s", channelId, e.getMessage()), e);
+            logger.error(format("POST message to channel: %s error: %s", channelId, e.getMessage()), e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
     }

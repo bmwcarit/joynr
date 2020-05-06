@@ -32,20 +32,20 @@ import org.slf4j.LoggerFactory;
 import joynr.interlanguagetest.TestInterfaceSync.MethodWithMultiplePrimitiveParametersReturned;
 
 public class IltConsumerCompressionTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerCompressionTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerCompressionTest.class);
 
     @BeforeClass
     public static void setUp() throws Exception {
-        LOG.info("setUp: Entering");
+        logger.info("setUp: Entering");
         setupConsumerRuntime(true);
-        LOG.info("setUp: Leaving");
+        logger.info("setUp: Leaving");
     }
 
     @AfterClass
     public static void tearDown() throws InterruptedException {
-        LOG.info("tearDown: Entering");
+        logger.info("tearDown: Entering");
         generalTearDown();
-        LOG.info("tearDown: Leaving");
+        logger.info("tearDown: Leaving");
     }
 
     /*
@@ -55,19 +55,19 @@ public class IltConsumerCompressionTest extends IltConsumerTest {
     // no check possible other than handling exceptions
     @Test
     public void callMethodWithoutParameters() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             testInterfaceProxy.methodWithoutParameters();
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED: " + e.getMessage());
             return;
         }
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callMethodWithMultiplePrimitiveParameters() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             int intArg = 2147483647;
             float floatArg = 47.11f;
@@ -81,6 +81,6 @@ public class IltConsumerCompressionTest extends IltConsumerTest {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
             return;
         }
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 }

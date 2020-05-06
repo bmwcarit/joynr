@@ -104,7 +104,7 @@ public class MutableMessageFactory {
             message = processor.processOutgoing(message);
         }
 
-        logger.debug("Message {} has expiry date: {}", message.getId(), expiryDate);
+        logger.trace("Message {} has expiry date: {}", message.getId(), expiryDate);
 
         return message;
     }

@@ -148,7 +148,7 @@ public final class ArbitratorFactory {
             DelayableArbitration delayableArbitration = null;
 
             Thread.currentThread().setName("ArbitratorRunnable");
-            logger.debug("Start ArbitratorRunnable");
+            logger.trace("Start ArbitratorRunnable");
 
             while (!stopped) {
                 try {
@@ -171,7 +171,7 @@ public final class ArbitratorFactory {
                     }
                 }
             }
-            logger.debug("Stop ArbitratorRunnable");
+            logger.trace("Stop ArbitratorRunnable");
         }
 
     }

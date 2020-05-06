@@ -32,7 +32,7 @@ import io.joynr.messaging.routing.MessageQueue;
 import io.joynr.runtime.PropertyLoader;
 
 public class MessagingPropertiesPersistence {
-    private static final Logger LOG = LoggerFactory.getLogger(MessagingPropertiesPersistence.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessagingPropertiesPersistence.class);
     private File persistenceFile;
     private Properties storage;
 
@@ -70,7 +70,7 @@ public class MessagingPropertiesPersistence {
             fileOutputStream = new FileOutputStream(persistenceFile);
             storage.store(fileOutputStream, null);
         } catch (IOException e1) {
-            LOG.error("Couldn't write properties file {}", persistenceFile.getPath(), e1);
+            logger.error("Couldn't write properties file {}", persistenceFile.getPath(), e1);
         } finally {
             if (fileOutputStream != null) {
                 try {

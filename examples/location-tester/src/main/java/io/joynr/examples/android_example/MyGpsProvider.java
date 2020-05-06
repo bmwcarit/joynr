@@ -29,7 +29,7 @@ import joynr.vehicle.DefaultGpsProvider;
 
 public class MyGpsProvider extends DefaultGpsProvider {
     private static final String PRINT_BORDER = "\n####################\n";
-    private static final Logger LOG = LoggerFactory.getLogger(MyGpsProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(MyGpsProvider.class);
 
     private int time = 0;
 
@@ -52,14 +52,14 @@ public class MyGpsProvider extends DefaultGpsProvider {
     public Promise<Deferred<GpsLocation>> getLocation() {
         Deferred<GpsLocation> deferred = new Deferred<GpsLocation>();
         location.setTime(time++);
-        LOG.info(PRINT_BORDER + "getLocation -> " + location + PRINT_BORDER);
+        logger.info(PRINT_BORDER + "getLocation -> " + location + PRINT_BORDER);
         deferred.resolve(location);
         return new Promise<Deferred<GpsLocation>>(deferred);
     }
 
     public void notifyLocationUpdate() {
         location.setTime(time++);
-        LOG.info(PRINT_BORDER + "notify location update: " + location + PRINT_BORDER);
+        logger.info(PRINT_BORDER + "notify location update: " + location + PRINT_BORDER);
         locationChanged(location);
     }
 }

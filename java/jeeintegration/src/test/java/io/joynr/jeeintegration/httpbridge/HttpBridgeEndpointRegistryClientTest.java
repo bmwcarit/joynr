@@ -54,7 +54,7 @@ import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient;
  */
 public class HttpBridgeEndpointRegistryClientTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HttpBridgeEndpointRegistryClientTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpBridgeEndpointRegistryClientTest.class);
 
     @Test
     public void testRegister() throws Exception {
@@ -72,7 +72,7 @@ public class HttpBridgeEndpointRegistryClientTest {
                                                eq(TimeUnit.SECONDS))).thenAnswer(new Answer<Object>() {
                                                    @Override
                                                    public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                                                       LOG.info("About to call scheduled task.");
+                                                       logger.info("About to call scheduled task.");
                                                        ((Runnable) invocationOnMock.getArguments()[0]).run();
                                                        return null;
                                                    }

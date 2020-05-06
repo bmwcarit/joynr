@@ -29,7 +29,7 @@ import joynr.infrastructure.GlobalDomainAccessControllerBroadcastInterface.Maste
 
 public class LdacMasterAccessControlEntryChangedBroadcastListener
         extends MasterAccessControlEntryChangedBroadcastAdapter {
-    private static final Logger LOG = LoggerFactory.getLogger(LdacMasterAccessControlEntryChangedBroadcastListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(LdacMasterAccessControlEntryChangedBroadcastListener.class);
 
     private DomainAccessControlStore localDomainAccessStore;
 
@@ -41,21 +41,21 @@ public class LdacMasterAccessControlEntryChangedBroadcastListener
     public void onReceive(ChangeType typeOfChange, MasterAccessControlEntry newMasterAce) {
         if (!typeOfChange.equals(ChangeType.REMOVE)) {
             localDomainAccessStore.updateMasterAccessControlEntry(newMasterAce);
-            LOG.debug("Updated master ACE: {}", newMasterAce.toString());
+            logger.debug("Updated master ACE: {}", newMasterAce.toString());
         } else {
             // removes are notified using entries where all fields except the key fields are null
             localDomainAccessStore.removeMasterAccessControlEntry(newMasterAce.getUid(),
                                                                   newMasterAce.getDomain(),
                                                                   newMasterAce.getInterfaceName(),
                                                                   newMasterAce.getOperation());
-            LOG.debug("Removed master ACE: {}", newMasterAce.toString());
+            logger.debug("Removed master ACE: {}", newMasterAce.toString());
         }
     }
 
     @Override
     public void onError(SubscriptionException error) {
-        LOG.error("Subscription to masterAce failed! SubscriptionId: {}, error: {}",
-                  error.getSubscriptionId(),
-                  error.getMessage());
+        logger.error("Subscription to masterAce failed! SubscriptionId: {}, error: {}",
+                     error.getSubscriptionId(),
+                     error.getMessage());
     }
 }

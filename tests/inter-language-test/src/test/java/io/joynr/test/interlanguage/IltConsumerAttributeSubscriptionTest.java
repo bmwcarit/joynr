@@ -34,20 +34,20 @@ import joynr.exceptions.ProviderRuntimeException;
 import joynr.interlanguagetest.Enumeration;
 
 public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerAttributeSubscriptionTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerAttributeSubscriptionTest.class);
 
     @BeforeClass
     public static void setUp() throws Exception {
-        LOG.info("setUp: Entering");
+        logger.info("setUp: Entering");
         setupConsumerRuntime(false);
-        LOG.info("setUp: Leaving");
+        logger.info("setUp: Leaving");
     }
 
     @AfterClass
     public static void tearDown() throws InterruptedException {
-        LOG.info("tearDown: Entering");
+        logger.info("tearDown: Entering");
         generalTearDown();
-        LOG.info("tearDown: Leaving");
+        logger.info("tearDown: Leaving");
     }
 
     /*
@@ -74,7 +74,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
 
         try {
             // must set the value before it can be retrieved again via subscription
@@ -85,33 +85,33 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                 @Override
                 public void onReceive(Enumeration value) {
                     if (value == Enumeration.ENUM_0_VALUE_2) {
-                        LOG.info(name.getMethodName() + " - callback - got publication with correct value");
+                        logger.info(name.getMethodName() + " - callback - got publication with correct value");
                         subscribeAttributeEnumerationCallbackResult = true;
                     } else {
                         subscribeAttributeEnumerationCallbackResult = false;
-                        LOG.info(name.getMethodName() + " - callback - got publication with invalid value");
+                        logger.info(name.getMethodName() + " - callback - got publication with invalid value");
                     }
                     subscribeAttributeEnumerationCallbackDone = true;
                 }
 
                 @Override
                 public void onError(JoynrRuntimeException error) {
-                    LOG.info(name.getMethodName() + " - callback - got unexpected exception");
+                    logger.info(name.getMethodName() + " - callback - got unexpected exception");
                     subscribeAttributeEnumerationCallbackResult = false;
                     subscribeAttributeEnumerationCallbackDone = true;
                 }
             }, subscriptionQos);
             subscriptionId = subscriptionIdFuture.get(10000);
-            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
+            logger.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
             if (subscribeAttributeEnumerationCallbackDone == false) {
-                LOG.info(name.getMethodName() + " - about to wait for a second for callback");
+                logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
-                LOG.info(name.getMethodName() + " - wait for callback is over");
+                logger.info(name.getMethodName() + " - wait for callback is over");
             } else {
-                LOG.info(name.getMethodName() + " - callback already done");
+                logger.info(name.getMethodName() + " - callback already done");
             }
             if (subscribeAttributeEnumerationCallbackDone && subscribeAttributeEnumerationCallbackResult) {
                 result = true;
@@ -123,16 +123,16 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
             // try to unsubscribe in any case
             try {
                 testInterfaceProxy.unsubscribeFromAttributeEnumeration(subscriptionId);
-                LOG.info(name.getMethodName() + " - unsubscribe successful");
+                logger.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
                 result = false;
             }
 
             if (!result) {
-                LOG.info(name.getMethodName() + " - FAILED");
+                logger.info(name.getMethodName() + " - FAILED");
             } else {
-                LOG.info(name.getMethodName() + " - OK");
+                logger.info(name.getMethodName() + " - OK");
             }
             return;
         } catch (Exception e) {
@@ -162,13 +162,13 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
         boolean result;
 
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
 
         try {
             subscriptionIdFuture = testInterfaceProxy.subscribeToAttributeWithExceptionFromGetter(new AttributeSubscriptionAdapter<Boolean>() {
                 @Override
                 public void onReceive(Boolean value) {
-                    LOG.info(name.getMethodName() + " - callback - got unexpected publication");
+                    logger.info(name.getMethodName() + " - callback - got unexpected publication");
                     subscribeAttributeWithExceptionFromGetterCallbackResult = false;
                     subscribeAttributeWithExceptionFromGetterCallbackDone = true;
                 }
@@ -178,41 +178,41 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                     if (error instanceof ProviderRuntimeException) {
                         if (((ProviderRuntimeException) error).getMessage()
                                                               .equals("Exception from getAttributeWithExceptionFromGetter")) {
-                            LOG.info(name.getMethodName() + " - callback - got expected exception "
+                            logger.info(name.getMethodName() + " - callback - got expected exception "
                                     + ((JoynrRuntimeException) error).getMessage());
                             subscribeAttributeWithExceptionFromGetterCallbackResult = true;
                             subscribeAttributeWithExceptionFromGetterCallbackDone = true;
                             return;
                         }
-                        LOG.info(name.getMethodName() + " - callback - caught invalid exception "
+                        logger.info(name.getMethodName() + " - callback - caught invalid exception "
                                 + ((JoynrRuntimeException) error).getMessage());
                     } else if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught invalid exception "
+                        logger.info(name.getMethodName() + " - callback - caught invalid exception "
                                 + ((JoynrRuntimeException) error).getMessage());
                     } else {
-                        LOG.info(name.getMethodName() + " - callback - caught invalid exception ");
+                        logger.info(name.getMethodName() + " - callback - caught invalid exception ");
                     }
                     subscribeAttributeWithExceptionFromGetterCallbackResult = false;
                     subscribeAttributeWithExceptionFromGetterCallbackDone = true;
                 }
             }, subscriptionQos);
             subscriptionId = subscriptionIdFuture.get(10000);
-            LOG.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
+            logger.info(name.getMethodName() + " - subscription successful, subscriptionId = " + subscriptionId);
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
             if (subscribeAttributeWithExceptionFromGetterCallbackDone == false) {
-                LOG.info(name.getMethodName() + " - about to wait for a second for callback");
+                logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
-                LOG.info(name.getMethodName() + " - wait for callback is over");
+                logger.info(name.getMethodName() + " - wait for callback is over");
             } else {
-                LOG.info(name.getMethodName() + " - callback already done");
+                logger.info(name.getMethodName() + " - callback already done");
             }
             if (!subscribeAttributeWithExceptionFromGetterCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
                 result = false;
             } else if (subscribeAttributeWithExceptionFromGetterCallbackResult) {
-                LOG.info(name.getMethodName() + " - callback got called and received expected exception");
+                logger.info(name.getMethodName() + " - callback got called and received expected exception");
                 result = true;
             } else {
                 fail(name.getMethodName() + " - FAILED - callback got called but received unexpected result");
@@ -222,7 +222,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
             // try to unsubscribe in any case
             try {
                 testInterfaceProxy.unsubscribeFromAttributeWithExceptionFromGetter(subscriptionId);
-                LOG.info(name.getMethodName() + " - unsubscribe successful");
+                logger.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
@@ -230,15 +230,15 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
             }
 
             if (!result) {
-                LOG.info(name.getMethodName() + " - FAILED");
+                logger.info(name.getMethodName() + " - FAILED");
             } else {
-                LOG.info(name.getMethodName() + " - OK");
+                logger.info(name.getMethodName() + " - OK");
             }
             return;
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
-            LOG.info(name.getMethodName() + " - caught unexpected exception");
-            LOG.info(name.getMethodName() + " - FAILED");
+            logger.info(name.getMethodName() + " - caught unexpected exception");
+            logger.info(name.getMethodName() + " - FAILED");
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
             return;
         }

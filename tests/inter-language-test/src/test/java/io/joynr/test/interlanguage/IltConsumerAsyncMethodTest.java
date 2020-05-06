@@ -54,20 +54,20 @@ import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 public class IltConsumerAsyncMethodTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerAsyncMethodTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerAsyncMethodTest.class);
 
     @BeforeClass
     public static void setUp() throws Exception {
-        LOG.info("setUp: Entering");
+        logger.info("setUp: Entering");
         setupConsumerRuntime(false);
-        LOG.info("setUp: Leaving");
+        logger.info("setUp: Leaving");
     }
 
     @AfterClass
     public static void tearDown() throws InterruptedException {
-        LOG.info("tearDown: Entering");
+        logger.info("tearDown: Entering");
         generalTearDown();
-        LOG.info("tearDown: Leaving");
+        logger.info("tearDown: Leaving");
     }
 
     @Before
@@ -90,7 +90,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 public void onSuccess(U out) {
                     // check result
                     if (!expectedResultCheck.test(arg, out)) {
-                        LOG.info(name.getMethodName() + TEST_FAILED_CALLBACK_INVALID_RESULT);
+                        logger.info(name.getMethodName() + TEST_FAILED_CALLBACK_INVALID_RESULT);
                         proxyMethodWithParameterCallbackResult = false;
                         resultAvailable.release();
                         return;
@@ -103,12 +103,12 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 public void onFailure(JoynrRuntimeException error) {
                     proxyMethodWithParameterCallbackResult = false;
                     if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + TEST_FAILED_CALLBACK_EXCEPTION
+                        logger.info(name.getMethodName() + TEST_FAILED_CALLBACK_EXCEPTION
                                 + ((JoynrRuntimeException) error).getMessage());
                     } else {
-                        LOG.info(name.getMethodName() + TEST_FAILED_CALLBACK_EXCEPTION);
+                        logger.info(name.getMethodName() + TEST_FAILED_CALLBACK_EXCEPTION);
                     }
-                    LOG.info(name.getMethodName() + TEST_FAILED);
+                    logger.info(name.getMethodName() + TEST_FAILED);
                     resultAvailable.release();
                 }
             };
@@ -118,12 +118,12 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
             try {
                 // wait for callback
-                LOG.info(name.getMethodName() + TEST_WAIT_FOR_CALLBACK);
+                logger.info(name.getMethodName() + TEST_WAIT_FOR_CALLBACK);
                 assertTrue(name.getMethodName() + TEST_FAILED_CALLBACK_TIMEOUT,
                            resultAvailable.tryAcquire(10, TimeUnit.SECONDS));
 
                 // check result from callback
-                LOG.info(name.getMethodName() + TEST_WAIT_FOR_CALLBACK_DONE);
+                logger.info(name.getMethodName() + TEST_WAIT_FOR_CALLBACK_DONE);
                 assertTrue(name.getMethodName() + TEST_FAILED_CALLBACK_ERROR, proxyMethodWithParameterCallbackResult);
             } catch (InterruptedException | JoynrRuntimeException e) {
                 fail(name.getMethodName() + TEST_FAILED_EXCEPTION + e.getMessage());
@@ -148,7 +148,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
     @Test
     public void callMethodWithMultipleStructParametersAsync() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             // setup input parameters
             ExtendedStructOfPrimitives extendedStructOfPrimitivesArg = IltUtil.createExtendedStructOfPrimitives();
@@ -162,8 +162,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     if (!IltUtil.checkBaseStructWithoutElements(baseStructWithoutElementsOut)) {
                         methodWithMultipleStructParametersAsyncCallbackResult = false;
                         methodWithMultipleStructParametersAsyncCallbackDone = true;
-                        LOG.info(name.getMethodName() + " - callback - invalid baseStructWithoutElementsOut");
-                        LOG.info(name.getMethodName() + " - FAILED");
+                        logger.info(name.getMethodName() + " - callback - invalid baseStructWithoutElementsOut");
+                        logger.info(name.getMethodName() + " - FAILED");
                         return;
                     }
 
@@ -171,8 +171,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     if (!extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                         methodWithMultipleStructParametersAsyncCallbackResult = false;
                         methodWithMultipleStructParametersAsyncCallbackDone = true;
-                        LOG.info(name.getMethodName() + " - callback - invalid extendedExtendedBaseStructOut");
-                        LOG.info(name.getMethodName() + " - FAILED");
+                        logger.info(name.getMethodName() + " - callback - invalid extendedExtendedBaseStructOut");
+                        logger.info(name.getMethodName() + " - FAILED");
                         return;
                     }
                     methodWithMultipleStructParametersAsyncCallbackResult = true;
@@ -184,12 +184,12 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     methodWithMultipleStructParametersAsyncCallbackResult = false;
                     methodWithMultipleStructParametersAsyncCallbackDone = true;
                     if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught exception "
+                        logger.info(name.getMethodName() + " - callback - caught exception "
                                 + ((JoynrRuntimeException) error).getMessage());
                     } else {
-                        LOG.info(name.getMethodName() + " - callback - caught exception");
+                        logger.info(name.getMethodName() + " - callback - caught exception");
                     }
-                    LOG.info(name.getMethodName() + " - FAILED");
+                    logger.info(name.getMethodName() + " - FAILED");
                 }
             };
 
@@ -199,13 +199,13 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
             try {
                 long timeoutInMilliseconds = 8000;
-                LOG.info(name.getMethodName() + " - about to call future.get");
+                logger.info(name.getMethodName() + " - about to call future.get");
                 MethodWithMultipleStructParametersReturned result = future.get(timeoutInMilliseconds);
                 if (result == null) {
                     fail(name.getMethodName() + " - FAILED - got no result");
                     return;
                 }
-                LOG.info(name.getMethodName() + " - returned from future.get");
+                logger.info(name.getMethodName() + " - returned from future.get");
 
                 // check results from future
                 if (!IltUtil.checkBaseStructWithoutElements(result.baseStructWithoutElementsOut)) {
@@ -218,16 +218,16 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     fail(name.getMethodName() + " - FAILED - got invalid result - extendedExtendedBaseStructOut");
                     return;
                 }
-                LOG.info(name.getMethodName() + " - future result checks OK");
+                logger.info(name.getMethodName() + " - future result checks OK");
 
                 // check results from callback; expect to be finished within 1 second
                 // should have been called ahead anyway
                 if (methodWithMultipleStructParametersAsyncCallbackDone == false) {
-                    LOG.info(name.getMethodName() + " - about to wait for a second for callback");
+                    logger.info(name.getMethodName() + " - about to wait for a second for callback");
                     Thread.sleep(1000);
-                    LOG.info(name.getMethodName() + " - wait for callback is over");
+                    logger.info(name.getMethodName() + " - wait for callback is over");
                 } else {
-                    LOG.info(name.getMethodName() + " - callback already done");
+                    logger.info(name.getMethodName() + " - callback already done");
                 }
                 if (methodWithMultipleStructParametersAsyncCallbackDone == false) {
                     fail(name.getMethodName() + " - FAILED - callback NOT done");
@@ -237,7 +237,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     fail(name.getMethodName() + " - FAILED - callback reported error");
                     return;
                 }
-                LOG.info(name.getMethodName() + " - callback has set OK flags");
+                logger.info(name.getMethodName() + " - callback has set OK flags");
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
                 return;
@@ -246,42 +246,42 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
             return;
         }
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callMethodWithSingleArrayParametersAsync() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         String[] stringArray = { "Hello", "World" };
         Double[] doubleArrayArg = IltUtil.createDoubleArray();
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleArrayParameters",
                                                          doubleArrayArg,
                                                          (Double[] arg, String[] res) -> Arrays.equals(res,
                                                                                                        stringArray));
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
         return;
     }
 
     @Test
     public void callMethodWithSinglePrimitiveParametersAsync() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         short shortArg = (short) 32767;
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithSinglePrimitiveParameters",
                                                          shortArg,
                                                          (Short arg,
                                                           String res) -> res.equals(new Integer(Short.toUnsignedInt(arg)).toString()));
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
         return;
     }
 
     @Test
     public void callMethodWithSingleByteBufferParameterAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         final Byte[] byteBufferArg = { -128, 0, 127 };
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleByteBufferParameter",
                                                          byteBufferArg,
                                                          (Byte[] arg, Byte[] res) -> Arrays.equals(arg, res));
-        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+        logger.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     // variables that are to be changed inside callbacks must be declared global
@@ -289,7 +289,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
     @Test
     public void callMethodWithMultipleByteBufferParametersAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
 
         final Semaphore resultAvailable = new Semaphore(0);
         try {
@@ -304,8 +304,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 public void onSuccess(Byte[] byteBufferOut) {
                     // check result
                     if (!java.util.Objects.deepEquals(byteBufferOut, concatenatedBuffer)) {
-                        LOG.info(name.getMethodName() + " - invalid byteBufferOut from callback");
-                        LOG.info(name.getMethodName() + " - FAILED");
+                        logger.info(name.getMethodName() + " - invalid byteBufferOut from callback");
+                        logger.info(name.getMethodName() + " - FAILED");
                         methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
                         resultAvailable.release();
                         return;
@@ -318,12 +318,12 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 public void onFailure(JoynrRuntimeException error) {
                     methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
                     if (error instanceof JoynrRuntimeException) {
-                        LOG.info(name.getMethodName() + " - callback - caught exception "
+                        logger.info(name.getMethodName() + " - callback - caught exception "
                                 + ((JoynrRuntimeException) error).getMessage());
                     } else {
-                        LOG.info(name.getMethodName() + " - callback - caught exception");
+                        logger.info(name.getMethodName() + " - callback - caught exception");
                     }
-                    LOG.info(name.getMethodName() + " - FAILED");
+                    logger.info(name.getMethodName() + " - FAILED");
                     resultAvailable.release();
                 }
             };
@@ -332,12 +332,12 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
             try {
                 // wait for callback
-                LOG.info(name.getMethodName() + " - about to wait for callback");
+                logger.info(name.getMethodName() + " - about to wait for callback");
                 Assert.assertTrue(name.getMethodName() + " - FAILED - callback not received in time",
                                   resultAvailable.tryAcquire(10, TimeUnit.SECONDS));
 
                 // check result from callback
-                LOG.info(name.getMethodName() + " - wait for callback is over");
+                logger.info(name.getMethodName() + " - wait for callback is over");
                 Assert.assertTrue(name.getMethodName() + " - FAILED - callback reported error",
                                   methodWithMultipleByteBufferParametersAsyncCallbackResult);
             } catch (InterruptedException | JoynrRuntimeException e) {
@@ -346,42 +346,42 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callMethodWithInt64TypeDefParameterAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         final Long int64TypeDefArg = 1L;
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithInt64TypeDefParameter",
                                                          int64TypeDefArg,
                                                          (Long arg, Long res) -> res.equals(arg));
-        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+        logger.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
     public void callMethodWithStringTypeDefParameterAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         final String stringTypeDefArg = "StringTypeDef";
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithStringTypeDefParameter",
                                                          stringTypeDefArg,
                                                          (String arg, String res) -> res.equals(arg));
-        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+        logger.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
     public void callMethodWithStructTypeDefParameterAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         final BaseStruct structTypeDefArg = IltUtil.createBaseStruct();
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithStructTypeDefParameter",
                                                          structTypeDefArg,
                                                          (BaseStruct arg, BaseStruct res) -> res.equals(arg));
-        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+        logger.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
     public void callMethodWithMapTypeDefParameterAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         final MapStringString mapTypeDefArg = new MapStringString();
         mapTypeDefArg.put("keyString1", "valueString1");
         mapTypeDefArg.put("keyString2", "valueString2");
@@ -389,39 +389,39 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithMapTypeDefParameter",
                                                          mapTypeDefArg,
                                                          (MapStringString arg, MapStringString res) -> res.equals(arg));
-        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+        logger.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
     public void callMethodWithEnumTypeDefParameterAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         final Enumeration enumTypeDefArg = Enumeration.ENUM_0_VALUE_1;
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithEnumTypeDefParameter",
                                                          enumTypeDefArg,
                                                          (Enumeration arg, Enumeration res) -> res.equals(arg));
-        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+        logger.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
     public void callMethodWithByteBufferTypeDefParameterAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         final Byte[] byteBufferTypeDefArg = { -128, 0, 127 };
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithByteBufferTypeDefParameter",
                                                          byteBufferTypeDefArg,
                                                          (Byte[] arg, Byte[] res) -> Arrays.equals(arg, res));
-        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+        logger.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     @Test
     public void callMethodWithArrayTypeDefParameterAsync() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         String[] stringArray = { "Hello", "World" };
         final ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithArrayTypeDefParameter",
                                                          arrayTypeDefArg,
                                                          (ArrayTypeDefStruct arg,
                                                           ArrayTypeDefStruct res) -> res.equals(arg));
-        LOG.info(name.getMethodName() + TEST_SUCCEEDED);
+        logger.info(name.getMethodName() + TEST_SUCCEEDED);
     }
 
     /*
@@ -435,7 +435,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     @SuppressWarnings("checkstyle:methodlength")
     @Test
     public void callMethodWithExtendedErrorEnumAsync() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             // setup input parameters
             String wantedExceptionArg = "ProviderRuntimeException";
@@ -443,8 +443,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
             CallbackWithModeledError<Void, MethodWithExtendedErrorEnumErrorEnum> callback = new CallbackWithModeledError<Void, MethodWithExtendedErrorEnumErrorEnum>() {
                 @Override
                 public void onSuccess(Void result) {
-                    LOG.info(name.getMethodName() + " - 1st - unexpected positive return in callback");
-                    LOG.info(name.getMethodName() + " - FAILED");
+                    logger.info(name.getMethodName() + " - 1st - unexpected positive return in callback");
+                    logger.info(name.getMethodName() + " - FAILED");
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                     methodWithExtendedErrorEnumAsyncCallbackDone = true;
                 }
@@ -454,30 +454,30 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     if (error instanceof ProviderRuntimeException) {
                         if (((ProviderRuntimeException) error).getMessage()
                                                               .endsWith("Exception from methodWithExtendedErrorEnum")) {
-                            LOG.info(name.getMethodName() + " - 1st - callback - got expected exception "
+                            logger.info(name.getMethodName() + " - 1st - callback - got expected exception "
                                     + ((JoynrRuntimeException) error).getMessage());
                             methodWithExtendedErrorEnumAsyncCallbackResult = true;
                             methodWithExtendedErrorEnumAsyncCallbackDone = true;
                             return;
                         }
-                        LOG.info(name.getMethodName() + " - 1st - callback - caught invalid exception "
+                        logger.info(name.getMethodName() + " - 1st - callback - caught invalid exception "
                                 + ((JoynrRuntimeException) error).getMessage());
                     } else {
-                        LOG.info(name.getMethodName() + " - 1st - callback - caught invalid exception "
+                        logger.info(name.getMethodName() + " - 1st - callback - caught invalid exception "
                                 + ((JoynrRuntimeException) error).getMessage());
                     }
 
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                     methodWithExtendedErrorEnumAsyncCallbackDone = true;
-                    LOG.info(name.getMethodName() + " - FAILED");
+                    logger.info(name.getMethodName() + " - FAILED");
                 }
 
                 @Override
                 public void onFailure(MethodWithExtendedErrorEnumErrorEnum errorEnum) {
-                    LOG.info(name.getMethodName() + " - 1st - callback - caught invalid exception ");
+                    logger.info(name.getMethodName() + " - 1st - callback - caught invalid exception ");
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                     methodWithExtendedErrorEnumAsyncCallbackDone = true;
-                    LOG.info(name.getMethodName() + " - FAILED");
+                    logger.info(name.getMethodName() + " - FAILED");
                 }
             };
 
@@ -485,7 +485,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
             try {
                 long timeoutInMilliseconds = 8000;
-                LOG.info(name.getMethodName() + " - 1st - about to call future.get");
+                logger.info(name.getMethodName() + " - 1st - about to call future.get");
                 future.get(timeoutInMilliseconds);
                 fail(name.getMethodName() + " - FAILED - unexpected return from future");
                 return;
@@ -493,7 +493,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 if (error instanceof ProviderRuntimeException) {
                     if (((ProviderRuntimeException) error).getMessage()
                                                           .endsWith("Exception from methodWithExtendedErrorEnum")) {
-                        LOG.info(name.getMethodName() + " - 1st - caught expected exception "
+                        logger.info(name.getMethodName() + " - 1st - caught expected exception "
                                 + ((JoynrRuntimeException) error).getMessage());
                         // OK, fallthrough
                     } else {
@@ -514,11 +514,11 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 // check results from callback; expect to be finished within 1 second
                 // should have been called ahead anyway
                 if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
-                    LOG.info(name.getMethodName() + " - 1st - wait a second for callback");
+                    logger.info(name.getMethodName() + " - 1st - wait a second for callback");
                     Thread.sleep(1000);
-                    LOG.info(name.getMethodName() + " - 1st - wait for callback is over");
+                    logger.info(name.getMethodName() + " - 1st - wait for callback is over");
                 } else {
-                    LOG.info(name.getMethodName() + " - 1st - callback already done");
+                    logger.info(name.getMethodName() + " - 1st - callback already done");
                 }
                 if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
                     fail(name.getMethodName() + " - FAILED - callback NOT done");
@@ -528,14 +528,14 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     fail(name.getMethodName() + " - FAILED - callback reported failure");
                     return;
                 }
-                LOG.info(name.getMethodName() + " - 1st - callback caught expected exception");
+                logger.info(name.getMethodName() + " - 1st - callback caught expected exception");
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
             return;
         }
 
-        LOG.info(name.getMethodName() + " - ProviderRuntimeException check done");
+        logger.info(name.getMethodName() + " - ProviderRuntimeException check done");
 
         // 2nd test
         try {
@@ -545,15 +545,15 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
             CallbackWithModeledError<Void, MethodWithExtendedErrorEnumErrorEnum> callback = new CallbackWithModeledError<Void, MethodWithExtendedErrorEnumErrorEnum>() {
                 @Override
                 public void onSuccess(Void result) {
-                    LOG.info(name.getMethodName() + " - 2nd - unexpected positive return in callback");
-                    LOG.info(name.getMethodName() + " - FAILED");
+                    logger.info(name.getMethodName() + " - 2nd - unexpected positive return in callback");
+                    logger.info(name.getMethodName() + " - FAILED");
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                     methodWithExtendedErrorEnumAsyncCallbackDone = true;
                 }
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
-                    LOG.info(name.getMethodName() + " - 2nd - callback - caught invalid JoynrRuntime like exception "
+                    logger.info(name.getMethodName() + " - 2nd - callback - caught invalid JoynrRuntime like exception "
                             + ((JoynrRuntimeException) error).getMessage());
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                     methodWithExtendedErrorEnumAsyncCallbackDone = true;
@@ -562,14 +562,14 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 @Override
                 public void onFailure(MethodWithExtendedErrorEnumErrorEnum errorEnum) {
                     if (errorEnum == MethodWithExtendedErrorEnumErrorEnum.ERROR_3_3_NTC) {
-                        LOG.info(name.getMethodName()
+                        logger.info(name.getMethodName()
                                 + " - 2nd - callback - caught ApplicationException with expected error enum");
                         methodWithExtendedErrorEnumAsyncCallbackResult = true;
                         methodWithExtendedErrorEnumAsyncCallbackDone = true;
                         return;
                     }
-                    LOG.info(name.getMethodName() + " - 2nd - callback - caught invalid ApplicationException with enum "
-                            + errorEnum);
+                    logger.info(name.getMethodName()
+                            + " - 2nd - callback - caught invalid ApplicationException with enum " + errorEnum);
 
                     methodWithExtendedErrorEnumAsyncCallbackResult = false;
                     methodWithExtendedErrorEnumAsyncCallbackDone = true;
@@ -580,14 +580,14 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
             try {
                 long timeoutInMilliseconds = 8000;
-                LOG.info(name.getMethodName() + " - 2nd - about to call future.get");
+                logger.info(name.getMethodName() + " - 2nd - about to call future.get");
                 future.get(timeoutInMilliseconds);
                 fail(name.getMethodName() + " - FAILED - unexpected return from future");
                 return;
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException error) {
                 if (error instanceof ApplicationException) {
                     if (((ApplicationException) error).getError() == MethodWithExtendedErrorEnumErrorEnum.ERROR_3_3_NTC) {
-                        LOG.info(name.getMethodName()
+                        logger.info(name.getMethodName()
                                 + " - 2nd - caught expected ApplicationException with correct error enum");
                     } else {
                         fail(name.getMethodName() + " - FAILED - 2nd - caught invalid ApplicationException with enum: "
@@ -608,11 +608,11 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 // check results from callback; expect to be finished within 1 second
                 // should have been called ahead anyway
                 if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
-                    LOG.info(name.getMethodName() + " - 2nd - about to wait for a second for callback");
+                    logger.info(name.getMethodName() + " - 2nd - about to wait for a second for callback");
                     Thread.sleep(1000);
-                    LOG.info(name.getMethodName() + " - 2nd - wait for callback is over");
+                    logger.info(name.getMethodName() + " - 2nd - wait for callback is over");
                 } else {
-                    LOG.info(name.getMethodName() + " - 2nd - callback already done");
+                    logger.info(name.getMethodName() + " - 2nd - callback already done");
                 }
                 if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
                     fail(name.getMethodName() + " - FAILED - 2nd - callback NOT done");
@@ -622,14 +622,14 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     fail(name.getMethodName() + " - FAILED - 2nd - callback reported success");
                     return;
                 }
-                LOG.info(name.getMethodName() + " - 2nd - callback has got expected exception");
+                logger.info(name.getMethodName() + " - 2nd - callback has got expected exception");
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
             return;
         }
-        LOG.info(name.getMethodName() + " - ApplicationException check done");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - ApplicationException check done");
+        logger.info(name.getMethodName() + " - OK");
         return;
 
         // 3rd test omitted

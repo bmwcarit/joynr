@@ -34,11 +34,11 @@ import joynr.MutableMessage;
 @Stateless
 public class ConsumerMessageProcessor implements JoynrMessageProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ConsumerMessageProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerMessageProcessor.class);
 
     @Override
     public MutableMessage processOutgoing(MutableMessage joynrMessage) {
-        LOG.info("Processing outgoing message {}", joynrMessage);
+        logger.info("Processing outgoing message {}", joynrMessage);
         Map<String, String> customHeaders = joynrMessage.getCustomHeaders();
 
         if (customHeaders != null && customHeaders.containsKey(CustomHeaderUtils.APP_CUSTOM_HEADER_KEY)) {
@@ -47,16 +47,16 @@ public class ConsumerMessageProcessor implements JoynrMessageProcessor {
             String processorCustomHeaderValue = CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_VALUE_PREFIX
                     + createUuidString();
             customHeaders.put(CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_KEY, processorCustomHeaderValue);
-            LOG.info("Set {} to {}", CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_KEY, processorCustomHeaderValue);
+            logger.info("Set {} to {}", CustomHeaderUtils.PROCESSOR_CUSTOM_HEADER_KEY, processorCustomHeaderValue);
         }
         return joynrMessage;
     }
 
     @Override
     public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
-        LOG.info("Processing incoming message {}", joynrMessage);
-        LOG.info("Custom headers are: {}", joynrMessage.getCustomHeaders());
-        LOG.info("Message context is: {}", joynrMessage.getContext());
+        logger.info("Processing incoming message {}", joynrMessage);
+        logger.info("Custom headers are: {}", joynrMessage.getCustomHeaders());
+        logger.info("Message context is: {}", joynrMessage.getContext());
         return joynrMessage;
     }
 }

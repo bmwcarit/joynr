@@ -30,7 +30,7 @@ import joynr.vehicle.RadioNewStationDiscoveredBroadcastFilter;
 import joynr.vehicle.RadioStation;
 
 public class GeocastBroadcastFilter extends RadioNewStationDiscoveredBroadcastFilter {
-    private static final Logger LOG = LoggerFactory.getLogger(GeocastBroadcastFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(GeocastBroadcastFilter.class);
 
     private ObjectMapper jsonSerializer;
 
@@ -51,14 +51,14 @@ public class GeocastBroadcastFilter extends RadioNewStationDiscoveredBroadcastFi
         try {
             positionOfInterest = jsonSerializer.readValue(filterParameters.getPositionOfInterest(), GeoPosition.class);
         } catch (IOException e) {
-            LOG.error("Unable to parse position of interest from filter parameters. DISABLING filter.", e);
+            logger.error("Unable to parse position of interest from filter parameters. DISABLING filter.", e);
             return true;
         }
         int radiusOfInterestArea = 0;
         try {
             radiusOfInterestArea = Integer.parseInt(filterParameters.getRadiusOfInterestArea());
         } catch (NumberFormatException e) {
-            LOG.error("Unable to parse radius of interest area from filter parameters. DISABLING filter.", e);
+            logger.error("Unable to parse radius of interest area from filter parameters. DISABLING filter.", e);
             return true;
         }
 

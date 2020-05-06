@@ -38,7 +38,7 @@ import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 public class IltConsumerGetterSetterTest extends IltConsumerTest {
-    private static final Logger LOG = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerTest.class);
 
     @SuppressWarnings("unchecked")
     private <T> void genericGetterSetterTestMethod(T arg, String methodName) {
@@ -63,23 +63,23 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callSetAndGetAttributeUInt8() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         byte byteArg = 127;
         genericGetterSetterTestMethod(byteArg, "AttributeUInt8");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetAttributeDouble() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         double doubleArg = 1.1d;
         genericGetterSetterTestMethod(doubleArg, "AttributeDouble");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callGetAttributeBooleanReadOnly() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             Boolean result;
             // value is hardcoded on provider side since it is readonly
@@ -97,7 +97,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
             return;
         }
 
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     // there is no setter for attributeBooleanReadOnly, but this cannot
@@ -105,15 +105,15 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callSetAndGetAttributeStringNoSubscriptions() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         String stringArg = "Hello world";
         genericGetterSetterTestMethod(stringArg, "AttributeStringNoSubscriptions");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetAttributeInt8readonlyNoSubscriptions() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             Byte result;
             // value is hardcoded on provider side since it is readonly
@@ -131,98 +131,98 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
             return;
         }
 
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     // no setter for attributeInt8readonlyNoSubscriptions
 
     @Test
     public void callSetAndGetAttributeArrayOfStringImplicit() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         String[] stringArrayArg = { "Hello", "World" };
         genericGetterSetterTestMethod(stringArrayArg, "AttributeArrayOfStringImplicit");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndSetAndGetAttributeByteBuffer() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         Byte[] byteBufferArg = { -128, 0, 127 };
         genericGetterSetterTestMethod(byteBufferArg, "AttributeByteBuffer");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetAttributeInt64TypeDef() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         Long int64TypeDefArg = 1L;
         genericGetterSetterTestMethod(int64TypeDefArg, "AttributeInt64TypeDef");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetAttributeStringTypeDef() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         String stringTypeDefArg = "StringTypeDef";
         genericGetterSetterTestMethod(stringTypeDefArg, "AttributeStringTypeDef");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetAttributeStructTypeDef() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         BaseStruct structTypeDefArg = IltUtil.createBaseStruct();
         genericGetterSetterTestMethod(structTypeDefArg, "AttributeStructTypeDef");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetGetAttributeMapTypeDef() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         MapStringString mapTypeDefArg = new MapStringString();
         mapTypeDefArg.put("keyString1", "valueString1");
         mapTypeDefArg.put("keyString2", "valueString2");
         mapTypeDefArg.put("keyString3", "valueString3");
         genericGetterSetterTestMethod(mapTypeDefArg, "AttributeMapTypeDef");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetGetAttributeEnumTypeDef() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         Enumeration enumTypeDefArg = Enumeration.ENUM_0_VALUE_1;
         genericGetterSetterTestMethod(enumTypeDefArg, "AttributeEnumTypeDef");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetGetAttributeByteBufferTypeDef() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         Byte[] byteBufferTypeDefArg = { -128, 0, 127 };
         genericGetterSetterTestMethod(byteBufferTypeDefArg, "AttributeByteBufferTypeDef");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetGetAttributeArrayTypeDef() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         String[] stringArray = { "Hello", "World" };
         ArrayTypeDefStruct arrayTypeDefArg = new ArrayTypeDefStruct(stringArray);
         genericGetterSetterTestMethod(arrayTypeDefArg, "AttributeArrayTypeDef");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetGetAttributeEnumeration() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         Enumeration enumerationArg = Enumeration.ENUM_0_VALUE_2;
         genericGetterSetterTestMethod(enumerationArg, "AttributeEnumeration");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callGetAttributeExtendedEnumerationReadonly() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             ExtendedEnumerationWithPartlyDefinedValues result;
 
@@ -241,36 +241,36 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
             return;
         }
 
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     // no setter for attributeExtendedEnumerationReadonly
 
     @Test
     public void callSetAndGetGetAttributeBaseStruct() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         BaseStruct baseStructArg = IltUtil.createBaseStruct();
         genericGetterSetterTestMethod(baseStructArg, "AttributeBaseStruct");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetAttributeExtendedExtendedBaseStruct() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         ExtendedExtendedBaseStruct extendedExtendedBaseStructArg = IltUtil.createExtendedExtendedBaseStruct();
         genericGetterSetterTestMethod(extendedExtendedBaseStructArg, "AttributeExtendedExtendedBaseStruct");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAndGetAttributeMapStringString() {
-        LOG.info(name.getMethodName());
+        logger.info(name.getMethodName());
         MapStringString attributeMapStringStringArg = new MapStringString();
         attributeMapStringStringArg.put("keyString1", "valueString1");
         attributeMapStringStringArg.put("keyString2", "valueString2");
         attributeMapStringStringArg.put("keyString3", "valueString3");
         genericGetterSetterTestMethod(attributeMapStringStringArg, "AttributeMapStringString");
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     /*
@@ -279,7 +279,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callGetAttributeWithExceptionFromGetter() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             testInterfaceProxy.getAttributeWithExceptionFromGetter();
             fail(name.getMethodName() + " - FAILED - unexpected return without exception");
@@ -295,12 +295,12 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
             return;
         }
 
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callSetAttributeWithExceptionFromSetter() {
-        LOG.info(name.getMethodName() + "");
+        logger.info(name.getMethodName() + "");
         try {
             testInterfaceProxy.setAttributeWithExceptionFromSetter(false);
             fail(name.getMethodName() + " - FAILED - got no result");
@@ -316,6 +316,6 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
             return;
         }
 
-        LOG.info(name.getMethodName() + " - OK");
+        logger.info(name.getMethodName() + " - OK");
     }
 }

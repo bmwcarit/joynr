@@ -45,7 +45,7 @@ import joynr.vehicle.RadioSync;
 @ServiceProvider(serviceInterface = RadioSync.class)
 public class RadioProviderBean implements RadioService {
 
-    private final static Logger LOG = LoggerFactory.getLogger(RadioProviderBean.class);
+    private final static Logger logger = LoggerFactory.getLogger(RadioProviderBean.class);
 
     private RadioStationDatabase radioStationDatabase;
 
@@ -128,7 +128,7 @@ public class RadioProviderBean implements RadioService {
             return connectionMetricsString;
         }).collect(Collectors.joining()));
         String statusMetricsString = statusMetricsStringBuilder.toString();
-        LOG.info(statusMetricsString);
+        logger.info(statusMetricsString);
         return statusMetricsString;
     }
 

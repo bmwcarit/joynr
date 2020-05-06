@@ -40,7 +40,7 @@ import joynr.exceptions.ProviderRuntimeException;
 @ServiceProvider(serviceInterface = VehicleStateSync.class)
 public class VehicleStateServiceBean implements VehicleStateSync {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(VehicleStateServiceBean.class);
+    private static final Logger logger = LoggerFactory.getLogger(VehicleStateServiceBean.class);
 
     private Map<String, VehicleConfiguration> configurations = new HashMap<>();
 
@@ -50,32 +50,32 @@ public class VehicleStateServiceBean implements VehicleStateSync {
 
     @Override
     public Integer getNumberOfConfigs() {
-        LOGGER.info("getNumberOfConfigs called");
+        logger.info("getNumberOfConfigs called");
         return configurations.size();
     }
 
     @Override
     public VehicleConfiguration getCurrentConfig(String id) throws ApplicationException {
-        LOGGER.info("getCurrentConfig called with {}", id);
+        logger.info("getCurrentConfig called with {}", id);
         return configurations.get(id);
     }
 
     @Override
     public void addConfiguration(VehicleConfiguration configuration) {
-        LOGGER.info("addConfiguration called with {}", configuration);
+        logger.info("addConfiguration called with {}", configuration);
         configurations.put(configuration.getId(), configuration);
         vehicleStateSubscriptionPublisher.numberOfConfigsChanged(configurations.size());
     }
 
     @Override
     public void callWithExceptionTest(String addToExceptionMessage) {
-        LOGGER.info("callWithExceptionTest called");
+        logger.info("callWithExceptionTest called");
         throw new ProviderRuntimeException("Test " + UUID.randomUUID().toString());
     }
 
     @Override
     public void callFireAndForgetTest(String dataIn) {
-        LOGGER.info("Received {}", dataIn);
+        logger.info("Received {}", dataIn);
     }
 
 }

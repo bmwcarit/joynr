@@ -30,7 +30,7 @@ import joynr.ImmutableMessage;
 
 public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSkeleton {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InProcessLibjoynrMessagingSkeleton.class);
+    private static final Logger logger = LoggerFactory.getLogger(InProcessLibjoynrMessagingSkeleton.class);
     private final Dispatcher dispatcher;
 
     @Inject
@@ -40,7 +40,7 @@ public class InProcessLibjoynrMessagingSkeleton implements InProcessMessagingSke
 
     @Override
     public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
-        LOG.trace("InProcess call for message id {}", message.getId());
+        logger.trace("InProcess call for message id {}", message.getId());
 
         try {
             dispatcher.messageArrived(message);
