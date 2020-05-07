@@ -156,7 +156,11 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
             ImmutableMessage message = new ImmutableMessage(processedMessage);
             message.setContext(context);
 
-            logger.debug("<<< INCOMING FROM {} <<< {}", ownGbid, message);
+            if (logger.isTraceEnabled()) {
+                logger.trace("<<< INCOMING FROM {} <<< {}", ownGbid, message);
+            } else {
+                logger.debug("<<< INCOMING FROM {} <<< {}", ownGbid, message.getTrackingInfo());
+            }
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {
@@ -185,12 +189,10 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                 failureAction.execute(e);
             }
         } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
-            logger.error("Message: \"{}\", could not be deserialized, exception: {}",
-                         serializedMessage,
-                         e.getMessage());
+            logger.error("Message: \"{}\" could not be deserialized, exception: {}", serializedMessage, e.getMessage());
             failureAction.execute(e);
         } catch (Exception e) {
-            logger.error("Message {} could not be transmitted:", serializedMessage, e);
+            logger.error("Message \"{}\" could not be transmitted:", serializedMessage, e);
             failureAction.execute(e);
         }
     }
@@ -200,8 +202,8 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         // if there are already too many requests still not processed
         if (maxIncomingMqttRequests > 0 && incomingMqttRequests.size() >= maxIncomingMqttRequests) {
             if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
-                logger.warn("Incoming MQTT message with id {} will be dropped as limit of {} requests is reached",
-                            message.getId(),
+                logger.warn("Incoming MQTT message {} will be dropped as limit of {} requests is reached",
+                            message.getTrackingInfo(),
                             maxIncomingMqttRequests);
                 return true;
             }
@@ -253,7 +255,8 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     }
 
     protected void requestProcessed(String messageId) {
-        logger.debug("Request {} was processed and is removed from the MQTT skeleton tracking list", messageId);
+        logger.debug("Request with messageId {} was processed and is removed from the MQTT skeleton tracking list",
+                     messageId);
     }
 
 }
