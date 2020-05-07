@@ -205,12 +205,19 @@ public class GuidedProxyBuilderTest {
         arbitratorField.setAccessible(true);
         subject.discoverAsync();
         assertNotNull(arbitratorField.get(subject));
+
+        Field discoveryQosField = GuidedProxyBuilder.class.getDeclaredField("discoveryQos");
+        discoveryQosField.setAccessible(true);
+        DiscoveryQos internalDiscoveryQos = (DiscoveryQos) discoveryQosField.get(subject);
+        assert (internalDiscoveryQos.getDiscoveryTimeoutMs() != DiscoveryQos.NO_VALUE);
+        assert (internalDiscoveryQos.getRetryIntervalMs() != DiscoveryQos.NO_VALUE);
     }
 
     @Test
     public void testProxyBuilderIsProperlyCalled() throws Exception {
         setup();
         String testParticipantId = "test";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
         DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         mockedDiscoveryEntry.setParticipantId(testParticipantId);
         ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
@@ -223,9 +230,16 @@ public class GuidedProxyBuilderTest {
         arbitrationResultField.setAccessible(true);
         arbitrationResultField.set(subject, mockedArbitrationResult);
 
+        subject.setDiscoveryQos(discoveryQos);
         subject.buildProxy(testProxy.class, testParticipantId);
         verify(proxyBuilderFactory).get(Mockito.<Set<String>> any(), eq(testProxy.class));
         verify(proxyBuilder).build(Mockito.<ArbitrationResult> any());
+
+        Field discoveryQosField = GuidedProxyBuilder.class.getDeclaredField("discoveryQos");
+        discoveryQosField.setAccessible(true);
+        DiscoveryQos internalDiscoveryQos = (DiscoveryQos) discoveryQosField.get(subject);
+        assert (internalDiscoveryQos.getDiscoveryTimeoutMs() != DiscoveryQos.NO_VALUE);
+        assert (internalDiscoveryQos.getRetryIntervalMs() != DiscoveryQos.NO_VALUE);
     }
 
     @Test
