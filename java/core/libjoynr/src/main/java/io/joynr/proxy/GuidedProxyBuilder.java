@@ -179,6 +179,7 @@ public class GuidedProxyBuilder {
         if (arbitrator == null) {
             if (discoveryQos == null) {
                 discoveryQos = new DiscoveryQos();
+                applyDefaultValues(discoveryQos);
             }
             arbitrator = ArbitratorFactory.create(domains,
                                                   interfaceName,
@@ -228,10 +229,12 @@ public class GuidedProxyBuilder {
         registerInterfaceClassTypes(interfaceClass, "Cannot create ProxyBuilder");
         ProxyBuilder<T> proxyBuilder = proxyBuilderFactory.get(domains, interfaceClass);
         if (discoveryQos == null) {
-            proxyBuilder.setDiscoveryQos(new DiscoveryQos());
-        } else {
-            proxyBuilder.setDiscoveryQos(discoveryQos);
+            // discoveryQos should be already set, since this is done latest in
+            // discoverAsyncInternal() which must have been called already since
+            // discoveryCompletedOnce is true
+            throw new IllegalStateException("DiscoveryQos not set, internal error!");
         }
+        proxyBuilder.setDiscoveryQos(discoveryQos);
 
         if (statelessAsyncCallbackUseCase != null) {
             proxyBuilder.setStatelessAsyncCallbackUseCase(statelessAsyncCallbackUseCase);
