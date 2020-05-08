@@ -67,6 +67,7 @@ class IWebsocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
 class JoynrClusterControllerMqttConnectionData;
 class LocalCapabilitiesDirectory;
+class LocalCapabilitiesDirectoryStore;
 class LocalDomainAccessController;
 class MqttReceiver;
 class MulticastMessagingSkeletonDirectory;
@@ -246,8 +247,7 @@ private:
     Semaphore _lifetimeSemaphore;
 
     std::shared_ptr<joynr::AccessController> _accessController;
-    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
-    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
+    std::shared_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
 
     std::string _routingProviderParticipantId;
     std::string _discoveryProviderParticipantId;

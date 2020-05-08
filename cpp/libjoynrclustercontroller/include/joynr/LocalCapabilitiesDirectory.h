@@ -93,8 +93,7 @@ public:
     LocalCapabilitiesDirectory(
             ClusterControllerSettings& messagingSettings,
             std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient,
-            std::shared_ptr<joynr::capabilities::Storage> locallyRegisteredCapabilities,
-            std::shared_ptr<joynr::capabilities::CachingStorage> globalLookupCache,
+            std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
             const std::string& localAddress,
             std::weak_ptr<IMessageRouter> messageRouter,
             boost::asio::io_service& ioService,

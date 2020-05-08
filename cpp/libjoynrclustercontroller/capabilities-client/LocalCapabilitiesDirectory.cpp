@@ -69,8 +69,7 @@ namespace joynr
 LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         ClusterControllerSettings& clusterControllerSettings,
         std::shared_ptr<IGlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient,
-        std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities,
-        std::shared_ptr<capabilities::CachingStorage> globalLookupCache,
+        std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
         const std::string& localAddress,
         std::weak_ptr<IMessageRouter> messageRouter,
         boost::asio::io_service& ioService,

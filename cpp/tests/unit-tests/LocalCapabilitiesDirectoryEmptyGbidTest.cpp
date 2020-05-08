@@ -29,6 +29,7 @@
 #include "joynr/CapabilitiesStorage.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
@@ -76,8 +77,7 @@ public:
               _messageRouterMock(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
               _clusterControllerId("clusterControllerId"),
-              _locallyRegisteredCapabilities(std::make_shared<capabilities::Storage>()),
-              _globalLookupCache(std::make_shared<capabilities::CachingStorage>()),
+              _localCapabilitiesDirectoryStore(std::make_shared<LocalCapabilitiesDirectoryStore>()),
               _localCapabilitiesDirectory(),
               _semaphore(0),
               _discoveryQos(),
@@ -145,8 +145,7 @@ protected:
         _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
                 _clusterControllerSettings,
                 _globalCapabilitiesDirectoryClientMock,
-                _locallyRegisteredCapabilities,
-                _globalLookupCache,
+                _localCapabilitiesDirectoryStore,
                 localAddress,
                 _messageRouterMock,
                 _singleThreadedIOService->getIOService(),
@@ -204,8 +203,7 @@ protected:
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> _messageRouterMock;
     std::string _clusterControllerId;
-    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
-    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
+    std::shared_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectory;
 
     Semaphore _semaphore;
