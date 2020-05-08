@@ -28,6 +28,7 @@
 
 #include "joynr/CapabilitiesStorage.h"
 #include "joynr/LocalCapabilitiesDirectory.h"
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/types/DiscoveryError.h"
@@ -38,14 +39,12 @@ class MockLocalCapabilitiesDirectory : public joynr::LocalCapabilitiesDirectory 
 public:
     MockLocalCapabilitiesDirectory(joynr::ClusterControllerSettings& ccSettings,
                                    std::shared_ptr<joynr::IMessageRouter> mockMessageRouter,
-                                   std::shared_ptr<joynr::capabilities::Storage> locallyRegisteredCapabilities,
-                                   std::shared_ptr<joynr::capabilities::CachingStorage> globalLookupCache,
+                                   std::shared_ptr<joynr::LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
                                    boost::asio::io_service& ioService,
                                    std::int64_t defaultExpiryDateMs)
         : LocalCapabilitiesDirectory(ccSettings,
                                    nullptr,
-                                   locallyRegisteredCapabilities,
-                                   globalLookupCache,
+                                   localCapabilitiesDirectoryStore,
                                    "localAddress",
                                    mockMessageRouter,
                                    ioService,

@@ -250,6 +250,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockWebSocketSendInterface.h
         mock/MockWebSocketClient.h
         mock/MockLocalCapabilitiesDirectory.h
+        mock/MockLocalCapabilitiesDirectoryStore.h
         mock/MockTestRequestCaller.h
         mock/MockRunnable.h
         mock/MockRunnableWithAccuracy.cpp

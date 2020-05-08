@@ -124,13 +124,11 @@ public:
               _accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
               _messageRouter(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
-              _locallyRegisteredCapabilities(std::make_shared<capabilities::Storage>()),
-              _globalLookupCache(std::make_shared<capabilities::CachingStorage>()),
+              _localCapabilitiesDirectoryStore(std::make_shared<LocalCapabilitiesDirectoryStore>()),
               _localCapabilitiesDirectoryMock(std::make_shared<MockLocalCapabilitiesDirectory>(
                       _clusterControllerSettings,
                       _messageRouter,
-                      _locallyRegisteredCapabilities,
-                      _globalLookupCache,
+                      _localCapabilitiesDirectoryStore,
                       _singleThreadedIOService->getIOService(),
                       _defaultExpiryDateMs)),
               _accessController(std::make_shared<AccessController>(_localCapabilitiesDirectoryMock, _localDomainAccessControllerMock)),
@@ -258,8 +256,7 @@ protected:
     std::shared_ptr<MockLocalDomainAccessController> _localDomainAccessControllerMock;
     std::shared_ptr<MockConsumerPermissionCallback> _accessControllerCallback;
     std::shared_ptr<MockMessageRouter> _messageRouter;
-    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
-    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
+    std::shared_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
     std::shared_ptr<MockLocalCapabilitiesDirectory> _localCapabilitiesDirectoryMock;
     std::shared_ptr<AccessController> _accessController;
     MutableMessageFactory _messageFactory;
