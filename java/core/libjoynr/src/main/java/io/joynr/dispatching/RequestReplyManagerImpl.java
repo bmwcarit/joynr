@@ -125,14 +125,28 @@ public class RequestReplyManagerImpl
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
         message.setStatelessAsync(request.getStatelessAsyncCallbackMethodId() != null);
 
-        logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, provider domain: {}, params: {}",
-                     request.getMethodName(),
-                     request.getRequestReplyId(),
-                     message.getId(),
-                     fromParticipantId,
-                     toDiscoveryEntry.getParticipantId(),
-                     toDiscoveryEntry.getDomain(),
-                     request.getParams());
+        if (logger.isTraceEnabled()) {
+            logger.trace("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain: {}, interfaceName: {}, {}, params: {}",
+                         request.getMethodName(),
+                         request.getRequestReplyId(),
+                         message.getId(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId(),
+                         toDiscoveryEntry.getDomain(),
+                         toDiscoveryEntry.getInterfaceName(),
+                         toDiscoveryEntry.getProviderVersion(),
+                         request.getParams());
+        } else {
+            logger.debug("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain: {}, interfaceName: {}, {}",
+                         request.getMethodName(),
+                         request.getRequestReplyId(),
+                         message.getId(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId(),
+                         toDiscoveryEntry.getDomain(),
+                         toDiscoveryEntry.getInterfaceName(),
+                         toDiscoveryEntry.getProviderVersion());
+        }
         messageSender.sendMessage(message);
     }
 
@@ -201,11 +215,26 @@ public class RequestReplyManagerImpl
                                                                         oneWayRequest,
                                                                         messagingQos);
 
-            logger.debug("Send OneWayRequest: method: {}, messageId: {}, proxy participantId: {}, provider participantId: {}",
-                         oneWayRequest.getMethodName(),
-                         message.getId(),
-                         fromParticipantId,
-                         toDiscoveryEntry.getParticipantId());
+            if (logger.isTraceEnabled()) {
+                logger.trace("ONEWAYREQUEST call proxy: method: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}, params: {}",
+                             oneWayRequest.getMethodName(),
+                             message.getId(),
+                             fromParticipantId,
+                             toDiscoveryEntry.getParticipantId(),
+                             toDiscoveryEntry.getDomain(),
+                             toDiscoveryEntry.getInterfaceName(),
+                             toDiscoveryEntry.getProviderVersion(),
+                             oneWayRequest.getParams());
+            } else {
+                logger.debug("ONEWAYREQUEST call proxy: method: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
+                             oneWayRequest.getMethodName(),
+                             message.getId(),
+                             fromParticipantId,
+                             toDiscoveryEntry.getParticipantId(),
+                             toDiscoveryEntry.getDomain(),
+                             toDiscoveryEntry.getInterfaceName(),
+                             toDiscoveryEntry.getProviderVersion());
+            }
             messageSender.sendMessage(message);
         }
     }
@@ -272,7 +301,7 @@ public class RequestReplyManagerImpl
             handleRequest(replyCallback, providerDirectory.get(providerParticipant).getRequestCaller(), request);
         } else {
             queueRequest(replyCallback, providerParticipant, request, ExpiryDate.fromAbsolute(expiryDate));
-            logger.info("No requestCaller found for participantId: {} queuing request message.", providerParticipant);
+            logger.info("Provider participantId: {} not found, queuing request message.", providerParticipant);
         }
     }
 
@@ -327,7 +356,8 @@ public class RequestReplyManagerImpl
                 requestQueue.get(providerParticipantId).remove(requestItem);
                 replyCallbacks.remove(requestItem.getContent());
                 Request request = requestItem.getContent();
-                logger.warn("TTL DISCARD. providerParticipantId: {} request method: {} because it has expired.",
+                logger.warn("REQUEST expired and discarded: requestReplyId {}, providerParticipantId: {} request method: {}.",
+                            request.getRequestReplyId(),
                             providerParticipantId,
                             request.getMethodName());
 
