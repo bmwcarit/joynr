@@ -6,20 +6,11 @@ find_dependency(Boost @JOYNR_BOOST_REQUIRED_VERSION@ REQUIRED
                 COMPONENTS system filesystem thread)
 find_dependency(spdlog @JOYNR_SPDLOG_REQUIRED_VERSION@ REQUIRED)
 if(${JOYNR_ENABLE_DLT_LOGGING})
-    find_dependency(DLT REQUIRED COMPONENTS automotive-dlt)
+    pkg_check_modules(DLT REQUIRED IMPORTED_TARGET automotive-dlt)
 endif()
 # websocketpp-config.cmake iw not guarding target addition; workaround: check it here.
 if(NOT TARGET websocketpp::websocketpp)
     find_dependency(websocketpp @JOYNR_WEBSOCKETPP_REQUIRED_VERSION@ REQUIRED)
-endif()
-find_dependency(CURL REQUIRED)
-find_dependency(mosquitto @JOYNR_MOSQUITTO_REQUIRED_VERSION@ REQUIRED)
-if(NOT TARGET mosquitto::mosquitto)
-    add_library(mosquitto::mosquitto UNKNOWN IMPORTED)
-    set_target_properties(mosquitto::mosquitto PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${MOSQUITTO_INCLUDE_DIRS}"
-        IMPORTED_LOCATION ${MOSQUITTO_LIBRARIES}
-    )
 endif()
 find_dependency(MoCOCrW @JOYNR_MOCOCRW_REQUIRED_VERSION@ REQUIRED)
 find_dependency(muesli @JOYNR_MUESLI_REQUIRED_VERSION@ REQUIRED)
@@ -33,13 +24,8 @@ if(NOT TARGET Joynr::JoynrLib)
     include("${CURRENT_CMAKE_DIR}/JoynrTargets.cmake")
 endif()
 
-set_and_check(Joynr_BIN_DIR "@PACKAGE_JOYNR_INSTALL_BINDIR@")
-set_and_check(Joynr_RESOURCES_DIR "@PACKAGE_JoynrConfig_RESOURCES_DIR@")
-
-list(
-    APPEND Joynr_EXECUTABLES
-    ${Joynr_BIN_DIR}/cluster-controller
-)
+set(Joynr_BIN_DIR "@PACKAGE_JOYNR_INSTALL_BINDIR@")
+set(Joynr_RESOURCES_DIR "@PACKAGE_JoynrConfig_RESOURCES_DIR@")
 
 include(FindPackageHandleStandardArgs)
 set(_dummy_var "found")
