@@ -67,7 +67,17 @@ public class MqttMessagingStub implements IMessagingStub {
             msgTtlSec = MESSAGE_EXPIRY_MAX_INTERVAL;
         }
         byte[] serializedMessage = message.getSerializedMessage();
-        logger.debug(">>> OUTGOING TO {} >>> {}bytes: {}", address.getBrokerUri(), serializedMessage.length, message);
+        if (logger.isTraceEnabled()) {
+            logger.trace(">>> OUTGOING TO {} >>> {}bytes: {}",
+                         address.getBrokerUri(),
+                         serializedMessage.length,
+                         message);
+        } else {
+            logger.debug(">>> OUTGOING TO {} >>> {}bytes: {}",
+                         address.getBrokerUri(),
+                         serializedMessage.length,
+                         message.getTrackingInfo());
+        }
         mqttClient.publishMessage(topic, serializedMessage, qosLevel, msgTtlSec, successAction, failureAction);
     }
 }
