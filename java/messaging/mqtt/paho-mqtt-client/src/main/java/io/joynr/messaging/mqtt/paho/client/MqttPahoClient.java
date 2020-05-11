@@ -463,7 +463,7 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
             mqttClientLock.unlockRead(stamp);
         }
 
-        logger.debug("Published message: {}", serializedMessage);
+        logger.trace("Published message: {}", serializedMessage);
         successAction.execute();
     }
 
@@ -625,10 +625,14 @@ public class MqttPahoClient implements JoynrMqttClient, MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-        logger.debug("Message received: id {}, topic {}, payload\n{}",
-                     mqttMessage.getId(),
-                     topic,
-                     new String(mqttMessage.getPayload(), StandardCharsets.UTF_8));
+        if (logger.isTraceEnabled()) {
+            logger.trace("Message received: id {}, topic {}, payload\n{}",
+                         mqttMessage.getId(),
+                         topic,
+                         new String(mqttMessage.getPayload(), StandardCharsets.UTF_8));
+        } else {
+            logger.debug("Message received: id {}, topic {}", mqttMessage.getId(), topic);
+        }
         if (messagingSkeleton == null) {
             logger.error("Message not processed: messagingSkeleton has not been set yet");
             return;
