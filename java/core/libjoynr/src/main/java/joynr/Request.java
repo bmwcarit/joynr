@@ -82,7 +82,7 @@ public class Request extends OneWayRequest implements JoynrMessageType {
     @Override
     public String toString() {
         return "Request: " + getMethodName() + ", requestReplyId: " + requestReplyId + ", params: "
-                + Arrays.toString(getParams());
+                + Arrays.deepToString(getParams());
     }
 
     @Override
