@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,7 +108,9 @@ public class RoutingTableImpl implements RoutingTable {
     private void updateRoutingEntry(final String participantId,
                                     final RoutingEntry oldRoutingEntry,
                                     final RoutingEntry newRoutingEntry) {
-        logger.debug("Updating existing routing entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {} with new entry with address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
+        mergeRoutingEntryAttributes(newRoutingEntry, oldRoutingEntry.getExpiryDateMs(), oldRoutingEntry.getIsSticky());
+        hashMap.put(participantId, newRoutingEntry);
+        logger.debug("Updated routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {} from address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                      participantId,
                      newRoutingEntry.address,
                      newRoutingEntry.isGloballyVisible,
@@ -118,8 +120,6 @@ public class RoutingTableImpl implements RoutingTable {
                      oldRoutingEntry.isGloballyVisible,
                      oldRoutingEntry.expiryDateMs,
                      oldRoutingEntry.isSticky);
-        mergeRoutingEntryAttributes(newRoutingEntry, oldRoutingEntry.getExpiryDateMs(), oldRoutingEntry.getIsSticky());
-        hashMap.put(participantId, newRoutingEntry);
     }
 
     /**
@@ -164,7 +164,7 @@ public class RoutingTableImpl implements RoutingTable {
                     long expiryDateMs,
                     final boolean sticky) {
         if (!addressValidator.isValidForRoutingTable(address)) {
-            logger.trace("ParticipantId {} has an unsupported address within this process.", participantId);
+            logger.trace("ParticipantId {} has an address unsupported within this process.", participantId);
             return;
         }
         try {
@@ -179,7 +179,7 @@ public class RoutingTableImpl implements RoutingTable {
             final boolean routingEntryAlreadyPresent = oldRoutingEntry != null;
 
             if (!routingEntryAlreadyPresent) {
-                logger.debug("Put entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {} into the routing table successfully",
+                logger.debug("Added routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                              participantId,
                              address,
                              isGloballyVisible,
@@ -193,7 +193,7 @@ public class RoutingTableImpl implements RoutingTable {
 
             if (addressOrVisibilityOfRoutingEntryChanged) {
                 if (oldRoutingEntry.isSticky) {
-                    logger.error("Sticky routing entry for participantId {}, address {}, isGloballyVisible {}, will not be updated by new entry with address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
+                    logger.error("Refused to update sticky routing entry participantId {}, address {}, isGloballyVisible {}, to address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                                  participantId,
                                  oldRoutingEntry.address,
                                  oldRoutingEntry.isGloballyVisible,
@@ -204,18 +204,20 @@ public class RoutingTableImpl implements RoutingTable {
                 } else if (addressValidator.allowUpdate(oldRoutingEntry, newRoutingEntry)) {
                     updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
                 } else {
-                    logger.warn("Unable to update routing entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, since the participant ID is already associated with a routing entry with address {}, isGloballyVisible {}",
+                    logger.warn("Refused to update routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, to address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                                 participantId,
+                                oldRoutingEntry.address,
+                                oldRoutingEntry.isGloballyVisible,
+                                oldRoutingEntry.expiryDateMs,
+                                oldRoutingEntry.isSticky,
                                 address,
                                 isGloballyVisible,
                                 expiryDateMs,
-                                sticky,
-                                oldRoutingEntry.address,
-                                oldRoutingEntry.isGloballyVisible);
+                                sticky);
                 }
             } else {
                 // only expiryDate or sticky flag of routing entry changed
-                logger.trace("Routing table entrz with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {} already exists. Updating expiryDate and sticky-flag",
+                logger.trace("Updated routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {} . Updated expiryDate and sticky-flag",
                              participantId,
                              address,
                              isGloballyVisible,
@@ -280,7 +282,7 @@ public class RoutingTableImpl implements RoutingTable {
         RoutingEntry routingEntry = hashMap.get(participantId);
         if (routingEntry != null) {
             if (routingEntry.isSticky) {
-                logger.warn("Cannot remove sticky routing entry (participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={}) from routing table",
+                logger.warn("Cannot remove sticky routing entry (participantId={}, address={}, isGloballyVisible={}, expiryDateMs={}, sticky={})",
                             participantId,
                             routingEntry.getAddress(),
                             routingEntry.getIsGloballyVisible(),
@@ -288,7 +290,7 @@ public class RoutingTableImpl implements RoutingTable {
                             routingEntry.getIsSticky());
             } else {
                 hashMap.remove(participantId);
-                logger.debug("Removed routing table entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
+                logger.debug("Removed routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                              participantId,
                              routingEntry.getAddress(),
                              routingEntry.getIsGloballyVisible(),
@@ -321,7 +323,7 @@ public class RoutingTableImpl implements RoutingTable {
 
             if (!e.getValue().getIsSticky() && e.getValue().expiryDateMs < currentTimeMillis) {
                 it.remove();
-                logger.trace("Purged routing entry with participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
+                logger.trace("Purged routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}",
                              e.getKey(),
                              e.getValue().getAddress(),
                              e.getValue().getIsGloballyVisible(),
