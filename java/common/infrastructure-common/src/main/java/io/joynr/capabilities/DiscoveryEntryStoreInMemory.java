@@ -218,7 +218,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
             }
         }
 
-        logger.debug("Capabilities found: {}", capabilitiesList.toString());
+        logger.trace("Capabilities found: {}", capabilitiesList.toString());
         return capabilitiesList;
     }
 
@@ -233,7 +233,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
 
             T discoveryEntry = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
 
-            logger.debug("Capability for participantId {} found: {}", participantId, discoveryEntry);
+            logger.trace("Capability for participantId {} found: {}", participantId, discoveryEntry);
             if (discoveryEntry instanceof GlobalDiscoveryEntry
                     && !checkAge(registeredCapabilitiesTime.get(discoveryEntryId), cacheMaxAge)) {
                 return Optional.empty();
