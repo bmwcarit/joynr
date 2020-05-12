@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.common.ExpiryDate;
+import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.dispatching.DispatcherUtils;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
@@ -242,10 +243,22 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                 return null;
             }
             Object response = RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse());
-            logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
-                         requestReplyId,
-                         method.getName(),
-                         response);
+            if (logger.isTraceEnabled()) {
+                String responseString;
+                if (response instanceof MultiReturnValuesContainer) {
+                    responseString = Arrays.deepToString(((MultiReturnValuesContainer) response).getValues());
+                } else {
+                    responseString = response.toString();
+                }
+                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
+                             requestReplyId,
+                             method.getName(),
+                             responseString);
+            } else {
+                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}",
+                             requestReplyId,
+                             method.getName());
+            }
             return response;
         } else if (reply.getError() instanceof ApplicationException) {
             logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
