@@ -358,3 +358,5 @@ install(
     DESTINATION "${JOYNR_INSTALL_CMAKECONFDIR}"
 )
 
+# unset variable to avoid confusion
+unset(JoynrConfig_RESOURCES_DIR)

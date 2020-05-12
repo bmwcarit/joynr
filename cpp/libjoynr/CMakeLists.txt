@@ -14,6 +14,8 @@ add_subdirectory(websocket)
 
 add_library(${PROJECT_NAME} SHARED "")
 add_library(Joynr::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+# Needed for compatibility reasons
+add_library(Joynr ALIAS ${PROJECT_NAME})
 
 target_link_objlibraries(${PROJECT_NAME}
     PUBLIC Joynr::Serializer

@@ -1,6 +1,7 @@
 set(JOYNR_ENABLE_DLT_LOGGING @JOYNR_ENABLE_DLT_LOGGING@)
 
 include(CMakeFindDependencyMacro)
+include(FindPkgConfig)
 
 find_dependency(Boost @JOYNR_BOOST_REQUIRED_VERSION@ REQUIRED
                 COMPONENTS system filesystem thread)
@@ -22,6 +23,28 @@ find_dependency(smrf @JOYNR_SMRF_REQUIRED_VERSION@ REQUIRED)
 if(NOT TARGET Joynr::JoynrLib)
     get_filename_component(CURRENT_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
     include("${CURRENT_CMAKE_DIR}/JoynrTargets.cmake")
+
+    # Backward compatibility
+    get_target_property(
+        Joynr_LIB_COMMON_INCLUDE_DIRS
+        Joynr::JoynrLib
+        INTERFACE_INCLUDE_DIRECTORIES
+    )
+    get_target_property(
+        Joynr_LIB_COMMON_LIBRARIES
+        Joynr::JoynrLib
+        INTERFACE_LINK_LIBRARIES
+    )
+    get_target_property(
+        Joynr_LIB_WS_INCLUDE_DIRS
+        Joynr::JoynrWsRuntime
+        INTERFACE_INCLUDE_DIRECTORIES
+    )
+    get_target_property(
+        Joynr_LIB_WS_LIBRARIES
+        Joynr::JoynrWsRuntime
+        INTERFACE_LINK_LIBRARIES
+    )
 endif()
 
 set(Joynr_BIN_DIR "@PACKAGE_JOYNR_INSTALL_BINDIR@")

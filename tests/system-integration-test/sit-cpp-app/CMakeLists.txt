@@ -124,10 +124,12 @@ set(
 )
 
 # copy joynr resources and settings
-file(
-    COPY ${Joynr_RESOURCES_DIR}
-    DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-)
+if(IS_DIRECTORY "${Joynr_RESOURCES_DIR}")
+    file(
+        COPY "${Joynr_RESOURCES_DIR}"
+        DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    )
+endif()
 
 # copy systemintegrationtest resources and settings
 file(
