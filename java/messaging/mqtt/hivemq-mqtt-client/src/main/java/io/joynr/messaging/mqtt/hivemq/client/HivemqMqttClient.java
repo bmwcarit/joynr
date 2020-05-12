@@ -55,7 +55,7 @@ import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 public class HivemqMqttClient implements JoynrMqttClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClient.class);
-    private static final long NOT_CONNECTED_RETRY_INTERVAL_MS = 60000;
+    private static final long NOT_CONNECTED_RETRY_INTERVAL_MS = 5000;
 
     private final Mqtt5RxClient client;
     private final Mqtt5ClientConfig clientConfig;
