@@ -89,7 +89,11 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
         try {
             ImmutableMessage message = new ImmutableMessage(serializedMessage);
 
-            logger.debug("<<< INCOMING <<< {}", message);
+            if (logger.isTraceEnabled()) {
+                logger.trace("<<< INCOMING <<< {}", message);
+            } else {
+                logger.debug("<<< INCOMING <<< {}", message.getTrackingInfo());
+            }
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {
