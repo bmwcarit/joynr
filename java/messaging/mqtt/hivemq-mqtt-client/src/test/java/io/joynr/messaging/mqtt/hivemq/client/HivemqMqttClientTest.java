@@ -47,7 +47,7 @@ import io.reactivex.Flowable;
 
 public class HivemqMqttClientTest {
 
-    private static final long NOT_CONNECTED_RETRY_INTERVAL_MS = 60000;
+    private static final long NOT_CONNECTED_RETRY_INTERVAL_MS = 5000;
 
     HivemqMqttClient client;
     @Mock
