@@ -44,7 +44,11 @@ public class WebSocketMessagingStub implements IMessagingStub {
 
     @Override
     public void transmit(ImmutableMessage message, SuccessAction successAction, FailureAction failureAction) {
-        logger.debug(">>> OUTGOING >>> {}", message);
+        if (logger.isTraceEnabled()) {
+            logger.trace(">>> OUTGOING >>> {}", message);
+        } else {
+            logger.debug(">>> OUTGOING >>> {}", message.getTrackingInfo());
+        }
 
         if (!message.isTtlAbsolute()) {
             throw new JoynrRuntimeException("Relative TTL not supported");
