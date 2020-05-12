@@ -121,9 +121,10 @@ public class Arbitrator {
     }
 
     void attemptArbitration() {
-        logger.debug("DISCOVERY lookup for domains: {}, interface: {}, gbids: {}",
+        logger.debug("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {}",
                      domains,
                      interfaceName,
+                     interfaceVersion,
                      Arrays.toString(gbids));
         localDiscoveryAggregator.lookup(new DiscoveryCallback(),
                                         domains.toArray(new String[domains.size()]),
@@ -137,9 +138,10 @@ public class Arbitrator {
     }
 
     public void lookup() {
-        logger.debug("DISCOVERY lookup for domains: {}, interface: {}, gbids: {}",
+        logger.debug("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {}",
                      domains,
                      interfaceName,
+                     interfaceVersion,
                      Arrays.toString(gbids));
         localDiscoveryAggregator.lookup(new DiscoveryCallback(false),
                                         domains.toArray(new String[domains.size()]),
@@ -218,13 +220,13 @@ public class Arbitrator {
                     DiscoveryError discoveryError = ((ApplicationException) exception).getError();
                     reason = new DiscoveryException("Unable to find provider due to DiscoveryError: " + discoveryError
                             + " interface: " + interfaceName + " domains: " + domains + " gbids: "
-                            + Arrays.toString(gbids));
+                            + Arrays.toString(gbids) + " " + interfaceVersion);
                 } else {
                     reason = exception;
                 }
             } else if (discoveredVersionsByDomainMap == null || discoveredVersionsByDomainMap.isEmpty()) {
                 reason = new DiscoveryException("Unable to find provider in time: interface: " + interfaceName
-                        + " domains: " + domains);
+                        + " domains: " + domains + " " + interfaceVersion);
             } else {
                 reason = noCompatibleProviderFound();
             }
@@ -353,9 +355,10 @@ public class Arbitrator {
             switch (error) {
             case NO_ENTRY_FOR_PARTICIPANT:
             case NO_ENTRY_FOR_SELECTED_BACKENDS:
-                logger.trace("DISCOVERY lookup for domains: {}, interface: {}, gbids: {} returned DiscoveryError {}, continuing",
+                logger.trace("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {} returned DiscoveryError {}, continuing",
                              domains,
                              interfaceName,
+                             interfaceVersion,
                              Arrays.toString(gbids),
                              error);
                 if (isArbitrationInTime()) {
@@ -368,9 +371,10 @@ public class Arbitrator {
             case INVALID_GBID:
             case INTERNAL_ERROR:
             default:
-                logger.trace("DISCOVERY lookup for domains: {}, interface: {}, gbids: {} returned DiscoveryError {}, giving up",
+                logger.trace("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {} returned DiscoveryError {}, giving up",
                              domains,
                              interfaceName,
+                             interfaceVersion,
                              Arrays.toString(gbids),
                              error);
                 arbitrationFailed(new ApplicationException(error));
@@ -382,7 +386,14 @@ public class Arbitrator {
         public void onSuccess(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
             assert discoveryEntries != null : "Discovery entries may not be null.";
             if (allDomainsDiscovered(discoveryEntries)) {
-                logger.trace("Lookup succeeded. Got {}", Arrays.toString(discoveryEntries));
+                if (logger.isTraceEnabled()) {
+                    logger.trace("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {} succeeded. Got {}",
+                                 domains,
+                                 interfaceName,
+                                 interfaceVersion,
+                                 Arrays.toString(gbids),
+                                 Arrays.toString(discoveryEntries));
+                }
                 Set<DiscoveryEntryWithMetaInfo> discoveryEntriesSet = filterDiscoveryEntries(discoveryEntries);
 
                 Set<DiscoveryEntryWithMetaInfo> selectedCapabilities;
@@ -445,7 +456,7 @@ public class Arbitrator {
                                                                          discoveryEntriesSet,
                                                                          discoveredVersionsByDomainMap);
                 if (discoveryEntriesSet.isEmpty()) {
-                    logger.debug("No discovery entries left after filtering while looking for interface {} in version {}. Entries found: {}",
+                    logger.debug("No discovery entries left after filtering while looking for interface {} in {}. Entries found: {}",
                                  interfaceName,
                                  interfaceVersion,
                                  Arrays.toString(discoveryEntries));
