@@ -71,6 +71,7 @@ public class Arbitrator {
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
     private final Map<String, Set<Version>> discoveredVersionsByDomainMap = new HashMap<>();
     private String[] gbids;
+    private int arbitrationCnt = 0;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public Arbitrator(final Set<String> domains,
@@ -121,7 +122,9 @@ public class Arbitrator {
     }
 
     void attemptArbitration() {
-        logger.debug("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {}",
+        arbitrationCnt++;
+        logger.debug("DISCOVERY lookup #{} for domains: {}, interface: {}, {}, gbids: {}",
+                     arbitrationCnt,
                      domains,
                      interfaceName,
                      interfaceVersion,
@@ -138,7 +141,8 @@ public class Arbitrator {
     }
 
     public void lookup() {
-        logger.debug("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {}",
+        arbitrationCnt++;
+        logger.debug("DISCOVERY lookup #{} for domains: {}, interface: {}, {}, gbids: {}",
                      domains,
                      interfaceName,
                      interfaceVersion,
@@ -355,7 +359,8 @@ public class Arbitrator {
             switch (error) {
             case NO_ENTRY_FOR_PARTICIPANT:
             case NO_ENTRY_FOR_SELECTED_BACKENDS:
-                logger.trace("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {} returned DiscoveryError {}, continuing",
+                logger.trace("DISCOVERY lookup #{} for domains: {}, interface: {}, {}, gbids: {} returned DiscoveryError {}, continuing",
+                             arbitrationCnt,
                              domains,
                              interfaceName,
                              interfaceVersion,
@@ -371,7 +376,8 @@ public class Arbitrator {
             case INVALID_GBID:
             case INTERNAL_ERROR:
             default:
-                logger.trace("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {} returned DiscoveryError {}, giving up",
+                logger.trace("DISCOVERY lookup #{} for domains: {}, interface: {}, {}, gbids: {} returned DiscoveryError {}, giving up",
+                             arbitrationCnt,
                              domains,
                              interfaceName,
                              interfaceVersion,
@@ -387,7 +393,8 @@ public class Arbitrator {
             assert discoveryEntries != null : "Discovery entries may not be null.";
             if (allDomainsDiscovered(discoveryEntries)) {
                 if (logger.isTraceEnabled()) {
-                    logger.trace("DISCOVERY lookup for domains: {}, interface: {}, {}, gbids: {} succeeded. Got {}",
+                    logger.trace("DISCOVERY lookup #{} for domains: {}, interface: {}, {}, gbids: {} succeeded. Got {}",
+                                 arbitrationCnt,
                                  domains,
                                  interfaceName,
                                  interfaceVersion,
