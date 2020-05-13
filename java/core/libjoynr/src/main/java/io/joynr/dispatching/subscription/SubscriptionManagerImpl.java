@@ -243,14 +243,16 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             final String multicastId = MulticastIdUtil.createMulticastId(toDiscoveryEntry.getParticipantId(),
                                                                          multicastSubscribeInvocation.getSubscriptionName(),
                                                                          multicastSubscribeInvocation.getPartitions());
-            logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider participantId: {}, provider domain: {}",
+            logger.debug("MULTICAST SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider participantId: {}, domain: {}, interfaceName: {}, {}",
                          multicastSubscribeInvocation.getSubscriptionId(),
                          multicastId,
                          multicastSubscribeInvocation.getSubscriptionName(),
                          multicastSubscribeInvocation.getQos(),
                          fromParticipantId,
                          toDiscoveryEntry.getParticipantId(),
-                         toDiscoveryEntry.getDomain());
+                         toDiscoveryEntry.getDomain(),
+                         toDiscoveryEntry.getInterfaceName(),
+                         toDiscoveryEntry.getProviderVersion());
             registerSubscription(fromParticipantId,
                                  toDiscoveryEntries,
                                  multicastSubscribeInvocation,
@@ -339,9 +341,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                 receive.setAccessible(true);
             }
 
-            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, broadcastValue: {}",
-                         subscriptionId,
-                         broadcastValues);
+            if (logger.isTraceEnabled()) {
+                logger.trace("BROADCAST SUBSCRIPTION notify listener: subscriptionId: {}, broadcastValue: {}",
+                             subscriptionId,
+                             broadcastValues);
+            } else {
+                logger.debug("BROADCAST SUBSCRIPTION notify listener: subscriptionId: {}", subscriptionId);
+
+            }
             receive.invoke(broadcastSubscriptionListener, broadcastValues);
 
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -354,10 +361,16 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         for (Map.Entry<Pattern, Set<String>> entry : multicastSubscribersDirectory.entrySet()) {
             if (entry.getKey().matcher(multicastId).matches()) {
                 for (String subscriptionId : entry.getValue()) {
-                    logger.trace("SUBSCRIPTION notify listener: subscriptionId: {}, multicastId: {}, broadcastValue: {}",
-                                 subscriptionId,
-                                 multicastId,
-                                 publicizedValues);
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("MULTICAST SUBSCRIPTION notify listener: subscriptionId: {}, multicastId: {}, broadcastValue: {}",
+                                     subscriptionId,
+                                     multicastId,
+                                     publicizedValues);
+                    } else {
+                        logger.debug("MULTICAST SUBSCRIPTION notify listener: subscriptionId: {}, multicastId: {}",
+                                     subscriptionId,
+                                     multicastId);
+                    }
                     handleBroadcastPublication(subscriptionId, publicizedValues);
                 }
             }
@@ -371,9 +384,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         if (!listener.isPresent()) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
-            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, attributeValue: {}",
-                         subscriptionId,
-                         attributeValue);
+            if (logger.isTraceEnabled()) {
+                logger.trace("ATTRIBUTE SUBSCRIPTION notify listener: subscriptionId: {}, attributeValue: {}",
+                             subscriptionId,
+                             attributeValue);
+            } else {
+                logger.debug("ATTRIBUTE SUBSCRIPTION notify listener: subscriptionId: {}", subscriptionId);
+            }
+
             listener.get().onReceive(attributeValue);
         }
     }
@@ -385,7 +403,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         if (!listener.isPresent()) {
             logger.error("No subscription listener found for incoming publication!");
         } else {
-            logger.debug("SUBSCRIPTION notify listener: subscriptionId: {}, error: {}", subscriptionId, error);
+            logger.debug("ATTRIBUTE SUBSCRIPTION notify listener: subscriptionId: {}, error: {}",
+                         subscriptionId,
+                         error);
             listener.get().onError(error);
         }
     }
