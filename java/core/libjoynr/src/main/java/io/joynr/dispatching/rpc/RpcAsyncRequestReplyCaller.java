@@ -77,10 +77,16 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                 }
             } else {
                 response = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
-                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
-                             requestReplyId,
-                             method.getName(),
-                             response);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
+                                 requestReplyId,
+                                 method.getName(),
+                                 response);
+                } else {
+                    logger.debug("REQUEST returns successful: requestReplyId: {}, method {}",
+                                 requestReplyId,
+                                 method.getName());
+                }
                 // Callback must be called first before releasing the future
                 if (callback != null) {
                     callback.resolve(response);
