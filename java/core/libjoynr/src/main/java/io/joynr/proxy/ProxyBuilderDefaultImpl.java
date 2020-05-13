@@ -207,7 +207,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 errorHolder[0] = error;
-                logger.error("Error creating proxy: interface: {} domains: {}, Error:", interfaceName, domains, error);
+                logger.error("Error creating proxy: interface: {} domains: {}, {}, Error:",
+                             interfaceName,
+                             domains,
+                             interfaceVersion,
+                             error);
             }
         });
         if (errorHolder[0] != null) {
@@ -243,7 +247,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             arbitrator.scheduleArbitration();
             return proxy;
         } catch (JoynrRuntimeException e) {
-            logger.debug("Error building proxy", e);
+            logger.debug("Error creating proxy: interface: {} domains: {}, {}, Error:",
+                         interfaceName,
+                         domains,
+                         interfaceVersion,
+                         e);
             callback.onProxyCreationError(e);
             return null;
         }
@@ -270,7 +278,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
         proxyInvocationHandler.registerProxy(proxy);
         proxyInvocationHandler.createConnector(result);
-        logger.trace("Proxy created: interface: {} domains: {}", interfaceName, domains);
+        logger.trace("Proxy participantId {} created: interface: {} domains: {} : {}",
+                     proxyParticipantId,
+                     interfaceName,
+                     domains,
+                     interfaceVersion);
         return proxy;
     }
 
@@ -304,7 +316,10 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
             @Override
             public void onSuccess(ArbitrationResult arbitrationResult) {
-                logger.debug("DISCOVERY proxy created for: {}", arbitrationResult.getDiscoveryEntries());
+                logger.debug("DISCOVERY proxy participantId {} {} created for: {}",
+                             proxyParticipantId,
+                             interfaceVersion,
+                             arbitrationResult.getDiscoveryEntries());
                 proxyInvocationHandler.createConnector(arbitrationResult);
                 callback.onProxyCreationFinished(proxy);
             }
@@ -317,6 +332,11 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                 } else {
                     reason = new JoynrRuntimeException(throwable);
                 }
+                logger.debug("DISCOVERY Error creating proxy: interface: {} domains: {}, {}, Error:",
+                             interfaceName,
+                             domains,
+                             interfaceVersion,
+                             reason);
                 proxyInvocationHandler.abort(reason);
                 callback.onProxyCreationError(reason);
             }
