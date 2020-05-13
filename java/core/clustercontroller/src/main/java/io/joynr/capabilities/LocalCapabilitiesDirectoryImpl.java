@@ -392,19 +392,21 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                               globalAddress);
         if (globalDiscoveryEntry != null) {
 
-            logger.debug("Global registration for participantId {}, domain {}, interface {} started",
+            logger.debug("Global provider registration for participantId {}, domain {}, interface {}, {} started",
                          globalDiscoveryEntry.getParticipantId(),
                          globalDiscoveryEntry.getDomain(),
-                         globalDiscoveryEntry.getInterfaceName());
+                         globalDiscoveryEntry.getInterfaceName(),
+                         globalDiscoveryEntry.getProviderVersion());
 
             globalCapabilitiesDirectoryClient.add(new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
                 public void onSuccess(Void nothing) {
-                    logger.info("Global Registration for participantId {}, domain {}, interface {} successful",
+                    logger.info("Global provider registration for participantId {}, domain {}, interface {}, {} successful",
                                 globalDiscoveryEntry.getParticipantId(),
                                 globalDiscoveryEntry.getDomain(),
-                                globalDiscoveryEntry.getInterfaceName());
+                                globalDiscoveryEntry.getInterfaceName(),
+                                globalDiscoveryEntry.getProviderVersion());
                     synchronized (globalDiscoveryEntryCache) {
                         mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
                         globalDiscoveryEntryCache.add(globalDiscoveryEntry);
@@ -414,10 +416,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException exception) {
-                    logger.error("Global registration for participantId {}, domain {}, interface {} failed",
+                    logger.error("Global registration for participantId {}, domain {}, interface {}, {} failed",
                                  globalDiscoveryEntry.getParticipantId(),
                                  globalDiscoveryEntry.getDomain(),
-                                 globalDiscoveryEntry.getInterfaceName());
+                                 globalDiscoveryEntry.getInterfaceName(),
+                                 globalDiscoveryEntry.getProviderVersion());
                     if (awaitGlobalRegistration == true) {
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
@@ -426,10 +429,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(DiscoveryError errorEnum) {
-                    logger.error("Global registration for participantId {}, domain {}, interface {} failed",
+                    logger.error("Global registration for participantId {}, domain {}, interface {}, {} failed",
                                  globalDiscoveryEntry.getParticipantId(),
                                  globalDiscoveryEntry.getDomain(),
-                                 globalDiscoveryEntry.getInterfaceName());
+                                 globalDiscoveryEntry.getInterfaceName(),
+                                 globalDiscoveryEntry.getProviderVersion());
                     if (awaitGlobalRegistration == true) {
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
