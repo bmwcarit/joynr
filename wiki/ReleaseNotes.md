@@ -2,6 +2,19 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.10
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Fixed automatically generated `DiscoveryQos` when using the
+  `GuidedProxyBuilder` to actually use the default values, instead of invalid
+  values.
+
+## Configuration property changes
+None.
+
 # joynr 1.8.9
 
 ## API relevant changes

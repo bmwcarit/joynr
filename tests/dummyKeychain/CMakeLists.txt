@@ -15,7 +15,7 @@ message(STATUS "option BUILD_SHARED_LIBS=" ${BUILD_SHARED_LIBS})
 
 # need a dependency to joynr for joynr::IKeyChain interface
 # depending on joynr will allow to use joynr utils as well
-find_package(Joynr 1.8.9 REQUIRED)
+find_package(Joynr 1.8.10 REQUIRED)
 
 set(
     dummyKeychain_HEADERS
