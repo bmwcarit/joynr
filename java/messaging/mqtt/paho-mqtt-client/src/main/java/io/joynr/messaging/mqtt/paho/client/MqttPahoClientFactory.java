@@ -198,7 +198,8 @@ public class MqttPahoClientFactory implements MqttClientFactory, ShutdownListene
                                             keyStorePWD,
                                             trustStorePWD,
                                             username,
-                                            password);
+                                            password,
+                                            gbid);
         } catch (MqttException e) {
             logger.error("Create MqttClient failed", e);
         }

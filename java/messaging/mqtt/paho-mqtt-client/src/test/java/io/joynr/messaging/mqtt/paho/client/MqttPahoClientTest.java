@@ -690,7 +690,8 @@ public class MqttPahoClientTest {
                                              "",
                                              "",
                                              username,
-                                             password);
+                                             password,
+                                             "gbid");
 
         joynrMqttClient.start();
         joynrMqttClient.setMessageListener(mockReceiver);
