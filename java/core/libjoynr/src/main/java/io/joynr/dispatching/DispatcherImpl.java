@@ -118,11 +118,14 @@ public class DispatcherImpl implements Dispatcher {
                                                                 fromParticipantId,
                                                                 toDiscoveryEntry.getParticipantId());
             }
-            logger.debug("Send SubscriptionRequest: subscriptionId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}",
+            logger.debug("REGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
                          subscriptionRequest.getSubscriptionId(),
                          message.getId(),
                          fromParticipantId,
-                         toDiscoveryEntry.getParticipantId());
+                         toDiscoveryEntry.getParticipantId(),
+                         toDiscoveryEntry.getDomain(),
+                         toDiscoveryEntry.getInterfaceName(),
+                         toDiscoveryEntry.getProviderVersion());
             messageSender.sendMessage(message);
         }
     }
@@ -138,11 +141,14 @@ public class DispatcherImpl implements Dispatcher {
                                                                            subscriptionStop,
                                                                            messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
-            logger.debug("UNREGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}",
+            logger.debug("UNREGISTER SUBSCRIPTION call proxy: subscriptionId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
                          subscriptionStop.getSubscriptionId(),
                          message.getId(),
                          fromParticipantId,
-                         toDiscoveryEntry.getParticipantId());
+                         toDiscoveryEntry.getParticipantId(),
+                         toDiscoveryEntry.getDomain(),
+                         toDiscoveryEntry.getInterfaceName(),
+                         toDiscoveryEntry.getProviderVersion());
             messageSender.sendMessage(message);
         }
 
@@ -201,8 +207,8 @@ public class DispatcherImpl implements Dispatcher {
         try {
             return MessagingQosEffort.valueOf(effortString);
         } catch (IllegalArgumentException e) {
-            logger.error("Received message (id: {}) with invalid effort: {}. Using default effort for reply message.",
-                         message.getId(),
+            logger.error("Received message ({}) with invalid effort: {}. Using default effort for reply message.",
+                         message.getTrackingInfo(),
                          effortString);
             return null;
         }
@@ -216,14 +222,18 @@ public class DispatcherImpl implements Dispatcher {
         }
 
         if (!message.isTtlAbsolute()) {
-            logger.error("Received message with relative ttl (not supported)");
+            logger.error("Received message with relative ttl (not supported): {}", message.getTrackingInfo());
             return;
         }
 
         final long expiryDate = message.getTtlMs();
         final Map<String, String> customHeaders = message.getCustomHeaders();
         if (DispatcherUtils.isExpired(expiryDate)) {
-            logger.debug("TTL expired, discarding message : {}", message);
+            if (logger.isTraceEnabled()) {
+                logger.trace("TTL expired, discarding message : {}", message);
+            } else {
+                logger.debug("TTL expired, discarding message : {}", message.getTrackingInfo());
+            }
             return;
         }
 
@@ -463,7 +473,7 @@ public class DispatcherImpl implements Dispatcher {
     }
 
     private void handle(SubscriptionStop subscriptionStop) {
-        logger.info("Subscription stop received");
+        logger.debug("Subscription stop received, subscriptionId: {}", subscriptionStop.getSubscriptionId());
         publicationManager.stopPublication(subscriptionStop.getSubscriptionId());
     }
 
