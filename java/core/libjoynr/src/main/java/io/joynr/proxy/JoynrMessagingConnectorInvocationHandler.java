@@ -240,6 +240,9 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                             strippedArguments.messagingQos);
         if (reply.getError() == null) {
             if (method.getReturnType().equals(void.class)) {
+                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: [void]",
+                             requestReplyId,
+                             method.getName());
                 return null;
             }
             Object response = RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse());
@@ -250,12 +253,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                 } else {
                     responseString = response.toString();
                 }
-                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
+                logger.trace("REQUEST returns successful: requestReplyId: {}, method {}, response: {}",
                              requestReplyId,
                              method.getName(),
                              responseString);
             } else {
-                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}",
+                logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: [not available with current loglevel]",
                              requestReplyId,
                              method.getName());
             }
