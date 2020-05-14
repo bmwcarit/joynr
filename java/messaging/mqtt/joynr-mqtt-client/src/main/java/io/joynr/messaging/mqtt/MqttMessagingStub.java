@@ -68,15 +68,9 @@ public class MqttMessagingStub implements IMessagingStub {
         }
         byte[] serializedMessage = message.getSerializedMessage();
         if (logger.isTraceEnabled()) {
-            logger.trace(">>> OUTGOING TO {} >>> {}bytes: {}",
-                         address.getBrokerUri(),
-                         serializedMessage.length,
-                         message);
+            logger.trace(">>> OUTGOING TO {} >>> {}", address.getBrokerUri(), message);
         } else {
-            logger.debug(">>> OUTGOING TO {} >>> {}bytes: {}",
-                         address.getBrokerUri(),
-                         serializedMessage.length,
-                         message.getTrackingInfo());
+            logger.debug(">>> OUTGOING TO {} >>> {}", address.getBrokerUri(), message.getTrackingInfo());
         }
         mqttClient.publishMessage(topic, serializedMessage, qosLevel, msgTtlSec, successAction, failureAction);
     }
