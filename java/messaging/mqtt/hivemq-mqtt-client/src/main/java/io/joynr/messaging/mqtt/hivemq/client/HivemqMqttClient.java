@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.mqtt.hivemq.client;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -191,7 +192,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         logger.info("{}: Attempting to shutdown connection.", clientInformation);
         this.shuttingDown = true;
         client.disconnectWith().noSessionExpiry().applyDisconnect().doOnComplete(() -> {
-            logger.debug("{}: Disconnected.", clientInformation);
+            logger.info("{}: Disconnected.", clientInformation);
         }).onErrorComplete(throwable -> {
             logger.error("{}: Error encountered from disconnect.", clientInformation, throwable);
             return true;
@@ -218,14 +219,14 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                 .payload(serializedMessage)
                                                 .messageExpiryInterval(messageExpiryIntervalSec)
                                                 .build();
-        logger.debug("{}: Publishing to {}: {}bytes with qos {}",
+        logger.debug("{}: Publishing to topic: {}, size: {}, qos: {}",
                      clientInformation,
                      topic,
                      serializedMessage.length,
                      qosLevel);
         client.toAsync().publish(mqtt5Publish).whenComplete((publishResult, throwable) -> {
             if (throwable != null) {
-                logger.error("{}: Publishing to {}: {}bytes with qos {} failed with exception.",
+                logger.error("{}: Publishing to topic: {}, size: {}, qos: {} failed with exception.",
                              clientInformation,
                              topic,
                              serializedMessage.length,
@@ -238,7 +239,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                     failureAction.execute(new JoynrDelayMessageException("Publish failed: " + throwable.toString()));
                 }
             } else if (publishResult.getError().isPresent()) {
-                logger.error("{}: Publishing to {}: {}bytes with qos {} failed with error result: {}",
+                logger.error("{}: Publishing to topic: {}, size: {}, qos: {} failed with error result: {}",
                              clientInformation,
                              topic,
                              serializedMessage.length,
@@ -249,12 +250,21 @@ public class HivemqMqttClient implements JoynrMqttClient {
                         + publishResult.getError().get().toString()));
             } else {
                 connectionStatusMetrics.increaseSentMessages();
-                logger.trace("{}: Publishing to {}: {}bytes with qos {} succeeded: {}",
-                             clientInformation,
-                             topic,
-                             serializedMessage.length,
-                             qosLevel,
-                             publishResult);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("{}: Publishing to topic: {}, size: {}, qos: {} succeeded: {}",
+                                 clientInformation,
+                                 topic,
+                                 serializedMessage.length,
+                                 qosLevel,
+                                 publishResult);
+                } else {
+                    logger.debug("{}: Publishing to topic: {}, size: {}, qos: {} succeeded.",
+                                 clientInformation,
+                                 topic,
+                                 serializedMessage.length,
+                                 qosLevel);
+
+                }
                 successAction.execute();
             }
         });
@@ -275,7 +285,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     @Override
     public void subscribe(String topic) {
         assert (isReceiver);
-        logger.info("{}: Subscribing to {}", clientInformation, topic);
+        logger.info("{}: Subscribing to topic: {}", clientInformation, topic);
         Mqtt5Subscription subscription = subscriptions.computeIfAbsent(topic,
                                                                        (t) -> Mqtt5Subscription.builder()
                                                                                                .topicFilter(t)
@@ -287,7 +297,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private void doSubscribe(Mqtt5Subscription subscription) {
         Mqtt5Subscribe subscribe = Mqtt5Subscribe.builder().addSubscription(subscription).build();
         client.subscribeStream(subscribe)
-              .doOnSingle(mqtt5SubAck -> logger.debug("{}: Subscribed to {} with result {}",
+              .doOnSingle(mqtt5SubAck -> logger.debug("{}: Subscribed to topic: {}, result: {}",
                                                       clientInformation,
                                                       subscription,
                                                       mqtt5SubAck))
@@ -302,7 +312,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     public void resubscribe() {
         logger.debug("{}: Resubscribe triggered.", clientInformation);
         subscriptions.forEach((topic, subscription) -> {
-            logger.info("{}: Resubscribing to {}", clientInformation, topic);
+            logger.info("{}: Resubscribing to topic: {}", clientInformation, topic);
             doSubscribe(subscription);
         });
     }
@@ -310,12 +320,12 @@ public class HivemqMqttClient implements JoynrMqttClient {
     @Override
     public void unsubscribe(String topic) {
         assert (isReceiver);
-        logger.info("{}: Unsubscribing from {}", clientInformation, topic);
+        logger.info("{}: Unsubscribing from topic: {}", clientInformation, topic);
         subscriptions.remove(topic);
         Mqtt5Unsubscribe unsubscribe = Mqtt5Unsubscribe.builder().addTopicFilter(topic).build();
         client.unsubscribe(unsubscribe)
-              .subscribe((unused) -> logger.debug("{}: Unsubscribed from {}", clientInformation, topic),
-                         throwable -> logger.error("{}: Unable to unsubscribe from {}",
+              .subscribe((unused) -> logger.debug("{}: Unsubscribed from topic: {}", clientInformation, topic),
+                         throwable -> logger.error("{}: Unable to unsubscribe from topic: {}",
                                                    clientInformation,
                                                    topic,
                                                    throwable));
@@ -327,7 +337,14 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     private void handleIncomingMessage(Mqtt5Publish mqtt5Publish) {
-        logger.trace("{}: Incoming: {}.", clientInformation, mqtt5Publish);
+        ByteBuffer payload = (mqtt5Publish.getPayload().isPresent()) ? mqtt5Publish.getPayload().get() : null;
+        logger.debug("{}: Received publication: topic: {}, size: {}, qos: {}, retain: {}, expiryInterval: {}.",
+                     clientInformation,
+                     mqtt5Publish.getTopic(),
+                     ((payload == null) ? "" : payload.remaining()),
+                     mqtt5Publish.getQos(),
+                     mqtt5Publish.isRetain(),
+                     mqtt5Publish.getMessageExpiryInterval().orElse(0));
         connectionStatusMetrics.increaseReceivedMessages();
         messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(),
                                    throwable -> logger.error("{}: Unable to transmit {}",
