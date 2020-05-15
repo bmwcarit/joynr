@@ -264,16 +264,30 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             }
             return response;
         } else if (reply.getError() instanceof ApplicationException) {
-            logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
-                         requestReplyId,
-                         method.getName(),
-                         reply.getError());
+            if (logger.isTraceEnabled()) {
+                logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                             requestReplyId,
+                             method.getName(),
+                             reply.getError());
+            } else {
+                logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                             requestReplyId,
+                             method.getName(),
+                             ((ApplicationException) reply.getError()).toString());
+            }
             throw (ApplicationException) reply.getError();
         } else {
-            logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
-                         requestReplyId,
-                         method.getName(),
-                         reply.getError());
+            if (logger.isTraceEnabled()) {
+                logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response:",
+                             requestReplyId,
+                             method.getName(),
+                             reply.getError());
+            } else {
+                logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                             requestReplyId,
+                             method.getName(),
+                             ((JoynrRuntimeException) reply.getError()).toString());
+            }
             throw (JoynrRuntimeException) reply.getError();
         }
 

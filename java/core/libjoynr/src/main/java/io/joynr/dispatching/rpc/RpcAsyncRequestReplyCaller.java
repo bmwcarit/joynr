@@ -65,10 +65,22 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
         Object[] response = null;
         try {
             if (payload.getError() != null) {
-                logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
-                             requestReplyId,
-                             method.getName(),
-                             payload.getError());
+                if (logger.isTraceEnabled()) {
+                    logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                                 requestReplyId,
+                                 method.getName(),
+                                 payload.getError());
+                } else if (payload.getError() instanceof ApplicationException) {
+                    logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                                 requestReplyId,
+                                 method.getName(),
+                                 ((ApplicationException) payload.getError()).toString());
+                } else {
+                    logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                                 requestReplyId,
+                                 method.getName(),
+                                 ((JoynrRuntimeException) payload.getError()).toString());
+                }
                 // Callback must be called first before releasing the future
                 errorCallback(payload.getError());
 
@@ -83,7 +95,7 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                                  method.getName(),
                                  response);
                 } else {
-                    logger.debug("REQUEST returns successful: requestReplyId: {}, method {}",
+                    logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: [not available with current loglevel]",
                                  requestReplyId,
                                  method.getName());
                 }
