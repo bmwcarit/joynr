@@ -507,6 +507,24 @@ class SubscriptionManager {
                 messagingQos,
                 subscriptionRequest
             })
+            .then(() => {
+                const type = Typing.getObjectType(subscriptionRequest);
+                if (type === "MulticastSubscriptionRequest") {
+                    const subscriptionReplyCaller = this.subscriptionReplyCallers.get(subscriptionId);
+                    const subscriptionListener = this.subscriptionListeners[subscriptionId];
+                    if (subscriptionReplyCaller !== undefined) {
+                        subscriptionReplyCaller.cb(undefined, subscriptionId);
+                    }
+                    if (subscriptionListener !== undefined && subscriptionListener.onSubscribed !== undefined) {
+                        subscriptionListener.onSubscribed(subscriptionId);
+                    }
+                    this.subscriptionReplyCallers.delete(subscriptionId);
+                    this.addRequestToMulticastSubscribers(
+                        (subscriptionRequest as MulticastSubscriptionRequest).multicastId,
+                        subscriptionRequest.subscriptionId
+                    );
+                }
+            })
             .catch(error => {
                 this.cleanupSubscription(subscriptionRequest.subscriptionId);
                 if (parameters.onError) {

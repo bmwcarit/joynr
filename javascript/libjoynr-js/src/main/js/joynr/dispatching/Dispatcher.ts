@@ -476,13 +476,11 @@ class Dispatcher {
                     from: settings.from
                 })
             );
-            return this.messageRouter
-                .addMulticastReceiver({
-                    multicastId: (settings.subscriptionRequest as MulticastSubscriptionRequest).multicastId,
-                    subscriberParticipantId: settings.from,
-                    providerParticipantId: settings.toDiscoveryEntry.participantId
-                })
-                .then(() => this.sendJoynrMessage(requestMessage, settings));
+            return this.messageRouter.addMulticastReceiver({
+                multicastId: (settings.subscriptionRequest as MulticastSubscriptionRequest).multicastId,
+                subscriberParticipantId: settings.from,
+                providerParticipantId: settings.toDiscoveryEntry.participantId
+            });
         }
         log.info(
             `broadcast subscription to ${settings.subscriptionRequest.subscribedToName}`,
