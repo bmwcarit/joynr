@@ -282,26 +282,6 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             );
         });
 
-        it("send multicast subscription request", async () => {
-            const settings = {
-                from: proxyId,
-                toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos,
-                subscriptionRequest: new MulticastSubscriptionRequest({
-                    multicastId: "multicastId",
-                    subscriptionId: "subscriptionId",
-                    subscribedToName: "multicastEvent",
-                    qos: subscriptionQos
-                })
-            };
-
-            await dispatcher.sendBroadcastSubscriptionRequest(settings);
-            checkMessageFromProxyWithTolerance(
-                JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
-                expiryDateMs
-            );
-        });
-
         it("send multicast subscription stop", () => {
             const settings = {
                 from: proxyId,
@@ -545,26 +525,6 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
 
             checkMessageFromProxyWithTolerance(
                 JoynrMessage.JOYNRMESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
-                expiryDateWithTtlUplift
-            );
-        });
-
-        it("send multicast subscription request", async () => {
-            const settings = {
-                from: proxyId,
-                toDiscoveryEntry: providerDiscoveryEntry,
-                messagingQos,
-                subscriptionRequest: new MulticastSubscriptionRequest({
-                    multicastId: "multicastId",
-                    subscriptionId: "subscriptionId",
-                    subscribedToName: "multicastEvent",
-                    qos: subscriptionQos
-                })
-            };
-
-            await dispatcherWithTtlUplift.sendBroadcastSubscriptionRequest(settings);
-            checkMessageFromProxyWithTolerance(
-                JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST,
                 expiryDateWithTtlUplift
             );
         });

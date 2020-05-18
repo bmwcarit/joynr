@@ -329,33 +329,6 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         });
     }
 
-    it("is able to send multicast subscription request", async () => {
-        const multicastId = "multicastId";
-        const multicastSubscriptionRequest = new MulticastSubscriptionRequest({
-            subscribedToName: "multicastEvent",
-            subscriptionId: "subscriptionId",
-            multicastId
-        });
-        const serializedPayload = JSON.stringify(multicastSubscriptionRequest);
-
-        expect(messageRouter.addMulticastReceiver).not.toHaveBeenCalled();
-        expect(clusterControllerMessagingStub.transmit).not.toHaveBeenCalled();
-
-        await sendBroadcastSubscriptionRequest(multicastSubscriptionRequest as any);
-        expect(messageRouter.addMulticastReceiver).toHaveBeenCalledTimes(1);
-        const addMulticastReceiverParams = messageRouter.addMulticastReceiver.mock.calls[0][0];
-        expect(addMulticastReceiverParams.multicastId).toEqual(multicastId);
-        expect(addMulticastReceiverParams.subscriberParticipantId).toEqual(proxyId);
-        expect(addMulticastReceiverParams.providerParticipantId).toEqual(providerId);
-
-        expect(clusterControllerMessagingStub.transmit).toHaveBeenCalledTimes(1);
-        const sentMessage = clusterControllerMessagingStub.transmit.mock.calls[0][0];
-        expect(sentMessage.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
-        expect(sentMessage.from).toEqual(proxyId);
-        expect(sentMessage.to).toEqual(providerId);
-        expect(sentMessage.payload).toEqual(serializedPayload);
-    });
-
     it("does not send multicast subscription request if addMulticastReceiver fails", async () => {
         const multicastId = "multicastId";
         const multicastSubscriptionRequest = new MulticastSubscriptionRequest({
@@ -390,36 +363,6 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         expect(sentMessage.payload).toEqual(serializedPayload);
     });
 
-    function setsIsLocalMessageInSubscriptionRequest(subscriptionRequest: SubscriptionRequest, sendKey: string) {
-        let sentMessage: any;
-        const messagingQos = new MessagingQos();
-
-        return (dispatcher as any)
-            [sendKey]({
-                from: "from",
-                toDiscoveryEntry,
-                messagingQos,
-                subscriptionRequest
-            })
-            .then(() => {
-                expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-                sentMessage = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
-                expect(sentMessage.isLocalMessage).toEqual(true);
-
-                return (dispatcher as any)[sendKey]({
-                    from: "from",
-                    toDiscoveryEntry: globalToDiscoveryEntry,
-                    messagingQos,
-                    subscriptionRequest
-                });
-            })
-            .then(() => {
-                expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
-                sentMessage = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
-                expect(sentMessage.isLocalMessage).toEqual(false);
-            });
-    }
-
     it("sets isLocalMessage in request messages", () => {
         let sentMessage: any;
         const messagingQos = new MessagingQos();
@@ -446,22 +389,6 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         sentMessage = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
         expect(sentMessage.isLocalMessage).toEqual(false);
-    });
-
-    it("sets isLocalMessage in subscription request messages", async () => {
-        const subscriptionRequestPayload: any = {
-            subscribedToName: "subscribeToName",
-            subscriptionId
-        };
-        const subscriptionRequest = new SubscriptionRequest(subscriptionRequestPayload);
-        await setsIsLocalMessageInSubscriptionRequest(subscriptionRequest, "sendSubscriptionRequest");
-        const broadcastSubscriptionRequest = new BroadcastSubscriptionRequest(subscriptionRequestPayload);
-
-        await setsIsLocalMessageInSubscriptionRequest(broadcastSubscriptionRequest, "sendBroadcastSubscriptionRequest");
-
-        subscriptionRequestPayload.multicastId = multicastId;
-        const multicastSubscriptionRequest = new MulticastSubscriptionRequest(subscriptionRequestPayload);
-        await setsIsLocalMessageInSubscriptionRequest(multicastSubscriptionRequest, "sendBroadcastSubscriptionRequest");
     });
 
     it("sets compress in request messages", () => {
