@@ -249,6 +249,7 @@ private:
     std::string _accessControlListEditorProviderParticipantId;
     bool _isShuttingDown;
     const system::RoutingTypes::Address _dummyGlobalAddress;
+    const std::int64_t _clusterControllerStartDateMs;
 
     std::vector<std::string> _availableGbids;
     void fillAvailableGbidsVector();

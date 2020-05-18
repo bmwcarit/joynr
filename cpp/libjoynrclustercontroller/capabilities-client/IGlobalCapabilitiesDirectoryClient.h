@@ -77,6 +77,13 @@ public:
             const std::string& clusterControllerId,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) = 0;
+
+    virtual void removeStale(
+            const std::string& clusterControllerId,
+            std::int64_t maxLastSeenDateMs,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError) = 0;
 };
 
 } // namespace joynr

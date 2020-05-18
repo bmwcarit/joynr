@@ -241,6 +241,13 @@ public:
 
     std::vector<types::DiscoveryEntry> getCachedGlobalDiscoveryEntries() const;
 
+    /**
+     * Remove stale providers of cluster controller from JDS, whose last seen date is
+     * lower than given start up date of the cluster controller.
+     * @param ccStartDateMs - start up date of the cluster controller in milliseconds
+     */
+    void removeStaleProvidersOfClusterController(const std::int64_t& clusterControllerStartDateMs);
+
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     ClusterControllerSettings& _clusterControllerSettings; // to retrieve info about persistency
