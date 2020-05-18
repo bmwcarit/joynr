@@ -31,7 +31,8 @@ AbstractJoynrMessagingConnector::AbstractJoynrMessagingConnector(
         const std::string& proxyParticipantId,
         const MessagingQos& qosSettings,
         const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
-        : _messageSender(messageSender),
+        : std::enable_shared_from_this<AbstractJoynrMessagingConnector>(),
+          _messageSender(messageSender),
           _subscriptionManager(subscriptionManager),
           _domain(domain),
           _interfaceName(interfaceName),

@@ -41,6 +41,7 @@ class OneWayRequest;
 class Request;
 
 class JOYNR_EXPORT AbstractJoynrMessagingConnector
+        : public std::enable_shared_from_this<AbstractJoynrMessagingConnector>
 {
 public:
     AbstractJoynrMessagingConnector(
