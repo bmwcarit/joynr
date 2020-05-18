@@ -124,11 +124,18 @@ public:
             std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy,
             MessagingQos messagingQos);
 
+    void removeStale(const std::string& clusterControllerId,
+                     std::int64_t maxLastSeenDateMs,
+                     std::function<void()> onSuccess,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                             onRuntimeError) override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClient);
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> _capabilitiesProxy;
     MessagingQos _messagingQos;
     const std::uint64_t _touchTtl;
+    const std::uint64_t _removeStaleTtl;
     ADD_LOGGER(GlobalCapabilitiesDirectoryClient)
 };
 

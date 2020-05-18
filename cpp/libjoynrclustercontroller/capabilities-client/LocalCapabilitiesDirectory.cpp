@@ -1734,6 +1734,32 @@ std::string LocalCapabilitiesDirectory::joinToString(
     return outputStream.str();
 }
 
+void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
+        const std::int64_t& clusterControllerStartDateMs)
+{
+    auto onSuccess = [ ccId = _clusterControllerId, clusterControllerStartDateMs ]()
+    {
+        JOYNR_LOG_TRACE(logger(),
+                        "RemoveStale(ccId={}, maxLastSeenDateMs={}) succeeded.",
+                        ccId,
+                        clusterControllerStartDateMs);
+    };
+
+    auto onRuntimeError = [ ccId = _clusterControllerId, clusterControllerStartDateMs ](
+            const joynr::exceptions::JoynrRuntimeException& error)
+    {
+        JOYNR_LOG_ERROR(logger(),
+                        "RemoveStale(ccId={}, maxLastSeenDateMs={}) failed: ",
+                        ccId,
+                        clusterControllerStartDateMs,
+                        error.getMessage());
+    };
+    _globalCapabilitiesDirectoryClient->removeStale(_clusterControllerId,
+                                                    clusterControllerStartDateMs,
+                                                    std::move(onSuccess),
+                                                    std::move(onRuntimeError));
+}
+
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(
         std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>&& onSuccess,
         std::function<void(const types::DiscoveryError::Enum&)>&& onError)

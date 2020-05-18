@@ -173,7 +173,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _messageNotificationProviderParticipantId(),
           _accessControlListEditorProviderParticipantId(),
           _isShuttingDown(false),
-          _dummyGlobalAddress()
+          _dummyGlobalAddress(),
+          _clusterControllerStartDateMs(TimePoint::now().toMilliseconds())
 {
 }
 
@@ -1098,6 +1099,8 @@ void JoynrClusterControllerRuntime::start()
     _singleThreadIOService->start();
     startLocalCommunication();
     startExternalCommunication();
+    _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(
+            _clusterControllerStartDateMs);
 }
 
 void JoynrClusterControllerRuntime::stop(bool deleteHttpChannel)

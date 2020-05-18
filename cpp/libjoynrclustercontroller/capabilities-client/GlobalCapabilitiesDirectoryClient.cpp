@@ -36,7 +36,8 @@ GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
         : _capabilitiesProxy(nullptr),
           _messagingQos(),
           _touchTtl(static_cast<std::uint64_t>(
-                  clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count()))
+                  clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())),
+          _removeStaleTtl(3600000)
 {
 }
 
@@ -137,6 +138,21 @@ void GlobalCapabilitiesDirectoryClient::setProxy(
 {
     this->_capabilitiesProxy = std::move(capabilitiesProxy);
     this->_messagingQos = std::move(messagingQos);
+}
+
+void GlobalCapabilitiesDirectoryClient::removeStale(
+        const std::string& clusterControllerId,
+        std::int64_t maxLastSeenDateMs,
+        std::function<void()> onSuccess,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
+{
+    MessagingQos removeStaleMessagingQos = _messagingQos;
+    removeStaleMessagingQos.setTtl(_removeStaleTtl);
+    _capabilitiesProxy->removeStaleAsync(clusterControllerId,
+                                         maxLastSeenDateMs,
+                                         std::move(onSuccess),
+                                         std::move(onRuntimeError),
+                                         removeStaleMessagingQos);
 }
 
 } // namespace joynr

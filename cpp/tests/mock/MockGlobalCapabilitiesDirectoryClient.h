@@ -59,6 +59,11 @@ public:
     MOCK_METHOD3(touch, void(const std::string& clusterControllerId,
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+
+    MOCK_METHOD4(removeStale, void(const std::string& clusterControllerId,
+                                   std::int64_t maxLastSeenDateMs,
+                                   std::function<void()> onSuccess,
+                                   std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 };
 
 #endif // TESTS_MOCK_MOCKGLOBALCAPABILITIESDIRECTORYCLIENT_H
