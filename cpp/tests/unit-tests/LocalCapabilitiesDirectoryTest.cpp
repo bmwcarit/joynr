@@ -4113,6 +4113,13 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterController)
+{
+    std::int64_t maxLastSeenMs = 100000.0;
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, removeStale(Eq(_clusterControllerId), maxLastSeenMs, _, _)).Times(1);
+    _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
+}
+
 INSTANTIATE_TEST_CASE_P(changeProviderScope,
                         LocalCapabilitiesDirectoryWithProviderScope,
                         ::testing::Values(types::ProviderScope::LOCAL,
