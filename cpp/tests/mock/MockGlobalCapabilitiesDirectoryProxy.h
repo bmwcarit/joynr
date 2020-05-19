@@ -152,6 +152,21 @@ public:
                       std::function<void(const JoynrRuntimeException& error)>
                               onRuntimeError,
                       std::shared_ptr<MessagingQos> qos));
+
+     std::shared_ptr<joynr::Future<void>> removeStaleAsync(const std::string& clusterControllerId,
+                                                           const std::int64_t& maxLastSeenDateMs,
+                                                           std::function<void()> onSuccess,
+                                                           std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError ,
+                                                           boost::optional<MessagingQos> qos) noexcept override
+     {
+         return removeStaleAsyncMock(clusterControllerId, maxLastSeenDateMs, onSuccess, onRuntimeError, std::make_shared<MessagingQos>(qos.get()));
+     }
+     MOCK_METHOD5(removeStaleAsyncMock, std::shared_ptr<Future<void>>(
+                      const std::string& clusterControllerId,
+                      const std::int64_t& maxLastSeenDateMs,
+                      std::function<void()> onSuccess,
+                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+                      std::shared_ptr<MessagingQos> qos));
 };
 
 #endif // MOCKGLOBALCAPABILITIESDIRECTORYPROXY

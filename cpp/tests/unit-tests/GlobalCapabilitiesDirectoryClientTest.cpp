@@ -197,8 +197,27 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testTouch)
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, touchAsyncMock(Eq(clusterControllerId), _, _, _))
             .WillRepeatedly(DoAll(SaveArg<3>(&messagingQosCapture), Return(mockFuture)));
 
+
     globalCapabilitiesDirectoryClient->touch(clusterControllerId,
                                              onSuccess,
                                              onRuntimeError);
     ASSERT_EQ(clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count(), messagingQosCapture->getTtl());
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveStale)
+{
+    std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
+    std::string clusterControllerId = "dummyClustercontrollerId";
+    const std::int64_t maxLastSeenMs = 100000.0;
+    const std::int64_t expectedTtl = 3600000.0;
+
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, removeStaleAsyncMock(Eq(clusterControllerId), Eq(maxLastSeenMs), _, _, _))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<4>(&messagingQosCapture), Return(mockFuture)));
+
+    globalCapabilitiesDirectoryClient->removeStale(clusterControllerId,
+                                                   maxLastSeenMs,
+                                                   onSuccess,
+                                                   onRuntimeError);
+   ASSERT_EQ(expectedTtl, messagingQosCapture->getTtl());
 }
