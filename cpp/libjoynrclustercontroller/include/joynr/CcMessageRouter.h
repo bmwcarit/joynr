@@ -197,7 +197,7 @@ public:
     /*
      * used by AbstractMessageRouter
      */
-    void removeMulticastReceiver(
+    void removeMulticastReceivers(
             const std::string& multicastId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
             const std::string& providerParticipantId) final;

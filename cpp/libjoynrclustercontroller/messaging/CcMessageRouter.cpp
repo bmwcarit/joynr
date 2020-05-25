@@ -885,14 +885,14 @@ void CcMessageRouter::stopSubscription(std::shared_ptr<ImmutableMessage> message
     }
 }
 
-void CcMessageRouter::removeMulticastReceiver(
+void CcMessageRouter::removeMulticastReceivers(
         const std::string& multicastId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         const std::string& providerParticipantId)
 {
     JOYNR_LOG_INFO(
             logger(),
-            "removeMulticastReceiver: multicastId {}, destAddress {}, providerParticipantId {}",
+            "removeMulticastReceivers: multicastId {}, destAddress {}, providerParticipantId {}",
             multicastId,
             destAddress->toString(),
             providerParticipantId);
@@ -905,7 +905,7 @@ void CcMessageRouter::removeMulticastReceiver(
         if (routingEntry && destAddress == routingEntry->address) {
             // for the time being, just do it async
             JOYNR_LOG_INFO(logger(),
-                           "removeMulticastReceiver: calling removeMulticastReceiver "
+                           "removeMulticastReceivers: calling removeMulticastReceiver "
                            "multicastId {}, participantId {}, providerParticipantId {}",
                            multicastId,
                            participantId,

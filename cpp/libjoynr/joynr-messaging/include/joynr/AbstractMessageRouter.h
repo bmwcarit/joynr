@@ -186,7 +186,7 @@ protected:
     /*
      * AbstractMessageRouter provides default implementation and CcMessageRouter overrrides it
      */
-    virtual void removeMulticastReceiver(
+    virtual void removeMulticastReceivers(
             const std::string& multicastId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
             const std::string& providerParticipantId);
