@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <limits>
 #include <tuple>
 #include <unordered_set>
@@ -165,10 +166,53 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
                 timerError.message());
     }
 
-    auto onError = [](const joynr::exceptions::JoynrRuntimeException& error) {
-        JOYNR_LOG_ERROR(logger(), "error sending freshness update: {}", error.getMessage());
+    std::vector<std::string> participantIds;
+    std::vector<capabilities::LocalDiscoveryEntry> entries;
+
+    const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                     std::chrono::system_clock::now().time_since_epoch()).count();
+    const std::int64_t newExpiryDateMs = now + _defaultExpiryIntervalMs;
+    {
+        std::lock_guard<std::recursive_mutex> lock14(_cacheLock);
+        for (auto entry : *_locallyRegisteredCapabilities) {
+            if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
+                entry.setLastSeenDateMs(now);
+                entry.setExpiryDateMs(newExpiryDateMs);
+                participantIds.push_back(entry.getParticipantId());
+                entries.push_back(entry);
+            }
+        }
+        for (const auto& entry : entries) {
+            _locallyRegisteredCapabilities->insert(entry, entry.gbids);
+            _globalLookupCache->insert(entry);
+        }
+    }
+
+    auto onSuccess = [ ccId = _clusterControllerId, participantIds ]()
+    {
+        if (logger().getLogLevel() == LogLevel::Trace) {
+            const std::string participantIdConcat = boost::algorithm::join(participantIds, ", ");
+            JOYNR_LOG_TRACE(logger(),
+                            "touch(ccId={}, participantIds={}) succeeded.",
+                            ccId,
+                            participantIdConcat);
+        } else {
+            JOYNR_LOG_DEBUG(logger(), "touch succeeded.");
+        }
     };
-    _globalCapabilitiesDirectoryClient->touch(_clusterControllerId, nullptr, std::move(onError));
+
+    auto onError = [ ccId = _clusterControllerId, participantIds ](
+            const joynr::exceptions::JoynrRuntimeException& error)
+    {
+        JOYNR_LOG_ERROR(logger(),
+                        "touch(ccId={}, participantIds={}) failed: {}",
+                        ccId,
+                        boost::algorithm::join(participantIds, ", "),
+                        error.getMessage());
+    };
+
+    _globalCapabilitiesDirectoryClient->touch(
+            _clusterControllerId, participantIds, std::move(onSuccess), std::move(onError));
     scheduleFreshnessUpdate();
 }
 
@@ -264,13 +308,13 @@ void LocalCapabilitiesDirectory::addInternal(
             onError
         ](const types::DiscoveryError::Enum& error)
         {
-            JOYNR_LOG_ERROR(
-                    logger(),
-                    "DiscoveryError occurred during the execution of capabilitiesProxy->add for "
-                    "'{}' for GBIDs >{}<. Error: {}",
-                    globalDiscoveryEntry.toString(),
-                    boost::algorithm::join(gbids, ", "),
-                    types::DiscoveryError::getLiteral(error));
+            JOYNR_LOG_ERROR(logger(),
+                            "DiscoveryError occurred during the execution of "
+                            "capabilitiesProxy->add for "
+                            "'{}' for GBIDs >{}<. Error: {}",
+                            globalDiscoveryEntry.toString(),
+                            boost::algorithm::join(gbids, ", "),
+                            types::DiscoveryError::getLiteral(error));
             if (awaitGlobalRegistration && onError) {
                 // no need to remove entry as in this case the entry was not yet added
                 onError(error);
@@ -1341,13 +1385,13 @@ void LocalCapabilitiesDirectory::remove(
                 };
                 auto onRuntimeError =
                         [participantId, gbids](const exceptions::JoynrRuntimeException& exception) {
-                    JOYNR_LOG_WARN(
-                            logger(),
-                            "Failed to remove participantId {} globally for GBIDs >{}<: {} ({})",
-                            participantId,
-                            boost::algorithm::join(gbids, ", "),
-                            exception.getMessage(),
-                            exception.getTypeName());
+                    JOYNR_LOG_WARN(logger(),
+                                   "Failed to remove participantId {} globally for GBIDs >{}<: "
+                                   "{} ({})",
+                                   participantId,
+                                   boost::algorithm::join(gbids, ", "),
+                                   exception.getMessage(),
+                                   exception.getTypeName());
                 };
 
                 _globalCapabilitiesDirectoryClient->remove(participantId,
@@ -1545,12 +1589,12 @@ void LocalCapabilitiesDirectory::insertInGlobalLookupCache(const types::Discover
     }
     _globalParticipantIdsToGbidsMap.insert(std::make_pair(participantId, allGbids));
 
-    JOYNR_LOG_INFO(
-            logger(),
-            "Added global capability to cache {}, registered GBIDs: >{}<, #globalLookupCache: {}",
-            entry.toString(),
-            boost::algorithm::join(allGbids, ", "),
-            _globalLookupCache->size());
+    JOYNR_LOG_INFO(logger(),
+                   "Added global capability to cache {}, registered GBIDs: >{}<, "
+                   "#globalLookupCache: {}",
+                   entry.toString(),
+                   boost::algorithm::join(allGbids, ", "),
+                   _globalLookupCache->size());
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::searchGlobalCache(
