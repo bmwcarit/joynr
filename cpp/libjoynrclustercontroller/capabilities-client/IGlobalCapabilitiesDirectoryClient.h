@@ -84,6 +84,12 @@ public:
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                     onRuntimeError) = 0;
+
+    virtual void touch(
+            const std::string& clusterControllerId,
+            const std::vector<std::string>& participantIds,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) = 0;
 };
 
 } // namespace joynr
