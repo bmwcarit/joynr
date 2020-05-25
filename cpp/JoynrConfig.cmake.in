@@ -3,6 +3,7 @@ set(JOYNR_ENABLE_DLT_LOGGING @JOYNR_ENABLE_DLT_LOGGING@)
 include(CMakeFindDependencyMacro)
 include(FindPkgConfig)
 
+set(Boost_FOUND False)
 find_dependency(Boost @JOYNR_BOOST_REQUIRED_VERSION@ REQUIRED
                 COMPONENTS system filesystem thread)
 find_dependency(spdlog @JOYNR_SPDLOG_REQUIRED_VERSION@ REQUIRED)
@@ -17,6 +18,9 @@ find_dependency(MoCOCrW @JOYNR_MOCOCRW_REQUIRED_VERSION@ REQUIRED)
 find_dependency(muesli @JOYNR_MUESLI_REQUIRED_VERSION@ REQUIRED)
 # Keep this as last, it interferes with finding Boost components.
 find_dependency(smrf @JOYNR_SMRF_REQUIRED_VERSION@ REQUIRED)
+
+# See https://gitlab.kitware.com/cmake/cmake/-/issues/17583
+set(Boost_FOUND False)
 
 @PACKAGE_INIT@
 
@@ -45,6 +49,15 @@ if(NOT TARGET Joynr::JoynrLib)
         Joynr::JoynrWsRuntime
         INTERFACE_LINK_LIBRARIES
     )
+    if(NOT TARGET Joynr)
+        add_library(Joynr INTERFACE)
+        target_link_libraries(Joynr INTERFACE Joynr::JoynrLib)
+    endif()
+    if(NOT TARGET JoynrWsRuntime)
+        add_library(JoynrWsRuntime INTERFACE)
+        target_link_libraries(JoynrWsRuntime INTERFACE Joynr::JoynrWsRuntime)
+    endif()
+
 endif()
 
 set(Joynr_BIN_DIR "@PACKAGE_JOYNR_INSTALL_BINDIR@")
