@@ -124,8 +124,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
         try {
             transaction.begin();
             deletedCount = entityManager.createQuery(queryString)
-                                        .setParameter("participantId",
-                                                      new HashSet<String>(Arrays.asList(participantId)))
+                                        .setParameter("participantId", participantId)
                                         .setParameter("gbids", new HashSet<String>(Arrays.asList(gbids)))
                                         .executeUpdate();
 
@@ -140,18 +139,21 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                                                               .getSingleResult();
                 if (numberOfEntriesInAllGbids > 0) {
                     // NO_ENTRY_FOR_SELECTED_BACKENDS
-                    return -1;
+                    deletedCount = -1;
                 } else {
                     // NO_ENTRY_FOR_PARTICIPANT
-                    return 0;
+                    deletedCount = 0;
                 }
             }
 
             transaction.commit();
-            logger.trace("Remove transaction for {} committed successfully", participantId);
+            entityManager.clear();
+            logger.trace("Remove({}) committed successfully", participantId);
+        } catch (Exception e) {
+            logger.error("Remove({}) failed.", participantId, e);
         } finally {
-            logger.trace("Remove transaction for {} failed", participantId);
             if (transaction.isActive()) {
+                logger.error("Remove({}): rollback.", participantId);
                 transaction.rollback();
             }
         }
