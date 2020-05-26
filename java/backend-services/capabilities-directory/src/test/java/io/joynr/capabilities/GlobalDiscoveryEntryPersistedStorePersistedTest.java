@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -63,6 +62,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     private EntityManager entityManager;
     private String defaultGbid = "joynrdefaultgbid";
     private String[] gbids = { defaultGbid, "joynrtestgbid2" };
+    private String clusterControllerId = "clusterControllerId";
 
     @Before
     public void setUp() throws Exception {
@@ -366,6 +366,66 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertTrue(returnedEntries.size() == 2);
     }
 
+    @Test
+    public void removeStale() throws Exception {
+        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry("domain1",
+                                                                             "interfaceName1",
+                                                                             "participantId1");
+        discoveryEntry1.setLastSeenDateMs(42l);
+        GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry("domain1",
+                                                                             "interfaceName2",
+                                                                             "participantId2");
+        long maxLastSeenDate = System.currentTimeMillis() - 1001;
+        discoveryEntry2.setLastSeenDateMs(maxLastSeenDate + 1000);
+        GlobalDiscoveryEntryPersisted discoveryEntry3 = createDiscoveryEntry("domain2",
+                                                                             "interfaceName3",
+                                                                             "participantId3");
+        discoveryEntry3.setLastSeenDateMs(maxLastSeenDate - 1);
+
+        store.add(discoveryEntry1, gbids);
+        store.add(discoveryEntry2, gbids);
+        store.add(discoveryEntry3, gbids);
+        entityManager.clear();
+        assertContains(discoveryEntry1, gbids);
+        assertContains(discoveryEntry2, gbids);
+        assertContains(discoveryEntry3, gbids);
+
+        int deletedCount = store.removeStale(clusterControllerId, maxLastSeenDate);
+        assertEquals(gbids.length * 2, deletedCount);
+        entityManager.clear();
+        assertContains(discoveryEntry2, gbids);
+        assertNotContains(discoveryEntry1, gbids);
+        assertNotContains(discoveryEntry3, gbids);
+    }
+
+    @Test
+    public void addAgainAfterRemoveStale() throws Exception {
+        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry("domain1",
+                                                                             "interfaceName1",
+                                                                             "participantId1");
+        long maxLastSeenDate = System.currentTimeMillis() - 1001;
+        discoveryEntry1.setLastSeenDateMs(maxLastSeenDate - 1);
+
+        store.add(discoveryEntry1, new String[]{ defaultGbid });
+        assertContains(discoveryEntry1, new String[]{ defaultGbid });
+
+        int deletedCount = store.removeStale(clusterControllerId, maxLastSeenDate);
+        assertEquals(1, deletedCount);
+        assertNotContains(discoveryEntry1, gbids);
+        GlobalDiscoveryEntryPersistedKey key = new GlobalDiscoveryEntryPersistedKey();
+        key.setGbid(defaultGbid);
+        key.setParticipantId(discoveryEntry1.getParticipantId());
+        assertNull(entityManager.find(GlobalDiscoveryEntryPersisted.class, key));
+
+        GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry("domain1",
+                                                                             "interfaceName1",
+                                                                             "participantId1");
+        discoveryEntry2.setLastSeenDateMs(System.currentTimeMillis());
+        store.add(discoveryEntry2, new String[]{ defaultGbid });
+        entityManager.clear();
+        assertContains(discoveryEntry2, new String[]{ defaultGbid });
+    }
+
     private GlobalDiscoveryEntryPersisted createDiscoveryEntry(String domain,
                                                                String interfaceName,
                                                                String participantId) throws Exception {
@@ -384,7 +444,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
                                                                                          expiryDateMs,
                                                                                          publicKeyId,
                                                                                          addressSerialized,
-                                                                                         "clusterControllerId",
+                                                                                         clusterControllerId,
                                                                                          defaultGbid);
         return discoveryEntry;
     }

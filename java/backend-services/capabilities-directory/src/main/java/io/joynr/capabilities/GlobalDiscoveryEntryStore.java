@@ -40,6 +40,8 @@ public interface GlobalDiscoveryEntryStore<T extends GlobalDiscoveryEntry> {
 
     public abstract void touch(String clusterControllerId, String[] participantIds);
 
+    public int removeStale(String clusterControllerId, Long maxLastSeenDateMs);
+
     public abstract boolean hasDiscoveryEntry(GlobalDiscoveryEntryPersisted discoveryEntry);
 
 }

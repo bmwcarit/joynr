@@ -484,12 +484,22 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<DeferredVoid> removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
+        logger.trace("RemoveStale(ccId={}, maxLastSeenDateMs={}) called.", clusterControllerId, maxLastSeenDateMs);
         DeferredVoid deferred = new DeferredVoid();
-        String message = format("Error: removeStale method for ccId %s and maxLastSeenDateMs %d is not yet implemented",
-                                clusterControllerId,
-                                maxLastSeenDateMs);
-        logger.error(message);
-        deferred.reject(new ProviderRuntimeException(message));
+        try {
+            int deletedCount = discoveryEntryStore.removeStale(clusterControllerId, maxLastSeenDateMs);
+            logger.info("RemoveStale(ccId={}, maxLastSeenDateMs={}) deleted {} stale entries.",
+                        clusterControllerId,
+                        maxLastSeenDateMs,
+                        deletedCount);
+            deferred.resolve();
+        } catch (Exception e) {
+            logger.error("RemoveStale(ccId={}, maxLastSeenDateMs={}) failed.",
+                         clusterControllerId,
+                         maxLastSeenDateMs,
+                         e);
+            deferred.reject(new ProviderRuntimeException("RemoveStale failed: " + e.toString()));
+        }
         return new Promise<DeferredVoid>(deferred);
     }
 

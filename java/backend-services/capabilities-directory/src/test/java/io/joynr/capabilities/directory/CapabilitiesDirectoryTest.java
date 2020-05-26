@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -952,6 +953,35 @@ public class CapabilitiesDirectoryTest {
         checkPromiseException(promise,
                               ProviderRuntimeException.class,
                               DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS.name());
+    }
+
+    @Test
+    public void touch_callsStore() throws InterruptedException {
+        final String ccId = "testCcId-" + System.currentTimeMillis();
+        Promise<DeferredVoid> promise = subject.touch(ccId);
+        verify(discoveryEntryStoreMock).touch(eq(ccId));
+        checkPromiseSuccess(promise);
+    }
+
+    @Test
+    public void removeStale_callsStore() throws InterruptedException {
+        final String ccId = "testCcId-" + System.currentTimeMillis();
+        final long maxLastSeen = System.currentTimeMillis();
+        Promise<DeferredVoid> promise = subject.removeStale(ccId, maxLastSeen);
+        verify(discoveryEntryStoreMock).removeStale(eq(ccId), eq(maxLastSeen));
+        checkPromiseSuccess(promise);
+    }
+
+    @Test
+    public void removeStale_rejectsOnException() throws InterruptedException {
+        final String errorMessage = "testException-" + System.currentTimeMillis();
+        final RuntimeException testException = new RuntimeException(errorMessage);
+        final String ccId = "testCcId-" + System.currentTimeMillis();
+        final long maxLastSeen = System.currentTimeMillis();
+        doThrow(testException).when(discoveryEntryStoreMock).removeStale(anyString(), anyLong());
+        Promise<DeferredVoid> promise = subject.removeStale(ccId, maxLastSeen);
+        verify(discoveryEntryStoreMock).removeStale(eq(ccId), eq(maxLastSeen));
+        checkPromiseException(promise, ProviderRuntimeException.class, "RemoveStale failed: " + testException);
     }
 
 }

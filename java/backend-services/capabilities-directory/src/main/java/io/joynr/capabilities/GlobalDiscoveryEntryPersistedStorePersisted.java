@@ -245,11 +245,47 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
     }
 
     @Override
-    public void touch(String clusterControllerId, String[] participantIds) {
+    public synchronized void touch(String clusterControllerId, String[] participantIds) {
         final String msg = String.format("Error: touch method for clusterControllerId %s and participantIds %s is not implemented yet.",
                                          clusterControllerId,
                                          Arrays.toString(participantIds));
         logger.error(msg);
         throw new ProviderRuntimeException(msg);
     }
+
+    @Override
+    public synchronized int removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
+        int deletedCount = 0;
+        String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep "
+                + "WHERE gdep.clusterControllerId = :clusterControllerId AND gdep.lastSeenDateMs < :maxLastSeenDateMs";
+
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            deletedCount = entityManager.createQuery(queryString)
+                                        .setParameter("clusterControllerId", clusterControllerId)
+                                        .setParameter("maxLastSeenDateMs", maxLastSeenDateMs)
+                                        .executeUpdate();
+            transaction.commit();
+            entityManager.clear();
+            logger.trace("RemoveStale(ccId={}, maxLastSeenDateMs={}) committed successfully",
+                         clusterControllerId,
+                         maxLastSeenDateMs);
+        } catch (RuntimeException e) {
+            logger.error("RemoveStale(ccId={}, maxLastSeenDateMs={}) failed.",
+                         clusterControllerId,
+                         maxLastSeenDateMs,
+                         e);
+            throw e;
+        } finally {
+            if (transaction.isActive()) {
+                logger.error("RemoveStale(ccId={}, maxLastSeenDateMs={}): rollback.",
+                             clusterControllerId,
+                             maxLastSeenDateMs);
+                transaction.rollback();
+            }
+        }
+        return deletedCount;
+    }
+
 }
