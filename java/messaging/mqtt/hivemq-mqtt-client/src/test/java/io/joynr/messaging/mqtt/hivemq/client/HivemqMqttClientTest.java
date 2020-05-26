@@ -28,7 +28,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
+import java.util.OptionalLong;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +44,7 @@ import org.mockito.stubbing.Answer;
 
 import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
 import com.hivemq.client.internal.mqtt.message.publish.MqttPublishResult.MqttQos1Result;
+import com.hivemq.client.mqtt.datatypes.MqttTopic;
 import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
@@ -293,6 +297,12 @@ public class HivemqMqttClientTest {
 
         Mqtt5Publish mockPublish = mock(Mqtt5Publish.class);
         doReturn(new byte[0]).when(mockPublish).getPayloadAsBytes();
+        Optional<ByteBuffer> optionalByteBuffer = Optional.ofNullable(null);
+        doReturn(optionalByteBuffer).when(mockPublish).getPayload();
+        doReturn(MqttTopic.of("topic")).when(mockPublish).getTopic();
+        doReturn(false).when(mockPublish).isRetain();
+        doReturn(null).when(mockPublish).getQos();
+        doReturn(OptionalLong.of(0l)).when(mockPublish).getMessageExpiryInterval();
         Method handleIncomingMessage = client.getClass().getDeclaredMethod("handleIncomingMessage", Mqtt5Publish.class);
         handleIncomingMessage.setAccessible(true);
         handleIncomingMessage.invoke(client, mockPublish);
