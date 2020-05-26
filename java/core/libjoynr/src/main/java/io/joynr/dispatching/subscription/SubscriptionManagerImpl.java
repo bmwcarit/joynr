@@ -243,11 +243,12 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             final String multicastId = MulticastIdUtil.createMulticastId(toDiscoveryEntry.getParticipantId(),
                                                                          multicastSubscribeInvocation.getSubscriptionName(),
                                                                          multicastSubscribeInvocation.getPartitions());
-            logger.debug("MULTICAST SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider participantId: {}, domain: {}, interfaceName: {}, {}",
+            logger.debug("MULTICAST SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos.expiryDateMs: {}, proxy participantId: {}, provider participantId: {}, domain: {}, interfaceName: {}, {}",
                          multicastSubscribeInvocation.getSubscriptionId(),
                          multicastId,
                          multicastSubscribeInvocation.getSubscriptionName(),
-                         multicastSubscribeInvocation.getQos(),
+                         (multicastSubscribeInvocation.getQos() == null) ? 0
+                                 : multicastSubscribeInvocation.getQos().getExpiryDateMs(),
                          fromParticipantId,
                          toDiscoveryEntry.getParticipantId(),
                          toDiscoveryEntry.getDomain(),
