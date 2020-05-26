@@ -337,14 +337,16 @@ public class HivemqMqttClient implements JoynrMqttClient {
     }
 
     private void handleIncomingMessage(Mqtt5Publish mqtt5Publish) {
-        ByteBuffer payload = (mqtt5Publish.getPayload().isPresent()) ? mqtt5Publish.getPayload().get() : null;
-        logger.debug("{}: Received publication: topic: {}, size: {}, qos: {}, retain: {}, expiryInterval: {}.",
-                     clientInformation,
-                     mqtt5Publish.getTopic(),
-                     ((payload == null) ? "" : payload.remaining()),
-                     mqtt5Publish.getQos(),
-                     mqtt5Publish.isRetain(),
-                     mqtt5Publish.getMessageExpiryInterval().orElse(0));
+        if (logger.isDebugEnabled()) {
+            ByteBuffer payload = mqtt5Publish.getPayload().orElse(null);
+            logger.debug("{}: Received publication: topic: {}, size: {}, qos: {}, retain: {}, expiryInterval: {}.",
+                         clientInformation,
+                         mqtt5Publish.getTopic(),
+                         ((payload == null) ? 0 : payload.remaining()),
+                         mqtt5Publish.getQos(),
+                         mqtt5Publish.isRetain(),
+                         mqtt5Publish.getMessageExpiryInterval().orElse(0));
+        }
         connectionStatusMetrics.increaseReceivedMessages();
         messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(),
                                    throwable -> logger.error("{}: Unable to transmit {}",
