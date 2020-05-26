@@ -193,4 +193,8 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
         return new HashSet<DiscoveryEntry>(registeredCapabilities);
     }
 
+    @Override
+    public void removeStaleProvidersOfClusterController() {
+        logger.info("!!!!!!!!!!!!!!!remove stale providers of cluster controller");
+    }
 }

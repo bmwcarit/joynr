@@ -37,6 +37,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -175,5 +176,14 @@ public class GlobalCapabilitiesDirectoryClient {
         MessagingQos qosWithGbidCustomHeader = new MessagingQos(freshnessUpdateIntervalMs);
         qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
         getGcdProxy().touch(localChannelId, qosWithGbidCustomHeader);
+    }
+
+    /**
+     * Remove stale providers from the specific cluster controller
+     */
+    public void removeStale(Callback<Void> callback, long maxLastSeenDateMs) {
+        long removeStaleTtl = 60 * 60 * 1000L;
+        MessagingQos messagingQos = new MessagingQos(removeStaleTtl);
+        getGcdProxy().removeStale(callback, localChannelId, maxLastSeenDateMs, messagingQos);
     }
 }
