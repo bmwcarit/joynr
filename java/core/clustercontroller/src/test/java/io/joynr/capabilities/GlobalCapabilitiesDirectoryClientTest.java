@@ -19,6 +19,7 @@
 package io.joynr.capabilities;
 
 import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
+import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
@@ -57,6 +58,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -82,6 +84,9 @@ public class GlobalCapabilitiesDirectoryClientTest {
     private GlobalCapabilitiesDirectoryProxy globalCapabilitiesDirectoryProxyMock;
 
     @Mock
+    private Callback<Void> callbackVoidMock;
+
+    @Mock
     private CallbackWithModeledError<Void, DiscoveryError> addCallbackWithModeledErrorMock;
 
     @Mock
@@ -100,6 +105,8 @@ public class GlobalCapabilitiesDirectoryClientTest {
 
     private final MessagingQos expectedGcdCallMessagingQos = new MessagingQos();
 
+    private String channelId = "GlobalCapabilitiesDirectoryClientTest_" + createUuidString();
+
     @Before
     public void setup() {
         final String domainMock = "domainMock";
@@ -108,6 +115,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
         Properties properties = new Properties();
         properties.put(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS,
                        String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
+        properties.put(MessagingPropertyKeys.CHANNELID, channelId);
 
         subject = createGCDClientWithProperties(properties);
 
@@ -384,5 +392,21 @@ public class GlobalCapabilitiesDirectoryClientTest {
         assertTrue(messagingQosCaptor.getAllValues()
                                      .stream()
                                      .allMatch(qos -> qos.getRoundTripTtl_ms() == FRESHNESS_UPDATE_INTERVAL_MS));
+    }
+
+    @Test
+    public void testRemoveStale() {
+        // Test whether removeStale() of the GlobalCapabilitiesDirectoryProxy 
+        // called once with the given value of max last seen date in milliseconds.
+        final long maxLastSeenDateMs = 1000000L;
+        final long expectedRemoveStaleTtl = 60 * 60 * 1000L;
+        final MessagingQos messagingQos = new MessagingQos(expectedRemoveStaleTtl);
+
+        subject.removeStale(callbackVoidMock, maxLastSeenDateMs);
+
+        verify(globalCapabilitiesDirectoryProxyMock, times(1)).removeStale(eq(callbackVoidMock),
+                                                                           eq(channelId),
+                                                                           eq(maxLastSeenDateMs),
+                                                                           eq(messagingQos));
     }
 }

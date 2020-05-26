@@ -2788,4 +2788,20 @@ public class LocalCapabilitiesDirectoryTest {
         runnable.run();
         verify(globalCapabilitiesDirectoryClient).touch();
     }
+
+    @Test
+    public void removeStaleProvidersOfClusterController_invokesGcdClient() {
+        // Test whether removeStale() of GlobalCapabiltiesDirectoryClient is called once
+        // and captured argument of maxLastSeenDateMs differs from current time less than threshold.
+        final long currentDateMs = System.currentTimeMillis();
+        ArgumentCaptor<Long> maxLastSeenDateCaptor = ArgumentCaptor.forClass(Long.class);
+        final long toleranceMs = 200L;
+
+        localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
+        verify(globalCapabilitiesDirectoryClient, times(1)).removeStale(Matchers.<Callback<Void>> any(),
+                                                                        maxLastSeenDateCaptor.capture());
+
+        assertTrue(maxLastSeenDateCaptor.getValue() <= currentDateMs);
+        assertTrue(currentDateMs - maxLastSeenDateCaptor.getValue() <= toleranceMs);
+    }
 }
