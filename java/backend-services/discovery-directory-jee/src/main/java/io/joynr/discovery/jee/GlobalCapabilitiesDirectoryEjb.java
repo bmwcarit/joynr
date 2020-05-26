@@ -489,11 +489,27 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
-        final String msg = String.format("Error: removeStael method for clusterControllerId %s and maxLastSeenDateMs %s is not yet implemented",
-                                         clusterControllerId,
-                                         maxLastSeenDateMs);
-        logger.error(msg);
-        throw new ProviderRuntimeException(msg);
+        logger.debug("RemoveStale called. Removing stale entries for ccId={}, maxLastSeenDateMs={}.",
+                     clusterControllerId,
+                     maxLastSeenDateMs);
+        String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep "
+                + "WHERE gdep.clusterControllerId = :clusterControllerId AND gdep.lastSeenDateMs < :maxLastSeenDateMs";
+        try {
+            int deletedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
+                                            .setParameter("clusterControllerId", clusterControllerId)
+                                            .setParameter("maxLastSeenDateMs", maxLastSeenDateMs)
+                                            .executeUpdate();
+            logger.info("Deleted {} stale entries for ccId={}, maxLastSeenDateMs={}.",
+                        deletedCount,
+                        clusterControllerId,
+                        maxLastSeenDateMs);
+        } catch (Exception e) {
+            logger.error("RemoveStale for ccId={}, maxLastSeenDateMs={} failed.",
+                         clusterControllerId,
+                         maxLastSeenDateMs,
+                         e);
+            throw new ProviderRuntimeException("RemoveStale failed: " + e.toString());
+        }
     }
 
 }

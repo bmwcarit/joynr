@@ -1248,4 +1248,59 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         assertTrue(initialLastSeen < persisted.getLastSeenDateMs());
     }
 
+    @Test
+    public void removeStale() throws ApplicationException {
+        String[] gbidsForAdd1 = new String[]{ validGbidsArray[2], validGbidsArray[0] };
+        String[] gbidsForAdd2 = validGbidsArray;
+        testGlobalDiscoveryEntry1.setLastSeenDateMs(42l);
+        long maxLastSeenDate = System.currentTimeMillis() - 1001;
+        testGlobalDiscoveryEntry1_a.setLastSeenDateMs(maxLastSeenDate + 1000);
+        testGlobalDiscoveryEntry2.setLastSeenDateMs(maxLastSeenDate - 1);
+        addEntry(testGlobalDiscoveryEntry1, gbidsForAdd1);
+        addEntry(testGlobalDiscoveryEntry1_a, gbidsForAdd1);
+        addEntry(testGlobalDiscoveryEntry2, gbidsForAdd2);
+
+        List<GlobalDiscoveryEntryPersisted> result = queryEntityManagerByParticipantId(testParticipantId1);
+        assertEquals(gbidsForAdd1.length, result.size());
+        result = queryEntityManagerByParticipantId(testParticipantId1_a);
+        assertEquals(gbidsForAdd1.length, result.size());
+        result = queryEntityManagerByParticipantId(testParticipantId2);
+        assertEquals(gbidsForAdd2.length, result.size());
+
+        subject.removeStale(TOPIC_NAME, maxLastSeenDate);
+        entityManager.flush();
+        entityManager.clear();
+
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        result = queryEntityManagerByParticipantId(testParticipantId1_a);
+        assertEquals(gbidsForAdd1.length, result.size());
+        checkEntryIsNotInEntityManager(testParticipantId2);
+    }
+
+    @Test
+    public void addAgainAfterRemoveStale() throws ApplicationException {
+        String[] gbidsForAdd1 = new String[]{ validGbidsArray[1] };
+        long maxLastSeenDate = System.currentTimeMillis() - 1001;
+        testGlobalDiscoveryEntry1.setLastSeenDateMs(maxLastSeenDate - 1);
+        addEntry(testGlobalDiscoveryEntry1, gbidsForAdd1);
+
+        List<GlobalDiscoveryEntryPersisted> result = queryEntityManagerByParticipantId(testParticipantId1);
+        assertEquals(gbidsForAdd1.length, result.size());
+
+        subject.removeStale(TOPIC_NAME, maxLastSeenDate);
+
+        checkEntryIsNotInEntityManager(testParticipantId1);
+        GlobalDiscoveryEntryPersistedKey key = new GlobalDiscoveryEntryPersistedKey();
+        key.setGbid(gbidsForAdd1[0]);
+        key.setParticipantId(testParticipantId1);
+        assertNull(entityManager.find(GlobalDiscoveryEntryPersisted.class, key));
+
+        GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(testGlobalDiscoveryEntry1);
+        entry2.setExpiryDateMs(testGlobalDiscoveryEntry1.getExpiryDateMs() + 1);
+        entry2.setLastSeenDateMs(testGlobalDiscoveryEntry1.getLastSeenDateMs() + 1);
+        addEntry(entry2, gbidsForAdd1);
+        result = queryEntityManagerByParticipantId(testParticipantId1);
+        assertEquals(gbidsForAdd1.length, result.size());
+    }
+
 }
