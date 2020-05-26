@@ -98,7 +98,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<DeferredVoid> add(GlobalDiscoveryEntry globalDiscoveryEntry) {
-        logger.debug("Adding global discovery entry to own gbid {}: {}", gcdGbid, globalDiscoveryEntry);
+        logger.info("Adding global discovery entry to own gbid {}: {}", gcdGbid, globalDiscoveryEntry);
         DeferredVoid deferred = new DeferredVoid();
         Promise<DeferredVoid> promise = new Promise<DeferredVoid>(deferred);
         try {
@@ -162,7 +162,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<Add1Deferred> add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) {
-        logger.debug("Adding global discovery entry to {}: {}", Arrays.toString(gbids), globalDiscoveryEntry);
+        logger.info("Adding global discovery entry to {}: {}", Arrays.toString(gbids), globalDiscoveryEntry);
         Add1Deferred deferred = new Add1Deferred();
         Promise<Add1Deferred> promise = new Promise<Add1Deferred>(deferred);
         switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
@@ -197,7 +197,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
             removeInternal(participantId);
             deletedCount += removeInternal(participantId);
         }
-        logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
+        logger.info("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -220,7 +220,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
     public Promise<DeferredVoid> remove(String participantId) {
         DeferredVoid deferred = new DeferredVoid();
         int deletedCount = removeInternal(participantId);
-        logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
+        logger.info("Deleted {} entries for participantId {})", deletedCount, participantId);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }
@@ -263,7 +263,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                     deferred.reject(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
                     break;
                 default:
-                    logger.debug("Deleted {} entries for participantId {})", deletedCount, participantId);
+                    logger.info("Deleted {} entries for participantId {})", deletedCount, participantId);
                     deferred.resolve();
                 }
             } catch (Exception e) {
@@ -283,10 +283,10 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<Lookup1Deferred> lookup(final String[] domains, final String interfaceName) {
-        logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}",
-                     Arrays.toString(domains),
-                     interfaceName,
-                     gcdGbid);
+        logger.info("Looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}",
+                    Arrays.toString(domains),
+                    interfaceName,
+                    gcdGbid);
         Lookup1Deferred deferred = new Lookup1Deferred();
         String[] gcdGbidArray = { gcdGbid };
 
@@ -319,10 +319,10 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<Lookup2Deferred> lookup(String[] domains, String interfaceName, String[] gbids) {
-        logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and Gbids {}",
-                     Arrays.toString(domains),
-                     interfaceName,
-                     Arrays.toString(gbids));
+        logger.info("Looking up global discovery entries for domains {} and interfaceName {} and Gbids {}",
+                    Arrays.toString(domains),
+                    interfaceName,
+                    Arrays.toString(gbids));
         Lookup2Deferred deferred = new Lookup2Deferred();
         Promise<Lookup2Deferred> promise = new Promise<Lookup2Deferred>(deferred);
         switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
@@ -374,7 +374,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<Lookup3Deferred> lookup(String participantId) {
-        logger.debug("Looking up global discovery entry for participantId {} and own Gbid {}", participantId, gcdGbid);
+        logger.info("Looking up global discovery entry for participantId {} and own Gbid {}", participantId, gcdGbid);
         Lookup3Deferred deferred = new Lookup3Deferred();
         String[] gcdGbidArray = { gcdGbid };
 
@@ -414,9 +414,9 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<Lookup4Deferred> lookup(String participantId, String[] gbids) {
-        logger.debug("Looking up global discovery entry for participantId {} and Gbids {}",
-                     participantId,
-                     Arrays.toString(gbids));
+        logger.info("Looking up global discovery entry for participantId {} and Gbids {}",
+                    participantId,
+                    Arrays.toString(gbids));
         Lookup4Deferred deferred = new Lookup4Deferred();
         Promise<Lookup4Deferred> promise = new Promise<Lookup4Deferred>(deferred);
         switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
@@ -464,6 +464,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<DeferredVoid> touch(String clusterControllerId) {
+        logger.info("Touching clusterControllerId {}.", clusterControllerId);
         DeferredVoid deferred = new DeferredVoid();
         discoveryEntryStore.touch(clusterControllerId);
         deferred.resolve();
