@@ -118,9 +118,10 @@ public class DispatcherImpl implements Dispatcher {
                                                                 fromParticipantId,
                                                                 toDiscoveryEntry.getParticipantId());
             }
-            logger.debug("REGISTER SUBSCRIPTION call proxy: subscriptionId: {}, subscribedToName: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
+            logger.debug("REGISTER SUBSCRIPTION call proxy: subscriptionId: {}, subscribedToName: {}, subscriptionQos.expiryDate: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
                          subscriptionRequest.getSubscriptionId(),
                          subscriptionRequest.getSubscribedToName(),
+                         (subscriptionRequest.getQos() == null) ? 0 : subscriptionRequest.getQos().getExpiryDateMs(),
                          message.getId(),
                          fromParticipantId,
                          toDiscoveryEntry.getParticipantId(),
