@@ -51,6 +51,7 @@ import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ShutdownNotifier;
@@ -105,6 +106,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     private final String[] knownGbids;
 
+    // Start up time of the cluster controller
+    private long ccStartUpDateInMs;
+
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
         private String[] gbids;
@@ -151,6 +155,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler,
                                           ShutdownNotifier shutdownNotifier,
                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] knownGbids) {
+        // set up current date as the start time of the cluster controller
+        this.ccStartUpDateInMs = System.currentTimeMillis();
         globalProviderParticipantIdToGbidListMap = new HashMap<>();
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
@@ -1121,6 +1127,22 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                            queuedDiscoveryEntry.getDeferred(),
                            queuedDiscoveryEntry.getAwaitGlobalRegistration());
         }
+    }
+
+    @Override
+    public void removeStaleProvidersOfClusterController() {
+        Callback<Void> callback = new Callback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                logger.info("RemoveStale(maxLastSeenDateMs={}) succeeded.", ccStartUpDateInMs);
+            }
+
+            @Override
+            public void onFailure(JoynrRuntimeException error) {
+                logger.error("RemoveStale(maxLastSeenDateMs={}) failed.", ccStartUpDateInMs, error);
+            }
+        };
+        globalCapabilitiesDirectoryClient.removeStale(callback, ccStartUpDateInMs);
     }
 
 }

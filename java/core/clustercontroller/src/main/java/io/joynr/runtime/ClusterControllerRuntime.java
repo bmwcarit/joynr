@@ -86,5 +86,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                                providerQos,
                                                new String[]{},
                                                awaitGlobalRegistration);
+
+        localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
     }
 }

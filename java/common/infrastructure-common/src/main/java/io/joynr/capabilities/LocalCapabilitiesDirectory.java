@@ -82,4 +82,9 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownL
      */
     void shutdown(boolean unregisterAllRegisteredCapabilities);
 
+    /**
+     * Removes stale providers of the cluster controller 
+     */
+    void removeStaleProvidersOfClusterController();
+
 }
