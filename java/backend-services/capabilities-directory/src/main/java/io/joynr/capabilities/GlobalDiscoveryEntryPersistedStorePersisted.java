@@ -36,7 +36,6 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.persist.PersistService;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -68,26 +67,16 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
         logger.debug("Adding discovery entry: {}", globalDiscoveryEntry);
 
         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
-        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId AND gdep.gbid = :gbid";
         String participantId = globalDiscoveryEntry.getParticipantId();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
             for (String gbid : gbids) {
-                List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
-                                                                                            GlobalDiscoveryEntryPersisted.class)
-                                                                               .setParameter("participantId",
-                                                                                             participantId)
-                                                                               .setParameter("gbid", gbid)
-                                                                               .getResultList();
+                GlobalDiscoveryEntryPersistedKey key = new GlobalDiscoveryEntryPersistedKey();
+                key.setGbid(gbid);
+                key.setParticipantId(participantId);
+                GlobalDiscoveryEntryPersisted oldEntity = entityManager.find(GlobalDiscoveryEntryPersisted.class, key);
 
-                if (queryResult.size() > 1) {
-                    logger.error("There should be max only one discovery entry! Found {} discovery entries: {}",
-                                 queryResult.size(),
-                                 queryResult);
-                    throw new JoynrIllegalStateException("There should be max only one discovery entry! Found "
-                            + queryResult.size() + " discovery entries");
-                }
                 GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
                                                                                          globalDiscoveryEntry.getClusterControllerId(),
                                                                                          gbid);
@@ -96,7 +85,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                     entity.setAddress(RoutingTypesUtil.toAddressString(address));
                 }
 
-                if (queryResult.isEmpty()) {
+                if (oldEntity == null) {
                     logger.trace("Adding new discoveryEntry {} to the persisted entries.", globalDiscoveryEntry);
                     entityManager.persist(entity);
                 } else {
@@ -105,13 +94,15 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                 }
             }
             transaction.commit();
-            logger.trace("Add transaction for {} committed successfully", participantId);
+            logger.trace("Add({}) committed successfully", participantId);
         } catch (Exception e) {
-            logger.trace("Add transaction for {} failed: ", participantId, e);
+            logger.error("Add({}) failed: ", participantId, e);
+            throw e;
+        } finally {
             if (transaction.isActive()) {
+                logger.error("Add({}): rollback.", participantId);
                 transaction.rollback();
             }
-            throw e;
         }
     }
 

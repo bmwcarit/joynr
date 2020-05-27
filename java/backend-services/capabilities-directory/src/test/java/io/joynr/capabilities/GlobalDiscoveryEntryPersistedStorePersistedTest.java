@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -396,6 +397,47 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertContains(discoveryEntry2, gbids);
         assertNotContains(discoveryEntry1, gbids);
         assertNotContains(discoveryEntry3, gbids);
+    }
+
+    @Test
+    public void addAndRemoveAndAddAgain() throws Exception {
+        // https://www.objectdb.com/java/jpa/query/jpql/delete
+        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry("domain1",
+                                                                             "interfaceName1",
+                                                                             "participantId1");
+
+        store.add(discoveryEntry1, new String[]{ defaultGbid });
+        assertContains(discoveryEntry1, new String[]{ defaultGbid });
+
+        int deletedCount = store.remove(discoveryEntry1.getParticipantId(), new String[]{ defaultGbid });
+        assertEquals(1, deletedCount);
+        assertNotContains(discoveryEntry1, gbids);
+        GlobalDiscoveryEntryPersistedKey key = new GlobalDiscoveryEntryPersistedKey();
+        key.setGbid(defaultGbid);
+        key.setParticipantId(discoveryEntry1.getParticipantId());
+        assertNull(entityManager.find(GlobalDiscoveryEntryPersisted.class, key));
+
+        GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry("domain1",
+                                                                             "interfaceName1",
+                                                                             "participantId1");
+        store.add(discoveryEntry2, new String[]{ defaultGbid });
+        assertContains(discoveryEntry2, new String[]{ defaultGbid });
+    }
+
+    @Test
+    public void removeThenAdd() throws Exception {
+        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry("domain1",
+                                                                             "interfaceName1",
+                                                                             "participantId1");
+        assertNotContains(discoveryEntry1, gbids);
+
+        int deletedCount = store.remove(discoveryEntry1.getParticipantId(), new String[]{ defaultGbid });
+        assertEquals(0, deletedCount);
+        assertNotContains(discoveryEntry1, gbids);
+
+        store.add(discoveryEntry1, new String[]{ defaultGbid });
+        entityManager.clear();
+        assertContains(discoveryEntry1, new String[]{ defaultGbid });
     }
 
     @Test
