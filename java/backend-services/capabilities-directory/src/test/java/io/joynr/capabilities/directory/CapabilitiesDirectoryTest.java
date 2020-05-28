@@ -964,6 +964,38 @@ public class CapabilitiesDirectoryTest {
     }
 
     @Test
+    public void touch_rejectsOnException() throws InterruptedException {
+        final String errorMessage = "testException-" + System.currentTimeMillis();
+        final RuntimeException testException = new RuntimeException(errorMessage);
+        final String ccId = "testCcId-" + System.currentTimeMillis();
+        doThrow(testException).when(discoveryEntryStoreMock).touch(anyString());
+        Promise<DeferredVoid> promise = subject.touch(ccId);
+        verify(discoveryEntryStoreMock).touch(eq(ccId));
+        checkPromiseException(promise, ProviderRuntimeException.class, "Touch failed: " + testException);
+    }
+
+    @Test
+    public void touchWithParticipantIds_callsStore() throws InterruptedException {
+        final String ccId = "testCcId-" + System.currentTimeMillis();
+        final String[] participantIds = new String[]{ "testParticipant1", "testParticipant2" };
+        Promise<DeferredVoid> promise = subject.touch(ccId, participantIds);
+        verify(discoveryEntryStoreMock).touch(eq(ccId), eq(participantIds));
+        checkPromiseSuccess(promise);
+    }
+
+    @Test
+    public void touchWithParticipantIds_rejectsOnException() throws InterruptedException {
+        final String errorMessage = "testException-" + System.currentTimeMillis();
+        final RuntimeException testException = new RuntimeException(errorMessage);
+        final String ccId = "testCcId-" + System.currentTimeMillis();
+        final String[] participantIds = new String[]{ "testParticipant3", "testParticipant4" };
+        doThrow(testException).when(discoveryEntryStoreMock).touch(anyString(), any(String[].class));
+        Promise<DeferredVoid> promise = subject.touch(ccId, participantIds);
+        verify(discoveryEntryStoreMock).touch(eq(ccId), eq(participantIds));
+        checkPromiseException(promise, ProviderRuntimeException.class, "Touch failed: " + testException);
+    }
+
+    @Test
     public void removeStale_callsStore() throws InterruptedException {
         final String ccId = "testCcId-" + System.currentTimeMillis();
         final long maxLastSeen = System.currentTimeMillis();

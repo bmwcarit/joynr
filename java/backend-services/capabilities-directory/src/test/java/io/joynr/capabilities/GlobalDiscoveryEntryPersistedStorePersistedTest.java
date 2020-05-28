@@ -29,6 +29,7 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -236,7 +237,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     }
 
     @Test
-    public void testTouchUpdatesLastSeenDateMs() throws Exception {
+    public void touch_updatesLastSeenDateMs() throws Exception {
         String domain = "testTouchDomain";
         String interfaceName = "testTouchInterfaceName";
         String clusterControllerId = "testTouchClusterControllerId";
@@ -279,13 +280,15 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
                 expectedEntry1.getDomain() }, expectedEntry1.getInterfaceName());
         assertTrue(returnedEntries.contains(expectedEntry1));
         assertTrue(returnedEntries.size() == 1);
-        assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
+        long actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen < currentTimeMillisBefore);
 
         returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ expectedEntry2.getDomain() },
                                                                              expectedEntry2.getInterfaceName());
         assertTrue(returnedEntries.contains(expectedEntry2));
         assertTrue(returnedEntries.size() == 1);
-        assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisBefore);
+        actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen < currentTimeMillisBefore);
 
         // call touch for clusterControllerId and check lastSeenDateMs
         store.touch(clusterControllerId);
@@ -301,8 +304,9 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertFalse(returnedEntries.contains(expectedEntry1));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 1);
-        assertTrue(returnedEntries.get(0).getLastSeenDateMs() > currentTimeMillisBefore);
-        assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisAfter);
+        actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen > currentTimeMillisBefore);
+        assertTrue(actualLastSeen < currentTimeMillisAfter);
 
         returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ expectedEntry2.getDomain() },
                                                                              expectedEntry2.getInterfaceName());
@@ -310,12 +314,123 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertFalse(returnedEntries.contains(expectedEntry2));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 1);
-        assertTrue(returnedEntries.get(0).getLastSeenDateMs() > currentTimeMillisBefore);
-        assertTrue(returnedEntries.get(0).getLastSeenDateMs() < currentTimeMillisAfter);
+        actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen > currentTimeMillisBefore);
+        assertTrue(actualLastSeen < currentTimeMillisAfter);
     }
 
     @Test
-    public void testTouchDoesNotUpdateEntriesFromOtherClusterControllers() throws Exception {
+    public void touchWithParticipantIds_updatesLastSeenDateMsOfSelectedParticipantIds() throws Exception {
+        Function<GlobalDiscoveryEntryPersisted, List<GlobalDiscoveryEntryPersisted>> containsUntouched = new Function<GlobalDiscoveryEntryPersisted, List<GlobalDiscoveryEntryPersisted>>() {
+            @Override
+            public List<GlobalDiscoveryEntryPersisted> apply(GlobalDiscoveryEntryPersisted e) {
+                List<GlobalDiscoveryEntryPersisted> returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                        e.getDomain() }, e.getInterfaceName());
+                assertTrue(returnedEntries.contains(e));
+                assertTrue(returnedEntries.size() == 1);
+                return returnedEntries;
+            }
+        };
+        Function<GlobalDiscoveryEntryPersisted, List<GlobalDiscoveryEntryPersisted>> containsTouched = new Function<GlobalDiscoveryEntryPersisted, List<GlobalDiscoveryEntryPersisted>>() {
+            @Override
+            public List<GlobalDiscoveryEntryPersisted> apply(GlobalDiscoveryEntryPersisted e) {
+                List<GlobalDiscoveryEntryPersisted> returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                        e.getDomain() }, e.getInterfaceName());
+                assertFalse(returnedEntries.contains(e));
+                // touch should not insert additional entries
+                assertTrue(returnedEntries.size() == 1);
+                return returnedEntries;
+            }
+        };
+
+        // prepare 2 entries
+        String domain = "testTouchDomain";
+        String interfaceName = "testTouchInterfaceName";
+        String clusterControllerId = "testTouchClusterControllerId";
+
+        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry(domain + "1",
+                                                                             interfaceName + "1",
+                                                                             "testTouchParticipantId1");
+        discoveryEntry1.setClusterControllerId(clusterControllerId);
+
+        GlobalDiscoveryEntryPersisted expectedEntry1 = new GlobalDiscoveryEntryPersisted(discoveryEntry1,
+                                                                                         discoveryEntry1.getClusterControllerId(),
+                                                                                         defaultGbid);
+        Address expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntry1);
+        ((MqttAddress) expectedAddress).setBrokerUri(defaultGbid);
+        expectedEntry1.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        GlobalDiscoveryEntryPersisted discoveryEntry2 = createDiscoveryEntry(domain + "2",
+                                                                             interfaceName + "2",
+                                                                             "testTouchParticipantId2");
+        discoveryEntry2.setClusterControllerId(clusterControllerId);
+
+        GlobalDiscoveryEntryPersisted expectedEntry2 = new GlobalDiscoveryEntryPersisted(discoveryEntry2,
+                                                                                         discoveryEntry2.getClusterControllerId(),
+                                                                                         gbids[1]);
+        expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntry2);
+        ((MqttAddress) expectedAddress).setBrokerUri(gbids[1]);
+        expectedEntry2.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        // add entries
+        store.add(discoveryEntry1, new String[]{ defaultGbid });
+        store.add(discoveryEntry2, new String[]{ gbids[1] });
+        entityManager.clear();
+
+        Thread.sleep(1);
+        // check if untouched + lastSeenDateMs < System.currentTimeMillis()
+        long currentTimeMillisBefore = System.currentTimeMillis();
+
+        List<GlobalDiscoveryEntryPersisted> returnedEntries = containsUntouched.apply(expectedEntry1);
+        long actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen < currentTimeMillisBefore);
+        returnedEntries = containsUntouched.apply(expectedEntry2);
+        actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen < currentTimeMillisBefore);
+
+        // call touch for clusterControllerId and participantId 2 and check lastSeenDateMs
+        store.touch(clusterControllerId, new String[]{ expectedEntry2.getParticipantId() });
+        entityManager.clear();
+
+        Thread.sleep(1);
+        long currentTimeMillisAfter1 = System.currentTimeMillis();
+
+        returnedEntries = containsUntouched.apply(expectedEntry1);
+        actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen < currentTimeMillisBefore);
+        assertTrue(actualLastSeen < currentTimeMillisAfter1);
+
+        containsTouched.apply(discoveryEntry2);
+        returnedEntries = containsTouched.apply(expectedEntry2);
+        actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen > currentTimeMillisBefore);
+        assertTrue(actualLastSeen < currentTimeMillisAfter1);
+
+        // call touch for clusterControllerId and all participantIds and check lastSeenDateMs
+        store.touch(clusterControllerId,
+                    new String[]{ expectedEntry2.getParticipantId(), expectedEntry1.getParticipantId() });
+        entityManager.clear();
+
+        Thread.sleep(1);
+        long currentTimeMillisAfter2 = System.currentTimeMillis();
+
+        containsTouched.apply(discoveryEntry1);
+        returnedEntries = containsTouched.apply(expectedEntry1);
+        actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen > currentTimeMillisBefore);
+        assertTrue(actualLastSeen > currentTimeMillisAfter1);
+        assertTrue(actualLastSeen < currentTimeMillisAfter2);
+
+        containsTouched.apply(discoveryEntry2);
+        returnedEntries = containsTouched.apply(expectedEntry2);
+        actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        assertTrue(actualLastSeen > currentTimeMillisBefore);
+        assertTrue(actualLastSeen > currentTimeMillisAfter1);
+        assertTrue(actualLastSeen < currentTimeMillisAfter2);
+    }
+
+    @Test
+    public void touch_doesNotUpdateEntriesFromOtherClusterControllers() throws Exception {
         String domain = "testTouchDomain";
         String interfaceName = "testTouchInterfaceName";
         String clusterControllerId = "testTouchClusterControllerId";
@@ -365,6 +480,64 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertTrue(returnedEntries.contains(expectedEntryFromOtherCc));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 2);
+    }
+
+    @Test
+    public void touchWithParticipantIds_doesNotUpdateEntriesFromOtherClusterControllers() throws Exception {
+        // prepare entries
+        String domain = "testTouchDomain";
+        String interfaceName = "testTouchInterfaceName";
+        String clusterControllerId = "testTouchClusterControllerId";
+        GlobalDiscoveryEntryPersisted touchedDiscoveryEntry = createDiscoveryEntry(domain,
+                                                                                   interfaceName,
+                                                                                   "testTouchParticipantId1");
+        touchedDiscoveryEntry.setClusterControllerId(clusterControllerId);
+
+        GlobalDiscoveryEntryPersisted expectedTouchedEntry = new GlobalDiscoveryEntryPersisted(touchedDiscoveryEntry,
+                                                                                               touchedDiscoveryEntry.getClusterControllerId(),
+                                                                                               defaultGbid);
+        Address expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedTouchedEntry);
+        ((MqttAddress) expectedAddress).setBrokerUri(defaultGbid);
+        expectedTouchedEntry.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        GlobalDiscoveryEntryPersisted discoveryEntryFromDefaultClusterController = createDiscoveryEntry(domain,
+                                                                                                        interfaceName,
+                                                                                                        "testTouchParticipantIdFromDefaultClusterController");
+
+        GlobalDiscoveryEntryPersisted expectedEntryFromOtherCc = new GlobalDiscoveryEntryPersisted(discoveryEntryFromDefaultClusterController,
+                                                                                                   discoveryEntryFromDefaultClusterController.getClusterControllerId(),
+                                                                                                   defaultGbid);
+        expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntryFromOtherCc);
+        ((MqttAddress) expectedAddress).setBrokerUri(defaultGbid);
+        expectedEntryFromOtherCc.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        // add entries
+        store.add(touchedDiscoveryEntry, new String[]{ defaultGbid });
+        store.add(discoveryEntryFromDefaultClusterController, new String[]{ defaultGbid });
+        entityManager.clear();
+
+        // wait some time to ensure new lastSeenDateMs
+        Thread.sleep(1);
+
+        List<GlobalDiscoveryEntryPersisted> returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                domain }, interfaceName);
+        assertTrue(returnedEntries.contains(expectedTouchedEntry));
+        assertTrue(returnedEntries.contains(expectedEntryFromOtherCc));
+        assertTrue(returnedEntries.size() == 2);
+
+        // call touch for clusterControllerId and all participantIds and check discoveryEntries
+        store.touch(clusterControllerId,
+                    new String[]{ expectedTouchedEntry.getParticipantId(),
+                            expectedEntryFromOtherCc.getParticipantId() });
+        Thread.sleep(1);
+
+        returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ domain }, interfaceName);
+        assertFalse(returnedEntries.contains(expectedTouchedEntry));
+        assertTrue(returnedEntries.contains(expectedEntryFromOtherCc));
+        // touch should not insert additional entries
+        assertTrue(returnedEntries.size() == 2);
+        assertTrue(returnedEntries.stream().anyMatch((entry) -> expectedTouchedEntry.getParticipantId()
+                                                                                    .equals(entry.getParticipantId())));
     }
 
     @Test

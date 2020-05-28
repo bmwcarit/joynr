@@ -36,7 +36,6 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.persist.PersistService;
 
-import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
@@ -217,31 +216,68 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                                                                                 .setParameter("clusterControllerId",
                                                                                               clusterControllerId)
                                                                                 .getResultList();
-            for (GlobalDiscoveryEntryPersisted discoveryEntry : capabilitiesList) {
-                long previousLastSeenDateMs = ((GlobalDiscoveryEntryPersisted) discoveryEntry).getLastSeenDateMs();
-                ((GlobalDiscoveryEntryPersisted) discoveryEntry).setLastSeenDateMs(System.currentTimeMillis());
-                logger.trace("Updated discovery entry for participantId {}, last seen date old {} -> new {}",
-                             discoveryEntry.getParticipantId(),
-                             previousLastSeenDateMs,
-                             discoveryEntry.getLastSeenDateMs());
-            }
+            touchEntries(capabilitiesList);
             transaction.commit();
+            logger.trace("Touch(ccId={}) committed successfully.", clusterControllerId);
         } catch (RuntimeException e) {
+            logger.error("Touch(ccId={}) failed.", clusterControllerId, e);
+            throw e;
+        } finally {
             if (transaction.isActive()) {
+                logger.error("Touch(ccId={}): rollback.", clusterControllerId);
                 transaction.rollback();
             }
-            logger.error("Error updating last seen date for cluster controller with ID {}", clusterControllerId, e);
         }
+    }
 
+    private void touchEntries(List<GlobalDiscoveryEntryPersisted> capabilitiesList) {
+        for (GlobalDiscoveryEntryPersisted discoveryEntry : capabilitiesList) {
+            long previousLastSeenDateMs = ((GlobalDiscoveryEntryPersisted) discoveryEntry).getLastSeenDateMs();
+            ((GlobalDiscoveryEntryPersisted) discoveryEntry).setLastSeenDateMs(System.currentTimeMillis());
+            logger.trace("Updated discovery entry for participantId {}, last seen date old {} -> new {}",
+                         discoveryEntry.getParticipantId(),
+                         previousLastSeenDateMs,
+                         discoveryEntry.getLastSeenDateMs());
+        }
     }
 
     @Override
     public synchronized void touch(String clusterControllerId, String[] participantIds) {
-        final String msg = String.format("Error: touch method for clusterControllerId %s and participantIds %s is not implemented yet.",
-                                         clusterControllerId,
-                                         Arrays.toString(participantIds));
-        logger.error(msg);
-        throw new ProviderRuntimeException(msg);
+        String query = "FROM GlobalDiscoveryEntryPersisted gdep "
+                + "WHERE gdep.clusterControllerId = :clusterControllerId AND gdep.participantId IN :participantIds";
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            @SuppressWarnings("unchecked")
+            List<GlobalDiscoveryEntryPersisted> capabilitiesList = entityManager.createQuery(query)
+                                                                                .setParameter("clusterControllerId",
+                                                                                              clusterControllerId)
+                                                                                .setParameter("participantIds",
+                                                                                              new HashSet<>(Arrays.asList(participantIds)))
+                                                                                .getResultList();
+            touchEntries(capabilitiesList);
+            transaction.commit();
+            if (participantIds.length > capabilitiesList.size()) {
+                logger.warn("Touch(ccId={}, participantIds={}) committed successfully, but updated only {} entries: {}.",
+                            clusterControllerId,
+                            participantIds,
+                            capabilitiesList.size(),
+                            capabilitiesList);
+            } else {
+                logger.trace("Touch(ccId={}, participantIds={}) committed successfully.",
+                             clusterControllerId,
+                             participantIds);
+            }
+        } catch (RuntimeException e) {
+            logger.error("Touch(ccId={}, participantIds={}) failed.", clusterControllerId, participantIds, e);
+            throw e;
+        } finally {
+            if (transaction.isActive()) {
+                logger.error("Touch(ccId={}, participantIds={}): rollback.", clusterControllerId, participantIds);
+                transaction.rollback();
+            }
+        }
+
     }
 
     @Override

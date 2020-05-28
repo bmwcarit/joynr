@@ -464,21 +464,31 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
 
     @Override
     public Promise<DeferredVoid> touch(String clusterControllerId) {
-        logger.info("Touching clusterControllerId {}.", clusterControllerId);
+        logger.trace("Touch(ccId={}) called.", clusterControllerId);
         DeferredVoid deferred = new DeferredVoid();
-        discoveryEntryStore.touch(clusterControllerId);
-        deferred.resolve();
+        try {
+            discoveryEntryStore.touch(clusterControllerId);
+            logger.info("Touch(ccId={}) succeeded.", clusterControllerId);
+            deferred.resolve();
+        } catch (Exception e) {
+            logger.error("Touch(ccId={}) failed.", clusterControllerId, e);
+            deferred.reject(new ProviderRuntimeException("Touch failed: " + e.toString()));
+        }
         return new Promise<DeferredVoid>(deferred);
     }
 
     @Override
     public Promise<DeferredVoid> touch(String clusterControllerId, String[] participantIds) {
+        logger.trace("Touch(ccId={}, participantIds={}) called.", clusterControllerId, participantIds);
         DeferredVoid deferred = new DeferredVoid();
-        String message = format("Error: touch method for ccId %s and participantIds %s not yet implemented",
-                                clusterControllerId,
-                                Arrays.toString(participantIds));
-        logger.error(message);
-        deferred.reject(new ProviderRuntimeException(message));
+        try {
+            discoveryEntryStore.touch(clusterControllerId, participantIds);
+            logger.info("Touch(ccId={}, participantIds={}) succeeded.", clusterControllerId, participantIds);
+            deferred.resolve();
+        } catch (Exception e) {
+            logger.error("Touch(ccId={}, participantIds={}) failed.", clusterControllerId, participantIds, e);
+            deferred.reject(new ProviderRuntimeException("Touch failed: " + e.toString()));
+        }
         return new Promise<DeferredVoid>(deferred);
     }
 
