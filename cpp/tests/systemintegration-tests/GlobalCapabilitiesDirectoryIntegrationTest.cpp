@@ -36,6 +36,10 @@
 #include "tests/JoynrTest.h"
 #include "tests/utils/PtrUtils.h"
 
+#include "joynr/tests/testProvider.h"
+#include "joynr/tests/testProxy.h"
+#include "tests/mock/MockTestProvider.h"
+
 using namespace ::testing;
 using namespace joynr;
 
@@ -169,6 +173,78 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
                 [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
     semaphore.waitFor(std::chrono::seconds(10));
     JOYNR_LOG_DEBUG(logger(), "finished get capabilities");
+}
+
+/**
+ * Test removing stale providers functionality of cluster controller when it is starting
+ *
+ * Pre-conditions: start cluster controller first time, register provider, shutdown cluster controller
+ * without calling of unregisterProvider() method. Start cluster controller second time.
+ *
+ * Expected behavior: testProxyBuilder->build() throws an exception after the second start of
+ * cluster controller, because stale provider has been removed at the start of cluster controller.
+ */
+TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
+{
+    // Setup
+    std::string domain = "cppTestRsDomain";
+    auto mockProvider = std::make_shared<MockTestProvider>();
+
+    types::ProviderQos providerQos;
+    auto millisSinceEpoch = TimePoint::now().toMilliseconds();
+    providerQos.setPriority(millisSinceEpoch);
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+
+    const std::int64_t discoveryTimeoutMs = 3000.0;
+    joynr::DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
+    discoveryQos.setCacheMaxAgeMs(0.0);
+    discoveryQos.setRetryIntervalMs(discoveryTimeoutMs + 50.0);
+
+    // Start cluster controller runtime first time
+    auto testRuntimeFirst = std::make_shared<JoynrClusterControllerRuntime>(
+            std::make_unique<Settings>(GetParam()));
+    testRuntimeFirst->init();
+    testRuntimeFirst->start();
+
+    std::string providerParticipantId = testRuntimeFirst->registerProvider<tests::testProvider>(domain, mockProvider, providerQos, true, true);
+
+    auto testProxyBuilder = testRuntimeFirst->createProxyBuilder<tests::testProxy>(domain);
+
+    auto testProxy = testProxyBuilder->setMessagingQos(MessagingQos())
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build();
+
+    testRuntimeFirst->shutdown();
+    test::util::resetAndWaitUntilDestroyed(testRuntimeFirst);
+
+    // Start cluster controller runtime second time
+    auto testRuntimeSecond = std::make_shared<JoynrClusterControllerRuntime>(
+            std::make_unique<Settings>(GetParam()));
+    testRuntimeSecond->init();
+    testRuntimeSecond->start();
+    // wait some time to make sure that removeStale has been published and processed
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    testProxyBuilder = testRuntimeSecond->createProxyBuilder<tests::testProxy>(domain);
+
+    try {
+        testProxy = testProxyBuilder->setMessagingQos(MessagingQos())
+                ->setDiscoveryQos(discoveryQos)
+                ->build();
+        FAIL() << "Proxy creation succeeded unexpectedly";
+    } catch (const exceptions::JoynrException& e) {
+        std::string exceptionMessage = e.getMessage();
+        std::string expectedSubstring = "No entries found for domain";
+        bool messageFound = exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
+        ASSERT_TRUE(messageFound);
+    }
+
+    testRuntimeSecond->shutdown();
+
+    test::util::resetAndWaitUntilDestroyed(testRuntimeSecond);
 }
 
 using namespace std::string_literals;
