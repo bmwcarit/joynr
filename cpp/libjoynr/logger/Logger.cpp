@@ -46,7 +46,7 @@ joynr::LogLevelInitializer::LogLevelInitializer()
         return;
     }
 
-    const std::string runtimeLogLevelName(logLevelEnv);
+    const std::string runtimeLogLevelName(logLevelEnv, strnlen(logLevelEnv, 10UL));
 
     for (auto i : stringToSpdLogLevelToJoynrLogLevel) {
         if (std::get<0>(i) == runtimeLogLevelName) {
