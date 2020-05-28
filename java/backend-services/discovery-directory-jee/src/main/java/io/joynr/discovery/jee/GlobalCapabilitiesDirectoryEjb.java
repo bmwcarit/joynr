@@ -480,11 +480,29 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     @Override
     public void touch(String clusterControllerId, String[] participantIds) {
-        final String msg = String.format("Error: touch method for clusterControllerId %s and participantIds %s is not implemented",
-                                         clusterControllerId,
-                                         Arrays.toString(participantIds));
-        logger.error(msg);
-        throw new ProviderRuntimeException(msg);
+        logger.debug("Touch called. Updating discovery entries from cluster controller with id={}, participantIds={}.",
+                     clusterControllerId,
+                     participantIds);
+        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep "
+                + "WHERE gdep.clusterControllerId = :clusterControllerId AND gdep.participantId IN :participantIds";
+        long now = System.currentTimeMillis();
+        TypedQuery<GlobalDiscoveryEntryPersisted> query = entityManager.createQuery(queryString,
+                                                                                    GlobalDiscoveryEntryPersisted.class);
+        query.setParameter("clusterControllerId", clusterControllerId);
+        query.setParameter("participantIds", new HashSet<String>(Arrays.asList(participantIds)));
+        List<GlobalDiscoveryEntryPersisted> capabilitiesList = query.getResultList();
+        for (GlobalDiscoveryEntryPersisted globalDiscoveryEntryPersisted : capabilitiesList) {
+            globalDiscoveryEntryPersisted.setLastSeenDateMs(now);
+        }
+        if (participantIds.length > capabilitiesList.size()) {
+            logger.warn("Touch(ccId={}, participantIds={}) succeeded, but updated only {} entries: {}.",
+                        clusterControllerId,
+                        participantIds,
+                        capabilitiesList.size(),
+                        capabilitiesList);
+        } else {
+            logger.info("Touch(ccId={}, participantIds={}) succeeded.", clusterControllerId, participantIds);
+        }
     }
 
     @Override
