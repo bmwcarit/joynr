@@ -45,6 +45,7 @@ tests/performance-test/CMakeLists.txt \
 tests/performance-test/package.json \
 tests/robustness-test/CMakeLists.txt \
 tests/robustness-test/package.json \
+tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt \
 tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/package.json \
