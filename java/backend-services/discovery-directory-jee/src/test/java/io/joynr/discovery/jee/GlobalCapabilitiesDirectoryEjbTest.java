@@ -1227,8 +1227,10 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
     // Other test cases
     @Test
-    public void touch_updatesLastSeenDateMs() throws InterruptedException {
+    public void touch_updatesEntries() throws InterruptedException {
+        final long toleranceMs = 100;
         long initialLastSeen = testGlobalDiscoveryEntry1.getLastSeenDateMs();
+        long initialExpiryDate = testGlobalDiscoveryEntry1.getExpiryDateMs();
         addEntry(testGlobalDiscoveryEntry1);
 
         GlobalDiscoveryEntryPersistedKey primaryKey = new GlobalDiscoveryEntryPersistedKey();
@@ -1240,6 +1242,8 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
         Thread.sleep(1L);
 
+        long now = System.currentTimeMillis();
+        long expectedExpiryDate = now + TestJoynrConfigurationProvider.DEFAULT_EXPIRY_INTERVAL_MS;
         subject.touch(TOPIC_NAME);
         entityManager.flush();
         entityManager.clear();
@@ -1247,10 +1251,14 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         persisted = entityManager.find(GlobalDiscoveryEntryPersisted.class, primaryKey);
         assertNotNull(persisted);
         assertTrue(initialLastSeen < persisted.getLastSeenDateMs());
+        assertTrue((persisted.getLastSeenDateMs() - now) < toleranceMs);
+        assertTrue(initialExpiryDate < persisted.getExpiryDateMs());
+        assertTrue((persisted.getExpiryDateMs() - expectedExpiryDate) < toleranceMs);
     }
 
     @Test
-    public void touchWithParticipantIds_updatesLastSeenDateMsOfSelectedParticipantIds() throws Exception {
+    public void touchWithParticipantIds_updatesSelectedParticipantIds() throws Exception {
+        final long toleranceMs = 100;
         Function<GlobalDiscoveryEntryPersisted, GlobalDiscoveryEntryPersisted> containsUntouched = new Function<GlobalDiscoveryEntryPersisted, GlobalDiscoveryEntryPersisted>() {
             @Override
             public GlobalDiscoveryEntryPersisted apply(GlobalDiscoveryEntryPersisted entry) {
@@ -1281,6 +1289,8 @@ public class GlobalCapabilitiesDirectoryEjbTest {
         // prepare entries
         long initialLastSeen1 = testGlobalDiscoveryEntry1.getLastSeenDateMs();
         long initialLastSeen2 = testGlobalDiscoveryEntry2.getLastSeenDateMs();
+        long initialExpiryDate1 = testGlobalDiscoveryEntry1.getExpiryDateMs();
+        long initialExpiryDate2 = testGlobalDiscoveryEntry2.getExpiryDateMs();
 
         GlobalDiscoveryEntryPersisted testGdep1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry1,
                                                                                     TOPIC_NAME,
@@ -1308,8 +1318,10 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
         GlobalDiscoveryEntryPersisted returnedEntry = containsUntouched.apply(testGdep1);
         assertEquals(initialLastSeen1, returnedEntry.getLastSeenDateMs().longValue());
+        assertEquals(initialExpiryDate1, returnedEntry.getExpiryDateMs().longValue());
         returnedEntry = containsUntouched.apply(testGdep2);
         assertEquals(initialLastSeen2, returnedEntry.getLastSeenDateMs().longValue());
+        assertEquals(initialExpiryDate2, returnedEntry.getExpiryDateMs().longValue());
 
         // call touch for clusterControllerId and participantId 2 and check lastSeenDateMs
         subject.touch(TOPIC_NAME, new String[]{ testParticipantId2 });
@@ -1318,14 +1330,17 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
         Thread.sleep(1);
         long currentTimeMillisAfter1 = System.currentTimeMillis();
+        long expectedExpiryDate = currentTimeMillisBefore + TestJoynrConfigurationProvider.DEFAULT_EXPIRY_INTERVAL_MS;
 
         returnedEntry = containsUntouched.apply(testGdep1);
         assertTrue(returnedEntry.getLastSeenDateMs() < currentTimeMillisBefore);
         assertEquals(initialLastSeen1, returnedEntry.getLastSeenDateMs().longValue());
+        assertEquals(initialExpiryDate1, returnedEntry.getExpiryDateMs().longValue());
 
         returnedEntry = containsTouched.apply(testGdep2);
         assertTrue(returnedEntry.getLastSeenDateMs() > currentTimeMillisBefore);
         assertTrue(returnedEntry.getLastSeenDateMs() < currentTimeMillisAfter1);
+        assertTrue(returnedEntry.getExpiryDateMs() - expectedExpiryDate < toleranceMs);
 
         // call touch for clusterControllerId and all participantIds and check lastSeenDateMs
         subject.touch(TOPIC_NAME, new String[]{ testParticipantId2, testParticipantId1 });
@@ -1334,16 +1349,19 @@ public class GlobalCapabilitiesDirectoryEjbTest {
 
         Thread.sleep(1);
         long currentTimeMillisAfter2 = System.currentTimeMillis();
+        expectedExpiryDate = currentTimeMillisAfter1 + TestJoynrConfigurationProvider.DEFAULT_EXPIRY_INTERVAL_MS;
 
         returnedEntry = containsTouched.apply(testGdep1);
         assertTrue(returnedEntry.getLastSeenDateMs() > currentTimeMillisBefore);
         assertTrue(returnedEntry.getLastSeenDateMs() > currentTimeMillisAfter1);
         assertTrue(returnedEntry.getLastSeenDateMs() < currentTimeMillisAfter2);
+        assertTrue(returnedEntry.getExpiryDateMs() - expectedExpiryDate < toleranceMs);
 
         returnedEntry = containsTouched.apply(testGdep2);
         assertTrue(returnedEntry.getLastSeenDateMs() > currentTimeMillisBefore);
         assertTrue(returnedEntry.getLastSeenDateMs() > currentTimeMillisAfter1);
         assertTrue(returnedEntry.getLastSeenDateMs() < currentTimeMillisAfter2);
+        assertTrue(returnedEntry.getExpiryDateMs() - expectedExpiryDate < toleranceMs);
     }
 
     @Test

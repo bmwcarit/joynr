@@ -20,6 +20,7 @@ package io.joynr.discovery.jee;
 
 import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.GCD_GBID;
 import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.VALID_GBIDS;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -64,16 +65,19 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
 
     private String gcdGbid;
     private Set<String> validGbids;
+    private long defaultExpiryTimeMs;
 
     @Inject
     public GlobalCapabilitiesDirectoryEjb(EntityManager entityManager,
                                           @SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher,
                                           @Named(GCD_GBID) String gcdGbid,
-                                          @Named(VALID_GBIDS) String validGbidsString) {
+                                          @Named(VALID_GBIDS) String validGbidsString,
+                                          @Named(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs) {
         this.entityManager = entityManager;
         this.gcdSubPublisher = gcdSubPublisher;
         this.gcdGbid = gcdGbid;
         this.validGbids = GcdUtilities.convertArrayStringToSet(validGbidsString, gcdGbid);
+        this.defaultExpiryTimeMs = defaultExpiryTimeMs;
     }
 
     @Override
@@ -475,6 +479,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         query.setParameter("clusterControllerId", clusterControllerId);
         for (GlobalDiscoveryEntryPersisted globalDiscoveryEntryPersisted : query.getResultList()) {
             globalDiscoveryEntryPersisted.setLastSeenDateMs(now);
+            globalDiscoveryEntryPersisted.setExpiryDateMs(now + defaultExpiryTimeMs);
         }
     }
 
@@ -493,6 +498,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         List<GlobalDiscoveryEntryPersisted> capabilitiesList = query.getResultList();
         for (GlobalDiscoveryEntryPersisted globalDiscoveryEntryPersisted : capabilitiesList) {
             globalDiscoveryEntryPersisted.setLastSeenDateMs(now);
+            globalDiscoveryEntryPersisted.setExpiryDateMs(now + defaultExpiryTimeMs);
         }
         if (participantIds.length > capabilitiesList.size()) {
             logger.warn("Touch(ccId={}, participantIds={}) succeeded, but updated only {} entries: {}.",

@@ -21,6 +21,8 @@ package io.joynr.discovery.jee;
 import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.GCD_GBID;
 import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.VALID_GBIDS;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
+import static io.joynr.messaging.MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE;
 
 import java.util.Map;
 import java.util.Properties;
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.capabilities.directory.util.GcdUtilities;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -149,5 +152,17 @@ public class JoynrConfigurationProvider {
             validGbidsString = getGcdGbid();
         }
         return validGbidsString;
+    }
+
+    @Produces
+    @Named(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS)
+    public long getDefaultExpiryTimeMs() {
+        Properties joynrDefaultProperties = PropertyLoader.loadProperties(DEFAULT_MESSAGING_PROPERTIES_FILE);
+        if (!joynrDefaultProperties.containsKey(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS)) {
+            logger.error("PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS not found in default properties: {}",
+                         joynrDefaultProperties);
+            throw new JoynrIllegalStateException("PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS not found in default properties.");
+        }
+        return Long.parseLong(joynrDefaultProperties.getProperty(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS));
     }
 }

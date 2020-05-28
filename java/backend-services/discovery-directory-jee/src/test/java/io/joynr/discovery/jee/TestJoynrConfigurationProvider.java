@@ -20,6 +20,7 @@ package io.joynr.discovery.jee;
 
 import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.GCD_GBID;
 import static io.joynr.capabilities.directory.CapabilitiesDirectoryImpl.VALID_GBIDS;
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
 
 import java.util.Properties;
 
@@ -36,6 +37,7 @@ public class TestJoynrConfigurationProvider {
 
     static final String VALID_GBIDS_ARRAY = "joynrdefaultgbid,testGbid2,testGbid3";
     static final String JOYNR_DEFAULT_GCD_GBID = "joynrdefaultgbid";
+    static final long DEFAULT_EXPIRY_INTERVAL_MS = 60000;
 
     @Produces
     @JoynrProperties
@@ -65,5 +67,11 @@ public class TestJoynrConfigurationProvider {
     @Named(VALID_GBIDS)
     public String getValidGbids() {
         return VALID_GBIDS_ARRAY;
+    }
+
+    @Produces
+    @Named(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS)
+    public long getDefaultExpiryTimeMs() {
+        return DEFAULT_EXPIRY_INTERVAL_MS;
     }
 }
