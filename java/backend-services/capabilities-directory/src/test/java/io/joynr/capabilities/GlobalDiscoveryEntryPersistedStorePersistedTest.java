@@ -18,6 +18,7 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -45,6 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.name.Names;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 
@@ -65,6 +67,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     private String defaultGbid = "joynrdefaultgbid";
     private String[] gbids = { defaultGbid, "joynrtestgbid2" };
     private String clusterControllerId = "clusterControllerId";
+    static final long DEFAULT_EXPIRY_INTERVAL_MS = 60000;
 
     @Before
     public void setUp() throws Exception {
@@ -72,6 +75,8 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         Injector injector = Guice.createInjector(new JpaPersistModule("CapabilitiesDirectory"), new AbstractModule() {
             @Override
             protected void configure() {
+                bind(String.class).annotatedWith(Names.named(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS))
+                                  .toInstance(String.valueOf(DEFAULT_EXPIRY_INTERVAL_MS));
                 bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
                 requestStaticInjection(CapabilityUtils.class, RoutingTypesUtil.class);
             }
@@ -237,7 +242,9 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     }
 
     @Test
-    public void touch_updatesLastSeenDateMs() throws Exception {
+    public void touch_updatesEntries() throws Exception {
+        long toleranceMs = 100;
+        assertTrue(DEFAULT_EXPIRY_INTERVAL_MS > 10 * toleranceMs);
         String domain = "testTouchDomain";
         String interfaceName = "testTouchInterfaceName";
         String clusterControllerId = "testTouchClusterControllerId";
@@ -297,6 +304,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
 
         Thread.sleep(1);
         long currentTimeMillisAfter = System.currentTimeMillis();
+        long expectedExpiryDate = currentTimeMillisBefore + DEFAULT_EXPIRY_INTERVAL_MS;
 
         returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ expectedEntry1.getDomain() },
                                                                              expectedEntry1.getInterfaceName());
@@ -307,6 +315,10 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
         assertTrue(actualLastSeen > currentTimeMillisBefore);
         assertTrue(actualLastSeen < currentTimeMillisAfter);
+        long actualExpiryDate = returnedEntries.get(0).getExpiryDateMs();
+        long diff = actualExpiryDate - expectedExpiryDate;
+        assertTrue("actual: " + actualExpiryDate + ", expected: " + expectedExpiryDate + ", diff: " + diff,
+                   diff < toleranceMs);
 
         returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{ expectedEntry2.getDomain() },
                                                                              expectedEntry2.getInterfaceName());
@@ -317,10 +329,16 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
         assertTrue(actualLastSeen > currentTimeMillisBefore);
         assertTrue(actualLastSeen < currentTimeMillisAfter);
+        actualExpiryDate = returnedEntries.get(0).getExpiryDateMs();
+        diff = actualExpiryDate - expectedExpiryDate;
+        assertTrue("actual: " + actualExpiryDate + ", expected: " + expectedExpiryDate + ", diff: " + diff,
+                   diff < toleranceMs);
     }
 
     @Test
-    public void touchWithParticipantIds_updatesLastSeenDateMsOfSelectedParticipantIds() throws Exception {
+    public void touchWithParticipantIds_updatesSelectedParticipantIds() throws Exception {
+        long toleranceMs = 100;
+        assertTrue(DEFAULT_EXPIRY_INTERVAL_MS > 10 * toleranceMs);
         Function<GlobalDiscoveryEntryPersisted, List<GlobalDiscoveryEntryPersisted>> containsUntouched = new Function<GlobalDiscoveryEntryPersisted, List<GlobalDiscoveryEntryPersisted>>() {
             @Override
             public List<GlobalDiscoveryEntryPersisted> apply(GlobalDiscoveryEntryPersisted e) {
@@ -378,7 +396,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         entityManager.clear();
 
         Thread.sleep(1);
-        // check if untouched + lastSeenDateMs < System.currentTimeMillis()
+        // check if untouched && lastSeenDateMs < System.currentTimeMillis()
         long currentTimeMillisBefore = System.currentTimeMillis();
 
         List<GlobalDiscoveryEntryPersisted> returnedEntries = containsUntouched.apply(expectedEntry1);
@@ -394,6 +412,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
 
         Thread.sleep(1);
         long currentTimeMillisAfter1 = System.currentTimeMillis();
+        long expectedExpiryDate = currentTimeMillisBefore + DEFAULT_EXPIRY_INTERVAL_MS;
 
         returnedEntries = containsUntouched.apply(expectedEntry1);
         actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
@@ -405,6 +424,10 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
         assertTrue(actualLastSeen > currentTimeMillisBefore);
         assertTrue(actualLastSeen < currentTimeMillisAfter1);
+        long actualExpiryDate = returnedEntries.get(0).getExpiryDateMs();
+        long diff = actualExpiryDate - expectedExpiryDate;
+        assertTrue("actual: " + actualExpiryDate + ", expected: " + expectedExpiryDate + ", diff: " + diff,
+                   diff < toleranceMs);
 
         // call touch for clusterControllerId and all participantIds and check lastSeenDateMs
         store.touch(clusterControllerId,
@@ -413,6 +436,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
 
         Thread.sleep(1);
         long currentTimeMillisAfter2 = System.currentTimeMillis();
+        expectedExpiryDate = currentTimeMillisAfter1 + DEFAULT_EXPIRY_INTERVAL_MS;
 
         containsTouched.apply(discoveryEntry1);
         returnedEntries = containsTouched.apply(expectedEntry1);
@@ -420,6 +444,10 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertTrue(actualLastSeen > currentTimeMillisBefore);
         assertTrue(actualLastSeen > currentTimeMillisAfter1);
         assertTrue(actualLastSeen < currentTimeMillisAfter2);
+        actualExpiryDate = returnedEntries.get(0).getExpiryDateMs();
+        diff = actualExpiryDate - expectedExpiryDate;
+        assertTrue("actual: " + actualExpiryDate + ", expected: " + expectedExpiryDate + ", diff: " + diff,
+                   diff < toleranceMs);
 
         containsTouched.apply(discoveryEntry2);
         returnedEntries = containsTouched.apply(expectedEntry2);
@@ -427,6 +455,10 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertTrue(actualLastSeen > currentTimeMillisBefore);
         assertTrue(actualLastSeen > currentTimeMillisAfter1);
         assertTrue(actualLastSeen < currentTimeMillisAfter2);
+        actualExpiryDate = returnedEntries.get(0).getExpiryDateMs();
+        diff = actualExpiryDate - expectedExpiryDate;
+        assertTrue("actual: " + actualExpiryDate + ", expected: " + expectedExpiryDate + ", diff: " + diff,
+                   diff < toleranceMs);
     }
 
     @Test

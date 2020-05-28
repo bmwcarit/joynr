@@ -18,6 +18,8 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.google.inject.persist.PersistService;
 
 import joynr.system.RoutingTypes.Address;
@@ -50,13 +53,16 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalDiscoveryEntryPersistedStorePersisted.class);
     private EntityManager entityManager;
+    private final long defaultExpiryTimeMs;
 
     @Inject
     public GlobalDiscoveryEntryPersistedStorePersisted(CapabilitiesProvisioning staticProvisioning,
                                                        Provider<EntityManager> entityManagerProvider,
-                                                       PersistService persistService) {
+                                                       PersistService persistService,
+                                                       @Named(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) String defaultExpiryTimeMs) {
         persistService.start();
         entityManager = entityManagerProvider.get();
+        this.defaultExpiryTimeMs = Long.parseLong(defaultExpiryTimeMs);
 
         logger.debug("Creating CapabilitiesStore with static provisioning");
     }
@@ -231,13 +237,18 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
     }
 
     private void touchEntries(List<GlobalDiscoveryEntryPersisted> capabilitiesList) {
+        long now = System.currentTimeMillis();
         for (GlobalDiscoveryEntryPersisted discoveryEntry : capabilitiesList) {
-            long previousLastSeenDateMs = ((GlobalDiscoveryEntryPersisted) discoveryEntry).getLastSeenDateMs();
-            ((GlobalDiscoveryEntryPersisted) discoveryEntry).setLastSeenDateMs(System.currentTimeMillis());
-            logger.trace("Updated discovery entry for participantId {}, last seen date old {} -> new {}",
+            long previousLastSeenDateMs = discoveryEntry.getLastSeenDateMs();
+            long previousExpiryDateMs = discoveryEntry.getExpiryDateMs();
+            discoveryEntry.setLastSeenDateMs(now);
+            discoveryEntry.setExpiryDateMs(now + defaultExpiryTimeMs);
+            logger.trace("Updated discovery entry for participantId {}, last seen date old={} -> new={}, expiry date old={} -> new={}.",
                          discoveryEntry.getParticipantId(),
                          previousLastSeenDateMs,
-                         discoveryEntry.getLastSeenDateMs());
+                         discoveryEntry.getLastSeenDateMs(),
+                         previousExpiryDateMs,
+                         discoveryEntry.getExpiryDateMs());
         }
     }
 
