@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.examples</groupId>
 		<artifactId>custom-headers</artifactId>
-		<version>1.14.0</version>
+		<version>1.15.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
