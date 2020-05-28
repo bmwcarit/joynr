@@ -36,6 +36,14 @@ the versioning scheme [here](JoynrVersioning.md).
   [JavaScript documentation](javascript.md#the-discovery-quality-of-service).
 * **[C++]** Routed messages are now only printed in the cluster controller, with a configurable
   interval.
+* **[C++]** Modernize the CMake build system. Please use the targets with the `Joynr::` prefix now.
+  Also uses the gold linker, if available.
+* **[Overall]** All NOTICE files were removed as they were partially outdated and hard to update.
+* **[C++, TS]** Introduced some preliminary changes to introduce Unix Domain Sockets as transport
+  protocol. This is not complete yet and can not be used yet.
+* **[JEE]** Startup is aborted when `@JoynrLocalDomain` is not set or empty.
+* **[Java, JEE]** Logging has been substantially altered to better align with the logging in C++
+  and provide better insights into what is happening.
 
 ## Configuration property changes
 * **[Java, JEE]** Introduced the `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` boolean property, which
