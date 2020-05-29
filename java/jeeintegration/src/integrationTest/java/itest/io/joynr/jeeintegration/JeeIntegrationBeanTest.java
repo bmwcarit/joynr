@@ -43,6 +43,7 @@ import com.google.inject.name.Names;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
+import io.joynr.jeeintegration.JeeJoynrServiceLocator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.JoynrStatusMetrics;
 import io.joynr.jeeintegration.JoynrStatusMetricsAggregator;
@@ -69,7 +70,8 @@ public class JeeIntegrationBeanTest {
                                      JeeIntegrationJoynrTestConfigurationProvider.class,
                                      JoynrIntegrationBean.class,
                                      TestResult.class,
-                                     JoynrStatusMetricsAggregator.class)
+                                     JoynrStatusMetricsAggregator.class,
+                                     JeeJoynrServiceLocator.class)
                          .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
         // @formatter:on
     }

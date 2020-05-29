@@ -26,6 +26,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.DependsOn;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.inject.Any;
@@ -55,6 +56,7 @@ import joynr.types.ProviderQos;
  */
 @Singleton
 @Startup
+@DependsOn("JeeJoynrServiceLocator")
 public class JoynrIntegrationBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(JoynrIntegrationBean.class);
