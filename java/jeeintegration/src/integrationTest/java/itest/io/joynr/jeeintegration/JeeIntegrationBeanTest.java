@@ -45,10 +45,10 @@ import com.google.inject.name.Names;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
+import io.joynr.jeeintegration.JeeJoynrServiceLocator;
 import io.joynr.jeeintegration.JeeJoynrStatusMetricsAggregator;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.statusmetrics.JoynrStatusMetrics;
-import io.joynr.statusmetrics.JoynrStatusMetricsAggregator;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
@@ -73,7 +73,8 @@ public class JeeIntegrationBeanTest {
                                      JeeIntegrationJoynrTestConfigurationProvider.class,
                                      JoynrIntegrationBean.class,
                                      TestResult.class,
-                                     JeeJoynrStatusMetricsAggregator.class)
+                                     JeeJoynrStatusMetricsAggregator.class,
+                                     JeeJoynrServiceLocator.class)
                          .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
         // @formatter:on
     }
