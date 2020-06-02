@@ -163,7 +163,7 @@ protected:
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(discoveryQos)
                         ->build();
-        return std::move(testProxy);
+        return testProxy;
     }
 
     template <typename ChangeAttribute, typename SubscribeTo, typename UnsubscribeFrom, typename T>
