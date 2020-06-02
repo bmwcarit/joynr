@@ -2,6 +2,20 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.11
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** HivemqMqttClient now checks for maxmimum message size the same way as was
+  already implemented for MqttPahoClient, see property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
+  See the [Java Configuration Reference](JavaSettings.md) for details about this property.
+* **[Java, JEE]** Singleton JeeJoynrServiceLocator will now be created at startup time.
+
+## Configuration property changes
+None.
+
 # joynr 1.8.10
 
 ## API relevant changes
