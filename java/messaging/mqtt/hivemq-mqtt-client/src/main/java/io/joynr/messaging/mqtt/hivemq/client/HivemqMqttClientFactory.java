@@ -89,6 +89,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private HashMap<String, String> mqttGbidToBrokerUriMap;
     private HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap;
     private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
+    private final int maxMsgSizeBytes;
     private final boolean cleanSession;
     private final JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
 
@@ -138,6 +139,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                    @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap,
                                    @Named(MqttModule.MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP) HashMap<String, Integer> mqttGbidToKeepAliveTimerSecMap,
                                    @Named(MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP) HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap,
+                                   @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES) int maxMsgSizeBytes,
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider,
@@ -150,6 +152,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         this.mqttClientIdProvider = mqttClientIdProvider;
         sendingMqttClients = new HashMap<>(); // gbid to client
         receivingMqttClients = new HashMap<>(); // gbid to client
+        this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
     }
@@ -237,6 +240,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         Mqtt5RxClient client = clientBuilder.buildRx();
         HivemqMqttClient result = new HivemqMqttClient(client,
                                                        mqttGbidToKeepAliveTimerSecMap.get(gbid),
+                                                       maxMsgSizeBytes,
                                                        cleanSession,
                                                        mqttGbidToConnectionTimeoutSecMap.get(gbid),
                                                        reconnectDelayMs,

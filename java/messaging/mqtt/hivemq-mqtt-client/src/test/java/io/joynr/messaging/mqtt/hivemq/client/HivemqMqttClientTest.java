@@ -34,7 +34,9 @@ import java.util.Optional;
 import java.util.OptionalLong;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -58,6 +60,7 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PublishResult;
 
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
@@ -76,6 +79,7 @@ public class HivemqMqttClientTest {
     @Mock
     private Mqtt5AsyncClient mockAsyncClient;
     private final int defaultKeepAliveTimerSec = 30;
+    private final int defaultMaxMessageSize = 0;
     private final boolean defaultCleanSession = false;
     private final int defaultConnectionTimeoutSec = 60;
     private final int defaultReconnectDelayMs = 1000;
@@ -104,6 +108,9 @@ public class HivemqMqttClientTest {
     @Mock
     private ConnectionStatusMetricsImpl mockConnectionStatusMetrics;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -124,6 +131,7 @@ public class HivemqMqttClientTest {
     private void createDefaultClient() {
         client = new HivemqMqttClient(mockRxClient,
                                       defaultKeepAliveTimerSec,
+                                      defaultMaxMessageSize,
                                       defaultCleanSession,
                                       defaultConnectionTimeoutSec,
                                       defaultReconnectDelayMs,
@@ -341,4 +349,71 @@ public class HivemqMqttClientTest {
         client.start();
         verify(mockConnectionStatusMetrics, times(1)).increaseConnectionAttempts();
     }
+
+    @Test
+    public void publishMessage_throwsWhenMaxMessageSizeExceeded() throws Exception {
+        final int maxMessageSize = 100;
+        client = new HivemqMqttClient(mockRxClient,
+                                      defaultKeepAliveTimerSec,
+                                      maxMessageSize,
+                                      defaultCleanSession,
+                                      defaultConnectionTimeoutSec,
+                                      defaultReconnectDelayMs,
+                                      true,
+                                      true,
+                                      defaultGbid,
+                                      mockConnectionStatusMetrics);
+        doReturn(MqttClientState.CONNECTED).when(mockClientConfig).getState();
+
+        byte[] largeSerializedMessage = new byte[maxMessageSize + 1];
+        thrown.expect(JoynrMessageNotSentException.class);
+        thrown.expectMessage("Publish failed: maximum allowed message size of " + maxMessageSize
+                + " bytes exceeded, actual size is " + largeSerializedMessage.length + " bytes");
+
+        client.publishMessage(testTopic,
+                              largeSerializedMessage,
+                              MqttQos.AT_LEAST_ONCE.getCode(),
+                              testExpiryIntervalSec,
+                              mockSuccessAction,
+                              mockFailureAction);
+        verify(mockSuccessAction, times(0)).execute();
+        verify(mockFailureAction, times(0)).execute(any(Throwable.class));
+    }
+
+    @Test
+    public void publishMessage_doesNotThrowWhenMaxMessageSizeNotExceeded() {
+        final int maxMessageSize = 100;
+        client = new HivemqMqttClient(mockRxClient,
+                                      defaultKeepAliveTimerSec,
+                                      maxMessageSize,
+                                      defaultCleanSession,
+                                      defaultConnectionTimeoutSec,
+                                      defaultReconnectDelayMs,
+                                      true,
+                                      true,
+                                      defaultGbid,
+                                      mockConnectionStatusMetrics);
+
+        byte[] shortSerializedMessage = new byte[maxMessageSize];
+        Mqtt5Publish expectedPublish = Mqtt5Publish.builder()
+                                                   .topic(testTopic)
+                                                   .qos(MqttQos.AT_LEAST_ONCE)
+                                                   .payload(shortSerializedMessage)
+                                                   .messageExpiryInterval(testExpiryIntervalSec)
+                                                   .build();
+        MqttQos1Result mockResult = new MqttQos1Result((MqttPublish) expectedPublish, null, null);
+        doReturn(MqttClientState.CONNECTED).when(mockClientConfig).getState();
+
+        client.publishMessage(testTopic,
+                              shortSerializedMessage,
+                              MqttQos.AT_LEAST_ONCE.getCode(),
+                              testExpiryIntervalSec,
+                              mockSuccessAction,
+                              mockFailureAction);
+        publishFuture.complete(mockResult);
+
+        verify(mockSuccessAction, times(1)).execute();
+        verify(mockFailureAction, times(0)).execute(any(Throwable.class));
+    }
+
 }

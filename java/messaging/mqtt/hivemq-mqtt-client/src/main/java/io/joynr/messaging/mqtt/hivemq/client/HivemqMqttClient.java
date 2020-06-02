@@ -40,6 +40,7 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.Mqtt5Unsubscribe;
 
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
@@ -60,6 +61,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     private final Mqtt5RxClient client;
     private final Mqtt5ClientConfig clientConfig;
+    private final int maxMsgSizeBytes;
     private final boolean cleanSession;
     private final int keepAliveTimeSeconds;
     private final int connectionTimeoutSec;
@@ -76,6 +78,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public HivemqMqttClient(Mqtt5RxClient client,
                             int keepAliveTimeSeconds,
+                            int maxMsgSizeBytes,
                             boolean cleanSession,
                             int connectionTimeoutSec,
                             int reconnectDelayMs,
@@ -86,6 +89,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         this.client = client;
         clientConfig = client.getConfig();
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
+        this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.reconnectDelayMs = reconnectDelayMs;
@@ -207,6 +211,12 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                SuccessAction successAction,
                                FailureAction failureAction) {
         assert (isSender);
+
+        if (maxMsgSizeBytes != 0 && serializedMessage.length > maxMsgSizeBytes) {
+            throw new JoynrMessageNotSentException("Publish failed: maximum allowed message size of " + maxMsgSizeBytes
+                    + " bytes exceeded, actual size is " + serializedMessage.length + " bytes");
+        }
+
         if (!clientConfig.getState().isConnected()) {
             failureAction.execute(new JoynrDelayMessageException(NOT_CONNECTED_RETRY_INTERVAL_MS,
                                                                  "Publish failed: Mqtt client not connected."));
