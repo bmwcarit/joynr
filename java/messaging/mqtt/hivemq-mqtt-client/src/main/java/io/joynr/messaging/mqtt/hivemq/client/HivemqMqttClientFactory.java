@@ -85,7 +85,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     private final MqttClientIdProvider mqttClientIdProvider;
     private final ScheduledExecutorService scheduledExecutorService;
     private final int keepAliveTimeSeconds;
-
+    private final int maxMsgSizeBytes;
     private final boolean cleanSession;
     private final int connectionTimeoutSec;
     private final MqttStatusReceiver mqttStatusReceiver;
@@ -138,6 +138,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMER_SEC) int keepAliveTimeSeconds,
+                                   @Named(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES) int maxMsgSizeBytes,
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUT_SEC) int connectionTimeoutSec,
@@ -148,6 +149,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         this.scheduledExecutorService = scheduledExecutorService;
         this.mqttClientIdProvider = mqttClientIdProvider;
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
+        this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.mqttStatusReceiver = mqttStatusReceiver;
@@ -236,6 +238,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         Mqtt3RxClient client = clientBuilder.buildRx();
         HivemqMqttClient result = new HivemqMqttClient(client,
                                                        keepAliveTimeSeconds,
+                                                       maxMsgSizeBytes,
                                                        cleanSession,
                                                        connectionTimeoutSec,
                                                        reconnectDelayMs,
