@@ -18,8 +18,12 @@ the versioning scheme [here](JoynrVersioning.md).
  for for additional information about the new methods.
 * **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.4
 * **[C++]** Mosquitto MQTT Client now sets message expiry interval of
-* **[Java, JEE]** HiveMQ MQTT Client now sets message expiry interval of
+* **[Java, JEE]** Singleton JeeJoynrServiceLocator will now be created at startup time.
+* **[Java]** HivemqMqttClient now sets message expiry interval of
   published MQTT messages.
+* **[Java]** HivemqMqttClient now checks for maxmimum message size the same way as was
+  already implemented for MqttPahoClient, see property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
+  See the [Java Configuration Reference](JavaSettings.md) for details about this property.
 * **[Java]** Fixed HivemqMqttClient to not lose messages: messages were sporadically lost
   because hivemq-mqtt-client was not used in a thread safe way when publishing messages.
 * **[All, Generator]** The generator can now be optionally be called via command line
