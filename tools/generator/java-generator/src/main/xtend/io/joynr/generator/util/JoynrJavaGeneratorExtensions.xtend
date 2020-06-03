@@ -40,7 +40,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 	@Inject extension InterfaceUtil
 	@Inject extension BroadcastUtil
 
-	var jeeExtension = false
 	var ignoreInvalidNullClassMembersExtension = false
 
 	def String getNamespaceStarter(FInterface interfaceType) {
@@ -243,14 +242,6 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	def getJoynTypePackagePrefix(){
 		joynrGenerationPrefix
-	}
-
-	def activateJeeExtension() {
-		jeeExtension = true
-	}
-
-	def jeeExtension() {
-		jeeExtension
 	}
 
 	def activateIgnoreInvalidNullClassMembersExtension() {

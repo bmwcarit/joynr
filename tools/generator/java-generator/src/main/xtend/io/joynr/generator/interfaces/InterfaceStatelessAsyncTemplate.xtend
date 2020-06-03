@@ -48,18 +48,14 @@ package «packagePath»;
 import io.joynr.StatelessAsync;
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.proxy.MessageIdCallback;
-«IF jeeExtension»
 import io.joynr.UsedBy;
-«ENDIF»
 
 «FOR datatype: getRequiredStatelessAsyncIncludesFor(francaIntf)»
 	import «datatype»;
 «ENDFOR»
 
 @StatelessAsync
-«IF jeeExtension»
 @UsedBy(«francaIntf.proxyClassName».class)
-«ENDIF»
 public interface «statelessAsyncClassName» extends «interfaceName»«IF hasFireAndForgetMethods(francaIntf)», «interfaceName»FireAndForget«ENDIF» {
 
 «FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»

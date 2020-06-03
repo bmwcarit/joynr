@@ -94,10 +94,8 @@ package «packagePath»;
 
 import io.joynr.messaging.MessagingQos;
 import io.joynr.Sync;
-«IF jeeExtension»
 import io.joynr.ProvidedBy;
 import io.joynr.UsedBy;
-«ENDIF»
 «IF hasMethodWithErrorEnum(francaIntf)»
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
@@ -107,10 +105,8 @@ import io.joynr.UsedBy;
 «ENDFOR»
 
 @Sync
-«IF jeeExtension»
 @ProvidedBy(«francaIntf.providerClassName».class)
 @UsedBy(«francaIntf.proxyClassName».class)
-«ENDIF»
 public interface «syncClassName» extends «interfaceName»«IF hasFireAndForgetMethods(francaIntf)», «interfaceName»FireAndForget«ENDIF» {
 
 «FOR attribute: getAttributes(francaIntf) SEPARATOR "\n"»
