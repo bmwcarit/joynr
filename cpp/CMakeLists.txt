@@ -69,7 +69,7 @@ endif(${GENERATE_SOURCES})
 
 #### BEGIN Globally required dependencies ####
 
-set(JOYNR_BOOST_REQUIRED_VERSION 1.58.0)
+set(JOYNR_BOOST_REQUIRED_VERSION 1.65.0)
 set(JOYNR_BOOST_REQUIRED_COMPONENTS system filesystem thread)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
