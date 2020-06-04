@@ -23,6 +23,9 @@ message(STATUS "option GENERATE_SOURCES=" ${GENERATE_SOURCES})
 
 # Pull in the Joynr configuration
 find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
+find_package(CURL REQUIRED)
+find_package(mosquitto 1.6.8 REQUIRED)
+include(CheckMosquittoImportTargets)
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)

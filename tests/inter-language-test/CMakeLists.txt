@@ -23,6 +23,9 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 
 # Pull in the Joynr configuration
 find_package(Joynr 1.14.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
+find_package(CURL REQUIRED)
+find_package(mosquitto 1.6.8 REQUIRED)
+include(CheckMosquittoImportTargets)
 
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")

@@ -53,6 +53,10 @@ message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 
+find_package(mosquitto 1.6.8 REQUIRED)
+include(CheckMosquittoImportTargets)
+find_package(CURL REQUIRED)
+
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
     message(STATUS "variable JoynrGenerator_FOUND=${JoynrGenerator_FOUND}")
