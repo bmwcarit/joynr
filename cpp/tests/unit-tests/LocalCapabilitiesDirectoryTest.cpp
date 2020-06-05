@@ -61,6 +61,7 @@
 #include "tests/mock/MockCapabilitiesStorage.h"
 #include "tests/mock/MockGlobalCapabilitiesDirectoryClient.h"
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -230,7 +231,8 @@ public:
     ~LocalCapabilitiesDirectoryTest() override
     {
         _singleThreadedIOService->stop();
-        _localCapabilitiesDirectory.reset();
+        test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectory);
+        test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
 
         test::util::removeFileInCurrentDirectory(".*\\.settings");
         test::util::removeFileInCurrentDirectory(".*\\.persist");
@@ -3019,7 +3021,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpiredGlobalEntries)
 {
-    // add a few entries
+    // add a few (remote) entries to the global cache
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
 
@@ -3089,7 +3091,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(Eq(domainVector), Eq(_INTERFACE_3_NAME), _, _, _, _, _))
-            .Times(1)
             .WillOnce(InvokeArgument<4>(expectedResultInterface3));
     _localCapabilitiesDirectory->lookup(domainVector,
                                        _INTERFACE_3_NAME,
@@ -3102,10 +3103,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
     // wait for cleanup timer to run
     std::this_thread::sleep_for(
             std::chrono::milliseconds(_purgeExpiredDiscoveryEntriesIntervalMs * 2));
+    // cache should now only contain entry1
 
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 
-    // Cached entry still available for interface 1
+    // 1 cached entry still available for interface 1
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(Eq(domainVector), Eq(_INTERFACE_1_NAME), _, _, _, _, _))
             .Times(0);
     _localCapabilitiesDirectory->lookup(domainVector,
@@ -3120,7 +3122,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
 
     // The only entry for interface 3 is expired by now, so the GCD is called again
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, Eq(_INTERFACE_3_NAME), _, _, _, _, _))
-            .Times(1)
             .WillOnce(InvokeArgument<4>(emptyExpectedResult));
     _localCapabilitiesDirectory->lookup(domainVector,
                                        _INTERFACE_3_NAME,
@@ -3822,13 +3823,64 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
 
 TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
 {
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _, _)).Times(0);
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
     Semaphore gcdSemaphore(0);
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, _, _)).Times(2).WillRepeatedly(
-            ReleaseSemaphore(&gcdSemaphore));
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, _, _))
+            .Times(2)
+            .WillRepeatedly(ReleaseSemaphore(&gcdSemaphore));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
+    EXPECT_FALSE(gcdSemaphore.waitFor(std::chrono::milliseconds(150)));
+    EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(100)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, callTouchWithOnlyGlobalParticipantIds_RefreshesEntries)
+{
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
+    // Fill the LCD
+    std::string participantId1 = "participantId1";
+    std::string participantId2 = "participantId2";
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    _entry.setQos(providerQos);
+    _entry.setParticipantId(participantId1);
+    _localCapabilitiesDirectory->add(
+            _entry,
+            createAddOnSuccessFunction(),
+            _unexpectedProviderRuntimeExceptionFunction);
+
+    std::int64_t oldLastSeenDate = 0;
+    std::int64_t oldExpiryDate = 0;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+    _entry.setLastSeenDateMs(oldLastSeenDate);
+    _entry.setExpiryDateMs(oldLastSeenDate);
+    _entry.setQos(providerQos);
+    _entry.setParticipantId(participantId2);
+    _localCapabilitiesDirectory->add(
+            _entry,
+            createAddOnSuccessFunction(),
+            _unexpectedProviderRuntimeExceptionFunction);
+
+    std::vector<std::string> expectedParticipantIds { participantId2 };
+
+    // wait for 2 add calls
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _, _)).Times(0);
+    Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
+    Semaphore gcdSemaphore(0);
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), Eq(expectedParticipantIds), _, _))
+            .WillOnce(ReleaseSemaphore(&gcdSemaphore));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
+
+    ASSERT_TRUE(oldLastSeenDate < _locallyRegisteredCapabilities->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
+    ASSERT_TRUE(oldExpiryDate < _locallyRegisteredCapabilities->lookupByParticipantId(participantId2).get().getExpiryDateMs());
+    ASSERT_TRUE(oldLastSeenDate < _globalLookupCache->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
+    ASSERT_TRUE(oldExpiryDate < _globalLookupCache->lookupByParticipantId(participantId2).get().getExpiryDateMs());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGlobal)
