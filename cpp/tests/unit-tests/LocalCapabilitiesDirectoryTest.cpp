@@ -3032,51 +3032,52 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
                     std::chrono::system_clock::now().time_since_epoch()).count() +
             _purgeExpiredDiscoveryEntriesIntervalMs * 10;
 
-    types::DiscoveryEntry entry1(_defaultProviderVersion,
+    types::GlobalDiscoveryEntry entry1(_defaultProviderVersion,
                                         _DOMAIN_1_NAME,
                                         _INTERFACE_1_NAME,
                                         _dummyParticipantIdsVector[0],
                                         providerQos,
                                         _lastSeenDateMs,
                                         longerExpiryDateMs,
-                                        _PUBLIC_KEY_ID);
+                                        _PUBLIC_KEY_ID,
+                                        _EXTERNAL_ADDRESSES_VECTOR[0]);
 
-    types::DiscoveryEntry entry2(_defaultProviderVersion,
+    types::GlobalDiscoveryEntry entry2(_defaultProviderVersion,
                                         _DOMAIN_1_NAME,
                                         _INTERFACE_1_NAME,
                                         _dummyParticipantIdsVector[1],
                                         providerQos,
                                         _lastSeenDateMs,
                                         _defaultExpiryDateMs,
-                                        _PUBLIC_KEY_ID);
+                                        _PUBLIC_KEY_ID,
+                                        _EXTERNAL_ADDRESSES_VECTOR[0]);
 
-    types::DiscoveryEntry entry3(_defaultProviderVersion,
+    types::GlobalDiscoveryEntry entry3(_defaultProviderVersion,
                                         _DOMAIN_1_NAME,
                                         _INTERFACE_3_NAME,
                                         _dummyParticipantIdsVector[2],
                                         providerQos,
                                         _lastSeenDateMs,
                                         _defaultExpiryDateMs,
-                                        _PUBLIC_KEY_ID);
+                                        _PUBLIC_KEY_ID,
+                                        _EXTERNAL_ADDRESSES_VECTOR[1]);
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(3);
+    std::vector<types::GlobalDiscoveryEntry> expectedResultInterface1 = { entry1, entry2 };
+    std::vector<types::GlobalDiscoveryEntry> expectedResultInterface3 = { entry3 };
+    std::vector<types::GlobalDiscoveryEntry> emptyExpectedResult = {};
 
-    _localCapabilitiesDirectory->add(entry1, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    const std::vector<std::string> domainVector = {_DOMAIN_1_NAME};
 
-    _localCapabilitiesDirectory->add(entry2, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
-
-    _localCapabilitiesDirectory->add(entry3, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
-
-    // Check Cached Global Discovery Entries
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
     types::DiscoveryQos localDiscoveryQos;
     localDiscoveryQos.setCacheMaxAge(5000);
     localDiscoveryQos.setDiscoveryTimeout(10000);
     localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
 
-    _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(Eq(domainVector), Eq(_INTERFACE_1_NAME), _, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<4>(expectedResultInterface1));
+    _localCapabilitiesDirectory->lookup(domainVector,
                                        _INTERFACE_1_NAME,
                                        localDiscoveryQos,
                                        _KNOWN_GBIDS,
@@ -3085,7 +3086,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
 
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
-    _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
+    Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(Eq(domainVector), Eq(_INTERFACE_3_NAME), _, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<4>(expectedResultInterface3));
+    _localCapabilitiesDirectory->lookup(domainVector,
                                        _INTERFACE_3_NAME,
                                        localDiscoveryQos,
                                        _KNOWN_GBIDS,
@@ -3097,22 +3103,26 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
     std::this_thread::sleep_for(
             std::chrono::milliseconds(_purgeExpiredDiscoveryEntriesIntervalMs * 2));
 
-    _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
+    Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
+
+    // Cached entry still available for interface 1
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(Eq(domainVector), Eq(_INTERFACE_1_NAME), _, _, _, _, _))
+            .Times(0);
+    _localCapabilitiesDirectory->lookup(domainVector,
                                        _INTERFACE_1_NAME,
                                        localDiscoveryQos,
                                        _KNOWN_GBIDS,
                                        createLookupSuccessFunction(1),
                                        _unexpectedOnDiscoveryErrorFunction);
-
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 
-    const std::vector<types::GlobalDiscoveryEntry>& onSuccessZeroResult{};
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
+    // The only entry for interface 3 is expired by now, so the GCD is called again
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, Eq(_INTERFACE_3_NAME), _, _, _, _, _))
             .Times(1)
-            .WillOnce(InvokeArgument<4>(onSuccessZeroResult));
-    _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
+            .WillOnce(InvokeArgument<4>(emptyExpectedResult));
+    _localCapabilitiesDirectory->lookup(domainVector,
                                        _INTERFACE_3_NAME,
                                        localDiscoveryQos,
                                        _KNOWN_GBIDS,
@@ -3812,10 +3822,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
 
 TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
 {
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _)).Times(0);
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _, _)).Times(0);
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
     Semaphore gcdSemaphore(0);
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, _)).Times(2).WillRepeatedly(
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, _, _)).Times(2).WillRepeatedly(
             ReleaseSemaphore(&gcdSemaphore));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
@@ -4025,52 +4035,6 @@ class LocalCapabilitiesDirectoryWithProviderScope
           public ::testing::WithParamInterface<types::ProviderScope::Enum>
 {
 };
-
-TEST_P(LocalCapabilitiesDirectoryWithProviderScope, purgeTimedOutEntries)
-{
-    types::ProviderQos providerQos;
-    providerQos.setScope(GetParam());
-
-    types::DiscoveryQos localDiscoveryQos;
-    localDiscoveryQos.setCacheMaxAge(5000);
-    localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
-
-    EXPECT_CALL(
-            *_globalCapabilitiesDirectoryClient, add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _))
-            .Times(GetParam() == types::ProviderScope::LOCAL ? 0 : 1);
-
-    types::DiscoveryEntry entry(_defaultProviderVersion,
-                                       _DOMAIN_1_NAME,
-                                       _INTERFACE_1_NAME,
-                                       _dummyParticipantIdsVector[0],
-                                       providerQos,
-                                       _lastSeenDateMs,
-                                       10,
-                                       _PUBLIC_KEY_ID);
-    _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
-    _localCapabilitiesDirectory->registerReceivedCapabilities(std::move(_globalCapEntryMap));
-
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
-    _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
-                                       _INTERFACE_1_NAME,
-                                       localDiscoveryQos,
-                                       _KNOWN_GBIDS,
-                                       createLookupSuccessFunction(1),
-                                       _unexpectedOnDiscoveryErrorFunction);
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
-
-    // wait for cleanup timer to run
-    std::this_thread::sleep_for(
-            std::chrono::milliseconds(_purgeExpiredDiscoveryEntriesIntervalMs * 2));
-
-    _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
-                                       _INTERFACE_1_NAME,
-                                       localDiscoveryQos,
-                                       _KNOWN_GBIDS,
-                                       createLookupSuccessFunction(0),
-                                       _unexpectedOnDiscoveryErrorFunction);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
-}
 
 TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
        registerCapabilitiesMultipleTimesDoesNotDuplicate)
