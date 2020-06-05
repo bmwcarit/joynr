@@ -209,8 +209,8 @@ To see a full example of this have a look at the
 
 ### Generating the interfaces
 
-When generating the interfaces for use in a JEE environment, you have to
-activate an additional parameter in the joynr generator (see also [the generator documentation](generator.md)).
+When generating the interfaces for use in a JEE environment, use the Java code generator, see
+[the generator documentation](generator.md) for further information about the generator.
 
 Here's an example of what the plugin configuration might look like:
 
@@ -230,12 +230,6 @@ Here's an example of what the plugin configuration might look like:
         <model>${basedir}/src/main/resources/fidl</model>
         <generationLanguage>java</generationLanguage>
         <outputPath>${project.build.directory}/generated-sources</outputPath>
-
-        <!-- ACTIVATE THIS TO GENERATE JEE COMPATIBLE INTERFACES -->
-        <parameter>
-          <jee>true</jee>
-        </parameter>
-
       </configuration>
     </execution>
   </executions>
@@ -249,8 +243,6 @@ Here's an example of what the plugin configuration might look like:
 </plugin>
 ```
 
-Note the `<parameter><jee>true</jee></parameter>` part. This is essential for
-generating artefacts which are compatible with the JEE integration.
 
 ### Implementing services (joynr providers)
 
@@ -1089,4 +1081,3 @@ You'll also likely want to change the way the FIDL file is included in the API p
 example it is obtained from the `radio-app` Maven dependency, but you will probably want to have it
 in, e.g., `${project.root}/my-api/src/main/model/my.fidl`, and then reference that file directly
 in the generator configuration. See the [joynr Generator Documentation](generator.md) for details.
-
