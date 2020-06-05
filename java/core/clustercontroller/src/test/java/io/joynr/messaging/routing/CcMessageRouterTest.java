@@ -863,6 +863,7 @@ public class CcMessageRouterTest {
         when(failingMessage.isTtlAbsolute()).thenReturn(true);
         when(failingMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
         when(failingMessage.getRecipient()).thenReturn("to");
+        when(failingMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
 
         Set<Address> addressSet = new HashSet<>();
         addressSet.add(channelAddress);
@@ -891,6 +892,7 @@ public class CcMessageRouterTest {
         when(anotherMessage.isTtlAbsolute()).thenReturn(true);
         when(anotherMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
         when(anotherMessage.getRecipient()).thenReturn("to");
+        when(anotherMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
         doReturn(addressSet).when(addressManager).getAddresses(anotherMessage);
 
         final Semaphore semaphore = new Semaphore(0);

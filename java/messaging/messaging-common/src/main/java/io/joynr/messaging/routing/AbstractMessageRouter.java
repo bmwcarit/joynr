@@ -357,6 +357,12 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         }
     }
 
+    protected ImmutableMessage createReplyMessageWithError(ImmutableMessage requestMessage,
+                                                           JoynrRuntimeException error) {
+        // implemented only in sub classes
+        return null;
+    }
+
     private FailureAction createFailureAction(final DelayableImmutableMessage delayableMessage) {
         final FailureAction failureAction = new FailureAction() {
             final String messageId = delayableMessage.getMessage().getId();
@@ -375,6 +381,16 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                 } else if (error instanceof JoynrMessageNotSentException) {
                     logger.error("ERROR SENDING: Aborting send of messageId: {}. Error:", messageId, error);
                     callMessageProcessedListeners(messageId);
+
+                    if (delayableMessage.getMessage()
+                                        .getType()
+                                        .equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
+                        ImmutableMessage replyMessage = createReplyMessageWithError(delayableMessage.getMessage(),
+                                                                                    (JoynrMessageNotSentException) error);
+                        if (replyMessage != null) {
+                            routeInternal(replyMessage, 0, 0);
+                        }
+                    }
                     return;
                 }
                 logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error:", messageId, error);
