@@ -19,10 +19,18 @@
 package io.joynr.integration;
 
 import static com.google.inject.util.Modules.override;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.reset;
 
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +48,9 @@ import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -79,7 +89,7 @@ public abstract class AbstractMqttMultipleBackendTest {
     protected JoynrMqttClient joynrMqttClient2;
 
     @Before
-    public void setUp() {
+    public void setUp() throws InterruptedException {
         doReturn(joynrMqttClient1).when(mqttPahoClientFactory).createReceiver(TESTGBID1);
         doReturn(joynrMqttClient1).when(mqttPahoClientFactory).createSender(TESTGBID1);
         doReturn(joynrMqttClient2).when(mqttPahoClientFactory).createReceiver(TESTGBID2);
@@ -133,7 +143,26 @@ public abstract class AbstractMqttMultipleBackendTest {
         joynrRuntime = injector.getInstance(JoynrRuntime.class);
     }
 
-    protected void createJoynrRuntime() {
+    private void waitForRemoveStale() throws InterruptedException {
+        // joynrMqttClient1 is called once at startup because ClusterControllerRuntime calls removeStale
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                cdl.countDown();
+                return null;
+            }
+        }).when(joynrMqttClient1).publishMessage(anyString(),
+                                                 any(byte[].class),
+                                                 anyInt(),
+                                                 anyLong(),
+                                                 any(SuccessAction.class),
+                                                 any(FailureAction.class));
+        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        reset(joynrMqttClient1);
+    }
+
+    protected void createJoynrRuntime() throws InterruptedException {
         shutdownRuntime();
 
         injector = Guice.createInjector(override(new CCInProcessRuntimeModule(),
@@ -147,6 +176,7 @@ public abstract class AbstractMqttMultipleBackendTest {
                                                                                 }
                                                                             }));
         joynrRuntime = injector.getInstance(JoynrRuntime.class);
+        waitForRemoveStale();
     }
 
     protected Answer<Void> createVoidCountDownAnswer(CountDownLatch countDownLatch) {

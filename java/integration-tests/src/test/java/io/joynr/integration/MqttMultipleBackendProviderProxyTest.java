@@ -89,7 +89,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
     private GlobalDiscoveryEntry globalDiscoveryEntry2;
 
     @Before
-    public void setUp() {
+    public void setUp() throws InterruptedException {
         super.setUp();
         createJoynrRuntimeWithMockedGcdClient();
 

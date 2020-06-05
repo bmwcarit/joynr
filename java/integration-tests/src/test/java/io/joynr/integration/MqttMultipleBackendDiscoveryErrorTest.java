@@ -59,7 +59,7 @@ import joynr.types.GlobalDiscoveryEntry;
 public class MqttMultipleBackendDiscoveryErrorTest extends AbstractMqttMultipleBackendTest {
 
     @Before
-    public void setUp() {
+    public void setUp() throws InterruptedException {
         super.setUp();
         createJoynrRuntimeWithMockedGcdClient();
     }
