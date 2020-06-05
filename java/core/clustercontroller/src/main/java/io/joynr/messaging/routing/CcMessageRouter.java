@@ -18,7 +18,10 @@
  */
 package io.joynr.messaging.routing;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.Map;
+import java.util.HashMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -27,18 +30,27 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.accesscontrol.HasConsumerPermissionCallback;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
+
 import joynr.ImmutableMessage;
+import joynr.Message;
+import joynr.MutableMessage;
+import joynr.Reply;
+import joynr.Request;
 
 public class CcMessageRouter extends AbstractMessageRouter {
     private static final Logger logger = LoggerFactory.getLogger(CcMessageRouter.class);
     private AccessController accessController;
     private boolean enableAccessControl;
+    private ObjectMapper objectMapper;
 
     @Inject
     @Singleton
@@ -55,7 +67,8 @@ public class CcMessageRouter extends AbstractMessageRouter {
                            AccessController accessController,
                            @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
                            MessageQueue messageQueue,
-                           ShutdownNotifier shutdownNotifier) {
+                           ShutdownNotifier shutdownNotifier,
+                           ObjectMapper objectMapper) {
         super(routingTable,
               scheduler,
               sendMsgRetryIntervalMs,
@@ -70,6 +83,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
 
         this.accessController = accessController;
         this.enableAccessControl = enableAccessControl;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -105,4 +119,40 @@ public class CcMessageRouter extends AbstractMessageRouter {
             super.route(message);
         }
     }
+
+    @Override
+    protected ImmutableMessage createReplyMessageWithError(ImmutableMessage requestMessage,
+                                                           JoynrRuntimeException error) {
+        try {
+            String deserializedPayload = new String(requestMessage.getUnencryptedBody(), StandardCharsets.UTF_8);
+            final Request request = objectMapper.readValue(deserializedPayload, Request.class);
+            String requestReplyId = request.getRequestReplyId();
+
+            MutableMessage replyMessage = new MutableMessage();
+            replyMessage.setType(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
+            if (requestMessage.getEffort() != null) {
+                replyMessage.setEffort(requestMessage.getEffort());
+            }
+            replyMessage.setSender(requestMessage.getRecipient());
+            replyMessage.setRecipient(requestMessage.getSender());
+            replyMessage.setTtlAbsolute(true);
+            replyMessage.setTtlMs(requestMessage.getTtlMs());
+            Reply reply = new Reply(requestReplyId, error);
+            String serializedPayload = objectMapper.writeValueAsString(reply);
+            replyMessage.setPayload(serializedPayload.getBytes(StandardCharsets.UTF_8));
+            Map<String, String> customHeaders = new HashMap<>();
+            customHeaders.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID, requestReplyId);
+            replyMessage.setCustomHeaders(customHeaders);
+            replyMessage.setCompressed(requestMessage.isCompressed());
+            return replyMessage.getImmutableMessage();
+        } catch (Exception e) {
+            logger.error("Failed to prepare ReplyMessageWithError for msgId: {}. from: {} to: {}. Reason: {}",
+                         requestMessage.getId(),
+                         requestMessage.getSender(),
+                         requestMessage.getRecipient(),
+                         e.getMessage());
+            return null;
+        }
+    }
+
 }
