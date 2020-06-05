@@ -2,6 +2,16 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.0
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
+    necessary anymore. The generated code for Java and JEE is identical now.
+    See [Generator documentation](generator.md).
+
 # joynr 1.14.0
 
 ## API relevant changes

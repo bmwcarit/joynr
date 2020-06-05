@@ -49,11 +49,13 @@ have to be provided in the Maven configuration:
                           is expected to work as well. -->
                 <addVersionTo>name|package|none</addVersionTo>
                 <parameter>
-                    <!-- for Jee code generation use generation language "java"
-                         and set the following parameter
-                         (see also documentation of joynr JEE Integration -->
-                    <jee>true</jee>
-                    <!-- for Java/Jee code generation with null values in
+                    <!-- For Jee code generation use generation language "java".
+                         The additional 'jee' parameter is deprecated because it is not necessary
+                         anymore. The generated code for Java and Jee is identical now.
+                         Deprecated parameter:
+                         <jee>true</jee>
+                    -->
+                    <!-- For Java/Jee code generation with null values in
                          complex types use generation language "java"
                          and set the following parameter -->
                     <ignoreInvalidNullClassMembers>true</ignoreInvalidNullClassMembers>
@@ -128,13 +130,13 @@ configuration](#maven-configuration) for details):
 * `modelPath`: Defines the path where the `.fidl` files are created and located.
   You must place the models in this location. The path must always be specified
   from the project's root onwards, typically `app/src/...`. If not supplied in
-  the script, default value is `src/main/fidl/` or `app/src/main/fidl/` depending on where this 
-  is found first (if nowhere, default is `app/src/main/fidl/`). Note that in a multi-project 
-  setup, paths must always be given from the root project onwards, i.e. 
+  the script, default value is `src/main/fidl/` or `app/src/main/fidl/` depending on where this
+  is found first (if nowhere, default is `app/src/main/fidl/`). Note that in a multi-project
+  setup, paths must always be given from the root project onwards, i.e.
   root-project/{sub-project1/...}; the path enclosed in {} is the path to specify.
 * `outputPath`: The output path where the generated files are created. The
   default value is `build/generated/source/fidl/` or `app/build/generated/source/fidl/` depending
-   on whether you have a multi-project setup (if the script can't find a suitable place, it will 
+   on whether you have a multi-project setup (if the script can't find a suitable place, it will
    fall back to `app/build/generated/source/fidl/`).
 * `generationLanguage`: The language to be used for generator tool selection.
   The default value is `java`.
@@ -227,16 +229,16 @@ android {
 
 Gradle plugin already has defaults for the required properties, `modelPath`,
 `outputPath` and `generationLanguage`. In Android we don't recommend changing
-the `outputPath` property as it's not fully supported. This differs from the Java version as the 
+the `outputPath` property as it's not fully supported. This differs from the Java version as the
 plugin will automatically detect if the Android plugin is applied &ndash; if it is, the
-`outputPath` will automatically be added as a source folder. For Java, nothing happens. You can 
+`outputPath` will automatically be added as a source folder. For Java, nothing happens. You can
 read about further properties in the first section of this document.
 
 > **Note**: You can use the Gradle generator script and develop Android apps as
 > normal, using Java or Kotlin.
 
-If you are using Android Studio, it's possible that when generating files the first time or 
-after a Gradle clean, the build and assemble don't report any errors but the used classes in code 
+If you are using Android Studio, it's possible that when generating files the first time or
+after a Gradle clean, the build and assemble don't report any errors but the used classes in code
 aren't being found. To solve this, press the "Sync project with Gradle files" button.
 
 ## Choosing the generation language
@@ -275,7 +277,7 @@ It is recommended to place any local model files into the project's subdirectory
 ## Disable versioning of generated files
 In the future, the generator generates package version information for interfaces and the
 types used by an interface by default. Interface/typecollection major versions (defaults to
-0 if not defined in the Franca file) are added as an additional package/namespace segment. 
+0 if not defined in the Franca file) are added as an additional package/namespace segment.
 To disable version generation, add a line containing #noVersionGeneration to the description
 (Franca @description comment) of the interface:
 
@@ -353,4 +355,3 @@ to *gen*.
         false: generate only module.exports for node
         default: false
 ```
-
