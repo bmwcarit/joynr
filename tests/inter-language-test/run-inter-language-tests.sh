@@ -130,8 +130,15 @@ function killProcessHierarchy {
 function prechecks {
 	if [ ! -f "$ILT_BUILD_DIR/bin/cluster-controller" ]
 	then
-		log 'cluster-controller for ILT not found in $ILT_BUILD_DIR/bin/cluster-controller'
-		exit 1
+		log 'cluster-controller for ILT not found in $ILT_BUILD_DIR/bin/cluster-controller, trying fallback'
+        if [ -f "$ILT_BUILD_DIR/../joynr/bin/cluster-controller" ]
+        then
+            ln -s "$ILT_BUILD_DIR/../joynr/bin/cluster-controller" "$ILT_BUILD_DIR/bin/cluster-controller"
+        else
+            echo "No CC found in $ILT_BUILD_DIR/../joynr/bin/cluster-controller"
+            log 'cluster-controller could also not be found in fallback location'
+		    exit 1
+        fi
 	fi
 
 	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-ws" ]
