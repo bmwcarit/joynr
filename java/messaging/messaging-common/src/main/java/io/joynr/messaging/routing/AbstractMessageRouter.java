@@ -358,16 +358,23 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
         messageQueue.put(delayableMessage);
     }
 
+    private boolean isExpired(final ImmutableMessage message) {
+        if (!message.isTtlAbsolute()) {
+            // relative ttl is not supported
+            return true;
+        }
+        return (message.getTtlMs() <= System.currentTimeMillis());
+    }
+
     private void checkExpiry(final ImmutableMessage message) {
         if (!message.isTtlAbsolute()) {
             callMessageProcessedListeners(message.getId());
             throw new JoynrRuntimeException("Relative ttl not supported");
         }
 
-        long currentTimeMillis = System.currentTimeMillis();
-        long ttlExpirationDateMs = message.getTtlMs();
-
-        if (ttlExpirationDateMs <= currentTimeMillis) {
+        if (isExpired(message)) {
+            long currentTimeMillis = System.currentTimeMillis();
+            long ttlExpirationDateMs = message.getTtlMs();
             String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} ({1}) abs_ttl: {2} ({3}) msg_id: {4}",
                                                        currentTimeMillis,
                                                        dateFormatter.format(currentTimeMillis),
@@ -378,6 +385,12 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
             callMessageProcessedListeners(message.getId());
             throw new JoynrMessageNotSentException(errorMessage);
         }
+    }
+
+    protected ImmutableMessage createReplyMessageWithError(ImmutableMessage requestMessage,
+                                                           JoynrRuntimeException error) {
+        // implemented only in sub classes where required
+        return null;
     }
 
     private FailureAction createFailureAction(final DelayableImmutableMessage delayableMessage) {
@@ -399,6 +412,16 @@ abstract public class AbstractMessageRouter implements MessageRouter, ShutdownLi
                     logger.error(" ERROR SENDING:  aborting send of messageId: {}. Error: {}",
                                  new Object[]{ messageId, error.getMessage() });
                     callMessageProcessedListeners(messageId);
+
+                    ImmutableMessage messageNotSent = delayableMessage.getMessage();
+                    if (!isExpired(messageNotSent)
+                            && messageNotSent.getType().equals(Message.VALUE_MESSAGE_TYPE_REQUEST)) {
+                        ImmutableMessage replyMessage = createReplyMessageWithError(messageNotSent,
+                                                                                    (JoynrMessageNotSentException) error);
+                        if (replyMessage != null) {
+                            routeInternal(replyMessage, 0, 0);
+                        }
+                    }
                     return;
                 }
                 logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error: {} Message: {}",
