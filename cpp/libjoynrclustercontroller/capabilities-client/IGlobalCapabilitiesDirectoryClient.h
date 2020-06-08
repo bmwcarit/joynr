@@ -73,11 +73,6 @@ public:
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError) = 0;
 
-    virtual void touch(
-            const std::string& clusterControllerId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) = 0;
-
     virtual void removeStale(
             const std::string& clusterControllerId,
             std::int64_t maxLastSeenDateMs,

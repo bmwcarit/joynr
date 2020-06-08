@@ -153,6 +153,22 @@ public:
                               onRuntimeError,
                       std::shared_ptr<MessagingQos> qos));
 
+     std::shared_ptr<Future<void>> touchAsync(const std::string &clusterControllerId,
+                                              const std::vector<std::string>& participantIds,
+                                                     std::function<void ()> onSuccess,
+                                                     std::function<void (const JoynrRuntimeException &)> onRuntimeError,
+                                                     boost::optional<MessagingQos> qos) noexcept override {
+         return touchAsyncMock(clusterControllerId, participantIds, onSuccess, onRuntimeError,
+                               std::make_shared<MessagingQos>(qos.get()));
+     }
+     MOCK_METHOD5(touchAsyncMock, std::shared_ptr<Future<void>>(
+                      const std::string& clusterControllerId,
+                      const std::vector<std::string>& participantIds,
+                      std::function<void()> onSuccess,
+                      std::function<void(const JoynrRuntimeException& error)>
+                              onRuntimeError,
+                      std::shared_ptr<MessagingQos> qos));
+
      std::shared_ptr<joynr::Future<void>> removeStaleAsync(const std::string& clusterControllerId,
                                                            const std::int64_t& maxLastSeenDateMs,
                                                            std::function<void()> onSuccess,

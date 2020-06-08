@@ -116,11 +116,6 @@ public:
             override;
 
     void touch(const std::string& clusterControllerId,
-               std::function<void()> onSuccess = nullptr,
-               std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError =
-                       nullptr) override;
-
-    void touch(const std::string& clusterControllerId,
                const std::vector<std::string>& participantIds,
                std::function<void()> onSuccess = nullptr,
                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError =
