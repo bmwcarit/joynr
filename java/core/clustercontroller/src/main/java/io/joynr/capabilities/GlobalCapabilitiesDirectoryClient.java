@@ -178,6 +178,11 @@ public class GlobalCapabilitiesDirectoryClient {
         getGcdProxy().touch(localChannelId, qosWithGbidCustomHeader);
     }
 
+    public void touch(Callback<Void> callback, String[] participantIds) {
+        MessagingQos messagingQos = new MessagingQos(freshnessUpdateIntervalMs);
+        getGcdProxy().touch(callback, localChannelId, participantIds, messagingQos);
+    }
+
     /**
      * Remove stale providers from the specific cluster controller
      */
