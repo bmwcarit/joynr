@@ -18,8 +18,6 @@
  */
 package io.joynr.jeeintegration;
 
-import static java.lang.String.format;
-
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,13 +40,20 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.JoynrProvider;
+import io.joynr.proxy.Future;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.ProviderRegistrar;
 import io.joynr.runtime.ShutdownNotifier;
+import joynr.exceptions.ApplicationException;
+import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.types.ProviderQos;
 
 /**
@@ -105,6 +110,12 @@ public class JoynrIntegrationBean {
     }
 
     private void registerProviders(Set<Bean<?>> serviceProviderBeans, JoynrRuntime runtime) {
+        final int maxRetryCount = getJoynrInjector().getInstance(Key.get(Integer.class,
+                                                                         Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES)));
+        final int retryIntervalMs = getJoynrInjector().getInstance(Key.get(Integer.class,
+                                                                           Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS)));
+        final boolean awaitRegistration = getJoynrInjector().getInstance(Key.get(Boolean.class,
+                                                                                 Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_AWAIT_REGISTRATION)));
         Set<ProviderRegistrationSettingsFactory> providerSettingsFactories = getProviderRegistrationSettingsFactories();
 
         for (Bean<?> bean : serviceProviderBeans) {
@@ -112,10 +123,10 @@ public class JoynrIntegrationBean {
             Class<?> serviceInterface = beanClass.getAnnotation(ServiceProvider.class).serviceInterface();
             Class<?> providerInterface = serviceProviderDiscovery.getProviderInterfaceFor(serviceInterface);
             if (logger.isDebugEnabled()) {
-                logger.debug(format("Registering in joynr runtime the bean %s as provider %s for service %s.",
-                                    bean,
-                                    providerInterface,
-                                    serviceInterface));
+                logger.debug("Provider registration started: registering the bean {} as provider {} for service {}.",
+                             bean,
+                             providerInterface,
+                             serviceInterface);
             }
             JoynrProvider provider = (JoynrProvider) Proxy.newProxyInstance(beanClass.getClassLoader(),
                                                                             new Class<?>[]{ providerInterface,
@@ -145,10 +156,56 @@ public class JoynrIntegrationBean {
                 gbids = new String[0];
             }
 
-            runtime.getProviderRegistrar(getDomainForProvider(beanClass), provider)
-                   .withProviderQos(providerQos)
-                   .withGbids(gbids)
-                   .register();
+            String domain = getDomainForProvider(beanClass);
+
+            // register provider
+            ProviderRegistrar registrar = runtime.getProviderRegistrar(domain, provider)
+                                                 .withProviderQos(providerQos)
+                                                 .withGbids(gbids);
+            if (!awaitRegistration) {
+                // do not wait for registration result and disable registration retries
+                logger.debug("Provider registration: trigger registration, bean {}", bean);
+                registrar.register();
+                continue;
+            }
+            // await registration result and retry in case of errors
+            if (!GlobalCapabilitiesDirectoryProvider.class.equals(providerInterface)) {
+                // Do not use awaitGlobalregistration for interface GlobalCapabilitiesDirectory to avoid potential deadlock
+                // in case its implementation depends on a Singleton that might not have been created before JoynrIntegrationBean
+                logger.debug("Provider registration: awaitGlobalRegistration, bean {}", bean);
+                registrar.awaitGlobalRegistration();
+            }
+            int attempt = 1;
+            while (true) {
+                logger.debug("Provider registration: attempt #{}, bean {}", attempt, bean);
+                Future<Void> registrationFuture = registrar.register();
+
+                try {
+                    try {
+                        // wait for internal ttl (60.000 ms + 10.000 ms) + 1.000 ms, see ttl for add in LocalDiscoveryAggregator
+                        registrationFuture.get(MessagingQos.DEFAULT_TTL + 11000);
+                        logger.info("Provider registration succeeded: attempt #{}, bean {}.", attempt, bean);
+                        break;
+                    } catch (JoynrRuntimeException | ApplicationException e) {
+                        if (attempt > maxRetryCount) {
+                            logger.error("Provider registration failed, giving up: attempt #{}, bean {}.",
+                                         attempt,
+                                         bean,
+                                         e);
+                            throw new JoynrRuntimeException("Provider registration failed for bean " + bean, e);
+                        }
+                        logger.warn("Provider registration failed, retrying in {} ms...: attempt #{}, bean {} (error: {})",
+                                    retryIntervalMs,
+                                    attempt,
+                                    bean,
+                                    e.toString());
+                        attempt++;
+                        Thread.sleep(retryIntervalMs);
+                    }
+                } catch (InterruptedException e) {
+                    throw new JoynrRuntimeException("Provider registration failed for bean " + bean, e);
+                }
+            }
 
             registeredProviders.add(provider);
         }
@@ -223,5 +280,4 @@ public class JoynrIntegrationBean {
     public JoynrRuntime getRuntime() {
         return joynrRuntime;
     }
-
 }
