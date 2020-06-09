@@ -211,6 +211,7 @@ public class LocalDiscoveryTest {
         MockitoAnnotations.initMocks(this);
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
+        final long defaultExpiryTime = 3628800000l;
         final LocalCapabilitiesDirectoryImpl localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioningMock,
                                                                                                              globalAddressProviderMock,
                                                                                                              localDiscoveryEntryStoreMock,
@@ -221,7 +222,8 @@ public class LocalDiscoveryTest {
                                                                                                              3600000,
                                                                                                              capabilitiesFreshnessUpdateExecutorMock,
                                                                                                              shutdownNotifier,
-                                                                                                             defaultGbids);
+                                                                                                             defaultGbids,
+                                                                                                             defaultExpiryTime);
 
         Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule(),
                                                                                   new AbstractModule() {

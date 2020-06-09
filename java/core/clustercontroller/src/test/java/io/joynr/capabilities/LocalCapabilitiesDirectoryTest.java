@@ -114,6 +114,7 @@ public class LocalCapabilitiesDirectoryTest {
     private static final String TEST_URL = "http://testUrl";
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
     private static final long freshnessUpdateIntervalMs = 3600000; // 1h
+    private static final long DEFAULT_EXPIRY_TIME_MS = 3628800000l;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
 
@@ -238,7 +239,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         freshnessUpdateIntervalMs,
                                                                         capabilitiesFreshnessUpdateExecutor,
                                                                         shutdownNotifier,
-                                                                        knownGbids);
+                                                                        knownGbids,
+                                                                        DEFAULT_EXPIRY_TIME_MS);
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),
