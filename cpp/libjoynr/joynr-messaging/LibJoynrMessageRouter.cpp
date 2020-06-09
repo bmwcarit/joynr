@@ -363,6 +363,13 @@ void LibJoynrMessageRouter::addNextHopToParent(
 bool LibJoynrMessageRouter::isValidForRoutingTable(
         std::shared_ptr<const joynr::system::RoutingTypes::Address> address)
 {
+    assert(address);
+    if (!address) {
+        JOYNR_LOG_FATAL(
+                logger(),
+                "internal error in LibJoynrMessageRouter::isValidForRoutingTable: address is null");
+        return false;
+    }
     if (dynamic_cast<const system::RoutingTypes::WebSocketAddress*>(address.get()) != nullptr ||
         dynamic_cast<const system::RoutingTypes::UdsAddress*>(address.get()) != nullptr ||
         dynamic_cast<const InProcessMessagingAddress*>(address.get()) != nullptr) {
