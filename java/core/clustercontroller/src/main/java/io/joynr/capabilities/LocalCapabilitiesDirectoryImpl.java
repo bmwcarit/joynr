@@ -45,6 +45,7 @@ import com.google.inject.name.Named;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
@@ -109,6 +110,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     // Start up time of the cluster controller
     private long ccStartUpDateInMs;
 
+    private long defaultExpiryTimeMs;
+
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
         private String[] gbids;
@@ -154,7 +157,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS) long freshnessUpdateIntervalMs,
                                           @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler,
                                           ShutdownNotifier shutdownNotifier,
-                                          @Named(MessagingPropertyKeys.GBID_ARRAY) String[] knownGbids) {
+                                          @Named(MessagingPropertyKeys.GBID_ARRAY) String[] knownGbids,
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs) {
         // set up current date as the start time of the cluster controller
         this.ccStartUpDateInMs = System.currentTimeMillis();
         globalProviderParticipantIdToGbidListMap = new HashMap<>();
@@ -165,6 +169,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
         this.knownGbids = knownGbids.clone();
+        this.defaultExpiryTimeMs = defaultExpiryTimeMs;
         Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = capabilitiesProvisioning.getDiscoveryEntries();
         this.globalDiscoveryEntryCache.add(provisionedDiscoveryEntries);
         for (GlobalDiscoveryEntry provisionedEntry : provisionedDiscoveryEntries) {
@@ -219,12 +224,33 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         Runnable command = new Runnable() {
             @Override
             public void run() {
-                try {
-                    logger.debug("Updating last seen date ms.");
-                    globalCapabilitiesDirectoryClient.touch();
-                } catch (JoynrRuntimeException e) {
-                    logger.error("Error sending freshness update", e);
-                }
+                long lastSeenDateMs = System.currentTimeMillis();
+                long expiryDateMs = lastSeenDateMs + defaultExpiryTimeMs;
+
+                String[] participantIds = localDiscoveryEntryStore.touchGlobalDiscoveryEntries(lastSeenDateMs,
+                                                                                               expiryDateMs);
+
+                // update globalDiscoveryEntryCache
+                globalDiscoveryEntryCache.touchDiscoveryEntries(participantIds, lastSeenDateMs, expiryDateMs);
+
+                Callback<Void> callback = new Callback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        if (logger.isTraceEnabled()) {
+                            String participantIdsStr = String.join(",", participantIds);
+                            logger.trace("touch(participantIds={}) succeeded.", participantIdsStr);
+                        } else {
+                            logger.debug("touch succeeded.");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(JoynrRuntimeException error) {
+                        String participantIdsStr = String.join(",", participantIds);
+                        logger.error("touch(participantIds={}) failed: {}", participantIdsStr, error);
+                    }
+                };
+                globalCapabilitiesDirectoryClient.touch(callback, participantIds);
             }
         };
         freshnessUpdateScheduler.scheduleAtFixedRate(command,
