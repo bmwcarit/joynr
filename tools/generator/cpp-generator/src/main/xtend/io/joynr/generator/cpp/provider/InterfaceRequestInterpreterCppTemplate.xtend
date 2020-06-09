@@ -68,6 +68,21 @@ void «interfaceName»RequestInterpreter::execute(
 		std::function<void (BaseReply&& reply)>&& onSuccess,
 		std::function<void (const std::shared_ptr<exceptions::JoynrException>& exception)>&& onError
 ) {
+	assert(requestCaller);
+	if (!requestCaller) {
+		JOYNR_LOG_FATAL(logger(), "{}: requestCaller is nullptr, aborting", "«interfaceName»RequestInterpreter::execute(...)");
+		return;
+	}
+	assert(onSuccess);
+	if (!onSuccess) {
+		JOYNR_LOG_FATAL(logger(), "{}: onSuccess is nullptr, aborting", "«interfaceName»RequestInterpreter::execute(...)");
+		return;
+	}
+	assert(onError);
+	if (!onError) {
+		JOYNR_LOG_FATAL(logger(), "{}: onError is nullptr, aborting", "«interfaceName»RequestInterpreter::execute(...)");
+		return;
+	}
 	«IF francaIntf.hasReadAttribute || francaIntf.hasWriteAttribute || !methodsWithoutFireAndForget.empty»
 		// cast generic RequestCaller to «interfaceName»Requestcaller
 		std::shared_ptr<«interfaceName»RequestCaller> «requestCallerName» =
