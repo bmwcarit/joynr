@@ -55,9 +55,9 @@ void PosixSignalHandler::setHandleAndRegisterForSignals(
     PosixSignalHandler::signalHandlingThread =
             std::thread(PosixSignalHandler::signalHandlerThreadFunction);
 
-    std::signal(SIGTERM, handleSignal);
-    std::signal(SIGUSR1, handleSignal);
-    std::signal(SIGUSR2, handleSignal);
+    static_cast<void>(std::signal(SIGTERM, handleSignal));
+    static_cast<void>(std::signal(SIGUSR1, handleSignal));
+    static_cast<void>(std::signal(SIGUSR2, handleSignal));
     JOYNR_LOG_INFO(logger(), "Signal handling setup completed");
 }
 
@@ -68,9 +68,9 @@ void PosixSignalHandler::stopSignalHandling()
         JOYNR_LOG_DEBUG(logger(), "Signal handling terminated, no thread had been started");
         return;
     }
-    std::signal(SIGTERM, SIG_IGN);
-    std::signal(SIGUSR1, SIG_IGN);
-    std::signal(SIGUSR2, SIG_IGN);
+    static_cast<void>(std::signal(SIGTERM, SIG_IGN));
+    static_cast<void>(std::signal(SIGUSR1, SIG_IGN));
+    static_cast<void>(std::signal(SIGUSR2, SIG_IGN));
 
     // make sure the background thread terminates, do not block
     int opt = fcntl(PosixSignalHandler::sigWriteFd, F_GETFL, 0);
