@@ -197,6 +197,15 @@ request.setParams(
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
 			] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				assert(error);
+				if (!error) {
+					JOYNR_LOG_FATAL(logger(),
+						"REQUEST returns error: requestReplyId: {}, method: {}, error not set, aborting",
+						requestReplyId,
+						methodName
+					);
+					return;
+				}
 				JOYNR_LOG_DEBUG(logger(),
 						"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
 						requestReplyId,
@@ -267,6 +276,15 @@ request.setParams(
 					requestReplyId = request.getRequestReplyId(),
 					methodName = request.getMethodName()
 			] (const std::shared_ptr<exceptions::JoynrException>& error) {
+				assert(error);
+				if (!error) {
+					JOYNR_LOG_FATAL(logger(),
+						"REQUEST returns error: requestReplyId: {}, method: {}, error not set, aborting",
+						requestReplyId,
+						methodName
+					);
+					return;
+				}
 				JOYNR_LOG_DEBUG(logger(),
 					"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
 					requestReplyId,
@@ -430,6 +448,15 @@ request.setParams(
 					methodName = request.getMethodName()
 			] (const std::shared_ptr<exceptions::JoynrException>& error)
 			{
+				assert(error);
+				if (!error) {
+					JOYNR_LOG_FATAL(logger(),
+						"REQUEST returns error: requestReplyId: {}, method: {}, error not set, aborting",
+						requestReplyId,
+						methodName
+					);
+					return;
+				}
 				JOYNR_LOG_DEBUG(logger(),
 					"REQUEST returns error: requestReplyId: {}, method: {}, response: {}",
 					requestReplyId,
@@ -437,8 +464,8 @@ request.setParams(
 					error->what()
 				);
 				future->onError(error);
-					«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
-				};
+				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
+			};
 
 			try {
 				«logMethodCall(method)»
