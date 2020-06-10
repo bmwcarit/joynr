@@ -254,6 +254,12 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
 
     @Override
     public synchronized void touch(String clusterControllerId, String[] participantIds) {
+        if (participantIds.length == 0) {
+            logger.trace("Touch(ccId={}, participantIds={}): nothing to do, no participantIds provided.",
+                         clusterControllerId,
+                         participantIds);
+            return;
+        }
         String query = "FROM GlobalDiscoveryEntryPersisted gdep "
                 + "WHERE gdep.clusterControllerId = :clusterControllerId AND gdep.participantId IN :participantIds";
         EntityTransaction transaction = entityManager.getTransaction();
