@@ -80,9 +80,10 @@ public class ServiceProviderDiscovery {
                     + " specified service interface %s is not annotated with @ProvidedBy."
                     + "%nMake sure that you implement a *Sync interface and"
                     + " that you specify that same *Sync interface as the serviceInterface."
-                    + "%nNote that you have to set the 'jee' parameter to 'true' "
-                    + "in the Franca code generator in order to correctly generate "
-                    + "the @ProvidedBy annotation on the Sync interfaces.", bean, serviceInterface));
+                    + "%nNote: Are you using an outdated version of the generator?"
+                    + "%nIn older versions of the generator, you have to set the now deprecated 'jee' "
+                    + "parameter to 'true' in order to correctly generate the @ProvidedBy annotation on "
+                    + "the Sync interfaces. This annoation is now generated automatically.", bean, serviceInterface));
         }
     }
 
