@@ -53,7 +53,9 @@ public class CallbackHandlerDiscovery {
                     if (usedBy == null) {
                         logger.warn("Stateless async callback interface " + interfaceClass + " implemented by "
                                 + callbackHandlerBean
-                                + " is not annotated with @UsedBy. Please ensure you have the jee = true property set on the joynr code generator.");
+                                + " is not annotated with @UsedBy. Are you using an outdated version of the joynr "
+                                + "code generator without setting the 'jee' parameter to ' true'? "
+                                + "Note that the 'jee' property is now deprecated.");
                         continue;
                     }
                     StatelessAsyncCallback beanReference = (StatelessAsyncCallback) beanManager.getReference(callbackHandlerBean,
