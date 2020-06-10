@@ -1365,6 +1365,42 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     }
 
     @Test
+    public void touchWithParticipantIds_noParticipantIds_doesNotThrow() throws Exception {
+        // prepare and add entry
+        long initialLastSeen1 = testGlobalDiscoveryEntry1.getLastSeenDateMs();
+        long initialExpiryDate1 = testGlobalDiscoveryEntry1.getExpiryDateMs();
+
+        GlobalDiscoveryEntryPersisted testGdep1 = new GlobalDiscoveryEntryPersisted(testGlobalDiscoveryEntry1,
+                                                                                    TOPIC_NAME,
+                                                                                    JOYNR_DEFAULT_GCD_GBID);
+        MqttAddress address1 = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(testGdep1);
+        address1.setBrokerUri(JOYNR_DEFAULT_GCD_GBID);
+        testGdep1.setAddress(CapabilityUtils.serializeAddress(address1));
+
+        addEntry(testGlobalDiscoveryEntry1);
+
+        // call touch for clusterControllerId and no participantId
+        Thread.sleep(1);
+        long currentTimeMillisBefore = System.currentTimeMillis();
+        subject.touch(TOPIC_NAME, new String[0]);
+        entityManager.flush();
+        entityManager.clear();
+
+        GlobalDiscoveryEntryPersistedKey primaryKey = new GlobalDiscoveryEntryPersistedKey();
+        primaryKey.setParticipantId(testGdep1.getParticipantId());
+        primaryKey.setGbid(testGdep1.getGbid());
+        GlobalDiscoveryEntryPersisted returnedEntry = entityManager.find(GlobalDiscoveryEntryPersisted.class,
+                                                                         primaryKey);
+        assertNotNull(returnedEntry);
+        assertEquals(testGdep1, returnedEntry);
+        assertTrue(returnedEntry.getLastSeenDateMs().longValue() < currentTimeMillisBefore);
+        assertTrue(returnedEntry.getExpiryDateMs().longValue() < currentTimeMillisBefore
+                + TestJoynrConfigurationProvider.DEFAULT_EXPIRY_INTERVAL_MS);
+        assertEquals(initialLastSeen1, returnedEntry.getLastSeenDateMs().longValue());
+        assertEquals(initialExpiryDate1, returnedEntry.getExpiryDateMs().longValue());
+    }
+
+    @Test
     public void touchWithParticipantIds_doesNotUpdateEntriesFromOtherClusterControllers() throws Exception {
         // prepare entries
         String clusterControllerId = "testTouchClusterControllerId";

@@ -462,6 +462,47 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     }
 
     @Test
+    public void touchWithParticipantIds_noParticipantIds_doesNotThrow() throws Exception {
+        // prepare entry
+        String domain = "testTouchDomain";
+        String interfaceName = "testTouchInterfaceName";
+        String clusterControllerId = "testTouchClusterControllerId";
+
+        GlobalDiscoveryEntryPersisted discoveryEntry1 = createDiscoveryEntry(domain + "1",
+                                                                             interfaceName + "1",
+                                                                             "testTouchParticipantId1");
+        discoveryEntry1.setClusterControllerId(clusterControllerId);
+        discoveryEntry1.setExpiryDateMs(System.currentTimeMillis() + DEFAULT_EXPIRY_INTERVAL_MS);
+
+        GlobalDiscoveryEntryPersisted expectedEntry1 = new GlobalDiscoveryEntryPersisted(discoveryEntry1,
+                                                                                         discoveryEntry1.getClusterControllerId(),
+                                                                                         defaultGbid);
+        Address expectedAddress = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(expectedEntry1);
+        ((MqttAddress) expectedAddress).setBrokerUri(defaultGbid);
+        expectedEntry1.setAddress(CapabilityUtils.serializeAddress(expectedAddress));
+
+        // add entry
+        store.add(discoveryEntry1, new String[]{ defaultGbid });
+        entityManager.clear();
+
+        // call touch for clusterControllerId and no participantId
+        Thread.sleep(1);
+        long currentTimeMillisBefore = System.currentTimeMillis();
+
+        store.touch(clusterControllerId, new String[0]);
+        entityManager.clear();
+
+        List<GlobalDiscoveryEntryPersisted> returnedEntries = (List<GlobalDiscoveryEntryPersisted>) store.lookup(new String[]{
+                expectedEntry1.getDomain() }, expectedEntry1.getInterfaceName());
+        assertTrue(returnedEntries.contains(expectedEntry1));
+        assertTrue(returnedEntries.size() == 1);
+        long actualLastSeen = returnedEntries.get(0).getLastSeenDateMs();
+        long actualExpiryDate = returnedEntries.get(0).getExpiryDateMs();
+        assertTrue(actualLastSeen < currentTimeMillisBefore);
+        assertTrue(actualExpiryDate < currentTimeMillisBefore + DEFAULT_EXPIRY_INTERVAL_MS);
+    }
+
+    @Test
     public void touch_doesNotUpdateEntriesFromOtherClusterControllers() throws Exception {
         String domain = "testTouchDomain";
         String interfaceName = "testTouchInterfaceName";

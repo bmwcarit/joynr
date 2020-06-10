@@ -488,6 +488,12 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         logger.debug("Touch called. Updating discovery entries from cluster controller with id={}, participantIds={}.",
                      clusterControllerId,
                      participantIds);
+        if (participantIds.length == 0) {
+            logger.info("Touch(ccId={}, participantIds={}) succeeded: nothing to do, no participantIds provided.",
+                        clusterControllerId,
+                        participantIds);
+            return;
+        }
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep "
                 + "WHERE gdep.clusterControllerId = :clusterControllerId AND gdep.participantId IN :participantIds";
         long now = System.currentTimeMillis();
