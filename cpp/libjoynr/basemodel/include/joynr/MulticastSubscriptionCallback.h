@@ -26,6 +26,7 @@
 #include "joynr/Future.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/ISubscriptionManager.h"
+#include "joynr/Logger.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/SubscriptionCallback.h"
@@ -61,7 +62,12 @@ public:
                     subscriptionManagerSharedPtr->getMulticastSubscriptionListeners(
                             multicastPublication.getMulticastId());
             for (const auto& listener : listeners) {
-                listener->onError(error);
+                assert(listener);
+                if (listener) {
+                    listener->onError(error);
+                } else {
+                    JOYNR_LOG_FATAL(logger(), "onError: listener is nullptr");
+                }
             }
         }
     }
@@ -80,7 +86,11 @@ public:
                 auto voidListener =
                         std::dynamic_pointer_cast<ISubscriptionListener<void>>(listener);
                 assert(voidListener);
-                voidListener->onReceive();
+                if (voidListener) {
+                    voidListener->onReceive();
+                } else {
+                    JOYNR_LOG_FATAL(logger(), "onSuccess: voidListener is nullptr");
+                }
             }
         }
     }
@@ -101,12 +111,17 @@ public:
                 auto typedListener =
                         std::dynamic_pointer_cast<ISubscriptionListener<T, Ts...>>(listener);
                 assert(typedListener);
-                typedListener->onReceive(value, values...);
+                if (typedListener) {
+                    typedListener->onReceive(value, values...);
+                } else {
+                    JOYNR_LOG_FATAL(logger(), "onSuccess: typedListener is nullptr");
+                }
             }
         }
     }
 
 private:
+    ADD_LOGGER(MulticastSubscriptionCallback)
     DISALLOW_COPY_AND_ASSIGN(MulticastSubscriptionCallback);
 };
 
