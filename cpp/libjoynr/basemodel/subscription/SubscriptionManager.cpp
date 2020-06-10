@@ -193,6 +193,14 @@ void SubscriptionManager::registerSubscription(
         // remove pre-exisiting multicast subscription
         if (_subscriptions.contains(subscriptionId)) {
             std::shared_ptr<Subscription> subscription(_subscriptions.value(subscriptionId));
+            assert(subscription);
+            if (!subscription) {
+                JOYNR_LOG_FATAL(logger(),
+                                "registerSubscription: internal error, nullptr found for "
+                                "subscription with id {}",
+                                subscriptionId);
+                return;
+            }
             std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->_mutex);
             std::string oldMulticastId = subscription->_multicastId;
             if (multicastId != oldMulticastId) {
@@ -221,6 +229,14 @@ void SubscriptionManager::registerSubscription(
                              qos,
                              subscriptionRequest);
         std::shared_ptr<Subscription> subscription(_subscriptions.value(subscriptionId));
+        assert(subscription);
+        if (!subscription) {
+            JOYNR_LOG_FATAL(logger(),
+                            "registerSubscription: internal error, nullptr found for subscription "
+                            "with id {}",
+                            subscriptionId);
+            return;
+        }
         {
             std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->_mutex);
             subscription->_multicastId = multicastId;
@@ -267,6 +283,14 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
         return;
     }
     std::shared_ptr<Subscription> subscription(_subscriptions.take(subscriptionId));
+    assert(subscription);
+    if (!subscription) {
+        JOYNR_LOG_FATAL(
+                logger(),
+                "unregisterSubscription: internal error, nullptr found for subscription with id {}",
+                subscriptionId);
+        return;
+    }
     std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->_mutex);
     JOYNR_LOG_TRACE(
             logger(), "Called unregister / unsubscribe on subscription id= {}", subscriptionId);
@@ -368,6 +392,14 @@ void SubscriptionManager::touchSubscriptionState(const std::string& subscription
         return;
     }
     std::shared_ptr<Subscription> subscription(_subscriptions.value(subscriptionId));
+    assert(subscription);
+    if (!subscription) {
+        JOYNR_LOG_FATAL(
+                logger(),
+                "touchSubscriptionState: internal error, nullptr found for subscription with id {}",
+                subscriptionId);
+        return;
+    }
     {
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                    std::chrono::system_clock::now().time_since_epoch()).count();
@@ -389,7 +421,14 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallb
     }
 
     std::shared_ptr<Subscription> subscription(_subscriptions.value(subscriptionId));
-
+    assert(subscription);
+    if (!subscription) {
+        JOYNR_LOG_FATAL(logger(),
+                        "getSubscriptionCallback: internal error, nullptr found for subscription "
+                        "with id {}",
+                        subscriptionId);
+        return nullptr;
+    }
     {
         std::lock_guard<std::recursive_mutex> subscriptionLockers(subscription->_mutex);
         return subscription->_subscriptionCaller;
@@ -423,7 +462,14 @@ std::shared_ptr<ISubscriptionListenerBase> SubscriptionManager::getSubscriptionL
     }
 
     std::shared_ptr<Subscription> subscription(_subscriptions.value(subscriptionId));
-
+    assert(subscription);
+    if (!subscription) {
+        JOYNR_LOG_FATAL(logger(),
+                        "getSubscriptionListener: internal error, nullptr found for subscription "
+                        "with id {}",
+                        subscriptionId);
+        return nullptr;
+    }
     {
         std::lock_guard<std::recursive_mutex> subscriptionLockers(subscription->_mutex);
         return subscription->_subscriptionListener;
