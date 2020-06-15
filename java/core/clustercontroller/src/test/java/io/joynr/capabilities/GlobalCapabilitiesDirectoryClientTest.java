@@ -409,4 +409,18 @@ public class GlobalCapabilitiesDirectoryClientTest {
                                                                            eq(maxLastSeenDateMs),
                                                                            eq(messagingQos));
     }
+
+    @Test
+    public void testTouchAsync() {
+        final String[] testParticipantIds = new String[]{ "participantId1", "participantId2" };
+        final String[] expectedParticipantIds = testParticipantIds.clone();
+        final MessagingQos messagingQos = new MessagingQos(FRESHNESS_UPDATE_INTERVAL_MS);
+
+        subject.touch(callbackVoidMock, testParticipantIds);
+
+        verify(globalCapabilitiesDirectoryProxyMock, times(1)).touch(eq(callbackVoidMock),
+                                                                     eq(channelId),
+                                                                     eq(expectedParticipantIds),
+                                                                     eq(messagingQos));
+    }
 }
