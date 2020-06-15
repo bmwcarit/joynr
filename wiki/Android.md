@@ -4,7 +4,7 @@
 
 This guide is a work in progress as the joynr Android api has not been finalized.
 
-## Setting up a joyner deployment
+## Setting up a joynr deployment
 
 The process of setting up the joynr deployment is very similar to the one [Java](./java.md#setting-up-a-joynr-deployment) 
 proccess.
@@ -23,13 +23,16 @@ See the [Java Configuration Reference](JavaSettings.md) for a complete list of a
 configuration properties available to use in joynr Java applications, which has very simillar  
 classes to Android.
 
+If you are planning on taking advantage of multi-user in the chosen Android environment, check out
+the [Multi-User in Android](#multi-user-in-android) section.
+
 ## Setting up Android project environment in Android Studio
 
 To develop an Android project with Android Studio first you need to create a new project following  
 the guidelines in ["Create an Android Project"](https://developer.android.com/training/basics/firstapp/creating-project)
 .
 
-### Setting up Graddle
+### Setting up Gradle
 
 In order to use joynr java code generator you need to add the generator gradle plugin and the java  
 generator in the project build.gradle, as these need to be applied in the app.
@@ -95,15 +98,12 @@ public class JoynrApplication extends Application {
 Using this approach you can create the runtime on the program initialization and access it anywhere  
 in your application.
 
-
-
 ### The Model Class
 
 The model for a consumer and a provider will be different as each one has a different reaction to  
 data. The model from the consumer part will query the provider for data, in this case using  
 assynchronous methods, while the provider receives the query and does the necessary operations to  
 respond to the query that the consumer made.
-
 
 #### The Consumer Model
 
@@ -247,3 +247,66 @@ private void updateText(final String text) {
 	view.setText(text);
 }
 ```
+
+## Multi-User in Android
+
+In the Android world, there is the concept of multi-user where different users may have
+installations of the same components and applications. Developers that want to consider multi-user
+during development should be aware of how the joynr Android Binder runtime works.
+ 
+In joynr, it is understood that the Cluster Controller (CC) runs in user 0, which is the system
+user. This CC is like the server part in a client-server architecture. Multiple clients, which are
+joynr components/applications that implement Proxies and Providers, connect to this server. This
+means that the CC is actually a singleton, and only exists in user 0.
+
+The Android Binder runtime performs logic on how to bind to the joynr BinderService by using the
+information provided in the BinderAddress. By default, when binding to the Service, the runtime will
+bind to the CC's Service as user 0 and will bind to any other client Services as their respective
+user. This information extraction happens under the hood, as the runtime fetches and uses the user
+ID automatically when creating the BinderAddress.
+
+In order for all of this to work as it should, the implementation of your CC should include the
+permissions `android.permission.INTERACT_ACROSS_USERS` and
+`android.permission.INTERACT_ACROSS_USERS_FULL`. These permissions allow the CC to successfully
+bind to the Service in different users. Note that these permissions require the CC to be a system
+app, as only those can request them.
+
+You should also make sure that joynr's BinderService is declared as `singleUser=true` in the CC's
+Android Manifest file. What this does is effectively make the CC's BinderService a singleton within
+the platform, which will always run in user 0. This can be done by declaring the Service again in
+the Manifest like so:
+
+```xml
+<!-- merged from joynr Binder runtime dependency but we want to redeclare it -->
+<service
+    android:name="io.joynr.android.binder.BinderService"
+    android:enabled="true"
+    android:exported="true"
+    android:singleUser="true">
+
+    <intent-filter>
+        <action android:name="io.joynr.android.action.COMMUNICATE" />
+    </intent-filter>
+</service>
+```
+
+Developers of any client applications or components that need to make use of multi-user should be
+aware that they need to understand their use cases and see how to best implement these scenarios.
+You can make the following components single user in Android: Service, Receiver, or Content
+Provider. Activities can not be declared as single user, which means they will be recreated for each
+user that is created in the system and uses the app.
+
+Depending on use case, you can choose a strategy where you declare these components as single user,
+perform their joynr Provider/Proxy execution, and then share results across all users that want to
+make use of the data. For example, you can register a joynr Provider in a single-user Android
+Content Provider, store retrieved data there, and then the application retrieves this information
+from the Content Provider (which in this scenario is the single source of truth), available as a
+singleton in user 0.
+ 
+**Always remember** that **any component** within the system that is not declared as single user
+**will be run for every user in the system**! This means that you need extra care to ensure that
+neither the CC nor joynr apps, unless required, have any such components, and if they do, you must
+be aware of this functioning, otherwise things might not work as intended.
+
+You can read more about Android multi-user development in 
+[Android's official documentation](https://source.android.com/devices/tech/admin/multiuser-apps.html).

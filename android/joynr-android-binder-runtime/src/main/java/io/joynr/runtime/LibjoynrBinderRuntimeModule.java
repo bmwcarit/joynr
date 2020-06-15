@@ -18,9 +18,8 @@
  */
 package io.joynr.runtime;
 
-import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
-
 import android.content.Context;
+import android.os.Process;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -40,6 +39,8 @@ import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BinderAddress;
+
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 
 /**
  * Use this module if you want to start a lib joynr instance which connects to a cluster controller by binder
@@ -65,7 +66,6 @@ public class LibjoynrBinderRuntimeModule extends AbstractRuntimeModule {
         bind(MessageSender.class).to(LibJoynrMessageSender.class);
         bind(RoutingTableAddressValidator.class).to(LibjoynrBinderRoutingTableAddressValidator.class);
 
-
         messagingSkeletonFactory.addBinding(BinderAddress.class).to(BinderMessagingSkeletonFactory.class);
         messagingStubFactory.addBinding(BinderAddress.class).to(BinderClientMessagingStubFactory.class);
         multicastAddressCalculators.addBinding().to(BinderMulticastAddressCalculator.class);
@@ -78,11 +78,10 @@ public class LibjoynrBinderRuntimeModule extends AbstractRuntimeModule {
         return ccBinderAddress;
     }
 
-
     @Provides
     @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS)
     Address getLibjoynrMessagingAddress() {
-        return new BinderAddress(context.getPackageName());
+        return new BinderAddress(context.getPackageName(), Process.myUid());
     }
 
     @Provides

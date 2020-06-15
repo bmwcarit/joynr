@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Properties;
 
+import io.joynr.android.messaging.binder.util.BinderConstants;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
@@ -70,7 +71,10 @@ public class AndroidBinderRuntime {
      * @param modules    Extra modules that can configure joynr runtime.
      * @return A {@link JoynrRuntime} object
      */
-    public static JoynrRuntime initClusterController(Context context, String brokerUri, Properties properties, Module... modules) {
+    public static JoynrRuntime initClusterController(Context context,
+                                                     String brokerUri,
+                                                     Properties properties,
+                                                     Module... modules) {
 
         // set default joynr properties
         final Properties config = getDefaultJoynrProperties(context);
@@ -95,7 +99,6 @@ public class AndroidBinderRuntime {
         return runtime;
     }
 
-
     /**
      * Static method that creates a {@link JoynrRuntime} for Android developers with default configurations.
      *
@@ -103,7 +106,7 @@ public class AndroidBinderRuntime {
      * @return A {@link JoynrRuntime} object
      */
     public static JoynrRuntime init(Context context) {
-        String clusterControllerPackageName = getClusterControlerServicePackagename(context);
+        String clusterControllerPackageName = getClusterControllerServicePackageName(context);
         return init(context, new Properties(), clusterControllerPackageName);
     }
 
@@ -115,10 +118,9 @@ public class AndroidBinderRuntime {
      * @return A {@link JoynrRuntime} object
      */
     public static JoynrRuntime init(Context context, Properties properties) {
-        String clusterControllerPackageName = getClusterControlerServicePackagename(context);
+        String clusterControllerPackageName = getClusterControllerServicePackageName(context);
         return init(context, properties, clusterControllerPackageName);
     }
-
 
     /**
      * Static method that creates a {@link JoynrRuntime} for Android developers with default configurations.
@@ -137,7 +139,7 @@ public class AndroidBinderRuntime {
         // override with possible developer specified properties
         config.putAll(properties);
 
-        BinderAddress ccBinderAddress = new BinderAddress(clusterControllerPackageName);
+        BinderAddress ccBinderAddress = new BinderAddress(clusterControllerPackageName, BinderConstants.USER_ID_SYSTEM);
         injector = new JoynrInjectorFactory(config, new LibjoynrBinderRuntimeModule(context, ccBinderAddress))
                 .createChildInjector();
         runtime = injector.getInstance(JoynrRuntime.class);
@@ -147,7 +149,7 @@ public class AndroidBinderRuntime {
         return runtime;
     }
 
-    private static String getClusterControlerServicePackagename(Context context) {
+    private static String getClusterControllerServicePackageName(Context context) {
         Intent intent = new Intent("io.joynr.android.action.COMMUNICATE");
 
         List<ResolveInfo> services = context.getPackageManager().queryIntentServices(intent, 0);
@@ -162,16 +164,15 @@ public class AndroidBinderRuntime {
 
         final Properties config = new Properties();
         config.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
-                context.getFilesDir() + "/" + STATIC_PERSISTENCE_FILE);
+                           context.getFilesDir() + "/" + STATIC_PERSISTENCE_FILE);
         config.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE,
-                context.getFilesDir() + "/" + STATIC_PARTICIPANTS_FILE);
+                           context.getFilesDir() + "/" + STATIC_PARTICIPANTS_FILE);
 
         config.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,
-                context.getFilesDir() + "/" + STATIC_PERSISTENCE_SUSBCRIPTION_REQUESTS);
+                           context.getFilesDir() + "/" + STATIC_PERSISTENCE_SUSBCRIPTION_REQUESTS);
 
         return config;
     }
-
 
     /**
      * @return The guice injector used to instantiate the {@code runtime}
