@@ -40,6 +40,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -2781,14 +2782,41 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void callTouchPeriodically() throws InterruptedException {
+    public void callTouchForGlobalParticipantIds() throws InterruptedException {
+        final long expectedLastSeenDateMs = System.currentTimeMillis();
+        final long expectedExpiryDateMs = expectedLastSeenDateMs + DEFAULT_EXPIRY_TIME_MS;
+        final long toleranceMs = 200l;
+        ArgumentCaptor<Long> lastSeenDateCaptor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<Long> expiryDateCaptor = ArgumentCaptor.forClass(Long.class);
+
+        String[] touchedParticipantIds = new String[]{ "participantId1", "participantId2" };
+        String[] expectedParticipantIds = touchedParticipantIds.clone();
+        when(localDiscoveryEntryStoreMock.touchGlobalDiscoveryEntries(anyLong(),
+                                                                      anyLong())).thenReturn(touchedParticipantIds);
+
         verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
                                                                         eq(freshnessUpdateIntervalMs),
                                                                         eq(freshnessUpdateIntervalMs),
                                                                         eq(TimeUnit.MILLISECONDS));
+
         Runnable runnable = runnableCaptor.getValue();
         runnable.run();
-        verify(globalCapabilitiesDirectoryClient).touch();
+
+        verify(localDiscoveryEntryStoreMock, times(1)).touchGlobalDiscoveryEntries(lastSeenDateCaptor.capture(),
+                                                                                   expiryDateCaptor.capture());
+
+        assertTrue(Math.abs(lastSeenDateCaptor.getValue() - expectedLastSeenDateMs) <= toleranceMs);
+        assertTrue(Math.abs(expiryDateCaptor.getValue() - expectedExpiryDateMs) <= toleranceMs);
+
+        verify(globalDiscoveryEntryCacheMock, times(1)).touchDiscoveryEntries(eq(expectedParticipantIds),
+                                                                              eq(lastSeenDateCaptor.getValue()),
+                                                                              eq(expiryDateCaptor.getValue()));
+
+        assertTrue(Math.abs(lastSeenDateCaptor.getValue() - expectedLastSeenDateMs) <= toleranceMs);
+        assertTrue(Math.abs(expiryDateCaptor.getValue() - expectedExpiryDateMs) <= toleranceMs);
+
+        verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
+                                                                  eq(expectedParticipantIds));
     }
 
     @Test
