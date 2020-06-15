@@ -335,16 +335,23 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         messageQueue.put(delayableMessage);
     }
 
+    private boolean isExpired(final ImmutableMessage message) {
+        if (!message.isTtlAbsolute()) {
+            // relative ttl is not supported
+            return true;
+        }
+        return (message.getTtlMs() <= System.currentTimeMillis());
+    }
+
     private void checkExpiry(final ImmutableMessage message) {
         if (!message.isTtlAbsolute()) {
             callMessageProcessedListeners(message.getId());
             throw new JoynrRuntimeException("Relative ttl not supported");
         }
 
-        long currentTimeMillis = System.currentTimeMillis();
-        long ttlExpirationDateMs = message.getTtlMs();
-
-        if (ttlExpirationDateMs <= currentTimeMillis) {
+        if (isExpired(message)) {
+            long currentTimeMillis = System.currentTimeMillis();
+            long ttlExpirationDateMs = message.getTtlMs();
             String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} ({1}) abs_ttl: {2} ({3}) msg_id: {4}",
                                                        currentTimeMillis,
                                                        dateFormatter.format(currentTimeMillis),
@@ -382,10 +389,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     logger.error("ERROR SENDING: Aborting send of messageId: {}. Error:", messageId, error);
                     callMessageProcessedListeners(messageId);
 
-                    if (delayableMessage.getMessage()
-                                        .getType()
-                                        .equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
-                        ImmutableMessage replyMessage = createReplyMessageWithError(delayableMessage.getMessage(),
+                    ImmutableMessage messageNotSent = delayableMessage.getMessage();
+                    if (!isExpired(messageNotSent)
+                            && messageNotSent.getType().equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
+                        ImmutableMessage replyMessage = createReplyMessageWithError(messageNotSent,
                                                                                     (JoynrMessageNotSentException) error);
                         if (replyMessage != null) {
                             routeInternal(replyMessage, 0, 0);
