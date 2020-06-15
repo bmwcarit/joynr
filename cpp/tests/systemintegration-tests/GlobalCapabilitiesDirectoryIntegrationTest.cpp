@@ -26,8 +26,12 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
+#include "joynr/SystemServicesSettings.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/system/DiscoveryProxy.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/types/DiscoveryError.h"
+#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
 
 #include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
@@ -63,13 +67,16 @@ public:
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
     ClusterControllerSettings clusterControllerSettings;
+    SystemServicesSettings sysSettings;
 
     GlobalCapabilitiesDirectoryIntegrationTest()
             : runtime(),
               settings(std::make_unique<Settings>(GetParam())),
               messagingSettings(*settings),
-              clusterControllerSettings(*settings)
+              clusterControllerSettings(*settings),
+              sysSettings(*settings)
     {
+        clusterControllerSettings.setCapabilitiesFreshnessUpdateIntervalMs(std::chrono::milliseconds(500));
         messagingSettings.setMessagingPropertiesPersistenceFilename(
                 messagingPropertiesPersistenceFileName);
         MessagingPropertiesPersistence storage(
@@ -245,6 +252,110 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
     testRuntimeSecond->shutdown();
 
     test::util::resetAndWaitUntilDestroyed(testRuntimeSecond);
+}
+
+
+/**
+ * Test touching only the providers actually registered in the clustercontroller
+ */
+TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouchOnlyUpdatesExistingParticipantIds)
+{
+    JOYNR_LOG_DEBUG(logger(), "testTouchOnlyUpdatesExistingParticipantIds started");
+    // Setup
+    const std::string domain = "cppTestTouchDomain";
+    auto mockProvider = std::make_shared<MockTestProvider>();
+
+    types::ProviderQos providerQos;
+    auto millisSinceEpoch = TimePoint::now().toMilliseconds();
+    providerQos.setPriority(millisSinceEpoch);
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+
+    joynr::DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    discoveryQos.setDiscoveryTimeoutMs(3000);
+
+    const std::string providerParticipantId = runtime->registerProvider<tests::testProvider>(
+                domain,
+                mockProvider,
+                providerQos,
+                true,
+                true);
+
+    std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
+            capabilitiesProxyBuilder =
+                    runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
+                            messagingSettings.getDiscoveryDirectoriesDomain());
+    const MessagingQos messagingQos;
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy(
+            capabilitiesProxyBuilder->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
+
+    auto testProxyBuilder = runtime->createProxyBuilder<system::DiscoveryProxy>(sysSettings.getDomain());
+    std::shared_ptr<system::DiscoveryProxy> lcdProxy = testProxyBuilder->setDiscoveryQos(discoveryQos)->build();
+
+    const std::vector<std::string> lookupGbids = { messagingSettings.getGbid() };
+
+    JOYNR_LOG_DEBUG(logger(), "performing pre-touch lookup");
+    types::GlobalDiscoveryEntry oldEntry;
+    cabilitiesProxy->lookup(oldEntry, providerParticipantId, lookupGbids);
+
+    const std::chrono::milliseconds touchInterval = clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs();
+    std::chrono::milliseconds waitTime = touchInterval + touchInterval / 2;
+    std::this_thread::sleep_for(waitTime);
+
+    JOYNR_LOG_DEBUG(logger(), "performing post-touch lookup");
+    // check global cache in LCD
+    types::DiscoveryQos internalDiscoveryQos;
+    internalDiscoveryQos.setCacheMaxAge(std::numeric_limits<std::int64_t>::max());
+    internalDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
+    internalDiscoveryQos.setDiscoveryTimeout(3000);
+    types::DiscoveryEntryWithMetaInfo cachedEntry;
+    lcdProxy->lookup(cachedEntry, providerParticipantId, internalDiscoveryQos, lookupGbids);
+    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , cached {}",
+                            oldEntry.getLastSeenDateMs(),
+                            cachedEntry.getLastSeenDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , cached {}",
+                            oldEntry.getExpiryDateMs(),
+                            cachedEntry.getExpiryDateMs());
+    EXPECT_TRUE(cachedEntry.getLastSeenDateMs() > oldEntry.getLastSeenDateMs());
+    EXPECT_TRUE(cachedEntry.getLastSeenDateMs() < ( oldEntry.getLastSeenDateMs() + 2 * touchInterval.count()));
+    EXPECT_TRUE(cachedEntry.getExpiryDateMs() > oldEntry.getExpiryDateMs());
+    EXPECT_TRUE(cachedEntry.getExpiryDateMs() < ( oldEntry.getExpiryDateMs() + 2 * touchInterval.count()));
+
+    // check local store in LCD
+    internalDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
+    types::DiscoveryEntryWithMetaInfo localEntry;
+    lcdProxy->lookup(localEntry, providerParticipantId, internalDiscoveryQos, lookupGbids);
+    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , local {}",
+                            oldEntry.getLastSeenDateMs(),
+                            localEntry.getLastSeenDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , local {}",
+                            oldEntry.getExpiryDateMs(),
+                            localEntry.getExpiryDateMs());
+    EXPECT_TRUE(localEntry.getLastSeenDateMs() > oldEntry.getLastSeenDateMs());
+    EXPECT_TRUE(localEntry.getLastSeenDateMs() < ( oldEntry.getLastSeenDateMs() + 2 * touchInterval.count()));
+    EXPECT_TRUE(localEntry.getExpiryDateMs() > oldEntry.getExpiryDateMs());
+    EXPECT_TRUE(localEntry.getExpiryDateMs() < ( oldEntry.getExpiryDateMs() + 2 * touchInterval.count()));
+
+    // check entry in GCD
+    types::GlobalDiscoveryEntry result2;
+    cabilitiesProxy->lookup(result2, providerParticipantId, lookupGbids);
+
+    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , new {}",
+                            oldEntry.getLastSeenDateMs(),
+                            result2.getLastSeenDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , new {}",
+                            oldEntry.getExpiryDateMs(),
+                            result2.getExpiryDateMs());
+    EXPECT_TRUE(result2.getLastSeenDateMs() > oldEntry.getLastSeenDateMs());
+    EXPECT_TRUE(result2.getLastSeenDateMs() < ( oldEntry.getLastSeenDateMs() + 2 * touchInterval.count()));
+    EXPECT_TRUE(result2.getExpiryDateMs() > oldEntry.getExpiryDateMs());
+    EXPECT_TRUE(result2.getExpiryDateMs() < ( oldEntry.getExpiryDateMs() + 2 * touchInterval.count()));
+
+    // Unregister providers to not clutter the JDS
+    runtime->unregisterProvider(providerParticipantId);
 }
 
 using namespace std::string_literals;
