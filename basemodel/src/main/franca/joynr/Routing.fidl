@@ -102,6 +102,8 @@ typeCollection RoutingTypes {
 	struct BinderAddress extends Address {
 		<** @description: BinderAddress package name **>
 		String packageName
+		<** @description: BinderAddress process user ID **>
+		Int32 userId
 	}
 }
 

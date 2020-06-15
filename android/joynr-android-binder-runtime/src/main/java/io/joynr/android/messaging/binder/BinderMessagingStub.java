@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
+import io.joynr.android.binder.BinderService;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
@@ -36,11 +37,10 @@ import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BinderAddress;
 
-
 public class BinderMessagingStub implements IMessagingStub {
     private static final Logger logger = LoggerFactory.getLogger(BinderMessagingStub.class);
 
-    private static final String BINDER_SERVICE_CLASSNAME = io.joynr.android.binder.BinderService.class.getName();
+    private static final String BINDER_SERVICE_CLASSNAME = BinderService.class.getName();
 
     private Address toAddress;
     private Context context;
@@ -61,20 +61,25 @@ public class BinderMessagingStub implements IMessagingStub {
         long timeout = message.getTtlMs() - System.currentTimeMillis();
         byte[] serializedMessage = message.getSerializedMessage();
 
-        connectAndTransmitData(serializedMessage, (BinderAddress) toAddress,
-                timeout, TimeUnit.MILLISECONDS, successAction, failureAction);
+        connectAndTransmitData(serializedMessage,
+                               (BinderAddress) toAddress,
+                               timeout,
+                               TimeUnit.MILLISECONDS,
+                               successAction,
+                               failureAction);
     }
 
-    private void connectAndTransmitData(byte[] data, BinderAddress toClientAddress,
-            long timeout,
-            TimeUnit unit,
-            final SuccessAction successAction,
-            final FailureAction failureAction) {
-
+    private void connectAndTransmitData(byte[] data,
+                                        BinderAddress toClientAddress,
+                                        long timeout,
+                                        TimeUnit unit,
+                                        SuccessAction successAction,
+                                        FailureAction failureAction) {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(toClientAddress.getPackageName(), BINDER_SERVICE_CLASSNAME));
-
         ServiceConnection connection = new BinderServiceConnection(context, data, successAction, failureAction);
-        context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+        // bind to service appropriately
+        new BinderServiceStub(context, intent, connection, toClientAddress).createBinderService();
     }
 }

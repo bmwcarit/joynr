@@ -98,6 +98,7 @@ android {
                     "../../java/common/discovery-common/src/main/java/",
                     "../../java/common/guice-integration/src/main/java/",
                     "../../java/common/access-control-common/src/main/java/",
+                    "../../java/common/status-metrics/src/main/java/",
 
                     // messaging
                     "../../java/messaging/messaging-common/src/main/java/",
