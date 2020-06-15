@@ -165,19 +165,6 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    // touch methods
-    public void touch() {
-        for (String gbid : allGbids) {
-            touch(gbid);
-        }
-    }
-
-    private void touch(String targetGbid) {
-        MessagingQos qosWithGbidCustomHeader = new MessagingQos(freshnessUpdateIntervalMs);
-        qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
-        getGcdProxy().touch(localChannelId, qosWithGbidCustomHeader);
-    }
-
     public void touch(Callback<Void> callback, String[] participantIds) {
         MessagingQos messagingQos = new MessagingQos(freshnessUpdateIntervalMs);
         getGcdProxy().touch(callback, localChannelId, participantIds, messagingQos);

@@ -369,32 +369,6 @@ public class GlobalCapabilitiesDirectoryClientTest {
     }
 
     @Test
-    public void testTouch() {
-        // given the freshness interval setting
-
-        // when we call the touch method
-        subject.touch();
-
-        // then the GCD proxy's touch method gets invoked exactly once for every backend (placed in
-        // the custom headers of MessagingQos)...
-        ArgumentCaptor<MessagingQos> messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
-        verify(globalCapabilitiesDirectoryProxyMock,
-               times(GBIDS_ARRAY_PROPERTY_SETTING.length)).touch(any(String.class), messagingQosCaptor.capture());
-
-        List<String> allUsedGbidCustomHeaders = messagingQosCaptor.getAllValues()
-                                                                  .stream()
-                                                                  .map(qos -> qos.getCustomMessageHeaders()
-                                                                                 .get(Message.CUSTOM_HEADER_GBID_KEY))
-                                                                  .collect(Collectors.toList());
-        assertTrue(allUsedGbidCustomHeaders.containsAll(Arrays.asList(GBIDS_ARRAY_PROPERTY_SETTING)));
-        assertTrue(Arrays.asList(GBIDS_ARRAY_PROPERTY_SETTING).containsAll(allUsedGbidCustomHeaders));
-        // ... and all proxy calls have the correct freshness QoS
-        assertTrue(messagingQosCaptor.getAllValues()
-                                     .stream()
-                                     .allMatch(qos -> qos.getRoundTripTtl_ms() == FRESHNESS_UPDATE_INTERVAL_MS));
-    }
-
-    @Test
     public void testRemoveStale() {
         // Test whether removeStale() of the GlobalCapabilitiesDirectoryProxy 
         // called once with the given value of max last seen date in milliseconds.
