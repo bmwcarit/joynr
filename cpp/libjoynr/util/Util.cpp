@@ -108,7 +108,7 @@ std::string attributeGetterFromName(const std::string& attributeName)
 {
     assert(!attributeName.empty());
     std::string result = attributeName;
-    result[0] = std::toupper(result[0]);
+    result[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(result[0])));
     result.insert(0, "get");
     return result;
 }
