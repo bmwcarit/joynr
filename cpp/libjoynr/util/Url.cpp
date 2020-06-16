@@ -107,22 +107,22 @@ bool Url::operator==(const Url& other) const
             _query == other._query && _fragment == other._fragment);
 }
 
-const std::string& Url::getProtocol() const
+const std::string Url::getProtocol() const
 {
     return _protocol;
 }
 
-const std::string& Url::getUser() const
+const std::string Url::getUser() const
 {
     return _user;
 }
 
-const std::string& Url::getPassword() const
+const std::string Url::getPassword() const
 {
     return _password;
 }
 
-const std::string& Url::getHost() const
+const std::string Url::getHost() const
 {
     return _host;
 }
@@ -132,7 +132,7 @@ std::uint16_t Url::getPort() const
     return _port;
 }
 
-const std::string& Url::getPath() const
+const std::string Url::getPath() const
 {
     return _path;
 }
@@ -143,7 +143,7 @@ void Url::setPath(const std::string& path)
     validate();
 }
 
-const std::string& Url::getQuery() const
+const std::string Url::getQuery() const
 {
     return _query;
 }
@@ -154,7 +154,7 @@ void Url::setQuery(UrlQuery query)
     validate();
 }
 
-const std::string& Url::getFragment() const
+const std::string Url::getFragment() const
 {
     return _fragment;
 }

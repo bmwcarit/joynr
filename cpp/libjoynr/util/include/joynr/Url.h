@@ -131,25 +131,25 @@ public:
      * @brief Get the protocol part of the Url, e.g https
      * @return The Protocol
      */
-    const std::string& getProtocol() const;
+    const std::string getProtocol() const;
 
     /**
      * @brief Get the user authentication part of the Url
      * @return The username
      */
-    const std::string& getUser() const;
+    const std::string getUser() const;
 
     /**
      * @brief Get the passsword authentication part of the Url
      * @return The password
      */
-    const std::string& getPassword() const;
+    const std::string getPassword() const;
 
     /**
      * @brief Get the host part of the Url
      * @return The host
      */
-    const std::string& getHost() const;
+    const std::string getHost() const;
 
     /**
      * @brief Get the port in the Url
@@ -161,7 +161,7 @@ public:
      * @brief Get the path part of the Url
      * @return The path
      */
-    const std::string& getPath() const;
+    const std::string getPath() const;
 
     /**
      * @brief setPath
@@ -173,7 +173,7 @@ public:
      * @brief Get the query of the Url
      * @return The query
      */
-    const std::string& getQuery() const;
+    const std::string getQuery() const;
 
     /**
      * @brief Set the query of the Url
@@ -185,7 +185,7 @@ public:
      * @brief Get the fragment of the Url
      * @return The fragment
      */
-    const std::string& getFragment() const;
+    const std::string getFragment() const;
 
     /**
      * @brief Indicates if the URL is valid
