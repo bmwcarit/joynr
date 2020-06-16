@@ -19,6 +19,7 @@ set(SOURCES
     MutableMessage.cpp
     MutableMessageFactory.cpp
     RoutingTable.cpp
+    UdsMulticastAddressCalculator.cpp
     WebSocketMulticastAddressCalculator.cpp
 )
 
@@ -50,6 +51,7 @@ set(PUBLIC_HEADERS
     include/joynr/MutableMessageFactory.h
     include/joynr/ProxyBuilder.h
     include/joynr/RoutingTable.h
+    include/joynr/UdsMulticastAddressCalculator.h
     include/joynr/WebSocketMulticastAddressCalculator.h
 )
 
