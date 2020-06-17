@@ -33,7 +33,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
@@ -50,8 +49,7 @@ import java.lang.Thread;
 
 public class GlobalCapabilitiesDirectoryIntegrationTest {
     private static final String TEST_DOMAIN = "test";
-    private static final long DISCOVERY_TIMEOUT = 14000;
-    private static final long MESSAGING_TTL = 15000;
+    private static final long DISCOVERY_TIMEOUT = 10000;
 
     private JoynrRuntime runtimeFirst;
     private JoynrRuntime runtimeSecond;
@@ -65,9 +63,6 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         discoveryQos.setDiscoveryTimeoutMs(DISCOVERY_TIMEOUT);
         discoveryQos.setRetryIntervalMs(DISCOVERY_TIMEOUT + 1L);
         discoveryQos.setCacheMaxAgeMs(0L);
-
-        MessagingQos messagingQos = new MessagingQos();
-        messagingQos.setTtl_ms(MESSAGING_TTL);
 
         final Future<Void> future = new Future<Void>();
 
@@ -90,7 +85,6 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         // build proxy when provider are unregistered
         runtimeSecond.getProxyBuilder(TEST_DOMAIN, testProxy.class)
                      .setDiscoveryQos(discoveryQos)
-                     .setMessagingQos(messagingQos)
                      .build(new ProxyCreatedCallback<testProxy>() {
                          @Override
                          public void onProxyCreationFinished(testProxy result) {
@@ -103,11 +97,11 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
                          }
                      });
         try {
-            future.get(5000);
+            future.get(DISCOVERY_TIMEOUT + 1000);
             fail("runtimeSecond.getProxyBuilder().build() should throw Exception!");
         } catch (Exception e) {
             boolean isFound = e.getMessage().indexOf("Unable to find provider") != -1 ? true : false;
-            assertTrue(isFound);
+            assertTrue("Unexpected error: " + e, isFound);
         }
 
         runtimeSecond.shutdown(true);
