@@ -178,7 +178,7 @@ public class DispatcherImpl implements Dispatcher {
                           Map<String, String> customHeaders,
                           final MessagingQosEffort effort,
                           boolean compress) throws IOException {
-        MessagingQos messagingQos = new MessagingQos(expiryDateMs, effort);
+        MessagingQos messagingQos = new MessagingQos(expiryDateMs - System.currentTimeMillis(), effort);
         messagingQos.getCustomMessageHeaders().putAll(customHeaders);
         if (overrideCompress) {
             compress = true;
