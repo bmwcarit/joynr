@@ -494,24 +494,24 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                         participantIds);
             return;
         }
-        String queryString = "FROM GlobalDiscoveryEntryPersisted gdep "
+        String queryString = "UPDATE GlobalDiscoveryEntryPersisted gdep "
+                + "SET gdep.lastSeenDateMs = :newLastSeenDateMs, gdep.expiryDateMs = :newExpiryDateMs "
                 + "WHERE gdep.clusterControllerId = :clusterControllerId AND gdep.participantId IN :participantIds";
         long now = System.currentTimeMillis();
-        TypedQuery<GlobalDiscoveryEntryPersisted> query = entityManager.createQuery(queryString,
-                                                                                    GlobalDiscoveryEntryPersisted.class);
-        query.setParameter("clusterControllerId", clusterControllerId);
-        query.setParameter("participantIds", new HashSet<String>(Arrays.asList(participantIds)));
-        List<GlobalDiscoveryEntryPersisted> capabilitiesList = query.getResultList();
-        for (GlobalDiscoveryEntryPersisted globalDiscoveryEntryPersisted : capabilitiesList) {
-            globalDiscoveryEntryPersisted.setLastSeenDateMs(now);
-            globalDiscoveryEntryPersisted.setExpiryDateMs(now + defaultExpiryTimeMs);
-        }
-        if (participantIds.length > capabilitiesList.size()) {
-            logger.warn("Touch(ccId={}, participantIds={}) succeeded, but updated only {} entries: {}.",
+        int updatedCount = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
+                                        .setParameter("clusterControllerId", clusterControllerId)
+                                        .setParameter("participantIds",
+                                                      new HashSet<String>(Arrays.asList(participantIds)))
+                                        .setParameter("newLastSeenDateMs", now)
+                                        .setParameter("newExpiryDateMs", now + defaultExpiryTimeMs)
+                                        .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+        if (participantIds.length > updatedCount) {
+            logger.warn("Touch(ccId={}, participantIds={}) succeeded, but updated only {} entries.",
                         clusterControllerId,
                         participantIds,
-                        capabilitiesList.size(),
-                        capabilitiesList);
+                        updatedCount);
         } else {
             logger.info("Touch(ccId={}, participantIds={}) succeeded.", clusterControllerId, participantIds);
         }
