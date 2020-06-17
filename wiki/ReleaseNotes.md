@@ -19,6 +19,11 @@ None.
   tailored for the CC to run in user 0 (system), and joynr app clients can connect on
   whichever user they decide to in a system with multi-user capabilities.
 
+## Bug fixes
+* **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
+    absolute TTL timestamp of the request, resulting in replies that virtually never expired.
+    This is fixed and replies will now expire at the same time as the original request.
+
 # joynr 1.14.0
 
 ## API relevant changes

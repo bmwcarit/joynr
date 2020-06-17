@@ -407,6 +407,37 @@ public class DispatcherImplTest {
         testPropagateCompressFlagFromRequestToRepliesImpl(compress, compressAllOutgoingReplies);
     }
 
+    @Test
+    public void testPropagateExpirationFromRequestToReplies() throws Exception {
+        MessagingQos messagingQos = new MessagingQos(60000L);
+
+        String rrId = createUuidString();
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, rrId);
+        final String providerId = "toParticipantId";
+
+        MutableMessage joynrMsg = messageFactory.createRequest("fromParticipantId", providerId, request, messagingQos);
+        ImmutableMessage requestMsg = joynrMsg.getImmutableMessage();
+
+        fixture.messageArrived(requestMsg);
+        verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
+                                                      eq(providerId),
+                                                      eq(request),
+                                                      eq(requestMsg.getTtlMs()));
+        providerCallbackReply.getValue().onSuccess(new Reply(rrId));
+        ArgumentCaptor<MutableMessage> captor = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock).sendMessage(captor.capture());
+        ImmutableMessage replyMsg = captor.getValue().getImmutableMessage();
+
+        // Now finally perform our actual test
+        // We want to make sure that the TTL of the reply matches the TTL of the
+        // request. We allow it to be up to 1 ms less or 1000 ms more than the
+        // request's TTL.
+        // We are using 1000 ms just to make sure that we do not have a toggling
+        // test in CI.
+        assertTrue(((requestMsg.getTtlMs() - 1) <= replyMsg.getTtlMs())
+                && ((requestMsg.getTtlMs() + 1000) >= replyMsg.getTtlMs()));
+    }
+
     private void testPropagateEffortFromRequestToRepliesImpl(final MessagingQosEffort effort) throws Exception {
         Mockito.reset(messageSenderMock);
         MessagingQos messagingQos = new MessagingQos(1000L, effort);
