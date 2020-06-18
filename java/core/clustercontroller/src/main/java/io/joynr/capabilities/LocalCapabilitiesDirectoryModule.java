@@ -19,22 +19,25 @@
 package io.joynr.capabilities;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 
 public class LocalCapabilitiesDirectoryModule extends AbstractModule {
+    @Provides
+    DiscoveryEntryStore<DiscoveryEntry> providesLocalStore() {
+        return new DiscoveryEntryStoreInMemory<DiscoveryEntry>(null, 0);
+    }
+
+    @Provides
+    DiscoveryEntryStore<GlobalDiscoveryEntry> providesGlobalCache() {
+        return new DiscoveryEntryStoreInMemory<GlobalDiscoveryEntry>(null, 1000);
+    }
 
     @Override
     protected void configure() {
         bind(LocalCapabilitiesDirectory.class).to(LocalCapabilitiesDirectoryImpl.class).in(Singleton.class);
-        bind(new TypeLiteral<DiscoveryEntryStore<DiscoveryEntry>>() {
-        }).to(new TypeLiteral<DiscoveryEntryStoreInMemory<DiscoveryEntry>>() {
-        });
-        bind(new TypeLiteral<DiscoveryEntryStore<GlobalDiscoveryEntry>>() {
-        }).to(new TypeLiteral<DiscoveryEntryStoreInMemory<GlobalDiscoveryEntry>>() {
-        });
     }
 }
