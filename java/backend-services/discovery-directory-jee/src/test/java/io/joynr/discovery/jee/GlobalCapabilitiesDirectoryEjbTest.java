@@ -37,6 +37,7 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -82,9 +83,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
                             .withTransitivity()
                             .asFile();
         return ShrinkWrap.create(WebArchive.class)
-                         .addClasses(EntityManagerProducer.class,
-                                     GlobalCapabilitiesDirectoryEjb.class,
-                                     TestJoynrConfigurationProvider.class)
+                         .addClasses(GlobalCapabilitiesDirectoryEjb.class, TestJoynrConfigurationProvider.class)
                          .addAsLibraries(files)
                          .addAsResource("META-INF/persistence.xml")
                          .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"));
@@ -108,7 +107,7 @@ public class GlobalCapabilitiesDirectoryEjbTest {
     @Inject
     private GlobalCapabilitiesDirectorySync subject;
 
-    @Inject
+    @PersistenceContext(unitName = "joynr-discovery-directory")
     private EntityManager entityManager;
 
     @Before
