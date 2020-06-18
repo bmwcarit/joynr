@@ -31,6 +31,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
@@ -59,6 +60,7 @@ import joynr.types.GlobalDiscoveryEntry;
 @Transactional(rollbackOn = Exception.class)
 public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirectoryService {
     private static final Logger logger = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryEjb.class);
+    @PersistenceContext(unitName = "joynr-discovery-directory")
     private EntityManager entityManager;
     @SuppressWarnings("unused")
     private GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher;
@@ -68,12 +70,10 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     private long defaultExpiryTimeMs;
 
     @Inject
-    public GlobalCapabilitiesDirectoryEjb(EntityManager entityManager,
-                                          @SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher,
+    public GlobalCapabilitiesDirectoryEjb(@SubscriptionPublisher GlobalCapabilitiesDirectorySubscriptionPublisher gcdSubPublisher,
                                           @Named(GCD_GBID) String gcdGbid,
                                           @Named(VALID_GBIDS) String validGbidsString,
                                           @Named(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs) {
-        this.entityManager = entityManager;
         this.gcdSubPublisher = gcdSubPublisher;
         this.gcdGbid = gcdGbid;
         this.validGbids = GcdUtilities.convertArrayStringToSet(validGbidsString, gcdGbid);
