@@ -27,11 +27,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -42,7 +41,8 @@ import joynr.types.ProviderScope;
 
 /**
  * The DiscoveryEntryStore stores a list of providers and the interfaces
- * they offer (DiscoveryEntry).
+ * they offer (DiscoveryEntry). The store can be optionally limited for
+ * non-sticky entries, if maximumNumberOfNonStickyEntries is set to a positive value.
  */
 public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements DiscoveryEntryStore<T> {
 
@@ -53,15 +53,36 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     Map<String, String> participantIdToCapabilityMapping = new HashMap<String, String>();
     Map<String, T> capabilityKeyToCapabilityMapping = new HashMap<String, T>();
     Map<Address, List<String>> endPointAddressToCapabilityMapping = new HashMap<Address, List<String>>();
+    // maps queueId -> participiantId, also ordered
+    TreeMap<Long, String> queueIdToParticipantIdMapping = new TreeMap<>();
+    // maps participiantId -> queueId
+    Map<String, Long> participantIdToQueueIdMapping = new HashMap<String, Long>();
+    private long counter = 0;
+    private int maximumNumberOfNonStickyEntries;
 
-    // Do not sychronize on a Boolean
+    // Do not synchronize on a Boolean
     // Fixes FindBug warning: DL: Synchronization on Boolean
     private Object storeLock = new Object();
 
-    @Inject
-    public DiscoveryEntryStoreInMemory(CapabilitiesProvisioning staticProvisioning) {
-        logger.trace("Creating CapabilitiesStore with static provisioning");
+    public DiscoveryEntryStoreInMemory(CapabilitiesProvisioning staticProvisioning,
+                                       int maximumNumberOfNonStickyEntries) {
+        logger.info("Creating CapabilitiesStore with static provisioning, maximumNumberOfNonStickyEntries = {}",
+                    maximumNumberOfNonStickyEntries);
         //add(staticProvisioning.getCapabilityEntries());
+        this.maximumNumberOfNonStickyEntries = maximumNumberOfNonStickyEntries;
+    }
+
+    private void recreateQueueIdToParticipantIdMapping() {
+        TreeMap<Long, String> newMap = new TreeMap<>();
+        participantIdToQueueIdMapping = new HashMap<>();
+        counter = 0;
+        for (String participantId : queueIdToParticipantIdMapping.values()) {
+            counter++;
+            newMap.put(counter, participantId);
+            participantIdToQueueIdMapping.put(participantId, counter);
+        }
+        counter++;
+        queueIdToParticipantIdMapping = newMap;
     }
 
     /*
@@ -77,15 +98,39 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
             logger.error(message);
             throw new JoynrCommunicationException(message);
         }
-
+        String participantId = discoveryEntry.getParticipantId();
+        logger.trace("DiscoveryEntryStoreInMemory: add for participantId {}", participantId);
         synchronized (storeLock) {
+            // store limit will only be used if enabled, and only for non-sticky entries;
+            // an entry is considered sticky, when its expiryDateMs is equal to Long.MAX_VALUE
+            if (maximumNumberOfNonStickyEntries > 0 && discoveryEntry.getExpiryDateMs() != Long.MAX_VALUE) {
+                if (queueIdToParticipantIdMapping.size() == maximumNumberOfNonStickyEntries) {
+                    Map.Entry<Long, String> entry = queueIdToParticipantIdMapping.firstEntry();
+                    String oldestParticipantId = entry.getValue();
+                    boolean removedSuccessfully = removeDiscoveryEntryFromStore(oldestParticipantId);
+                    if (!removedSuccessfully) {
+                        logger.error("Could not find discoveryEntry to remove with Id: {}", participantId);
+                    }
+                }
+
+                counter++;
+                if (Long.MAX_VALUE == counter) {
+                    recreateQueueIdToParticipantIdMapping();
+                }
+                queueIdToParticipantIdMapping.put(counter, participantId);
+                participantIdToQueueIdMapping.put(participantId, counter);
+            }
+
             String discoveryEntryId = domainInterfaceParticipantIdKey(discoveryEntry.getDomain(),
                                                                       discoveryEntry.getInterfaceName(),
-                                                                      discoveryEntry.getParticipantId());
+                                                                      participantId);
             T entry = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
             // check if a DiscoveryEntry with the same Id already exists
             if (entry != null) {
-                remove(discoveryEntry.getParticipantId());
+                boolean removedSuccessfully = removeDiscoveryEntryFromStore(participantId);
+                if (!removedSuccessfully) {
+                    logger.error("Could not find discoveryEntry to remove with Id: {}", participantId);
+                }
             }
 
             // update participantId to capability mapping
@@ -109,7 +154,6 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
             mapping.add(discoveryEntryId);
 
             // update participantId to capability mapping
-            String participantId = discoveryEntry.getParticipantId();
 
             participantIdToCapabilityMapping.put(participantId, discoveryEntryId);
         }
@@ -138,6 +182,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     }
 
     private boolean removeDiscoveryEntryFromStore(String participantId) {
+        logger.trace("DiscoveryEntryStoreInMemory: removeDiscoveryEntryFromStore for participantId {}", participantId);
         String discoveryEntryId = participantIdToCapabilityMapping.get(participantId);
         if (discoveryEntryId == null) {
             return false;
@@ -179,8 +224,24 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
                          discoveryEntryId);
         }
 
-        return true;
+        // store limit will only be used if configured, and only for non-sticky entries;
+        // an entry is considered sticky, when its expiryDateMs is equal to Long.MAX_VALUE
+        if (maximumNumberOfNonStickyEntries > 0 && capability.getExpiryDateMs() != Long.MAX_VALUE) {
+            Long queueId = participantIdToQueueIdMapping.remove(participantId);
+            if (queueId == null) {
+                logger.error("Could not find queueId to remove from participantIdToQueueIdMapping: {}",
+                             discoveryEntryId);
+                return false;
+            }
 
+            if (queueIdToParticipantIdMapping.remove(queueId) == null) {
+                logger.error("Could not find participantId to remove from queueIdToParticipantIdMapping: {}",
+                             discoveryEntryId);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
