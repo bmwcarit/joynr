@@ -2,6 +2,19 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.14.3
+
+## API relevant changes
+None.
+
+## Bug fixes
+* **[C++]** Cluster controller now uses the new `touch` and `removeStale` methods of
+  [`GlobalCapabilitiesDirectory.fidl`](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl).
+  The Global Capabilities Directory has to implement version 0.3 of the interface.
+
+## Other Changes
+None.
+
 # joynr 1.14.2
 
 ## Other changes
@@ -50,8 +63,8 @@ None.
 
 ## Other changes
 * **[FIDL]** Introduce new touch and removeStale methods in GlobalCapabilitiesDirectory FIDL.
- See [internal documentation of GlobalCapabilitiesDirectory](../docs/gcd-in-multiple-be.md)
- for for additional information about the new methods.
+  See [internal documentation of GlobalCapabilitiesDirectory](../docs/gcd-in-multiple-be.md)
+  for for additional information about the new methods.
 * **[Java, JEE]** Updated hivemq-mqtt-client to 1.1.4
 * **[C++]** Mosquitto MQTT Client now sets message expiry interval of
 * **[Java, JEE]** Singleton JeeJoynrServiceLocator will now be created at startup time.
