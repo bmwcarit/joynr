@@ -42,7 +42,7 @@ interface Spies {
 
 describe("libjoynr-js.integration.end2end.subscription", () => {
     const subscriptionLength = 2000;
-    const safetyTimeout = 100;
+    const safetyTimeout = 500;
     let subscriptionQosOnChange: OnChangeSubscriptionQos;
     let subscriptionQosInterval: PeriodicSubscriptionQos;
     let subscriptionQosMulticast: MulticastSubscriptionQos;
