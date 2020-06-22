@@ -77,7 +77,7 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
             protected void configure() {
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS))
                                   .toInstance(String.valueOf(DEFAULT_EXPIRY_INTERVAL_MS));
-                bind(CapabilitiesProvisioning.class).to(DefaultCapabilitiesProvisioning.class);
+                bind(CapabilitiesProvisioning.class).to(TestCapabilitiesProvisioning.class);
                 requestStaticInjection(CapabilityUtils.class, RoutingTypesUtil.class);
             }
         });

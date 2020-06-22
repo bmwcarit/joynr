@@ -23,7 +23,7 @@ import java.util.Collections;
 
 import joynr.types.GlobalDiscoveryEntry;
 
-public class DefaultCapabilitiesProvisioning implements CapabilitiesProvisioning {
+public class TestCapabilitiesProvisioning implements CapabilitiesProvisioning {
 
     @Override
     public Collection<GlobalDiscoveryEntry> getDiscoveryEntries() {
