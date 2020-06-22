@@ -130,7 +130,9 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                                                 new TypeReference<List<GlobalDiscoveryEntry>>() {
                                                 });
             for (GlobalDiscoveryEntry globalDiscoveryEntry : newEntries) {
+                // TODO use Long.MAX_VALUE for lastSeenDate of provisioned entries?
                 globalDiscoveryEntry.setLastSeenDateMs(System.currentTimeMillis());
+                globalDiscoveryEntry.setExpiryDateMs(Long.MAX_VALUE);
                 Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
                 if (internalInterfaces.contains(globalDiscoveryEntry.getInterfaceName())
                         && address instanceof MqttAddress) {
