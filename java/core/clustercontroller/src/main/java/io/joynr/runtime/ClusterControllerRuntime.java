@@ -27,6 +27,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
+import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessagingSkeletonFactory;
@@ -53,6 +54,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     RoutingTable routingTable,
                                     StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                                     DiscoverySettingsStorage discoverySettingsStorage,
+                                    ParticipantIdStorage participantIdStorage,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                                     @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
@@ -67,6 +69,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               routingTable,
               statelessAsyncCallbackDirectory,
               discoverySettingsStorage,
+              participantIdStorage,
               systemServicesDomain,
               dispatcherAddress,
               discoveryProviderAddress);

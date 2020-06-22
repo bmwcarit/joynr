@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -54,6 +55,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            RoutingTable routingTable,
                            StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                            DiscoverySettingsStorage discoverySettingsStorage,
+                           ParticipantIdStorage participantIdStorage,
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
@@ -69,6 +71,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
               routingTable,
               statelessAsyncCallbackDirectory,
               discoverySettingsStorage,
+              participantIdStorage,
               systemServicesDomain,
               dispatcherAddress,
               discoveryProviderAddress);

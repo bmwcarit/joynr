@@ -18,6 +18,8 @@
  */
 package io.joynr.runtime;
 
+import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -35,6 +37,7 @@ import com.google.inject.name.Named;
 import io.joynr.UsedBy;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
+import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -47,11 +50,11 @@ import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
-import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.util.AnnotationUtil;
 import io.joynr.util.ReflectionUtils;
 import joynr.BroadcastSubscriptionRequest;
@@ -61,6 +64,8 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.exceptions.ApplicationException;
+import joynr.system.Discovery;
+import joynr.system.Routing;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
 
@@ -97,9 +102,10 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             RoutingTable routingTable,
                             StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                             DiscoverySettingsStorage discoverySettingsStorage,
+                            ParticipantIdStorage participantIdStorage,
                             @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
-                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress) {
+                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress) {
         // CHECKSTYLE:ON
         this.dispatcher = dispatcher;
         this.objectMapper = objectMapper;
@@ -122,9 +128,20 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
             }
         });
 
-        if (discoveryProviderAddress instanceof InProcessAddress) {
-            ((InProcessAddress) discoveryProviderAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        if (ccMessagingAddress instanceof InProcessAddress) {
+            ((InProcessAddress) ccMessagingAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         }
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean isSticky = true;
+        final String discoveryProviderParticipantId = participantIdStorage.getProviderParticipantId(systemServicesDomain,
+                                                                                                    Discovery.INTERFACE_NAME,
+                                                                                                    getVersionFromAnnotation(Discovery.class).getMajorVersion());
+        final String routingProviderParticipantId = participantIdStorage.getProviderParticipantId(systemServicesDomain,
+                                                                                                  Routing.INTERFACE_NAME,
+                                                                                                  getVersionFromAnnotation(Routing.class).getMajorVersion());
+        routingTable.put(discoveryProviderParticipantId, ccMessagingAddress, isGloballyVisible, expiryDateMs, isSticky);
+        routingTable.put(routingProviderParticipantId, ccMessagingAddress, isGloballyVisible, expiryDateMs, isSticky);
 
         localDiscoveryAggregator.forceQueryOfDiscoveryProxy();
         ArbitratorFactory.start();
