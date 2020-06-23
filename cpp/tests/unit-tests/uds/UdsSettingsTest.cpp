@@ -16,9 +16,10 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
 #include <chrono>
 #include <cstdio>
+
+#include <gtest/gtest.h>
 
 #include "joynr/UdsSettings.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
@@ -35,9 +36,9 @@ public:
     {
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
-        std::remove(testSettingsFileName.c_str());
+        remove(testSettingsFileName.c_str());
     }
 
 protected:
@@ -51,12 +52,14 @@ TEST_F(UdsSettingsTest, intializedWithDefaultSettings)
     UdsSettings udsSettings(testSettings);
 
     EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_SOCKET_PATH()));
-    EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_RECONNECT_SLEEP_TIME_MS()));
+    EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_CONNECT_SLEEP_TIME_MS()));
     EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_CLIENT_ID()));
+    EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_SENDING_QUEUE_SIZE()));
 
     EXPECT_EQ(udsSettings.getSocketPath(), joynr::UdsSettings::DEFAULT_SOCKET_PATH());
-    EXPECT_EQ(udsSettings.getReconnectSleepTimeMs(), joynr::UdsSettings::DEFAULT_RECONNECT_SLEEP_TIME_MS());
+    EXPECT_EQ(udsSettings.getConnectSleepTimeMs(), joynr::UdsSettings::DEFAULT_CONNECT_SLEEP_TIME_MS());
     EXPECT_NE(udsSettings.getClientId(), "");
+    EXPECT_EQ(udsSettings.getSendingQueueSize(), joynr::UdsSettings::DEFAULT_SENDING_QUEUE_SIZE());
 }
 
 TEST_F(UdsSettingsTest, overrideDefaultSettings)
@@ -64,25 +67,31 @@ TEST_F(UdsSettingsTest, overrideDefaultSettings)
     const std::string expectedSocketPath("/tmp/test-path");
     EXPECT_NE(expectedSocketPath, joynr::UdsSettings::DEFAULT_SOCKET_PATH());
 
-    const std::chrono::milliseconds expectedReconnectSleepTimeMs(1024);
-    EXPECT_NE(expectedReconnectSleepTimeMs, joynr::UdsSettings::DEFAULT_RECONNECT_SLEEP_TIME_MS());
+    const std::chrono::milliseconds expectedConnectSleepTimeMs(1024);
+    EXPECT_NE(expectedConnectSleepTimeMs, joynr::UdsSettings::DEFAULT_CONNECT_SLEEP_TIME_MS());
 
     const std::string expectedClientId("testClientId");
 
     Settings testSettings(testSettingsFileName);
     UdsSettings udsSettings(testSettings);
     udsSettings.setSocketPath(expectedSocketPath);
-    udsSettings.setReconnectSleepTimeMs(expectedReconnectSleepTimeMs);
+    udsSettings.setConnectSleepTimeMs(expectedConnectSleepTimeMs);
     udsSettings.setClientId(expectedClientId);
 
     const std::string socketPath = udsSettings.getSocketPath();
     EXPECT_EQ(expectedSocketPath, socketPath);
 
-    const std::chrono::milliseconds reconnectSleepTimeMs = udsSettings.getReconnectSleepTimeMs();
-    EXPECT_EQ(expectedReconnectSleepTimeMs, reconnectSleepTimeMs);
+    const std::chrono::milliseconds connectSleepTimeMs = udsSettings.getConnectSleepTimeMs();
+    EXPECT_EQ(expectedConnectSleepTimeMs, connectSleepTimeMs);
 
     const std::string clientId = udsSettings.getClientId();
     EXPECT_EQ(expectedClientId, clientId);
+
+    const std::size_t expectedSendingQueueSize(42);
+    EXPECT_NE(expectedSendingQueueSize, joynr::UdsSettings::DEFAULT_SENDING_QUEUE_SIZE());
+    udsSettings.setSendingQueueSize(expectedSendingQueueSize);
+    const auto sendingQueueSize = udsSettings.getSendingQueueSize();
+    EXPECT_EQ(expectedSendingQueueSize, sendingQueueSize);
 }
 
 TEST_F(UdsSettingsTest, createsUdsAddress)

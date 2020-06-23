@@ -38,6 +38,7 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
+
 #include "libjoynr/uds/UdsLibJoynrMessagingSkeleton.h"
 
 #include "tests/JoynrTest.h"

@@ -8,6 +8,7 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other changes
+* **[C++]** Raise required minimum Boost version from 1.58.0 to 1.65.0.
 * **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
   necessary anymore. The generated code for Java and JEE is identical now.
   See [Generator documentation](generator.md).

@@ -20,6 +20,7 @@
 #define UDSSETTINGS_H
 
 #include <chrono>
+#include <cstdint>
 #include <string>
 
 #include "joynr/Logger.h"
@@ -40,14 +41,7 @@ class UdsAddress;
 class UdsSettings
 {
 public:
-    static const std::string& SETTING_SOCKET_PATH();
-    static const std::string& SETTING_RECONNECT_SLEEP_TIME_MS();
-    static const std::string& SETTING_CLIENT_ID();
-
     static const std::string& DEFAULT_UDS_SETTINGS_FILENAME();
-
-    static std::chrono::milliseconds DEFAULT_RECONNECT_SLEEP_TIME_MS();
-    static const std::string& DEFAULT_SOCKET_PATH();
 
     explicit UdsSettings(Settings& settings);
     UdsSettings(const UdsSettings&) = default;
@@ -55,16 +49,35 @@ public:
 
     ~UdsSettings() = default;
 
+    static const std::string& SETTING_SOCKET_PATH();
+    static const std::string& DEFAULT_SOCKET_PATH();
     std::string getSocketPath() const;
-    void setSocketPath(const std::string& url);
+    void setSocketPath(const std::string& filePath);
 
     system::RoutingTypes::UdsAddress createClusterControllerMessagingAddress() const;
 
-    std::chrono::milliseconds getReconnectSleepTimeMs() const;
-    void setReconnectSleepTimeMs(const std::chrono::milliseconds reconnectSleepTimeMs);
+    static const std::string& SETTING_CONNECT_SLEEP_TIME_MS();
+    static std::chrono::milliseconds DEFAULT_CONNECT_SLEEP_TIME_MS();
+    /**
+     * @brief Get timeout between initial connection attempts
+     * @return Timeout [ms]
+     */
+    std::chrono::milliseconds getConnectSleepTimeMs() const;
 
+    /**
+     * @brief Set timeout between initial connection attempts
+     * @param connectSleepTimeMs Timeout [ms]
+     */
+    void setConnectSleepTimeMs(const std::chrono::milliseconds connectSleepTimeMs);
+
+    static const std::string& SETTING_CLIENT_ID();
     std::string getClientId() const;
     void setClientId(const std::string& url);
+
+    static const std::string& SETTING_SENDING_QUEUE_SIZE();
+    static const std::size_t& DEFAULT_SENDING_QUEUE_SIZE();
+    std::size_t getSendingQueueSize() const;
+    void setSendingQueueSize(const std::size_t& queueSize);
 
     void printSettings() const;
 

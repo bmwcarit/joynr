@@ -1,24 +1,26 @@
 project(Uds)
 
 set(SOURCES
+    UdsClient.cpp
+    UdsFrameBufferV1.cpp
     UdsLibJoynrMessagingSkeleton.cpp
     UdsMessagingStub.cpp
     UdsMessagingStubFactory.cpp
-    # UdsClient.cpp
+    UdsServer.cpp
     UdsSettings.cpp
 )
 
 set(PRIVATE_HEADERS
-    # IUdsClient.h
+    UdsFrameBufferV1.h
     UdsLibJoynrMessagingSkeleton.h
     UdsMessagingStub.h
     UdsMessagingStubFactory.h
-    # UdsClient.h
-    # UdsReceiver.h
-    # UdsSender.h
+    UdsSendQueue.h
 )
 
 set(PUBLIC_HEADERS
+    include/joynr/UdsClient.h
+    include/joynr/UdsServer.h
     include/joynr/UdsSettings.h
 )
 
@@ -28,9 +30,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     PUBLIC "$<INSTALL_INTERFACE:${JOYNR_INSTALL_INCLUDEDIR}>"
 )
-objlibrary_target_link_libraries(${PROJECT_NAME}
-    #PRIVATE udspp::udspp
-)
+
 target_link_objlibraries(${PROJECT_NAME}
     PUBLIC Joynr::Interface
     PUBLIC Joynr::Messaging

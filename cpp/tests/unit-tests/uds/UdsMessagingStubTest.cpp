@@ -23,10 +23,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "libjoynr/uds/UdsMessagingStub.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Semaphore.h"
+
+#include "libjoynr/uds/UdsMessagingStub.h"
+
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockIUdsSender.h"

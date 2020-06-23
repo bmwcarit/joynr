@@ -36,23 +36,23 @@ class JoynrRuntimeException;
 
 /**
  * @class IUdsSender
- * @brief A generic send interface for different Uds implementation
+ * @brief A generic send interface for different UDS implementation
  */
 class JOYNR_EXPORT IUdsSender
 {
 public:
+    using SendFailed = std::function<void(const exceptions::JoynrRuntimeException&)>;
+
     /**
      * @brief Destructor
      */
     virtual ~IUdsSender() = default;
 
     /**
-     * @brief Send a message asynchronously via WebSocket
+     * @brief Send a message asynchronously via UNIX domain sockets
      * @param message Message to be sent
      */
-    virtual void send(
-            const smrf::ByteArrayView& message,
-            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
+    virtual void send(const smrf::ByteArrayView& message, const SendFailed& onFailure) = 0;
 };
 
 } // namespace joynr

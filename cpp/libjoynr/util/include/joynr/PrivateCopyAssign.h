@@ -30,4 +30,8 @@
     TypeName(const TypeName&) = delete;                                                            \
     TypeName& operator=(const TypeName&) = delete
 
+#define DISALLOW_MOVE_AND_ASSIGN(TypeName)                                                         \
+    TypeName(TypeName&&) = delete;                                                                 \
+    TypeName& operator=(TypeName&&) = delete
+
 #endif // PRIVATECOPYASSIGN_H

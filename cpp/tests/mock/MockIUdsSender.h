@@ -32,7 +32,7 @@ public:
     }
 
     MOCK_METHOD2(send, void (const smrf::ByteArrayView& message,
-                             const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+                             const SendFailed& onFailure));
 };
 
 #endif // TESTS_MOCKIUDSSENDER_H

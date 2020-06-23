@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <limits>
 
 #include "joynr/Settings.h"
 #include "joynr/Util.h"
@@ -27,6 +28,12 @@
 
 namespace joynr
 {
+
+const std::string& UdsSettings::DEFAULT_UDS_SETTINGS_FILENAME()
+{
+    static const std::string value("default-uds.settings");
+    return value;
+}
 
 UdsSettings::UdsSettings(Settings& settings) : _settings(settings)
 {
@@ -40,12 +47,16 @@ void UdsSettings::checkSettings()
         setSocketPath(DEFAULT_SOCKET_PATH());
     }
 
-    if (!_settings.contains(SETTING_RECONNECT_SLEEP_TIME_MS())) {
-        setReconnectSleepTimeMs(DEFAULT_RECONNECT_SLEEP_TIME_MS());
+    if (!_settings.contains(SETTING_CONNECT_SLEEP_TIME_MS())) {
+        setConnectSleepTimeMs(DEFAULT_CONNECT_SLEEP_TIME_MS());
     }
 
     if (!_settings.contains(SETTING_CLIENT_ID())) {
         setClientId(joynr::util::createUuid());
+    }
+
+    if (!_settings.contains(SETTING_SENDING_QUEUE_SIZE())) {
+        setSendingQueueSize(DEFAULT_SENDING_QUEUE_SIZE());
     }
 }
 
@@ -55,21 +66,15 @@ const std::string& UdsSettings::SETTING_SOCKET_PATH()
     return value;
 }
 
-const std::string& UdsSettings::SETTING_RECONNECT_SLEEP_TIME_MS()
+const std::string& UdsSettings::SETTING_CONNECT_SLEEP_TIME_MS()
 {
-    static const std::string value("uds/reconnect-sleep-time-ms");
+    static const std::string value("uds/connect-sleep-time-ms");
     return value;
 }
 
 const std::string& UdsSettings::SETTING_CLIENT_ID()
 {
     static const std::string value("uds/client-id");
-    return value;
-}
-
-const std::string& UdsSettings::DEFAULT_UDS_SETTINGS_FILENAME()
-{
-    static const std::string value("default-uds.settings");
     return value;
 }
 
@@ -83,15 +88,15 @@ void UdsSettings::setSocketPath(const std::string& socketPath)
     _settings.set(UdsSettings::SETTING_SOCKET_PATH(), socketPath);
 }
 
-std::chrono::milliseconds UdsSettings::getReconnectSleepTimeMs() const
+std::chrono::milliseconds UdsSettings::getConnectSleepTimeMs() const
 {
     return std::chrono::milliseconds(
-            _settings.get<std::int64_t>(UdsSettings::SETTING_RECONNECT_SLEEP_TIME_MS()));
+            _settings.get<std::int64_t>(UdsSettings::SETTING_CONNECT_SLEEP_TIME_MS()));
 }
 
-void UdsSettings::setReconnectSleepTimeMs(const std::chrono::milliseconds reconnectSleepTimeMs)
+void UdsSettings::setConnectSleepTimeMs(const std::chrono::milliseconds connectSleepTimeMs)
 {
-    _settings.set(UdsSettings::SETTING_RECONNECT_SLEEP_TIME_MS(), reconnectSleepTimeMs.count());
+    _settings.set(UdsSettings::SETTING_CONNECT_SLEEP_TIME_MS(), connectSleepTimeMs.count());
 }
 
 std::string UdsSettings::getClientId() const
@@ -110,10 +115,46 @@ const std::string& UdsSettings::DEFAULT_SOCKET_PATH()
     return value;
 }
 
-std::chrono::milliseconds UdsSettings::DEFAULT_RECONNECT_SLEEP_TIME_MS()
+std::chrono::milliseconds UdsSettings::DEFAULT_CONNECT_SLEEP_TIME_MS()
 {
     static const std::chrono::milliseconds value(500);
     return value;
+}
+
+const std::string& UdsSettings::SETTING_SENDING_QUEUE_SIZE()
+{
+    static const std::string value("uds/sending-queue-size");
+    return value;
+}
+
+const std::size_t& UdsSettings::DEFAULT_SENDING_QUEUE_SIZE()
+{
+    static const std::size_t value{1024};
+    return value;
+}
+std::size_t UdsSettings::getSendingQueueSize() const
+{
+    const auto sendingQueueSizeStr =
+            _settings.get<std::string>(UdsSettings::SETTING_SENDING_QUEUE_SIZE());
+    try {
+        const auto sendingQueueSize = std::stoul(sendingQueueSizeStr);
+        return sendingQueueSize; // In case of zero, an additional message will trigger a reschedule
+                                 // if one message is still processed.
+    } catch (const std::logic_error& ex) {
+        JOYNR_LOG_ERROR(logger(),
+                        "Cannot parse ",
+                        UdsSettings::SETTING_SENDING_QUEUE_SIZE(),
+                        " value '",
+                        sendingQueueSizeStr,
+                        " '. Exception: ",
+                        ex.what());
+    }
+    return DEFAULT_SENDING_QUEUE_SIZE();
+}
+
+void UdsSettings::setSendingQueueSize(const std::size_t& queueSize)
+{
+    _settings.set(UdsSettings::SETTING_SENDING_QUEUE_SIZE(), std::to_string(queueSize));
 }
 
 joynr::system::RoutingTypes::UdsAddress UdsSettings::createClusterControllerMessagingAddress() const
@@ -135,13 +176,18 @@ void UdsSettings::printSettings() const
 
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
-                   SETTING_RECONNECT_SLEEP_TIME_MS(),
-                   _settings.get<std::string>(SETTING_RECONNECT_SLEEP_TIME_MS()));
+                   SETTING_CONNECT_SLEEP_TIME_MS(),
+                   _settings.get<std::string>(SETTING_CONNECT_SLEEP_TIME_MS()));
 
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_CLIENT_ID(),
                    _settings.get<std::string>(SETTING_CLIENT_ID()));
+
+    JOYNR_LOG_INFO(logger(),
+                   "SETTING: {} = {}",
+                   SETTING_SENDING_QUEUE_SIZE(),
+                   _settings.get<std::string>(SETTING_SENDING_QUEUE_SIZE()));
 }
 
 } // namespace joynr

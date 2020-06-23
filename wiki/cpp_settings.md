@@ -19,7 +19,7 @@ A settings file is a text file and must have ini-File format, for example
 ...
 ```
 
-## Uds settings
+## UDS settings
 
 ### `socket-path`
 
@@ -31,26 +31,36 @@ This setting defines the UDS (server) address as socket path.
 * **Key**: `socket-path`
 * **Default value**: `/var/run/joynr/cluster-controller.sock`
 
-### `reconnect-sleep-time-ms`
+### `connect-sleep-time-ms`
 
-This setting defines the time to wait between reconnects
-for uds connections.
+This setting defines the time to wait between initial UDS (client)
+connection attempts.
 
 * **OPTIONAL**
 * **Sectioname**: `uds`
 * **Type**: Unsigned integer value as string
-* **Key**: `reconnect-sleep-time-ms`
+* **Key**: `connect-sleep-time-ms`
 * **Default value**: `500`
 
 ### `client-id`
 
-This setting defines the client-id of the uds connection.
+This setting defines the client-id of the UDS connection.
 
 * **OPTIONAL**
 * **Sectioname**: `uds`
 * **Type**: String
 * **Key**: `client-id`
 * **Default value**: `<uuid value will be auto generated>`
+
+### `sending-queue-size`
+
+This setting defines the size of the sending-queue on UDS async-layer.
+
+* **OPTIONAL**
+* **Sectioname**: `uds`
+* **Type**: Number
+* **Key**: `sending-queue-size`
+* **Default value**: `1024`
 
 ## Cluster controller setings
 
