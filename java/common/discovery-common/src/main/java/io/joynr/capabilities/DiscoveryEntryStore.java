@@ -44,5 +44,19 @@ public interface DiscoveryEntryStore<T extends DiscoveryEntry> {
 
     public abstract boolean hasDiscoveryEntry(T discoveryEntry);
 
-    public abstract void touch(String clusterControllerId);
+    /**
+     * Update last seen date and expiry date of the discovery entries with global scope.
+     * @param lastSeenDateMs - last seen date in milliseconds to set
+     * @param expiryDateMs - expiry date in milliseconds to set
+     * @return a list of participant IDs of the updated discovery entries
+     */
+    public abstract String[] touchGlobalDiscoveryEntries(long lastSeenDateMs, long expiryDateMs);
+
+    /**
+     * Update last seen date and expiry date of discovery entries with particular participant IDs
+     * @param participantIds - list of participant IDs of discovery entries to be updated
+     * @param lastSeenDateMs - last seen date in milliseconds to set
+     * @param expiryDateMs - expiry date in milliseconds to set
+     */
+    public abstract void touchDiscoveryEntries(String[] participantIds, long lastSeenDateMs, long expiryDateMs);
 }
