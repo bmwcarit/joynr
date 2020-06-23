@@ -38,6 +38,7 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderScope;
 
 /**
  * The DiscoveryEntryStore stores a list of providers and the interfaces
@@ -274,7 +275,36 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     }
 
     @Override
-    public void touch(String clusterControllerId) {
-        // TODO Auto-generated method stub
+    public String[] touchGlobalDiscoveryEntries(long lastSeenDateMs, long expiryDateMs) {
+        List<String> participantIds = new ArrayList<>();
+
+        synchronized (storeLock) {
+            for (T discoveryEntry : capabilityKeyToCapabilityMapping.values()) {
+                if (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL) {
+                    participantIds.add(discoveryEntry.getParticipantId());
+                    discoveryEntry.setLastSeenDateMs(lastSeenDateMs);
+                    discoveryEntry.setExpiryDateMs(expiryDateMs);
+                }
+            }
+        }
+        return participantIds.toArray(new String[participantIds.size()]);
+    }
+
+    @Override
+    public void touchDiscoveryEntries(String[] participantIds, long lastSeenDateMs, long expiryDateMs) {
+        synchronized (storeLock) {
+            for (String participantId : participantIds) {
+                if (!participantIdToCapabilityMapping.containsKey(participantId)) {
+                    continue;
+                }
+                String discoveryEntryId = participantIdToCapabilityMapping.get(participantId);
+                T foundDiscoveryEntry = capabilityKeyToCapabilityMapping.get(discoveryEntryId);
+                if (foundDiscoveryEntry == null) {
+                    continue;
+                }
+                foundDiscoveryEntry.setLastSeenDateMs(lastSeenDateMs);
+                foundDiscoveryEntry.setExpiryDateMs(expiryDateMs);
+            }
+        }
     }
 }
