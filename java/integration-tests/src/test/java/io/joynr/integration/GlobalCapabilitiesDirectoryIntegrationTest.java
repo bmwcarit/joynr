@@ -18,19 +18,20 @@
  */
 package io.joynr.integration;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GBIDS;
 import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
 import java.util.Properties;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
@@ -38,15 +39,14 @@ import com.google.inject.util.Modules;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
@@ -60,22 +60,27 @@ import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-
-import java.lang.Thread;
-
 public class GlobalCapabilitiesDirectoryIntegrationTest {
     private static final Logger log = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryIntegrationTest.class);
 
     private static final String TEST_DOMAIN = "test";
-    private static final long DISCOVERY_TIMEOUT = 10000;
+    private static final long DISCOVERY_TIMEOUT = 5000;
     private static final long FRESHNESS_UPDATE_INTERVAL_MS = 500;
 
     private JoynrRuntime runtimeFirst;
     private JoynrRuntime runtimeSecond;
     private DefaulttestProvider testProvider;
+
+    private void waitForGlobalConnection(Injector injector) throws Exception {
+        // wait some time for MQTT connection to be established
+        Thread.sleep(FRESHNESS_UPDATE_INTERVAL_MS);
+        // TODO use JoynrStatusMetrics instead of unconditional sleep (does not work with PahoMqttClient, requires HivemqMqttClient):
+        // JoynrStatusMetrics statusMetrics = injector.getInstance(JoynrStatusMetrics.class);
+        // while (!(statusMetrics.getAllConnectionStatusMetrics().size() > 0)
+        //         || statusMetrics.getAllConnectionStatusMetrics().toArray(new ConnectionStatusMetrics[0])[0].isConnected()) {
+        //     Thread.sleep(10);
+        // }
+    }
 
     @Test
     public void testTouchOfProvidersWithGlobalScope() throws Exception {
@@ -88,8 +93,13 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
 
         Injector injector = createInjector();
         runtime = injector.getInstance(JoynrRuntime.class);
-        registerProvider(runtime);
-        Thread.sleep(1000);
+        try {
+            registerProvider(runtime);
+        } catch (Exception e) {
+            runtime.shutdown(true);
+            fail("Provider registration failed: " + e.toString());
+        }
+        waitForGlobalConnection(injector);
 
         // Build globalCapabilitiesDirectoryProxy
         GlobalCapabilitiesDirectoryProxy gcdProxy;
@@ -114,11 +124,11 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         lcdProxy = lcdProxyBuilder.setDiscoveryQos(discoveryQos).build();
 
         // Perform first lookup
+        long timeBeforeFirstLookup = System.currentTimeMillis();
         String[] providerDomains = new String[]{ TEST_DOMAIN };
         String interfaceName = test.INTERFACE_NAME;
-        String lookupGbidsStr = injector.getInstance(Key.get(String.class,
-                                                             Names.named(ConfigurableMessagingSettings.PROPERTY_GBIDS)));
-        String[] lookupGbids = Arrays.stream(lookupGbidsStr.split(",")).map(a -> a.trim()).toArray(String[]::new);
+        String[] lookupGbids = injector.getInstance(Key.get(String[].class,
+                                                            Names.named(MessagingPropertyKeys.GBID_ARRAY)));
 
         DiscoveryEntry[] oldGlobalDiscoveryEntires = gcdProxy.lookup(providerDomains, interfaceName, lookupGbids);
         assertEquals(1, oldGlobalDiscoveryEntires.length);
@@ -130,6 +140,8 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         // Check entry in GCD
         DiscoveryEntry[] newGlobalDiscoveryEntires = gcdProxy.lookup(providerDomains, interfaceName, lookupGbids);
         assertEquals(1, newGlobalDiscoveryEntires.length);
+        long timeAfterSecondLookup = System.currentTimeMillis();
+        long deltaMax = timeAfterSecondLookup - timeBeforeFirstLookup + FRESHNESS_UPDATE_INTERVAL_MS;
 
         DiscoveryEntry oldGlobalEntry = oldGlobalDiscoveryEntires[0];
         DiscoveryEntry newGlobalEntry = newGlobalDiscoveryEntires[0];
@@ -139,12 +151,13 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         log.info("newGlobalEntry - oldGlobalEntry = {}",
                  newGlobalEntry.getExpiryDateMs() - oldGlobalEntry.getExpiryDateMs());
 
-        assertTrue(oldGlobalEntry.getLastSeenDateMs() < newGlobalEntry.getLastSeenDateMs());
-        assertTrue(newGlobalEntry.getLastSeenDateMs() < (oldGlobalEntry.getLastSeenDateMs()
-                + 2 * FRESHNESS_UPDATE_INTERVAL_MS));
-        assertTrue(oldGlobalEntry.getExpiryDateMs() < newGlobalEntry.getExpiryDateMs());
-        assertTrue(newGlobalEntry.getExpiryDateMs() < (oldGlobalEntry.getExpiryDateMs()
-                + 2 * FRESHNESS_UPDATE_INTERVAL_MS));
+        // real interval between 2 touch calls might be less than FRESHNESS_UPDATE_INTERVAL_MS because of messaging delays
+        final long minNewLastSeenDate = oldGlobalEntry.getLastSeenDateMs() + FRESHNESS_UPDATE_INTERVAL_MS / 2;
+        final long minNewExpiryDate = oldGlobalEntry.getExpiryDateMs() + FRESHNESS_UPDATE_INTERVAL_MS / 2;
+        assertTrue(minNewLastSeenDate <= newGlobalEntry.getLastSeenDateMs());
+        assertTrue(newGlobalEntry.getLastSeenDateMs() < (oldGlobalEntry.getLastSeenDateMs() + deltaMax));
+        assertTrue(minNewExpiryDate <= newGlobalEntry.getExpiryDateMs());
+        assertTrue(newGlobalEntry.getExpiryDateMs() < (oldGlobalEntry.getExpiryDateMs() + deltaMax));
 
         // Check global cache in LCD
         joynr.types.DiscoveryQos internalDiscoveryQos = new joynr.types.DiscoveryQos();
@@ -157,15 +170,15 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
                                                                                   internalDiscoveryQos,
                                                                                   lookupGbids);
         assertEquals(1, newGlobalCacheLocalEntries.length);
+        timeAfterSecondLookup = System.currentTimeMillis();
+        deltaMax = timeAfterSecondLookup - timeBeforeFirstLookup + FRESHNESS_UPDATE_INTERVAL_MS;
 
         DiscoveryEntryWithMetaInfo newGlobalCacheLocalEntry = newGlobalCacheLocalEntries[0];
 
-        assertTrue(oldGlobalEntry.getLastSeenDateMs() < newGlobalCacheLocalEntry.getLastSeenDateMs());
-        assertTrue(newGlobalCacheLocalEntry.getLastSeenDateMs() < (oldGlobalEntry.getLastSeenDateMs()
-                + 2 * FRESHNESS_UPDATE_INTERVAL_MS));
-        assertTrue(oldGlobalEntry.getExpiryDateMs() < newGlobalCacheLocalEntry.getExpiryDateMs());
-        assertTrue(newGlobalCacheLocalEntry.getExpiryDateMs() < (oldGlobalEntry.getExpiryDateMs()
-                + 2 * FRESHNESS_UPDATE_INTERVAL_MS));
+        assertTrue(minNewLastSeenDate <= newGlobalCacheLocalEntry.getLastSeenDateMs());
+        assertTrue(newGlobalCacheLocalEntry.getLastSeenDateMs() < (oldGlobalEntry.getLastSeenDateMs() + deltaMax));
+        assertTrue(minNewExpiryDate <= newGlobalCacheLocalEntry.getExpiryDateMs());
+        assertTrue(newGlobalCacheLocalEntry.getExpiryDateMs() < (oldGlobalEntry.getExpiryDateMs() + deltaMax));
 
         // Check local store in LCD
         internalDiscoveryQos.setDiscoveryScope(joynr.types.DiscoveryScope.LOCAL_ONLY);
@@ -175,15 +188,17 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
                                                                                  internalDiscoveryQos,
                                                                                  lookupGbids);
         assertEquals(1, newLocalCacheLocalEntries.length);
+        timeAfterSecondLookup = System.currentTimeMillis();
+        deltaMax = timeAfterSecondLookup - timeBeforeFirstLookup + FRESHNESS_UPDATE_INTERVAL_MS;
 
         DiscoveryEntryWithMetaInfo newLocalCacheLocalEntry = newLocalCacheLocalEntries[0];
 
-        assertTrue(oldGlobalEntry.getLastSeenDateMs() < newLocalCacheLocalEntry.getLastSeenDateMs());
-        assertTrue(newLocalCacheLocalEntry.getLastSeenDateMs() < (oldGlobalEntry.getLastSeenDateMs()
-                + 2 * FRESHNESS_UPDATE_INTERVAL_MS));
-        assertTrue(oldGlobalEntry.getExpiryDateMs() < newLocalCacheLocalEntry.getExpiryDateMs());
-        assertTrue(newLocalCacheLocalEntry.getExpiryDateMs() < (oldGlobalEntry.getExpiryDateMs()
-                + 2 * FRESHNESS_UPDATE_INTERVAL_MS));
+        assertTrue(minNewLastSeenDate <= newLocalCacheLocalEntry.getLastSeenDateMs());
+        assertTrue("deltaMax: " + deltaMax,
+                   newLocalCacheLocalEntry.getLastSeenDateMs() < (oldGlobalEntry.getLastSeenDateMs() + deltaMax));
+        assertTrue(minNewExpiryDate <= newLocalCacheLocalEntry.getExpiryDateMs());
+        assertTrue("deltaMax: " + deltaMax,
+                   newLocalCacheLocalEntry.getExpiryDateMs() < (oldGlobalEntry.getExpiryDateMs() + deltaMax));
 
         // Unregister providers to not clutter the JDS
         runtime.unregisterProvider(TEST_DOMAIN, testProvider);
@@ -204,12 +219,14 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         // create first joynr cluster controller runtime
         runtimeFirst = createRuntime();
         // register provider
-        registerProvider(runtimeFirst);
+        try {
+            registerProvider(runtimeFirst);
+        } catch (Exception e) {
+            runtimeFirst.shutdown(true);
+            fail("Provider registration failed: " + e.toString());
+        }
 
         // shutdown first cluster controller
-        if (testProvider != null) {
-            testProvider = null;
-        }
         runtimeFirst.shutdown(false);
 
         // create cluster controller second time
@@ -243,17 +260,13 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
     }
 
     private Injector createInjector() {
-        Module mqttTransportModule = new MqttPahoModule();
-        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(mqttTransportModule,
-                                                                                     new AbstractModule() {
-                                                                                         @Override
-                                                                                         protected void configure() {
-                                                                                             bind(String.class).annotatedWith(Names.named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS))
-                                                                                                               .toInstance(String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
-                                                                                         }
-                                                                                     });
-
-        return new JoynrInjectorFactory(new Properties(), runtimeModule).getInjector();
+        Properties properties = new Properties();
+        properties.put(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS,
+                       String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
+        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule())
+                                      // TODO uncomment code in waitForGlobalConnection() when switching to HivemqMqttClientModule)
+                                      .with(new MqttPahoModule(), new JoynrPropertiesModule(properties));
+        return Guice.createInjector(runtimeModule);
     }
 
     private JoynrRuntime createRuntime() {
@@ -261,7 +274,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         return injector.getInstance(JoynrRuntime.class);
     }
 
-    private void registerProvider(JoynrRuntime runtime) {
+    private void registerProvider(JoynrRuntime runtime) throws Exception {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.GLOBAL);
         providerQos.setPriority(System.currentTimeMillis());
@@ -271,6 +284,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         runtime.getProviderRegistrar(TEST_DOMAIN, testProvider)
                .withProviderQos(providerQos)
                .awaitGlobalRegistration()
-               .register();
+               .register()
+               .get(); // wait for successful registration
     }
 }
