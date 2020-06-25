@@ -29,7 +29,7 @@ function usage
     echo "usage: cpp-build-tests.sh all$joined_tests
         [--additionalcmakeargs <args> Default empty string]
         [--archivebinaries ON|OFF Default $ARCHIVEBINARIES]
-        [--buildtype DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL Default: $BUILDTYPE]
+        [--buildtype Debug|Release|RelWithDebInfo|MinSizeRel Default: $BUILDTYPE]
         [--clangformatter ON|OFF Default $CLANGFORMATTER]
         [--jobs X Default $JOBS]
         [--use-ninja ON|OFF Default: $USE_NINJA]
