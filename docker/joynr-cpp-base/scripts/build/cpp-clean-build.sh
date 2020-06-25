@@ -8,7 +8,7 @@ GCOV='OFF'
 ENABLE_CLANG_FORMATTER='ON'
 BUILD_TESTS='ON'
 ADDITIONAL_CMAKE_ARGS=''
-BUILD_TYPE='DEBUG'
+BUILD_TYPE='Debug'
 USE_NINJA='OFF'
 
 function usage
@@ -17,7 +17,7 @@ function usage
             --jobs X
             --enableclangformatter ON|OFF
             --buildtests ON|OFF
-            [--buildtype [DEBUG|RELEASE|RELWITHDEBINFO|MINSIZEREL] <default: DEBUG>]
+            [--buildtype [Debug|Release|RelWithDebInfo|MinSizeRel] <default: Debug>]
             [--gcov ON|OFF <default: OFF>]
             [--use-ninja ON|OFF <Default: $USE_NINJA>]
             [--additionalcmakeargs <args> <default: "">]"
