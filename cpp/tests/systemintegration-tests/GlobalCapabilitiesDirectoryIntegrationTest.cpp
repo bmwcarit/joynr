@@ -258,23 +258,30 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
 /**
  * Test touching only the providers actually registered in the clustercontroller
  */
-TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouchOnlyUpdatesExistingParticipantIds)
+TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegisteredProvider)
 {
     JOYNR_LOG_DEBUG(logger(), "testTouchOnlyUpdatesExistingParticipantIds started");
     // Setup
-    const std::string domain = "cppTestTouchDomain";
-    auto mockProvider = std::make_shared<MockTestProvider>();
-
-    types::ProviderQos providerQos;
-    auto millisSinceEpoch = TimePoint::now().toMilliseconds();
-    providerQos.setPriority(millisSinceEpoch);
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
-    providerQos.setSupportsOnChangeSubscriptions(true);
+    const std::chrono::milliseconds touchInterval = clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs();
+    const std::vector<std::string> lookupGbids = { messagingSettings.getGbid() };
 
     joynr::DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setDiscoveryTimeoutMs(3000);
+    discoveryQos.setRetryIntervalMs(discoveryQos.getDiscoveryTimeoutMs() + 1);
+    discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
 
+    // register provider
+    const std::string domain = "cppTestTouchDomain";
+    auto mockProvider = std::make_shared<MockTestProvider>();
+
+    types::ProviderQos providerQos;
+    const auto millisSinceEpoch = TimePoint::now().toMilliseconds();
+    providerQos.setPriority(millisSinceEpoch);
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+
+    const auto timeBeforeAdd = TimePoint::now().toMilliseconds();
     const std::string providerParticipantId = runtime->registerProvider<tests::testProvider>(
                 domain,
                 mockProvider,
@@ -282,30 +289,30 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouchOnlyUpdatesExistingP
                 true,
                 true);
 
+    // build GCD proxy
     std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
-            capabilitiesProxyBuilder =
+            gcdProxyBuilder =
                     runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                             messagingSettings.getDiscoveryDirectoriesDomain());
-    const MessagingQos messagingQos;
-    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> cabilitiesProxy(
-            capabilitiesProxyBuilder->setMessagingQos(messagingQos)
+    std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> gcdProxy(
+            gcdProxyBuilder
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
-    auto testProxyBuilder = runtime->createProxyBuilder<system::DiscoveryProxy>(sysSettings.getDomain());
-    std::shared_ptr<system::DiscoveryProxy> lcdProxy = testProxyBuilder->setDiscoveryQos(discoveryQos)->build();
-
-    const std::vector<std::string> lookupGbids = { messagingSettings.getGbid() };
+    // build LCD proxy
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
+    auto lcdProxyBuilder = runtime->createProxyBuilder<system::DiscoveryProxy>(sysSettings.getDomain());
+    std::shared_ptr<system::DiscoveryProxy> lcdProxy = lcdProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 
     JOYNR_LOG_DEBUG(logger(), "performing pre-touch lookup");
     types::GlobalDiscoveryEntry oldEntry;
-    cabilitiesProxy->lookup(oldEntry, providerParticipantId, lookupGbids);
+    gcdProxy->lookup(oldEntry, providerParticipantId, lookupGbids);
 
-    const std::chrono::milliseconds touchInterval = clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs();
+    // wait some time to perform further lookups after at least one touch call
     std::chrono::milliseconds waitTime = touchInterval + touchInterval / 2;
     std::this_thread::sleep_for(waitTime);
 
-    JOYNR_LOG_DEBUG(logger(), "performing post-touch lookup");
+    JOYNR_LOG_DEBUG(logger(), "performing post-touch lookups");
     // check global cache in LCD
     types::DiscoveryQos internalDiscoveryQos;
     internalDiscoveryQos.setCacheMaxAge(std::numeric_limits<std::int64_t>::max());
@@ -319,10 +326,19 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouchOnlyUpdatesExistingP
     JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , cached {}",
                             oldEntry.getExpiryDateMs(),
                             cachedEntry.getExpiryDateMs());
-    EXPECT_TRUE(cachedEntry.getLastSeenDateMs() > oldEntry.getLastSeenDateMs());
-    EXPECT_TRUE(cachedEntry.getLastSeenDateMs() < ( oldEntry.getLastSeenDateMs() + 2 * touchInterval.count()));
-    EXPECT_TRUE(cachedEntry.getExpiryDateMs() > oldEntry.getExpiryDateMs());
-    EXPECT_TRUE(cachedEntry.getExpiryDateMs() < ( oldEntry.getExpiryDateMs() + 2 * touchInterval.count()));
+
+    auto timeAfterSecondLookup = TimePoint::now().toMilliseconds();
+    int64_t deltaMax = timeAfterSecondLookup - timeBeforeAdd;
+
+    // real interval between 2 touch calls might be less than FRESHNESS_UPDATE_INTERVAL_MS because of messaging delays
+    const int64_t minNewLastSeenDate = oldEntry.getLastSeenDateMs() + touchInterval.count() / 2;
+    const int64_t minNewExpiryDate = oldEntry.getExpiryDateMs() + touchInterval.count() / 2;
+    EXPECT_TRUE(cachedEntry.getLastSeenDateMs() > minNewLastSeenDate);
+    EXPECT_TRUE(cachedEntry.getLastSeenDateMs() < (oldEntry.getLastSeenDateMs() + deltaMax))
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+    EXPECT_TRUE(cachedEntry.getExpiryDateMs() > minNewExpiryDate);
+    EXPECT_TRUE(cachedEntry.getExpiryDateMs() < (oldEntry.getExpiryDateMs() + deltaMax))
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
 
     // check local store in LCD
     internalDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
@@ -334,25 +350,37 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouchOnlyUpdatesExistingP
     JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , local {}",
                             oldEntry.getExpiryDateMs(),
                             localEntry.getExpiryDateMs());
-    EXPECT_TRUE(localEntry.getLastSeenDateMs() > oldEntry.getLastSeenDateMs());
-    EXPECT_TRUE(localEntry.getLastSeenDateMs() < ( oldEntry.getLastSeenDateMs() + 2 * touchInterval.count()));
-    EXPECT_TRUE(localEntry.getExpiryDateMs() > oldEntry.getExpiryDateMs());
-    EXPECT_TRUE(localEntry.getExpiryDateMs() < ( oldEntry.getExpiryDateMs() + 2 * touchInterval.count()));
+
+    timeAfterSecondLookup = TimePoint::now().toMilliseconds();
+    deltaMax = timeAfterSecondLookup - timeBeforeAdd;
+
+    EXPECT_TRUE(localEntry.getLastSeenDateMs() > minNewLastSeenDate);
+    EXPECT_TRUE(localEntry.getLastSeenDateMs() < (oldEntry.getLastSeenDateMs() + deltaMax))
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+    EXPECT_TRUE(localEntry.getExpiryDateMs() > minNewExpiryDate);
+    EXPECT_TRUE(localEntry.getExpiryDateMs() < (oldEntry.getExpiryDateMs() + deltaMax))
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
 
     // check entry in GCD
-    types::GlobalDiscoveryEntry result2;
-    cabilitiesProxy->lookup(result2, providerParticipantId, lookupGbids);
+    types::GlobalDiscoveryEntry globalEntry;
+    gcdProxy->lookup(globalEntry, providerParticipantId, lookupGbids);
 
     JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , new {}",
                             oldEntry.getLastSeenDateMs(),
-                            result2.getLastSeenDateMs());
+                            globalEntry.getLastSeenDateMs());
     JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , new {}",
                             oldEntry.getExpiryDateMs(),
-                            result2.getExpiryDateMs());
-    EXPECT_TRUE(result2.getLastSeenDateMs() > oldEntry.getLastSeenDateMs());
-    EXPECT_TRUE(result2.getLastSeenDateMs() < ( oldEntry.getLastSeenDateMs() + 2 * touchInterval.count()));
-    EXPECT_TRUE(result2.getExpiryDateMs() > oldEntry.getExpiryDateMs());
-    EXPECT_TRUE(result2.getExpiryDateMs() < ( oldEntry.getExpiryDateMs() + 2 * touchInterval.count()));
+                            globalEntry.getExpiryDateMs());
+
+    timeAfterSecondLookup = TimePoint::now().toMilliseconds();
+    deltaMax = timeAfterSecondLookup - timeBeforeAdd;
+
+    EXPECT_TRUE(globalEntry.getLastSeenDateMs() > minNewLastSeenDate);
+    EXPECT_TRUE(globalEntry.getLastSeenDateMs() < (oldEntry.getLastSeenDateMs() + deltaMax))
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+    EXPECT_TRUE(globalEntry.getExpiryDateMs() > minNewExpiryDate);
+    EXPECT_TRUE(globalEntry.getExpiryDateMs() < (oldEntry.getExpiryDateMs() + deltaMax))
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
 
     // Unregister providers to not clutter the JDS
     runtime->unregisterProvider(providerParticipantId);
