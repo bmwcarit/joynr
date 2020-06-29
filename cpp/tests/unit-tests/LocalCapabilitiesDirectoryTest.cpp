@@ -891,8 +891,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalEntryByParticipantId_callsMock
                                        gbids,
                                        createUnexpectedLookupParticipantIdSuccessFunction(),
                                        createExpectedDiscoveryErrorFunction(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT));
-
-    //EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGlobalAgain)
@@ -3871,10 +3869,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchWithOnlyGlobalParticipantIds_Ref
             .WillOnce(ReleaseSemaphore(&gcdSemaphore));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
 
-    ASSERT_TRUE(oldLastSeenDate < _locallyRegisteredCapabilities->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
-    ASSERT_TRUE(oldExpiryDate < _locallyRegisteredCapabilities->lookupByParticipantId(participantId2).get().getExpiryDateMs());
-    ASSERT_TRUE(oldLastSeenDate < _globalLookupCache->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
-    ASSERT_TRUE(oldExpiryDate < _globalLookupCache->lookupByParticipantId(participantId2).get().getExpiryDateMs());
+    ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId2)[0].getLastSeenDateMs());
+    ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId2)[0].getExpiryDateMs());
+    ASSERT_TRUE(oldLastSeenDate <
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
+    ASSERT_TRUE(oldExpiryDate <
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId2).get().getExpiryDateMs());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGlobal)

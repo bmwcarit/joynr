@@ -154,8 +154,9 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
                                      std::chrono::system_clock::now().time_since_epoch()).count();
     const std::int64_t newExpiryDateMs = now + _defaultExpiryIntervalMs;
     {
-        std::lock_guard<std::recursive_mutex> lock14(_cacheLock);
-        for (auto entry : *_locallyRegisteredCapabilities) {
+        std::lock_guard<std::recursive_mutex> expiryDateUpdateLock(
+                _localCapabilitiesDirectoryStore->getCacheLock());
+        for (auto entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
             if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
                 entry.setLastSeenDateMs(now);
                 entry.setExpiryDateMs(newExpiryDateMs);
@@ -164,8 +165,8 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
             }
         }
         for (const auto& entry : entries) {
-            _locallyRegisteredCapabilities->insert(entry, entry.gbids);
-            _globalLookupCache->insert(entry);
+            _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(entry);
+            _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(entry, entry.gbids);
         }
     }
 
@@ -299,7 +300,7 @@ void LocalCapabilitiesDirectory::addInternal(
         ]()
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                std::lock_guard<std::recursive_mutex> lock2(
+                std::lock_guard<std::recursive_mutex> cacheInsertionLock(
                         thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
                 JOYNR_LOG_INFO(
                         logger(),
@@ -367,7 +368,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
     std::ignore = onError;
 
     {
-        std::lock_guard<std::recursive_mutex> lock3(
+        std::lock_guard<std::recursive_mutex> providerReregistrationLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
         JOYNR_LOG_DEBUG(logger(), "triggerGlobalProviderReregistration");
         std::vector<types::DiscoveryEntry> entries;
@@ -645,7 +646,6 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
     }
 }
 
-// TODO: ist this required outside of tests?
 bool LocalCapabilitiesDirectory::hasPendingLookups()
 {
     return _lcdPendingLookupsHandler.hasPendingLookups();
@@ -1016,7 +1016,7 @@ void LocalCapabilitiesDirectory::remove(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     {
-        std::lock_guard<std::recursive_mutex> lock7(
+        std::lock_guard<std::recursive_mutex> removeLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
 
         boost::optional<types::DiscoveryEntry> optionalEntry =
@@ -1133,7 +1133,7 @@ void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& 
     }
 
     try {
-        std::lock_guard<std::recursive_mutex> lock8(
+        std::lock_guard<std::recursive_mutex> filePersistencyStorageLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
         joynr::util::saveStringToFile(
                 fileName,
@@ -1168,7 +1168,8 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
         return;
     }
 
-    std::lock_guard<std::recursive_mutex> lock9(_localCapabilitiesDirectoryStore->getCacheLock());
+    std::lock_guard<std::recursive_mutex> filePersistencyRetrievalLock(
+            _localCapabilitiesDirectoryStore->getCacheLock());
 
     try {
         std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities =
@@ -1286,7 +1287,7 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 
     bool fileUpdateRequired = false;
     {
-        std::lock_guard<std::recursive_mutex> lock13(
+        std::lock_guard<std::recursive_mutex> discoveryEntryExpiryCheckLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
 
         auto removedLocalCapabilities =
