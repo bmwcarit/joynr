@@ -33,7 +33,7 @@
 
 #include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/CapabilitiesStorage.h"
-#include "joynr/ClusterControllerDirectories.h"
+#include "joynr/CapabilitiesCache.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/InterfaceAddress.h"
 #include "joynr/JoynrClusterControllerExport.h"
@@ -111,14 +111,6 @@ public:
 
     void shutdown();
 
-    /*
-      * Returns a list of locally cached capabilitiy entries. This method is used
-      * when capabilities from the global directory are received, to check if a new
-      * local provider was registered in the meantime.
-      */
-    std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(const std::string& participantId);
-    std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(
-            const std::vector<InterfaceAddress>& interfaceAddress);
     /*
      * removes all discovery entries
      */
@@ -285,40 +277,15 @@ private:
                         const std::vector<std::string>& gbids,
                         std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
-    bool getLocalAndCachedCapabilities(const std::vector<InterfaceAddress>& interfaceAddress,
-                                       const joynr::types::DiscoveryQos& discoveryQos,
-                                       const std::vector<std::string>& gbids,
-                                       std::shared_ptr<ILocalCapabilitiesCallback> callback);
-    bool getLocalAndCachedCapabilities(const std::string& participantId,
-                                       const joynr::types::DiscoveryQos& discoveryQos,
-                                       const std::vector<std::string>& gbids,
-                                       std::shared_ptr<ILocalCapabilitiesCallback> callback);
     bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
                                 std::vector<types::DiscoveryEntry>&& localCapabilities,
                                 std::vector<types::DiscoveryEntry>&& globalCapabilities,
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
-    void insertInLocalCapabilitiesStorage(const types::DiscoveryEntry& entry);
-    void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
-                                   const std::vector<std::string>& gbids);
-
-    std::vector<types::DiscoveryEntry> searchGlobalCache(
-            const std::vector<InterfaceAddress>& interfaceAddress,
-            const std::vector<std::string>& gbids,
-            std::chrono::milliseconds maxCacheAge);
-    std::vector<types::DiscoveryEntry> searchLocalCache(
-            const std::vector<InterfaceAddress>& interfaceAddress);
-    boost::optional<types::DiscoveryEntry> searchCaches(const std::string& participantId,
-                                                        types::DiscoveryScope::Enum scope,
-                                                        const std::vector<std::string>& gbids,
-                                                        std::chrono::milliseconds maxCacheAge);
-
     ADD_LOGGER(LocalCapabilitiesDirectory)
     std::shared_ptr<IGlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
-    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
-    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
+    CapabilitiesCache _capabilitiesCache;
     std::string _localAddress;
-    mutable std::recursive_mutex _cacheLock;
     std::mutex _pendingLookupsLock;
 
     std::weak_ptr<IMessageRouter> _messageRouter;
@@ -339,7 +306,6 @@ private:
     const std::vector<std::string> _knownGbids;
     std::unordered_set<std::string> _knownGbidsSet;
     const std::int64_t _defaultExpiryIntervalMs;
-    std::unordered_map<std::string, std::vector<std::string>> _globalParticipantIdsToGbidsMap;
     void scheduleFreshnessUpdate();
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
@@ -351,7 +317,6 @@ private:
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::types::DiscoveryError::Enum&)> onError);
     bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
-    std::size_t countGlobalCapabilities() const;
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback

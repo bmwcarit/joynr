@@ -1,6 +1,7 @@
 project(CapabilitiesClient)
 
 set(SOURCES
+    CapabilitiesCache.cpp
     GlobalCapabilitiesDirectoryClient.cpp
     GlobalCapabilitiesDirectoryClient.h
     IGlobalCapabilitiesDirectoryClient.h
