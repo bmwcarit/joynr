@@ -124,13 +124,14 @@ class ITransportStatus;
 
 JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
+        std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
         std::shared_ptr<IKeychain> keyChain,
         MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory,
         std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver,
         std::shared_ptr<ITransportMessageSender> httpMessageSender,
         std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
                 mqttConnectionDataVector)
-        : JoynrRuntimeImpl(*settings, std::move(keyChain)),
+        : JoynrRuntimeImpl(*settings, std::move(onFatalRuntimeError), std::move(keyChain)),
           _joynrDispatcher(),
           _subscriptionManager(),
           _messageSender(),
@@ -224,6 +225,7 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
         Settings::merge(currentSettings, *settings, true);
     }
     return create(std::move(settings),
+                  JoynrRuntime::defaultFatalRuntimeErrorHandler,
                   discoveryEntriesFile,
                   std::move(keyChain),
                   std::move(mqttMessagingSkeletonFactory));
@@ -1079,12 +1081,16 @@ void JoynrClusterControllerRuntime::runForever()
 
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::unique_ptr<Settings> settings,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
         const std::string& discoveryEntriesFile,
         std::shared_ptr<IKeychain> keyChain,
         MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory)
 {
     auto runtime = std::make_shared<JoynrClusterControllerRuntime>(
-            std::move(settings), std::move(keyChain), std::move(mqttMessagingSkeletonFactory));
+            std::move(settings),
+            std::move(onFatalRuntimeError),
+            std::move(keyChain),
+            std::move(mqttMessagingSkeletonFactory));
     runtime->init();
 
     assert(runtime->_localCapabilitiesDirectory);

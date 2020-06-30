@@ -72,9 +72,11 @@ class Address;
 }
 }
 
-LibJoynrRuntime::LibJoynrRuntime(std::unique_ptr<Settings> settings,
-                                 std::shared_ptr<IKeychain> keyChain)
-        : JoynrRuntimeImpl(*settings, std::move(keyChain)),
+LibJoynrRuntime::LibJoynrRuntime(
+        std::unique_ptr<Settings> settings,
+        std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
+        std::shared_ptr<IKeychain> keyChain)
+        : JoynrRuntimeImpl(*settings, std::move(onFatalRuntimeError), std::move(keyChain)),
           _subscriptionManager(nullptr),
           _messageSender(nullptr),
           _joynrDispatcher(nullptr),

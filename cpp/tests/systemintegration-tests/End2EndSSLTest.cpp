@@ -93,7 +93,8 @@ protected:
     void startRuntimes()
     {
         auto ccSettings = std::make_unique<Settings>(std::get<0>(GetParam()));
-        ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::move(ccSettings));
+        ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(
+                std::move(ccSettings), failOnFatalRuntimeError);
         ccRuntime->init();
 
         auto libJoynrSettings = std::make_unique<Settings>(std::get<1>(GetParam()));

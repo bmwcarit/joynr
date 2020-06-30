@@ -27,6 +27,7 @@ namespace joynr
 
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
         const std::string& pathToLibjoynrSettings,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
         const std::string& pathToMessagingSettings,
         std::shared_ptr<IKeychain> keyChain)
 {
@@ -34,19 +35,25 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
     Settings messagingSettings{pathToMessagingSettings};
     Settings::merge(messagingSettings, *settings, false);
 
-    return createRuntime(std::move(settings), std::move(keyChain));
+    return createRuntime(std::move(settings), std::move(onFatalRuntimeError), std::move(keyChain));
 }
 
-std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(std::unique_ptr<Settings> settings,
-                                                          std::shared_ptr<IKeychain> keyChain)
+std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
+        std::unique_ptr<Settings> settings,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
+        std::shared_ptr<IKeychain> keyChain)
 {
     const std::string discoveryEntriesFile("");
-    return std::make_shared<JoynrRuntime>(JoynrClusterControllerRuntime::create(
-            std::move(settings), discoveryEntriesFile, std::move(keyChain)));
+    return std::make_shared<JoynrRuntime>(
+            JoynrClusterControllerRuntime::create(std::move(settings),
+                                                  std::move(onFatalRuntimeError),
+                                                  discoveryEntriesFile,
+                                                  std::move(keyChain)));
 }
 
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         const std::string& pathToLibjoynrSettings,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         const std::string& pathToMessagingSettings,
@@ -55,8 +62,10 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
     std::shared_ptr<JoynrRuntime> runtime;
 
     try {
-        runtime =
-                createRuntime(pathToLibjoynrSettings, pathToMessagingSettings, std::move(keyChain));
+        runtime = createRuntime(pathToLibjoynrSettings,
+                                std::move(onFatalRuntimeError),
+                                pathToMessagingSettings,
+                                std::move(keyChain));
         if (onSuccess) {
             onSuccess();
         }
@@ -70,13 +79,15 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
 
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(
         std::unique_ptr<Settings> settings,
+        std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
         std::shared_ptr<IKeychain> keyChain) noexcept
 {
     std::shared_ptr<JoynrRuntime> runtime;
     try {
-        runtime = createRuntime(std::move(settings), std::move(keyChain));
+        runtime = createRuntime(
+                std::move(settings), std::move(onFatalRuntimeError), std::move(keyChain));
         if (onSuccess) {
             onSuccess();
         }

@@ -53,7 +53,7 @@ public:
     End2EndRPCTest() : domain(), runtime()
     {
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
-                std::make_unique<Settings>(GetParam()));
+                std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError);
         runtime->init();
         domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();
 

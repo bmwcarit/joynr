@@ -118,9 +118,13 @@ The ```main()``` function must setup the configuration (provider domain etc.) an
 As a prerequisite, the **provider** and **consumer domain** need to be defined as shown below.
 
 ```cpp
+    auto onFatalRuntimeError = [](const joynr::exceptions::JoynrRuntimeException& error) {
+        // this lambda will be invoked in exceptional cases that render the runtime inoperable.
+    };
+
     // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
     std::shared_ptr<JoynrRuntime> runtime =
-        JoynrRuntime::createRuntime(pathToLibJoynrSettings[, pathToMessagingSettings]);
+        JoynrRuntime::createRuntime(pathToLibJoynrSettings, onFatalRuntimeError[, pathToMessagingSettings]);
     std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
         runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
@@ -142,6 +146,7 @@ asynchronously:
 
     std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
         pathToLibJoynrSettings,
+        onFatalRuntimeError,
         onSuccess,
         onError,
         pathToMessagingSettings,
@@ -803,10 +808,14 @@ main(int argc, char** argv)
 ### Creating the runtime
 
 ```cpp
+    auto onFatalRuntimeError = [](const joynr::exceptions::JoynrRuntimeException& error) {
+        // this lambda will be invoked in exceptional cases that render the runtime inoperable.
+    };
+
     // setup pathToLibJoynrSettings, and optionally pathToMessagingSettings
     std::shared_ptr<IKeychain> keychain = createMyKeychain();
     std::shared_ptr<JoynrRuntime> runtime =
-        JoynrRuntime::createRuntime(pathToLibJoynrSettings, pathToMessagingSettings, keychain);
+        JoynrRuntime::createRuntime(pathToLibJoynrSettings, onFatalRuntimeError, pathToMessagingSettings, keychain);
 ```
 
 ### The Provider quality of service

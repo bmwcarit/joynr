@@ -384,8 +384,12 @@ protected:
     /**
      * @brief Constructs a JoynrRuntime instance
      * @param settings The system service settings
+     * @param onFatalRuntimeError Called in case a runtime error prevents further communication
      */
-    explicit JoynrRuntimeImpl(Settings& settings, std::shared_ptr<IKeychain> keyChain = nullptr);
+    explicit JoynrRuntimeImpl(
+            Settings& settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
+            std::shared_ptr<IKeychain> keyChain = nullptr);
 
     /** @brief Return an IMessageRouter instance */
     virtual std::shared_ptr<IMessageRouter> getMessageRouter() = 0;
@@ -417,6 +421,8 @@ protected:
     MessagingSettings _messagingSettings;
     /** @brief System services settings */
     SystemServicesSettings _systemServicesSettings;
+    /** @brief User callback invoked in case an error occurs which prevents further communication */
+    std::function<void(const exceptions::JoynrRuntimeException&)> _onFatalRuntimeError;
     /** @brief Address of the dispatcher */
     std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress;
     /** @brief Wrapper for discovery proxies */

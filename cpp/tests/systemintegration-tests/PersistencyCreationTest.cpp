@@ -55,8 +55,8 @@ public:
 
     void init(const std::string& settings)
     {
-        ccRuntime =
-                JoynrClusterControllerRuntime::create(std::make_unique<joynr::Settings>(settings));
+        ccRuntime = JoynrClusterControllerRuntime::create(
+                std::make_unique<joynr::Settings>(settings), failOnFatalRuntimeError);
 
         types::ProviderQos providerQos;
         providerQos.setScope(joynr::types::ProviderScope::LOCAL);

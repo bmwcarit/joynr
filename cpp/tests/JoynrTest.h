@@ -90,7 +90,6 @@ namespace util {
 } // namespace test
 } // namespace joynr
 
-
 inline void compareMutableImmutableMessage(const joynr::MutableMessage& mutableMessage, const joynr::ImmutableMessage& immutableMessage)
 {
     // serialize MutableMessage and compare result with ImmutableMessage
@@ -101,6 +100,10 @@ inline void compareMutableImmutableMessage(const joynr::MutableMessage& mutableM
 inline void compareMutableImmutableMessage(const joynr::MutableMessage& mutableMessage, std::shared_ptr<joynr::ImmutableMessage> immutableMessage)
 {
     compareMutableImmutableMessage(mutableMessage, *immutableMessage);
+}
+
+inline static void failOnFatalRuntimeError(const joynr::exceptions::JoynrRuntimeException& error) {
+    FAIL() << "Unexpected onFatalRuntimeError: " << error.what();
 }
 
 MATCHER_P(ImmutableMessageHasPayload, payload, "") {

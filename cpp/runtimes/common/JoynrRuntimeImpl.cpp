@@ -34,7 +34,10 @@
 namespace joynr
 {
 
-JoynrRuntimeImpl::JoynrRuntimeImpl(Settings& settings, std::shared_ptr<IKeychain> keyChain)
+JoynrRuntimeImpl::JoynrRuntimeImpl(
+        Settings& settings,
+        std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
+        std::shared_ptr<IKeychain> keyChain)
         : _singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
           _proxyFactory(nullptr),
           _requestCallerDirectory(nullptr),
@@ -42,6 +45,7 @@ JoynrRuntimeImpl::JoynrRuntimeImpl(Settings& settings, std::shared_ptr<IKeychain
           _capabilitiesRegistrar(nullptr),
           _messagingSettings(settings),
           _systemServicesSettings(settings),
+          _onFatalRuntimeError(std::move(onFatalRuntimeError)),
           _dispatcherAddress(nullptr),
           _discoveryProxy(nullptr),
           _publicationManager(nullptr),

@@ -68,7 +68,8 @@ public:
         // use wrong broker-url to prevent global communication
         BrokerUrl brokerUrl("mqtt://localhost:12347");
         ccSettings.setBrokerUrl(brokerUrl);
-        ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings));
+        ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(
+                std::move(settings), failOnFatalRuntimeError);
 
         ccRuntime->init();
         ccRuntime->start();
@@ -169,7 +170,8 @@ void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(
     std::string participantId = providerRuntime->registerProvider<vehicle::GpsProvider>(
             domain, mockProvider, providerQos);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(static_cast<std::int64_t>(qosRoundTripTTL) + discoveryTimeoutMs)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(
+            static_cast<std::int64_t>(qosRoundTripTTL) + discoveryTimeoutMs)));
 
     // unregister provider
     providerRuntime->unregisterProvider(participantId);

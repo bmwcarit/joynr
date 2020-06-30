@@ -46,8 +46,10 @@ class JoynrRuntimeException;
 class LibJoynrWebSocketRuntime : public LibJoynrRuntime
 {
 public:
-    LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
-                             std::shared_ptr<IKeychain> keyChain = nullptr);
+    LibJoynrWebSocketRuntime(
+            std::unique_ptr<Settings> settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
+            std::shared_ptr<IKeychain> keyChain = nullptr);
     ~LibJoynrWebSocketRuntime() override;
 
     void shutdown() override;

@@ -31,6 +31,7 @@
 #include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
@@ -338,13 +339,49 @@ public:
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param pathToLibjoynrSettings
+     * @param onFatalRuntimeError Called in case a runtime error prevents further communication
      * @param pathToMessagingSettings
      * @param An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
      */
     static std::shared_ptr<JoynrRuntime> createRuntime(
             const std::string& pathToLibjoynrSettings,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
             const std::string& pathToMessagingSettings = "",
+            std::shared_ptr<IKeychain> keyChain = nullptr);
+
+    /**
+     * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
+     * @param pathToLibjoynrSettings
+     * @param pathToMessagingSettings
+     * @param An optional key chain that is used for websocket connections
+     * @return pointer to a JoynrRuntime instance
+     *
+     * [[deprecated("Use createRuntime(const std::string&, std::function<void(const "
+     *             "joynr::exceptions::JoynrRuntimeException&)>, const std::string&, "
+     *             "std::shared_ptr<IKeychain>) instead.")]]
+     */
+    inline static std::shared_ptr<JoynrRuntime> createRuntime(
+            const std::string& pathToLibjoynrSettings,
+            const std::string& pathToMessagingSettings = "",
+            std::shared_ptr<IKeychain> keyChain = nullptr)
+    {
+        return createRuntime(pathToLibjoynrSettings,
+                             defaultFatalRuntimeErrorHandler,
+                             pathToMessagingSettings,
+                             std::move(keyChain));
+    }
+
+    /**
+     * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
+     * @param settings settings object
+     * @param onFatalRuntimeError Called in case a runtime error prevents further communication
+     * @param An optional key chain that is used for websocket connections
+     * @return pointer to a JoynrRuntime instance
+     */
+    static std::shared_ptr<JoynrRuntime> createRuntime(
+            std::unique_ptr<Settings> settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
             std::shared_ptr<IKeychain> keyChain = nullptr);
 
     /**
@@ -352,17 +389,27 @@ public:
      * @param settings settings object
      * @param An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
+     *
+     * [[deprecated("Use createRuntime(std::unique_ptr<Settings>, std::function<void(const "
+     *             "joynr::exceptions::JoynrRuntimeException&)>, std::shared_ptr<IKeychain>) "
+     *             "instead.")]]
      */
-    static std::shared_ptr<JoynrRuntime> createRuntime(
+    inline static std::shared_ptr<JoynrRuntime> createRuntime(
             std::unique_ptr<Settings> settings,
-            std::shared_ptr<IKeychain> keyChain = nullptr);
+            std::shared_ptr<IKeychain> keyChain = nullptr)
+    {
+        return createRuntime(
+                std::move(settings), defaultFatalRuntimeErrorHandler, std::move(keyChain));
+    }
 
     /**
      * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param pathToLibjoynrSettings Path to lib joynr setting files
+     * @param onFatalRuntimeError Called (after successful setup) in case a runtime error prevents
+     * further communication
      * @param onSuccess Is called when the runtime is available for use
-     * @param onError Is called when an error occurs
+     * @param onError Is called when an error occurs during runtime setup
      * @param pathToMessagingSettings
      * @param An optional key chain that is used for websocket connections
      * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
@@ -370,6 +417,7 @@ public:
      */
     static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
             const std::string& pathToLibjoynrSettings,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
             const std::string& pathToMessagingSettings = "",
@@ -378,18 +426,80 @@ public:
     /**
      * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
-     * @param settings settings object
+     * @param pathToLibjoynrSettings Path to lib joynr setting files
      * @param onSuccess Is called when the runtime is available for use
-     * @param onError Is called when an error occurs
+     * @param onError Is called when an error occurs during runtime setup
+     * @param pathToMessagingSettings
+     * @param An optional key chain that is used for websocket connections
+     * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * onSuccess is called
+     *
+     * [[deprecated("Use createRuntimeAsync(const std::string&, std::function<void(const "
+     *             "joynr::exceptions::JoynrRuntimeException&)>, std::function<void()>, "
+     *             "std::function<void(const exceptions::JoynrRuntimeException&)>, const "
+     *             "std::string&, std::shared_ptr<IKeychain>) instead.")]]
+     */
+    inline static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
+            const std::string& pathToLibjoynrSettings,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
+            const std::string& pathToMessagingSettings = "",
+            std::shared_ptr<IKeychain> keyChain = nullptr) noexcept
+    {
+        return createRuntimeAsync(pathToLibjoynrSettings,
+                                  defaultFatalRuntimeErrorHandler,
+                                  std::move(onSuccess),
+                                  std::move(onError),
+                                  pathToMessagingSettings,
+                                  std::move(keyChain));
+    }
+
+    /**
+     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
+     * will be called when the runtime creation finished.
+     * @param settings settings object
+     * @param onFatalRuntimeError Called (after successful setup) in case a runtime error prevents
+     * further communication
+     * @param onSuccess Is called when the runtime is available for use
+     * @param onError Is called when an error occurs during runtime setup
      * @param An optional key chain that is used for websocket connections
      * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      */
     static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
             std::unique_ptr<Settings> settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
             std::function<void()> onSuccess,
             std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
             std::shared_ptr<IKeychain> keyChain = nullptr) noexcept;
+
+    /**
+     * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
+     * will be called when the runtime creation finished.
+     * @param settings settings object
+     * @param onSuccess Is called when the runtime is available for use
+     * @param onError Is called when an error occurs during runtime setup
+     * @param An optional key chain that is used for websocket connections
+     * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
+     * onSuccess is called
+     *
+     * [[deprecated("Use createRuntimeAsync(std::unique_ptr<Settings>, std::function<void(const "
+     *             "joynr::exceptions::JoynrRuntimeException&)>, std::function<void()>, "
+     *             "std::function<void(const exceptions::JoynrRuntimeException&)>, "
+     *            "std::shared_ptr<IKeychain>) instead.")]]
+     */
+    inline static std::shared_ptr<JoynrRuntime> createRuntimeAsync(
+            std::unique_ptr<Settings> settings,
+            std::function<void()> onSuccess,
+            std::function<void(const exceptions::JoynrRuntimeException& exception)> onError,
+            std::shared_ptr<IKeychain> keyChain = nullptr) noexcept
+    {
+        return createRuntimeAsync(std::move(settings),
+                                  defaultFatalRuntimeErrorHandler,
+                                  std::move(onSuccess),
+                                  std::move(onError),
+                                  std::move(keyChain));
+    }
 
     /**
      * @brief Constructs a JoynrRuntime instance
@@ -398,6 +508,13 @@ public:
     explicit JoynrRuntime(std::shared_ptr<JoynrRuntimeImpl> runtimeImpl)
             : _runtimeImpl(std::move(runtimeImpl))
     {
+    }
+
+    inline static void defaultFatalRuntimeErrorHandler(
+            const exceptions::JoynrRuntimeException& error)
+    {
+        JOYNR_LOG_FATAL(
+                JoynrRuntime::logger(), "Unexpected JOYNR runtime error occured: {}", error.what());
     }
 
 protected:
