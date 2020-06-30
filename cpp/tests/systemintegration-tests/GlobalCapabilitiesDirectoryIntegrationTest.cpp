@@ -84,7 +84,7 @@ public:
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings));
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings), failOnFatalRuntimeError);
         runtime->init();
     }
 
@@ -212,7 +212,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
 
     // Start cluster controller runtime first time
     auto testRuntimeFirst = std::make_shared<JoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(GetParam()));
+            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError);
     testRuntimeFirst->init();
     testRuntimeFirst->start();
 
@@ -229,7 +229,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
 
     // Start cluster controller runtime second time
     auto testRuntimeSecond = std::make_shared<JoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(GetParam()));
+            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError);
     testRuntimeSecond->init();
     testRuntimeSecond->start();
     // wait some time to make sure that removeStale has been published and processed

@@ -184,6 +184,7 @@ public:
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsFilenameMqtt),
+                failOnFatalRuntimeError,
                 nullptr,
                 nullptr,
                 mockHttpMessageReceiver,
@@ -224,6 +225,7 @@ public:
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsFilenameMqttMultipleBackends),
+                failOnFatalRuntimeError,
                 nullptr,
                 nullptr,
                 mockHttpMessageReceiver,
@@ -254,6 +256,7 @@ public:
 
         runtime = std::make_shared<JoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsFilenameHttp),
+                failOnFatalRuntimeError,
                 nullptr,
                 nullptr,
                 mockHttpMessageReceiver,
@@ -296,6 +299,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, loadMultipleAclRclFiles)
 
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
             std::make_unique<Settings>(settingsFilenameMultipleAclRclFiles),
+                failOnFatalRuntimeError,
             nullptr,
             nullptr,
             mockHttpMessageReceiver,
@@ -322,7 +326,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeHttp)
 TEST_F(JoynrClusterControllerRuntimeTest, mqttTlsOnButNoCertificates)
 {
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(settingsFilenameMqttTlsOnNoCertificates));
+            std::make_unique<Settings>(settingsFilenameMqttTlsOnNoCertificates), failOnFatalRuntimeError);
 
     ASSERT_TRUE(runtime != nullptr);
 
@@ -377,6 +381,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
 
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
             std::make_unique<Settings>(settingsFilenameMqtt),
+                failOnFatalRuntimeError,
             nullptr,
             mockMqttMessagingSkeletonFactory,
             mockHttpMessageReceiver,
@@ -425,6 +430,7 @@ TEST_F(JoynrClusterControllerRuntimeTest,
     EXPECT_THROW(
             JoynrClusterControllerRuntime(
                     std::make_unique<Settings>(settingsFilenameMqttMultipleBackendsMisconfigured),
+                    failOnFatalRuntimeError,
                     nullptr,
                     nullptr,
                     mockHttpMessageReceiver,
@@ -462,6 +468,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeAllowsEmptyGbid)
 
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
             std::make_unique<Settings>(settingsFilenameMqttMultipleBackendsEmptyDefaultGbid),
+                failOnFatalRuntimeError,
             nullptr,
             nullptr,
             mockHttpMessageReceiver,

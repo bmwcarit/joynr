@@ -45,7 +45,7 @@ class ITransportStatus;
 
 ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
                                          std::shared_ptr<IKeychain> keyChain)
-        : JoynrRuntimeImpl(*settings),
+        : JoynrRuntimeImpl(*settings, [](const exceptions::JoynrRuntimeException&) {}),
           _keyChain(std::move(keyChain)),
           _clusterControllerSettings(*settings),
           _ownAddress(),

@@ -141,12 +141,14 @@ public:
 
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings1));
+        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(
+                std::move(settings1), failOnFatalRuntimeError);
         runtime1->init();
 
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
+        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(
+                std::move(settings2), failOnFatalRuntimeError);
         runtime2->init();
 
         filterParameters.setCountry("Germany");

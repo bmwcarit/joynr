@@ -47,7 +47,8 @@ public:
                 std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
         Settings settings("test-resources/MqttSystemIntegrationTest1.settings");
         Settings::merge(settings, *integrationSettings, false);
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(integrationSettings));
+        runtime = std::make_shared<JoynrClusterControllerRuntime>(
+                std::move(integrationSettings), failOnFatalRuntimeError);
         runtime->init();
         runtime->start();
     }

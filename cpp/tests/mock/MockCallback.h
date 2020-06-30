@@ -29,6 +29,7 @@
 template <typename ... Ts>
 class MockCallback{
 public:
+    MOCK_METHOD1_T(onFatalRuntimeError, void(const joynr::exceptions::JoynrException& error));
     MOCK_METHOD1_T(onSuccess, void(const Ts&... result));
     MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
 };
@@ -36,6 +37,7 @@ public:
 template <typename T>
 class MockCallback<T&&>{
 public:
+    MOCK_METHOD1_T(onFatalRuntimeError, void(const joynr::exceptions::JoynrException& error));
     MOCK_METHOD1_T(onSuccess, void(const T& result));
     MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
     void onSuccess(T&& result)
@@ -47,6 +49,7 @@ public:
 template <typename T1, typename T2>
 class MockCallback2 {
 public:
+    MOCK_METHOD1_T(onFatalRuntimeError, void(const joynr::exceptions::JoynrException& error));
     MOCK_METHOD2_T(onSuccess, void(const T1& out1, const T2& out2));
     MOCK_METHOD1_T(onError, void(const joynr::exceptions::JoynrException& error));
 };
@@ -54,6 +57,7 @@ public:
 template<>
 class MockCallback<void> {
 public:
+    MOCK_METHOD1(onFatalRuntimeError, void(const joynr::exceptions::JoynrException& error));
     MOCK_METHOD0(onSuccess, void(void));
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrException& error));
 };

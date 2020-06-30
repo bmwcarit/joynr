@@ -43,9 +43,11 @@ protected:
     void SetUp() override
     {
         runtime1 = JoynrRuntime::createRuntime(
-                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"));
+                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"),
+                failOnFatalRuntimeError);
         runtime2 = JoynrRuntime::createRuntime(
-                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"));
+                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"),
+                failOnFatalRuntimeError);
         discoveryQos.setDiscoveryTimeoutMs(100);
         discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
         providerQos.setScope(types::ProviderScope::LOCAL);
@@ -147,8 +149,7 @@ TEST_F(MultipleVersionsTest, twoProxiesOfDifferentVersioningTypesVsOneProvider)
             testDomain, testProvider);
 }
 
-TEST_F(MultipleVersionsTest,
-       twoProvidersOfDifferentVersionsAndTwoFittingProxiesInSingleRuntime)
+TEST_F(MultipleVersionsTest, twoProvidersOfDifferentVersionsAndTwoFittingProxiesInSingleRuntime)
 {
     buildTwoProvidersAndPerformChecks(false);
 }

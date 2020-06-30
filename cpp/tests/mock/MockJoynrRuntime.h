@@ -20,14 +20,26 @@
 #define TESTS_MOCK_MOCKJOYNRRUNTIME_H
 
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include "joynr/JoynrRuntimeImpl.h"
+#include "tests/JoynrTest.h"
 
 class MockJoynrRuntime : public joynr::JoynrRuntimeImpl
 {
 public:
-    MockJoynrRuntime(joynr::Settings& settings) : joynr::JoynrRuntimeImpl(settings) {}
-    MockJoynrRuntime(std::unique_ptr<joynr::Settings> settings) : joynr::JoynrRuntimeImpl(*settings) {}
+    MockJoynrRuntime(joynr::Settings& settings,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&&
+                             onFatalRuntimeError = failOnFatalRuntimeError)
+            : joynr::JoynrRuntimeImpl(settings, std::move(onFatalRuntimeError))
+    {
+    }
+    MockJoynrRuntime(std::unique_ptr<joynr::Settings> settings,
+                     std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&&
+                             onFatalRuntimeError = failOnFatalRuntimeError)
+            : joynr::JoynrRuntimeImpl(*settings, std::move(onFatalRuntimeError))
+    {
+    }
     MOCK_METHOD0(getMessageRouter, std::shared_ptr<joynr::IMessageRouter>());
     MOCK_METHOD0(shutdown, void());
 };

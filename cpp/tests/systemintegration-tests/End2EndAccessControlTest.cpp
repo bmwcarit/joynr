@@ -89,8 +89,8 @@ public:
                 "test-resources/CCSettingsWithAccessControlDisabled.settings");
         settings1->set(ClusterControllerSettings::SETTING_ACL_ENTRIES_DIRECTORY(), ".");
 
-        runtimeAcON = JoynrRuntime::createRuntime(std::move(settings1));
-        runtimeAcOFF = JoynrRuntime::createRuntime(std::move(settings2));
+        runtimeAcON = JoynrRuntime::createRuntime(std::move(settings1), failOnFatalRuntimeError);
+        runtimeAcOFF = JoynrRuntime::createRuntime(std::move(settings2), failOnFatalRuntimeError);
 
         // Create a provider on runtimeAcON and a proxy on runtimeAcOFF
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
@@ -109,7 +109,7 @@ public:
 
         settings->set(MessagingSettings::SETTING_SEND_MSG_RETRY_INTERVAL(), MESSAGINGQOS_TTL / 10);
 
-        runtimeACRetry = JoynrRuntime::createRuntime(std::move(settings));
+        runtimeACRetry = JoynrRuntime::createRuntime(std::move(settings), failOnFatalRuntimeError);
 
         // Create a provider on runtimeACRetry and a proxy on the same runtimeACRetry
         providerQos.setScope(joynr::types::ProviderScope::LOCAL);

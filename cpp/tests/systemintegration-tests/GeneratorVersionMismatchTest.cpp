@@ -34,7 +34,8 @@ class GeneratorVersionMismatchTest : public Test
 public:
     GeneratorVersionMismatchTest() : runtime(), testDomain("testDomain")
     {
-        runtime = JoynrRuntime::createRuntime(std::make_unique<Settings>());
+        runtime =
+                JoynrRuntime::createRuntime(std::make_unique<Settings>(), failOnFatalRuntimeError);
         discoveryQos.setDiscoveryTimeoutMs(100);
         discoveryQos.setDiscoveryScope(joynr::types::DiscoveryScope::LOCAL_ONLY);
     }

@@ -117,6 +117,7 @@ public:
         // runtime can only be created, after MockCommunicationManager has been told to return
         // a channelId for getReceiveChannelId.
         runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings),
+                                                                  failOnFatalRuntimeError,
                                                                   nullptr,
                                                                   nullptr,
                                                                   mockMessageReceiverHttp,

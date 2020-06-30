@@ -44,9 +44,11 @@
 namespace joynr
 {
 
-LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
-                                                   std::shared_ptr<IKeychain> keyChain)
-        : LibJoynrRuntime(std::move(settings), std::move(keyChain)),
+LibJoynrWebSocketRuntime::LibJoynrWebSocketRuntime(
+        std::unique_ptr<Settings> settings,
+        std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
+        std::shared_ptr<IKeychain> keyChain)
+        : LibJoynrRuntime(std::move(settings), std::move(onFatalRuntimeError), std::move(keyChain)),
           _wsSettings(*this->_settings),
           _websocket(nullptr),
           _initializationMsg(),

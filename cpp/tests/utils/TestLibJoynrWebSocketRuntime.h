@@ -30,19 +30,28 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 
+#include "tests/JoynrTest.h"
+
 namespace joynr
 {
 
 class TestLibJoynrWebSocketRuntime : public LibJoynrWebSocketRuntime
 {
-public:
 
-    TestLibJoynrWebSocketRuntime(
-            std::unique_ptr<Settings> settings,
-            std::shared_ptr<IKeychain> keyChain = nullptr)
-        : LibJoynrWebSocketRuntime(
-              std::move(settings),
-              std::move(keyChain))
+public:
+    TestLibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
+                                 std::function<void(const exceptions::JoynrRuntimeException&)>&&
+                                         onFatalRuntimeError = failOnFatalRuntimeError,
+                                 std::shared_ptr<IKeychain> keyChain = nullptr)
+            : LibJoynrWebSocketRuntime(std::move(settings),
+                                       std::move(onFatalRuntimeError),
+                                       std::move(keyChain))
+    {
+    }
+
+    TestLibJoynrWebSocketRuntime(std::unique_ptr<Settings> settings,
+                                 std::shared_ptr<IKeychain> keyChain)
+            : TestLibJoynrWebSocketRuntime(std::move(settings), failOnFatalRuntimeError, keyChain)
     {
     }
 
@@ -50,13 +59,11 @@ public:
     {
         auto semaphore = std::make_shared<Semaphore>();
 
-        LibJoynrWebSocketRuntime::connect([semaphore]()
-        {
-            semaphore->notify();
-        }, [](const exceptions::JoynrRuntimeException& error)
-        {
-            FAIL() << "LibJoynrWebSocketRuntime::connect failed: " << error.getMessage();
-        });
+        LibJoynrWebSocketRuntime::connect(
+                [semaphore]() { semaphore->notify(); },
+                [](const exceptions::JoynrRuntimeException& error) {
+                    FAIL() << "LibJoynrWebSocketRuntime::connect failed: " << error.getMessage();
+                });
 
         return semaphore->waitFor(timeoutMs);
     }

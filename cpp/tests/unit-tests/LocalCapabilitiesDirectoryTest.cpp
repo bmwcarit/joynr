@@ -3703,6 +3703,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnEmptyDomainsVector)
                       &mockCallback,
                       std::placeholders::_1);
 
+    EXPECT_CALL(mockCallback, onFatalRuntimeError(_)).Times(0);
     EXPECT_CALL(mockCallback, onError(_)).Times(0);
     EXPECT_CALL(mockCallback, onSuccess(_)).Times(0);
     EXPECT_THROW(_localCapabilitiesDirectory->lookup(

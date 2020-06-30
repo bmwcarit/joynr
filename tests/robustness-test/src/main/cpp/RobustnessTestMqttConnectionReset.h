@@ -50,7 +50,10 @@ protected:
         std::string pathToMessagingSettings("resources/robustness-tests-consumer.settings");
 
         runtime = joynr::JoynrClusterControllerRuntime::create(
-                std::make_unique<joynr::Settings>(pathToMessagingSettings));
+                std::make_unique<joynr::Settings>(pathToMessagingSettings),
+                [](const joynr::exceptions::JoynrRuntimeException& error) {
+                    FAIL() << "Unexpected onFatalRuntimeError: " << error.what();
+                });
 
         joynr::PosixSignalHandler::setHandleAndRegisterForSignals(runtime);
 

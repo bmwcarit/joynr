@@ -52,8 +52,10 @@ class LibJoynrRuntime : public JoynrRuntimeImpl
 {
 
 public:
-    explicit LibJoynrRuntime(std::unique_ptr<Settings> settings,
-                             std::shared_ptr<IKeychain> keyChain = nullptr);
+    explicit LibJoynrRuntime(
+            std::unique_ptr<Settings> settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
+            std::shared_ptr<IKeychain> keyChain = nullptr);
     ~LibJoynrRuntime() override;
 
     void shutdown() override;

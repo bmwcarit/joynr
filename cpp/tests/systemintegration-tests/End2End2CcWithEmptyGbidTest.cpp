@@ -63,10 +63,10 @@ public:
         assert(!mSettings2.getGbid().empty());
 
         runtime1WithEmptyGbid = std::make_shared<JoynrClusterControllerRuntime>(
-                    std::move(settings1));
+                    std::move(settings1), failOnFatalRuntimeError);
         runtime1WithEmptyGbid->init();
         runtimeWithNonEmptyGbid = std::make_shared<JoynrClusterControllerRuntime>(
-                    std::move(settings2));
+                    std::move(settings2), failOnFatalRuntimeError);
         runtimeWithNonEmptyGbid->init();
 
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);

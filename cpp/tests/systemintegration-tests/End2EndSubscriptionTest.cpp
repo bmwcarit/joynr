@@ -74,14 +74,16 @@ public:
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings1));
+        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(
+                std::move(settings1), failOnFatalRuntimeError);
         runtime1->init();
         runtime1->start();
 
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings2));
+        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(
+                std::move(settings2), failOnFatalRuntimeError);
         runtime2->init();
         runtime2->start();
     }
@@ -314,8 +316,8 @@ TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute)
                    std::string& subscriptionId) {
                 std::shared_ptr<Future<std::string>> subscriptionIdFuture =
                         testProxy->subscribeToEnumAttribute(subscriptionListener, subscriptionQos);
-                JOYNR_EXPECT_NO_THROW(
-                        subscriptionIdFuture->get(static_cast<std::int64_t>(subscribeToAttributeWait), subscriptionId));
+                JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(
+                        static_cast<std::int64_t>(subscribeToAttributeWait), subscriptionId));
             },
             [](std::shared_ptr<tests::testProxy>& testProxy, std::string& subscriptionId) {
                 testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
@@ -337,8 +339,8 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute)
                 std::shared_ptr<Future<std::string>> subscriptionIdFuture =
                         testProxy->subscribeToByteBufferAttribute(
                                 subscriptionListener, subscriptionQos);
-                JOYNR_EXPECT_NO_THROW(
-                        subscriptionIdFuture->get(static_cast<std::int64_t>(subscribeToAttributeWait), subscriptionId));
+                JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(
+                        static_cast<std::int64_t>(subscribeToAttributeWait), subscriptionId));
             },
             [](std::shared_ptr<tests::testProxy>& testProxy, std::string& subscriptionId) {
                 testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);

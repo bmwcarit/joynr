@@ -50,7 +50,7 @@ public:
               semaphore()
     {
         clusterControllerRuntime = std::make_shared<JoynrClusterControllerRuntime>(
-                std::make_unique<Settings>(settingsPath));
+                std::make_unique<Settings>(settingsPath), failOnFatalRuntimeError);
         clusterControllerRuntime->init();
         clusterControllerRuntime->start();
     }

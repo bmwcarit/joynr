@@ -26,6 +26,7 @@
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/ProviderReregistrationControllerProxy.h"
 #include "joynr/DiscoveryQos.h"
+#include "tests/JoynrTest.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
@@ -38,7 +39,8 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     joynr::SystemServicesSettings systemServiceSettings(*integrationSettings);
     const std::string domain(systemServiceSettings.getDomain());
 
-    auto runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(integrationSettings));
+    auto runtime = std::make_shared<JoynrClusterControllerRuntime>(
+            std::move(integrationSettings), failOnFatalRuntimeError);
     runtime->init();
     runtime->start();
 
@@ -67,8 +69,8 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     joynr::SystemServicesSettings systemServiceSettings(*integrationSettings);
     const std::string domain(systemServiceSettings.getDomain());
 
-    auto ccRuntime =
-            std::make_shared<JoynrClusterControllerRuntime>(std::move(integrationSettings));
+    auto ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(
+            std::move(integrationSettings), failOnFatalRuntimeError);
     ccRuntime->init();
     ccRuntime->start();
 
@@ -77,8 +79,7 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
 
     auto wsRuntimeSettings =
             std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
-    auto wsRuntime =
-            std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(wsRuntimeSettings), nullptr);
+    auto wsRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(wsRuntimeSettings));
     ASSERT_TRUE(wsRuntime->connect(std::chrono::seconds(2)));
 
     auto providerReregistrationControllerProxyBuilder =

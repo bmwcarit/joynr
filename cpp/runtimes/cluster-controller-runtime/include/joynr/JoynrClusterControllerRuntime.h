@@ -104,6 +104,7 @@ public:
                     std::uint64_t ttlUplift)>;
     JoynrClusterControllerRuntime(
             std::unique_ptr<Settings> settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
             std::shared_ptr<IKeychain> _keyChain = nullptr,
             MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
             std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
@@ -120,6 +121,7 @@ public:
 
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::unique_ptr<Settings> settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
             const std::string& discoveryEntriesFile = "",
             std::shared_ptr<IKeychain> _keyChain = nullptr,
             MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
