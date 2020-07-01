@@ -38,6 +38,8 @@ class FakeUdsServer {
      */
     private readonly udsPath: string;
 
+    private serverSpy: any;
+
     /**
      * @constructor
      * @param path - path of the unix domain socket
@@ -51,6 +53,20 @@ class FakeUdsServer {
             .on("connection", this.handleConnection)
             .on("error", this.onServerError)
             .on("close", this.onServerClose);
+        // Create a server spy
+        this.serverSpy = {
+            // callback when new connection made, pass no arguments
+            onConnection: jest.fn(),
+            // callback when message from client received
+            // pass two arguments (socket, message)
+            onMessageReceived: jest.fn(),
+            // callback when client disconnected, pass no arguments
+            onClientDisconnected: jest.fn(),
+            // callback when server error occurred, pass single argument (error)
+            onServerError: jest.fn(),
+            // callback when server closed, pass no arguments
+            onServerClose: jest.fn()
+        };
     }
 
     /**
@@ -71,6 +87,10 @@ class FakeUdsServer {
             delete this.clientSocket;
         }
         this.server.close(callback);
+    };
+
+    public getServerSpy = () => {
+        return this.serverSpy;
     };
 
     /**
@@ -99,8 +119,11 @@ class FakeUdsServer {
         console.log("Client connection acknowledged!");
         this.clientSocket = socket;
 
+        // Call server spy function when new connection is made
+        this.serverSpy.onConnection();
+
         // disconnect the socket
-        this.clientSocket.on("end", this.onClientEnd);
+        this.clientSocket.on("end", this.onClientDisconnected);
 
         // Handle data received form the server
         this.clientSocket.on("data", this.onMessageReceived);
@@ -111,8 +134,10 @@ class FakeUdsServer {
      * Close the the established connection with the client.
      * @param socket - connection object representing client
      */
-    private onClientEnd = (): void => {
+    private onClientDisconnected = (): void => {
         console.log("Client disconnected!");
+        // call server spy function when client disconnected
+        this.serverSpy.onClientDisconnected();
         delete this.clientSocket;
     };
 
@@ -122,6 +147,8 @@ class FakeUdsServer {
      * @param msg - message received from the client
      */
     private onMessageReceived = (msg: any): void => {
+        // call server spy function when message received from client
+        this.serverSpy.onMessageReceived(this.clientSocket, msg);
         msg = msg.toString();
         console.log("Message received from client:", msg);
     };
@@ -132,7 +159,9 @@ class FakeUdsServer {
      * @param err - error object called by the server
      */
     private onServerError = (err: Error) => {
-        console.log("Error on server occurred:", err);
+        // call server spy function when server error occurred
+        this.serverSpy.onServerError(err);
+        console.log("Error on the server occurred:", err);
     };
 
     /**
@@ -140,6 +169,8 @@ class FakeUdsServer {
      * It is emitted only when all connections are closed.
      */
     private onServerClose = () => {
+        // call server spy function when server closed
+        this.serverSpy.onServerClose();
         console.log("Server is closed!");
     };
 }
