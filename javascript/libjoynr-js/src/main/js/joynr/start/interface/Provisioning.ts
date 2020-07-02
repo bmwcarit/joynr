@@ -157,11 +157,11 @@ export interface UdsLibJoynrProvisioning extends LibJoynrProvisioning {
          * clientId of the uds connection
          * @default "uuid value will be auto generated"
          */
-        clientId?: number;
+        clientId?: string;
         /**
          * time in milliseconds between reconnect attempts for the uds connection
          * @default 500
          */
-        reconnectSleepTimeMs?: number;
+        connectSleepTimeMs?: number;
     };
 }
