@@ -87,16 +87,9 @@ public:
     virtual void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
                                            const std::vector<std::string>& gbids);
 
-    std::vector<types::DiscoveryEntry> searchGlobalCache(
-            const std::vector<InterfaceAddress>& interfaceAddress,
-            const std::vector<std::string>& gbids,
-            std::chrono::milliseconds maxCacheAge);
     std::vector<types::DiscoveryEntry> searchLocalCache(
             const std::vector<InterfaceAddress>& interfaceAddress);
-    boost::optional<types::DiscoveryEntry> searchCaches(const std::string& participantId,
-                                                        types::DiscoveryScope::Enum scope,
-                                                        const std::vector<std::string>& gbids,
-                                                        std::chrono::milliseconds maxCacheAge);
+
     std::recursive_mutex& getCacheLock();
     void eraseParticipantIdToGbidMapping(const std::string& participantId);
     std::vector<std::string> getGbidsForParticipantId(const std::string& participantId);
@@ -104,6 +97,14 @@ public:
     std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities();
 
 private:
+    boost::optional<types::DiscoveryEntry> searchCaches(const std::string& participantId,
+                                                        types::DiscoveryScope::Enum scope,
+                                                        const std::vector<std::string>& gbids,
+                                                        std::chrono::milliseconds maxCacheAge);
+    std::vector<types::DiscoveryEntry> searchGlobalCache(
+            const std::vector<InterfaceAddress>& interfaceAddress,
+            const std::vector<std::string>& gbids,
+            std::chrono::milliseconds maxCacheAge);
     bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
                                 std::vector<types::DiscoveryEntry>&& localCapabilities,
                                 std::vector<types::DiscoveryEntry>&& globalCapabilities,

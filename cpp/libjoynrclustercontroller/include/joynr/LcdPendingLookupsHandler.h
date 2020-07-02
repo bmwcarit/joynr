@@ -16,6 +16,8 @@
  * limitations under the License.
  * #L%
  */
+#ifndef LCDPENDINGLOOKUPSHANDLER_H
+#define LCDPENDINGLOOKUPSHANDLER_H
 
 #include <unordered_map>
 #include <vector>
@@ -59,3 +61,5 @@ private:
             _pendingLookups;
 };
 }
+
+#endif // LCDPENDINGLOOKUPSHANDLER_H
