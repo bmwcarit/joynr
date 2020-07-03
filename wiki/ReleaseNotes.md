@@ -2,7 +2,7 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
-# joynr 1.15.0
+# joynr 1.14.1
 
 ## API relevant changes
 None.

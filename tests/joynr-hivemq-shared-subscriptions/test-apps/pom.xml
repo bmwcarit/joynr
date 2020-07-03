@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>joynr-hivemq-shared-subscriptions</artifactId>
-		<version>1.15.0-SNAPSHOT</version>
+		<version>1.14.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
