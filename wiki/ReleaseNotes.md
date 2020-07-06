@@ -44,6 +44,8 @@ None.
   Services to be bound either as the system user or as a specific user. The implementation is
   tailored for the CC to run in user 0 (system), and joynr app clients can connect on
   whichever user they decide to in a system with multi-user capabilities.
+* **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
+ tools (4.0.0).
 
 ## Bug fixes
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
