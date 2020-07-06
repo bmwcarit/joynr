@@ -21,6 +21,7 @@ package io.joynr.tools.generator.gradle
 import io.joynr.generator.util.InvocationArguments
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import java.io.File
 
@@ -48,7 +49,7 @@ class JoynrGeneratorArgumentHandler(
      */
     var skip: Property<java.lang.Boolean>,
     var addVersionTo: Property<String>,
-    var extraParameters: Property<Map<*, *>>,
+    var extraParameters: MapProperty<String, String>,
     private val project: Project
 ) {
 
@@ -66,10 +67,6 @@ class JoynrGeneratorArgumentHandler(
 
     fun getGeneratorInvocationArguments(): InvocationArguments {
         val invocationArguments = InvocationArguments()
-        var extraParametersStringMap: Map<String, String> = HashMap()
-        if (extraParameters.isPresent) {
-            extraParametersStringMap = extractStringEntriesFromMap(extraParameters.get())
-        }
         val defaultLanguage =
             if (generationLanguage.orNull == null) DEFAULT_LANGUAGE else generationLanguage.get()
 
@@ -109,9 +106,11 @@ class JoynrGeneratorArgumentHandler(
                     e.printStackTrace()
                 }
             }
-            extraParametersStringMap.forEach { (key, value) ->
-                run {
-                    it.parameter[key] = value
+            if (extraParameters.isPresent) {
+                extraParameters.get().forEach { (key, value) ->
+                    run {
+                        it.parameter[key] = value
+                    }
                 }
             }
         }

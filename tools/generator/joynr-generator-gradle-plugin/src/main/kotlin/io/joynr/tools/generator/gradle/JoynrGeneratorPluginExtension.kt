@@ -71,5 +71,5 @@ open class JoynrGeneratorPluginExtension(project: Project) {
      * Sets extra parameters that may be required by custom generators (optional).
      * In the gradle build file, this has to be set using a Map<String, String> structure.
      */
-    val extraParameters = project.objects.property(Map::class.java)!!
+    val extraParameters = project.objects.mapProperty(String::class.java, String::class.java)!!
 }

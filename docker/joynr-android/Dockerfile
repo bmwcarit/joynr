@@ -19,7 +19,7 @@ RUN chmod 777 -R /data/scripts/build/
 ENV ANDROID_SDK_FILENAME sdk-tools-linux-4333796.zip
 ENV ANDROID_SDK_URL https://dl.google.com/android/repository/${ANDROID_SDK_FILENAME}
 ENV ANDROID_API_LEVEL android-28
-ENV ANDROID_BUILD_TOOLS_VERSION 29.0.0
+ENV ANDROID_BUILD_TOOLS_VERSION 29.0.3
 ENV ANDROID_HOME /opt/android-sdk-linux
 ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 RUN cd /opt \
@@ -32,7 +32,7 @@ RUN cd /opt \
 RUN chown -R root:root ${ANDROID_HOME} \
     && chmod -R 755 ${ANDROID_HOME}
 # set this date to cause android to be updated
-ENV REFRESHED_ANDROID_AT 2019-07-15
+ENV REFRESHED_ANDROID_AT 2020-07-08
 RUN /data/scripts/build/setup-android.sh
 
 RUN date -R > /data/timestamp
