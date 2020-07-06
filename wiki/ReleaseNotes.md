@@ -11,11 +11,6 @@ None.
 * **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
   necessary anymore. The generated code for Java and JEE is identical now.
   See [Generator documentation](generator.md).
-  necessary anymore. The generated code for Java and JEE is identical now.
-  See [Generator documentation](generator.md).
-* **[C++]** Cluster controller now uses the new `touch` and `removeStale` methods of
-  [`GlobalCapabilitiesDirectory.fidl`](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl).
-  The Global Capabilities Directory has to implement version 0.3 of the interface.
 * **[Android]** Added support for multi-user in the Android Binder runtime, allowing Android
   Services to be bound either as the system user or as a specific user. The implementation is
   tailored for the CC to run in user 0 (system), and joynr app clients can connect on
