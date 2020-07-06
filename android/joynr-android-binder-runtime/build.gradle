@@ -51,7 +51,7 @@ allprojects {
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "29.0.0"
+    buildToolsVersion "29.0.3"
 
     defaultConfig {
         minSdkVersion 28

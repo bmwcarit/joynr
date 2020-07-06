@@ -4,7 +4,7 @@ apply plugin: 'io.joynr.tools.generator.joynr-generator-gradle-plugin'
 android {
 
     compileSdkVersion 28
-    buildToolsVersion "29.0.0"
+    buildToolsVersion "29.0.3"
 
     defaultConfig {
         applicationId "io.joynr.android.provider"

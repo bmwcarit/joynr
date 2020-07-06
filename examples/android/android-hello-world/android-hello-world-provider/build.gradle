@@ -15,7 +15,7 @@ buildscript {
 
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.2'
+        classpath 'com.android.tools.build:gradle:4.0.0'
 
         classpath "io.joynr.tools.generator:joynr-generator-gradle-plugin:$joynrVersion"
         classpath "io.joynr.tools.generator:java-generator:$joynrVersion"
