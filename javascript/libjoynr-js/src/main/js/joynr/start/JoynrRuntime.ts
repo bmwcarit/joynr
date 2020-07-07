@@ -47,6 +47,7 @@ import LoggingManager = require("../system/LoggingManager");
 import TypeRegistry = require("./TypeRegistry");
 import { Persistency } from "../../global/interface/Persistency";
 import JoynrStates = require("./JoynrStates");
+import * as UtilInternal from "../util/UtilInternal";
 
 const log = loggingManager.getLogger("joynr.start.JoynrRuntime");
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
@@ -145,13 +146,14 @@ class JoynrRuntime<T extends Provisioning> {
         return persistencyPromise;
     }
 
-    protected initializeComponents(
+    protected createMessageRouter(
         provisioning: T,
-        messageRouterSettings: Omit<MessageRouterSettings, "persistency" | "multicastSkeletons" | "messageQueue">,
-        discovery: DiscoveryStub,
-        typedCapabilities?: DiscoveryEntryWithMetaInfo[]
+        messageRouterSettings: Omit<MessageRouterSettings, "persistency" | "multicastSkeletons" | "messageQueue">
     ): void {
-        this.discovery = discovery;
+        if (UtilInternal.checkNullUndefined(this.persistencyConfig)) {
+            throw new Error("Call initializePersistency before createMessageRouter.");
+        }
+
         const messageQueueSettings: { maxQueueSizeInKBytes?: number } = {};
         if (provisioning.messaging !== undefined && provisioning.messaging.maxQueueSizeInKBytes !== undefined) {
             messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
@@ -162,16 +164,24 @@ class JoynrRuntime<T extends Provisioning> {
         (messageRouterSettings as MessageRouterSettings).messageQueue = new MessageQueue(messageQueueSettings);
 
         this.messageRouter = new MessageRouter(messageRouterSettings as MessageRouterSettings);
+    }
 
-        // link up clustercontroller messaging to dispatcher
-        const messageRouterSkeleton = new InProcessMessagingSkeleton();
-        const messageRouterStub = new InProcessMessagingStub(messageRouterSkeleton);
+    protected initializeComponents(
+        provisioning: T,
+        joynrInstanceId: string,
+        discovery: DiscoveryStub,
+        externalMessagingStub: InProcessMessagingStub,
+        typedCapabilities?: DiscoveryEntryWithMetaInfo[]
+    ): void {
+        if (UtilInternal.checkNullUndefined(this.messageRouter)) {
+            throw new Error("Call createMessageRouter before initializePersistency.");
+        }
 
-        // clustercontroller messaging handled by the messageRouter
-        messageRouterSkeleton.registerListener(this.messageRouter.route);
+        this.discovery = discovery;
+
         const ttlUpLiftMs =
             provisioning.messaging && provisioning.messaging.TTL_UPLIFT ? provisioning.messaging.TTL_UPLIFT : undefined;
-        this.dispatcher = new Dispatcher(messageRouterStub, new PlatformSecurityManager(), ttlUpLiftMs);
+        this.dispatcher = new Dispatcher(externalMessagingStub, new PlatformSecurityManager(), ttlUpLiftMs);
 
         const libjoynrMessagingSkeleton = new InProcessMessagingSkeleton();
         libjoynrMessagingSkeleton.registerListener(this.dispatcher.receive);
@@ -181,7 +191,7 @@ class JoynrRuntime<T extends Provisioning> {
         this.publicationManager = new PublicationManager(
             this.dispatcher,
             this.persistencyConfig.publications,
-            messageRouterSettings.joynrInstanceId
+            joynrInstanceId
         );
 
         this.dispatcher.registerRequestReplyManager(this.requestReplyManager);
