@@ -357,6 +357,17 @@ void LibJoynrMessageRouter::addNextHopToParent(
                                        isGloballyVisible,
                                        std::move(onSuccess),
                                        std::move(onErrorWrapper));
+    } else if (auto udsClientAddress = std::dynamic_pointer_cast<
+                       const joynr::system::RoutingTypes::UdsClientAddress>(_incomingAddress)) {
+        _parentRouter->addNextHopAsync(participantId,
+                                       *udsClientAddress,
+                                       isGloballyVisible,
+                                       std::move(onSuccess),
+                                       std::move(onErrorWrapper));
+    } else if (onError) {
+        std::string errorMsg = "Unsupported incomming address - ";
+        errorMsg += _incomingAddress ? _incomingAddress->toString() : " NULL pointer";
+        onError(joynr::exceptions::ProviderRuntimeException(errorMsg));
     }
 }
 

@@ -63,17 +63,9 @@ class RoutingProxy;
 } // namespace system
 
 /**
-  * Class MessageRouter receives incoming JoynrMessages on the ClusterController
-  * and forwards them either to a remote ClusterController or to a LibJoynr on the machine.
-  *
-  *  1 extracts the destination participant ID and looks up the EndpointAddress in the
-  *MessagingEndpointDirectory
-  *  2 creates a <Middleware>MessagingStub by calling MessagingStubFactory.create(EndpointAddress
-  *addr)
-  *  3 forwards the message using the <Middleware>MessagingStub.send(JoynrMessage msg)
-  *
-  *  In sending, a ThreadPool of default size 6 is used with a 500ms default retry interval.
-  */
+ * LibJoynrMessageRouter implementation which adds hops to its parent and tries to resolve unknown
+ * addresses at its parent
+ */
 
 class JOYNR_EXPORT LibJoynrMessageRouter : public joynr::AbstractMessageRouter
 {

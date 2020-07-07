@@ -68,7 +68,7 @@ public:
             boost::optional<joynr::MessagingQos> qos
         ) noexcept override
     {
-        return addNextHopAsyncMock(
+        return addNextHopAsyncMockWs(
                 participantId,
                 webSocketClientAddress,
                 isGloballyVisible,
@@ -76,9 +76,34 @@ public:
                 std::move(onRuntimeError),
                 std::move(qos));
     }
-    MOCK_METHOD6(addNextHopAsyncMock, std::shared_ptr<joynr::Future<void>>(
+    MOCK_METHOD6(addNextHopAsyncMockWs, std::shared_ptr<joynr::Future<void>>(
             const std::string& participantId,
             const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
+            const bool& isGloballyVisible,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos));
+
+    std::shared_ptr<joynr::Future<void>> addNextHopAsync(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::UdsClientAddress& udsClientAddress,
+            const bool& isGloballyVisible,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos
+        ) noexcept override
+    {
+        return addNextHopAsyncMockUds(
+                participantId,
+                udsClientAddress,
+                isGloballyVisible,
+                std::move(onSuccess),
+                std::move(onRuntimeError),
+                std::move(qos));
+    }
+    MOCK_METHOD6(addNextHopAsyncMockUds, std::shared_ptr<joynr::Future<void>>(
+            const std::string& participantId,
+            const joynr::system::RoutingTypes::UdsClientAddress& udsClientAddress,
             const bool& isGloballyVisible,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
