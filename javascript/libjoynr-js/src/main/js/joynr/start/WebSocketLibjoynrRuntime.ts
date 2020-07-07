@@ -44,6 +44,8 @@ import JoynrMessage from "../../joynr/messaging/JoynrMessage";
 import JoynrRuntime from "./JoynrRuntime";
 import JoynrStates = require("./JoynrStates");
 import LocalDiscoveryAggregator = require("../capabilities/discovery/LocalDiscoveryAggregator");
+import InProcessMessagingSkeleton from "../messaging/inprocess/InProcessMessagingSkeleton";
+import InProcessMessagingStub from "../messaging/inprocess/InProcessMessagingStub";
 
 const log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
@@ -54,7 +56,6 @@ const log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
  *
  * @name WebSocketLibjoynrRuntime
  * @constructor
- * @param {Object} provisioning
  */
 class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisioning> {
     private sharedWebSocket!: SharedWebSocket;
@@ -72,6 +73,7 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
     /**
      * Starts up the libjoynr instance
      *
+     * @param {WebSocketLibjoynrProvisioning} provisioning
      * @returns an A+ promise object, reporting when libjoynr startup is
      *          completed or has failed
      * @throws {Error} if libjoynr is not in SHUTDOWN state
@@ -175,7 +177,21 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
         const localDiscoveryAggregator = new LocalDiscoveryAggregator();
 
         await super.initializePersistency(provisioning);
-        super.initializeComponents(provisioning, messageRouterSettings, localDiscoveryAggregator, typedCapabilities);
+
+        super.createMessageRouter(provisioning, messageRouterSettings);
+
+        const clusterControllerMessagingSkeleton = new InProcessMessagingSkeleton();
+        const clusterControllerMessagingStub = new InProcessMessagingStub(clusterControllerMessagingSkeleton);
+
+        clusterControllerMessagingSkeleton.registerListener(this.messageRouter.route);
+
+        super.initializeComponents(
+            provisioning,
+            messageRouterSettings.joynrInstanceId,
+            localDiscoveryAggregator,
+            clusterControllerMessagingStub,
+            typedCapabilities
+        );
 
         this.webSocketMessagingSkeleton.registerListener(this.messageRouter.route);
 

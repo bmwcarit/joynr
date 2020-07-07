@@ -55,6 +55,8 @@ const JoynrStates: {
 };
 
 import JoynrRuntime from "./JoynrRuntime";
+import InProcessMessagingSkeleton from "../messaging/inprocess/InProcessMessagingSkeleton";
+import InProcessMessagingStub from "../messaging/inprocess/InProcessMessagingStub";
 
 const log = loggingManager.getLogger("joynr.start.InProcessRuntime");
 
@@ -185,7 +187,18 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
             provisioning.gbids || clusterControllerSettings.gbids
         );
 
-        super.initializeComponents(provisioning, messageRouterSettings, capabilityDiscovery);
+        super.createMessageRouter(provisioning, messageRouterSettings);
+
+        const externalMessagingSkeleton = new InProcessMessagingSkeleton();
+        const externalMessagingStub = new InProcessMessagingStub(externalMessagingSkeleton);
+        externalMessagingSkeleton.registerListener(this.messageRouter.route);
+
+        super.initializeComponents(
+            provisioning,
+            messageRouterSettings.joynrInstanceId,
+            capabilityDiscovery,
+            externalMessagingStub
+        );
 
         const mqttMessagingSkeleton = new MqttMessagingSkeleton({
             address: globalClusterControllerAddress,
