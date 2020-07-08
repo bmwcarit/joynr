@@ -30,6 +30,7 @@
 class UdsClientCallbackInterface
 {
 public:
+    virtual ~UdsClientCallbackInterface() = default;
     virtual void connected() = 0;
     virtual void disconnected() = 0;
     virtual void receivedMock(smrf::ByteVector) = 0;

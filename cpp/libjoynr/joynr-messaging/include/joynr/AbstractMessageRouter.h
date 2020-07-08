@@ -74,7 +74,7 @@ class JOYNR_EXPORT AbstractMessageRouter
 {
 
 public:
-    virtual ~AbstractMessageRouter();
+    ~AbstractMessageRouter() override;
     void addProvisionedNextHop(std::string participantId,
                                std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                                bool isGloballyVisible);

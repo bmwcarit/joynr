@@ -85,6 +85,8 @@ struct BaseTestRunner
     {
     }
 
+    virtual ~BaseTestRunner() = default;
+
     template <typename T = FunctionType, typename U = ControlEntry>
     std::enable_if_t<std::is_same<T, tags::Domain>::value, void>
     completeInitializationOfExpectedEntry(U& entry)

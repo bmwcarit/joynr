@@ -31,6 +31,7 @@
 class UdsServerCallbackInterface
 {
 public:
+    virtual ~UdsServerCallbackInterface() = default;
     virtual void connected(const joynr::system::RoutingTypes::UdsClientAddress&,
                            std::shared_ptr<joynr::IUdsSender>) = 0;
     virtual void disconnected(const joynr::system::RoutingTypes::UdsClientAddress&) = 0;

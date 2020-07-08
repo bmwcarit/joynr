@@ -227,6 +227,7 @@ add_compile_options(
     -Werror=implicit-fallthrough
     -Werror=logical-op
     -Werror=missing-include-dirs
+    -Werror=non-virtual-dtor
     -Werror=redundant-decls
     -Werror=shadow
     -Werror=sign-conversion
