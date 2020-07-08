@@ -5,7 +5,10 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.15.0
 
 ## API relevant changes
-None.
+* **[C++]** The `createRuntime` and `createRuntimeAsync` APIs in `JoynrRuntime` now support a 
+  `onFatalRuntimeError` callback, which is invoked in exceptional cases that render the runtime 
+  inoperable. The old APIs without this callback are deprecated now and will be removed in the 
+  future.
 
 ## Other changes
 * **[C++]** Raise required minimum Boost version from 1.58.0 to 1.65.0.
