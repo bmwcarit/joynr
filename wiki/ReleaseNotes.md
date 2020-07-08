@@ -34,7 +34,10 @@ None.
 # joynr 1.14.1
 
 ## API relevant changes
-None.
+* **[C++]** The `createRuntime` and `createRuntimeAsync` APIs in `JoynrRuntime` now support a 
+  `onFatalRuntimeError` callback, which is invoked in exceptional cases that render the runtime 
+  inoperable. The old APIs without this callback are deprecated now and will be removed in the 
+  future.
 
 ## Other changes
 * **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
