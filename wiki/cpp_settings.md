@@ -26,7 +26,7 @@ A settings file is a text file and must have ini-File format, for example
 This setting defines the UDS (server) address as socket path.
 
 * **OPTIONAL**
-* **Sectioname**: `uds`
+* **Section name**: `uds`
 * **Type**: String
 * **Key**: `socket-path`
 * **Default value**: `/var/run/joynr/cluster-controller.sock`
@@ -37,7 +37,7 @@ This setting defines the time to wait between initial UDS (client)
 connection attempts.
 
 * **OPTIONAL**
-* **Sectioname**: `uds`
+* **Section name**: `uds`
 * **Type**: Unsigned integer value as string
 * **Key**: `connect-sleep-time-ms`
 * **Default value**: `500`
@@ -47,7 +47,7 @@ connection attempts.
 This setting defines the client-id of the UDS connection.
 
 * **OPTIONAL**
-* **Sectioname**: `uds`
+* **Section name**: `uds`
 * **Type**: String
 * **Key**: `client-id`
 * **Default value**: `<uuid value will be auto generated>`
@@ -57,10 +57,21 @@ This setting defines the client-id of the UDS connection.
 This setting defines the size of the sending-queue on UDS async-layer.
 
 * **OPTIONAL**
-* **Sectioname**: `uds`
+* **Section name**: `uds`
 * **Type**: Number
 * **Key**: `sending-queue-size`
 * **Default value**: `1024`
+
+### `read-write-timeout`
+
+This setting defines the timeout on read and write operations,
+after which an uds connection is deemed blocked and thus will be closed.
+
+* **OPTIONAL**
+* **Section name**: `uds`
+* **Type**: Unsigned integer value as string
+* **Key**: `read-write-timeout`
+* **Default value**: `1000`
 
 ## Cluster controller setings
 
@@ -70,7 +81,7 @@ This setting defines whether the cluster controller should support
 websocket connections.
 
 * **OPTIONAL**
-* **Sectioname**: `cluster-controller`
+* **Section name**: `cluster-controller`
 * **Type**: Boolean value as string
 * **Key**: `ws-enabled`
 * **Default value**: `true`
@@ -81,7 +92,7 @@ This setting defines whether the cluster controller should support
 uds connections.
 
 * **OPTIONAL**
-* **Sectioname**: `cluster-controller`
+* **Section name**: `cluster-controller`
 * **Type**: Boolean value as string
 * **Key**: `uds-enabled`
 * **Default value**: `true`
