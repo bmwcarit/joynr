@@ -35,6 +35,7 @@
 #include "joynr/ProxyBuilder.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
+#include "joynr/UdsClient.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -53,6 +54,7 @@
 #include "tests/mock/MockTestProvider.h"
 #include "tests/mock/MockTransportMessageReceiver.h"
 #include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/MockUdsClientCallbacks.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
@@ -144,15 +146,20 @@ public:
 
     ~JoynrClusterControllerRuntimeTest()
     {
+        shutdownRuntime();
+        test::util::removeAllCreatedSettingsAndPersistencyFiles();
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(mockHttpMessageReceiver.get()));
+        EXPECT_TRUE(Mock::VerifyAndClearExpectations(mockMqttMessageReceiver.get()));
+    }
+
+    void shutdownRuntime()
+    {
         if (runtime) {
             runtime->deleteChannel();
             runtime->stopExternalCommunication();
             runtime->shutdown();
             test::util::resetAndWaitUntilDestroyed(runtime);
         }
-        test::util::removeAllCreatedSettingsAndPersistencyFiles();
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(mockHttpMessageReceiver.get()));
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(mockMqttMessageReceiver.get()));
     }
 
     void createRuntimeMqtt()
@@ -270,7 +277,7 @@ public:
     void invokeOnSuccessWithGpsLocation(
             std::function<void(const joynr::types::Localisation::GpsLocation location)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
-                    /*onError*/)
+            /*onError*/)
     {
         onSuccess(gpsLocation);
     }
@@ -299,7 +306,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, loadMultipleAclRclFiles)
 
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
             std::make_unique<Settings>(settingsFilenameMultipleAclRclFiles),
-                failOnFatalRuntimeError,
+            failOnFatalRuntimeError,
             nullptr,
             nullptr,
             mockHttpMessageReceiver,
@@ -326,7 +333,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeHttp)
 TEST_F(JoynrClusterControllerRuntimeTest, mqttTlsOnButNoCertificates)
 {
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(settingsFilenameMqttTlsOnNoCertificates), failOnFatalRuntimeError);
+            std::make_unique<Settings>(settingsFilenameMqttTlsOnNoCertificates),
+            failOnFatalRuntimeError);
 
     ASSERT_TRUE(runtime != nullptr);
 
@@ -339,12 +347,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
 {
     auto mockMqttMessagingSkeleton = std::make_shared<MockMqttMessagingSkeleton>();
 
-    auto mockMqttMessagingSkeletonFactory = [mockMqttMessagingSkeleton](
-                                                    std::weak_ptr<IMessageRouter> messageRouter,
-                                                    std::shared_ptr<MqttReceiver> mqttReceiver,
-                                                    const std::string& gbid,
-                                                    const std::string& multicastTopicPrefix,
-                                                    std::uint64_t ttlUplift) {
+    auto mockMqttMessagingSkeletonFactory =
+            [mockMqttMessagingSkeleton](std::weak_ptr<IMessageRouter> messageRouter,
+                                        std::shared_ptr<MqttReceiver> mqttReceiver,
+                                        const std::string& gbid,
+                                        const std::string& multicastTopicPrefix,
+                                        std::uint64_t ttlUplift) {
         std::ignore = messageRouter;
         std::ignore = mqttReceiver;
         std::ignore = multicastTopicPrefix;
@@ -355,9 +363,9 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
 
     smrf::ByteVector msg;
     auto registerReceivedCallbackHelper =
-            [msg](std::function<void(smrf::ByteVector &&)> onMessageReceived) mutable {
-                onMessageReceived(std::move(msg));
-            };
+            [msg](std::function<void(smrf::ByteVector && )> onMessageReceived) mutable {
+        onMessageReceived(std::move(msg));
+    };
 
     mockMqttMultipleConnections.push_back(
             std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
@@ -381,7 +389,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
 
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
             std::make_unique<Settings>(settingsFilenameMqtt),
-                failOnFatalRuntimeError,
+            failOnFatalRuntimeError,
             nullptr,
             mockMqttMessagingSkeletonFactory,
             mockHttpMessageReceiver,
@@ -451,15 +459,13 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeAllowsEmptyGbid)
             mockMqttMultipleConnections[0]);
     connectionDataVector.push_back(connectionData);
 
-    EXPECT_CALL(*connectionDataVector[0], getMqttMessageReceiver())
-            .Times(5)
-            .WillRepeatedly(Return(mockMqttMessageReceiver));
+    EXPECT_CALL(*connectionDataVector[0], getMqttMessageReceiver()).Times(5).WillRepeatedly(
+            Return(mockMqttMessageReceiver));
 
     EXPECT_CALL(*connectionDataVector[0], getMqttMessageSender()).Times(3);
 
-    EXPECT_CALL(*connectionDataVector[0], getMosquittoConnection())
-            .Times(3)
-            .WillRepeatedly(Return(mockMosquittoConnection));
+    EXPECT_CALL(*connectionDataVector[0], getMosquittoConnection()).Times(3).WillRepeatedly(
+            Return(mockMosquittoConnection));
 
     EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
             .WillOnce(::testing::Return(serializedMqttAddress));
@@ -468,7 +474,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeAllowsEmptyGbid)
 
     runtime = std::make_shared<JoynrClusterControllerRuntime>(
             std::make_unique<Settings>(settingsFilenameMqttMultipleBackendsEmptyDefaultGbid),
-                failOnFatalRuntimeError,
+            failOnFatalRuntimeError,
             nullptr,
             nullptr,
             mockHttpMessageReceiver,
@@ -667,7 +673,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
                                                                    200,  // min interval
                                                                    200,  // max interval
                                                                    200   // alert after interval
-            );
+                                                                   );
     auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
@@ -723,7 +729,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
                                                                    100,  // min interval
                                                                    1000, // max interval
                                                                    10000 // alert after interval
-            );
+                                                                   );
     ON_CALL(*mockSubscriptionListener, onReceive(Eq(gpsLocation)))
             .WillByDefault(ReleaseSemaphore(&semaphore));
 
@@ -739,4 +745,34 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
 
     ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
     runtime->unregisterProvider(participantId);
+}
+
+TEST_F(JoynrClusterControllerRuntimeTest, localCommunicationUds)
+{
+    const std::chrono::seconds waitPeriodForClientServerCommunication{5};
+    createRuntimeMqtt();
+    runtime->start();
+    MockUdsClientCallbacks mockClientCallbacks;
+    UdsSettings settings(testSettings);
+    UdsClient client(settings, [](const exceptions::JoynrRuntimeException&) {});
+    client.setConnectCallback(std::bind(&MockUdsClientCallbacks::connected, &mockClientCallbacks));
+    client.setDisconnectCallback(
+            std::bind(&MockUdsClientCallbacks::disconnected, &mockClientCallbacks));
+    client.setReceiveCallback([&mockClientCallbacks](smrf::ByteVector&& val) {
+        mockClientCallbacks.received(std::move(val));
+    });
+
+    Semaphore semaphore;
+    EXPECT_CALL(mockClientCallbacks, connected()).Times(1).WillOnce(
+            InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    client.start();
+    ASSERT_TRUE(semaphore.waitFor(waitPeriodForClientServerCommunication))
+            << "UDS client could not connect.";
+    Mock::VerifyAndClearExpectations(&mockClientCallbacks);
+
+    EXPECT_CALL(mockClientCallbacks, disconnected()).Times(1).WillOnce(
+            InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    shutdownRuntime();
+    ASSERT_TRUE(semaphore.waitFor(waitPeriodForClientServerCommunication))
+            << "UDS client could not disconnected when runtime is shutting down.";
 }

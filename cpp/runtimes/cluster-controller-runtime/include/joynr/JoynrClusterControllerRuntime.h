@@ -39,6 +39,7 @@
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/SystemServicesSettings.h"
+#include "joynr/UdsServer.h"
 #include "joynr/UdsSettings.h"
 #include "joynr/WebSocketSettings.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -72,6 +73,7 @@ class MulticastMessagingSkeletonDirectory;
 class Settings;
 class SubscriptionManager;
 class UdsCcMessagingSkeleton;
+class UdsMessagingStubFactory;
 class WebSocketMessagingStubFactory;
 
 namespace capabilities
@@ -181,8 +183,13 @@ protected:
     std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
     ClusterControllerSettings _clusterControllerSettings;
 
+    // skeleton and stub-factory register methods to the server, hence the server must be removed
+    // first
     UdsSettings _udsSettings;
-    std::shared_ptr<UdsCcMessagingSkeleton> _udsCcMessagingSkeleton;
+    std::shared_ptr<UdsMessagingStubFactory> _udsMessagingStubFactory;
+    std::unique_ptr<UdsCcMessagingSkeleton> _udsCcMessagingSkeleton;
+    std::unique_ptr<UdsServer> _udsServer;
+
     WebSocketSettings _wsSettings;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsCcMessagingSkeleton;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsTLSCcMessagingSkeleton;
@@ -191,8 +198,6 @@ protected:
     bool _doMqttMessaging;
     bool _doHttpMessaging;
     std::shared_ptr<WebSocketMessagingStubFactory> _wsMessagingStubFactory;
-    // TODO
-    // std::shared_ptr<UdsMessagingStubFactory> _udsMessagingStubFactory;
 
     ADD_LOGGER(JoynrClusterControllerRuntime)
 

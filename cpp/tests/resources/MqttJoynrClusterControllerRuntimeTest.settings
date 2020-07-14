@@ -17,3 +17,6 @@ fakeDomain=integrationDomain
 fakeInterfaceName=integrationInterfaceName
 fakeChannelId=End2EndRPCTestRemote
 fakeParticipantId=participantId_End2EndRPCTestRemote
+
+[uds]
+socket-path=./uds-mqtt-test.sock

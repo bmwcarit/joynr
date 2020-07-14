@@ -94,6 +94,7 @@
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
+#include "libjoynr/uds/UdsMessagingStubFactory.h"
 
 #include "libjoynrclustercontroller/ClusterControllerCallContext.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
@@ -157,8 +158,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _doMqttMessaging(false),
           _doHttpMessaging(false),
           _wsMessagingStubFactory(),
-          // TODO
-          // _udsMessagingStubFactory(),
           _multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
           _ccMessageRouter(nullptr),
@@ -484,16 +483,12 @@ void JoynrClusterControllerRuntime::init()
     }
 
     if (_clusterControllerSettings.isUdsEnabled()) {
-        // TODO setup CC Uds interface
-        JOYNR_LOG_INFO(logger(), "Uds not implemented yet.");
-        //_udsMessagingStubFactory = std::make_shared<UdsMessagingStubFactory>();
-        //_udsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-        //        const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
-        //        destinationAddress) {
-        //    messagingStubFactory->remove(destinationAddress);
-        //});
+        _udsMessagingStubFactory = std::make_unique<UdsMessagingStubFactory>();
+        _udsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
+                const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                        destinationAddress) { messagingStubFactory->remove(destinationAddress); });
 
-        // messagingStubFactory->registerStubFactory(_udsMessagingStubFactory);
+        messagingStubFactory->registerStubFactory(_udsMessagingStubFactory);
     }
 
     /* LibJoynr */
@@ -967,8 +962,25 @@ void JoynrClusterControllerRuntime::startLocalCommunication()
             _wsCcMessagingSkeleton->init();
         }
     }
-    if (_clusterControllerSettings.isUdsEnabled()) {
-        _udsCcMessagingSkeleton = std::make_shared<UdsCcMessagingSkeleton>(_ccMessageRouter);
+    if (_udsMessagingStubFactory) {
+        //_udsMessagingStubFactory only created if UDS is enabled
+        _udsCcMessagingSkeleton = std::make_unique<UdsCcMessagingSkeleton>(_ccMessageRouter);
+
+        _udsServer =
+                std::make_unique<UdsServer>(_udsSettings); // Stops implicitly old server if exists
+        _udsServer->setConnectCallback([this](const system::RoutingTypes::UdsClientAddress& address,
+                                              std::shared_ptr<IUdsSender> sender) {
+            _udsMessagingStubFactory->addClient(address, std::move(sender));
+        });
+        _udsServer->setDisconnectCallback(
+                [this](const system::RoutingTypes::UdsClientAddress& address) {
+                    _udsMessagingStubFactory->onMessagingStubClosed(address);
+                });
+        _udsServer->setReceiveCallback([this](
+                const system::RoutingTypes::UdsClientAddress&, smrf::ByteVector&& newMessage) {
+            _udsCcMessagingSkeleton->onMessageReceived(std::move(newMessage));
+        });
+        _udsServer->start();
     }
 }
 
@@ -1034,10 +1046,7 @@ void JoynrClusterControllerRuntime::shutdown()
         _wsTLSCcMessagingSkeleton->shutdown();
     }
 
-    // TODO shutdown UdsClient / UdsSender / UdsReceiver ?!?
-    // if (_udsCcMessagingSkeleton) {
-    //    _udsCcMessagingSkeleton->shutdown();
-    //}
+    _udsServer.reset();
 
     unregisterInternalSystemServiceProviders();
 
