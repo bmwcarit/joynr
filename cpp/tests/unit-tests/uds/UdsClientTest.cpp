@@ -63,6 +63,8 @@ TEST_F(UdsClientTest, clientCallbacks)
     Mock::VerifyAndClearExpectations(&mockUdsClientCallbacks);
 
     EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(1);
+    // On an expected connection loss, no fatal runtime error is signaled
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(0);
     client.reset();
     ASSERT_EQ(countServerConnections(0), 0);
 }
@@ -77,7 +79,9 @@ TEST_F(UdsClientTest, clientCallbackServerClosesConnection)
     ASSERT_EQ(countServerConnections(1), 1);
     Mock::VerifyAndClearExpectations(&mockUdsClientCallbacks);
 
-    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(1).WillOnce(
+    Sequence sequence;
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(1).InSequence(sequence);
+    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(1).InSequence(sequence).WillOnce(
             InvokeWithoutArgs(&semaphore, &Semaphore::notify));
     stopServer();
     EXPECT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))

@@ -56,7 +56,9 @@ public:
     using Disconnected = std::function<void()>;
     using Received = std::function<void(smrf::ByteVector&&)>;
 
-    explicit UdsClient(const UdsSettings& settings) noexcept;
+    explicit UdsClient(const UdsSettings& settings,
+                       const std::function<void(const exceptions::JoynrRuntimeException&)>&
+                               onFatalRuntimeError) noexcept;
     virtual ~UdsClient();
 
     // Client cannot be copied since it has internal threads
@@ -64,6 +66,9 @@ public:
 
     UdsClient(UdsClient&&) = default;
     UdsClient& operator=(UdsClient&&) = default;
+
+    /** @return Address of this client */
+    system::RoutingTypes::UdsClientAddress getAddress() const noexcept;
 
     /**
      * Called uppon sucessful connection
@@ -98,12 +103,15 @@ private:
     void doReadBody();
     void doWriteInit();
     void doWrite();
+    void doHandleFatalError(const std::string& errorMessage, const std::exception& error) noexcept;
+    void doHandleFatalError(const std::string& errorMessage) noexcept;
 
     static constexpr int _threadsPerConnection = 1;
+    std::function<void(const exceptions::JoynrRuntimeException&)> _fatalRuntimeErrorCallback;
     Connected _connectedCallback;
     Disconnected _disconnectedCallback;
     Received _receivedCallback;
-    std::string _id;
+    system::RoutingTypes::UdsClientAddress _address;
     std::chrono::milliseconds _connectSleepTime;
 
     // PIMPL to keep includes clean
@@ -113,7 +121,7 @@ private:
     boost::asio::local::stream_protocol::endpoint _endpoint;
     boost::asio::io_service _ioContext;
     boost::asio::local::stream_protocol::socket _socket;
-    enum class State : unsigned char { START, CONNECTED, STOP };
+    enum class State : unsigned char { START, CONNECTED, STOP, FAILED };
     std::atomic<State> _state;
     std::future<void> _worker;
 

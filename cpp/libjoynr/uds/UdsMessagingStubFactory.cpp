@@ -30,12 +30,24 @@ namespace joynr
 
 UdsMessagingStubFactory::UdsMessagingStubFactory()
         : IMiddlewareMessagingStubFactory(),
+          _onMessagingStubClosedCallback(nullptr),
           _serverStubMap(),
           _serverStubMapMutex(),
           _clientStubMap(),
-          _clientStubMapMutex(),
-          _onMessagingStubClosedCallback(nullptr)
+          _clientStubMapMutex()
 {
+}
+
+UdsMessagingStubFactory::~UdsMessagingStubFactory()
+{
+    {
+        std::lock_guard<std::mutex> lock(_clientStubMapMutex);
+        _clientStubMap.clear();
+    }
+    {
+        std::lock_guard<std::mutex> lock(_serverStubMapMutex);
+        _serverStubMap.clear();
+    }
 }
 
 bool UdsMessagingStubFactory::canCreate(const joynr::system::RoutingTypes::Address& destAddress)

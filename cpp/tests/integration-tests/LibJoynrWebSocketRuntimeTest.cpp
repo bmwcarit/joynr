@@ -28,7 +28,7 @@
 
 #include "tests/JoynrTest.h"
 
-TEST(LibJoynrRuntimeTest, destroyRuntimeWithoutInitCall)
+TEST(LibJoynrWebSocketRuntimeTest, destroyRuntimeWithoutInitCall)
 {
     auto settings = std::make_unique<joynr::Settings>();
     joynr::MessagingSettings messagingSettings(*settings);

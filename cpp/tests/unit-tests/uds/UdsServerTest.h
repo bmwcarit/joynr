@@ -185,8 +185,14 @@ public:
 
     void restartClient()
     {
+        // This test is for the server, not for the client. The latter one just acts as a nominal
+        // counter part.
+        static std::function<void(const joynr::exceptions::JoynrRuntimeException&)>
+                ignoreClientFatalRuntimeErrors =
+                        [](const joynr::exceptions::JoynrRuntimeException&) {};
+
         _clientConnected.store(false);
-        _client = std::make_unique<joynr::UdsClient>(_settings);
+        _client = std::make_unique<joynr::UdsClient>(_settings, ignoreClientFatalRuntimeErrors);
         _client->setConnectCallback([this]() { _clientConnected.store(true); });
         _client->setDisconnectCallback([this]() { _clientConnected.store(false); });
         _client->setReceiveCallback([this](smrf::ByteVector&& message) mutable {

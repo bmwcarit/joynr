@@ -48,7 +48,7 @@ class UdsMessagingStubFactory : public IMiddlewareMessagingStubFactory
 
 public:
     UdsMessagingStubFactory();
-    virtual ~UdsMessagingStubFactory() = default;
+    virtual ~UdsMessagingStubFactory();
     virtual std::shared_ptr<IMessagingStub> create(
             const joynr::system::RoutingTypes::Address& destAddress) override;
     virtual bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
@@ -63,14 +63,14 @@ public:
             override;
 
 private:
+    std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
+                               destinationAddress)> _onMessagingStubClosedCallback;
     std::unordered_map<joynr::system::RoutingTypes::UdsAddress, std::shared_ptr<IMessagingStub>>
             _serverStubMap;
     std::mutex _serverStubMapMutex;
     std::unordered_map<joynr::system::RoutingTypes::UdsClientAddress,
                        std::shared_ptr<IMessagingStub>> _clientStubMap;
     std::mutex _clientStubMapMutex;
-    std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
-                               destinationAddress)> _onMessagingStubClosedCallback;
 
     ADD_LOGGER(UdsMessagingStubFactory)
 };

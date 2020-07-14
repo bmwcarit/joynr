@@ -22,8 +22,9 @@
 #include <gtest/gtest.h>
 
 #include "joynr/UdsSettings.h"
-#include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/Settings.h"
+#include "joynr/system/RoutingTypes/UdsAddress.h"
+#include "joynr/system/RoutingTypes/UdsClientAddress.h"
 
 #include "tests/PrettyPrint.h"
 
@@ -117,4 +118,20 @@ TEST_F(UdsSettingsTest, createsUdsAddress)
     const system::RoutingTypes::UdsAddress udsAddress =
             udsSettings.createClusterControllerMessagingAddress();
     EXPECT_EQ(expectedMessagingAddress, udsAddress);
+}
+
+TEST_F(UdsSettingsTest, createClientMessagingAddress)
+{
+    const std::string expectedClientId("some-non-random-client-id");
+    Settings testSettings(testSettingsFileName);
+    UdsSettings udsSettings(testSettings);
+    EXPECT_NE(expectedClientId, udsSettings.getClientId());
+
+    const joynr::system::RoutingTypes::UdsClientAddress expectedAddress(expectedClientId);
+
+    udsSettings.setClientId(expectedClientId);
+
+    const auto createdAddress =
+            udsSettings.createClientMessagingAddress();
+    EXPECT_EQ(expectedAddress, createdAddress);
 }

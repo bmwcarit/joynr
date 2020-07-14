@@ -26,7 +26,6 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "websocket-cc-tls.settings"
         "websocket-libjoynr-tls.settings"
         "websocket-libjoynr-non-tls.settings"
-        "uds-cc.settings"
         "uds-libjoynr.settings"
         "CCSettingsWithAccessControlDisabled.settings"
         "CCSettingsWithAccessControlEnabled.settings"
@@ -367,6 +366,7 @@ if(${BUILD_INTEGRATION_TESTS})
     # not from JoynrWsRuntime. Therefore, do not link Joynr::JoynrWsRuntime.
     target_link_objlibraries(g_IntegrationTests
         PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
+        PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
     )
 
     target_include_directories(
@@ -408,6 +408,7 @@ if(${BUILD_SYSTEM_INTEGRATION_TESTS})
     # not from JoynrWsRuntime. Therefore, do not link Joynr::JoynrWsRuntime.
     target_link_objlibraries(g_SystemIntegrationTests
         PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
+        PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
     )
 
     target_include_directories(

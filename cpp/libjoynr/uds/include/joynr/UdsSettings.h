@@ -35,6 +35,8 @@ namespace system
 namespace RoutingTypes
 {
 class UdsAddress;
+class UdsClientAddress;
+
 } // namespace RoutingTypes
 } // namespace system
 
@@ -55,6 +57,7 @@ public:
     void setSocketPath(const std::string& filePath);
 
     system::RoutingTypes::UdsAddress createClusterControllerMessagingAddress() const;
+    system::RoutingTypes::UdsClientAddress createClientMessagingAddress() const;
 
     static const std::string& SETTING_CONNECT_SLEEP_TIME_MS();
     static std::chrono::milliseconds DEFAULT_CONNECT_SLEEP_TIME_MS();

@@ -25,6 +25,7 @@
 #include "joynr/Settings.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
+#include "joynr/system/RoutingTypes/UdsClientAddress.h"
 
 namespace joynr
 {
@@ -187,6 +188,11 @@ void UdsSettings::setReadWriteTimeout(const std::chrono::milliseconds timeout)
 joynr::system::RoutingTypes::UdsAddress UdsSettings::createClusterControllerMessagingAddress() const
 {
     return system::RoutingTypes::UdsAddress(getSocketPath());
+}
+
+system::RoutingTypes::UdsClientAddress UdsSettings::createClientMessagingAddress() const
+{
+    return system::RoutingTypes::UdsClientAddress(getClientId());
 }
 
 bool UdsSettings::contains(const std::string& key) const

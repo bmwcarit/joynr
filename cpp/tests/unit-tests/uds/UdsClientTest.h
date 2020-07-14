@@ -82,7 +82,9 @@ protected:
         return sum;
     }
 
-    std::unique_ptr<joynr::UdsClient> createClient()
+    std::unique_ptr<joynr::UdsClient> createClient(
+            std::function<void(const joynr::exceptions::JoynrRuntimeException&)>
+                    onFatalRuntimeError = [](const joynr::exceptions::JoynrRuntimeException&) {})
     {
         auto newClientSettings = _settings;
         {
@@ -90,13 +92,14 @@ protected:
             newClientSettings.setClientId(std::string("Client-ID ") +
                                           std::to_string(_connectedClients.size()));
         }
-        auto result = std::make_unique<joynr::UdsClient>(_settings);
+        auto result = std::make_unique<joynr::UdsClient>(_settings, onFatalRuntimeError);
         return result;
     }
 
     std::unique_ptr<joynr::UdsClient> createClient(MockUdsClientCallbacks& mock)
     {
-        auto result = createClient();
+        auto result = createClient(std::bind(
+                &MockUdsClientCallbacks::fatalRuntimeError, &mock, std::placeholders::_1));
         result->setConnectCallback(std::bind(&MockUdsClientCallbacks::connected, &mock));
         result->setDisconnectCallback(std::bind(&MockUdsClientCallbacks::disconnected, &mock));
         result->setReceiveCallback(

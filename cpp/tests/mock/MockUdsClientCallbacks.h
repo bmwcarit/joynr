@@ -38,6 +38,7 @@ public:
         receivedMock(std::move(msg));
     }
     virtual void sendFailed(const joynr::exceptions::JoynrRuntimeException&) = 0;
+    virtual void fatalRuntimeError(const joynr::exceptions::JoynrRuntimeException&) = 0;
 };
 
 class MockUdsClientCallbacks : public UdsClientCallbackInterface
@@ -47,5 +48,6 @@ public:
     MOCK_METHOD0(disconnected, void());
     MOCK_METHOD1(receivedMock, void(smrf::ByteVector));
     MOCK_METHOD1(sendFailed, void(const joynr::exceptions::JoynrRuntimeException&));
+    MOCK_METHOD1(fatalRuntimeError, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 #endif // TESTS_MOCK_MOCKUDSCLIENTCALLBACKS_H
