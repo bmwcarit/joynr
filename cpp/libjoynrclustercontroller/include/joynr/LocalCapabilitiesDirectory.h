@@ -297,7 +297,7 @@ private:
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
 
-    void addInternal(const joynr::types::DiscoveryEntry& entry,
+    void addInternal(joynr::types::DiscoveryEntry entry,
                      bool awaitGlobalRegistration,
                      const std::vector<std::string>& gbids,
                      std::function<void()> onSuccess,
