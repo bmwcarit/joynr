@@ -74,7 +74,7 @@ public:
               discoveryQos(),
               discoveryProxyBuilder(nullptr),
               discoveryProxy(nullptr),
-              lastSeenDateMs(-1),
+              lastSeenDateMs(TimePoint::now().toMilliseconds()),
               expiryDateMs(-1),
               publicKeyId(""),
               globalMqttTopic("mqtt_SystemServicesDiscoveryTest.topic"),
@@ -152,6 +152,72 @@ public:
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
+protected:
+    void genericAddLookupRemoveDiscoveryEntryTest(std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result,
+                                                  std::string domain,
+                                                  std::string interfaceName,
+                                                  joynr::types::DiscoveryQos discoveryQosLocal) {
+        discoveryProxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(5000))
+                                 ->setDiscoveryQos(discoveryQos)
+                                 ->build();
+
+        std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
+        joynr::types::ProviderQos providerQos(
+                std::vector<joynr::types::CustomParameter>(), // custom provider parameters
+                1,                                            // priority
+                joynr::types::ProviderScope::LOCAL,           // scope for provider registration
+                false // provider supports on change subscriptions
+                );
+        joynr::types::Version providerVersion(47, 11);
+        joynr::types::DiscoveryEntry discoveryEntry(providerVersion,
+                                                    domain,
+                                                    interfaceName,
+                                                    participantId,
+                                                    providerQos,
+                                                    lastSeenDateMs,
+                                                    expiryDateMs,
+                                                    publicKeyId);
+        std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
+        auto expectedEntry = util::convert(true, discoveryEntry);
+        expectedResult.push_back(expectedEntry);
+
+        try {
+            discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQosLocal);
+        } catch (const exceptions::JoynrException& e) {
+            ADD_FAILURE() << "lookup was not successful";
+        }
+        EXPECT_TRUE(result.empty());
+
+        try {
+            discoveryProxy->add(discoveryEntry);
+        } catch (const exceptions::JoynrException& e) {
+            ADD_FAILURE() << "add was not successful";
+        }
+
+        try {
+            discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQosLocal);
+        } catch (const exceptions::JoynrException& e) {
+            ADD_FAILURE() << "lookup was not successful";
+        }
+        EXPECT_EQ(expectedResult.size(), result.size());
+        EXPECT_EQ(expectedResult[0].getProviderVersion(), result[0].getProviderVersion());
+        EXPECT_EQ(expectedResult[0].getDomain(), result[0].getDomain());
+        EXPECT_EQ(expectedResult[0].getInterfaceName(), result[0].getInterfaceName());
+        EXPECT_EQ(expectedResult[0].getParticipantId(), result[0].getParticipantId());
+        EXPECT_EQ(expectedResult[0].getQos(), result[0].getQos());
+        EXPECT_TRUE(expectedResult[0].getLastSeenDateMs() <= result[0].getLastSeenDateMs() &&
+                    result[0].getLastSeenDateMs() <= (expectedResult[0].getLastSeenDateMs() + 5000));
+        EXPECT_EQ(expectedResult[0].getExpiryDateMs(), result[0].getExpiryDateMs());
+        EXPECT_EQ(expectedResult[0].getPublicKeyId(), result[0].getPublicKeyId());
+
+        // cleanup after test
+        try {
+            discoveryProxy->remove(participantId);
+        } catch (const exceptions::JoynrException& e) {
+            ADD_FAILURE() << "remove was not successful";
+        }
+    }
+
 private:
     DISALLOW_COPY_AND_ASSIGN(SystemServicesDiscoveryTest);
     const std::string globalMqttTopic;
@@ -193,125 +259,34 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknownParticipantReturnsEmptyResult)
 
 TEST_F(SystemServicesDiscoveryTest, add)
 {
-    discoveryProxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(5000))
-                             ->setDiscoveryQos(discoveryQos)
-                             ->build();
-
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
-    std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
-    joynr::types::DiscoveryQos discoveryQos(
+    joynr::types::DiscoveryQos discoveryQosLocal(
             5000,                                     // max cache age
             5000,                                     // discovery ttl
             joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
             false // provider must support on change subscriptions
             );
-    joynr::types::ProviderQos providerQos(
-            std::vector<joynr::types::CustomParameter>(), // custom provider parameters
-            1,                                            // priority
-            joynr::types::ProviderScope::LOCAL,           // scope for provider registration
-            false // provider supports on change subscriptions
-            );
-    joynr::types::Version providerVersion(47, 11);
-    joynr::types::DiscoveryEntry discoveryEntry(providerVersion,
-                                                domain,
-                                                interfaceName,
-                                                participantId,
-                                                providerQos,
-                                                lastSeenDateMs,
-                                                expiryDateMs,
-                                                publicKeyId);
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
-    auto expectedEntry = util::convert(true, discoveryEntry);
-    expectedResult.push_back(expectedEntry);
-
-    try {
-        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "lookup was not successful";
-    }
-    EXPECT_TRUE(result.empty());
-
-    try {
-        discoveryProxy->add(discoveryEntry);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "add was not successful";
-    }
-
-    try {
-        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "lookup was not successful";
-    }
-    EXPECT_EQ(expectedResult, result);
-
-    // cleanup after test
-    try {
-        discoveryProxy->remove(participantId);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "remove was not successful";
-    }
+    genericAddLookupRemoveDiscoveryEntryTest(result, domain, interfaceName, discoveryQosLocal);
 }
 
 TEST_F(SystemServicesDiscoveryTest, remove)
 {
-    discoveryProxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(5000))
-                             ->setDiscoveryQos(discoveryQos)
-                             ->build();
-
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
     std::string domain("SystemServicesDiscoveryTest.Domain.A");
     std::string interfaceName("SystemServicesDiscoveryTest.InterfaceName.A");
-    std::string participantId("SystemServicesDiscoveryTest.ParticipantID.A");
-    joynr::types::DiscoveryQos discoveryQos(
+    joynr::types::DiscoveryQos discoveryQosLocal(
             5000,                                     // max cache age
             5000,                                     // discovery ttl
             joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
             false // provider must support on change subscriptions
             );
-    joynr::types::ProviderQos providerQos(
-            std::vector<joynr::types::CustomParameter>(), // custom provider parameters
-            1,                                            // priority
-            joynr::types::ProviderScope::LOCAL,           // scope for provider registration
-            false // provider supports on change subscriptions
-            );
-    joynr::types::Version providerVersion(47, 11);
-    joynr::types::DiscoveryEntry discoveryEntry(providerVersion,
-                                                domain,
-                                                interfaceName,
-                                                participantId,
-                                                providerQos,
-                                                lastSeenDateMs,
-                                                expiryDateMs,
-                                                publicKeyId);
-
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
-    auto expectedEntry = util::convert(true, discoveryEntry);
-    expectedResult.push_back(expectedEntry);
-
-    try {
-        discoveryProxy->add(discoveryEntry);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "add was not successful";
-    }
-
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
-    try {
-        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "lookup was not successful";
-    }
-    EXPECT_EQ(expectedResult, result);
-
-    try {
-        discoveryProxy->remove(participantId);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "remove was not successful";
-    }
+    genericAddLookupRemoveDiscoveryEntryTest(result, domain, interfaceName, discoveryQosLocal);
 
     result.clear();
     try {
-        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
+        discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQosLocal);
     } catch (const exceptions::JoynrException& e) {
         ADD_FAILURE() << "lookup was not successful";
     }
