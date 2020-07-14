@@ -293,8 +293,6 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     it("won't terminate Subscriptions when explicitly called with shutdown", async () => {
         runtime = new WebSocketLibjoynrRuntime();
 
-        provisioning.shutdownSettings = { clearSubscriptionsEnabled: false };
-
         await runtime.start(provisioning);
 
         runtime.shutdown({ clearSubscriptionsEnabled: false });
