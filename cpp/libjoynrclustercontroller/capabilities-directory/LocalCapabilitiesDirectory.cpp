@@ -44,6 +44,7 @@
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/InterfaceAddress.h"
+#include "joynr/TimePoint.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
@@ -205,13 +206,14 @@ LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()
 }
 
 void LocalCapabilitiesDirectory::addInternal(
-        const types::DiscoveryEntry& discoveryEntry,
+        types::DiscoveryEntry discoveryEntry,
         bool awaitGlobalRegistration,
         const std::vector<std::string>& gbids,
         std::function<void()> onSuccess,
         std::function<void(const types::DiscoveryError::Enum&)> onError)
 {
     const bool isGloballyVisible = LCDUtil::isGlobal(discoveryEntry);
+    discoveryEntry.setLastSeenDateMs(TimePoint::now().toMilliseconds());
 
     if (!isGloballyVisible || !awaitGlobalRegistration) {
         std::lock_guard<std::recursive_mutex> lock1(
