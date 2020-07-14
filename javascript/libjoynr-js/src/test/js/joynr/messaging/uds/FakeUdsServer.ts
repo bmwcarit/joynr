@@ -55,7 +55,7 @@ class FakeUdsServer {
             .on("close", this.onServerClose);
         // Create a server spy
         this.serverSpy = {
-            // callback when new connection made, pass no arguments
+            // callback when new connection made, pass socket as an argument
             onConnection: jest.fn(),
             // callback when message from client received
             // pass two arguments (socket, message)
@@ -120,7 +120,7 @@ class FakeUdsServer {
         this.clientSocket = socket;
 
         // Call server spy function when new connection is made
-        this.serverSpy.onConnection();
+        this.serverSpy.onConnection(socket);
 
         // disconnect the socket
         this.clientSocket.on("end", this.onClientDisconnected);
