@@ -31,6 +31,7 @@
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -86,6 +87,9 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnection);
 
+    void startInternal();
+    void stopInternal();
+
     /**
      * Starts mosquitto's internal loop. This function wraps internal mosquitto function loop_start
      */
@@ -134,7 +138,12 @@ private:
     std::function<void(bool)> onReadyToSendChanged;
 
     std::mutex stopMutex;
+    std::mutex stopStartMutex;
     bool isStopped;
+    bool isActive;
+    std::atomic<bool> restartThreadShutdown;
+    Semaphore restartSemaphore;
+    std::thread restartThread;
 
     ADD_LOGGER(MosquittoConnection)
 };
