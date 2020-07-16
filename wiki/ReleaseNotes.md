@@ -2,6 +2,20 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.11.5
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+## Bug fixes
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+
 # joynr 1.11.4
 
 ## API relevant changes
