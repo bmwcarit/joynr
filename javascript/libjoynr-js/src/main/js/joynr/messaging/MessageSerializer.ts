@@ -42,7 +42,7 @@ function deserializeSmrfMessage(data: Buffer): JoynrMessage {
 
 export function stringify(joynrMessage: JoynrMessage): Buffer {
     // @ts-ignore
-    joynrMessage.body = joynrMessage.body || new Buffer(joynrMessage.payload);
+    joynrMessage.body = joynrMessage.body || Buffer.from(joynrMessage.payload);
 
     return serializeSmrfMessage(joynrMessage);
 }
