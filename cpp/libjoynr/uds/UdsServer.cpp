@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -88,7 +88,7 @@ void UdsServer::run()
             std::this_thread::sleep_for(_openSleepTime);
             _ioContext->reset();
         }
-        if (remove(_endpoint.path().c_str())) {
+        if (0 == remove(_endpoint.path().c_str())) {
             JOYNR_LOG_WARN(logger(),
                            "UDS server path {} already exists. Replacing existing path.",
                            _endpoint.path());
@@ -98,13 +98,14 @@ void UdsServer::run()
             _acceptor.open(_endpoint.protocol());
             _acceptor.bind(_endpoint);
             _acceptor.listen();
-            JOYNR_LOG_INFO(
-                    logger(), "UDS server wating for connections on path {}.", _endpoint.path());
+            JOYNR_LOG_INFO(logger(), "Waiting for connections on path {}.", _endpoint.path());
             doAcceptClient();
             _ioContext->run();
         } catch (const boost::system::system_error& error) {
-            JOYNR_LOG_ERROR(
-                    logger(), "UDS server encountered an error and will restart: {}", error.what());
+            JOYNR_LOG_ERROR(logger(),
+                            "UDS server ({}) encountered an error and will restart: {}",
+                            _endpoint.path(),
+                            error.what());
         }
         boost::system::error_code ignore;
         _acceptor.close(ignore);
