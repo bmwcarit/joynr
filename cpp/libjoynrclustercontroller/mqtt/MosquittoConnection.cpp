@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2020 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,12 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
           _onReadyToSendChangedMutex(),
           _onReadyToSendChanged(),
           _stopMutex(),
+          _stopStartMutex(),
           _isStopped(true),
+          _isActive(false),
+          _restartThreadShutdown(false),
+          _restartSemaphore(0),
+          _restartThread(),
           _mosq(nullptr)
 {
     JOYNR_LOG_INFO(logger(), "Init mosquitto connection using MQTT client ID: {}", clientId);
@@ -203,6 +208,56 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
         JOYNR_LOG_DEBUG(
                 logger(), "Connection to {}: MQTT connection not encrypted", brokerUrl.toString());
     }
+
+    _restartThread = std::thread([this]() {
+        for (;;) {
+            if (_restartThreadShutdown) {
+                break;
+            }
+
+            JOYNR_LOG_INFO(logger(), "restartThread: waiting for restartSemaphore");
+            _restartSemaphore.wait();
+            JOYNR_LOG_INFO(logger(), "restartThread: got notified by restartSemaphore");
+
+            if (_restartThreadShutdown) {
+                break;
+            }
+
+            {
+                std::lock_guard<std::mutex> stopStartLocker(_stopStartMutex);
+                if (_isActive) {
+                    JOYNR_LOG_INFO(logger(), "restartThread: calling stopInternal()");
+                    stopInternal();
+                } else {
+                    JOYNR_LOG_INFO(
+                            logger(), "restartThread: external comms disabled - skipping stop");
+                    continue;
+                }
+            }
+
+            if (_restartThreadShutdown) {
+                break;
+            }
+
+            std::this_thread::sleep_for(_mqttReconnectDelayTimeSeconds);
+
+            if (_restartThreadShutdown) {
+                break;
+            }
+
+            {
+                std::lock_guard<std::mutex> stopStartLocker(_stopStartMutex);
+                if (_isActive) {
+                    JOYNR_LOG_INFO(logger(), "restartThread: calling startInternal()");
+                    startInternal();
+                } else {
+                    JOYNR_LOG_INFO(
+                            logger(), "restartThread: external comms disabled - skipping restart");
+                }
+            }
+        }
+        JOYNR_LOG_INFO(logger(), "restartThread terminating");
+    });
 }
 
 // wrappers
@@ -237,14 +292,17 @@ void MosquittoConnection::on_disconnect_v5(struct mosquitto* mosq,
     std::ignore = mosq;
     std::ignore = props;
     class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
+    const int storedErrno = errno;
     const std::string errorString(getErrorString(rc));
     mosquittoConnection->setReadyToSend(false);
     if (!mosquittoConnection->_isConnected) {
         // In case we didn't connect yet
         JOYNR_LOG_ERROR(logger(),
-                        "Not yet connected to tcp://{}:{}, error: {}",
+                        "Not yet connected to tcp://{}:{}, rc: {}, errno: {}, error: {}",
                         mosquittoConnection->_host,
                         mosquittoConnection->_port,
+                        rc,
+                        errno,
                         errorString);
         return;
     }
@@ -257,12 +315,48 @@ void MosquittoConnection::on_disconnect_v5(struct mosquitto* mosq,
                        "Disconnected from tcp://{}:{}",
                        mosquittoConnection->_host,
                        mosquittoConnection->_port);
+        JOYNR_LOG_INFO(logger(), "Triggering loop restart");
+        mosquittoConnection->_restartSemaphore.notify();
     } else {
         JOYNR_LOG_ERROR(logger(),
-                        "Unexpectedly disconnected from tcp://{}:{}, error: {}",
+                        "Unexpectedly disconnected from tcp://{}:{}, rc: {}, errno: {}, error: {}",
                         mosquittoConnection->_host,
                         mosquittoConnection->_port,
+                        rc,
+                        storedErrno,
                         errorString);
+        // trigger restart for all known fatal cases where Mosquitto leaves the loop
+        // and thus does not attempt the reconnect itself
+        switch (rc) {
+        case MOSQ_ERR_NOMEM:
+        case MOSQ_ERR_PROTOCOL:
+        case MOSQ_ERR_INVAL:
+        case MOSQ_ERR_NOT_FOUND:
+        case MOSQ_ERR_PAYLOAD_SIZE:
+        case MOSQ_ERR_NOT_SUPPORTED:
+        case MOSQ_ERR_AUTH:
+        case MOSQ_ERR_ACL_DENIED:
+        case MOSQ_ERR_UNKNOWN:
+        case MOSQ_ERR_EAI:
+        case MOSQ_ERR_PROXY:
+            JOYNR_LOG_INFO(logger(), "Triggering loop restart");
+            mosquittoConnection->_restartSemaphore.notify();
+            return;
+        case MOSQ_ERR_ERRNO:
+            if (storedErrno == EPROTO) {
+                JOYNR_LOG_INFO(logger(), "Triggering loop restart");
+                mosquittoConnection->_restartSemaphore.notify();
+                return;
+            }
+            break;
+        case MOSQ_ERR_CONN_PENDING:
+        case MOSQ_ERR_NO_CONN:
+        case MOSQ_ERR_CONN_REFUSED:
+        case MOSQ_ERR_CONN_LOST:
+        case MOSQ_ERR_TLS:
+        default:
+            break;
+        }
         mosquitto_reconnect(mosq);
     }
 }
@@ -376,6 +470,18 @@ MosquittoConnection::~MosquittoConnection()
 {
     std::lock_guard<std::mutex> stopLocker(_stopMutex);
     assert(_isStopped);
+    assert(!_isActive);
+
+    // signal restartThread, we are about to shutdown
+    _restartThreadShutdown = true;
+    _restartSemaphore.notify();
+    if (_restartThread.joinable()) {
+        JOYNR_LOG_INFO(logger(), "restartThread joinable");
+        _restartThread.join();
+        JOYNR_LOG_INFO(logger(), "restartThread joined");
+    } else {
+        JOYNR_LOG_ERROR(logger(), "restartThread not joinable");
+    }
 
     if (_mosq) {
         mosquitto_destroy(_mosq);
@@ -413,6 +519,14 @@ bool MosquittoConnection::isMqttRetain() const
 }
 
 void MosquittoConnection::start()
+{
+    JOYNR_LOG_INFO(logger(), "MosquittoConnection external start() called");
+    std::lock_guard<std::mutex> stopStartLocker(_stopStartMutex);
+    startInternal();
+    _isActive = true;
+}
+
+void MosquittoConnection::startInternal()
 {
     // do not start/stop in parallel
     std::lock_guard<std::mutex> stopLocker(_stopMutex);
@@ -470,6 +584,14 @@ void MosquittoConnection::startLoop()
 }
 
 void MosquittoConnection::stop()
+{
+    JOYNR_LOG_INFO(logger(), "MosquittoConnection external stop() called");
+    std::lock_guard<std::mutex> stopStartLocker(_stopStartMutex);
+    stopInternal();
+    _isActive = false;
+}
+
+void MosquittoConnection::stopInternal()
 {
     // do not start/stop in parallel
     std::lock_guard<std::mutex> stopLocker(_stopMutex);
