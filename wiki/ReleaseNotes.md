@@ -2,6 +2,21 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.11.4
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+## Bug fixes
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
+
 # joynr 1.11.3
 
 ## API relevant changes
