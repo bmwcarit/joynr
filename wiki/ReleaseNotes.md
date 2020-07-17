@@ -22,6 +22,7 @@ None.
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
     This is fixed and replies will now expire at the same time as the original request.
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 
 # joynr 1.14.0
 
