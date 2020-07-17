@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@
 #include "joynr/BrokerUrl.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
 
 namespace joynr
 {
@@ -124,6 +125,9 @@ private:
                                 const mosquitto_property* props);
     static void on_log(struct mosquitto* mosq, void* userdata, int level, const char* str);
 
+    void startInternal();
+    void stopInternal();
+
     /**
      * Starts mosquitto's internal loop. This function wraps internal mosquitto function loop_start
      */
@@ -173,7 +177,12 @@ private:
     std::function<void(bool)> _onReadyToSendChanged;
 
     std::mutex _stopMutex;
+    std::mutex _stopStartMutex;
     bool _isStopped;
+    bool _isActive;
+    std::atomic<bool> _restartThreadShutdown;
+    Semaphore _restartSemaphore;
+    std::thread _restartThread;
     struct mosquitto* _mosq;
 
     ADD_LOGGER(MosquittoConnection)
