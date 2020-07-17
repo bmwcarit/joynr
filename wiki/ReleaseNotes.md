@@ -23,6 +23,8 @@ None.
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
     This is fixed and replies will now expire at the same time as the original request.
 * **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
 
 # joynr 1.14.0
 
