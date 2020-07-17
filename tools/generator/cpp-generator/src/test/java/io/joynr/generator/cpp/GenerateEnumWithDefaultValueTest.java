@@ -42,8 +42,8 @@ public class GenerateEnumWithDefaultValueTest extends AbstractJoynrCppGeneratorT
         TestResult testResult = new TestResult();
         result.forEach((filename, fileContent) -> {
             if (filename.equals("TestStruct")) {
-                testResult.setDefaultEnumInitializationFound(fileContent.contains("testEnumerationType(TestEnumerationType::VALUE1)"));
-                testResult.setDefaultEnumInitializationWithExplicitValueFound(fileContent.contains("testEnumerationTypeWithExplicitValue(TestEnumerationTypeWithExplicitValue::VALUEWITHDEFAULT1)"));
+                testResult.setDefaultEnumInitializationFound(fileContent.contains("testEnumerationType(joynr::types::TestEnumerationType::VALUE1)"));
+                testResult.setDefaultEnumInitializationWithExplicitValueFound(fileContent.contains("testEnumerationTypeWithExplicitValue(joynr::types::TestEnumerationTypeWithExplicitValue::VALUEWITHDEFAULT1)"));
             }
         });
         assertTrue(testResult.isDefaultEnumInitializationFound());
