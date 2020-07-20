@@ -57,7 +57,7 @@ public:
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
             override;
 
-    void onMessageReceived(smrf::ByteVector&& message) override;
+    void onMessageReceived(smrf::ByteVector&& message, const std::string& creator) override;
 
 private:
     ADD_LOGGER(UdsCcMessagingSkeleton)

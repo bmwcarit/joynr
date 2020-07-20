@@ -123,7 +123,8 @@ TEST_F(UdsCcMessagingSkeletonTest, onMessageReceivedTest)
                       _)).Times(1);
 
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
-    udsCcMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
+    const std::string creator("anonoymous");
+    udsCcMessagingSkeleton.onMessageReceived(std::move(serializedMessage), creator);
 }
 
 TEST_F(UdsCcMessagingSkeletonTest, transmitDoesNotSetReceivedFromGlobalForMulticastPublications)

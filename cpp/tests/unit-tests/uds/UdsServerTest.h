@@ -110,7 +110,7 @@ protected:
                 });
         udsServerTest->setReceiveCallback(
                 [&mock](const joynr::system::RoutingTypes::UdsClientAddress& id,
-                        smrf::ByteVector&& val) { mock.received(id, std::move(val)); });
+                        smrf::ByteVector&& val, const std::string& creator) { mock.received(id, std::move(val), creator); });
         return udsServerTest;
     }
 

@@ -51,8 +51,9 @@ public:
     using Connected = std::function<
             void(const system::RoutingTypes::UdsClientAddress&, std::shared_ptr<IUdsSender>)>;
     using Disconnected = std::function<void(const system::RoutingTypes::UdsClientAddress&)>;
-    using Received =
-            std::function<void(const system::RoutingTypes::UdsClientAddress&, smrf::ByteVector&&)>;
+    using Received = std::function<void(const system::RoutingTypes::UdsClientAddress&,
+                                        smrf::ByteVector&&,
+                                        const std::string&)>;
 
     /** The initial serialized message must start with the following byte stream, otherwise the
      * connection is rejected. */
@@ -101,8 +102,9 @@ private:
         Connected _connectedCallback =
                 [](const system::RoutingTypes::UdsClientAddress&, std::shared_ptr<IUdsSender>) {};
         Disconnected _disconnectedCallback = [](const system::RoutingTypes::UdsClientAddress&) {};
-        Received _receivedCallback =
-                [](const system::RoutingTypes::UdsClientAddress&, smrf::ByteVector&&) {};
+        Received _receivedCallback = [](const system::RoutingTypes::UdsClientAddress&,
+                                        smrf::ByteVector&&,
+                                        const std::string&) {};
     };
 
     // Connection to remote client, lifetime is decoupled from server
@@ -149,6 +151,8 @@ private:
         std::atomic_bool _closedDueToError;
 
         system::RoutingTypes::UdsClientAddress _address; // Only accessed by read-strand
+
+        std::string _username; // Appended to each received message for ACL
 
         // PIMPL to keep includes clean
         std::unique_ptr<UdsSendQueue<UdsFrameBufferV1>> _sendQueue;

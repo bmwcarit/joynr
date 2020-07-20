@@ -47,7 +47,7 @@ public:
             std::shared_ptr<ImmutableMessage> message,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) = 0;
 
-    virtual void onMessageReceived(smrf::ByteVector&& message) = 0;
+    virtual void onMessageReceived(smrf::ByteVector&& message, const std::string& creator) = 0;
 };
 
 } // namespace joynr

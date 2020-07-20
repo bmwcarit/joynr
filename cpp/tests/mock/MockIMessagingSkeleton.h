@@ -40,10 +40,10 @@ public:
     MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage>, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
 
     // GoogleMock does not support mocking functions with r-value references as parameters
-    MOCK_METHOD1(onMessageReceivedMock,void(smrf::ByteVector& rawMessage));
-    void onMessageReceived(smrf::ByteVector&& rawMessage) override
+    MOCK_METHOD2(onMessageReceivedMock,void(smrf::ByteVector& rawMessage, const std::string& creator));
+    void onMessageReceived(smrf::ByteVector&& rawMessage, const std::string& creator) override
     {
-        onMessageReceivedMock(rawMessage);
+        onMessageReceivedMock(rawMessage, creator);
     }
 };
 

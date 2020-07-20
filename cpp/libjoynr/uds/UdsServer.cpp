@@ -20,7 +20,10 @@
 #include <cstdio>
 
 #include <boost/format.hpp>
+#include <sys/types.h>
+#include <pwd.h>
 
+#include "joynr/ImmutableMessage.h"
 #include "joynr/UdsServer.h"
 #include "joynr/Logger.h"
 
@@ -150,6 +153,35 @@ UdsServer::Connection::Connection(uds::socket&& socket,
           _sendQueue(std::make_unique<UdsSendQueue<UdsFrameBufferV1>>(config._maxSendQueueSize)),
           _readBuffer(std::make_unique<UdsFrameBufferV1>())
 {
+    const static std::string anonymous("anonymous");
+    struct ucred ucred;
+    socklen_t len = sizeof(ucred);
+    int sockfd = _socket.native_handle();
+    if (!getsockopt(sockfd, SOL_SOCKET, SO_PEERCRED, &ucred, &len)) {
+        struct passwd passwd;
+        struct passwd* result;
+        char buf[1024];
+        int rc;
+
+        if (!(rc = getpwuid_r(ucred.uid, &passwd, buf, sizeof(buf), &result))) {
+            if (result) {
+                _username = std::string(passwd.pw_name, strnlen(passwd.pw_name, 256UL));
+            } else {
+                JOYNR_LOG_ERROR(logger(), "Could not find username for uid {}", ucred.uid);
+                _username = anonymous;
+            }
+        } else {
+            JOYNR_LOG_ERROR(
+                    logger(), "Could not find username for uid {}, errno {}", ucred.uid, rc);
+            _username = anonymous;
+        }
+    } else {
+        int storedErrno = errno;
+        _username = anonymous;
+        JOYNR_LOG_ERROR(
+                logger(), "Could not obtain peer credentials from socket, errno {}", storedErrno);
+    }
+    JOYNR_LOG_DEBUG(logger(), "Established new connection with username '{}'", _username);
 }
 
 UdsServer::Connection::~Connection()
@@ -228,7 +260,7 @@ void UdsServer::Connection::doReadBody()
                 [this](boost::system::error_code readFailure, std::size_t /*length*/) {
                     if (doCheck(readFailure)) {
                         try {
-                            _receivedCallback(_address, _readBuffer->readMessage());
+                            _receivedCallback(_address, _readBuffer->readMessage(), _username);
                         } catch (const std::exception& e) {
                             JOYNR_LOG_FATAL(logger(),
                                             "Failed to process UDS message from '{}': {}",

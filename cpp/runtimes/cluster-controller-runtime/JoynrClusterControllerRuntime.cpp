@@ -975,9 +975,10 @@ void JoynrClusterControllerRuntime::startLocalCommunication()
                 [this](const system::RoutingTypes::UdsClientAddress& address) {
                     _udsMessagingStubFactory->onMessagingStubClosed(address);
                 });
-        _udsServer->setReceiveCallback([this](
-                const system::RoutingTypes::UdsClientAddress&, smrf::ByteVector&& newMessage) {
-            _udsCcMessagingSkeleton->onMessageReceived(std::move(newMessage));
+        _udsServer->setReceiveCallback([this](const system::RoutingTypes::UdsClientAddress&,
+                                              smrf::ByteVector&& newMessage,
+                                              const std::string& creator) {
+            _udsCcMessagingSkeleton->onMessageReceived(std::move(newMessage), creator);
         });
         _udsServer->start();
     }

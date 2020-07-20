@@ -65,9 +65,9 @@ TEST_F(UdsServerTest, serverCallbacks)
 
     const smrf::Byte message1 = 42;
     const smrf::Byte message2 = 43;
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(clientAddress, ElementsAre(message1)))
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(clientAddress, ElementsAre(message1), _))
             .InSequence(sequence);
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(clientAddress, ElementsAre(message2)))
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(clientAddress, ElementsAre(message2), _))
             .InSequence(sequence)
             .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
     sendFromClient(message1);
@@ -90,7 +90,7 @@ TEST_F(UdsServerTest, sendToClient)
     std::shared_ptr<joynr::IUdsSender> sender;
     EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).WillOnce(
             DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _)).Times(0);
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
             .Times(0); // Server disconnects before client
     auto server = createServer(mockUdsServerCallbacks);
@@ -113,7 +113,7 @@ TEST_F(UdsServerTest, streamInterfaceRobustness)
     std::shared_ptr<joynr::IUdsSender> goodClientSender;
     EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(2).WillOnce(DoAll(
             SaveArg<1>(&goodClientSender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _)).Times(0);
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(2).WillRepeatedly(
             InvokeWithoutArgs(&semaphore, &Semaphore::notify));
     auto server = createServer(mockUdsServerCallbacks);
@@ -151,7 +151,7 @@ TEST_F(UdsServerTest, sendWhileClientDisconnection)
     std::shared_ptr<joynr::IUdsSender> sender;
     EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(1).WillOnce(
             DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _)).Times(0);
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(AnyNumber());
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
@@ -176,7 +176,7 @@ TEST_F(UdsServerTest, stopServerWhileSending)
     auto server = createServer(mockUdsServerCallbacks);
     EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(1).WillOnce(
             DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _)).Times(0); // Not registered
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0); // Not registered
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
             .Times(0); // Only called when client connects, but not when server stops before
     server->start();
@@ -209,7 +209,7 @@ TEST_F(UdsServerTest, sendAfterClientDisconnection)
     std::shared_ptr<joynr::IUdsSender> sender;
     EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(1).WillOnce(
             DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _)).Times(0);
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(1).WillOnce(
             InvokeWithoutArgs(&semaphore, &Semaphore::notify));
     auto server = createServer(mockUdsServerCallbacks);

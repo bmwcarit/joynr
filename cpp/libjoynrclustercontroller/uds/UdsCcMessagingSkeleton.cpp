@@ -51,12 +51,14 @@ void UdsCcMessagingSkeleton::transmit(
     }
 }
 
-void UdsCcMessagingSkeleton::onMessageReceived(smrf::ByteVector&& message)
+void UdsCcMessagingSkeleton::onMessageReceived(smrf::ByteVector&& message,
+                                               const std::string& creator)
 {
     // deserialize message and transmit
     std::shared_ptr<ImmutableMessage> immutableMessage;
     try {
         immutableMessage = std::make_shared<ImmutableMessage>(std::move(message));
+        immutableMessage->setCreator(creator);
     } catch (const smrf::EncodingException& e) {
         JOYNR_LOG_ERROR(logger(), "Unable to deserialize message - error: {}", e.what());
         return;

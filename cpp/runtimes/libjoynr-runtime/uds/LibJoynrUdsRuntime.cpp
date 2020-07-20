@@ -102,8 +102,10 @@ void LibJoynrUdsRuntime::startLibJoynrMessagingSkeleton(
      * when invoking connect callbak (see above).
      * Therefore any modifications of the client are safe.
      */
-    _client->setReceiveCallback(
-            [this](smrf::ByteVector&& msg) { _skeleton->onMessageReceived(std::move(msg)); });
+    _client->setReceiveCallback([this](smrf::ByteVector&& msg) {
+        const static std::string creator("anonymous");
+        _skeleton->onMessageReceived(std::move(msg), creator);
+    });
 
     /*
      * The LibJoynrRuntime::init calls registerOnMessagingStubClosedCallback, which implicitly

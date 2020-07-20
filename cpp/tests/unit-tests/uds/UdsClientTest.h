@@ -221,7 +221,8 @@ public:
         });
         _server->setReceiveCallback([this](
                 const joynr::system::RoutingTypes::UdsClientAddress& address,
-                smrf::ByteVector&& message) {
+                smrf::ByteVector&& message, const std::string& creator) {
+            std::ignore = creator;
             std::lock_guard<std::mutex> lck(_connectedClientsMutex);
             auto clientInfo =
                     std::find(_connectedClients.begin(), _connectedClients.end(), address);

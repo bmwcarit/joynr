@@ -36,10 +36,10 @@ public:
                            std::shared_ptr<joynr::IUdsSender>) = 0;
     virtual void disconnected(const joynr::system::RoutingTypes::UdsClientAddress&) = 0;
     virtual void receivedMock(const joynr::system::RoutingTypes::UdsClientAddress&,
-                              smrf::ByteVector) = 0;
-    void received(const joynr::system::RoutingTypes::UdsClientAddress& id, smrf::ByteVector&& msg)
+                              smrf::ByteVector, const std::string& creator) = 0;
+    void received(const joynr::system::RoutingTypes::UdsClientAddress& id, smrf::ByteVector&& msg, const std::string& creator)
     {
-        receivedMock(id, std::move(msg));
+        receivedMock(id, std::move(msg), creator);
     }
     virtual void sendFailed(const joynr::exceptions::JoynrRuntimeException&) = 0;
 };
@@ -51,8 +51,8 @@ public:
                  void(const joynr::system::RoutingTypes::UdsClientAddress&,
                       std::shared_ptr<joynr::IUdsSender>));
     MOCK_METHOD1(disconnected, void(const joynr::system::RoutingTypes::UdsClientAddress&));
-    MOCK_METHOD2(receivedMock,
-                 void(const joynr::system::RoutingTypes::UdsClientAddress&, smrf::ByteVector));
+    MOCK_METHOD3(receivedMock,
+                 void(const joynr::system::RoutingTypes::UdsClientAddress&, smrf::ByteVector, const std::string&));
     MOCK_METHOD1(sendFailed, void(const joynr::exceptions::JoynrRuntimeException&));
 };
 

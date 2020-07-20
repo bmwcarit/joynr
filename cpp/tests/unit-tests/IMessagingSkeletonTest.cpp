@@ -53,8 +53,9 @@ TEST(IMessagingSkeletonTest, mockIMessagingSkeletonAPIsCanBeCalled)
             }
     );
 
-    EXPECT_CALL(*mockIMessagingSkeleton, onMessageReceivedMock(_)).Times(1);
+    std::string creator("creator");
+    EXPECT_CALL(*mockIMessagingSkeleton, onMessageReceivedMock(_, _)).Times(1);
     smrf::ByteVector smrfMessage = immutableMessage->getSerializedMessage();
-    iMessagingSkeleton->onMessageReceived(std::move(smrfMessage));
+    iMessagingSkeleton->onMessageReceived(std::move(smrfMessage), creator);
     EXPECT_CALL(*mockIMessagingSkeleton, dtorCalled());
 }
