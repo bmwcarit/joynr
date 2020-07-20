@@ -7,3 +7,6 @@ participant-ids-persistence-file=radio-app-consumer.ParticipantIds.persist
 subscriptionrequest-persistence-file=radio-app-consumer.SubscriptionRequests.persist
 local-capabilities-directory-persistence-file=radio-app-consumer.LocalCapabilitiesDirectory.persist
 broadcastsubscriptionrequest-persistence-file=radio-app-consumer.BroadcastSubscriptionRequests.persist
+
+[uds]
+socket-path=/tmp/joynr-radio-app.sock

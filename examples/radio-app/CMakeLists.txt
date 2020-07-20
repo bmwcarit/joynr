@@ -165,42 +165,61 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-# Compile the provider application (requires: running cluster controller)
-# Communicates via WebSockets with cluster controller
-add_executable(radio-app-provider-ws
+# Provider objects are independent of cluster controller communication
+add_library(radio-app-provider-common OBJECT
     ${radio-app-provider_HEADERS}
     ${radio-app-provider_SOURCES}
 )
 
-# Link the provider application
-target_link_libraries(radio-app-provider-ws
+target_link_libraries(radio-app-provider-common
     radio-app
-    Joynr::JoynrWsRuntime
+    Joynr::JoynrLibJoynrRuntime
 )
 
-# Compile the consumer application (requires: running cluster controller)
-# Communicates via WebSockets with cluster controller
-add_executable(radio-app-consumer-ws
+# Consumer objects are independent of cluster controller communication
+add_library(radio-app-consumer-common OBJECT
     ${radio-app-consumer_HEADERS}
     ${radio-app-consumer_SOURCES}
 )
 
-# Link the consumer application
-target_link_libraries(radio-app-consumer-ws
+target_link_libraries(radio-app-consumer-common
     radio-app
-    Joynr::JoynrWsRuntime
+    Joynr::JoynrLibJoynrRuntime
 )
+
+
+function(create_apps TYPE RUNTIME)
+    add_executable(radio-app-provider-${TYPE}
+        $<TARGET_OBJECTS:radio-app-provider-common>)
+    target_link_libraries(radio-app-provider-${TYPE}
+        radio-app
+        Joynr::${RUNTIME})
+
+    add_executable(radio-app-consumer-${TYPE}
+        $<TARGET_OBJECTS:radio-app-consumer-common>)
+    target_link_libraries(radio-app-consumer-${TYPE}
+        radio-app
+        Joynr::${RUNTIME})
+endfunction()
+
+# Communicates via WebSockets with cluster controller
+create_apps(ws JoynrWsRuntime)
+
+# Communicates via UNIX Domain Sockets with cluster controller
+create_apps(uds JoynrUdsRuntime)
 
 install(TARGETS
             radio-app-provider-ws
             radio-app-consumer-ws
+            radio-app-provider-uds
+            radio-app-consumer-uds
             radio-app-provider-cc
             radio-app-consumer-cc
         RUNTIME DESTINATION bin COMPONENT bin
 )
 
-AddClangFormat(radio-app-provider-ws)
-AddClangFormat(radio-app-consumer-ws)
+AddClangFormat(radio-app-provider-common)
+AddClangFormat(radio-app-consumer-common)
 AddClangFormat(radio-app-provider-cc)
 AddClangFormat(radio-app-consumer-cc)
 

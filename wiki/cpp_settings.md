@@ -24,6 +24,8 @@ A settings file is a text file and must have ini-File format, for example
 ### `socket-path`
 
 This setting defines the UDS (server) address as socket path.
+The directory (per default `/var/run/joynr/`) must exist and must be read-/
+write-able by the cluster-controller and readable by the UDS client. 
 
 * **OPTIONAL**
 * **Section name**: `uds`

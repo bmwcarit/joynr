@@ -550,6 +550,12 @@ In another terminal window execute:
 ><CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-provider-ws <my provider domain>
 ><CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-consumer-ws <my provider domain>
 >```
+>For UNIX domain socket connection to standalone cluster controller you can start
+>provider-uds and consumer-uds:
+>```bash
+><CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-provider-uds <my provider domain>
+><CPP_BUILD_DIRECTORY>/radio/bin$ ./radio-app-consumer-uds <my provider domain>
+>```
 
 The consumer will make a call to the joynr runtime to find a provider with the domain. If there are
 several providers of the same type registered on the same domain, then the ArbitrationStrategy (see
