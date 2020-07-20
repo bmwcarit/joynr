@@ -1,17 +1,37 @@
-to try out the Radio example the following preliminary steps are necessary:
+To try out the Radio example the following preliminary steps are necessary:
 
 1. run "mvn install -p javascript" in <JOYNR_ROOT>
 2. run the following commands in <JOYNR_ROOT>/examples/radio-node
 
+```
 mvn install
-npm install -g npm@latest
 npm install
-
+```
 
 Then run the node applications by doing the following:
 
-1. ensure a cluster controller allowing to be connected via web socket is running and accessible
-2. start a provider
-   npm run-script startprovider --radio-node:domain=<DOMAIN> [(--radio-node:runtime=websocket --radio-node:cc:host=<HOST> --radio-node:cc:port=<PORT>) | (--radio-node:runtime=inprocess --radio-node:bounceProxyBaseUrl=<BACKEND_URL>)]
-3. start a consumer
-   npm run-script startconsumer --radio-node:domain=<DOMAIN> [(--radio-node:runtime=websocket --radio-node:cc:host=<HOST> --radio-node:cc:port=<PORT>) | (--radio-node:runtime=inprocess --radio-node:bounceProxyBaseUrl=<BACKEND_URL>)]
+* connect to a joynr cluster controller via unix domain sockets (default):
+  1. ensure a cluster controller allowing to be connected via UDS is running and accessible
+  2. start a provider:
+   npm run startprovider [--radio-node:domain=<DOMAIN> --radio-node:runtime=uds --radio-node:uds:path=<SOCKETPATH> --radio-node:uds:providerid=<PROVIDERID> --radio-node:uds:connectsleeptimems=<CONNECTSLEEPTIMEMS>]
+  3. start a consumer:
+   npm run startconsumer [--radio-node:domain=<DOMAIN> --radio-node:runtime=uds --radio-node:uds:path=<SOCKETPATH> --radio-node:uds:consumerid=<CONSUMERRID> --radio-node:uds:connectsleeptimems=<CONNECTSLEEPTIMEMS>]
+
+* connect to a joynr cluster controller via web sockets:
+  1. ensure a cluster controller allowing to be connected via web socket is running and accessible
+  2. start a provider:
+   npm run startprovider --radio-node:domain=<DOMAIN> [--radio-node:domain=<DOMAIN> --radio-node:runtime=websocket --radio-node:ws:host=<HOST> --radio-node:ws:port=<PORT>]
+  3. start a consumer:
+   npm run startconsumer --radio-node:runtime=websocket [--radio-node:domain=<DOMAIN> --radio-node:ws:host=<HOST> --radio-node:ws:port=<PORT>]
+
+* start consumer and provider with its own embedded cluster controller (only partially supported in joynr javascript):
+  1. ensure a Global Discovery Directory and a MQTT Broker are running
+  2. start a provider:
+   npm run startprovider --radio-node:runtime=inprocess [--radio-node:domain=<DOMAIN> --radio-node:brokerUri=<BROKER_URI> --radio-node:bounceProxyBaseUrl=<BACKEND_URL>]
+  3. start a consumer:
+   npm run startconsumer --radio-node:runtime=inprocess [--radio-node:domain=<DOMAIN> --radio-node:brokerUri=<BROKER_URI> --radio-node:bounceProxyBaseUrl=<BACKEND_URL>]
+
+Mixed modes are also possible, e.g. a provider connecting to the cluster controller via UDS and a
+consumer connecting to the cluster controller via web sockets. In this case, the cluster controller
+must be able to accept uds and websocket connections in parallel.
+

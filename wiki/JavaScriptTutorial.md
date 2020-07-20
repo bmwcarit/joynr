@@ -49,8 +49,7 @@ for consumer implementation details.
 
 ### Prerequisite
 
-You need to have Maven installed. Joynr is tested with Maven 3.3.3, but more recent versions should
-also work here.
+You need to have Maven installed.
 
 For both, consumer and provider, the backend (MQTT broker, JEE based Discovery and AccessControl)
 and a local standalone cluster-controller need to be started first.
@@ -86,6 +85,7 @@ The node environment has to be prepared once prior to starting
 applications.
 
 ```bash
+<RADIO_HOME>$ mvn install
 <RADIO_HOME>$ npm install
 ```
 
@@ -94,23 +94,24 @@ applications.
 Run the provider application in a terminal
 
 ```bash
-<RADIO_HOME>$ npm run-script startprovider
+<RADIO_HOME>$ npm run startprovider
 ```
 
 Run the consumer in another terminal
 
 ```bash
-<RADIO_HOME>$ npm run-script startconsumer
+<RADIO_HOME>$ npm run startconsumer
 ```
 
 ## Provisioning
 
 The provisioning is partially done in the files
 [\<RADIO_HOME\>/package.json](/examples/radio-node/package.json) and
-[\<RADIO_HOME\>/src/main/js/provisioning_common.js](/examples/radio-node/src/main/js/provisioning_common.js).
+[\<RADIO_HOME\>/src/main/js/provisioning_common.js](/examples/radio-node/src/main/js/provisioning_common.ts).
 
-This example uses the WebSocket libjoynr runtime which communicates via WebSocket with a preexisting
-cluster controller.
+This example uses the UDS libjoynr runtime which communicates via unix domain socket with a preexisting
+cluster controller.  
+For different runtimes (e.g. WebSocket runtime) and further options, see [radio-node README](/examples/radio-node/README).
 
 See [JavaScript Configuration Reference](JavaScriptSettings.md) for details on the possible
 provisioning settings.
