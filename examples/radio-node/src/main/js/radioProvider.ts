@@ -17,7 +17,11 @@
  * #L%
  */
 
-import { InProcessProvisioning, WebSocketLibjoynrProvisioning } from "joynr/joynr/start/interface/Provisioning";
+import {
+    InProcessProvisioning,
+    UdsLibJoynrProvisioning,
+    WebSocketLibjoynrProvisioning
+} from "joynr/joynr/start/interface/Provisioning";
 import { log } from "./logging";
 
 import joynr from "joynr";
@@ -26,7 +30,11 @@ import showHelp from "./console_common";
 import RadioProvider from "../generated/js/joynr/vehicle/RadioProvider";
 import MyRadioProvider from "./MyRadioProvider";
 import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
-const provisioning: InProcessProvisioning & WebSocketLibjoynrProvisioning = require("./provisioning_common");
+import WebSocketLibjoynrRuntime from "joynr/joynr/start/WebSocketLibjoynrRuntime";
+
+const provisioning: InProcessProvisioning &
+    WebSocketLibjoynrProvisioning &
+    UdsLibJoynrProvisioning = require("./provisioning_common");
 
 const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
     let res: Function;
@@ -116,13 +124,33 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
 
     if (process.env.runtime !== undefined) {
         if (process.env.runtime === "inprocess") {
+            if (process.env.brokerUri === undefined || process.env.bounceProxyBaseUrl === undefined) {
+                log("please pass brokerUri and bounceProxyBaseUrl as argument");
+                return process.exit(1);
+            }
             provisioning.brokerUri = process.env.brokerUri!;
             provisioning.bounceProxyBaseUrl = process.env.bounceProxyBaseUrl!;
             provisioning.bounceProxyUrl = `${provisioning.bounceProxyBaseUrl}/bounceproxy/`;
             joynr.selectRuntime(InProcessRuntime);
         } else if (process.env.runtime === "websocket") {
-            provisioning.ccAddress.host = process.env.cchost!;
-            provisioning.ccAddress.port = (process.env.ccport as unknown) as number;
+            if (process.env.wshost === undefined || process.env.wsport === undefined) {
+                log("please pass wshost and wsport as argument");
+                return process.exit(1);
+            }
+            provisioning.ccAddress.host = process.env.wshost!;
+            provisioning.ccAddress.port = (process.env.wsport as unknown) as number;
+            joynr.selectRuntime(WebSocketLibjoynrRuntime);
+        } else if (process.env.runtime === "uds") {
+            if (!process.env.udspath || !process.env.udsclientid || !process.env.udsconnectsleeptimems) {
+                log("please pass udspath, udsclientid, udsconnectsleeptimems as argument");
+                return process.exit(1);
+            }
+            provisioning.uds = {
+                socketPath: process.env.udspath,
+                clientId: process.env.udsclientid,
+                connectSleepTimeMs: Number(process.env.udsconnectsleeptimems)
+            }
+            // no selectRuntime: UdsLibJoynrRuntime is default
         }
     }
 

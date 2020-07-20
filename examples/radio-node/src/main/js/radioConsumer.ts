@@ -16,19 +16,27 @@
  * limitations under the License.
  * #L%
  */
-import { InProcessProvisioning, WebSocketLibjoynrProvisioning } from "joynr/joynr/start/interface/Provisioning";
+import {
+    InProcessProvisioning,
+    WebSocketLibjoynrProvisioning,
+    UdsLibJoynrProvisioning
+} from "joynr/joynr/start/interface/Provisioning";
 import { log, prettyLog } from "./logging";
 import joynr from "joynr";
 import LocalStorage from "joynr/global/LocalStorageNode";
 import RadioProxy from "../generated/js/joynr/vehicle/RadioProxy";
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const provisioning: InProcessProvisioning & WebSocketLibjoynrProvisioning = require("./provisioning_common");
+const provisioning: InProcessProvisioning &
+    WebSocketLibjoynrProvisioning &
+    UdsLibJoynrProvisioning = require("./provisioning_common");
 import OnChangeSubscriptionQos = require("joynr/joynr/proxy/OnChangeSubscriptionQos");
 import RadioStation from "../generated/js/joynr/vehicle/RadioStation";
 import Country from "../generated/js/joynr/vehicle/Country";
 import showHelp from "./console_common";
 import readline from "readline";
 import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
+import WebSocketLibjoynrRuntime from "joynr/joynr/start/WebSocketLibjoynrRuntime";
 
 const persistencyLocation = "./radioLocalStorageConsumer";
 const localStorage = new LocalStorage({ location: persistencyLocation, clearPersistency: false });
@@ -372,13 +380,26 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
         provisioning.bounceProxyUrl = `${process.env.bounceProxyBaseUrl}/bounceproxy/`;
         joynr.selectRuntime(InProcessRuntime);
     } else if (process.env.runtime === "websocket") {
-        if (process.env.cchost === undefined || process.env.ccport === undefined) {
-            log("please pass cchost and ccport as argument");
+        if (process.env.wshost === undefined || process.env.wsport === undefined) {
+            log("please pass wshost and wsport as argument");
             return process.exit(1);
         }
-        provisioning.ccAddress.host = process.env.cchost;
-        provisioning.ccAddress.port = Number(process.env.ccport);
+        provisioning.ccAddress.host = process.env.wshost;
+        provisioning.ccAddress.port = Number(process.env.wsport);
+        joynr.selectRuntime(WebSocketLibjoynrRuntime);
+    } else if (process.env.runtime === "uds") {
+        if (!process.env.udspath || !process.env.udsclientid || !process.env.udsconnectsleeptimems) {
+            log("please pass udspath, udsclientid, udsconnectsleeptimems as argument");
+            return process.exit(1);
+        }
+        provisioning.uds = {
+            socketPath: process.env.udspath,
+            clientId: process.env.udsclientid,
+            connectSleepTimeMs: Number(process.env.udsconnectsleeptimems)
+        }
+        // no selectRuntime: UdsLibJoynrRuntime is default
     }
+
     await localStorage.init();
     await joynr.load(provisioning);
     log("joynr started");
