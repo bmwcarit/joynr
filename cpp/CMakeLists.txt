@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
 ######## Project settings ########
-project(joynr-1.11.4)
+project(joynr-1.11.5)
 set(JOYNR_MAJOR_VERSION 1)
 set(JOYNR_MINOR_VERSION 11)
-set(JOYNR_PATCH_VERSION 4)
+set(JOYNR_PATCH_VERSION 5)
 set(
     JOYNR_VERSION
     ${JOYNR_MAJOR_VERSION}.${JOYNR_MINOR_VERSION}.${JOYNR_PATCH_VERSION}
