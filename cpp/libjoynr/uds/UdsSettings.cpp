@@ -221,6 +221,11 @@ void UdsSettings::printSettings() const
                    "SETTING: {} = {}",
                    SETTING_SENDING_QUEUE_SIZE(),
                    _settings.get<std::string>(SETTING_SENDING_QUEUE_SIZE()));
+
+    JOYNR_LOG_INFO(logger(),
+                   "SETTING: {} = {}",
+                   SETTING_READ_WRITE_TIMEOUT(),
+                   _settings.get<std::string>(SETTING_READ_WRITE_TIMEOUT()));
 }
 
 } // namespace joynr
