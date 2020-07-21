@@ -427,7 +427,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                               globalAddress);
         if (globalDiscoveryEntry != null) {
 
-            logger.debug("Global provider registration for participantId {}, domain {}, interface {}, {} started",
+            logger.debug("Global provider registration started: participantId {}, domain {}, interface {}, {}",
                          globalDiscoveryEntry.getParticipantId(),
                          globalDiscoveryEntry.getDomain(),
                          globalDiscoveryEntry.getInterfaceName(),
@@ -437,7 +437,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onSuccess(Void nothing) {
-                    logger.info("Global provider registration for participantId {}, domain {}, interface {}, {} successful",
+                    logger.info("Global provider registration succeeded: participantId {}, domain {}, interface {}, {}",
                                 globalDiscoveryEntry.getParticipantId(),
                                 globalDiscoveryEntry.getDomain(),
                                 globalDiscoveryEntry.getInterfaceName(),
@@ -451,7 +451,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException exception) {
-                    logger.error("Global registration for participantId {}, domain {}, interface {}, {} failed",
+                    logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
                                  globalDiscoveryEntry.getParticipantId(),
                                  globalDiscoveryEntry.getDomain(),
                                  globalDiscoveryEntry.getInterfaceName(),
@@ -464,7 +464,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(DiscoveryError errorEnum) {
-                    logger.error("Global registration for participantId {}, domain {}, interface {}, {} failed",
+                    logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
                                  globalDiscoveryEntry.getParticipantId(),
                                  globalDiscoveryEntry.getDomain(),
                                  globalDiscoveryEntry.getInterfaceName(),
