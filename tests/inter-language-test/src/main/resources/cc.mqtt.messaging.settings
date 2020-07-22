@@ -23,3 +23,6 @@ persistence-file=joynr.settings
 long-poll-timeout=
 broker-timeout=
 max-send-ttl=
+
+[uds]
+socket-path=./uds-libjoynr-ilt.sock

@@ -198,6 +198,25 @@ target_link_libraries(ilt-provider-ws
     Joynr::JoynrWsRuntime
 )
 
+# Compile the provider application (requires: running cluster controller)
+# Communicates via Unix Domain Socket with cluster controller
+add_executable(ilt-provider-uds
+    ${ilt-provider_HEADERS}
+    ${ilt-provider_SOURCES}
+)
+
+target_include_directories(
+    ilt-provider-uds
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+)
+
+# Link the provider application
+target_link_libraries(ilt-provider-uds
+    ilt
+    ${ilt_LIBRARIES}
+    Joynr::JoynrUdsRuntime
+)
+
 # Compile the test application (requires: running cluster controller)
 # Communicates via WebSockets with cluster controller
 AddTest(
@@ -245,16 +264,67 @@ target_link_libraries(ilt-consumer-proxy-provider-interface-mismatch-ws
     ${GMOCK_LIBRARIES}
 )
 
+# Compile the test application (requires: running cluster controller)
+# Communicates via Unix Domain Sockets with cluster controller
+AddTest(
+    ilt-consumer-uds
+    ${ilt-consumer_HEADERS}
+    ${ilt-consumer_SOURCES}
+)
+
+target_include_directories(
+    ilt-consumer-uds
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
+)
+
+# Link the consumer application
+target_link_libraries(ilt-consumer-uds
+    ilt
+    ${ilt_LIBRARIES}
+    Joynr::JoynrUdsRuntime
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
+)
+
+# Compile the extended test application (requires: running cluster controller)
+# Communicates via Unix Domain Socket with cluster controller
+AddTest(
+    ilt-consumer-proxy-provider-interface-mismatch-uds
+    ${ilt-consumer-proxy-provider-interface-mismatch_HEADERS}
+    ${ilt-consumer-proxy-provider-interface-mismatch_SOURCES}
+)
+
+target_include_directories(
+    ilt-consumer-proxy-provider-interface-mismatch-uds
+    PRIVATE ${GENERATED_INCLUDE_DIRS_PROXY_PROVIDER_INTERFACE_MISMATCH}
+    PRIVATE ${GENERATED_INCLUDE_DIRS}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
+)
+
+# Link the consumer application
+target_link_libraries(ilt-consumer-proxy-provider-interface-mismatch-uds
+    ilt
+    ${ilt_LIBRARIES}
+    Joynr::JoynrUdsRuntime
+    ${GTEST_LIBRARIES}
+    ${GMOCK_LIBRARIES}
+)
+
 install(TARGETS
             ilt-provider-ws
             ilt-consumer-ws
             ilt-provider-cc
+            ilt-provider-uds
+            ilt-consumer-uds
         RUNTIME DESTINATION bin COMPONENT bin
 )
 
 AddClangFormat(ilt-provider-cc)
 AddClangFormat(ilt-provider-ws)
 AddClangFormat(ilt-consumer-ws)
+AddClangFormat(ilt-provider-uds)
+AddClangFormat(ilt-consumer-uds)
 
 if(NOT DEFINED JOYNR_SERVER_HOST)
     set(JOYNR_SERVER_HOST "localhost")

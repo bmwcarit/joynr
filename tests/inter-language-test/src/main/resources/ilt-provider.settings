@@ -1,2 +1,5 @@
 [messaging]
 persistence-file=cpp-ilt-provider.persistence_file
+
+[uds]
+socket-path=../cluster-controller-bin/uds-libjoynr-ilt.sock
