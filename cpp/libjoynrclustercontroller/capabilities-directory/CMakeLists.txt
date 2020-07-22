@@ -1,4 +1,4 @@
-project(CapabilitiesClient)
+project(CapabilitiesDirectory)
 
 set(SOURCES
     LocalCapabilitiesDirectoryStore.cpp

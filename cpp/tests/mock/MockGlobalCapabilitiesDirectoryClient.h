@@ -21,7 +21,7 @@
 
 #include <gmock/gmock.h>
 
-#include "libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h"
+#include "libjoynrclustercontroller/capabilities-directory/IGlobalCapabilitiesDirectoryClient.h"
 
 #include "joynr/types/DiscoveryError.h"
 
