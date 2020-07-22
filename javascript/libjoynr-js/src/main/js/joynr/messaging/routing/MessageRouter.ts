@@ -406,7 +406,7 @@ class MessageRouter {
         return this.routeInternal(address, joynrMessage);
     }
 
-    public getAddressFromPersistency(participantId: string): Address | undefined {
+    private getAddressFromPersistency(participantId: string): Address | undefined {
         try {
             const addressString = this.persistency.getItem(this.getStorageKey(participantId));
             if (addressString === undefined || addressString === null || addressString === "{}") {
@@ -480,7 +480,7 @@ class MessageRouter {
      *
      * @returns promise
      */
-    public addNextHopToParentRoutingTable(participantId: string, isGloballyVisible: boolean): Promise<any> {
+    private addNextHopToParentRoutingTable(participantId: string, isGloballyVisible: boolean): Promise<any> {
         if (this.incomingAddress instanceof UdsClientAddress) {
             return this.routingProxy.addNextHop({
                 participantId,
