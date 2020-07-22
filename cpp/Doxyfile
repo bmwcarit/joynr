@@ -820,12 +820,12 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynrclustercontroller/access-control/LocalDomainAccessStore.h \
                          libjoynrclustercontroller/access-control/TrustLevelComparator.cpp \
                          libjoynrclustercontroller/access-control/TrustLevelComparator.h \
-                         libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.cpp \
-                         libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h \
-                         libjoynrclustercontroller/capabilities-client/FakeGlobalCapabilitiesDirectoryClient.cpp \
-                         libjoynrclustercontroller/capabilities-client/FakeGlobalCapabilitiesDirectoryClient.h \
-                         libjoynrclustercontroller/capabilities-client/IGlobalCapabilitiesDirectoryClient.h \
-                         libjoynrclustercontroller/capabilities-client/LocalCapabilitiesDirectory.cpp \
+                         libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.cpp \
+                         libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h \
+                         libjoynrclustercontroller/capabilities-directory/FakeGlobalCapabilitiesDirectoryClient.cpp \
+                         libjoynrclustercontroller/capabilities-directory/FakeGlobalCapabilitiesDirectoryClient.h \
+                         libjoynrclustercontroller/capabilities-directory/IGlobalCapabilitiesDirectoryClient.h \
+                         libjoynrclustercontroller/capabilities-directory/LocalCapabilitiesDirectory.cpp \
                          libjoynrclustercontroller/http-communication-manager/ChannelUrlSelector.cpp \
                          libjoynrclustercontroller/http-communication-manager/ChannelUrlSelector.h \
                          libjoynrclustercontroller/http-communication-manager/HttpReceiver.cpp \

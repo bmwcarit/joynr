@@ -15,7 +15,7 @@ generate_export_header(
 )
 
 add_subdirectory(access-control)
-add_subdirectory(capabilities-client)
+add_subdirectory(capabilities-directory)
 add_subdirectory(httpnetworking)
 add_subdirectory(http-communication-manager)
 add_subdirectory(messaging)
@@ -56,7 +56,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 target_link_objlibraries(${PROJECT_NAME}
     PUBLIC JoynrCCLib::AccessControl
-    PUBLIC JoynrCCLib::CapabilitiesClient
+    PUBLIC JoynrCCLib::CapabilitiesDirectory
     PUBLIC JoynrCCLib::HttpNetworking
     PUBLIC JoynrCCLib::HttpCommunicationManager
     PUBLIC JoynrCCLib::CcJoynrMessaging

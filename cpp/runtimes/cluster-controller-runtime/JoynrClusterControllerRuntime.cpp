@@ -102,7 +102,7 @@
 #include "libjoynrclustercontroller/access-control/AccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
-#include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
+#include "libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpMessagingSkeleton.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
 #include "libjoynrclustercontroller/http-communication-manager/HttpSender.h"

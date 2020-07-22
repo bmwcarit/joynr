@@ -28,7 +28,7 @@
 #include "joynr/MessagingSettings.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/Settings.h"
-#include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
+#include "libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h"
 #include "tests/mock/MockGlobalCapabilitiesDirectoryProxy.h"
 #include "tests/mock/MockJoynrRuntime.h"
 #include "tests/mock/MockMessageSender.h"

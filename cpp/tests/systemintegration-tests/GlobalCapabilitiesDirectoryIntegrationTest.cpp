@@ -34,7 +34,7 @@
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/Version.h"
 
-#include "libjoynrclustercontroller/capabilities-client/GlobalCapabilitiesDirectoryClient.h"
+#include "libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h"
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 
 #include "tests/JoynrTest.h"
