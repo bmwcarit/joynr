@@ -92,6 +92,15 @@ public:
      * connection has been established. */
     void start();
 
+    /**
+     * Thread safe method to stop all internal threads.
+     * This method should only be used, if external garbage collection is used
+     * in combination with external thread management. Since the client manages its
+     * own thread pool, it provides external access in case client lifetime
+     * is managed by garbage collector.
+     */
+    void shutdown() noexcept;
+
     void send(const smrf::ByteArrayView& msg, const IUdsSender::SendFailed& callback) override;
 
 private:
@@ -123,6 +132,7 @@ private:
     boost::asio::local::stream_protocol::socket _socket;
     enum class State : unsigned char { START, CONNECTED, STOP, FAILED };
     std::atomic<State> _state;
+    std::mutex _asyncShutdownMutex;
     std::future<void> _worker;
 
     ADD_LOGGER(UdsClient)

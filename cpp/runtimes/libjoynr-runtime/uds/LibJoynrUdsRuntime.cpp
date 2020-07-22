@@ -59,17 +59,10 @@ void LibJoynrUdsRuntime::shutdown()
 {
     if (!_isShuttingDown.exchange(true)) {
         /*
-         * The stub factory holds pointer to client.
-         * The client registered callbacks to the stub factory.
-         * Hence the client must be removed from the stub factory.
+         * Assure that LibJoynrRuntime::init (see setConnectCallback) is not executed
+         * while executing LibJoynrRuntime::shutdown.
          */
-        _stubFactory->onMessagingStubClosed(*_serverAddress);
-
-        /*
-         * _stubFactory and this are the only stake holders, so release the memory.
-         * Consider this class as a factory (same as UdsServer) and the stubFactory as the owner.
-         */
-        _client.reset();
+        _client->shutdown();
 
         LibJoynrRuntime::shutdown();
     }
@@ -97,9 +90,6 @@ void LibJoynrUdsRuntime::connect(
                            std::move(onError));
             });
 
-    _client->setDisconnectCallback(
-            [this]() { _stubFactory->onMessagingStubClosed(*_serverAddress); });
-
     _client->start();
 }
 
@@ -114,6 +104,14 @@ void LibJoynrUdsRuntime::startLibJoynrMessagingSkeleton(
      */
     _client->setReceiveCallback(
             [this](smrf::ByteVector&& msg) { _skeleton->onMessageReceived(std::move(msg)); });
+
+    /*
+     * The LibJoynrRuntime::init calls registerOnMessagingStubClosedCallback, which implicitly
+     * modifies the onMessagingStubClosed behaviour. Hence onMessagingStubClosed must not be called
+     * before configuration is complete.
+     */
+    _client->setDisconnectCallback(
+            [this]() { _stubFactory->onMessagingStubClosed(*_serverAddress); });
 }
 
 } // namespace joynr

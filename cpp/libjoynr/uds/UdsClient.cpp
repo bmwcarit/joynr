@@ -53,16 +53,7 @@ UdsClient::UdsClient(const UdsSettings& settings,
 
 UdsClient::~UdsClient()
 {
-    _state.store(State::STOP);
-    _ioContext.stop();
-    if (_worker.valid()) {
-        _worker.get();
-    } else {
-        JOYNR_LOG_WARN(logger(),
-                       "UDS client {} ({}) stopped by before starting.",
-                       _address.getId(),
-                       _endpoint.path());
-    }
+    shutdown();
 }
 
 joynr::system::RoutingTypes::UdsClientAddress UdsClient::getAddress() const noexcept
@@ -94,6 +85,27 @@ void UdsClient::start()
     }
     _state.store(State::START);
     _worker = std::async(&UdsClient::run, this);
+}
+
+void UdsClient::shutdown() noexcept
+{
+    std::lock_guard<std::mutex> lockStop(_asyncShutdownMutex);
+    _state.store(State::STOP);
+    try {
+        _ioContext.stop();
+        if (_worker.valid()) {
+            _worker.get();
+        }
+    } catch (std::exception& e) {
+        JOYNR_LOG_ERROR(logger(),
+                        "UDS client {} caused unexpected error when stopping worker: {}",
+                        _address.getId(),
+                        e.what());
+    } catch (...) {
+        JOYNR_LOG_ERROR(logger(),
+                        "UDS client {} caused unknown error when stopping worker",
+                        _address.getId());
+    }
 }
 
 void UdsClient::run()

@@ -152,7 +152,7 @@ TEST_F(LibJoynrUdsRuntimeTest, shutdownAfterConnect)
     auto server = createServer(serverCallbacks);
     server->start();
 
-    EXPECT_TRUE(serverSemaphore.waitFor(waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(serverSemaphore.waitFor(waitPeriodForClientServerCommunication))
             << "Connection not monitored by server";
     Mock::VerifyAndClearExpectations(&serverCallbacks);
 
@@ -188,7 +188,7 @@ TEST_F(LibJoynrUdsRuntimeTest, connectionLoss)
     auto server = createServer(serverCallbacks);
     server->start();
 
-    EXPECT_TRUE(serverSemaphore.waitFor(waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(serverSemaphore.waitFor(waitPeriodForClientServerCommunication))
             << "Connection not monitored by server";
     Mock::VerifyAndClearExpectations(&serverCallbacks);
 
