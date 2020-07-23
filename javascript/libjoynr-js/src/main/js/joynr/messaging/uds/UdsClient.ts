@@ -25,36 +25,39 @@ import * as MessageSerializer from "../MessageSerializer";
 
 import LongTimer from "../../util/LongTimer";
 import LoggingManager from "../../system/LoggingManager";
-const log = LoggingManager.getLogger("joynr.messaging.socket.UdsClient");
+const log = LoggingManager.getLogger("joynr.messaging.uds.UdsClient");
 
 import net = require("net");
+import fs = require("fs");
 import MagicCookieUtil from "./MagicCookieUtil";
 import util from "util";
 import JoynrMessage from "../JoynrMessage";
 import * as DiagnosticTags from "../../system/DiagnosticTags";
+import JoynrRuntimeException from "../../exceptions/JoynrRuntimeException";
 
 interface UdsLibJoynrProvisioning {
     socketPath: string;
     clientId: string;
     connectSleepTimeMs: number;
     onMessageCallback: Function;
+    onFatalRuntimeError: (error: JoynrRuntimeException) => void;
 }
 
 class UdsClient {
     /**
-     util.promisify creates the callback which will be called by ws once the message was sent.
+     util.promisify creates the callback which will be called by socket.write once the message was sent.
      When the callback is called with an error it will reject the promise, otherwise resolve it.
-     The arrow function is there to assure that socket.send is called with socket as its this context.
+     The arrow function is there to assure that socket.write is called with socket as its this context.
      */
-    private readonly udsSendAsync: (marshalledMessage: Buffer) => Promise<void>;
+    private readonly promisifyWriteToSocket: (marshalledMessage: Buffer) => Promise<void>;
 
     private encodingConf = { binary: true };
     private reconnectTimer: any;
     private connected: boolean = false;
     private closed: boolean = false;
-    private firstMagicCookieFound: boolean = false;
     private queuedMessages: any = [];
     private readonly onMessageCallback: Function;
+    private readonly onFatalRuntimeError: (error: JoynrRuntimeException) => void;
     private readonly connectSleepTimeMs: number;
     private socket: any;
     private readonly socketPath: string;
@@ -69,12 +72,15 @@ class UdsClient {
      * @param parameters.clientId: client id
      * @param parameters.connectSleepTimeMs: interval to try to connect to the server when it is unavailable
      * @param parameters.onMessageCallback: callback to be called when a complete message arrives
+     * @param parameters.onFatalRuntimeError: callback to be called when a fatal error in UdsClient happens that
+     * prevents further communication via UDS in this runtime
      */
     public constructor(parameters: UdsLibJoynrProvisioning) {
         this.socketPath = parameters.socketPath;
         this.clientId = parameters.clientId;
         this.connectSleepTimeMs = parameters.connectSleepTimeMs;
         this.onMessageCallback = parameters.onMessageCallback;
+        this.onFatalRuntimeError = parameters.onFatalRuntimeError;
         this.internBuff = Buffer.alloc(0, 0);
 
         this.serializedUdsClientAddress = Buffer.from(
@@ -91,9 +97,13 @@ class UdsClient {
             throw new Error(errorMsg);
         }
 
-        log.debug(`Client trying to connect to ${this.socketPath} with clientId=${this.clientId} ...`);
-        this.udsSendAsync = util.promisify((marshaledMessage: Buffer, cb: any) =>
-            this.socket!.write(marshaledMessage, cb, this.encodingConf)
+        log.info(`Client trying to connect to ${this.socketPath} with clientId=${this.clientId} ...`);
+        this.promisifyWriteToSocket = util.promisify((marshaledMessage: Buffer, cb: any) =>
+            this.socket!.write(
+                MagicCookieUtil.writeMagicCookies(marshaledMessage, MagicCookieUtil.MESSAGE_COOKIE),
+                this.encodingConf,
+                cb
+            )
         );
 
         this.onClose = this.onClose.bind(this);
@@ -122,12 +132,12 @@ class UdsClient {
 
     private readonly onConnect = (): void => {
         this.connected = true;
-        log.debug(`Connected to ${this.socketPath} with clientId ${this.clientId}`);
+        log.info(`Connected to ${this.socketPath} with clientId ${this.clientId}`);
         const initMsgBuff: Buffer = MagicCookieUtil.writeMagicCookies(
             this.serializedUdsClientAddress,
             MagicCookieUtil.INIT_COOKIE
         );
-        log.debug(
+        log.trace(
             `Send Init Message: ${MagicCookieUtil.getMagicCookieBuff(
                 initMsgBuff
             ).toString()}${MagicCookieUtil.getPayloadLength(initMsgBuff).toString()}${MagicCookieUtil.getPayloadBuff(
@@ -136,122 +146,158 @@ class UdsClient {
         );
         this.socket.write(initMsgBuff, this.encodingConf);
 
-        try {
-            this.sendQueuedMessages();
-        } catch (e) {
-            log.error(`Sending queued messages failed. It fails with ${e}`);
-            this.shutdown();
-        }
+        this.sendQueuedMessages();
     };
 
     private readonly onClose = (event: { hadError: boolean }) => {
         if (this.closed) {
+            log.info(`UdsClient.onClose called.`);
             return;
         }
 
         if (!this.connected) {
-            log.debug(`Server is not yet available. Try to connect in ${this.connectSleepTimeMs} ms`);
+            let isSocketExist = true;
+            try {
+                fs.statSync(this.socketPath);
+            } catch (e) {
+                isSocketExist = false;
+            }
+            if (isSocketExist) {
+                try {
+                    fs.accessSync(this.socketPath, fs.constants.R_OK && fs.constants.W_OK);
+                } catch (e) {
+                    log.fatal(e.message);
+                    this.onFatalRuntimeError(
+                        new JoynrRuntimeException({
+                            detailMessage: `Fatal runtime error, stopping all communication permanently: ${e}`
+                        })
+                    );
+                    this.shutdown();
+                    return;
+                }
+            }
+
+            log.info(`Server is not yet available. Try to connect in ${this.connectSleepTimeMs} ms`);
             this.reconnectTimer = LongTimer.setTimeout(this.establishConnection, this.connectSleepTimeMs);
             return;
         }
-        let msg = `Server terminates the connection gracefully. Connection to the socket is closed.`;
+
+        let msg = `Fatal runtime error, stopping all communication permanently: `;
         if (event.hadError) {
-            msg = `The socket had a transmission error. Connection to the socket is closed.`;
+            msg += `The socket had a transmission error.`;
+        } else {
+            msg += `The server terminated the connection.`;
         }
-        log.info(msg);
+        log.fatal(msg);
+        this.onFatalRuntimeError(new JoynrRuntimeException({ detailMessage: msg }));
         this.shutdown();
     };
 
     private readonly onEnd = () => {
-        log.debug(`end callback is called`);
-        this.shutdown();
+        if (this.closed) {
+            log.info(`UdsClient.onEnd called.`);
+        } else {
+            const msg =
+                "Fatal runtime error, stopping all communication permanently: The server closed the connection.";
+            log.fatal(msg);
+            this.onFatalRuntimeError(new JoynrRuntimeException({ detailMessage: msg }));
+            this.shutdown();
+        }
     };
 
-    private readonly onError = () => {
-        // TODO: Ticket to handle errors
-        log.debug(`on error callback is called`);
+    private readonly onError = (event: { err: Error }) => {
+        if (event.err) {
+            const msg = `UdsClient.onError called: ${event.err}`;
+            log.fatal(msg);
+            this.onFatalRuntimeError(
+                new JoynrRuntimeException({
+                    detailMessage: `Fatal runtime error, stopping all communication permanently: ${msg}`
+                })
+            );
+            this.shutdown();
+        }
     };
 
     private readonly onReceivedMessage = (data: Buffer): void => {
-        if (Buffer.byteLength(data) <= 0) {
-            // nothing to process.
-            return;
-        }
-
         // append what we received to the former received data
         this.internBuff = Buffer.concat([this.internBuff, data]);
-
-        if (!MagicCookieUtil.validateCookie(this.internBuff)) {
-            // received little amount of bytes, not enough to process them. continue receiving
-            return;
-        }
-        // we received at least magic cookie and the length of serialized joynr message.
-        // we might have received a huge buffer which contains several messages
-        // on first reception, scan the buffer to get the magic cookie. If not found, purge the internBuff.
-        if (!this.firstMagicCookieFound && !(this.internBuff.indexOf(MagicCookieUtil.MESSAGE_COOKIE) > -1)) {
-            this.internBuff = Buffer.alloc(0, 0);
-            return;
-        }
-        if (!this.firstMagicCookieFound && this.internBuff.indexOf(MagicCookieUtil.MESSAGE_COOKIE) > -1) {
-            // extract data from magic cookie upwards. everything before is useless
-            this.internBuff = this.internBuff.slice(this.internBuff.indexOf(MagicCookieUtil.MESSAGE_COOKIE));
-            this.firstMagicCookieFound = true;
-        }
-
-        // start processing the received buffer
-        while (this.internBuff.length >= MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH) {
-            this.processReceivedBuffer();
-        }
+        while (this.processReceivedBuffer()) {}
     };
 
-    private processReceivedBuffer(): void {
-        try {
-            const serializedJoynrMessageLength: number = MagicCookieUtil.getPayloadLength(this.internBuff);
-            if (serializedJoynrMessageLength === 0) {
-                // no payload received, adjust internal buffer and continue receiving
-                this.internBuff = this.internBuff.slice(
-                    MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH + serializedJoynrMessageLength
-                );
-                return;
-            }
-
-            if (
-                this.internBuff.length <
-                MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH + serializedJoynrMessageLength
-            ) {
-                // message is incomplete. Already buffered, continue receiving
-                return;
-            }
-
-            const receivedPayloadBuff: Buffer = MagicCookieUtil.getPayloadBuff(this.internBuff);
-
-            if (receivedPayloadBuff.length === serializedJoynrMessageLength) {
-                // message is complete. no extra bytes received
-                this.internBuff = Buffer.alloc(0, 0);
-                this.firstMagicCookieFound = false;
-                this.processExtractedMessage(receivedPayloadBuff);
-                return;
-            }
-
-            if (receivedPayloadBuff.length > serializedJoynrMessageLength) {
-                // message is complete. intern buffer still has data from the next message.
-                this.internBuff = this.internBuff.slice(
-                    MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH + serializedJoynrMessageLength
-                );
-                const buff = receivedPayloadBuff.slice(0, serializedJoynrMessageLength);
-                this.processExtractedMessage(buff);
-                return;
-            }
-        } catch (e) {
-            log.error(`Could not unmarshal joynrMessage: ${e}`);
+    private processReceivedBuffer(): boolean {
+        if (Buffer.byteLength(this.internBuff) < MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH) {
+            // received little amount of bytes, not enough to process them. continue receiving
+            return false;
         }
+
+        // we received at least amount of magic cookie and the length of serialized joynr message.
+        // it might be a huge buffer which contains several messages
+        if (!MagicCookieUtil.checkCookie(this.internBuff)) {
+            this.onFatalRuntimeError(
+                new JoynrRuntimeException({
+                    detailMessage: `Fatal runtime error, stopping all communication permanently: Received invalid cookies ${MagicCookieUtil.getMagicCookieBuff(
+                        this.internBuff
+                    ).toString()}. Close the connection.`
+                })
+            );
+            this.shutdown();
+            return false;
+        }
+
+        const serializedJoynrMessageLength: number = MagicCookieUtil.getPayloadLength(this.internBuff);
+
+        // message is incomplete. Already buffered, continue receiving
+        if (this.internBuff.length < MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH + serializedJoynrMessageLength) {
+            return false;
+        }
+
+        // internBuff has at least one complete message
+        const extractMsgBuff: Buffer = Buffer.from(
+            this.internBuff.subarray(
+                MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH,
+                MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH + serializedJoynrMessageLength
+            )
+        );
+
+        // adjust internBuff after extracting the message
+        this.internBuff = this.internBuff.slice(
+            MagicCookieUtil.MAGIC_COOKIE_AND_PAYLOAD_LENGTH + serializedJoynrMessageLength
+        );
+
+        this.processExtractedMessage(extractMsgBuff);
+        return true;
     }
 
-    private processExtractedMessage(serializedJoynrMessage: Buffer): void {
-        log.debug(`Received joynr serialized message: ${serializedJoynrMessage.toString()}`);
-        const joynrMessage = MessageSerializer.parse(serializedJoynrMessage);
-        if (joynrMessage && this.onMessageCallback !== null) {
-            this.onMessageCallback(joynrMessage);
+    private processExtractedMessage(extractMsgBuff: Buffer): void {
+        let joynrMessage;
+        try {
+            joynrMessage = MessageSerializer.parse(extractMsgBuff);
+        } catch (e) {
+            const msg = `Fatal runtime error, stopping all communication permanently: ${e}, dropping the message!`;
+            log.fatal(msg);
+            this.onFatalRuntimeError(
+                new JoynrRuntimeException({
+                    detailMessage: msg
+                })
+            );
+            this.shutdown();
+            return;
+        }
+        if (this.onMessageCallback) {
+            try {
+                if (joynrMessage) {
+                    this.onMessageCallback(joynrMessage);
+                }
+            } catch (e) {
+                log.fatal(`Error from onMessageCallback ${e}`);
+                this.onFatalRuntimeError(
+                    new JoynrRuntimeException({
+                        detailMessage: `Fatal runtime error, stopping all communication permanently: Error from onMessageCallback: ${e}`
+                    })
+                );
+                this.shutdown();
+                return;
+            }
         }
     }
 
@@ -261,80 +307,94 @@ class UdsClient {
 
     private sendQueuedMessages(): void {
         log.debug(`Sending queued messages if any: ${this.queuedMessages.length} queued.`);
-        while (this.queuedMessages.length) {
-            const queuedMessage = this.queuedMessages.shift();
-            const queuedMessageBuff: Buffer = Buffer.from(queuedMessage);
-            this.socket.write(
-                MagicCookieUtil.writeMagicCookies(queuedMessageBuff, MagicCookieUtil.MESSAGE_COOKIE),
-                this.encodingConf
+        try {
+            while (this.queuedMessages.length) {
+                const queuedMessageBuff = this.queuedMessages.shift();
+                this.writeToSocket(queuedMessageBuff);
+            }
+        } catch (e) {
+            const msg = `Sending queued messages failed. It fails with ${e}`;
+            log.fatal(msg);
+            this.onFatalRuntimeError(
+                new JoynrRuntimeException({
+                    detailMessage: `Fatal runtime error, stopping all communication permanently: ${msg}`
+                })
             );
+            this.shutdown();
         }
+        return;
     }
 
-    /**
-     * @param joynrMessage the joynr message to transmit
-     */
-    public send(joynrMessage: JoynrMessage): Promise<void> {
-        log.info(`>>> OUTGOING >>> message: ${joynrMessage}`);
-        return this.sendMessage(joynrMessage);
-    }
-
-    private async sendMessage(joynrMessage: JoynrMessage): Promise<void> {
+    private serializeJoynrMessage(joynrMessage: JoynrMessage): Buffer | undefined {
         let marshaledMessage;
         try {
             marshaledMessage = MessageSerializer.stringify(joynrMessage);
         } catch (e) {
             log.error(
-                `Could not marshal joynrMessage: ${DiagnosticTags.forJoynrMessage(joynrMessage)}. It failed with ${e}`
+                `Could not marshal joynrMessage: ${DiagnosticTags.forJoynrMessage(joynrMessage)}. It failed with ${e}.`
             );
-            return Promise.resolve();
+        }
+        return marshaledMessage;
+    }
+
+    /**
+     * @param joynrMessage the joynr message to transmit
+     */
+    public async send(joynrMessage: JoynrMessage): Promise<void> {
+        log.info(`>>> OUTGOING >>> message: ${joynrMessage.msgId}`);
+        let marshaledMessage;
+        let serializingTries = 2;
+        while (serializingTries > 0) {
+            --serializingTries;
+            marshaledMessage = this.serializeJoynrMessage(joynrMessage);
+            if (marshaledMessage) {
+                break;
+            }
         }
 
-        if (this.socket !== null && this.connected === true && this.socket!.readyState === "open") {
-            try {
-                await this.sendInternal(marshaledMessage);
-            } catch (e) {
-                log.error(`Could not send joynrMessage: ${DiagnosticTags.forJoynrMessage(joynrMessage)}. Error: ${e}.`);
-                return Promise.resolve();
-            }
+        if (!marshaledMessage) {
+            log.error(`Discarding the message because of a failure in serializing it.`);
+        } else if (this.socket !== null && this.connected && this.socket!.readyState === "open") {
+            await this.sendInternal(marshaledMessage);
         } else if (!this.closed) {
-            // push new messages on to the back of the queue
-            log.debug(`Push new messages to the back of the queue`);
+            log.debug(`Not connected, push new messages to the back of the queue`);
             this.queuedMessages.push(marshaledMessage);
         } else {
             log.error(
-                `Dropping message because connection is already closed: ${DiagnosticTags.forJoynrMessage(joynrMessage)}`
+                `Dropping message because connection is already closed. ${DiagnosticTags.forJoynrMessage(joynrMessage)}`
             );
         }
     }
 
     private async sendInternal(marshaledMessage: Buffer): Promise<void> {
-        try {
-            this.socket!.write(
-                MagicCookieUtil.writeMagicCookies(marshaledMessage, MagicCookieUtil.MESSAGE_COOKIE),
-                this.encodingConf
-            );
-        } catch (e) {
-            log.error(`Catching an exception in sendInternal ${e}`);
-            return Promise.resolve();
-        }
+        this.writeToSocket(marshaledMessage);
+    }
+
+    private writeToSocket(marshaledMessage: Buffer): void {
+        this.socket!.write(
+            MagicCookieUtil.writeMagicCookies(marshaledMessage, MagicCookieUtil.MESSAGE_COOKIE),
+            this.encodingConf
+        );
     }
 
     /**
-     * Normally the UdsClient.write api automatically resolves the Promise
+     * Normally the UdsClient.send api automatically resolves the Promise
      * when it's called. But this doesn't mean that the data was actually
      * written out. This method is a helper for a graceful shutdown which delays
      * the resolving of the UdsClient.send Promise till the data is
      * written out, to make sure that unsubscribe messages are successfully sent.
      */
     public enableShutdownMode(): void {
-        this.sendInternal = this.udsSendAsync;
+        this.sendInternal = this.promisifyWriteToSocket;
     }
 
     /**
      * Ends connection to the socket
      */
     public shutdown(callback?: Function): void {
+        if (this.closed && this.socket === null) {
+            return;
+        }
         log.info(`shutdown of uds client is invoked`);
         this.closed = true;
         if (this.reconnectTimer !== undefined) {

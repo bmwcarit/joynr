@@ -48,6 +48,7 @@ import TypeRegistry = require("./TypeRegistry");
 import { Persistency } from "../../global/interface/Persistency";
 import JoynrStates = require("./JoynrStates");
 import * as UtilInternal from "../util/UtilInternal";
+import JoynrRuntimeException from "../exceptions/JoynrRuntimeException";
 
 const log = loggingManager.getLogger("joynr.start.JoynrRuntime");
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
@@ -61,6 +62,7 @@ class JoynrRuntime<T extends Provisioning> {
     protected joynrState: typeof JoynrStates[keyof typeof JoynrStates];
     protected multicastSkeletons: Record<string, any> = {};
     protected dispatcher!: Dispatcher;
+    protected onFatalRuntimeError: (error: JoynrRuntimeException) => void;
     protected subscriptionManager!: SubscriptionManager;
     protected publicationManager!: PublicationManager;
     protected requestReplyManager!: RequestReplyManager;
@@ -103,10 +105,12 @@ class JoynrRuntime<T extends Provisioning> {
      */
     public typeRegistry: TypeRegistry;
 
-    public constructor() {
+    public constructor(onFatalRuntimeError: (error: JoynrRuntimeException) => void) {
         // all methods apart from start need to be bound here.
         this.shutdown = this.shutdown.bind(this);
         this.terminateAllSubscriptions = this.terminateAllSubscriptions.bind(this);
+
+        this.onFatalRuntimeError = onFatalRuntimeError;
 
         this.typeRegistry = TypeRegistrySingleton.getInstance();
 

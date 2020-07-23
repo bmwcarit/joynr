@@ -57,6 +57,7 @@ const JoynrStates: {
 import JoynrRuntime from "./JoynrRuntime";
 import InProcessMessagingSkeleton from "../messaging/inprocess/InProcessMessagingSkeleton";
 import InProcessMessagingStub from "../messaging/inprocess/InProcessMessagingStub";
+import JoynrRuntimeException from "../exceptions/JoynrRuntimeException";
 
 const log = loggingManager.getLogger("joynr.start.InProcessRuntime");
 
@@ -71,8 +72,8 @@ const log = loggingManager.getLogger("joynr.start.InProcessRuntime");
  */
 class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
     private freshnessIntervalId: any = null;
-    public constructor() {
-        super();
+    public constructor(onFatalRuntimeError: (error: JoynrRuntimeException) => void) {
+        super(onFatalRuntimeError);
     }
 
     /**

@@ -46,6 +46,7 @@ import JoynrStates = require("./JoynrStates");
 import LocalDiscoveryAggregator = require("../capabilities/discovery/LocalDiscoveryAggregator");
 import InProcessMessagingSkeleton from "../messaging/inprocess/InProcessMessagingSkeleton";
 import InProcessMessagingStub from "../messaging/inprocess/InProcessMessagingStub";
+import JoynrRuntimeException from "../exceptions/JoynrRuntimeException";
 
 const log = loggingManager.getLogger("joynr.start.WebSocketLibjoynrRuntime");
 
@@ -61,8 +62,8 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
     private sharedWebSocket!: SharedWebSocket;
     private webSocketMessagingSkeleton!: WebSocketMessagingSkeleton;
     private bufferedOwnerId!: Buffer;
-    public constructor() {
-        super();
+    public constructor(onFatalRuntimeError: (error: JoynrRuntimeException) => void) {
+        super(onFatalRuntimeError);
         this.signingCallback = this.signingCallback.bind(this);
     }
 

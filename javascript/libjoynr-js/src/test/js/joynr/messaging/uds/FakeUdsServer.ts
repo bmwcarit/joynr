@@ -125,7 +125,7 @@ class FakeUdsServer {
         // disconnect the socket
         this.clientSocket.on("end", this.onClientDisconnected);
 
-        // Handle data received form the server
+        // Handle data received from the client
         this.clientSocket.on("data", this.onMessageReceived);
     };
 

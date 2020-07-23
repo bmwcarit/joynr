@@ -35,6 +35,9 @@ import loggingManager = require("./joynr/system/LoggingManager");
 import ParticipantIdStorage = require("./joynr/capabilities/ParticipantIdStorage");
 import CapabilitiesRegistrar = require("./joynr/capabilities/CapabilitiesRegistrar");
 import UdsLibJoynrRuntime from "./joynr/start/UdsLibJoynrRuntime";
+import JoynrRuntimeException from "./joynr/exceptions/JoynrRuntimeException";
+import LoggingManager from "./joynr/system/LoggingManager";
+const log = LoggingManager.getLogger("joynr");
 
 /**
  * copies all non private members and methods to joynr
@@ -83,11 +86,17 @@ class Joynr extends JoynrApi implements Pick<JoynrRuntime<Provisioning>, JoynrKe
 
     /**
      * @param provisioning
+     * @param onFatalRuntimeError Called in case a runtime error prevents further communication
      * @return Promise object being resolved in case all libjoynr dependencies are loaded
      */
-    public async load(provisioning: InProcessProvisioning | WebSocketLibjoynrProvisioning): Promise<Joynr> {
+    public async load(provisioning: InProcessProvisioning | WebSocketLibjoynrProvisioning, onFatalRuntimeError? : (error: JoynrRuntimeException) => void): Promise<Joynr> {
         this.loaded = true;
-        const runtime = new this.selectedRuntime();
+        if(!onFatalRuntimeError) {
+            onFatalRuntimeError = (error: JoynrRuntimeException) => {
+                log.fatal(`Unexpected joynr runtime error occured: ${error}`);
+            };
+        }
+        const runtime = new this.selectedRuntime(onFatalRuntimeError);
         await runtime.start(provisioning);
         wrapRuntime(this, runtime);
 

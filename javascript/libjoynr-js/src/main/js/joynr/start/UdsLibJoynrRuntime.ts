@@ -44,6 +44,7 @@ import LocalDiscoveryAggregator = require("../capabilities/discovery/LocalDiscov
 import UdsMulticastAddressCalculator from "../messaging/uds/UdsMulticastAddressCalculator";
 import JoynrStates = require("./JoynrStates");
 import loggingManager from "../system/LoggingManager";
+import JoynrRuntimeException from "../exceptions/JoynrRuntimeException";
 
 const log = loggingManager.getLogger("joynr.start.UdsLibJoynrRuntime");
 
@@ -59,8 +60,8 @@ class UdsLibJoynrRuntime extends JoynrRuntime<UdsLibJoynrProvisioning> {
     private udsClient!: UdsClient;
     private messageReplyToAddressCalculator: MessageReplyToAddressCalculator;
 
-    public constructor() {
-        super();
+    public constructor(onFatalRuntimeError: (error: JoynrRuntimeException) => void) {
+        super(onFatalRuntimeError);
         this.messageReplyToAddressCalculator = new MessageReplyToAddressCalculator({});
     }
 
@@ -157,7 +158,8 @@ class UdsLibJoynrRuntime extends JoynrRuntime<UdsLibJoynrProvisioning> {
             socketPath: udsProvisioning.socketPath,
             clientId: udsProvisioning.clientId,
             connectSleepTimeMs: udsProvisioning.connectSleepTimeMs,
-            onMessageCallback: onUdsClientMessageCallback
+            onMessageCallback: onUdsClientMessageCallback,
+            onFatalRuntimeError: this.onFatalRuntimeError
         });
 
         // Forward all outgoing messages directly to udsClient.send() (no routing)

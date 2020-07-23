@@ -19,6 +19,12 @@
 
 import ProvisioningRoot from "../../../resources/joynr/provisioning/provisioning_root";
 
+const onFatalRuntimeErrorSpy = jest.fn();
+
+const onFatalRuntimeErrorCallBack = (error: JoynrRuntimeException) => {
+    onFatalRuntimeErrorSpy(error);
+};
+
 const mocks: Record<string, any> = {};
 const constructors: Record<string, any> = {};
 const spies: Record<string, any> = {};
@@ -102,6 +108,7 @@ for (const [key, value] of Object.entries(config)) {
 }
 
 import UdsLibJoynrRuntime from "../../../../main/js/joynr/start/UdsLibJoynrRuntime";
+import JoynrRuntimeException from "../../../../main/js/joynr/exceptions/JoynrRuntimeException";
 
 describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     let runtime: any;
@@ -133,7 +140,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     });
 
     it("won't override settings unnecessarily", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         await runtime.shutdown();
         expect(constructors.DiscoveryQos.setDefaultSettings).not.toHaveBeenCalled();
@@ -153,7 +160,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
             discoveryTimeoutMs,
             discoveryExpiryIntervalMs
         };
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         await runtime.shutdown();
 
@@ -167,7 +174,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     });
 
     it("will initialize UdsClient correctly when provisioning is provided", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
 
         const expectedSocketPath = provisioning.uds.socketPath;
@@ -178,12 +185,13 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
             socketPath: expectedSocketPath,
             clientId: expectedClient,
             connectSleepTimeMs: expectedConnectSleepTimeMs,
-            onMessageCallback: expect.anything()
+            onMessageCallback: expect.anything(),
+            onFatalRuntimeError: onFatalRuntimeErrorCallBack
         });
     });
 
     it("will initialize UdsClient with default values when provisioning undefined", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         provisioning.uds = undefined;
         await runtime.start(provisioning);
 
@@ -194,14 +202,15 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
             socketPath: expectedSocketPath,
             clientId: expect.anything(),
             connectSleepTimeMs: expectedConnectSleepTimeMs,
-            onMessageCallback: expect.anything()
+            onMessageCallback: expect.anything(),
+            onFatalRuntimeError: onFatalRuntimeErrorCallBack
         });
     });
 
     it("will initialize UdsAddress (ccAddress) with correct socket path", async () => {
         const expectedSocketPath = provisioning.uds.socketPath;
 
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
 
         expect(spies.UdsAddress).toHaveBeenCalledWith({
@@ -212,7 +221,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     it("will initialize UdsClientAddress with correct client id", async () => {
         const expectedUdsClientId = provisioning.uds.clientId;
 
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
 
         expect(spies.UdsClientAddress).toHaveBeenCalledWith({
@@ -223,7 +232,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     it("will set routing proxy after building of RoutingProxy", async () => {
         mocks.MessageRouter.setRoutingProxy.mockReturnValue(Promise.reject(new Error("error from setRoutingProxy")));
 
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         try {
             await runtime.start(provisioning);
         } catch (e) {
@@ -240,7 +249,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         mocks.MessageRouter.getReplyToAddressFromRoutingProxy.mockReturnValue(
             Promise.reject(new Error("error from getReplyToAddressFromRoutingProxy"))
         );
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         try {
             await runtime.start(provisioning);
         } catch (e) {
@@ -257,26 +266,27 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         mocks.MessageRouter.getReplyToAddressFromRoutingProxy = jest
             .fn()
             .mockReturnValue(Promise.resolve("testAddress"));
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
 
         expect(mocks.MessageReplyToAddressCalculator.setReplyToAddress).toHaveBeenCalledWith("testAddress");
     });
 
     it("will use the default persistency settings", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.MessageRouter.mock.calls.length).toEqual(1);
         expect(spies.MessageRouter.mock.calls[0][0].persistency).toBeUndefined();
         expect(spies.ParticipantIdStorage.mock.calls.length).toEqual(1);
         expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
         expect(spies.PublicationManager.mock.calls.length).toEqual(1);
+        expect(spies.UdsClient.mock.calls.length).toEqual(1);
         expect(spies.PublicationManager.mock.calls[0][1]).toEqual(mocks.LocalStorageNode);
     });
 
     it("enables MessageRouter Persistency if configured", async () => {
         provisioning.persistency = { routingTable: true };
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.MessageRouter.mock.calls.length).toEqual(1);
         expect(spies.MessageRouter.mock.calls[0][0].persistency).toEqual(mocks.LocalStorageNode);
@@ -287,7 +297,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
 
     it("enables ParticipantIdStorage persistency if configured", async () => {
         provisioning.persistency = { capabilities: true };
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.ParticipantIdStorage.mock.calls.length).toEqual(1);
         expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
@@ -295,7 +305,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
 
     it("disables PublicationManager persistency if configured", async () => {
         provisioning.persistency = { publications: false };
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.PublicationManager.mock.calls.length).toEqual(1);
         expect(spies.PublicationManager.mock.calls[0][1]).toBeUndefined();
@@ -304,7 +314,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     it("will call MessageQueue with the settings from the provisioning", async () => {
         const maxQueueSizeInKBytes = 100;
         provisioning.messaging = { maxQueueSizeInKBytes };
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.MessageQueue.mock.calls.length).toEqual(1);
         expect(spies.MessageQueue).toHaveBeenCalledWith({
@@ -315,7 +325,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     it("will call Dispatcher with the settings from the provisioning", async () => {
         const ttlUpLiftMs = 1000;
         provisioning.messaging = { TTL_UPLIFT: ttlUpLiftMs };
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.Dispatcher.mock.calls.length).toEqual(1);
         expect(spies.Dispatcher.mock.calls[0][2]).toEqual(ttlUpLiftMs);
@@ -324,13 +334,13 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     it("will call MessagingQos with the settings from the provisioning", async () => {
         const ttl = 1000;
         provisioning.internalMessagingQos = { ttl };
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.MessagingQos).toHaveBeenCalledWith({ ttl });
     });
 
     it("calls UdsClient.enableShutdownMode in terminateAllSubscriptions", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         await runtime.terminateAllSubscriptions();
         expect(mocks.UdsClient.enableShutdownMode).toHaveBeenCalled();
@@ -338,7 +348,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     });
 
     it("calls SubscriptionManager.terminateSubscriptions in terminateAllSubscriptions", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         await runtime.terminateAllSubscriptions();
         expect(mocks.SubscriptionManager.terminateSubscriptions).toHaveBeenCalledWith(0);
@@ -346,7 +356,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     });
 
     it("terminates Subscriptions upon shutdown with default timeout", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
 
         await runtime.start(provisioning);
         await runtime.shutdown();
@@ -355,7 +365,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     });
 
     it("won't terminate Subscriptions upon shutdown when specified by provisioning", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
 
         provisioning.shutdownSettings = { clearSubscriptionsEnabled: false };
 
@@ -366,7 +376,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     });
 
     it("won't terminate Subscriptions when explicitly called with shutdown", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
 
         await runtime.start(provisioning);
 
@@ -375,11 +385,19 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     });
 
     it("will call enableShutdownMode and shutdown of UdsClient when shut down", async () => {
-        runtime = new UdsLibJoynrRuntime();
+        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         await runtime.shutdown();
 
         expect(mocks.UdsClient.enableShutdownMode).toHaveBeenCalled();
         expect(mocks.UdsClient.shutdown).toHaveBeenCalled();
+    });
+
+    afterEach(done => {
+        if (runtime !== null) {
+            runtime.shutdown();
+            jest.clearAllMocks();
+            done();
+        }
     });
 });
