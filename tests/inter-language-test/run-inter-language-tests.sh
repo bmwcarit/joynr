@@ -152,6 +152,18 @@ function prechecks {
 		log 'ilt-provider-cc for ILT not found in $ILT_BUILD_DIR/bin/ilt-provider-cc'
 		exit 1
 	fi
+	
+	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-provider-uds" ]
+	then
+		log 'ilt-provider-uds for ILT not found in $ILT_BUILD_DIR/bin/ilt-provider-uds'
+		exit 1
+	fi
+	
+	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-uds" ]
+	then
+		log 'ilt-consumer-uds for ILT not found in $ILT_BUILD_DIR/bin/ilt-consumer-uds'
+		exit 1
+	fi
 
 	if [ ! -f "$ILT_DIR/target/discovery-jee.war" ]
 	then
@@ -367,19 +379,34 @@ function stop_provider {
 	fi
 }
 
-function start_cpp_provider {
-	log 'Starting C++ provider.'
-	PROVIDER_DIR=$ILT_BUILD_DIR/provider_bin
+function start_cpp_provider_ws {
+	log 'Starting C++ provider WS (with WS to standalone cluster-controller).'
+	PROVIDER_DIR=$ILT_BUILD_DIR/cpp-provider-ws-bin
 	rm -fr $PROVIDER_DIR
 	cp -a $ILT_BUILD_DIR/bin $PROVIDER_DIR
 	cd $PROVIDER_DIR
 	[[ $? == "0" ]] && echo "cd $PROVIDER_DIR OK"
-	./ilt-provider-ws $DOMAIN > $ILT_RESULTS_DIR/provider-cpp.log 2>&1 &
+	./ilt-provider-ws $DOMAIN > $ILT_RESULTS_DIR/provider-cpp-ws.log 2>&1 &
 	PROVIDER_PID=$!
-	echo "Started C++ provider with PID $PROVIDER_PID in directory $PROVIDER_DIR"
+	echo "Started C++ provider WS with PID $PROVIDER_PID in directory $PROVIDER_DIR"
 	# Allow some time for startup
 	sleep 10
 }
+
+function start_cpp_provider_uds {
+	log 'Starting C++ provider UDS (with UDS to standalone cluster-controller).'
+	PROVIDER_DIR=$ILT_BUILD_DIR/cpp-provider-uds-bin
+	rm -fr $PROVIDER_DIR
+	cp -a $ILT_BUILD_DIR/bin $PROVIDER_DIR
+	cd $PROVIDER_DIR
+	[[ $? == "0" ]] && echo "cd $PROVIDER_DIR OK"
+	./ilt-provider-uds $DOMAIN > $ILT_RESULTS_DIR/provider-cpp-uds.log 2>&1 &
+	PROVIDER_PID=$!
+	echo "Started C++ provider UDS with PID $PROVIDER_PID in directory $PROVIDER_DIR"
+	# Allow some time for startup
+	sleep 10
+}
+
 
 function start_javascript_provider {
 	log 'Starting Javascript provider.'
@@ -448,42 +475,79 @@ function start_java_consumer_ws {
 	fi
 }
 
-function start_cpp_consumer {
-	log 'Starting C++ consumer.'
-	CONSUMER_DIR=$ILT_BUILD_DIR/consumer-bin
+function start_cpp_consumer_ws {
+	log 'Starting C++ consumer WS (with WS to standalone cluster-controller).'
+	CONSUMER_DIR=$ILT_BUILD_DIR/cpp-consumer-ws-bin
 	cd $ILT_BUILD_DIR
 	rm -fr $CONSUMER_DIR
 	cp -a $ILT_BUILD_DIR/bin $CONSUMER_DIR
 	cd $CONSUMER_DIR
 	[[ $? == "0" ]] && echo "cd $CONSUMER_DIR OK"
-	#./ilt-consumer-cc $DOMAIN >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
-	./ilt-consumer-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-$1.log 2>&1
+	./ilt-consumer-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-ws-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-ws-$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]
 	then
-	log 'C++ consumer FAILED.'
+	log 'C++ consumer WS FAILED.'
 		echo "STATUS = $SUCCESS"
 		#test_failed
 		let FAILED_TESTS+=1
 		#stopall
 	else
-	log 'C++ consumer successfully completed.'
+	log 'C++ consumer WS successfully completed.'
 	fi
 
-	log 'Starting C++ consumer.'
-	./ilt-consumer-proxy-provider-interface-mismatch-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch-$1.log 2>&1
+	log 'Starting C++ consumer proxy-provider-mismatch-ws.'
+	./ilt-consumer-proxy-provider-interface-mismatch-ws $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch-ws-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch-ws-$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]
 	then
-	log 'C++ consumer proxy-provider-mismatch FAILED.'
+	log 'C++ consumer proxy-provider-mismatch-ws FAILED.'
 		echo "STATUS = $SUCCESS"
 		#test_failed
 		let FAILED_TESTS+=1
 		#stopall
 	else
-	log 'C++ consumer proxy-provider-mismatch successfully completed.'
+	log 'C++ consumer proxy-provider-mismatch-ws successfully completed.'
+	fi
+}
+
+function start_cpp_consumer_uds {
+	log 'Starting C++ consumer UDS (with UDS to standalone cluster-controller).'
+	CONSUMER_DIR=$ILT_BUILD_DIR/cpp-consumer-uds-bin
+	cd $ILT_BUILD_DIR
+	rm -fr $CONSUMER_DIR
+	cp -a $ILT_BUILD_DIR/bin $CONSUMER_DIR
+	cd $CONSUMER_DIR
+	[[ $? == "0" ]] && echo "cd $CONSUMER_DIR OK"
+	./ilt-consumer-uds $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-uds-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-uds-$1.log 2>&1
+	SUCCESS=$?
+
+	if [ "$SUCCESS" != 0 ]
+	then
+	log 'C++ consumer UDS FAILED.'
+		echo "STATUS = $SUCCESS"
+		#test_failed
+		let FAILED_TESTS+=1
+		#stopall
+	else
+	log 'C++ consumer UDS successfully completed.'
+	fi
+	
+	log 'Starting C++ consumer proxy-provider-mismatch-uds.'
+	./ilt-consumer-proxy-provider-interface-mismatch-uds $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch-uds-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch-uds-$1.log 2>&1
+	SUCCESS=$?
+
+	if [ "$SUCCESS" != 0 ]
+	then
+	log 'C++ consumer proxy-provider-mismatch-uds FAILED.'
+		echo "STATUS = $SUCCESS"
+		#test_failed
+		let FAILED_TESTS+=1
+		#stopall
+	else
+	log 'C++ consumer proxy-provider-mismatch-uds successfully completed.'
 	fi
 }
 
@@ -509,7 +573,8 @@ function start_javascript_consumer {
 function start_consumers {
 	start_java_consumer_cc $1
 	start_java_consumer_ws $1
-	start_cpp_consumer $1
+	start_cpp_consumer_ws $1
+	start_cpp_consumer_uds $1
 	start_javascript_consumer $1
 }
 
@@ -571,11 +636,23 @@ stop_services
 
 # run checks with C++ provider
 clean_up
-log 'RUN CHECKS WITH C++ PROVIDER.'
-PROVIDER="provider-cpp"
+log 'RUN CHECKS WITH C++ PROVIDER WS (with WS to standalone clustercontroller).'
+PROVIDER="provider-cpp-ws"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
-start_cpp_provider
+start_cpp_provider_ws
+start_consumers $PROVIDER
+stop_provider
+stop_cluster_controller
+stop_services
+
+# run checks with C++ provider UDS
+clean_up
+log 'RUN CHECKS WITH C++ PROVIDER UDS (with UDS to standalone clustercontroller).'
+PROVIDER="provider-cpp-uds"
+start_services $PROVIDER
+start_cluster_controller $PROVIDER
+start_cpp_provider_uds
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
@@ -593,7 +670,7 @@ stop_provider
 stop_cluster_controller
 stop_services
 
-# run checks with Javascript provider
+# run checks with Javascript bundle provider
 clean_up
 log 'RUN CHECKS WITH JAVASCRIPT BUNDLE PROVIDER.'
 PROVIDER="provider-javascript-bundle"
