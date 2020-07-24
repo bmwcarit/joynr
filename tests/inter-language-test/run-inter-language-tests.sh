@@ -408,22 +408,48 @@ function start_cpp_provider_uds {
 }
 
 
-function start_javascript_provider {
-	log 'Starting Javascript provider.'
+function start_javascript_provider_ws {
+	log 'Starting Javascript provider WS (with WS to standalone cluster-controller).'
+	RUNTIME="websocket"
 	cd $ILT_DIR
-	nohup npm run-script startprovider --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider-javascript.log 2>&1 &
+	nohup npm run startprovider --inter-language-test:domain=$DOMAIN --inter-language-test:runtime=$RUNTIME > $ILT_RESULTS_DIR/provider-javascript-ws.log 2>&1 &
 	PROVIDER_PID=$!
-	echo "Started Javascript provider with PID $PROVIDER_PID"
+	echo "Started Javascript provider WS with PID $PROVIDER_PID"
 	# Allow some time for startup
 	sleep 10
 }
 
-function start_javascript_provider_bundle {
-	log 'Starting Javascript provider bundle.'
+function start_javascript_provider_uds {
+	log 'Starting Javascript provider UDS (with UDS to standalone cluster-controller).'
+	RUNTIME="uds"
+	SOCKET_PATH=$ILT_BUILD_DIR/cluster-controller-bin/uds-libjoynr-ilt.sock
 	cd $ILT_DIR
-	nohup npm run startproviderbundle --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/provider-javascript-bundle.log 2>&1 &
+	nohup npm run startprovider --inter-language-test:domain=$DOMAIN --inter-language-test:runtime=$RUNTIME --inter-language-test:uds:path=$SOCKET_PATH > $ILT_RESULTS_DIR/provider-javascript-uds.log 2>&1 &
 	PROVIDER_PID=$!
-	echo "Started Javascript provider with PID $PROVIDER_PID"
+	echo "Started Javascript provider UDS with PID $PROVIDER_PID"
+	# Allow some time for startup
+	sleep 10
+}
+
+function start_javascript_provider_bundle_ws {
+	log 'Starting Javascript provider bundle WS (with WS to standalone cluster-controller).'
+	RUNTIME="websocket"
+	cd $ILT_DIR
+	nohup npm run startproviderbundle --inter-language-test:domain=$DOMAIN --inter-language-test:runtime=$RUNTIME > $ILT_RESULTS_DIR/provider-javascript-bundle_ws.log 2>&1 &
+	PROVIDER_PID=$!
+	echo "Started Javascript provider bundle WS with PID $PROVIDER_PID"
+	# Allow some time for startup
+	sleep 10
+}
+
+function start_javascript_provider_bundle_uds {
+	log 'Starting Javascript provider bundle UDS (with UDS to standalone cluster-controller).'
+	RUNTIME="uds"
+	SOCKET_PATH=$ILT_BUILD_DIR/cluster-controller-bin/uds-libjoynr-ilt.sock
+	cd $ILT_DIR
+	nohup npm run startproviderbundle --inter-language-test:domain=$DOMAIN --inter-language-test:runtime=$RUNTIME --inter-language-test:uds:path=$SOCKET_PATH > $ILT_RESULTS_DIR/provider-javascript-bundle_uds.log 2>&1 &
+	PROVIDER_PID=$!
+	echo "Started Javascript provider bundle UDS with PID $PROVIDER_PID"
 	# Allow some time for startup
 	sleep 10
 }
@@ -551,22 +577,44 @@ function start_cpp_consumer_uds {
 	fi
 }
 
-function start_javascript_consumer {
-	log 'Starting Javascript consumer.'
+function start_javascript_consumer_ws {
+	log 'Starting Javascript consumer WS (with WS to standalone cluster-controller).'
+	RUNTIME="websocket"
 	cd $ILT_DIR
 	rm -fr localStorageStorage
-	npm run-script startjasmine --interlanguageTest:domain=$DOMAIN > $ILT_RESULTS_DIR/consumer-javascript-$1.log 2>&1
+	npm run startjasmine --inter-language-test:domain=$DOMAIN --inter-language-test:runtime=$RUNTIME > $ILT_RESULTS_DIR/consumer-javascript-ws-$1.log 2>&1
 	SUCCESS=$?
 
 	if [ "$SUCCESS" != 0 ]
 	then
-		log 'Javascript consumer FAILED.'
+		log 'Javascript consumer WS FAILED.'
 		echo "STATUS = $SUCCESS"
 		#test_failed
 		let FAILED_TESTS+=1
 		#stopall
 	else
-		log 'Javascript consumer successfully completed.'
+		log 'Javascript consumer WS successfully completed.'
+	fi
+}
+
+function start_javascript_consumer_uds {
+	log 'Starting Javascript consumer UDS (with UDS to standalone cluster-controller).'
+	RUNTIME="uds"
+	SOCKET_PATH=$ILT_BUILD_DIR/cluster-controller-bin/uds-libjoynr-ilt.sock
+	cd $ILT_DIR
+	rm -fr localStorageStorage
+	npm run startjasmine --inter-language-test:domain=$DOMAIN --inter-language-test:runtime=$RUNTIME --inter-language-test:uds:path=$SOCKET_PATH > $ILT_RESULTS_DIR/consumer-javascript-uds-$1.log 2>&1
+	SUCCESS=$?
+
+	if [ "$SUCCESS" != 0 ]
+	then
+		log 'Javascript consumer UDS FAILED.'
+		echo "STATUS = $SUCCESS"
+		#test_failed
+		let FAILED_TESTS+=1
+		#stopall
+	else
+		log 'Javascript consumer UDS successfully completed.'
 	fi
 }
 
@@ -575,7 +623,8 @@ function start_consumers {
 	start_java_consumer_ws $1
 	start_cpp_consumer_ws $1
 	start_cpp_consumer_uds $1
-	start_javascript_consumer $1
+	start_javascript_consumer_ws $1
+	start_javascript_consumer_uds $1
 }
 
 # TESTS
@@ -658,25 +707,49 @@ stop_provider
 stop_cluster_controller
 stop_services
 
-# run checks with Javascript provider
+# run checks with Javascript provider WS
 clean_up
-log 'RUN CHECKS WITH JAVASCRIPT PROVIDER.'
-PROVIDER="provider-javascript"
+log 'RUN CHECKS WITH JAVASCRIPT PROVIDER WS (with WS to standalone clustercontroller).'
+PROVIDER="provider-javascript-ws"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
-start_javascript_provider
+start_javascript_provider_ws
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
 stop_services
 
-# run checks with Javascript bundle provider
+# run checks with Javascript provider UDS
 clean_up
-log 'RUN CHECKS WITH JAVASCRIPT BUNDLE PROVIDER.'
-PROVIDER="provider-javascript-bundle"
+log 'RUN CHECKS WITH JAVASCRIPT PROVIDER UDS (with UDS to standalone clustercontroller).'
+PROVIDER="provider-javascript-uds"
 start_services $PROVIDER
 start_cluster_controller $PROVIDER
-start_javascript_provider_bundle
+start_javascript_provider_uds
+start_consumers $PROVIDER
+stop_provider
+stop_cluster_controller
+stop_services
+
+# run checks with Javascript bundle provider WS
+clean_up
+log 'RUN CHECKS WITH JAVASCRIPT BUNDLE PROVIDER WS (with WS to standalone clustercontroller).'
+PROVIDER="provider-javascript-bundle-ws"
+start_services $PROVIDER
+start_cluster_controller $PROVIDER
+start_javascript_provider_bundle_ws
+start_consumers $PROVIDER
+stop_provider
+stop_cluster_controller
+stop_services
+
+# run checks with Javascript bundle provider UDS
+clean_up
+log 'RUN CHECKS WITH JAVASCRIPT BUNDLE PROVIDER UDS (with UDS to standalone clustercontroller).'
+PROVIDER="provider-javascript-bundle-uds"
+start_services $PROVIDER
+start_cluster_controller $PROVIDER
+start_javascript_provider_bundle_uds
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
