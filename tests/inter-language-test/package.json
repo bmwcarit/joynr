@@ -17,16 +17,25 @@
   },
   "config": {
     "domain": "joynr-inter-language-test-domain",
-    "glob": "src/{{main/js}/**/*.ts,main/js/*.ts}"
+    "glob": "src/{{main/js}/**/*.ts,main/js/*.ts}",
+    "runtime": "uds",
+    "uds": {
+      "path": "/var/run/joynr/cluster-controller.sock",
+      "consumerid": "ilt_consumer_id",
+      "providerid": "ilt_provider_id",
+      "providerbundleid": "ilt_provider_bundle_id",
+      "connectsleeptimems": 500
+    }
   },
   "scripts": {
     "clean": "rm -rf node_modules ../../javascript/libjoynr-js/.output",
     "install:browserify": "node bundle.js",
-    "startprovider": "../../node_modules/.bin/ts-node src/main/js/provider.ts $npm_package_config_domain",
-    "startproviderbundle": "node src/main/js/provider.bundle.js $npm_package_config_domain",
-    "startjasmine": "export domain=$npm_package_config_domain && ../../node_modules/.bin/jest -i",
+    "startprovider": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime udspath=$npm_package_config_uds_path udsclientid=$npm_package_config_uds_providerid udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems ../../node_modules/.bin/ts-node src/main/js/provider.ts",
+    "startproviderbundle": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime udspath=$npm_package_config_uds_path udsclientid=$npm_package_config_uds_providerbundleid udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems node src/main/js/provider.bundle.js",
+    "startjasmine": "export domain=$npm_package_config_domain && export runtime=$npm_package_config_runtime && export udspath=$npm_package_config_uds_path && export udsclientid=$npm_package_config_uds_consumerid && export udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems && ../../node_modules/.bin/jest -i",
     "build:fast": "cd ../../javascript/libjoynr-js && npm run ts:package && cd - && npm i && npm run install:browserify && npm run lint",
     "build": "npm run clean && npm run build:fast",
+    "format:install": "npm i prettier@1.17.1 --no-save && npm run format",
     "format": "prettier --write $npm_package_config_glob",
     "lint": "../../node_modules/.bin/eslint $npm_package_config_glob",
     "lint:fix": "../../node_modules/.bin/eslint $npm_package_config_glob --fix"

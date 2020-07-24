@@ -29,6 +29,8 @@ import MapStringString from "../generated-javascript/joynr/interlanguagetest/nam
 import ArrayTypeDefStruct from "../generated-javascript/joynr/interlanguagetest/typeDefCollection/ArrayTypeDefStruct";
 import joynr from "joynr";
 import TestInterfaceProxy from "../generated-javascript/joynr/interlanguagetest/TestInterfaceProxy";
+import WebSocketLibjoynrRuntime from "joynr/joynr/start/WebSocketLibjoynrRuntime";
+import UdsLibJoynrRuntime from "joynr/joynr/start/UdsLibJoynrRuntime";
 
 if (process.env.domain === undefined) {
     log("please pass a domain as argument");
@@ -38,8 +40,31 @@ if (process.env.domain === undefined) {
 const domain: string = process.env.domain!;
 log(`domain: ${domain}`);
 
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const runtime: string = process.env.runtime!;
+log(`runtime: ${runtime}`);
+
 describe("Consumer test", () => {
     const provisioning = testbase.provisioning_common;
+
+    if (process.env.runtime !== undefined) {
+        if (runtime === "websocket") {
+            // provisioning data are defined in test-base
+            joynr.selectRuntime(WebSocketLibjoynrRuntime);
+        } else if (runtime === "uds") {
+            if (!process.env.udspath || !process.env.udsclientid || !process.env.udsconnectsleeptimems) {
+                log("please pass udspath, udsclientid, udsconnectsleeptimems as argument");
+                process.exit(1);
+            }
+            provisioning.uds = {
+                socketPath: process.env.udspath,
+                clientId: process.env.udsclientid,
+                connectSleepTimeMs: Number(process.env.udsconnectsleeptimems)
+            };
+            joynr.selectRuntime(UdsLibJoynrRuntime);
+        }
+    }
+
     provisioning.persistency = {
         clearPersistency: true
     };

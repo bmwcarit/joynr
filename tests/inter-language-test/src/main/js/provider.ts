@@ -21,10 +21,13 @@ import joynr from "joynr";
 
 import testbase from "test-base";
 const log = testbase.logging.log;
-const provisioning = testbase.provisioning_common;
 import TestInterfaceProvider from "../generated-javascript/joynr/interlanguagetest/TestInterfaceProvider";
 import IltTestInterfaceProvider from "./IltProvider";
 import IltStringBroadcastFilter from "./IltStringBroadcastFilter";
+import WebSocketLibjoynrRuntime from "joynr/joynr/start/WebSocketLibjoynrRuntime";
+import UdsLibJoynrRuntime from "joynr/joynr/start/UdsLibJoynrRuntime";
+
+const provisioning = testbase.provisioning_common;
 
 provisioning.logging.configuration = {
     appenders: {
@@ -50,12 +53,37 @@ provisioning.logging.configuration = {
     }
 };
 
-if (process.argv.length !== 3) {
+if (process.env.domain === undefined) {
     log("please pass a domain as argument");
     process.exit(0);
 }
-const domain = process.argv[2];
+
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const domain = process.env.domain!;
 log(`domain: ${domain}`);
+
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const runtime = process.env.runtime!;
+log(`runtime: ${runtime}`);
+
+if (runtime !== undefined) {
+    if (runtime === "websocket") {
+        // provisioning data are defined in test-base
+        joynr.selectRuntime(WebSocketLibjoynrRuntime);
+    } else if (runtime === "uds") {
+        if (!process.env.udspath || !process.env.udsclientid || !process.env.udsconnectsleeptimems) {
+            log("please pass udspath, udsclientid, udsconnectsleeptimems as argument");
+            process.exit(1);
+        }
+        provisioning.uds = {
+            socketPath: process.env.udspath,
+            clientId: process.env.udsclientid,
+            connectSleepTimeMs: Number(process.env.udsconnectsleeptimems)
+        };
+        // no selectRuntime: UdsLibJoynrRuntime is default
+        joynr.selectRuntime(UdsLibJoynrRuntime);
+    }
+}
 
 joynr
     .load(provisioning)
