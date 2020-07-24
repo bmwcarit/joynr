@@ -335,6 +335,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             gbids = new String[]{ knownGbids[0] };
         }
 
+        discoveryEntry.setLastSeenDateMs(System.currentTimeMillis());
+
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
             Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(discoveryEntry.getParticipantId(),
                                                                                               Long.MAX_VALUE);
