@@ -91,7 +91,7 @@ class UdsClient {
             throw new Error(errorMsg);
         }
 
-        log.debug(`Client trying to connect with ${this.clientId} ...`);
+        log.debug(`Client trying to connect to ${this.socketPath} with clientId=${this.clientId} ...`);
         this.udsSendAsync = util.promisify((marshaledMessage: Buffer, cb: any) =>
             this.socket!.write(marshaledMessage, cb, this.encodingConf)
         );
