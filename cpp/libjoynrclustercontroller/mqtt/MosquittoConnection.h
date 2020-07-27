@@ -27,7 +27,10 @@
 #include <unordered_set>
 #include <mutex>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wredundant-decls"
 #include <mosquitto.h>
+#pragma GCC diagnostic pop
 #include <mqtt_protocol.h>
 
 #if (LIBMOSQUITTO_VERSION_NUMBER < 1006007)
