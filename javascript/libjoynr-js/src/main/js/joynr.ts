@@ -34,7 +34,7 @@ import ProviderBuilder = require("./joynr/provider/ProviderBuilder");
 import loggingManager = require("./joynr/system/LoggingManager");
 import ParticipantIdStorage = require("./joynr/capabilities/ParticipantIdStorage");
 import CapabilitiesRegistrar = require("./joynr/capabilities/CapabilitiesRegistrar");
-import WebSocketLibjoynrRuntime = require("./joynr/start/WebSocketLibjoynrRuntime");
+import UdsLibJoynrRuntime from "./joynr/start/UdsLibJoynrRuntime";
 
 /**
  * copies all non private members and methods to joynr
@@ -79,7 +79,7 @@ class Joynr extends JoynrApi implements Pick<JoynrRuntime<Provisioning>, JoynrKe
 
     private loaded: boolean = false;
     public JoynrObject = JoynrObject;
-    private selectedRuntime: Type<JoynrRuntime<Provisioning>> = WebSocketLibjoynrRuntime;
+    private selectedRuntime: Type<JoynrRuntime<Provisioning>> = UdsLibJoynrRuntime;
 
     /**
      * @param provisioning
