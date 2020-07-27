@@ -25,7 +25,7 @@ const spys: Record<string, any> = {};
 [
     ["DiscoveryQos"],
     ["CapabilitiesRegistrar", ["shutdown"]],
-    ["MessageRouter", ["setRoutingProxy", "addNextHop", "shutdown"]],
+    ["MessageRouter", ["setRoutingProxy", "addNextHop", "shutdown", "configureReplyToAddressFromRoutingProxy"]],
     ["MessageQueue"],
     [
         "Dispatcher",
@@ -61,6 +61,7 @@ const spys: Record<string, any> = {};
 });
 
 mocks.MessageRouter.setRoutingProxy = jest.fn().mockReturnValue(Promise.resolve());
+mocks.MessageRouter.configureReplyToAddressFromRoutingProxy = jest.fn().mockReturnValue(Promise.resolve());
 mocks.ProxyBuilder.build.mockReturnValue(Promise.resolve());
 
 mocks.SubscriptionManager.terminateSubscriptions.mockReturnValue(Promise.resolve());

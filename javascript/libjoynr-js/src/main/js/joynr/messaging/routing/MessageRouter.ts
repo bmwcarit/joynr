@@ -536,13 +536,30 @@ class MessageRouter {
     public setRoutingProxy(newRoutingProxy: RoutingProxy): Promise<void> {
         this.routingProxy = newRoutingProxy;
 
-        return this.addRoutingProxyToParentRoutingTable()
-            .then(() => this.routingProxy.replyToAddress.get())
+        return this.addRoutingProxyToParentRoutingTable().then(() => this.processQueuedRoutingProxyCalls());
+    }
+
+    /**
+     * Get replyToAddress from routing proxy
+     * @returns A+ promise object
+     */
+    public getReplyToAddressFromRoutingProxy(): Promise<string> {
+        if (!this.routingProxy) {
+            return Promise.reject(new Error(`"setRoutingProxy()" has to be called first`));
+        }
+        return this.routingProxy.replyToAddress.get();
+    }
+
+    /**
+     * Get replyToAddress via routing proxy to enable global communication in message router.
+     * @returns A+ promise object
+     */
+    public configureReplyToAddressFromRoutingProxy(): Promise<void> {
+        return this.getReplyToAddressFromRoutingProxy()
             .then(address => this.setReplyToAddress(address))
             .catch((error: Error) => {
                 throw new Error(`Failed to get replyToAddress from parent router: ${error}`);
-            })
-            .then(() => this.processQueuedRoutingProxyCalls());
+            });
     }
 
     /**

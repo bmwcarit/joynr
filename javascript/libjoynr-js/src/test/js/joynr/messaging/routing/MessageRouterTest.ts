@@ -713,6 +713,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
 
             await messageRouter.setRoutingProxy(routingProxySpy);
+            await messageRouter.configureReplyToAddressFromRoutingProxy();
             await testUtil.multipleSetImmediate();
 
             expect(messagingStubSpy.transmit).toHaveBeenCalledWith(expectedJoynrMessage);
