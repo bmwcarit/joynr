@@ -21,7 +21,7 @@ import ProvisioningRoot from "../../../resources/joynr/provisioning/provisioning
 
 const mocks: Record<string, any> = {};
 const constructors: Record<string, any> = {};
-const spys: Record<string, any> = {};
+const spies: Record<string, any> = {};
 [
     ["DiscoveryQos"],
     ["CapabilitiesRegistrar", ["shutdown"]],
@@ -53,9 +53,9 @@ const spys: Record<string, any> = {};
     keys.forEach((key: string) => {
         mocks[name][key] = jest.fn();
     });
-    spys[name] = jest.fn();
+    spies[name] = jest.fn();
     constructors[name] = function(...args: any[]) {
-        spys[name](...args);
+        spies[name](...args);
         return mocks[name];
     };
 });
@@ -119,8 +119,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         });
 
         // unfortunately jasmine doesn't reset spies between specs per default ...
-        Object.keys(spys).forEach((spy: any) => {
-            spys[spy].mockClear();
+        Object.keys(spies).forEach((spy: any) => {
+            spies[spy].mockClear();
         });
         mocks.SubscriptionManager.terminateSubscriptions.mockClear();
     });
@@ -159,7 +159,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
 
-        expect(spys.SharedWebSocket).toHaveBeenCalledWith({
+        expect(spies.SharedWebSocket).toHaveBeenCalledWith({
             remoteAddress: expect.objectContaining({
                 _typeName: "joynr.system.RoutingTypes.WebSocketAddress",
                 protocol: WebSocketProtocol.WS,
@@ -178,21 +178,21 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     it("will use the default persistency settings", async () => {
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.MessageRouter.mock.calls.length).toEqual(1);
-        expect(spys.MessageRouter.mock.calls[0][0].persistency).toBeUndefined();
-        expect(spys.ParticipantIdStorage.mock.calls.length).toEqual(1);
-        expect(spys.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
-        expect(spys.PublicationManager.mock.calls.length).toEqual(1);
-        expect(spys.PublicationManager.mock.calls[0][1]).toEqual(mocks.LocalStorageNode);
+        expect(spies.MessageRouter.mock.calls.length).toEqual(1);
+        expect(spies.MessageRouter.mock.calls[0][0].persistency).toBeUndefined();
+        expect(spies.ParticipantIdStorage.mock.calls.length).toEqual(1);
+        expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
+        expect(spies.PublicationManager.mock.calls.length).toEqual(1);
+        expect(spies.PublicationManager.mock.calls[0][1]).toEqual(mocks.LocalStorageNode);
     });
 
     it("enables MessageRouter Persistency if configured", async () => {
         provisioning.persistency = { routingTable: true };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.MessageRouter.mock.calls.length).toEqual(1);
-        expect(spys.MessageRouter.mock.calls[0][0].persistency).toEqual(mocks.LocalStorageNode);
-        expect(spys.MessageRouter).toHaveBeenCalledWith(
+        expect(spies.MessageRouter.mock.calls.length).toEqual(1);
+        expect(spies.MessageRouter.mock.calls[0][0].persistency).toEqual(mocks.LocalStorageNode);
+        expect(spies.MessageRouter).toHaveBeenCalledWith(
             expect.objectContaining({ persistency: mocks.LocalStorageNode })
         );
     });
@@ -201,16 +201,16 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.persistency = { capabilities: true };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.ParticipantIdStorage.mock.calls.length).toEqual(1);
-        expect(spys.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
+        expect(spies.ParticipantIdStorage.mock.calls.length).toEqual(1);
+        expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
     });
 
     it("disables PublicationManager persistency if configured", async () => {
         provisioning.persistency = { publications: false };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.PublicationManager.mock.calls.length).toEqual(1);
-        expect(spys.PublicationManager.mock.calls[0][1]).toBeUndefined();
+        expect(spies.PublicationManager.mock.calls.length).toEqual(1);
+        expect(spies.PublicationManager.mock.calls[0][1]).toBeUndefined();
     });
 
     it("will call MessageQueue with the settings from the provisioning", async () => {
@@ -218,8 +218,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.messaging = { maxQueueSizeInKBytes };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.MessageQueue.mock.calls.length).toEqual(1);
-        expect(spys.MessageQueue).toHaveBeenCalledWith({
+        expect(spies.MessageQueue.mock.calls.length).toEqual(1);
+        expect(spies.MessageQueue).toHaveBeenCalledWith({
             maxQueueSizeInKBytes
         });
     });
@@ -229,8 +229,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.messaging = { TTL_UPLIFT: ttlUpLiftMs };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.Dispatcher.mock.calls.length).toEqual(1);
-        expect(spys.Dispatcher.mock.calls[0][2]).toEqual(ttlUpLiftMs);
+        expect(spies.Dispatcher.mock.calls.length).toEqual(1);
+        expect(spies.Dispatcher.mock.calls[0][2]).toEqual(ttlUpLiftMs);
     });
 
     it("will call MessagingQos with the settings from the provisioning", async () => {
@@ -238,7 +238,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         provisioning.internalMessagingQos = { ttl };
         runtime = new WebSocketLibjoynrRuntime();
         await runtime.start(provisioning);
-        expect(spys.MessagingQos).toHaveBeenCalledWith({ ttl });
+        expect(spies.MessagingQos).toHaveBeenCalledWith({ ttl });
     });
 
     it("will set the signingCallback to the joynrMessage.prototype", async () => {
