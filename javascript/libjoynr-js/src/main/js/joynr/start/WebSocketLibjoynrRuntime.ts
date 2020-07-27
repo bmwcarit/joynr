@@ -213,6 +213,12 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
                 throw new Error(`Failed to create routing proxy: ${error}`);
             })
             .then(() => {
+                return this.messageRouter.configureReplyToAddressFromRoutingProxy();
+            })
+            .catch((error: any) => {
+                throw new Error(`Failed to initialize replyToAddress: ${error}`);
+            })
+            .then(() => {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 return this.proxyBuilder!.build(DiscoveryProxy, {
                     domain: "io.joynr",
