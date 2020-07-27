@@ -554,6 +554,7 @@ void MosquittoConnection::startInternal()
             &props, MQTT_PROP_SESSION_EXPIRY_INTERVAL, std::numeric_limits<std::int32_t>::max());
     mosquitto_connect_bind_async_v5(
             _mosq, _host.c_str(), _port, _mqttKeepAliveTimeSeconds.count(), nullptr, props);
+    mosquitto_property_free_all(&props);
 
     mosquitto_reconnect_delay_set(_mosq,
                                   _mqttReconnectDelayTimeSeconds.count(),
@@ -776,6 +777,7 @@ void MosquittoConnection::publishMessage(
         const std::string errorString(getErrorString(ret));
         std::string errorMsg = "Adding MQTT message expiry interval property failed: error: " +
                                std::to_string(ret) + " (" + errorString + ")";
+        mosquitto_property_free_all(&props);
         throw exceptions::JoynrRuntimeException(errorMsg);
     }
     int rc = mosquitto_publish_v5(_mosq,
@@ -786,6 +788,7 @@ void MosquittoConnection::publishMessage(
                                   qosLevel,
                                   isMqttRetain(),
                                   props);
+    mosquitto_property_free_all(&props);
     if (!(rc == MOSQ_ERR_SUCCESS)) {
         const std::string errorString(getErrorString(rc));
         if (rc == MOSQ_ERR_INVAL || rc == MOSQ_ERR_PAYLOAD_SIZE) {
