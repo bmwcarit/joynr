@@ -1112,8 +1112,8 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
 void JoynrClusterControllerRuntime::start()
 {
     _singleThreadIOService->start();
-    startLocalCommunication();
     startExternalCommunication();
+    startLocalCommunication();
     _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(
             _clusterControllerStartDateMs);
 }
