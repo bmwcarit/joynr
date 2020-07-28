@@ -25,6 +25,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/functional/hash.hpp>
 #include <boost/optional.hpp>
 
 #include "joynr/Logger.h"
