@@ -1309,7 +1309,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
     auto onSuccess = [this, expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
-        EXPECT_EQ(expectedEntry, result);
+        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result));
         _semaphore.notify();
     };
 
