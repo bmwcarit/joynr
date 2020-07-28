@@ -40,7 +40,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -181,6 +180,56 @@ public class LocalCapabilitiesDirectoryTest {
         }
     }
 
+    private static class DiscoveryEntryWithUpdatedLastSeenDateMsMatcher extends ArgumentMatcher<DiscoveryEntry> {
+
+        private DiscoveryEntry expected;
+
+        private DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(DiscoveryEntry expected) {
+            this.expected = expected;
+        }
+
+        @Override
+        public boolean matches(Object argument) {
+            assertNotNull(argument);
+            DiscoveryEntry actual = (DiscoveryEntry) argument;
+            return discoveryEntriesMatchWithUpdatedLastSeenDate(expected, actual);
+        }
+    }
+
+    private static class GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher
+            extends ArgumentMatcher<GlobalDiscoveryEntry> {
+
+        private GlobalDiscoveryEntry expected;
+
+        private GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(GlobalDiscoveryEntry expected) {
+            this.expected = expected;
+        }
+
+        @Override
+        public boolean matches(Object argument) {
+            assertNotNull(argument);
+            GlobalDiscoveryEntry actual = (GlobalDiscoveryEntry) argument;
+            return globalDiscoveryEntriesMatchWithUpdatedLastSeenDate(expected, actual);
+        }
+    }
+
+    private static boolean discoveryEntriesMatchWithUpdatedLastSeenDate(DiscoveryEntry expected,
+                                                                        DiscoveryEntry actual) {
+        return expected.getDomain() == actual.getDomain() && expected.getExpiryDateMs() == actual.getExpiryDateMs()
+                && expected.getInterfaceName() == actual.getInterfaceName()
+                && expected.getParticipantId() == actual.getParticipantId()
+                && expected.getProviderVersion().equals(actual.getProviderVersion())
+                && expected.getPublicKeyId() == actual.getPublicKeyId() && expected.getQos().equals(actual.getQos())
+                && expected.getLastSeenDateMs() <= actual.getLastSeenDateMs()
+                && (expected.getLastSeenDateMs() + 1000) >= actual.getLastSeenDateMs();
+    }
+
+    private static boolean globalDiscoveryEntriesMatchWithUpdatedLastSeenDate(GlobalDiscoveryEntry expected,
+                                                                              GlobalDiscoveryEntry actual) {
+        return discoveryEntriesMatchWithUpdatedLastSeenDate(expected, actual)
+                && expected.getAddress().equals(actual.getAddress());
+    }
+
     @Before
     public void setUp() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -282,11 +331,13 @@ public class LocalCapabilitiesDirectoryTest {
                                                       eq(expectedGbids));
         GlobalDiscoveryEntry capturedGlobalDiscoveryEntry = argumentCaptor.getValue();
         assertNotNull(capturedGlobalDiscoveryEntry);
-        assertEquals(expectedGlobalDiscoveryEntry, capturedGlobalDiscoveryEntry);
+        assertTrue(globalDiscoveryEntriesMatchWithUpdatedLastSeenDate(expectedGlobalDiscoveryEntry,
+                                                                      capturedGlobalDiscoveryEntry));
 
-        verify(localDiscoveryEntryStoreMock).add(eq(expectedDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
         checkPromiseSuccess(promise, "add failed");
-        verify(globalDiscoveryEntryCacheMock, times(1)).add(eq(expectedGlobalDiscoveryEntry));
+        verify(globalDiscoveryEntryCacheMock,
+               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -354,22 +405,26 @@ public class LocalCapabilitiesDirectoryTest {
         final boolean awaitGlobalRegistration = true;
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
 
-        verify(localDiscoveryEntryStoreMock, times(1)).add(eq(expectedDiscoveryEntry));
-        verify(globalDiscoveryEntryCacheMock, times(1)).add(eq(expectedGlobalDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock,
+               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock,
+               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                             eq(expectedGlobalDiscoveryEntry),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                              Matchers.<String[]> any());
         checkPromiseSuccess(promise, "add failed");
 
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(discoveryEntry);
         Promise<DeferredVoid> promise2 = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
 
-        verify(localDiscoveryEntryStoreMock, times(2)).add(eq(expectedDiscoveryEntry));
-        verify(globalDiscoveryEntryCacheMock, times(2)).add(eq(expectedGlobalDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock,
+               times(2)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock,
+               times(2)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
         verify(globalCapabilitiesDirectoryClient,
                times(2)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                             eq(expectedGlobalDiscoveryEntry),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                              Matchers.<String[]> any());
         checkPromiseSuccess(promise2, "add failed");
     }
@@ -403,7 +458,7 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderRuntimeException exception = new ProviderRuntimeException("add failed");
         doAnswer(createAddAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
                                                          .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                              eq(globalDiscoveryEntry),
+                                                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                                                               Matchers.<String[]> any());
 
         final boolean awaitGlobalRegistration = true;
@@ -411,21 +466,22 @@ public class LocalCapabilitiesDirectoryTest {
 
         checkPromiseException(promise, new ProviderRuntimeException(exception.toString()));
         verify(globalCapabilitiesDirectoryClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                      eq(globalDiscoveryEntry),
+                                                      argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                                                       Matchers.<String[]> any());
-        verify(globalDiscoveryEntryCacheMock, never()).add(eq(globalDiscoveryEntry));
+        verify(globalDiscoveryEntryCacheMock,
+               never()).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)));
 
         reset(globalCapabilitiesDirectoryClient);
 
         doAnswer(createAddAnswerWithSuccess()).when(globalCapabilitiesDirectoryClient)
                                               .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                   eq(globalDiscoveryEntry),
+                                                   argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                                                    Matchers.<String[]> any());
 
         promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
 
         verify(globalCapabilitiesDirectoryClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                      eq(globalDiscoveryEntry),
+                                                      argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                                                       Matchers.<String[]> any());
         checkPromiseSuccess(promise, "add failed");
 
@@ -434,7 +490,7 @@ public class LocalCapabilitiesDirectoryTest {
     private void testAddWithGbidsIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
         doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
                                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                                       eq(globalDiscoveryEntry),
+                                                                       argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                                                                        Matchers.<String[]> any());
 
         final boolean awaitGlobalRegistration = true;
@@ -446,7 +502,7 @@ public class LocalCapabilitiesDirectoryTest {
     private void testAddIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
         doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
                                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                                       eq(globalDiscoveryEntry),
+                                                                       argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                                                                        Matchers.<String[]> any());
 
         final boolean awaitGlobalRegistration = true;
@@ -528,11 +584,13 @@ public class LocalCapabilitiesDirectoryTest {
 
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
 
-        verify(localDiscoveryEntryStoreMock, times(1)).add(eq(expectedDiscoveryEntry));
-        verify(globalDiscoveryEntryCacheMock, times(1)).add(eq(expectedGlobalDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock,
+               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock,
+               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                             eq(expectedGlobalDiscoveryEntry),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                              eq(expectedGbids));
         checkPromiseSuccess(promise, "add failed");
 
@@ -544,11 +602,13 @@ public class LocalCapabilitiesDirectoryTest {
 
         checkPromiseSuccess(promise2, "add failed");
         // entry is not added again
-        verify(localDiscoveryEntryStoreMock, times(2)).add(eq(expectedDiscoveryEntry));
-        verify(globalDiscoveryEntryCacheMock, times(2)).add(eq(expectedGlobalDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock,
+               times(2)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock,
+               times(2)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
         verify(globalCapabilitiesDirectoryClient,
                times(2)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                             eq(expectedGlobalDiscoveryEntry),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                              eq(expectedGbids));
     }
 
@@ -564,16 +624,18 @@ public class LocalCapabilitiesDirectoryTest {
 
         doAnswer(createAddAnswerWithSuccess()).when(globalCapabilitiesDirectoryClient)
                                               .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                   eq(expectedGlobalDiscoveryEntry),
+                                                   argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                                                    Matchers.<String[]> any());
 
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids1);
 
-        verify(localDiscoveryEntryStoreMock, times(1)).add(eq(expectedDiscoveryEntry));
-        verify(globalDiscoveryEntryCacheMock, times(1)).add(eq(expectedGlobalDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock,
+               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock,
+               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                             eq(expectedGlobalDiscoveryEntry),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                              eq(expectedGbids1));
         checkPromiseSuccess(promise, "add failed");
 
@@ -586,11 +648,13 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         awaitGlobalRegistration,
                                                                         gbids2);
 
-        verify(localDiscoveryEntryStoreMock, times(2)).add(eq(expectedDiscoveryEntry));
-        verify(globalDiscoveryEntryCacheMock, times(2)).add(eq(expectedGlobalDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock,
+               times(2)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock,
+               times(2)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                             eq(expectedGlobalDiscoveryEntry),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                              eq(expectedGbids2));
         checkPromiseSuccess(promise2, "add failed");
 
@@ -620,7 +684,8 @@ public class LocalCapabilitiesDirectoryTest {
     public void testAddKnownLocalEntryDoesNothing() throws InterruptedException {
         discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
         expectedDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
-        doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(expectedDiscoveryEntry);
+        doReturn(true).when(localDiscoveryEntryStoreMock)
+                      .hasDiscoveryEntry(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
         doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
                                              .lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
 
@@ -628,9 +693,8 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(newDiscoveryEntry, false, knownGbids);
 
         checkPromiseSuccess(promise, "add failed");
-        verify(localDiscoveryEntryStoreMock).hasDiscoveryEntry(expectedDiscoveryEntry);
+        verify(localDiscoveryEntryStoreMock).hasDiscoveryEntry(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
         verify(localDiscoveryEntryStoreMock).lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
-        verify(localDiscoveryEntryStoreMock, never()).add(any(DiscoveryEntry.class));
         verify(globalDiscoveryEntryCacheMock, never()).lookup(anyString(), anyLong());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
         verify(globalCapabilitiesDirectoryClient, never()).add(any(), any(), any());
@@ -674,10 +738,11 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
                                                                                 awaitGlobalRegistration);
 
-        verify(localDiscoveryEntryStoreMock, times(1)).add(eq(expectedDiscoveryEntry));
-        verify(globalDiscoveryEntryCacheMock).add(eq(expectedGlobalDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock,
+               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
         verify(globalCapabilitiesDirectoryClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                      eq(expectedGlobalDiscoveryEntry),
+                                                      argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                                                       eq(knownGbids));
         checkPromiseSuccess(promise, "addToAll failed");
     }
@@ -697,7 +762,8 @@ public class LocalCapabilitiesDirectoryTest {
                never()).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                             any(GlobalDiscoveryEntry.class),
                             Matchers.<String[]> any());
-        verify(localDiscoveryEntryStoreMock, times(1)).add(eq(expectedDiscoveryEntry));
+        verify(localDiscoveryEntryStoreMock,
+               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -706,7 +772,7 @@ public class LocalCapabilitiesDirectoryTest {
         ProviderRuntimeException expectedException = new ProviderRuntimeException(exception.toString());
         doAnswer(createAddAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
                                                          .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                              eq(globalDiscoveryEntry),
+                                                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                                                               Matchers.<String[]> any());
 
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
@@ -718,7 +784,7 @@ public class LocalCapabilitiesDirectoryTest {
     private void testAddToAllIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
         doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
                                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                                       eq(globalDiscoveryEntry),
+                                                                       argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                                                                        Matchers.<String[]> any());
 
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
