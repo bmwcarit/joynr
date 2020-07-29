@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -211,25 +211,21 @@ void MessageSender::sendMulticastSubscriptionRequest(
         const MulticastSubscriptionRequest& subscriptionRequest,
         bool isLocalMessage)
 {
+    std::ignore = isLocalMessage;
+
     try {
-        MutableMessage message =
-                _messageFactory.createMulticastSubscriptionRequest(senderParticipantId,
-                                                                   receiverParticipantId,
-                                                                   qos,
-                                                                   subscriptionRequest,
-                                                                   isLocalMessage);
-        if (!message.isLocalMessage()) {
-            message.setReplyTo(_replyToAddress);
-        }
+        // MulticastSubscriptionRequest is no longer transmitted, instead
+        // the SubscriptionReply formerly sent by provider is simulated and
+        // routed back to invoke regular reply handling as before.
         JOYNR_LOG_DEBUG(logger(),
-                        "Send MulticastSubscriptionRequest: subscriptionId: {}, messageId: {}, "
+                        "MulticastSubscription: subscriptionId: {}, "
                         "proxy participantId: {}, provider participantId: {}",
                         subscriptionRequest.getSubscriptionId(),
-                        message.getId(),
                         senderParticipantId,
                         receiverParticipantId);
-        assert(_messageRouter);
-        _messageRouter->route(message.getImmutableMessage());
+        SubscriptionReply subscriptionReply;
+        subscriptionReply.setSubscriptionId(subscriptionRequest.getSubscriptionId());
+        sendSubscriptionReply(receiverParticipantId, senderParticipantId, qos, subscriptionReply);
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     }
