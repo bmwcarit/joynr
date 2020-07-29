@@ -129,6 +129,7 @@ private:
         void doReadInitHeader();
 
     private:
+        std::string getUserName();
         // I/O context functions
         void doReadInitBody();
         void doReadHeader();

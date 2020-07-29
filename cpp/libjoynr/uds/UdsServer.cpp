@@ -153,7 +153,13 @@ UdsServer::Connection::Connection(uds::socket&& socket,
           _sendQueue(std::make_unique<UdsSendQueue<UdsFrameBufferV1>>(config._maxSendQueueSize)),
           _readBuffer(std::make_unique<UdsFrameBufferV1>())
 {
-    const static std::string anonymous("anonymous");
+    _username = getUserName();
+    JOYNR_LOG_DEBUG(logger(), "Established new connection with username '{}'", _username);
+}
+
+std::string UdsServer::Connection::getUserName()
+{
+    std::string username("anonymous");
     struct ucred ucred;
     socklen_t len = sizeof(ucred);
     int sockfd = _socket.native_handle();
@@ -165,23 +171,20 @@ UdsServer::Connection::Connection(uds::socket&& socket,
 
         if (!(rc = getpwuid_r(ucred.uid, &passwd, buf, sizeof(buf), &result))) {
             if (result) {
-                _username = std::string(passwd.pw_name, strnlen(passwd.pw_name, 256UL));
+                username = std::string(passwd.pw_name, strnlen(passwd.pw_name, 256UL));
             } else {
                 JOYNR_LOG_ERROR(logger(), "Could not find username for uid {}", ucred.uid);
-                _username = anonymous;
             }
         } else {
             JOYNR_LOG_ERROR(
                     logger(), "Could not find username for uid {}, errno {}", ucred.uid, rc);
-            _username = anonymous;
         }
     } else {
         int storedErrno = errno;
-        _username = anonymous;
         JOYNR_LOG_ERROR(
                 logger(), "Could not obtain peer credentials from socket, errno {}", storedErrno);
     }
-    JOYNR_LOG_DEBUG(logger(), "Established new connection with username '{}'", _username);
+    return username;
 }
 
 UdsServer::Connection::~Connection()
