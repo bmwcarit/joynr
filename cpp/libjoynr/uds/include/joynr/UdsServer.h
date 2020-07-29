@@ -55,11 +55,6 @@ public:
                                         smrf::ByteVector&&,
                                         const std::string&)>;
 
-    /** The initial serialized message must start with the following byte stream, otherwise the
-     * connection is rejected. */
-    static constexpr char _initMessageStart[] =
-            "{\"_typeName\":\"joynr.system.RoutingTypes.UdsClientAddress\"";
-
     explicit UdsServer(const UdsSettings& settings) noexcept;
     virtual ~UdsServer() final;
 

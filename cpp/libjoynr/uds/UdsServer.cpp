@@ -33,7 +33,6 @@
 namespace joynr
 {
 
-constexpr char UdsServer::_initMessageStart[];
 constexpr int UdsServer::_threadsPerServer;
 
 UdsServer::UdsServer(const UdsSettings& settings) noexcept
