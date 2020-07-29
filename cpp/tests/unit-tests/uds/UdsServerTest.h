@@ -51,7 +51,7 @@ protected:
 
     // Global settings for timeout, when communication between client-server is checked
     static const std::chrono::seconds _waitPeriodForClientServerCommunication;
-    static const std::chrono::seconds _retryIntervalDuringClientServerCommunication;
+    static const std::chrono::milliseconds _retryIntervalDuringClientServerCommunication;
 
     class ErroneousClient
     {

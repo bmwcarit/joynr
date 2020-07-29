@@ -27,7 +27,7 @@ using namespace testing;
 constexpr char UdsClientTest::_settingsFile[];
 // Global settings for timeout, when communication between client-server is checked
 const std::chrono::seconds UdsClientTest::_waitPeriodForClientServerCommunication(5);
-const std::chrono::seconds UdsClientTest::_retryIntervalDuringClientServerCommunication(1);
+const std::chrono::milliseconds UdsClientTest::_retryIntervalDuringClientServerCommunication(200);
 
 TEST_F(UdsClientTest, multipleClients)
 {
