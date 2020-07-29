@@ -61,19 +61,19 @@ TEST(UdsFrameBufferV1Test, defaultCtor)
     ASSERT_EQ(test.header().size(), headerSize) << "Frame buffer header has not expected length";
     try {
         test.body();
-        FAIL() << "Emtpy frame should not be interpreted as message frame";
+        FAIL() << "Empty frame should not be interpreted as message frame";
     } catch (const joynr::exceptions::JoynrRuntimeException& e) {
         EXPECT_THAT(e.what(), HasSubstr("'MJ'"));
     }
     try {
         test.readMessage();
-        FAIL() << "Emtpy frame should not be interpreted as message frame";
+        FAIL() << "Empty frame should not be interpreted as message frame";
     } catch (const joynr::exceptions::JoynrRuntimeException& e) {
         EXPECT_THAT(e.what(), HasSubstr("'MJM1'"));
     }
     try {
         test.readInit();
-        FAIL() << "Emtpy frame should not be interpreted as init-frame";
+        FAIL() << "Empty frame should not be interpreted as init-frame";
     } catch (const joynr::exceptions::JoynrRuntimeException& e) {
         EXPECT_THAT(e.what(), HasSubstr("'MJI1'"));
     }

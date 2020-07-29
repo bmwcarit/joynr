@@ -29,7 +29,7 @@ constexpr char UdsClientTest::_settingsFile[];
 const std::chrono::seconds UdsClientTest::_waitPeriodForClientServerCommunication(5);
 const std::chrono::milliseconds UdsClientTest::_retryIntervalDuringClientServerCommunication(200);
 
-TEST_F(UdsClientTest, multipleClients)
+TEST_F(UdsClientTest, connectAndDisconnectMultipleClients)
 {
     auto client1 = createClient();
     client1->start();
@@ -43,7 +43,7 @@ TEST_F(UdsClientTest, multipleClients)
     ASSERT_EQ(countServerConnections(0), 0) << "Second client not disconnected.";
 }
 
-TEST_F(UdsClientTest, clientCallbacks)
+TEST_F(UdsClientTest, receiveFromServer_clientCallbacksCalled)
 {
     Sequence sequence;
     Semaphore semaphore;
@@ -69,7 +69,7 @@ TEST_F(UdsClientTest, clientCallbacks)
     ASSERT_EQ(countServerConnections(0), 0);
 }
 
-TEST_F(UdsClientTest, clientCallbackServerClosesConnection)
+TEST_F(UdsClientTest, disconnectFromServer_clientCallbacksCalled)
 {
     Semaphore semaphore;
     MockUdsClientCallbacks mockUdsClientCallbacks;
@@ -88,7 +88,7 @@ TEST_F(UdsClientTest, clientCallbackServerClosesConnection)
             << "Diconnected not reported when server closes";
 }
 
-TEST_F(UdsClientTest, sendFromClient)
+TEST_F(UdsClientTest, sendFrom2Clients)
 {
     auto client1 = createClient();
     const smrf::ByteVector messageBeforeStartClient1(1, 1);

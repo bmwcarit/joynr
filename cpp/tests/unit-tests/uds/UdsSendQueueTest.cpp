@@ -82,8 +82,8 @@ public:
 
 TEST_F(UdsSendQueueTest, insertRemove)
 {
-    constexpr std::size_t hugheLimitNeverReached = 10;
-    UdsSendQueue<UdsFrameBufferV1> test(hugheLimitNeverReached);
+    constexpr std::size_t hugeLimitNeverReached = 10;
+    UdsSendQueue<UdsFrameBufferV1> test(hugeLimitNeverReached);
 
     EXPECT_EQ(test.showFront().size(), 0)
             << "In case queue is emtpy, show front should return empty message";

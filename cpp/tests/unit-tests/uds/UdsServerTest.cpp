@@ -43,13 +43,13 @@ TEST_F(UdsServerTest, multipleServerReusingSocket)
             << "Client lost connection after second server reuses socket.";
     server1.reset();
     ASSERT_EQ(waitClientConnected(false), false)
-            << "Client is not disconnected after server server stopped.";
+            << "Client is not disconnected after initial server stopped.";
     restartClient();
     ASSERT_EQ(waitClientConnected(true), true)
             << "Client is not connected to second server after restart.";
 }
 
-TEST_F(UdsServerTest, serverCallbacks)
+TEST_F(UdsServerTest, connectReceiveAndDisconnectFromClient_serverCallbacksCalled)
 {
     Semaphore semaphore;
     Sequence sequence;
@@ -61,7 +61,6 @@ TEST_F(UdsServerTest, serverCallbacks)
     server->start();
     ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback.";
-    Mock::VerifyAndClearExpectations(&semaphore);
 
     const smrf::Byte message1 = 42;
     const smrf::Byte message2 = 43;
@@ -74,7 +73,6 @@ TEST_F(UdsServerTest, serverCallbacks)
     sendFromClient(message2);
     EXPECT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive second frame.";
-    Mock::VerifyAndClearExpectations(&semaphore);
 
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(clientAddress)).Times(1).WillOnce(
             InvokeWithoutArgs(&semaphore, &Semaphore::notify));
@@ -106,21 +104,24 @@ TEST_F(UdsServerTest, sendToClient)
     EXPECT_EQ(_messagesReceivedByClient[1], messageEmpty);
 }
 
-TEST_F(UdsServerTest, streamInterfaceRobustness)
+TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffected)
 {
     Semaphore semaphore;
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> goodClientSender;
+    // connected callback called for good client and erroneousClientMessage
     EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(2).WillOnce(DoAll(
             SaveArg<1>(&goodClientSender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
+    // disconnected callback called for good client and erroneousClientMessage
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(2).WillRepeatedly(
             InvokeWithoutArgs(&semaphore, &Semaphore::notify));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
     ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
-            << "Failed to receive connection callback.";
+            << "Failed to receive connection callback for good client.";
 
+    // connected and disconnected callbacks are not called if init message is invalid
     ErroneousClient erroneousClientCookie(_udsSettings);
     EXPECT_TRUE(erroneousClientCookie.write(smrf::ByteVector(100, 0x01)));
     EXPECT_TRUE(erroneousClientCookie.waitTillClose())
@@ -144,7 +145,7 @@ TEST_F(UdsServerTest, streamInterfaceRobustness)
             << "Failed to receive disconnection call.";
 }
 
-TEST_F(UdsServerTest, sendWhileClientDisconnection)
+TEST_F(UdsServerTest, sendToClientWhileClientDisconnection)
 {
     Semaphore semaphore;
     MockUdsServerCallbacks mockUdsServerCallbacks;
@@ -178,7 +179,7 @@ TEST_F(UdsServerTest, stopServerWhileSending)
             DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0); // Not registered
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
-            .Times(0); // Only called when client connects, but not when server stops before
+            .Times(0); // Only called when client disconnects, but not when server stops before
     server->start();
     ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback.";
@@ -197,7 +198,7 @@ TEST_F(UdsServerTest, stopServerWhileSending)
     // Note that on the CI the yield does not always lead to a further reception. Hence sometimes
     // only 1 message gets through.
     EXPECT_TRUE(_messagesReceivedByClient.size() > 0)
-            << "Test timing problem. All messages received before server shutdown.";
+            << "Test timing problem. No messages received before server shutdown.";
     EXPECT_TRUE(_messagesReceivedByClient.size() < sendRequests)
             << "Test timing problem. All messages received before server shutdown.";
 }
