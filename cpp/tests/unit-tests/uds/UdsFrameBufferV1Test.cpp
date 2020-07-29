@@ -59,6 +59,8 @@ TEST(UdsFrameBufferV1Test, defaultCtor)
     ASSERT_THAT(convertAsioBuffer(test.raw()), Each(0))
             << "Frame header (size element) not initialized with 0";
     ASSERT_EQ(test.header().size(), headerSize) << "Frame buffer header has not expected length";
+    ASSERT_THAT(convertAsioBuffer(test.header()), Each(0))
+            << "Frame header (size element) not initialized with 0";
     try {
         test.body();
         FAIL() << "Empty frame should not be interpreted as message frame";

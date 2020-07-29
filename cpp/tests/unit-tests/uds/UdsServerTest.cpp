@@ -111,7 +111,8 @@ TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffec
     std::shared_ptr<joynr::IUdsSender> goodClientSender;
     // connected callback called for good client and erroneousClientMessage
     EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(2).WillOnce(DoAll(
-            SaveArg<1>(&goodClientSender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+            SaveArg<1>(&goodClientSender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)))
+            .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     // disconnected callback called for good client and erroneousClientMessage
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(2).WillRepeatedly(
@@ -131,6 +132,8 @@ TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffec
     joynr::system::RoutingTypes::UdsClientAddress addr("evilMessage");
     joynr::UdsFrameBufferV1 initFrame(addr);
     EXPECT_TRUE(erroneousClientMessage.write(initFrame.raw()));
+    ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive connection callback for erroneous client.";
     EXPECT_TRUE(erroneousClientMessage.write(smrf::ByteVector(100, 0x01)));
     ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive disconnection callback for erroneous message.";
