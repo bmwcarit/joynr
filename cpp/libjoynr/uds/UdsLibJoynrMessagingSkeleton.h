@@ -48,7 +48,7 @@ public:
     void transmit(std::shared_ptr<ImmutableMessage> message,
                   const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
-    void onMessageReceived(smrf::ByteVector&& message, const std::string& creator);
+    void onMessageReceived(smrf::ByteVector&& message);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(UdsLibJoynrMessagingSkeleton);

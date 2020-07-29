@@ -124,8 +124,7 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, onMessageReceivedTest)
                       _)).Times(1);
 
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
-    std::string creator("creator");
-    udsLibJoynrMessagingSkeleton.onMessageReceived(std::move(serializedMessage), creator);
+    udsLibJoynrMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
 }
 
 TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitSetsReceivedFromGlobalForMulticastPublications)
