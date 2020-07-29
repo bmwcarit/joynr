@@ -68,7 +68,7 @@ protected:
     static const std::chrono::seconds _waitPeriodForClientServerCommunication;
     static const std::chrono::milliseconds _retryIntervalDuringClientServerCommunication;
 
-    joynr::UdsSettings _settings;
+    joynr::UdsSettings _udsSettings;
     std::mutex _connectedClientsMutex;
     std::vector<ClientInfo> _connectedClients;
 
@@ -86,13 +86,13 @@ protected:
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)>
                     onFatalRuntimeError = [](const joynr::exceptions::JoynrRuntimeException&) {})
     {
-        auto newClientSettings = _settings;
+        auto newClientSettings = _udsSettings;
         {
             std::lock_guard<std::mutex> lck(_connectedClientsMutex);
             newClientSettings.setClientId(std::string("Client-ID ") +
                                           std::to_string(_connectedClients.size()));
         }
-        auto result = std::make_unique<joynr::UdsClient>(_settings, onFatalRuntimeError);
+        auto result = std::make_unique<joynr::UdsClient>(_udsSettings, onFatalRuntimeError);
         return result;
     }
 
@@ -191,9 +191,9 @@ protected:
     }
 
 public:
-    UdsClientTest() : _settingsDb(_settingsFile), _settings(_settingsDb)
+    UdsClientTest() : _settingsDb(_settingsFile), _udsSettings(_settingsDb)
     {
-        _settings.setSocketPath("./UdsClientTest.sock");
+        _udsSettings.setSocketPath("./UdsClientTest.sock");
     }
 
     ~UdsClientTest()
@@ -204,7 +204,7 @@ public:
 
     void SetUp() override
     {
-        _server = std::make_unique<joynr::UdsServer>(_settings);
+        _server = std::make_unique<joynr::UdsServer>(_udsSettings);
         _server->setConnectCallback(
                 [this](const joynr::system::RoutingTypes::UdsClientAddress& address,
                        std::shared_ptr<joynr::IUdsSender> sender) {

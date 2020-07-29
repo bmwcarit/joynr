@@ -121,12 +121,12 @@ TEST_F(UdsServerTest, streamInterfaceRobustness)
     ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback.";
 
-    ErroneousClient erroneousClientCookie(_settings);
+    ErroneousClient erroneousClientCookie(_udsSettings);
     EXPECT_TRUE(erroneousClientCookie.write(smrf::ByteVector(100, 0x01)));
     EXPECT_TRUE(erroneousClientCookie.waitTillClose())
             << "Erroneous client still connected to server after providing invalid cookie.";
 
-    ErroneousClient erroneousClientMessage(_settings);
+    ErroneousClient erroneousClientMessage(_udsSettings);
     joynr::system::RoutingTypes::UdsClientAddress addr("evilMessage");
     joynr::UdsFrameBufferV1 initFrame(addr);
     EXPECT_TRUE(erroneousClientMessage.write(initFrame.raw()));

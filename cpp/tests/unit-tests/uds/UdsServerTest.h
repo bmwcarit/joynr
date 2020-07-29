@@ -45,7 +45,7 @@ private:
     std::atomic_bool _clientConnected;
 
 protected:
-    joynr::UdsSettings _settings;
+    joynr::UdsSettings _udsSettings;
     std::vector<smrf::ByteVector> _messagesReceivedByClient;
     std::mutex _syncAllMutex;
 
@@ -95,7 +95,7 @@ protected:
 
     std::unique_ptr<joynr::UdsServer> createServer()
     {
-        return std::make_unique<joynr::UdsServer>(_settings);
+        return std::make_unique<joynr::UdsServer>(_udsSettings);
     }
 
     std::unique_ptr<joynr::UdsServer> createServer(MockUdsServerCallbacks& mock)
@@ -172,9 +172,9 @@ protected:
     }
 
 public:
-    UdsServerTest() : _settingsDb(_settingsFile), _clientConnected{false}, _settings(_settingsDb)
+    UdsServerTest() : _settingsDb(_settingsFile), _clientConnected{false}, _udsSettings(_settingsDb)
     {
-        _settings.setSocketPath("./UdsServerTest.sock");
+        _udsSettings.setSocketPath("./UdsServerTest.sock");
         restartClient();
     }
 
@@ -192,7 +192,7 @@ public:
                         [](const joynr::exceptions::JoynrRuntimeException&) {};
 
         _clientConnected.store(false);
-        _client = std::make_unique<joynr::UdsClient>(_settings, ignoreClientFatalRuntimeErrors);
+        _client = std::make_unique<joynr::UdsClient>(_udsSettings, ignoreClientFatalRuntimeErrors);
         _client->setConnectCallback([this]() { _clientConnected.store(true); });
         _client->setDisconnectCallback([this]() { _clientConnected.store(false); });
         _client->setReceiveCallback([this](smrf::ByteVector&& message) mutable {

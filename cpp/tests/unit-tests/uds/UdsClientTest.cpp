@@ -144,7 +144,7 @@ TEST_F(UdsClientTest, sendFromClientBufferOverflow)
     EXPECT_CALL(mockUdsClientCallbacks, sendFailed(_)).Times(sendQueueSize).WillRepeatedly(
             InvokeWithoutArgs([&countSendFailures] { countSendFailures++; }));
     const smrf::ByteVector messageEmpty;
-    _settings.setSendingQueueSize(sendQueueSize);
+    _udsSettings.setSendingQueueSize(sendQueueSize);
     auto client = createClient();
     client->start();
     ASSERT_EQ(countServerConnections(1), 1);
