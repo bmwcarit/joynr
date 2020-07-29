@@ -92,6 +92,9 @@ class MyRadioProvider implements RadioProviderImplementation {
         };
 
         this.shuffleStations = this.shuffleStations.bind(this);
+        this.getLocationOfCurrentStation = this.getLocationOfCurrentStation.bind(this);
+        this.addFavoriteStation = this.addFavoriteStation.bind(this);
+        this.currentStation.get = this.currentStation.get.bind(this);
     }
 
     public setProvider(radioProvider: RadioProvider): void {
@@ -132,13 +135,6 @@ class MyRadioProvider implements RadioProviderImplementation {
         this.stationsList.push(opArgs.newFavoriteStation);
         return {
             success: true
-        };
-    }
-
-    public addFavoriteStationList(opArgs: any): AddFavoriteStationReturns1 {
-        prettyLog(`radioProvider.addFavoriteStationList(${JSON.stringify(opArgs)}) called`);
-        return {
-            success: false
         };
     }
 
