@@ -91,16 +91,17 @@ MATCHER_P2(pointerToAddressWithSerializedAddress, addressType, serializedAddress
     }
 }
 
-bool compareConvertedGlobalDiscoveryEntries(const types::DiscoveryEntry& other,
-                                            const types::DiscoveryEntry& arg) {
-    return other.getDomain() == arg.getDomain() &&
-           other.getInterfaceName() == arg.getInterfaceName() &&
-           other.getParticipantId() == arg.getParticipantId() && other.getQos() == arg.getQos() &&
-           other.getLastSeenDateMs() <= arg.getLastSeenDateMs() &&
-           other.getLastSeenDateMs() >= (arg.getLastSeenDateMs() - 1000) &&
-           other.getProviderVersion() == arg.getProviderVersion() &&
-           other.getExpiryDateMs() == arg.getExpiryDateMs() &&
-           other.getPublicKeyId() == arg.getPublicKeyId();
+static constexpr std::int64_t conversionDelayToleranceMs = 1000;
+
+bool compareConvertedGlobalDiscoveryEntries(const types::DiscoveryEntry& expected,
+                                            const types::DiscoveryEntry& actual) {
+    return expected.getDomain() == actual.getDomain() &&
+           expected.getInterfaceName() == actual.getInterfaceName() &&
+           expected.getParticipantId() == actual.getParticipantId() && expected.getQos() == actual.getQos() &&
+           (expected.getLastSeenDateMs() + conversionDelayToleranceMs) >= actual.getLastSeenDateMs() &&
+           expected.getProviderVersion() == actual.getProviderVersion() &&
+           (expected.getExpiryDateMs() + conversionDelayToleranceMs) >= actual.getExpiryDateMs() &&
+           expected.getPublicKeyId() == actual.getPublicKeyId();
 }
 
 MATCHER_P(AnConvertedGlobalDiscoveryEntry, other, "")
@@ -112,27 +113,6 @@ MATCHER_P(GlobalDiscoveryEntryMatcher, other, "")
 {
     return compareConvertedGlobalDiscoveryEntries(other, arg) &&
            other.getAddress() == arg.getAddress();
-}
-
-bool compareConvertedGlobalDiscoveryEntryWithExtendedDates(const types::DiscoveryEntry& arg,
-                                                           const types::DiscoveryEntry& expected,
-                                                           const std::int64_t toleranceMs)
-{
-    return expected.getDomain() == arg.getDomain() &&
-           expected.getInterfaceName() == arg.getInterfaceName() &&
-           expected.getParticipantId() == arg.getParticipantId() &&
-           expected.getQos() == arg.getQos() &&
-           expected.getLastSeenDateMs() <= arg.getLastSeenDateMs() &&
-           arg.getLastSeenDateMs() <= (expected.getLastSeenDateMs() + toleranceMs) &&
-           expected.getProviderVersion() == arg.getProviderVersion() &&
-           expected.getExpiryDateMs() <= arg.getExpiryDateMs() &&
-           arg.getExpiryDateMs() <= (expected.getExpiryDateMs() + toleranceMs) &&
-           expected.getPublicKeyId() == arg.getPublicKeyId();
-}
-
-MATCHER_P2(AnConvertedGlobalDiscoveryEntryWithExtendedDates, expected, toleranceMs, "")
-{
-    return compareConvertedGlobalDiscoveryEntryWithExtendedDates(arg, expected, toleranceMs);
 }
 
 class LocalCapabilitiesDirectoryTest : public ::testing::Test
@@ -158,7 +138,6 @@ public:
               _localCapabilitiesDirectoryWithMockCapStorage(),
               _lastSeenDateMs(TimePoint::now().toMilliseconds()),
               _defaultExpiryDateMs(60 * 60 * 1000),
-              _toleranceMs(50),
               _dummyParticipantIdsVector{util::createUuid(), util::createUuid(), util::createUuid()},
               _defaultOnSuccess([]() {}),
               _defaultProviderRuntimeExceptionError([](const exceptions::ProviderRuntimeException&) {}),
@@ -401,7 +380,7 @@ public:
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
         auto onSuccess = [this, expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
-            EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(result, expectedEntry, 1000));
+            EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result));
             _semaphore.notify();
         };
 
@@ -715,7 +694,6 @@ protected:
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectoryWithMockCapStorage;
     std::int64_t _lastSeenDateMs;
     std::int64_t _defaultExpiryDateMs;
-    const std::int64_t _toleranceMs;
     std::vector<std::string> _dummyParticipantIdsVector;
     types::DiscoveryQos _discoveryQos;
     std::unordered_multimap<std::string, types::DiscoveryEntry> _globalCapEntryMap;
@@ -1776,7 +1754,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_localThenGlobal_l
     auto onSuccess = [this, &expectedEntry]
             (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
         ASSERT_EQ(1, result.size());
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(result[0], expectedEntry, _toleranceMs));
+        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result[0]));
         _semaphore.notify();
     };
 
@@ -1960,14 +1938,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntryWithExtendedDates(expectedEntry1, _toleranceMs)),
+                            AnConvertedGlobalDiscoveryEntry(expectedEntry1)),
                     _,
                     _,
                     _,
                     _)).Times(1);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntryWithExtendedDates(expectedEntry2, _toleranceMs)),
+                            AnConvertedGlobalDiscoveryEntry(expectedEntry2)),
                     _,
                     _,
                     _,
@@ -1983,7 +1961,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
 
     // check that the dates are also updated in local store and global cache
     auto onSuccess = [this, expectedEntry1] (const types::DiscoveryEntryWithMetaInfo& result) {
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(result, expectedEntry1, _toleranceMs));
+        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry1, result));
         _semaphore.notify();
     };
 
@@ -2055,7 +2033,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 add(AllOf(Property(&joynr::types::GlobalDiscoveryEntry::getParticipantId,
                                    Eq(entry1.getParticipantId())),
                           Matcher<const types::GlobalDiscoveryEntry&>(
-                              AnConvertedGlobalDiscoveryEntryWithExtendedDates(expectedEntry1, _toleranceMs))),
+                              AnConvertedGlobalDiscoveryEntry(expectedEntry1))),
                 _,
                 _,
                 _,
@@ -2142,7 +2120,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_TRUE(onSuccessCalled);
 
     auto onSuccess = [this, expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(result, expectedEntry, _toleranceMs));
+        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry,result));
         _semaphore.notify();
     };
 
@@ -3627,8 +3605,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
 
     EXPECT_EQ(2, cachedGlobalDiscoveryEntries.size());
     // Compare cached entries to expected entries
-    EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(cachedGlobalDiscoveryEntries[0], entry2, _toleranceMs));
-    EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(cachedGlobalDiscoveryEntries[1], entry3, _toleranceMs));
+    EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(entry2, cachedGlobalDiscoveryEntries[0]));
+    EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(entry3, cachedGlobalDiscoveryEntries[1]));
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _))
             .WillRepeatedly(InvokeArgument<4>(types::DiscoveryError::INTERNAL_ERROR));
@@ -3755,7 +3733,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
     auto onSuccess = [this, expectedEntry] (const std::vector<types::DiscoveryEntryWithMetaInfo>& results) {
         EXPECT_EQ(1, results.size());
         const types::DiscoveryEntryWithMetaInfo& result = results.at(0);
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(result, expectedEntry, _toleranceMs));
+        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result));
         _semaphore.notify();
     };
 
@@ -3816,7 +3794,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
     auto onSuccess = [this, expectedEntry] (const std::vector<types::DiscoveryEntryWithMetaInfo>& results) {
         EXPECT_EQ(1, results.size());
         const types::DiscoveryEntryWithMetaInfo& result = results.at(0);
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntryWithExtendedDates(result, expectedEntry, _toleranceMs));
+        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result));
         _semaphore.notify();
     };
     _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
