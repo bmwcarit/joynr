@@ -24,7 +24,6 @@
 
 #include <smrf/ByteVector.h>
 
-#include "joynr/IMessagingSkeleton.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -39,7 +38,7 @@ namespace exceptions
 class JoynrRuntimeException;
 } // namespace exceptions
 
-class UdsLibJoynrMessagingSkeleton : public IMessagingSkeleton
+class UdsLibJoynrMessagingSkeleton
 {
 public:
     explicit UdsLibJoynrMessagingSkeleton(std::weak_ptr<IMessageRouter> messageRouter);
@@ -47,10 +46,9 @@ public:
     ~UdsLibJoynrMessagingSkeleton() = default;
 
     void transmit(std::shared_ptr<ImmutableMessage> message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
-    void onMessageReceived(smrf::ByteVector&& message, const std::string& creator) override;
+    void onMessageReceived(smrf::ByteVector&& message, const std::string& creator);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(UdsLibJoynrMessagingSkeleton);

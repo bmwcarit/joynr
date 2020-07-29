@@ -36,7 +36,7 @@ namespace joynr
 
 UdsLibJoynrMessagingSkeleton::UdsLibJoynrMessagingSkeleton(
         std::weak_ptr<IMessageRouter> messageRouter)
-        : IMessagingSkeleton(), _messageRouter(std::move(messageRouter))
+        : _messageRouter(std::move(messageRouter))
 {
 }
 

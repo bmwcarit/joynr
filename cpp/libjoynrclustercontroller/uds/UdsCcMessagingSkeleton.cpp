@@ -35,7 +35,6 @@ namespace joynr
 {
 UdsCcMessagingSkeleton::UdsCcMessagingSkeleton(std::shared_ptr<IMessageRouter> messageRouter)
         : std::enable_shared_from_this<UdsCcMessagingSkeleton>(),
-          IMessagingSkeleton(),
           _messageRouter(std::move(messageRouter))
 {
 }

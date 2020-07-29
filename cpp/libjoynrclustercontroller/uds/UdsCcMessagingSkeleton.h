@@ -24,7 +24,6 @@
 
 #include <smrf/ByteVector.h>
 
-#include "joynr/IMessagingSkeleton.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 
@@ -34,12 +33,16 @@ namespace joynr
 class IMessageRouter;
 class ImmutableMessage;
 
+namespace exceptions
+{
+class JoynrRuntimeException;
+} // namespace exceptions
+
 /**
  * @class UdsCcMessagingSkeleton
  * @brief Messaging skeleton for the cluster controller
  */
-class UdsCcMessagingSkeleton : public std::enable_shared_from_this<UdsCcMessagingSkeleton>,
-                               public IMessagingSkeleton
+class UdsCcMessagingSkeleton : public std::enable_shared_from_this<UdsCcMessagingSkeleton>
 {
 public:
     /**
@@ -51,13 +54,12 @@ public:
     /**
      * @brief Destructor
      */
-    ~UdsCcMessagingSkeleton() override = default;
+    ~UdsCcMessagingSkeleton() = default;
 
     void transmit(std::shared_ptr<ImmutableMessage> message,
-                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure)
-            override;
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
-    void onMessageReceived(smrf::ByteVector&& message, const std::string& creator) override;
+    void onMessageReceived(smrf::ByteVector&& message, const std::string& creator);
 
 private:
     ADD_LOGGER(UdsCcMessagingSkeleton)
