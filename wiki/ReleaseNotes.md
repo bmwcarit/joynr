@@ -2,6 +2,22 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.14.2
+
+## Other changes
+
+* **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
+ tools (4.0.0).
+
+## Bug fixes
+
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
+* **[C++]** Fixed memory leak in MosquittoConnection
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+* **[Java]** Expiration date of provisioned discovery entries is now set to maximum value
+* **[Java]** Routing entries for RoutingProvider and DiscoveryProvider are now sticky
+
 # joynr 1.14.1
 
 ## API relevant changes
@@ -15,16 +31,12 @@ None.
   Services to be bound either as the system user or as a specific user. The implementation is
   tailored for the CC to run in user 0 (system), and joynr app clients can connect on
   whichever user they decide to in a system with multi-user capabilities.
-* **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
- tools (4.0.0).
+
 
 ## Bug fixes
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
     This is fixed and replies will now expire at the same time as the original request.
-* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
-* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
-  occurs after connection has been established
 
 # joynr 1.14.0
 
