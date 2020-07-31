@@ -21,6 +21,7 @@
 
 #include <boost/format.hpp>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <pwd.h>
 
 #include "joynr/ImmutableMessage.h"
@@ -97,8 +98,10 @@ void UdsServer::run()
         }
         isRetry = true;
         try {
+            mode_t oldMask = umask(S_IROTH | S_IWOTH); // do not allow access to others
             _acceptor.open(_endpoint.protocol());
             _acceptor.bind(_endpoint);
+            umask(oldMask); // restore original umask
             _acceptor.listen();
             JOYNR_LOG_INFO(logger(), "Waiting for connections on path {}.", _endpoint.path());
             doAcceptClient();
