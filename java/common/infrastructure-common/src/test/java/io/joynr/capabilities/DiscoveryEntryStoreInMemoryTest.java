@@ -87,11 +87,12 @@ public class DiscoveryEntryStoreInMemoryTest {
 
         final long newLastSeenDateMs = LAST_SEEN_DATE_MS + dateDiffMs;
         final long newExpiryDateMs = EXPIRY_DATE_MS + dateDiffMs;
+        expectedLocalDiscoveryEntry.setLastSeenDateMs(newLastSeenDateMs);
+        expectedLocalDiscoveryEntry.setExpiryDateMs(newExpiryDateMs);
         expectedGlobalDiscoveryEntry.setLastSeenDateMs(newLastSeenDateMs);
         expectedGlobalDiscoveryEntry.setExpiryDateMs(newExpiryDateMs);
 
-        String[] actualParticipantIds = discoveryEntryStore.touchGlobalDiscoveryEntries(newLastSeenDateMs,
-                                                                                        newExpiryDateMs);
+        String[] actualParticipantIds = discoveryEntryStore.touchDiscoveryEntries(newLastSeenDateMs, newExpiryDateMs);
 
         actualLocalDiscoveryEntry = discoveryEntryStore.lookup(localParticipantId, Long.MAX_VALUE).get();
         actualGlobalDiscoveryEntry = discoveryEntryStore.lookup(globalParticipantId, Long.MAX_VALUE).get();
