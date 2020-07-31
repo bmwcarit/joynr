@@ -275,15 +275,19 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     }
 
     @Override
-    public String[] touchGlobalDiscoveryEntries(long lastSeenDateMs, long expiryDateMs) {
+    public String[] touchDiscoveryEntries(long lastSeenDateMs, long expiryDateMs) {
         List<String> participantIds = new ArrayList<>();
 
         synchronized (storeLock) {
             for (T discoveryEntry : capabilityKeyToCapabilityMapping.values()) {
+                if (discoveryEntry.getLastSeenDateMs() < lastSeenDateMs) {
+                    discoveryEntry.setLastSeenDateMs(lastSeenDateMs);
+                }
+                if (discoveryEntry.getExpiryDateMs() < expiryDateMs) {
+                    discoveryEntry.setExpiryDateMs(expiryDateMs);
+                }
                 if (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL) {
                     participantIds.add(discoveryEntry.getParticipantId());
-                    discoveryEntry.setLastSeenDateMs(lastSeenDateMs);
-                    discoveryEntry.setExpiryDateMs(expiryDateMs);
                 }
             }
         }
