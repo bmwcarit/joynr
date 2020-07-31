@@ -227,8 +227,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 long lastSeenDateMs = System.currentTimeMillis();
                 long expiryDateMs = lastSeenDateMs + defaultExpiryTimeMs;
 
-                String[] participantIds = localDiscoveryEntryStore.touchGlobalDiscoveryEntries(lastSeenDateMs,
-                                                                                               expiryDateMs);
+                // Touches all discovery entries, but only returns the participantIds of global ones 
+                String[] participantIds = localDiscoveryEntryStore.touchDiscoveryEntries(lastSeenDateMs, expiryDateMs);
 
                 // update globalDiscoveryEntryCache
                 globalDiscoveryEntryCache.touchDiscoveryEntries(participantIds, lastSeenDateMs, expiryDateMs);
