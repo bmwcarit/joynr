@@ -2791,8 +2791,8 @@ public class LocalCapabilitiesDirectoryTest {
 
         String[] touchedParticipantIds = new String[]{ "participantId1", "participantId2" };
         String[] expectedParticipantIds = touchedParticipantIds.clone();
-        when(localDiscoveryEntryStoreMock.touchGlobalDiscoveryEntries(anyLong(),
-                                                                      anyLong())).thenReturn(touchedParticipantIds);
+        when(localDiscoveryEntryStoreMock.touchDiscoveryEntries(anyLong(),
+                                                                anyLong())).thenReturn(touchedParticipantIds);
 
         verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
                                                                         eq(freshnessUpdateIntervalMs),
@@ -2802,8 +2802,8 @@ public class LocalCapabilitiesDirectoryTest {
         Runnable runnable = runnableCaptor.getValue();
         runnable.run();
 
-        verify(localDiscoveryEntryStoreMock, times(1)).touchGlobalDiscoveryEntries(lastSeenDateCaptor.capture(),
-                                                                                   expiryDateCaptor.capture());
+        verify(localDiscoveryEntryStoreMock, times(1)).touchDiscoveryEntries(lastSeenDateCaptor.capture(),
+                                                                             expiryDateCaptor.capture());
 
         assertTrue(Math.abs(lastSeenDateCaptor.getValue() - expectedLastSeenDateMs) <= toleranceMs);
         assertTrue(Math.abs(expiryDateCaptor.getValue() - expectedExpiryDateMs) <= toleranceMs);
