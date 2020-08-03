@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -280,11 +280,15 @@ protected:
         std::string subscriptionId;
         subscribeTo(testProxy.get(), subscriptionListener, subscriptionQos, subscriptionId);
 
+        delayForMqttSubscribeOrUnsubscribe();
+
         (*testProvider.*fireBroadcast)(expectedValues..., partitions);
 
         // Wait for a subscription message to arrive
         ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
         unsubscribeFrom(testProxy.get(), subscriptionId);
+
+        delayForMqttSubscribeOrUnsubscribe();
     }
 
     template <typename BroadcastFilter>
@@ -335,6 +339,13 @@ protected:
         // Wait for a subscription message to arrive
         ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
         unsubscribeFrom(testProxy.get(), subscriptionId);
+    }
+
+    void delayForMqttSubscribeOrUnsubscribe()
+    {
+        // wait some time so that MQTT subscribe/unsubscribe can be
+        // executed by MQTT client and MQTT broker
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 };
 
