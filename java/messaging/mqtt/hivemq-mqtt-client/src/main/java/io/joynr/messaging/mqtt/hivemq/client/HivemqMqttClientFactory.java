@@ -64,6 +64,8 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.reactivex.schedulers.Schedulers;
@@ -77,7 +79,7 @@ import io.reactivex.schedulers.Schedulers;
  * - When persistent session configuration exists, then enable configuration thereof
  */
 @Singleton
-public class HivemqMqttClientFactory implements MqttClientFactory {
+public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientFactory.class);
 
@@ -143,7 +145,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider,
-                                   JoynrStatusMetricsReceiver joynrStatusMetricsReceiver) {
+                                   JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
+                                   ShutdownNotifier shutdownNotifier) {
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
         this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
         this.mqttGbidToConnectionTimeoutSecMap = mqttGbidToConnectionTimeoutSecMap;
@@ -155,6 +158,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
         this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
+        shutdownNotifier.registerForShutdown(this);
     }
 
     @Override
@@ -185,6 +189,29 @@ public class HivemqMqttClientFactory implements MqttClientFactory {
             logger.debug("Receiver MQTT client for gbid {} now: {}", gbid, receivingMqttClients.get(gbid));
         }
         return receivingMqttClients.get(gbid);
+    }
+
+    @Override
+    public synchronized void prepareForShutdown() {
+        if (separateConnections) {
+            for (JoynrMqttClient client : receivingMqttClients.values()) {
+                client.shutdown();
+            }
+        }
+    }
+
+    @Override
+    public synchronized void shutdown() {
+        for (JoynrMqttClient client : sendingMqttClients.values()) {
+            client.shutdown();
+        }
+        if (separateConnections) {
+            for (JoynrMqttClient client : receivingMqttClients.values()) {
+                if (!client.isShutdown()) {
+                    client.shutdown();
+                }
+            }
+        }
     }
 
     private void createCombinedClient(String gbid) {

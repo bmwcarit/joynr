@@ -193,14 +193,20 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public synchronized void shutdown() {
-        logger.info("{}: Attempting to shutdown connection.", clientInformation);
-        this.shuttingDown = true;
-        client.disconnectWith().noSessionExpiry().applyDisconnect().doOnComplete(() -> {
-            logger.info("{}: Disconnected.", clientInformation);
-        }).onErrorComplete(throwable -> {
-            logger.error("{}: Error encountered from disconnect.", clientInformation, throwable);
-            return true;
-        }).blockingAwait();
+        if (!shuttingDown) {
+            try {
+                logger.info("{}: Attempting to shutdown connection.", clientInformation);
+                shuttingDown = true;
+                client.disconnectWith().noSessionExpiry().applyDisconnect().doOnComplete(() -> {
+                    logger.info("{}: Disconnected.", clientInformation);
+                }).onErrorComplete(throwable -> {
+                    logger.error("{}: Error encountered from disconnect.", clientInformation, throwable);
+                    return true;
+                }).blockingAwait();
+            } catch (Exception e) {
+                logger.error("{}: Exception thrown on disconnect.", clientInformation, e.getMessage());
+            }
+        }
     }
 
     @Override
