@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,8 @@ protected:
             std::string subscriptionId;
             JOYNR_ASSERT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionId));
 
+            delayForMqttSubscribeOrUnsubscribe();
+
             testProvider->fireLocationUpdate(gpsLocation2, partitions.second);
             std::stringstream subscriptionPartitions;
             std::copy(partitions.first.begin(),
@@ -97,6 +99,8 @@ protected:
                     << std::endl << "Partitions used for fire broadcast" + firePartitions.str();
 
             testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
+
+            delayForMqttSubscribeOrUnsubscribe();
         }
     }
 
@@ -131,12 +135,16 @@ protected:
         subscriptionIdFuture1->get(5000, subscriptionId1);
         subscriptionIdFuture2->get(5000, subscriptionId2);
 
+        delayForMqttSubscribeOrUnsubscribe();
+
         testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "partitionX"});
 
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(5)));
 
         testProxy1->unsubscribeFromLocationUpdateBroadcast(subscriptionId1);
         testProxy2->unsubscribeFromLocationUpdateBroadcast(subscriptionId2);
+
+        delayForMqttSubscribeOrUnsubscribe();
     }
 
 private:
@@ -226,6 +234,8 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription)
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW(future->get(5000, subscriptionId));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     testProvider->fireLocationUpdate(gpsLocation2);
 
     // make sure the fireLocationUpdate is received by the first listener
@@ -242,6 +252,8 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription)
     // make sure the fireLocationUpdate is received by the second listener
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice)
@@ -277,6 +289,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice)
     JOYNR_ASSERT_NO_THROW(future->get(5000, subscriptionId1));
     JOYNR_ASSERT_NO_THROW(future2->get(5000, subscriptionId2));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     testProvider->fireLocationUpdate(gpsLocation2);
 
     // make sure the fireLocationUpdate is received by the first listener
@@ -285,6 +299,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice)
     ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId1));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput)
@@ -308,6 +324,8 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput)
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW(future->get(5000, subscriptionId));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     EXPECT_CALL(*subscriptionListener, onReceive(Eq(gpsLocation2))).Times(1).WillOnce(
             ReleaseSemaphore(&semaphore));
 
@@ -322,6 +340,8 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput)
     // ensure to wait long enough before ending
     std::this_thread::sleep_for(std::chrono::seconds(3));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput)
@@ -344,6 +364,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput)
     std::string subscriptionId;
     JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2))).Times(1);
     testProvider->fireLocationUpdate(gpsLocation2);
 
@@ -363,6 +385,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput)
     // ensure to wait long enough before ending
     std::this_thread::sleep_for(std::chrono::seconds(3));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration)
@@ -392,10 +416,14 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration)
     JOYNR_EXPECT_NO_THROW(
             subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionIdFromFuture));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
     JOYNR_ASSERT_NO_THROW(
             testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionIdFromFuture));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate)
@@ -430,6 +458,9 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate)
     // the sequence of calling the onReceive listener and the future resolve is not guaranteed
     JOYNR_EXPECT_NO_THROW(
             subscriptionIdFuture->get(subscribeToBroadcastWait, initialSubscriptionIdFromFuture));
+
+    delayForMqttSubscribeOrUnsubscribe();
+
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     EXPECT_EQ(initialSubscriptionIdFromListener, initialSubscriptionIdFromFuture);
@@ -448,6 +479,8 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate)
     EXPECT_EQ(initialSubscriptionIdFromListener, updateSubscriptionIdFromListener);
     JOYNR_ASSERT_NO_THROW(
             testProxy->unsubscribeFromLocationUpdateBroadcast(initialSubscriptionIdFromListener));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput)
@@ -476,6 +509,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput)
     JOYNR_EXPECT_NO_THROW(
             subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     testProvider->fireEmptyBroadcast();
 
     // Wait for a subscription message to arrive
@@ -496,6 +531,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput)
     // Wait for a subscription message to arrive
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromEmptyBroadcastBroadcast(subscriptionId));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput)
@@ -533,6 +570,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput)
     JOYNR_EXPECT_NO_THROW(
             subscriptionBroadcastResult->get(subscribeToBroadcastWait, subscriptionId));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     // Change the location 3 times
 
     testProvider->fireLocationUpdateWithSpeed(gpsLocation2, 100);
@@ -556,6 +595,8 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput)
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
     JOYNR_ASSERT_NO_THROW(
             testProxy->unsubscribeFromLocationUpdateWithSpeedBroadcast(subscriptionId));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
@@ -646,6 +687,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions)
     JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->get(subscribeToBroadcastWait, subscriptionId1));
     JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->get(subscribeToBroadcastWait, subscriptionId2));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     // fire broadcast without partitions (should not be received by any subscriber)
     testProvider->fireLocationUpdate(gpsLocation2);
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
@@ -669,6 +712,8 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions)
     EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId1));
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards)
@@ -763,6 +808,8 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
     JOYNR_ASSERT_NO_THROW(subscriptionIdFuture1->get(subscribeToBroadcastWait, subscriptionId1));
     JOYNR_ASSERT_NO_THROW(subscriptionIdFuture2->get(subscribeToBroadcastWait, subscriptionId2));
 
+    delayForMqttSubscribeOrUnsubscribe();
+
     // Each proxy will receive a message exactly one time
     EXPECT_CALL(*mockSubscriptionListener1, onReceive(_)).Times(1).WillOnce(
             ReleaseSemaphore(&semaphore));
@@ -777,6 +824,8 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
     EXPECT_TRUE(altSemaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
     JOYNR_ASSERT_NO_THROW(testProxy1->unsubscribeFromLocationUpdateBroadcast(subscriptionId1));
     JOYNR_ASSERT_NO_THROW(testProxy2->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
+
+    delayForMqttSubscribeOrUnsubscribe();
 }
 
 using namespace std::literals;
