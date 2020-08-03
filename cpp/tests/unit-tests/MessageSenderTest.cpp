@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@
 #include "joynr/BroadcastFilterParameters.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/SingleThreadedIOService.h"
@@ -259,12 +260,13 @@ TEST_F(MessageSenderTest, sendMulticastSubscriptionRequest)
 {
     const std::string senderParticipantId("senderParticipantId");
     const std::string receiverParticipantId("receiverParticipantId");
+    const std::string subscriptionId("subscriptionId");
     MessagingQos messagingQos(1, MessagingQosEffort::Enum::BEST_EFFORT);
     auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
 
     MulticastSubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscribeToName("subscribeToName");
-    subscriptionRequest.setSubscriptionId("subscriptionId");
+    subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setQos(subscriptionQos);
     subscriptionRequest.setMulticastId("multicastId");
 
@@ -275,8 +277,17 @@ TEST_F(MessageSenderTest, sendMulticastSubscriptionRequest)
                                                               subscriptionRequest,
                                                               isLocalMessage);
 
-    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST(),
-                        mutableMessage.getPayload());
+    SubscriptionReply subscriptionReply;
+    subscriptionReply.setSubscriptionId("subscriptionId");
+
+    MutableMessage mutableReplyMessage =
+            messageFactory.createSubscriptionReply(receiverParticipantId,
+                    senderParticipantId,
+                    messagingQos,
+                    subscriptionReply);
+
+    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(),
+                        mutableReplyMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
 
