@@ -45,6 +45,7 @@ import com.google.inject.name.Named;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
@@ -1168,9 +1169,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             @Override
             public void onFailure(JoynrRuntimeException error) {
                 logger.error("RemoveStale(maxLastSeenDateMs={}) failed.", ccStartUpDateInMs, error);
+                if (!(error instanceof JoynrMessageNotSentException
+                        && error.getMessage().contains("Address type not supported"))) {
+                    removeStaleProvidersOfClusterController();
+                }
             }
         };
         globalCapabilitiesDirectoryClient.removeStale(callback, ccStartUpDateInMs);
     }
-
 }
