@@ -3821,7 +3821,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(100)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, callTouchWithOnlyGlobalParticipantIds_RefreshesEntries)
+TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUsesGlobalOnes)
 {
     // make sure that there is only one runtime that is periodically calling touch
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
@@ -3858,9 +3858,13 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchWithOnlyGlobalParticipantIds_Ref
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _, _)).Times(0);
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
     Semaphore gcdSemaphore(0);
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), Eq(expectedParticipantIds), _, _))
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), UnorderedElementsAreArray(expectedParticipantIds), _, _))
             .WillOnce(ReleaseSemaphore(&gcdSemaphore));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
+
+    ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId1)[0].getLastSeenDateMs());
+    ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId1)[0].getExpiryDateMs());
+    ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId1).has_value());
 
     ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId2)[0].getLastSeenDateMs());
     ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId2)[0].getExpiryDateMs());
