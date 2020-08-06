@@ -149,7 +149,6 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
     }
 
     std::vector<std::string> participantIds;
-    std::vector<capabilities::LocalDiscoveryEntry> entries;
 
     const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                      std::chrono::system_clock::now().time_since_epoch()).count();
@@ -158,16 +157,45 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
         std::lock_guard<std::recursive_mutex> expiryDateUpdateLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
         for (auto entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
-            if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
+            bool refresh_entry = false;
+            if (now > entry.getLastSeenDateMs()) {
                 entry.setLastSeenDateMs(now);
+                refresh_entry = true;
+            }
+            if (newExpiryDateMs > entry.getExpiryDateMs()) {
                 entry.setExpiryDateMs(newExpiryDateMs);
-                participantIds.push_back(entry.getParticipantId());
-                entries.push_back(entry);
+                refresh_entry = true;
+            }
+            if (refresh_entry) {
+                if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
+                    participantIds.push_back(entry.getParticipantId());
+                }
+                _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(entry);
             }
         }
-        for (const auto& entry : entries) {
-            _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(entry);
-            _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(entry, entry.gbids);
+        for (auto participantId : participantIds) {
+            auto globalEntryOptional =
+                    _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(
+                            participantId);
+            if (!(globalEntryOptional.has_value())) {
+                continue;
+            }
+            auto globalEntry = globalEntryOptional.get();
+            bool refresh_entry = false;
+            if (now > globalEntry.getLastSeenDateMs()) {
+                globalEntry.setLastSeenDateMs(now);
+                refresh_entry = true;
+            }
+            if (newExpiryDateMs > globalEntry.getExpiryDateMs()) {
+                globalEntry.setExpiryDateMs(newExpiryDateMs);
+                refresh_entry = true;
+            }
+            if (refresh_entry) {
+                _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
+                        globalEntry,
+                        _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
+                                globalEntry.getParticipantId()));
+            }
         }
     }
 
