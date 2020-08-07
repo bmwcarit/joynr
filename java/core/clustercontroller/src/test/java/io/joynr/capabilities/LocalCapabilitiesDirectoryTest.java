@@ -69,6 +69,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
@@ -2899,5 +2900,61 @@ public class LocalCapabilitiesDirectoryTest {
 
         assertTrue(maxLastSeenDateCaptor.getValue() <= currentDateMs);
         assertTrue(currentDateMs - maxLastSeenDateCaptor.getValue() <= toleranceMs);
+    }
+
+    @Test
+    public void removeStaleProvidersOfClusterController_callsItselfOnCallbackFailure() {
+        // Test whether removeStaleProvidersOfClusterController() is calling itself n-times
+        // when callback function is calling onFailure(exception) function.
+        int numberOfOnFailureCalls = 2;
+        JoynrRuntimeException exception = new JoynrRuntimeException("removeStale failed");
+
+        doAnswer(new Answer<Future<Void>>() {
+            private int count = 0;
+
+            @Override
+            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                Future<Void> result = new Future<Void>();
+                @SuppressWarnings("unchecked")
+                Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+                if (count++ == numberOfOnFailureCalls) {
+                    callback.onSuccess(null);
+                    result.onSuccess(null);
+                    return result;
+                }
+                callback.onFailure(exception);
+                result.onSuccess(null);
+                return result;
+            }
+        }).when(globalCapabilitiesDirectoryClient).removeStale(Matchers.<Callback<Void>> any(), anyLong());
+
+        localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
+
+        int numberOfVerifiedFunctionCalls = numberOfOnFailureCalls + 1;
+        verify(globalCapabilitiesDirectoryClient,
+               times(numberOfVerifiedFunctionCalls)).removeStale(Matchers.<Callback<Void>> any(), anyLong());
+    }
+
+    @Test
+    public void removeStaleProvidersOfClusterController_calledOnceIfMessageNotSent() {
+        // Test whether removeStale() of GlobalCapabiltiesDirectoryClient is called once when exception
+        // has a type JoynrMessageNotSentException and contains "Address type not supported" message
+        JoynrRuntimeException exception = new JoynrMessageNotSentException("Address type not supported");
+
+        doAnswer(new Answer<Future<Void>>() {
+            @Override
+            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                Future<Void> result = new Future<Void>();
+                @SuppressWarnings("unchecked")
+                Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+                callback.onFailure(exception);
+                result.onSuccess(null);
+                return result;
+            }
+        }).when(globalCapabilitiesDirectoryClient).removeStale(Matchers.<Callback<Void>> any(), anyLong());
+
+        localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
+
+        verify(globalCapabilitiesDirectoryClient, times(1)).removeStale(Matchers.<Callback<Void>> any(), anyLong());
     }
 }
