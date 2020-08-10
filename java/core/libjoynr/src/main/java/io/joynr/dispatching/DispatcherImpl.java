@@ -114,21 +114,40 @@ public class DispatcherImpl implements Dispatcher {
 
             if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
                 String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
+                logger.debug("REGISTER MULTICAST SUBSCRIPTION: subscriptionId: {}, multicastId {}, subscribedToName: {}, subscriptionQos.expiryDate: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
+                             subscriptionRequest.getSubscriptionId(),
+                             multicastId,
+                             subscriptionRequest.getSubscribedToName(),
+                             (subscriptionRequest.getQos() == null) ? 0
+                                     : subscriptionRequest.getQos().getExpiryDateMs(),
+                             message.getId(),
+                             fromParticipantId,
+                             toDiscoveryEntry.getParticipantId(),
+                             toDiscoveryEntry.getDomain(),
+                             toDiscoveryEntry.getInterfaceName(),
+                             toDiscoveryEntry.getProviderVersion());
                 multicastReceiverRegistrar.addMulticastReceiver(multicastId,
                                                                 fromParticipantId,
                                                                 toDiscoveryEntry.getParticipantId());
+                SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionRequest.getSubscriptionId());
+                sendSubscriptionReply(toDiscoveryEntry.getParticipantId(),
+                                      fromParticipantId,
+                                      subscriptionReply,
+                                      messagingQos);
+            } else {
+                logger.debug("REGISTER SUBSCRIPTION call proxy: subscriptionId: {}, subscribedToName: {}, subscriptionQos.expiryDate: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
+                             subscriptionRequest.getSubscriptionId(),
+                             subscriptionRequest.getSubscribedToName(),
+                             (subscriptionRequest.getQos() == null) ? 0
+                                     : subscriptionRequest.getQos().getExpiryDateMs(),
+                             message.getId(),
+                             fromParticipantId,
+                             toDiscoveryEntry.getParticipantId(),
+                             toDiscoveryEntry.getDomain(),
+                             toDiscoveryEntry.getInterfaceName(),
+                             toDiscoveryEntry.getProviderVersion());
+                messageSender.sendMessage(message);
             }
-            logger.debug("REGISTER SUBSCRIPTION call proxy: subscriptionId: {}, subscribedToName: {}, subscriptionQos.expiryDate: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
-                         subscriptionRequest.getSubscriptionId(),
-                         subscriptionRequest.getSubscribedToName(),
-                         (subscriptionRequest.getQos() == null) ? 0 : subscriptionRequest.getQos().getExpiryDateMs(),
-                         message.getId(),
-                         fromParticipantId,
-                         toDiscoveryEntry.getParticipantId(),
-                         toDiscoveryEntry.getDomain(),
-                         toDiscoveryEntry.getInterfaceName(),
-                         toDiscoveryEntry.getProviderVersion());
-            messageSender.sendMessage(message);
         }
     }
 
