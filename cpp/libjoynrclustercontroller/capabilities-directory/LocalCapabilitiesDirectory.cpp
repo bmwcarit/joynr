@@ -1370,14 +1370,20 @@ void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
                         clusterControllerStartDateMs);
     };
 
-    auto onRuntimeError = [ ccId = _clusterControllerId, clusterControllerStartDateMs ](
-            const joynr::exceptions::JoynrRuntimeException& error)
+    auto onRuntimeError = [
+        ccId = _clusterControllerId,
+        clusterControllerStartDateMs,
+        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())
+    ](const joynr::exceptions::JoynrRuntimeException& error)
     {
-        JOYNR_LOG_ERROR(logger(),
-                        "RemoveStale(ccId={}, maxLastSeenDateMs={}) failed: ",
-                        ccId,
-                        clusterControllerStartDateMs,
-                        error.getMessage());
+        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            JOYNR_LOG_ERROR(logger(),
+                            "RemoveStale(ccId={}, maxLastSeenDateMs={}) failed: {}",
+                            ccId,
+                            clusterControllerStartDateMs,
+                            error.getMessage());
+            thisSharedPtr->removeStaleProvidersOfClusterController(clusterControllerStartDateMs);
+        }
     };
     _globalCapabilitiesDirectoryClient->removeStale(_clusterControllerId,
                                                     clusterControllerStartDateMs,
