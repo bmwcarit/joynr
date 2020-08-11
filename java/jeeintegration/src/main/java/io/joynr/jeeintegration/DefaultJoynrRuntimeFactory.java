@@ -362,6 +362,11 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         return joynrLocalDomain;
     }
 
+    @Override
+    public Properties getProperties() {
+        return joynrProperties;
+    }
+
     public RawMessagingPreprocessor getRawMessagePreprocessor() {
         return rawMessagePreprocessor;
     }
