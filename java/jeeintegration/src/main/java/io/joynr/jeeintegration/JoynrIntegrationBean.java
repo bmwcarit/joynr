@@ -43,6 +43,7 @@ import com.google.inject.Injector;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
@@ -71,8 +72,6 @@ public class JoynrIntegrationBean {
     private Set<Object> registeredProviders = new HashSet<>();
 
     private JoynrRuntime joynrRuntime;
-
-    private boolean deregisterOnShutdown = false;
 
     public JoynrIntegrationBean() {
     }
@@ -186,7 +185,10 @@ public class JoynrIntegrationBean {
 
     @PreDestroy
     public void destroy() {
-        if (deregisterOnShutdown) {
+        if (!(joynrRuntimeFactory.getProperties()
+                                 .getProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false")
+                                 .equals("true"))) {
+            logger.info("Unregistering provider ", joynrRuntimeFactory.getLocalDomain());
             for (Object provider : registeredProviders) {
                 try {
                     joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);

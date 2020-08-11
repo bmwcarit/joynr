@@ -18,6 +18,7 @@
  */
 package io.joynr.jeeintegration;
 
+import java.util.Properties;
 import java.util.Set;
 
 import com.google.inject.Injector;
@@ -56,5 +57,11 @@ public interface JoynrRuntimeFactory {
      * @return the guice intector to be used by the joynr runtime factory
      */
     Injector getInjector();
+
+    /**
+     * Provides the properties used by the joynr runtime factory
+     * @return the properties used by the joynr runtime factory
+     */
+    Properties getProperties();
 
 }
