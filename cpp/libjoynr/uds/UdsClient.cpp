@@ -48,7 +48,11 @@ UdsClient::UdsClient(const UdsSettings& settings,
           _socket(_ioContext),
           _state{State::STOP}
 {
-    _sendQueue->pushBack(UdsFrameBufferV1(_address));
+    try {
+        _sendQueue->pushBack(UdsFrameBufferV1(_address));
+    } catch (const std::exception& e) {
+        doHandleFatalError("Failed to insert INIT message to queue.", e);
+    }
 }
 
 UdsClient::~UdsClient()
@@ -196,11 +200,15 @@ void UdsClient::doReadBody()
 
 void UdsClient::send(const smrf::ByteArrayView& msg, const IUdsSender::SendFailed& callback)
 {
-    _ioContext.post([ this, frame = UdsFrameBufferV1(msg), callback ]() mutable {
-        if (_sendQueue->pushBack(std::move(frame), callback)) {
-            doWrite();
-        }
-    });
+    try {
+        _ioContext.post([ this, frame = UdsFrameBufferV1(msg), callback ]() mutable {
+            if (_sendQueue->pushBack(std::move(frame), callback)) {
+                doWrite();
+            }
+        });
+    } catch (const std::exception& e) {
+        doHandleFatalError("Failed to queue message-frame", e);
+    }
 }
 
 void UdsClient::doWrite()

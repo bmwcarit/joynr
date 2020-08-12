@@ -32,6 +32,10 @@ constexpr char UdsServerTest::_settingsFile[];
 const std::chrono::seconds UdsServerTest::_waitPeriodForClientServerCommunication(5);
 const std::chrono::milliseconds UdsServerTest::_retryIntervalDuringClientServerCommunication(200);
 
+std::function<void(const joynr::exceptions::JoynrRuntimeException&)>
+        UdsServerTest::_ignoreClientFatalRuntimeErrors =
+                [](const joynr::exceptions::JoynrRuntimeException&) {};
+
 TEST_F(UdsServerTest, multipleServerReusingSocket)
 {
     auto server1 = createServer();
@@ -104,14 +108,57 @@ TEST_F(UdsServerTest, sendToClient)
     EXPECT_EQ(_messagesReceivedByClient[1], messageEmpty);
 }
 
+TEST_F(UdsServerTest, robustness_sendException_otherClientsNotAffected)
+{
+    Semaphore connectionSemaphore, disconnectionSemaphore;
+    MockUdsServerCallbacks mockUdsServerCallbacks;
+    std::shared_ptr<joynr::IUdsSender> tmpSender, nominalSender, erroneousSender;
+    EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(2).WillRepeatedly(DoAll(
+            SaveArg<1>(&tmpSender), InvokeWithoutArgs(&connectionSemaphore, &Semaphore::notify)));
+    // disconnected called for erroneous sender, not for nominal one
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
+            .WillOnce(InvokeWithoutArgs(&disconnectionSemaphore, &Semaphore::notify));
+    auto server = createServer(mockUdsServerCallbacks);
+    server->start();
+    ASSERT_TRUE(connectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive connection callback for nominal client.";
+    nominalSender = tmpSender;
+
+    _udsSettings.setClientId("ErrorCausedBySenderNotByClient");
+    joynr::UdsClient otherClient(_udsSettings, _ignoreClientFatalRuntimeErrors);
+    otherClient.start();
+    ASSERT_TRUE(connectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive connection callback for other client.";
+    erroneousSender = tmpSender;
+
+    constexpr std::size_t sizeViolatingLimit =
+            1UL + std::numeric_limits<UdsFrameBufferV1::BodyLength>::max();
+    smrf::ByteArrayView viewCausingException(nullptr, sizeViolatingLimit);
+    erroneousSender->send(viewCausingException, [](const exceptions::JoynrRuntimeException&) {});
+    ASSERT_TRUE(disconnectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive disconnection callback for other client.";
+
+    // Connections / Senders are independent. Error in one does not affect the other-
+    const smrf::ByteVector message(1, 1);
+    sendToClient(nominalSender, message);
+    ASSERT_EQ(waitFor(_messagesReceivedByClient, 1), 1)
+            << "Erroneous clients affected good client connection.";
+    EXPECT_EQ(_messagesReceivedByClient[0], message);
+
+    // Assure that only the expected disconnection has been called
+    Mock::VerifyAndClearExpectations(&mockUdsServerCallbacks);
+}
+
 TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffected)
 {
     Semaphore semaphore;
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> goodClientSender;
     // connected callback called for good client and erroneousClientMessage
-    EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(2).WillOnce(DoAll(
-            SaveArg<1>(&goodClientSender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)))
+    EXPECT_CALL(mockUdsServerCallbacks, connected(_, _))
+            .Times(2)
+            .WillOnce(DoAll(SaveArg<1>(&goodClientSender),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)))
             .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     // disconnected callback called for good client and erroneousClientMessage

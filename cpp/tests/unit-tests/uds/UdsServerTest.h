@@ -53,6 +53,13 @@ protected:
     static const std::chrono::seconds _waitPeriodForClientServerCommunication;
     static const std::chrono::milliseconds _retryIntervalDuringClientServerCommunication;
 
+    /*
+     * In operative scenario, the UDS connection is never lost. A connection loss is normal in
+     * most unit-tests and the resulting fatal runtime error on client side can be ignored.
+     */
+    static std::function<void(const joynr::exceptions::JoynrRuntimeException&)>
+            _ignoreClientFatalRuntimeErrors;
+
     class ErroneousClient
     {
         boost::asio::local::stream_protocol::endpoint _endpoint;
@@ -108,9 +115,10 @@ protected:
                 [&mock](const joynr::system::RoutingTypes::UdsClientAddress& id) {
                     mock.disconnected(id);
                 });
-        udsServerTest->setReceiveCallback(
-                [&mock](const joynr::system::RoutingTypes::UdsClientAddress& id,
-                        smrf::ByteVector&& val, const std::string& creator) { mock.received(id, std::move(val), creator); });
+        udsServerTest->setReceiveCallback([&mock](
+                const joynr::system::RoutingTypes::UdsClientAddress& id,
+                smrf::ByteVector&& val,
+                const std::string& creator) { mock.received(id, std::move(val), creator); });
         return udsServerTest;
     }
 
@@ -192,7 +200,7 @@ public:
                         [](const joynr::exceptions::JoynrRuntimeException&) {};
 
         _clientConnected.store(false);
-        _client = std::make_unique<joynr::UdsClient>(_udsSettings, ignoreClientFatalRuntimeErrors);
+        _client = std::make_unique<joynr::UdsClient>(_udsSettings, _ignoreClientFatalRuntimeErrors);
         _client->setConnectCallback([this]() { _clientConnected.store(true); });
         _client->setDisconnectCallback([this]() { _clientConnected.store(false); });
         _client->setReceiveCallback([this](smrf::ByteVector&& message) mutable {

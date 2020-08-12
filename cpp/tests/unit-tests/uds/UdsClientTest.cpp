@@ -19,6 +19,8 @@
 #include "UdsClientTest.h"
 #include "joynr/Semaphore.h"
 
+#include "libjoynr/uds/UdsFrameBufferV1.h"
+
 #include "tests/PrettyPrint.h"
 
 using namespace joynr;
@@ -195,4 +197,20 @@ TEST_F(UdsClientTest, sendFromClientAsynchronous)
         }));
     }
     ASSERT_EQ(waitFor(messagesReceivedFromClient, numberOfSendCalls), numberOfSendCalls);
+}
+
+TEST_F(UdsClientTest, sendException)
+{
+    Sequence sequence;
+    MockUdsClientCallbacks mockUdsClientCallbacks;
+    auto client = createClient(mockUdsClientCallbacks);
+    EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1).InSequence(sequence);
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(1).InSequence(sequence);
+    client->start();
+    ASSERT_EQ(countServerConnections(1), 1);
+    constexpr std::size_t sizeViolatingLimit =
+            1UL + std::numeric_limits<UdsFrameBufferV1::BodyLength>::max();
+    smrf::ByteArrayView viewCausingException(nullptr, sizeViolatingLimit);
+    client->send(viewCausingException, [](const exceptions::JoynrRuntimeException&) {});
+    ASSERT_EQ(countServerConnections(0), 0);
 }
