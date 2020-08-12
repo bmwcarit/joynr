@@ -21,8 +21,6 @@
 
 #include <cstring>
 #include <stdexcept>
-#include <new>
-#include <string>
 
 namespace joynr
 {
@@ -37,11 +35,11 @@ UdsFrameBufferV1::UdsFrameBufferV1() noexcept : _buffer(empty())
 UdsFrameBufferV1::UdsFrameBufferV1(const smrf::ByteArrayView& view) : UdsFrameBufferV1()
 {
     if (_maxBodyLength < view.size()) {
-        // Connection will be closed by server when receiving message with invalid header.
-        JOYNR_LOG_ERROR(logger(), "Dropping invalid message of size {}.", view.size());
+        throw joynr::exceptions::JoynrRuntimeException("Frame payload size invalid " +
+                                                       std::to_string(view.size()));
     } else {
+        resizeBufferPayload(_buffer, view.size());
         writeMagicCookie(_msgMagicCookie);
-        _buffer.resize(view.size() + _headerSize);
         writeLength(view.size());
         std::memcpy(_buffer.data() + _headerSize, view.data(), view.size());
     }
@@ -49,20 +47,9 @@ UdsFrameBufferV1::UdsFrameBufferV1(const smrf::ByteArrayView& view) : UdsFrameBu
 
 UdsFrameBufferV1::UdsFrameBufferV1(
         const joynr::system::RoutingTypes::UdsClientAddress& clientAddress)
-        : UdsFrameBufferV1()
+        : UdsFrameBufferV1(smrf::ByteArrayView(serializeClientAddress(clientAddress)))
 {
-    const auto serialized = serializer::serializeToJson(clientAddress);
-    const smrf::ByteVector bytes(serialized.begin(), serialized.end());
-
-    if (_maxBodyLength < bytes.size()) {
-        // Connection will be closed by server when receiving message with invalid header.
-        JOYNR_LOG_ERROR(
-                logger(), "Dropping invalid ID due to its serialized size {}.", bytes.size());
-    } else {
-        writeMagicCookie(_initMagicCookie);
-        writeLength(bytes.size());
-        _buffer.insert(_buffer.end(), bytes.begin(), bytes.end());
-    }
+    writeMagicCookie(_initMagicCookie);
 }
 
 boost::asio::const_buffers_1 UdsFrameBufferV1::raw() const noexcept
@@ -78,15 +65,7 @@ boost::asio::mutable_buffers_1 UdsFrameBufferV1::header() noexcept
 boost::asio::mutable_buffers_1 UdsFrameBufferV1::body()
 {
     checkMagicCookie(_initMagicCookie, _commonMagicBytes);
-    try {
-        _buffer.resize(readLength() + _headerSize);
-    } catch (const std::bad_alloc&) {
-        const auto requestedLength = readLength();
-        _buffer = empty(); // Assure valid state of buffer
-        throw joynr::exceptions::JoynrRuntimeException(
-                "Failed to reserve UDS frame buffer of size [bytes]: " +
-                std::to_string(requestedLength));
-    }
+    resizeBufferPayload(_buffer, readLength());
     return boost::asio::mutable_buffers_1(
             _buffer.data() + _headerSize, _buffer.size() - _headerSize);
 }

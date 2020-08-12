@@ -99,6 +99,27 @@ TEST(UdsFrameBufferV1Test, messageCtor)
                 ElementsAre(0, 0, 4, 0));
 }
 
+TEST(UdsFrameBufferV1Test, messageCtorException)
+{
+    try {
+        constexpr std::size_t testSize =
+                1UL + std::numeric_limits<UdsFrameBufferV1::BodyLength>::max();
+        smrf::ByteVector testData(testSize, 1);
+        const smrf::ByteArrayView testView(testData);
+        std::string exceptionMessage = "JoynrRuntimeException not thrown by CTOR.";
+        try {
+            const UdsFrameBufferV1 unused(testView);
+            ASSERT_EQ(0, unused.raw().size()) << "Expected exception not thrown.";
+        } catch (const joynr::exceptions::JoynrRuntimeException& e) {
+            exceptionMessage = e.what();
+        }
+        EXPECT_THAT(exceptionMessage, HasSubstr(std::to_string(testSize)));
+
+    } catch (std::bad_alloc&) {
+        // Whether the test can be executed, depends on the memory allocation of the underlying OS.
+    }
+}
+
 TEST(UdsFrameBufferV1Test, clientAddressCtor)
 {
     const joynr::system::RoutingTypes::UdsClientAddress testAddress("Hello World");
@@ -116,7 +137,7 @@ TEST(UdsFrameBufferV1Test, clientAddressCtor)
     ASSERT_THAT(convertAsioBuffer(test.body()), ElementsAreArray(testSerialized));
 }
 
-TEST(UdsFrameBufferV1Test, bodyExceptions)
+TEST(UdsFrameBufferV1Test, bodyException)
 {
     UdsFrameBufferV1 test;
     constexpr UdsFrameBufferV1::BodyLength testSize =

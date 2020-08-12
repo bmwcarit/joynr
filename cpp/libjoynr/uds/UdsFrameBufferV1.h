@@ -21,6 +21,8 @@
 
 #include <cstdint>
 #include <limits>
+#include <new>
+#include <string>
 
 #include <boost/asio.hpp>
 #include <boost/endian/conversion.hpp>
@@ -57,10 +59,19 @@ public:
     UdsFrameBufferV1() noexcept;
 
     /** Constructs message buffer from view (bytes from view are copied, empty view results in empty
-     * message) */
+     * message)
+     * @param view Temporary view to byte array containing payload for single frame.
+     * @throws JoynrRuntimeException if message view size exceeds UdsFrameBufferV1::BodyLength bits.
+     * @throws JoynrRuntimeException if buffer for view cannot be allocated.
+     */
     explicit UdsFrameBufferV1(const smrf::ByteArrayView& view);
 
-    /** Constructs init-frame buffer */
+    /**
+     * Constructs init-frame buffer
+     * @param clientAddress Address used for unique identification of the client
+     * @throws JoynrRuntimeException if address cannot be serialized.
+     * @throws JoynrRuntimeException if buffer for address cannot be allocated.
+     */
     explicit UdsFrameBufferV1(const joynr::system::RoutingTypes::UdsClientAddress& clientAddress);
 
     /** @return Get view on the raw buffer content. */
@@ -91,10 +102,25 @@ public:
     joynr::system::RoutingTypes::UdsClientAddress readInit();
 
 private:
+    static inline smrf::ByteVector serializeClientAddress(
+            const joynr::system::RoutingTypes::UdsClientAddress& clientAddress)
+    {
+        try {
+            const auto serialized = serializer::serializeToJson(clientAddress);
+            return smrf::ByteVector(serialized.begin(), serialized.end());
+        } catch (const std::exception& e) {
+            throw joynr::exceptions::JoynrRuntimeException("Failed to serialize client address " +
+                                                           clientAddress.getId() + ": " + e.what());
+        } catch (...) {
+            throw joynr::exceptions::JoynrRuntimeException("Failed to serialize client address " +
+                                                           clientAddress.getId());
+        }
+    }
+
     smrf::ByteVector _buffer;
     static constexpr std::size_t _cookieSize = sizeof(Cookie);
 
-    inline void writeMagicCookie(const Cookie& cookie)
+    inline void writeMagicCookie(const Cookie& cookie) noexcept
     {
         std::memcpy(_buffer.data(), cookie.data(), _cookieSize);
     }
@@ -112,14 +138,14 @@ private:
 
     static constexpr std::size_t _bodyLengthSize = sizeof(BodyLength);
 
-    inline BodyLength readLength() const
+    inline BodyLength readLength() const noexcept
     {
         BodyLength networkByteOrder;
         std::memcpy(&networkByteOrder, _buffer.data() + _cookieSize, _bodyLengthSize);
         return boost::endian::big_to_native(networkByteOrder);
     }
 
-    inline void writeLength(const BodyLength& size)
+    inline void writeLength(const BodyLength& size) noexcept
     {
         BodyLength networkByteOrder = boost::endian::native_to_big(size);
         std::memcpy(_buffer.data() + _cookieSize, &networkByteOrder, _bodyLengthSize);
@@ -130,9 +156,22 @@ private:
     static_assert(
             sizeof(smrf::ByteVector::size_type) > _bodyLengthSize,
             "Number of bytes transported within one UDS frame do not fit into SMRF byte vector.");
+
     static inline smrf::ByteVector empty()
     {
         return smrf::ByteVector(_headerSize, 0);
+    }
+
+    static inline void resizeBufferPayload(smrf::ByteVector& buffer, const std::size_t& payloadSize)
+    {
+        try {
+            buffer.resize(payloadSize + _headerSize);
+        } catch (const std::bad_alloc&) {
+            buffer = empty(); // Assure valid state of buffer
+            throw joynr::exceptions::JoynrRuntimeException(
+                    "Failed to reserve UDS frame buffer for payload-size [bytes]: " +
+                    std::to_string(payloadSize));
+        }
     }
 
     ADD_LOGGER(UdsFrameBufferV1)
