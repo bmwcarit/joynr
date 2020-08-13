@@ -47,6 +47,7 @@ import com.google.inject.name.Named;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -87,12 +88,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     private Dispatcher dispatcher;
 
     private final MulticastWildcardRegexFactory multicastWildcardRegexFactory;
+    private final MulticastReceiverRegistrar multicastReceiverRegistrar;
 
     @Inject
     public SubscriptionManagerImpl(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
                                    Dispatcher dispatcher,
                                    MulticastWildcardRegexFactory multicastWildcardRegexFactory,
-                                   ShutdownNotifier shutdownNotifier) {
+                                   ShutdownNotifier shutdownNotifier,
+                                   MulticastReceiverRegistrar multicastReceiverRegistrar) {
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionListenerDirectory = new ConcurrentHashMap<>();
@@ -106,6 +109,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         this.multicastBroadcastTypes = new ConcurrentHashMap<>();
         this.subscriptionFutureMap = new ConcurrentHashMap<>();
         this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
+        this.multicastReceiverRegistrar = multicastReceiverRegistrar;
         shutdownNotifier.registerForShutdown(this);
     }
 
@@ -122,7 +126,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                    ConcurrentMap<String, Future<String>> subscriptionFutureMap,
                                    ScheduledExecutorService cleanupScheduler,
                                    Dispatcher dispatcher,
-                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
+                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory,
+                                   MulticastReceiverRegistrar multicastReceiverRegistrar) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
         this.broadcastSubscriptionListenerDirectory = broadcastSubscriptionDirectory;
@@ -137,6 +142,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         this.dispatcher = dispatcher;
         this.subscriptionFutureMap = subscriptionFutureMap;
         this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
+        this.multicastReceiverRegistrar = multicastReceiverRegistrar;
     }
 
     private void cancelExistingSubscriptionEndRunnable(String subscriptionId) {
@@ -272,6 +278,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                                                              multicastSubscribeInvocation.getOutParameterTypes());
                                          broadcastSubscriptionListenerDirectory.put(subscriptionId,
                                                                                     multicastSubscribeInvocation.getListener());
+                                         multicastReceiverRegistrar.addMulticastReceiver(multicastId,
+                                                                                         fromParticipantId,
+                                                                                         toDiscoveryEntry.getParticipantId());
                                          return new MulticastSubscriptionRequest(multicastId,
                                                                                  multicastSubscribeInvocation.getSubscriptionId(),
                                                                                  multicastSubscribeInvocation.getSubscriptionName(),
@@ -324,6 +333,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         }
 
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
+
+        for(DiscoveryEntryWithMetaInfo discoveryEntry: toDiscoveryEntries) {
+            multicastReceiverRegistrar.removeMulticastReceiver(multicastId, fromParticipantId, discoveryEntry.getParticipantId());
+        }
 
         dispatcher.sendSubscriptionStop(fromParticipantId,
                                         toDiscoveryEntries,

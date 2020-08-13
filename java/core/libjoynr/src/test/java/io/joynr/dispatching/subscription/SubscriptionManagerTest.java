@@ -59,6 +59,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -124,6 +125,9 @@ public class SubscriptionManagerTest {
     @Mock
     private MulticastWildcardRegexFactory multicastWildcardRegexFactory;
 
+    @Mock
+    private MulticastReceiverRegistrar mockMulticastReceiverRegistrar;
+
     @Before
     public void setUp() {
         subscriptionManager = new SubscriptionManagerImpl(attributeSubscriptionDirectory,
@@ -138,7 +142,8 @@ public class SubscriptionManagerTest {
                                                           subscriptionFutureMap,
                                                           cleanupScheduler,
                                                           dispatcher,
-                                                          multicastWildcardRegexFactory);
+                                                          multicastWildcardRegexFactory,
+                                                          mockMulticastReceiverRegistrar);
         subscriptionId = "testSubscription";
 
         attributeName = "testAttribute";

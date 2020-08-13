@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
@@ -79,6 +80,9 @@ public class SubscriptionTimersTest {
     @Mock
     private MulticastWildcardRegexFactory multicastWildcardRegexFactory;
 
+    @Mock
+    private MulticastReceiverRegistrar mockMulticastReceiverRegistrar;
+
     private String subscriptionId;
 
     private int period = 100;
@@ -100,7 +104,8 @@ public class SubscriptionTimersTest {
         subscriptionManager = new SubscriptionManagerImpl(subscriptionEndScheduler,
                                                           dispatcher,
                                                           multicastWildcardRegexFactory,
-                                                          shutdownNotifier);
+                                                          shutdownNotifier,
+                                                          mockMulticastReceiverRegistrar);
         attributeName = "testAttribute";
         fromParticipantId = "fromParticipantId";
         toParticipantId = "toParticipantId";

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
-import io.joynr.messaging.MulticastReceiverRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +69,6 @@ public class DispatcherImpl implements Dispatcher {
     private RequestReplyManager requestReplyManager;
     private SubscriptionManager subscriptionManager;
     private PublicationManager publicationManager;
-    private final MulticastReceiverRegistrar multicastReceiverRegistrar;
     private final MessageSender messageSender;
     private ObjectMapper objectMapper;
     private boolean overrideCompress;
@@ -81,7 +79,6 @@ public class DispatcherImpl implements Dispatcher {
     public DispatcherImpl(RequestReplyManager requestReplyManager,
                           SubscriptionManager subscriptionManager,
                           PublicationManager publicationManager,
-                          MulticastReceiverRegistrar multicastReceiverRegistrar,
                           MessageSender messageSender,
                           MutableMessageFactory messageFactory,
                           ObjectMapper objectMapper,
@@ -90,7 +87,6 @@ public class DispatcherImpl implements Dispatcher {
         this.requestReplyManager = requestReplyManager;
         this.subscriptionManager = subscriptionManager;
         this.publicationManager = publicationManager;
-        this.multicastReceiverRegistrar = multicastReceiverRegistrar;
         this.messageSender = messageSender;
         this.messageFactory = messageFactory;
         this.objectMapper = objectMapper;
@@ -126,9 +122,6 @@ public class DispatcherImpl implements Dispatcher {
                              toDiscoveryEntry.getDomain(),
                              toDiscoveryEntry.getInterfaceName(),
                              toDiscoveryEntry.getProviderVersion());
-                multicastReceiverRegistrar.addMulticastReceiver(multicastId,
-                                                                fromParticipantId,
-                                                                toDiscoveryEntry.getParticipantId());
                 SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionRequest.getSubscriptionId());
                 sendSubscriptionReply(toDiscoveryEntry.getParticipantId(),
                                       fromParticipantId,
