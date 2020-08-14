@@ -30,9 +30,9 @@ namespace joynr
 
 constexpr int UdsClient::_threadsPerConnection;
 
-UdsClient::UdsClient(const UdsSettings& settings,
-                     const std::function<void(const exceptions::JoynrRuntimeException&)>&
-                             onFatalRuntimeError) noexcept
+UdsClient::UdsClient(
+        const UdsSettings& settings,
+        const std::function<void(const exceptions::JoynrRuntimeException&)>& onFatalRuntimeError)
         : IUdsSender(),
           _fatalRuntimeErrorCallback{onFatalRuntimeError},
           _connectedCallback{[]() {}},
@@ -65,26 +65,31 @@ joynr::system::RoutingTypes::UdsClientAddress UdsClient::getAddress() const noex
     return _address;
 }
 
-void UdsClient::setConnectCallback(const Connected& callback) noexcept
+void UdsClient::setConnectCallback(const Connected& callback)
 {
-    _connectedCallback = callback;
+    if (callback) {
+        _connectedCallback = callback;
+    }
 }
 
-void UdsClient::setDisconnectCallback(const Disconnected& callback) noexcept
+void UdsClient::setDisconnectCallback(const Disconnected& callback)
 {
-    _disconnectedCallback = callback;
+    if (callback) {
+        _disconnectedCallback = callback;
+    }
 }
 
-void UdsClient::setReceiveCallback(const Received& callback) noexcept
+void UdsClient::setReceiveCallback(const Received& callback)
 {
-    _receivedCallback = callback;
+    if (callback) {
+        _receivedCallback = callback;
+    }
 }
 
 void UdsClient::start()
 {
     if (_worker.valid()) {
-        JOYNR_LOG_ERROR(
-                logger(), "UDS client {} ({}) alreay started.", _address.getId(), _endpoint.path());
+        JOYNR_LOG_ERROR(logger(), "{} alreay started.", _address.getId());
         return;
     }
     _state.store(State::START);
@@ -102,13 +107,11 @@ void UdsClient::shutdown() noexcept
         }
     } catch (std::exception& e) {
         JOYNR_LOG_ERROR(logger(),
-                        "UDS client {} caused unexpected error when stopping worker: {}",
+                        "{} caused unexpected error when stopping worker: {}",
                         _address.getId(),
                         e.what());
     } catch (...) {
-        JOYNR_LOG_ERROR(logger(),
-                        "UDS client {} caused unknown error when stopping worker",
-                        _address.getId());
+        JOYNR_LOG_ERROR(logger(), "{} caused unknown error when stopping worker", _address.getId());
     }
 }
 
@@ -125,7 +128,7 @@ void UdsClient::run()
         _socket.async_connect(_endpoint, [this](boost::system::error_code failedToConnect) {
             if (failedToConnect) {
                 JOYNR_LOG_ERROR(logger(),
-                                "UDS client {} ({}) failed to connect. Retry in {:d}ms.",
+                                "{} ({}) failed to connect. Retry in {:d}ms.",
                                 _address.getId(),
                                 _endpoint.path(),
                                 _connectSleepTime.count());
@@ -149,21 +152,24 @@ void UdsClient::run()
         _socket.close();
     }
     if (State::CONNECTED == _state.load()) {
-        doHandleFatalError("State machine stopped unexpectedly.");
+        doHandleFatalError("State machine stopped unexpectedly");
     }
-    _disconnectedCallback();
+    try {
+        _disconnectedCallback();
+    } catch (const std::exception& e) {
+        doHandleFatalError("Failed to process disconnection", e);
+    }
 }
 
-void UdsClient::doReadHeader()
+void UdsClient::doReadHeader() noexcept
 {
     boost::asio::async_read(_socket,
                             _readBuffer->header(),
                             [this](boost::system::error_code readFailure, std::size_t /*length*/) {
         if (readFailure) {
             JOYNR_LOG_ERROR(logger(),
-                            "UDS client {} ({}) failed to read header: {}",
+                            "{} failed to read header: {}",
                             _address.getId(),
-                            _endpoint.path(),
                             readFailure.message());
         } else {
             doReadBody();
@@ -171,7 +177,7 @@ void UdsClient::doReadHeader()
     });
 }
 
-void UdsClient::doReadBody()
+void UdsClient::doReadBody() noexcept
 {
     try {
         boost::asio::async_read(
@@ -180,9 +186,8 @@ void UdsClient::doReadBody()
                 [this](boost::system::error_code readFailure, std::size_t /*length*/) {
                     if (readFailure) {
                         JOYNR_LOG_ERROR(logger(),
-                                        "UDS client {} ({}) failed to read body: {}",
+                                        "{} failed to read body: {}",
                                         _address.getId(),
-                                        _endpoint.path(),
                                         readFailure.message());
                     } else {
                         try {
@@ -202,16 +207,20 @@ void UdsClient::send(const smrf::ByteArrayView& msg, const IUdsSender::SendFaile
 {
     try {
         _ioContext.post([ this, frame = UdsFrameBufferV1(msg), callback ]() mutable {
-            if (_sendQueue->pushBack(std::move(frame), callback)) {
-                doWrite();
+            try {
+                if (_sendQueue->pushBack(std::move(frame), callback)) {
+                    doWrite();
+                }
+            } catch (const std::exception& e) {
+                doHandleFatalError("Failed to queue message", e);
             }
         });
     } catch (const std::exception& e) {
-        doHandleFatalError("Failed to queue message-frame", e);
+        doHandleFatalError("Failed to create message frame", e);
     }
 }
 
-void UdsClient::doWrite()
+void UdsClient::doWrite() noexcept
 {
     boost::asio::async_write(_socket,
                              _sendQueue->showFront(),
@@ -231,31 +240,46 @@ void UdsClient::doHandleFatalError(const std::string& errorMessage,
 void UdsClient::doHandleFatalError(const std::string& errorMessage) noexcept
 {
     JOYNR_LOG_FATAL(logger(),
-                    "UDS client {} ({}) fatal runtime error, stopping all communication via UDS "
-                    "permanently: {}",
+                    "{} fatal runtime error, stopping all communication permanently: {}",
                     _address.getId(),
-                    _endpoint.path(),
                     errorMessage);
-    if (State::FAILED != _state.exchange(State::FAILED)) {
+    if (!hasFatalErrorAlreadyBeenReported()) {
         try {
             if (_fatalRuntimeErrorCallback) {
                 _fatalRuntimeErrorCallback(exceptions::JoynrRuntimeException(errorMessage));
             }
         } catch (std::exception& e) {
             JOYNR_LOG_ERROR(logger(),
-                            "UDS client {} received unexpected exception when informing user about "
+                            "{} received unexpected exception when informing user about "
                             "internal fatal runtime error: {}",
                             _address.getId(),
                             e.what());
         } catch (...) {
             JOYNR_LOG_ERROR(logger(),
-                            "UDS client {} received an unkown error when informing user about "
+                            "{} received an unkown error when informing user about "
                             "internal fatal runtime error.",
                             _address.getId());
         }
         boost::system::error_code ignore; // Maybe the socket is not open.
         _socket.close(ignore);
     }
+}
+
+bool UdsClient::hasFatalErrorAlreadyBeenReported() noexcept
+{
+    const auto previous = _state.exchange(State::FAILED);
+    switch (previous) {
+    case State::FAILED:
+        // This call is a follow-up of previously reported error
+        return true;
+    case State::STOP:
+        // In case of shutdown, don't report a connection problem as error
+        return true;
+    case State::CONNECTED:
+    case State::START:
+        break;
+    }
+    return false;
 }
 
 } // namespace joynr

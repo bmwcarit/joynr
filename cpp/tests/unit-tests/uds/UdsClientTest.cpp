@@ -214,3 +214,85 @@ TEST_F(UdsClientTest, sendException)
     client->send(viewCausingException, [](const exceptions::JoynrRuntimeException&) {});
     ASSERT_EQ(countServerConnections(0), 0);
 }
+
+TEST_F(UdsClientTest, sendFailedCallbackException)
+{
+    MockUdsClientCallbacks mockUdsClientCallbacks;
+    const std::logic_error userException("Test exception");
+    EXPECT_CALL(mockUdsClientCallbacks, sendFailed(_)).Times(AtLeast(1)).WillRepeatedly(
+            Throw(userException));
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(1);
+
+    _udsSettings.setSendingQueueSize(0);
+    auto client = createClient(mockUdsClientCallbacks);
+    client->start();
+    ASSERT_EQ(countServerConnections(1), 1);
+    const smrf::ByteVector message;
+    for (unsigned int i = 0; i < 1024; i++) {
+        sendFromClient(client, message, mockUdsClientCallbacks);
+    }
+    ASSERT_EQ(countServerConnections(0), 0);
+}
+
+TEST_F(UdsClientTest, connectedCallbackException)
+{
+    Semaphore semaphore;
+    MockUdsClientCallbacks mockUdsClientCallbacks;
+    const std::logic_error userException("Test exception");
+    EXPECT_CALL(mockUdsClientCallbacks, connected()).WillOnce(Throw(userException));
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
+            .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    auto client = createClient(mockUdsClientCallbacks);
+    client->start();
+    ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "fatal error callback not invoked";
+    ASSERT_EQ(countServerConnections(0), 0);
+}
+
+TEST_F(UdsClientTest, disconnectedCallbackException)
+{
+    Semaphore semaphore;
+    MockUdsClientCallbacks mockUdsClientCallbacks;
+    const std::logic_error userException("Test exception");
+    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).WillOnce(Throw(userException));
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
+            .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    auto client = createClient(mockUdsClientCallbacks);
+    client->start();
+    ASSERT_EQ(countServerConnections(1), 1);
+    stopServer();
+    ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "fatal error callback not invoked";
+    ASSERT_EQ(countServerConnections(0), 0);
+}
+
+TEST_F(UdsClientTest, receivedCallbackException)
+{
+    Semaphore semaphore;
+    MockUdsClientCallbacks mockUdsClientCallbacks;
+    const std::logic_error userException("Test exception");
+    EXPECT_CALL(mockUdsClientCallbacks, receivedMock(_)).WillOnce(Throw(userException));
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
+            .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    auto client = createClient(mockUdsClientCallbacks);
+    client->start();
+    ASSERT_EQ(countServerConnections(1), 1);
+    sendFromServer(1);
+    ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "fatal error callback not invoked";
+    ASSERT_EQ(countServerConnections(0), 0);
+}
+
+TEST_F(UdsClientTest, fatalErrorCallbackException)
+{
+    MockUdsClientCallbacks mockUdsClientCallbacks;
+    const std::logic_error triggerFatalErrorCallback("Test exception 1");
+    EXPECT_CALL(mockUdsClientCallbacks, receivedMock(_)).WillOnce(Throw(triggerFatalErrorCallback));
+    const std::logic_error userException("Test exception 2");
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).WillOnce(Throw(userException));
+    auto client = createClient(mockUdsClientCallbacks);
+    client->start();
+    ASSERT_EQ(countServerConnections(1), 1);
+    sendFromServer(1);
+    ASSERT_EQ(countServerConnections(0), 0);
+}

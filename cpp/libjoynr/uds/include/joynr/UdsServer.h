@@ -45,7 +45,7 @@ class UdsFrameBufferV1;
 template <typename FRAME>
 class UdsSendQueue;
 
-class UdsServer final
+class UdsServer
 {
 public:
     using Connected = std::function<
@@ -55,15 +55,14 @@ public:
                                         smrf::ByteVector&&,
                                         const std::string&)>;
 
-    explicit UdsServer(const UdsSettings& settings) noexcept;
-    virtual ~UdsServer();
+    explicit UdsServer(const UdsSettings& settings);
+    ~UdsServer();
 
     // Server cannot be copied since it has internal threads
     DISALLOW_COPY_AND_ASSIGN(UdsServer);
 
     // atomic_bool _started cannot be moved
-    UdsServer(UdsServer&&) = delete;
-    UdsServer& operator=(UdsServer&&) = delete;
+    DISALLOW_MOVE_AND_ASSIGN(UdsServer);
 
     /**
      * @brief Sets callback for sucuessful connection of a client. Connection is successful if
@@ -71,20 +70,20 @@ public:
      * The provided sender must not exist longer than the UDS server.
      * @param callback Callback
      */
-    void setConnectCallback(const Connected& callback) noexcept;
+    void setConnectCallback(const Connected& callback);
 
     /**
      * @brief Sets callback for disconnection of the client (not called if server is stopped before
      * client disconnection)
      * @param callback Callback
      */
-    void setDisconnectCallback(const Disconnected& callback) noexcept;
+    void setDisconnectCallback(const Disconnected& callback);
 
     /**
      * @brief Sets callback for message reception
      * @param callback Callback
      */
-    void setReceiveCallback(const Received& callback) noexcept;
+    void setReceiveCallback(const Received& callback);
 
     /** Opens an UNIX domain socket asynchronously and starts the IO thread pool. */
     void start();
@@ -122,17 +121,19 @@ private:
         void send(const smrf::ByteArrayView& msg, const IUdsSender::SendFailed& callback) override;
         // All do-actions are executed by the UdsServer thread pool. If the pool is stopped, the
         // actions are dropped
-        void doReadInitHeader();
+        void doReadInitHeader() noexcept;
 
     private:
         std::string getUserName();
         // I/O context functions
-        void doReadInitBody();
-        void doReadHeader();
-        void doReadBody();
-        void doWrite();
-        bool doCheck(const boost::system::error_code& ec);
-        void doClose();
+        void doReadInitBody() noexcept;
+        void doReadHeader() noexcept;
+        void doReadBody() noexcept;
+        void doWrite() noexcept;
+        bool doCheck(const boost::system::error_code& ec) noexcept;
+        void doClose(const std::string& errorMessage, const std::exception& error) noexcept;
+        void doClose(const std::string& errorMessage) noexcept;
+        void doClose() noexcept;
 
         // Socket is always available, hence sending does not require any locks
         uds::socket _socket;
@@ -161,7 +162,7 @@ private:
     void run();
 
     // I/O context functions
-    void doAcceptClient();
+    void doAcceptClient() noexcept;
 
     /** Currently one thread handles server socket and all client sockets. Therefore no strands are
      * implemented for remote-client read/write */

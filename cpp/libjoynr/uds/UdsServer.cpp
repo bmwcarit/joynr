@@ -36,7 +36,7 @@ namespace joynr
 
 constexpr int UdsServer::_threadsPerServer;
 
-UdsServer::UdsServer(const UdsSettings& settings) noexcept
+UdsServer::UdsServer(const UdsSettings& settings)
         : _ioContext(std::make_shared<boost::asio::io_service>(_threadsPerServer)),
           _registry{std::make_shared<Connection::Active>()},
           _openSleepTime{settings.getConnectSleepTimeMs()},
@@ -58,25 +58,31 @@ UdsServer::~UdsServer()
     _registry->clear(); // Delete all clients not hold by a user
 }
 
-void UdsServer::setConnectCallback(const Connected& callback) noexcept
+void UdsServer::setConnectCallback(const Connected& callback)
 {
-    _remoteConfig._connectedCallback = callback;
+    if (callback) {
+        _remoteConfig._connectedCallback = callback;
+    }
 }
 
-void UdsServer::setDisconnectCallback(const Disconnected& callback) noexcept
+void UdsServer::setDisconnectCallback(const Disconnected& callback)
 {
-    _remoteConfig._disconnectedCallback = callback;
+    if (callback) {
+        _remoteConfig._disconnectedCallback = callback;
+    }
 }
 
-void UdsServer::setReceiveCallback(const Received& callback) noexcept
+void UdsServer::setReceiveCallback(const Received& callback)
 {
-    _remoteConfig._receivedCallback = callback;
+    if (callback) {
+        _remoteConfig._receivedCallback = callback;
+    }
 }
 
 void UdsServer::start()
 {
     if (_started.exchange(true)) {
-        JOYNR_LOG_ERROR(logger(), "UDS server alreay started.");
+        JOYNR_LOG_ERROR(logger(), "Server already started.");
         return;
     }
     _worker = std::async(&UdsServer::run, this);
@@ -92,9 +98,8 @@ void UdsServer::run()
             _ioContext->reset();
         }
         if (0 == remove(_endpoint.path().c_str())) {
-            JOYNR_LOG_WARN(logger(),
-                           "UDS server path {} already exists. Replacing existing path.",
-                           _endpoint.path());
+            JOYNR_LOG_WARN(
+                    logger(), "Path {} already exists. Replacing existing path.", _endpoint.path());
         }
         isRetry = true;
         try {
@@ -108,7 +113,7 @@ void UdsServer::run()
             _ioContext->run();
         } catch (const boost::system::system_error& error) {
             JOYNR_LOG_ERROR(logger(),
-                            "UDS server ({}) encountered an error and will restart: {}",
+                            "Encountered an error on path {} and will restart: {}",
                             _endpoint.path(),
                             error.what());
         }
@@ -117,13 +122,11 @@ void UdsServer::run()
     }
 }
 
-void UdsServer::doAcceptClient()
+void UdsServer::doAcceptClient() noexcept
 {
     _acceptor.async_accept(_newClientSocket, [this](boost::system::error_code acceptFailure) {
         if (acceptFailure) {
-            JOYNR_LOG_ERROR(logger(),
-                            "UDS server failed to accept new client: {}",
-                            acceptFailure.message());
+            JOYNR_LOG_ERROR(logger(), "Failed to accept new client: {}", acceptFailure.message());
         } else {
             auto newConnection =
                     std::make_shared<Connection>(std::move(_newClientSocket),
@@ -198,11 +201,15 @@ UdsServer::Connection::~Connection()
     boost::system::error_code ignore;
     _socket.close(ignore);
     if (closedDueToError) {
-        _sendQueue->emptyQueueAndNotify("Connection lost to " + _address.getId());
+        try {
+            _sendQueue->emptyQueueAndNotify("Connection lost to " + _address.getId());
+        } catch (const std::exception& e) {
+            JOYNR_LOG_ERROR(logger(), "Failed to process message notifications: {}", e.what());
+        }
     }
 }
 
-void UdsServer::Connection::doReadInitHeader()
+void UdsServer::Connection::doReadInitHeader() noexcept
 {
     boost::asio::async_read(_socket,
                             _readBuffer->header(),
@@ -213,39 +220,33 @@ void UdsServer::Connection::doReadInitHeader()
     });
 }
 
-void UdsServer::Connection::doReadInitBody()
+void UdsServer::Connection::doReadInitBody() noexcept
 {
     try {
-        boost::asio::async_read(_socket,
-                                _readBuffer->body(),
-                                [this](boost::system::error_code readFailure,
-                                       std::size_t /*length*/) {
-            if (doCheck(readFailure)) {
-                try {
-                    _address = _readBuffer->readInit();
-                    JOYNR_LOG_INFO(logger(),
-                                   "Initialize connection for UDS client id: {}",
-                                   _address.getId());
-                    _connectedCallback(_address, this->shared_from_this());
-                    doReadHeader();
-                } catch (const std::exception& e) {
-                    std::string id = _address.getId();
-                    if (id.empty()) {
-                        id = "[unknown ID]";
+        boost::asio::async_read(
+                _socket,
+                _readBuffer->body(),
+                [this](boost::system::error_code readFailure, std::size_t /*length*/) {
+                    if (doCheck(readFailure)) {
+                        try {
+                            _address = _readBuffer->readInit();
+                            JOYNR_LOG_INFO(logger(),
+                                           "Initialize connection for client with ID: {}",
+                                           _address.getId());
+                            _connectedCallback(_address, this->shared_from_this());
+                            doReadHeader();
+                        } catch (const std::exception& e) {
+                            doClose("Initialization processing failed", e);
+                        }
                     }
-                    JOYNR_LOG_FATAL(
-                            logger(), "Failed to initialize UDS connection '{}': {}", id, e.what());
-                    doClose();
-                }
-            }
-        });
+                });
     } catch (const std::exception& e) {
-        JOYNR_LOG_FATAL(logger(), "Failed to read init-frame for new UDS connection: {}", e.what());
+        JOYNR_LOG_FATAL(logger(), "Failed to read init-frame for new connection: {}", e.what());
         doClose();
     }
 }
 
-void UdsServer::Connection::doReadHeader()
+void UdsServer::Connection::doReadHeader() noexcept
 {
     boost::asio::async_read(_socket,
                             _readBuffer->header(),
@@ -256,7 +257,7 @@ void UdsServer::Connection::doReadHeader()
     });
 }
 
-void UdsServer::Connection::doReadBody()
+void UdsServer::Connection::doReadBody() noexcept
 {
     try {
         boost::asio::async_read(
@@ -267,21 +268,13 @@ void UdsServer::Connection::doReadBody()
                         try {
                             _receivedCallback(_address, _readBuffer->readMessage(), _username);
                         } catch (const std::exception& e) {
-                            JOYNR_LOG_FATAL(logger(),
-                                            "Failed to process UDS message from '{}': {}",
-                                            _address.getId(),
-                                            e.what());
-                            doClose();
+                            doClose("Failed to process message", e);
                         }
                         doReadHeader();
                     }
                 });
     } catch (const std::exception& e) {
-        JOYNR_LOG_FATAL(logger(),
-                        "Failed to read UDS message-frame from '{}': {}",
-                        _address.getId(),
-                        e.what());
-        doClose();
+        doClose("Failed to read message", e);
     }
 }
 
@@ -290,18 +283,20 @@ void UdsServer::Connection::send(const smrf::ByteArrayView& msg,
 {
     try {
         _ioContext->post([ this, frame = UdsFrameBufferV1(msg), callback ]() mutable {
-            if (_sendQueue->pushBack(std::move(frame), callback)) {
-                doWrite();
+            try {
+                if (_sendQueue->pushBack(std::move(frame), callback)) {
+                    doWrite();
+                }
+            } catch (const std::exception& e) {
+                doClose("Failed to insert new message", e);
             }
         });
     } catch (const std::exception& e) {
-        JOYNR_LOG_FATAL(
-                logger(), "Failed insert UDS message for '{}': {}", _address.getId(), e.what());
-        doClose();
+        doClose("Failed to insert new message", e);
     }
 }
 
-void UdsServer::Connection::doWrite()
+void UdsServer::Connection::doWrite() noexcept
 {
     boost::asio::async_write(_socket,
                              _sendQueue->showFront(),
@@ -313,21 +308,38 @@ void UdsServer::Connection::doWrite()
     });
 }
 
-bool UdsServer::Connection::doCheck(const boost::system::error_code& error)
+bool UdsServer::Connection::doCheck(const boost::system::error_code& error) noexcept
 {
     if (error) {
-        JOYNR_LOG_INFO(logger(), "UDS remote client connection disconnected: {}", error.message());
+        JOYNR_LOG_INFO(logger(), "Remote client connection disconnected: {}", error.message());
         doClose();
         return false;
     }
     return true;
 }
 
-void UdsServer::Connection::doClose()
+void UdsServer::Connection::doClose(const std::string& errorMessage,
+                                    const std::exception& error) noexcept
+{
+    doClose(errorMessage + " - " + error.what());
+}
+
+void UdsServer::Connection::doClose(const std::string& errorMessage) noexcept
+{
+    const std::string clientId = _address.getId().empty() ? "[unknown ID]" : _address.getId();
+    JOYNR_LOG_FATAL(logger(), "Connection to {} corrupted: {}", clientId, errorMessage);
+    doClose();
+}
+
+void UdsServer::Connection::doClose() noexcept
 {
     if (!_closedDueToError.exchange(true)) {
         if (!_address.getId().empty()) {
-            _disconnectedCallback(_address);
+            try {
+                _disconnectedCallback(_address);
+            } catch (const std::exception& e) {
+                JOYNR_LOG_ERROR(logger(), "Failed to process disconnection: {}", e.what());
+            }
         }
         boost::system::error_code ignore;
         _socket.close(ignore);

@@ -58,15 +58,14 @@ public:
 
     explicit UdsClient(const UdsSettings& settings,
                        const std::function<void(const exceptions::JoynrRuntimeException&)>&
-                               onFatalRuntimeError) noexcept;
+                               onFatalRuntimeError);
     virtual ~UdsClient();
 
     // Client cannot be copied since it has internal threads
     DISALLOW_COPY_AND_ASSIGN(UdsClient);
 
     // io_context cannot be moved
-    UdsClient(UdsClient&&) = delete;
-    UdsClient& operator=(UdsClient&&) = delete;
+    DISALLOW_MOVE_AND_ASSIGN(UdsClient);
 
     /** @return Address of this client */
     system::RoutingTypes::UdsClientAddress getAddress() const noexcept;
@@ -75,19 +74,19 @@ public:
      * Called uppon sucessful connection
      * @param callback Callback
      */
-    void setConnectCallback(const Connected& callback) noexcept;
+    void setConnectCallback(const Connected& callback);
 
     /**
      * Called uppon disconnection (regardless whether stopped by user or a fatal error occured)
      * @param callback Callback
      */
-    void setDisconnectCallback(const Disconnected& callback) noexcept;
+    void setDisconnectCallback(const Disconnected& callback);
 
     /**
      * Called when a new message has been received
      * @param callback Callback
      */
-    void setReceiveCallback(const Received& callback) noexcept;
+    void setReceiveCallback(const Received& callback);
 
     /** Starts the UDS client asynchronously and triggers the connected callback as soon as the
      * connection has been established. */
@@ -109,12 +108,14 @@ private:
     void run();
 
     // I/O context functions
-    void doReadHeader();
-    void doReadBody();
-    void doWriteInit();
-    void doWrite();
+    void doReadHeader() noexcept;
+    void doReadBody() noexcept;
+    void doWriteInit() noexcept;
+    void doWrite() noexcept;
     void doHandleFatalError(const std::string& errorMessage, const std::exception& error) noexcept;
     void doHandleFatalError(const std::string& errorMessage) noexcept;
+
+    bool hasFatalErrorAlreadyBeenReported() noexcept;
 
     static constexpr int _threadsPerConnection = 1;
     std::function<void(const exceptions::JoynrRuntimeException&)> _fatalRuntimeErrorCallback;
