@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -101,6 +103,7 @@ public class SubscriptionManagerTest {
     private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes = spy(new ConcurrentHashMap<String, Class<?>[]>());
     private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes = spy(new ConcurrentHashMap<Pattern, Class<?>[]>());
     private ConcurrentMap<String, Future<String>> subscriptionFutureMap = spy(new ConcurrentHashMap<String, Future<String>>());
+    private ConcurrentMap<String, List<MulticastInformation>> subscriptionIdToMulticastInformationMap = spy(new ConcurrentHashMap<String, List<MulticastInformation>>());
 
     @Mock
     private PubSubState subscriptionState;
@@ -140,6 +143,7 @@ public class SubscriptionManagerTest {
                                                           unicastBroadcastTypes,
                                                           multicastBroadcastTypes,
                                                           subscriptionFutureMap,
+                                                          subscriptionIdToMulticastInformationMap,
                                                           cleanupScheduler,
                                                           dispatcher,
                                                           multicastWildcardRegexFactory,
@@ -341,6 +345,10 @@ public class SubscriptionManagerTest {
             assertEquals(subscriptionId, subscriptionIdSet.iterator().next());
         }
 
+        assertEquals(1, subscriptionIdToMulticastInformationMap.size());
+        verify(mockMulticastReceiverRegistrar).addMulticastReceiver(multicastId,
+                                                                    fromParticipantId,
+                                                                    toDiscoveryEntry.getParticipantId());
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
@@ -367,6 +375,65 @@ public class SubscriptionManagerTest {
                                               eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                               Mockito.eq(new SubscriptionStop(subscriptionId)),
                                               Mockito.any(MessagingQos.class));
+
+    }
+
+    @Test
+    public void unregisterMulticastSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
+                                                  JsonGenerationException, JsonMappingException, IOException {
+
+        String multicastId = "testMulticastId";
+        String secondMulticastId = "secondMulticastId";
+        String secondToParticipantId = "secondToParticipantId";
+        DiscoveryEntryWithMetaInfo secondToDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        secondToDiscoveryEntry.setParticipantId(secondToParticipantId);
+        List<MulticastInformation> multicastInformationList = new ArrayList<>();
+        multicastInformationList.add(new MulticastInformation(multicastId, fromParticipantId, toParticipantId));
+        multicastInformationList.add(new MulticastInformation(secondMulticastId,
+                                                              fromParticipantId,
+                                                              secondToParticipantId));
+
+        String secondSubscriptionId = "secondSubscriptionId";
+        String thirdMulticastId = "thirdMulticastId";
+        String thirdToParticipantId = "thirdToParticipantId";
+        List<MulticastInformation> secondMulticastInformationList = new ArrayList<>();
+        secondMulticastInformationList.add(new MulticastInformation(thirdMulticastId,
+                                                                    fromParticipantId,
+                                                                    thirdToParticipantId));
+
+        subscriptionIdToMulticastInformationMap.put(subscriptionId, multicastInformationList);
+        subscriptionIdToMulticastInformationMap.put(secondSubscriptionId, secondMulticastInformationList);
+
+        when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
+        when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
+        when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
+
+        assertEquals(2, subscriptionIdToMulticastInformationMap.size());
+        subscriptionManager.unregisterSubscription(fromParticipantId,
+                                                   new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry,
+                                                                                                         secondToDiscoveryEntry)),
+                                                   subscriptionId,
+                                                   qosSettings);
+
+        verify(subscriptionStates).get(Mockito.eq(subscriptionId));
+        verify(subscriptionState).stop();
+
+        verify(dispatcher,
+               times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
+                                              eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry,
+                                                                                                       secondToDiscoveryEntry))),
+                                              Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                              Mockito.any(MessagingQos.class));
+        verify(mockMulticastReceiverRegistrar, times(1)).removeMulticastReceiver(multicastId,
+                                                                                 fromParticipantId,
+                                                                                 toParticipantId);
+        verify(mockMulticastReceiverRegistrar, times(1)).removeMulticastReceiver(secondMulticastId,
+                                                                                 fromParticipantId,
+                                                                                 secondToParticipantId);
+        verify(mockMulticastReceiverRegistrar, times(0)).removeMulticastReceiver(thirdMulticastId,
+                                                                                 fromParticipantId,
+                                                                                 thirdToParticipantId);
+        assertEquals(1, subscriptionIdToMulticastInformationMap.size());
 
     }
 

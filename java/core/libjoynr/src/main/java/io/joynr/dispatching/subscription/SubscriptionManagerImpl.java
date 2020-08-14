@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     private ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures; // These futures will be needed if a
     // subscription
     // should be updated with a new end time
+    private ConcurrentMap<String, List<MulticastInformation>> subscriptionIdToMulticastInformationMap;
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionManagerImpl.class);
     private ScheduledExecutorService cleanupScheduler;
@@ -108,6 +109,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         this.unicastBroadcastTypes = new ConcurrentHashMap<>();
         this.multicastBroadcastTypes = new ConcurrentHashMap<>();
         this.subscriptionFutureMap = new ConcurrentHashMap<>();
+        this.subscriptionIdToMulticastInformationMap = new ConcurrentHashMap<>();
         this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
         this.multicastReceiverRegistrar = multicastReceiverRegistrar;
         shutdownNotifier.registerForShutdown(this);
@@ -124,6 +126,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                    ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes,
                                    ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes,
                                    ConcurrentMap<String, Future<String>> subscriptionFutureMap,
+                                   ConcurrentMap<String, List<MulticastInformation>> subscriptionIdToMulticastInformationMap,
                                    ScheduledExecutorService cleanupScheduler,
                                    Dispatcher dispatcher,
                                    MulticastWildcardRegexFactory multicastWildcardRegexFactory,
@@ -141,6 +144,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         this.cleanupScheduler = cleanupScheduler;
         this.dispatcher = dispatcher;
         this.subscriptionFutureMap = subscriptionFutureMap;
+        this.subscriptionIdToMulticastInformationMap = subscriptionIdToMulticastInformationMap;
         this.multicastWildcardRegexFactory = multicastWildcardRegexFactory;
         this.multicastReceiverRegistrar = multicastReceiverRegistrar;
     }
@@ -245,10 +249,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     public void registerMulticastSubscription(String fromParticipantId,
                                               Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
                                               final MulticastSubscribeInvocation multicastSubscribeInvocation) {
+        List<MulticastInformation> multicastInformationList = new ArrayList<>();
         for (DiscoveryEntryWithMetaInfo toDiscoveryEntry : toDiscoveryEntries) {
             final String multicastId = MulticastIdUtil.createMulticastId(toDiscoveryEntry.getParticipantId(),
                                                                          multicastSubscribeInvocation.getSubscriptionName(),
                                                                          multicastSubscribeInvocation.getPartitions());
+            multicastInformationList.add(new MulticastInformation(multicastId,
+                                                                  fromParticipantId,
+                                                                  toDiscoveryEntry.getParticipantId()));
             logger.debug("MULTICAST SUBSCRIPTION call proxy: subscriptionId: {}, multicastId: {}, broadcast: {}, qos.expiryDateMs: {}, proxy participantId: {}, provider participantId: {}, domain: {}, interfaceName: {}, {}",
                          multicastSubscribeInvocation.getSubscriptionId(),
                          multicastId,
@@ -288,6 +296,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                      }
                                  });
         }
+        subscriptionIdToMulticastInformationMap.put(multicastSubscribeInvocation.getSubscriptionId(),
+                                                    multicastInformationList);
     }
 
     private static interface RegisterDataAndCreateSubscriptionRequest {
@@ -333,10 +343,6 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         }
 
         SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
-
-        for(DiscoveryEntryWithMetaInfo discoveryEntry: toDiscoveryEntries) {
-            multicastReceiverRegistrar.removeMulticastReceiver(multicastId, fromParticipantId, discoveryEntry.getParticipantId());
-        }
 
         dispatcher.sendSubscriptionStop(fromParticipantId,
                                         toDiscoveryEntries,
@@ -542,6 +548,16 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             }
         }
         subscriptionTypes.remove(subscriptionId);
+
+        List<MulticastInformation> multicastInformationList = subscriptionIdToMulticastInformationMap.get(subscriptionId);
+        if (multicastInformationList != null) {
+            for (MulticastInformation multicastInformation : multicastInformationList) {
+                multicastReceiverRegistrar.removeMulticastReceiver(multicastInformation.getMulticastId(),
+                                                                   multicastInformation.getFromParticipantId(),
+                                                                   multicastInformation.getToParticipantId());
+            }
+        }
+        subscriptionIdToMulticastInformationMap.remove(subscriptionId);
     }
 
     private Class<?>[] getParameterTypesForBroadcastPublication(Object[] broadcastValues) {
