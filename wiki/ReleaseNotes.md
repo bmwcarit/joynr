@@ -38,6 +38,11 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
     This is fixed and replies will now expire at the same time as the original request.
+* **[Java, JEE]** Fixed some cases, where an UndeclaredThrowableException was returned when
+    customer provider method implementation code was using an unsupported exception type
+    (neither ProviderRuntimeException nor ApplicationException where applicable).
+    Now a ProviderRuntimeException will be returned which contains the text of the original
+    exception in such cases.
 * **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 * **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
   occurs after connection has been established
