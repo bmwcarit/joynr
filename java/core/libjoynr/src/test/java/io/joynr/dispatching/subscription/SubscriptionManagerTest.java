@@ -19,6 +19,7 @@
 package io.joynr.dispatching.subscription;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
@@ -47,6 +48,7 @@ import java.util.regex.Pattern;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -210,9 +212,13 @@ public class SubscriptionManagerTest {
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
         verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
+        ArgumentCaptor<Long> capturedExpiryInterval = ArgumentCaptor.forClass(Long.class);
+        long remainingExpiryDateMs = onChangeQos.getExpiryDateMs() - System.currentTimeMillis();
         verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                          Mockito.eq(qos.getExpiryDateMs()),
+                                          capturedExpiryInterval.capture(),
                                           Mockito.eq(TimeUnit.MILLISECONDS));
+        assertTrue(capturedExpiryInterval.getValue() >= remainingExpiryDateMs
+                && capturedExpiryInterval.getValue() <= remainingExpiryDateMs + 100);
         verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
                                                              Mockito.any(ScheduledFuture.class));
 
@@ -239,9 +245,13 @@ public class SubscriptionManagerTest {
         verify(broadcastSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(broadcastSubscriptionListener));
         verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
 
+        ArgumentCaptor<Long> capturedExpiryInterval = ArgumentCaptor.forClass(Long.class);
+        long remainingExpiryDateMs = onChangeQos.getExpiryDateMs() - System.currentTimeMillis();
         verify(cleanupScheduler).schedule(Mockito.any(Runnable.class),
-                                          Mockito.eq(onChangeQos.getExpiryDateMs()),
+                                          capturedExpiryInterval.capture(),
                                           Mockito.eq(TimeUnit.MILLISECONDS));
+        assertTrue(capturedExpiryInterval.getValue() >= remainingExpiryDateMs
+                && capturedExpiryInterval.getValue() <= remainingExpiryDateMs + 100);
         verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
                                                              Mockito.any(ScheduledFuture.class));
 
