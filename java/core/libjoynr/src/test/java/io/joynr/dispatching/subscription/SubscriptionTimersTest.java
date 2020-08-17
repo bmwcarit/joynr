@@ -20,22 +20,26 @@ package io.joynr.dispatching.subscription;
 
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.regex.Pattern;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,15 +48,21 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
+import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
+import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
+import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.runtime.ShutdownNotifier;
+import joynr.MulticastSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.exceptions.PublicationMissedException;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -60,6 +70,11 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 @RunWith(MockitoJUnitRunner.class)
 public class SubscriptionTimersTest {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionTimersTest.class);
+
+    private static interface TestMulticastSubscriptionInterface {
+        @JoynrMulticast(name = "myMulticast")
+        void subscribeToMyMulticast();
+    }
 
     private SubscriptionManager subscriptionManager;
 
@@ -144,6 +159,47 @@ public class SubscriptionTimersTest {
 
         // verify callback is not called
         verifyNoMoreInteractions(attributeSubscriptionCallback);
+    }
+
+    @Test(timeout = 10000)
+    public void multicastReceiverRemovedOnExpiry() throws InterruptedException, JoynrSendBufferFullException,
+                                                   JoynrMessageNotSentException, JsonGenerationException,
+                                                   JsonMappingException, IOException, NoSuchMethodException {
+        logger.debug("Starting multicastReceiverRemovedOnExpiry test");
+
+        Future<String> future = new Future<>();
+        Method method = TestMulticastSubscriptionInterface.class.getMethod("subscribeToMyMulticast", new Class[0]);
+        BroadcastSubscriptionListener listener = spy(new BroadcastSubscriptionListener() {
+            @Override
+            public void onError(SubscriptionException error) {
+            }
+
+            @Override
+            public void onSubscribed(String subscriptionId) {
+            }
+
+            @SuppressWarnings("unused")
+            public void onReceive() {
+            }
+        });
+        SubscriptionQos multicastSubscriptionQos = new MulticastSubscriptionQos().setValidityMs(subscriptionLength);
+        subscriptionId = "subid";
+        Object[] args = new Object[]{ subscriptionId, listener, multicastSubscriptionQos, new Object[]{ "abc" } };
+        MulticastSubscribeInvocation multicastSubscribeInvocation = new MulticastSubscribeInvocation(method,
+                                                                                                     args,
+                                                                                                     future);
+        Mockito.when(multicastWildcardRegexFactory.createIdPattern(Mockito.anyString()))
+               .thenReturn(Pattern.compile("."));
+        subscriptionManager.registerMulticastSubscription(fromParticipantId,
+                                                          new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
+                                                          multicastSubscribeInvocation);
+        verify(mockMulticastReceiverRegistrar, times(1)).addMulticastReceiver(Mockito.anyString(),
+                                                                              Mockito.anyString(),
+                                                                              Mockito.anyString());
+        Thread.sleep(subscriptionLength * 5);
+        verify(mockMulticastReceiverRegistrar, times(1)).removeMulticastReceiver(Mockito.anyString(),
+                                                                                 Mockito.anyString(),
+                                                                                 Mockito.anyString());
     }
 
     @Test(timeout = 3000)
