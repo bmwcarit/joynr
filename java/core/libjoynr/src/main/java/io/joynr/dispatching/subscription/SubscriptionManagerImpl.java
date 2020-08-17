@@ -170,7 +170,8 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         if (expiryDate != SubscriptionQos.NO_EXPIRY_DATE) {
             SubscriptionEndRunnable endRunnable = new SubscriptionEndRunnable(subscriptionId);
             ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(endRunnable,
-                                                                                 expiryDate,
+                                                                                 expiryDate
+                                                                                         - System.currentTimeMillis(),
                                                                                  TimeUnit.MILLISECONDS);
             subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
         }
