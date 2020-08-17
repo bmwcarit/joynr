@@ -11,6 +11,13 @@ None.
 * **[C++]** Cluster controller now uses the new `touch` and `removeStale` methods of
   [`GlobalCapabilitiesDirectory.fidl`](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl).
   The Global Capabilities Directory has to implement version 0.3 of the interface.
+* **[Java, JEE]** Fixed some cases, where an UndeclaredThrowableException was returned when
+    customer provider method implementation code was using an unsupported exception type
+    (neither ProviderRuntimeException nor ApplicationException where applicable).
+    Now a ProviderRuntimeException will be returned which contains the text of the original
+    exception in such cases.
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
 
 ## Other Changes
 None.
@@ -54,6 +61,7 @@ None.
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
     This is fixed and replies will now expire at the same time as the original request.
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 
 # joynr 1.14.0
 
