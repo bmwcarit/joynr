@@ -70,6 +70,7 @@ public:
 
     virtual std::uint16_t getMqttQos() const;
     virtual std::string getMqttPrio() const;
+    virtual std::uint32_t getMqttMaximumPacketSize() const;
     virtual bool isMqttRetain() const;
 
     /**
@@ -187,6 +188,7 @@ private:
     Semaphore _restartSemaphore;
     std::thread _restartThread;
     struct mosquitto* _mosq;
+    uint32_t _mqttMaximumPacketSize;
 
     ADD_LOGGER(MosquittoConnection)
 };
