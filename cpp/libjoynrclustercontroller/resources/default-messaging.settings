@@ -37,11 +37,6 @@ mqtt-keep-alive-time-seconds=60
 mqtt-reconnect-delay-time-seconds=1
 # Maximum time in milliseconds to wait for network activity before timing out.
 mqtt-connection-timeout-ms=1000
-# Maximum message size in bytes. This value should be adjusted following the
-# mqtt broker settings. If the value is not set, joynr will allow messages
-# of any size to be sent to the mqtt broker.
-mqtt-max-message-size-bytes=0
-
 
 index=0
 create-channel-retry-interval=500
