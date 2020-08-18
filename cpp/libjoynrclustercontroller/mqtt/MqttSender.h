@@ -70,7 +70,6 @@ private:
 
     std::shared_ptr<MosquittoConnection> _mosquittoConnection;
     std::shared_ptr<ITransportMessageReceiver> _receiver;
-    const std::int64_t _mqttMaxMessageSizeBytes;
 
     ADD_LOGGER(MqttSender)
 };
