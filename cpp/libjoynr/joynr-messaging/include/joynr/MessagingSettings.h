@@ -130,8 +130,6 @@ public:
     static std::chrono::seconds DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static bool DEFAULT_MQTT_ENABLED();
     static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
-    static std::int64_t DEFAULT_MQTT_MAX_MESSAGE_SIZE_BYTES();
-    static std::int64_t NO_MQTT_MAX_MESSAGE_SIZE_BYTES();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
@@ -165,8 +163,6 @@ public:
     bool getMqttExponentialBackoffEnabled() const;
     void setMqttExponentialBackoffEnabled(const bool& enable);
     std::chrono::milliseconds getMqttConnectionTimeoutMs() const;
-    std::int64_t getMqttMaxMessageSizeBytes() const;
-    void setMqttMaxMessageSizeBytes(std::int64_t mqttMaxMessageSizeBytes);
     std::int64_t getIndex() const;
     void setIndex(std::int64_t index);
     int getCreateChannelRetryInterval() const;
