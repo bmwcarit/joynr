@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public:
     }
 
 protected:
-    void createMqttSender(std::string testSettingsFileNameMqtt)
+    void createMqttSender(std::string testSettingsFileNameMqtt, std::uint32_t maximumPacketSize)
     {
         Settings testSettings(testSettingsFileNameMqtt);
         MessagingSettings messagingSettings(testSettings);
@@ -71,6 +71,7 @@ protected:
         ON_CALL(*mockMosquittoConnection, isSubscribedToChannelTopic()).WillByDefault(Return(true));
         ON_CALL(*mockMosquittoConnection, getMqttQos()).WillByDefault(Return(0));
         ON_CALL(*mockMosquittoConnection, getMqttPrio()).WillByDefault(Return("low"));
+        ON_CALL(*mockMosquittoConnection, getMqttMaximumPacketSize()).WillByDefault(Return(maximumPacketSize));
     }
 
     ADD_LOGGER(MqttSenderTest)
@@ -78,6 +79,7 @@ protected:
 
     std::shared_ptr<MockMosquittoConnection> mockMosquittoConnection;
     std::shared_ptr<MqttSender> mqttSender;
+    const std::uint32_t noMqttMessagePacketSize = 0;
 };
 
 TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
@@ -85,7 +87,7 @@ TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
     const std::string expectedTopic = mqttAddress.getTopic() + "/low";
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings", MqttSenderTest::noMqttMessagePacketSize);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
     mutableMessage.setSender("testSender");
@@ -120,7 +122,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
 
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings", MqttSenderTest::noMqttMessagePacketSize);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
     mutableMessage.setSender("testSender");
@@ -178,7 +180,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecGreaterThanMaxIntervalAlways
 
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings", MqttSenderTest::noMqttMessagePacketSize);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
     mutableMessage.setSender("testSender");
@@ -215,7 +217,7 @@ TEST_F(MqttSenderTest, multicastMessagePublishedToCorrectTopic)
     const std::string expectedTopic = mqttAddress.getTopic();
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings", MqttSenderTest::noMqttMessagePacketSize);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
     mutableMessage.setSender("testSender");
@@ -246,7 +248,7 @@ TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck)
     bool gotExpectedExceptionType;
     bool gotCalled;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits1.settings");
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits1.settings", 900);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
     mutableMessage.setSender("testSender");
@@ -300,7 +302,7 @@ TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck)
 {
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings");
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings", 0);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
     mutableMessage.setSender("testSender");
