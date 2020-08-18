@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,9 @@ namespace joynr
 
 MqttSender::MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection,
                        const MessagingSettings& settings)
-        : _mosquittoConnection(mosquittoConnection),
-          _receiver(),
-          _mqttMaxMessageSizeBytes(settings.getMqttMaxMessageSizeBytes())
+        : _mosquittoConnection(mosquittoConnection), _receiver()
 {
+    std::ignore = settings;
 }
 
 void MqttSender::sendMessage(
@@ -83,12 +82,13 @@ void MqttSender::sendMessage(
 
     const smrf::ByteVector& rawMessage = message->getSerializedMessage();
 
-    if (_mqttMaxMessageSizeBytes != MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES() &&
-        ((rawMessage.size() > static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max())) ||
-         (static_cast<std::int64_t>(rawMessage.size()) > _mqttMaxMessageSizeBytes))) {
+    std::size_t mqttMaximumMessageSizeBytes =
+            static_cast<std::size_t>(_mosquittoConnection->getMqttMaximumPacketSize());
+    if ((rawMessage.size() > static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max())) ||
+        ((mqttMaximumMessageSizeBytes > 0) && (rawMessage.size() > mqttMaximumMessageSizeBytes))) {
         std::stringstream errorMsg;
         errorMsg << "Message size MQTT Publish failed: maximum allowed message size of "
-                 << _mqttMaxMessageSizeBytes << " bytes exceeded, actual size is "
+                 << mqttMaximumMessageSizeBytes << " bytes exceeded, actual size is "
                  << rawMessage.size() << " bytes";
         JOYNR_LOG_DEBUG(logger(), errorMsg.str());
         onFailure(exceptions::JoynrMessageNotSentException(errorMsg.str()));
