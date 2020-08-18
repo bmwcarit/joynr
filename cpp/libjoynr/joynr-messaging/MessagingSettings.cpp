@@ -162,12 +162,6 @@ const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES()
-{
-    static const std::string value("messaging/mqtt-max-message-size-bytes");
-    return value;
-}
-
 const std::string& MessagingSettings::SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS()
 {
     static const std::string value("messaging/discard-unroutable-replies-and-publications");
@@ -178,16 +172,6 @@ std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS(
 {
     static const std::chrono::milliseconds value(1000);
     return value;
-}
-
-std::int64_t MessagingSettings::DEFAULT_MQTT_MAX_MESSAGE_SIZE_BYTES()
-{
-    return MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES();
-}
-
-std::int64_t MessagingSettings::NO_MQTT_MAX_MESSAGE_SIZE_BYTES()
-{
-    return 0;
 }
 
 std::chrono::seconds MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS()
@@ -589,16 +573,6 @@ std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeoutMs() const
             _settings.get<std::int64_t>(SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
 }
 
-std::int64_t MessagingSettings::getMqttMaxMessageSizeBytes() const
-{
-    return _settings.get<std::int64_t>(SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES());
-}
-
-void MessagingSettings::setMqttMaxMessageSizeBytes(std::int64_t mqttMaxMessageSizeBytes)
-{
-    _settings.set(SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES(), mqttMaxMessageSizeBytes);
-}
-
 std::int64_t MessagingSettings::getIndex() const
 {
     return _settings.get<std::int64_t>(SETTING_INDEX());
@@ -877,9 +851,6 @@ void MessagingSettings::checkSettings()
     if (!_settings.contains(SETTING_MQTT_CONNECTION_TIMEOUT_MS())) {
         _settings.set(
                 SETTING_MQTT_CONNECTION_TIMEOUT_MS(), DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
-    }
-    if (!_settings.contains(SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES())) {
-        _settings.set(SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES(), DEFAULT_MQTT_MAX_MESSAGE_SIZE_BYTES());
     }
     if (!_settings.contains(SETTING_INDEX())) {
         _settings.set(SETTING_INDEX(), 0);
