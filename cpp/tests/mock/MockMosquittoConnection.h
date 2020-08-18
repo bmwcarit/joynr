@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ public:
 
     MOCK_CONST_METHOD0(getMqttPrio, std::string());
     MOCK_CONST_METHOD0(getMqttQos, std::uint16_t());
+    MOCK_CONST_METHOD0(getMqttMaximumPacketSize, std::uint32_t());
     MOCK_CONST_METHOD0(isMqttRetain, bool());
     MOCK_CONST_METHOD0(isReadyToSend, bool());
     MOCK_CONST_METHOD0(isSubscribedToChannelTopic, bool());
