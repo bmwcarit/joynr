@@ -6,6 +6,7 @@ set(SOURCES
 
     AbstractMessageRouter.cpp
     BrokerUrl.cpp
+    DiscoveryResult.cpp
     DummyPlatformSecurityManager.cpp
     HttpMulticastAddressCalculator.cpp
     ImmutableMessage.cpp
@@ -33,6 +34,7 @@ set(PUBLIC_HEADERS
     include/joynr/AbstractMessageRouter.h
     include/joynr/BrokerUrl.h
     include/joynr/Directory.h
+    include/joynr/DiscoveryResult.h
     include/joynr/Dispatcher.h
     include/joynr/HttpMulticastAddressCalculator.h
     include/joynr/ImmutableMessage.h
