@@ -57,6 +57,12 @@ None.
 * **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
  tools (4.0.0).
 
+## Configuration property changes
+* **[C++]** The configuration option `mqtt-max-message-size-bytes` was removed from messaging
+  settings. Instead the value optionally provided in the CONNACK properties sent by the broker
+  as response to CONNECT is used, if available; otherwise the size is limited to the maximum
+  value a `std::int64_t` can hold.
+
 ## Bug fixes
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
