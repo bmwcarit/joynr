@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
@@ -185,9 +187,8 @@ public class JoynrIntegrationBean {
 
     @PreDestroy
     public void destroy() {
-        if (!(joynrRuntimeFactory.getProperties()
-                                 .getProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false")
-                                 .equals("true"))) {
+        if (!(getJoynrInjector().getInstance(Key.get(Boolean.class,
+                                                     Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))))) {
             logger.info("Unregistering provider ", joynrRuntimeFactory.getLocalDomain());
             for (Object provider : registeredProviders) {
                 try {
