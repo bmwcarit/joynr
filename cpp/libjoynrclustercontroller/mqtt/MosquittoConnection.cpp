@@ -74,7 +74,8 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
           _restartThreadShutdown(false),
           _restartSemaphore(0),
           _restartThread(),
-          _mosq(nullptr)
+          _mosq(nullptr),
+          _mqttMaximumPacketSize(0)
 {
     JOYNR_LOG_INFO(logger(), "Init mosquitto connection using MQTT client ID: {}", clientId);
 
@@ -270,10 +271,20 @@ void MosquittoConnection::on_connect_v5(struct mosquitto* mosq,
 {
     std::ignore = mosq;
     std::ignore = flags;
-    std::ignore = props;
     class MosquittoConnection* mosquittoConnection = (class MosquittoConnection*)userdata;
+
     if (rc == MOSQ_ERR_SUCCESS) {
         JOYNR_LOG_INFO(logger(), "Mosquitto Connection established");
+
+        uint32_t tmpMaximumPacketSize;
+        if (mosquitto_property_read_int32(
+                    props, MQTT_PROP_MAXIMUM_PACKET_SIZE, &tmpMaximumPacketSize, false)) {
+            mosquittoConnection->_mqttMaximumPacketSize = tmpMaximumPacketSize;
+            JOYNR_LOG_INFO(logger(), "Maximum packet size = {}", tmpMaximumPacketSize);
+        } else {
+            JOYNR_LOG_INFO(logger(), "Maximum packet size not provided");
+        }
+
         mosquittoConnection->_isConnected = true;
 
         mosquittoConnection->createSubscriptions();
@@ -849,6 +860,11 @@ void MosquittoConnection::setReadyToSend(bool readyToSend)
             _onReadyToSendChanged(readyToSend);
         }
     }
+}
+
+std::uint32_t MosquittoConnection::getMqttMaximumPacketSize() const
+{
+    return _mqttMaximumPacketSize;
 }
 
 } // namespace joynr
