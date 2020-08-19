@@ -143,6 +143,7 @@ public class Arbitrator {
     public void lookup() {
         arbitrationCnt++;
         logger.debug("DISCOVERY lookup #{} for domains: {}, interface: {}, {}, gbids: {}",
+                     arbitrationCnt,
                      domains,
                      interfaceName,
                      interfaceVersion,
