@@ -36,6 +36,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.smrf.EncodingException;
@@ -68,8 +69,8 @@ public class MqttMessagingStubFactoryTest {
     }
 
     @Test
-    public void testReturnStubWithCorrectClient() throws SecurityException, EncodingException,
-                                                  UnsuppportedVersionException {
+    public void returnStubWithCorrectClient() throws SecurityException, EncodingException,
+                                              UnsuppportedVersionException {
         MutableMessage mutableMessage = new MutableMessage();
         mutableMessage.setPayload("testPayload".getBytes());
         mutableMessage.setRecipient("test");
@@ -130,13 +131,12 @@ public class MqttMessagingStubFactoryTest {
         assertTrue(topicCaptor.getValue().startsWith(TESTTOPIC2));
     }
 
-    @Test
-    public void testReturnNullOnUnknownGbid() {
+    @Test(expected = JoynrMessageNotSentException.class)
+    public void throwsOnUnknownGbid() {
         String[] gbid_array = new String[]{ TESTGBID1, TESTGBID2 };
         MqttMessagingStubFactory subject = new MqttMessagingStubFactory(mqttClientFactory, gbid_array);
         MqttAddress address = new MqttAddress("UnknownGbid", "UnknownTopic");
-        MqttMessagingStub messagingStub = subject.createInternal(address);
-        assertNull(messagingStub);
+        subject.createInternal(address);
     }
 
 }
