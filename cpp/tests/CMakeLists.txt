@@ -367,6 +367,7 @@ if(${BUILD_INTEGRATION_TESTS})
     target_link_objlibraries(g_IntegrationTests
         PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
         PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
+        PUBLIC Joynr::JoynrLibJoynrRuntime
     )
 
     target_include_directories(
@@ -409,6 +410,7 @@ if(${BUILD_SYSTEM_INTEGRATION_TESTS})
     target_link_objlibraries(g_SystemIntegrationTests
         PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
         PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
+        PUBLIC Joynr::JoynrLibJoynrRuntime
     )
 
     target_include_directories(

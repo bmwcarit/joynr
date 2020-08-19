@@ -1,15 +1,17 @@
 project(JoynrLibJoynrRuntime)
 
-add_library(${PROJECT_NAME} STATIC ./LibJoynrRuntime.cpp ./LibJoynrRuntime.h)
+add_library(${PROJECT_NAME} OBJECT "")
 add_library(Joynr::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
-target_link_objlibraries(${PROJECT_NAME}
-    PUBLIC Joynr::RuntimeCommon
+target_sources(${PROJECT_NAME} PRIVATE
+    LibJoynrRuntime.cpp
+    LibJoynrRuntime.h
 )
-
 target_include_directories(${PROJECT_NAME}
     # for includes like #include "runtimes/libjoynr-runtime/LibJoynrRuntime.h"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+)
+target_link_objlibraries(${PROJECT_NAME}
+    PUBLIC Joynr::RuntimeCommon
 )
 
 AddClangFormat(${PROJECT_NAME})
@@ -17,14 +19,6 @@ AddClangFormat(${PROJECT_NAME})
 AddIncludeWhatYouUse(${PROJECT_NAME})
 
 AddClangTidy(${PROJECT_NAME})
-
-install(
-    TARGETS ${PROJECT_NAME}
-    EXPORT JoynrTargets
-    RUNTIME DESTINATION "${JOYNR_INSTALL_BINDIR}"
-    LIBRARY DESTINATION "${JOYNR_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${JOYNR_INSTALL_LIBDIR}"
-)
 
 function(create_joynr_runtime TYPE SUBDIR)
     project("Joynr${TYPE}RuntimeWithoutJoynrRuntime")
@@ -37,11 +31,9 @@ function(create_joynr_runtime TYPE SUBDIR)
     target_include_directories(${PROJECT_NAME}
         # for includes like #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../.."
-        PUBLIC "$<INSTALL_INTERFACE:${JOYNR_INSTALL_INCLUDEDIR}>"
     )
-
-    target_link_libraries(${PROJECT_NAME}
-        PUBLIC Joynr::JoynrLibJoynrRuntime
+    target_link_objlibraries(${PROJECT_NAME}
+        PUBLIC Joynr::RuntimeCommon
     )
 
     AddClangFormat(${PROJECT_NAME})
@@ -65,9 +57,12 @@ function(create_joynr_runtime TYPE SUBDIR)
         # for includes like #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../.."
         PUBLIC "$<INSTALL_INTERFACE:${JOYNR_INSTALL_INCLUDEDIR}>"
+        PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
     )
     target_link_objlibraries(${PROJECT_NAME}
         PUBLIC "Joynr::Joynr${TYPE}RuntimeWithoutJoynrRuntime"
+        PUBLIC Joynr::JoynrLibJoynrRuntime
+        PUBLIC Joynr::RuntimeCommon
     )
 
     AddClangFormat(${PROJECT_NAME})

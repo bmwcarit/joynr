@@ -165,15 +165,23 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
+get_target_property(
+    LibJoynrRuntime_INCLUDE_DIRS
+    Joynr::JoynrWsRuntime
+    INTERFACE_INCLUDE_DIRECTORIES
+)
+
 # Provider objects are independent of cluster controller communication
 add_library(radio-app-provider-common OBJECT
     ${radio-app-provider_HEADERS}
     ${radio-app-provider_SOURCES}
 )
 
+target_include_directories(radio-app-provider-common
+    PUBLIC ${LibJoynrRuntime_INCLUDE_DIRS}
+)
 target_link_libraries(radio-app-provider-common
     radio-app
-    Joynr::JoynrLibJoynrRuntime
 )
 
 # Consumer objects are independent of cluster controller communication
@@ -182,9 +190,11 @@ add_library(radio-app-consumer-common OBJECT
     ${radio-app-consumer_SOURCES}
 )
 
+target_include_directories(radio-app-consumer-common
+    PUBLIC ${LibJoynrRuntime_INCLUDE_DIRS}
+)
 target_link_libraries(radio-app-consumer-common
     radio-app
-    Joynr::JoynrLibJoynrRuntime
 )
 
 
