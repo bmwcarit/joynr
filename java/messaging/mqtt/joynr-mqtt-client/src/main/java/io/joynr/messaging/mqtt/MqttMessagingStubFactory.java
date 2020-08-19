@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -50,8 +51,13 @@ public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFac
     protected MqttMessagingStub createInternal(MqttAddress address) {
         String gbid = address.getBrokerUri();
         if (!gbidToMqttClientMap.containsKey(gbid)) {
-            logger.error("Gbid {} is not known in MqttMessagingStubFactory.", gbid);
-            return null;
+            String msg = new StringBuilder().append("Gbid ")
+                                            .append(gbid)
+                                            .append("is not known in MqttMessagingStubFactory")
+                                            .toString();
+            logger.error(msg);
+            // do not retry
+            throw new JoynrMessageNotSentException(msg);
         }
         return new MqttMessagingStub(address, gbidToMqttClientMap.get(gbid));
     }
