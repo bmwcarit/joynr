@@ -40,7 +40,7 @@ class JoynrRuntimeException;
    * @class WebSocketMessagingStub
    * @brief Represents an outgoing WebSocket connection
    */
-class WebSocketMessagingStub : public IMessagingStub
+class WebSocketMessagingStub final : public IMessagingStub
 {
 public:
     /**
@@ -53,10 +53,9 @@ public:
     /**
      * @brief Destructor
      */
-    ~WebSocketMessagingStub() final = default;
-    void transmit(
-            std::shared_ptr<ImmutableMessage> message,
-            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) final;
+    ~WebSocketMessagingStub() = default;
+    void transmit(std::shared_ptr<ImmutableMessage> message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(WebSocketMessagingStub);

@@ -36,20 +36,20 @@ class DiscoveryEntryWithMetaInfo;
 
 /**
   * The Keyword Arbitration Strategy requests CapabilityEntries for a give interfaceName and domain
- * from
+  * from
   * the LocalCapabilitiesDirectory and filters them by a keyword in the qos. The first address
   * of the first entry with the correct keyword is returned.
   */
-class KeywordArbitrationStrategyFunction : public ArbitrationStrategyFunction
+class KeywordArbitrationStrategyFunction final : public ArbitrationStrategyFunction
 {
 
 public:
-    ~KeywordArbitrationStrategyFunction() final = default;
+    ~KeywordArbitrationStrategyFunction() = default;
     KeywordArbitrationStrategyFunction() = default;
 
     types::DiscoveryEntryWithMetaInfo select(
             const std::map<std::string, types::CustomParameter> customParameters,
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const final;
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(KeywordArbitrationStrategyFunction);

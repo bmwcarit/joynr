@@ -35,19 +35,19 @@ class DiscoveryEntry;
 class CustomParameter;
 } // namespace types
 
-/*
+/**
   * The FixedParticipant Arbitration Strategy Function arbitrates according to a specific
- * ParticipantId of a provider.
+  * ParticipantId of a provider.
   */
-class FixedParticipantArbitrationStrategyFunction : public ArbitrationStrategyFunction
+class FixedParticipantArbitrationStrategyFunction final : public ArbitrationStrategyFunction
 {
 
 public:
-    ~FixedParticipantArbitrationStrategyFunction() final = default;
+    ~FixedParticipantArbitrationStrategyFunction() = default;
     FixedParticipantArbitrationStrategyFunction() = default;
     types::DiscoveryEntryWithMetaInfo select(
             const std::map<std::string, types::CustomParameter> customParameters,
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const final;
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(FixedParticipantArbitrationStrategyFunction);

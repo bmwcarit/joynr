@@ -41,15 +41,15 @@ class CustomParameter;
   * The QoS Arbitration Strategy Function arbitrates according to the QoS of the provider.
   * It arbitrates to the provider with the highest priority.
   */
-class QosArbitrationStrategyFunction : public ArbitrationStrategyFunction
+class QosArbitrationStrategyFunction final : public ArbitrationStrategyFunction
 {
 
 public:
-    ~QosArbitrationStrategyFunction() final = default;
+    ~QosArbitrationStrategyFunction() = default;
     QosArbitrationStrategyFunction() = default;
     types::DiscoveryEntryWithMetaInfo select(
             const std::map<std::string, types::CustomParameter> customParameters,
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const final;
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(QosArbitrationStrategyFunction);
