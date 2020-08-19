@@ -136,7 +136,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering)
                 JOYNR_EXPECT_NO_THROW(
                         subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
             },
-            [this](tests::testProxy* testProxy, std::string& subscriptionId) {
+            [](tests::testProxy* testProxy, std::string& subscriptionId) {
                 testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
             },
             &tests::testProvider::fireBroadcastWithFiltering,

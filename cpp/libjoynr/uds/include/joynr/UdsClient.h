@@ -64,8 +64,9 @@ public:
     // Client cannot be copied since it has internal threads
     DISALLOW_COPY_AND_ASSIGN(UdsClient);
 
-    UdsClient(UdsClient&&) = default;
-    UdsClient& operator=(UdsClient&&) = default;
+    // io_context cannot be moved
+    UdsClient(UdsClient&&) = delete;
+    UdsClient& operator=(UdsClient&&) = delete;
 
     /** @return Address of this client */
     system::RoutingTypes::UdsClientAddress getAddress() const noexcept;

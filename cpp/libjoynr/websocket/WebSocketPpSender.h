@@ -31,7 +31,7 @@ namespace joynr
 {
 
 template <typename Endpoint>
-class WebSocketPpSender : public IWebSocketSendInterface
+class WebSocketPpSender final : public IWebSocketSendInterface
 {
 protected:
     using ConnectionHandle = websocketpp::connection_hdl;
@@ -41,7 +41,7 @@ public:
     {
     }
 
-    ~WebSocketPpSender() final = default;
+    ~WebSocketPpSender() = default;
 
     void send(
             const smrf::ByteArrayView& msg,

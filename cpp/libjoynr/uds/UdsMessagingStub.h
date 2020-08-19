@@ -41,7 +41,7 @@ class JoynrRuntimeException;
  * @class UdsMessagingStub
  * @brief Represents an outgoing uds connection
  */
-class UdsMessagingStub : public IMessagingStub
+class UdsMessagingStub final : public IMessagingStub
 {
 public:
     /**
@@ -53,10 +53,9 @@ public:
     /**
      * @brief Destructor
      */
-    ~UdsMessagingStub() final = default;
-    void transmit(
-            std::shared_ptr<ImmutableMessage> message,
-            const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure) final;
+    ~UdsMessagingStub() = default;
+    void transmit(std::shared_ptr<ImmutableMessage> message,
+                  const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(UdsMessagingStub);

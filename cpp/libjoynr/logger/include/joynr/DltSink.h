@@ -116,13 +116,13 @@ protected:
         }
     }
 
-    void set_formatter(std::unique_ptr<spdlog::formatter> sink_formatter)
+    void set_formatter(std::unique_ptr<spdlog::formatter> sink_formatter) override
     {
         std::lock_guard<std::mutex> lock(_mutex);
         _formatter = std::move(sink_formatter);
     }
 
-    void set_pattern(const std::string& pattern)
+    void set_pattern(const std::string& pattern) override
     {
         std::lock_guard<std::mutex> lock(_mutex);
         _formatter = std::unique_ptr<spdlog::formatter>(new spdlog::pattern_formatter(pattern));

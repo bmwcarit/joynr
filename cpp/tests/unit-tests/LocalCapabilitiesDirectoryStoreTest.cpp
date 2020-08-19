@@ -201,7 +201,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_i
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 
@@ -236,7 +236,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_i
                 }
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 
@@ -263,7 +263,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_i
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 
@@ -288,7 +288,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_i
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 
@@ -314,7 +314,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_p
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 
@@ -354,7 +354,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_p
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 
@@ -402,7 +402,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_p
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 
@@ -444,7 +444,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_p
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 

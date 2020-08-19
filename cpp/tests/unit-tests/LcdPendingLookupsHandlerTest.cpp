@@ -81,7 +81,7 @@ TEST_F(LcdPendingLookupsHandlerTest, test_callPendingLookups)
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 
@@ -125,7 +125,7 @@ TEST_F(LcdPendingLookupsHandlerTest, test_callbackCalled)
                 _semaphore.notify();
     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [this] (const types::DiscoveryError::Enum& errorEnum) {
+            [] (const types::DiscoveryError::Enum& errorEnum) {
                 FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
     };
 

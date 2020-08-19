@@ -224,10 +224,10 @@ void LocalCapabilitiesDirectoryStore::insertInGlobalLookupCache(
 
     const std::string& participantId = entry.getParticipantId();
     std::vector<std::string> allGbids(gbids);
-    auto foundMapping = _globalParticipantIdsToGbidsMap.find(participantId);
+    const auto foundMapping = _globalParticipantIdsToGbidsMap.find(participantId);
     if (foundMapping != _globalParticipantIdsToGbidsMap.cend()) {
-        const auto oldGbids = foundMapping->second;
-        for (const auto gbid : oldGbids) {
+        const auto& oldGbids = foundMapping->second;
+        for (const auto& gbid : oldGbids) {
             if (std::find(allGbids.cbegin(), allGbids.cend(), gbid) == allGbids.cend()) {
                 allGbids.emplace_back(gbid);
             }

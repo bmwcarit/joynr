@@ -173,7 +173,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput)
                 JOYNR_EXPECT_NO_THROW(
                         subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
             },
-            [this](tests::testProxy* testProxy, std::string& subscriptionId) {
+            [](tests::testProxy* testProxy, std::string& subscriptionId) {
                 testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
             },
             &tests::testProvider::fireBroadcastWithEnumOutput);
@@ -198,7 +198,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter)
                 JOYNR_EXPECT_NO_THROW(
                         subscriptionIdFuture->get(subscribeToBroadcastWait, subscriptionId));
             },
-            [this](tests::testProxy* testProxy, std::string& subscriptionId) {
+            [](tests::testProxy* testProxy, std::string& subscriptionId) {
                 testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
             },
             &tests::testProvider::fireBroadcastWithByteBufferParameter);

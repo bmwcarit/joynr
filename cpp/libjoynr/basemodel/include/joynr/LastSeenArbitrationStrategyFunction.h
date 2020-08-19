@@ -35,21 +35,21 @@ class DiscoveryEntryWithMetaInfo;
 class CustomParameter;
 } // namespace types
 
-/*
+/**
   * The Last Seen Arbitration Strategy arbitrates according to the LastSeenDateMs of the provider.
   * It arbitrates to the provider with the latest LastSeenDateMs.
   * This is the default arbitration strategy.
   */
-class LastSeenArbitrationStrategyFunction : public ArbitrationStrategyFunction
+class LastSeenArbitrationStrategyFunction final : public ArbitrationStrategyFunction
 {
 
 public:
-    ~LastSeenArbitrationStrategyFunction() final = default;
+    ~LastSeenArbitrationStrategyFunction() = default;
     LastSeenArbitrationStrategyFunction() = default;
 
     types::DiscoveryEntryWithMetaInfo select(
             std::map<std::string, types::CustomParameter> customParameters,
-            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const final;
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries) const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(LastSeenArbitrationStrategyFunction);

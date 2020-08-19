@@ -45,7 +45,7 @@ class UdsFrameBufferV1;
 template <typename FRAME>
 class UdsSendQueue;
 
-class UdsServer
+class UdsServer final
 {
 public:
     using Connected = std::function<
@@ -56,13 +56,14 @@ public:
                                         const std::string&)>;
 
     explicit UdsServer(const UdsSettings& settings) noexcept;
-    virtual ~UdsServer() final;
+    virtual ~UdsServer();
 
     // Server cannot be copied since it has internal threads
     DISALLOW_COPY_AND_ASSIGN(UdsServer);
 
-    UdsServer(UdsServer&&) = default;
-    UdsServer& operator=(UdsServer&&) = default;
+    // atomic_bool _started cannot be moved
+    UdsServer(UdsServer&&) = delete;
+    UdsServer& operator=(UdsServer&&) = delete;
 
     /**
      * @brief Sets callback for sucuessful connection of a client. Connection is successful if
