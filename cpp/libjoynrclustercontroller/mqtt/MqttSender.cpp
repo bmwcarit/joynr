@@ -38,11 +38,9 @@
 namespace joynr
 {
 
-MqttSender::MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection,
-                       const MessagingSettings& settings)
+MqttSender::MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection)
         : _mosquittoConnection(mosquittoConnection), _receiver()
 {
-    std::ignore = settings;
 }
 
 void MqttSender::sendMessage(

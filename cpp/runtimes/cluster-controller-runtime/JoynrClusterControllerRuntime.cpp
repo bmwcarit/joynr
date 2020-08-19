@@ -584,8 +584,8 @@ void JoynrClusterControllerRuntime::init()
                                 "mqtt MessageSender",
                                 brokerIndex);
 
-                const auto& mqttMessageSender = std::make_shared<MqttSender>(
-                        connectionData->getMosquittoConnection(), _messagingSettings);
+                const auto& mqttMessageSender =
+                        std::make_shared<MqttSender>(connectionData->getMosquittoConnection());
                 connectionData->setMqttMessageSender(std::move(mqttMessageSender));
             }
 
