@@ -52,8 +52,7 @@ class MqttSender : public ITransportMessageSender
 {
 
 public:
-    explicit MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection,
-                        const MessagingSettings& settings);
+    explicit MqttSender(std::shared_ptr<MosquittoConnection> mosquittoConnection);
 
     ~MqttSender() override = default;
 

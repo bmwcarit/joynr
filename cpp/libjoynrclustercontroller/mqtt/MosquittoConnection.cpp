@@ -282,7 +282,8 @@ void MosquittoConnection::on_connect_v5(struct mosquitto* mosq,
             mosquittoConnection->_mqttMaximumPacketSize = tmpMaximumPacketSize;
             JOYNR_LOG_INFO(logger(), "Maximum packet size = {}", tmpMaximumPacketSize);
         } else {
-            JOYNR_LOG_INFO(logger(), "Maximum packet size not provided");
+            mosquittoConnection->_mqttMaximumPacketSize = 0;
+            JOYNR_LOG_INFO(logger(), "Maximum packet size = unlimited");
         }
 
         mosquittoConnection->_isConnected = true;

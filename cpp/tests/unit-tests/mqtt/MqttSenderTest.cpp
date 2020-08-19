@@ -66,7 +66,7 @@ protected:
                                                           isMqttExponentialBackoffEnabled,
                                                           clientId);
 
-        mqttSender = std::make_shared<MqttSender>(mockMosquittoConnection, messagingSettings);
+        mqttSender = std::make_shared<MqttSender>(mockMosquittoConnection);
 
         ON_CALL(*mockMosquittoConnection, isSubscribedToChannelTopic()).WillByDefault(Return(true));
         ON_CALL(*mockMosquittoConnection, getMqttQos()).WillByDefault(Return(0));
