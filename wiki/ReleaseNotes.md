@@ -32,7 +32,10 @@ the versioning scheme [here](JoynrVersioning.md).
   tailored for the CC to run in user 0 (system), and joynr app clients can connect on
   whichever user they decide to in a system with multi-user capabilities.
 * **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
- tools (4.0.0).
+  tools (4.0.0).
+* **[Android]** Added ContentProvider that allows apps and other components to  implement 
+  persistent providers, designed for specific use cases where the providers' configuration can 
+  occur first thing in the component lifecycle.
 
 ## Configuration property changes
 * **[C++]** The configuration option `mqtt-max-message-size-bytes` was removed from messaging
