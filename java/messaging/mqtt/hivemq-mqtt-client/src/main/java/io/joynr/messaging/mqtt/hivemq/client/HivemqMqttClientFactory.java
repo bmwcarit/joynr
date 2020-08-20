@@ -72,8 +72,6 @@ import io.reactivex.schedulers.Schedulers;
 
 /**
  * This factory class is responsible for producing joynr MQTT clients using the HiveMQ MQTT Client library.
- * The HiveMQ MQTT Client library is explicitly intended for use in backend applications, so using it on
- * constrained devices might not work well. Consider using the Paho client in those circumstances.
  *
  * TODO
  * - When persistent session configuration exists, then enable configuration thereof

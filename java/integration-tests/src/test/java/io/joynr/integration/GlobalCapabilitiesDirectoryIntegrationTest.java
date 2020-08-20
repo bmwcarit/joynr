@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +50,11 @@ import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.SystemServicesSettings;
+import io.joynr.statusmetrics.ConnectionStatusMetrics;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
 import joynr.system.DiscoveryProxy;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.test;
 import joynr.tests.testProxy;
@@ -61,7 +65,10 @@ import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
 public class GlobalCapabilitiesDirectoryIntegrationTest {
-    private static final Logger log = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryIntegrationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryIntegrationTest.class);
+
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     private static final String TEST_DOMAIN = "test";
     private static final long DISCOVERY_TIMEOUT = 5000;
@@ -76,8 +83,10 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         Thread.sleep(FRESHNESS_UPDATE_INTERVAL_MS);
         JoynrStatusMetrics statusMetrics = injector.getInstance(JoynrStatusMetrics.class);
         while (!(statusMetrics.getAllConnectionStatusMetrics().size() > 0)
-               || statusMetrics.getAllConnectionStatusMetrics().toArray(new ConnectionStatusMetrics[0])[0].isConnected()) {
-              Thread.sleep(10);
+                && statusMetrics.getAllConnectionStatusMetrics()
+                                .toArray(new ConnectionStatusMetrics[0])[0].isConnected()) {
+            statusMetrics.getAllConnectionStatusMetrics().toArray(new ConnectionStatusMetrics[0]);
+            Thread.sleep(10);
         }
     }
 
@@ -145,10 +154,10 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         DiscoveryEntry oldGlobalEntry = oldGlobalDiscoveryEntires[0];
         DiscoveryEntry newGlobalEntry = newGlobalDiscoveryEntires[0];
 
-        log.info("oldGlobalEntry.getExpiryDateMs() = {}", oldGlobalEntry.getExpiryDateMs());
-        log.info("newGlobalEntry.getExpiryDateMs() = {}", newGlobalEntry.getExpiryDateMs());
-        log.info("newGlobalEntry - oldGlobalEntry = {}",
-                 newGlobalEntry.getExpiryDateMs() - oldGlobalEntry.getExpiryDateMs());
+        logger.info("oldGlobalEntry.getExpiryDateMs() = {}", oldGlobalEntry.getExpiryDateMs());
+        logger.info("newGlobalEntry.getExpiryDateMs() = {}", newGlobalEntry.getExpiryDateMs());
+        logger.info("newGlobalEntry - oldGlobalEntry = {}",
+                    newGlobalEntry.getExpiryDateMs() - oldGlobalEntry.getExpiryDateMs());
 
         // real interval between 2 touch calls might be less than FRESHNESS_UPDATE_INTERVAL_MS because of messaging delays
         final long minNewLastSeenDate = oldGlobalEntry.getLastSeenDateMs() + FRESHNESS_UPDATE_INTERVAL_MS / 2;

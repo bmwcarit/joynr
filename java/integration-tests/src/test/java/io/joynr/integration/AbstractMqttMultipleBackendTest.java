@@ -131,15 +131,15 @@ public abstract class AbstractMqttMultipleBackendTest {
 
         injector = Guice.createInjector(override(new CCInProcessRuntimeModule(),
                                                  new HivemqMqttClientModule()).with(new JoynrPropertiesModule(properties),
-                                                                            new AbstractModule() {
-                                                                                @Override
-                                                                                protected void configure() {
-                                                                                    bind(MqttClientFactory.class).toInstance(hiveMqMqttClientFactory);
-                                                                                    bind(GlobalCapabilitiesDirectoryClient.class).toInstance(gcdClient);
-                                                                                    bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
-                                                                                                        .toInstance(gbids);
-                                                                                }
-                                                                            }));
+                                                                                    new AbstractModule() {
+                                                                                        @Override
+                                                                                        protected void configure() {
+                                                                                            bind(MqttClientFactory.class).toInstance(hiveMqMqttClientFactory);
+                                                                                            bind(GlobalCapabilitiesDirectoryClient.class).toInstance(gcdClient);
+                                                                                            bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                                                                                                .toInstance(gbids);
+                                                                                        }
+                                                                                    }));
         joynrRuntime = injector.getInstance(JoynrRuntime.class);
     }
 
@@ -167,14 +167,14 @@ public abstract class AbstractMqttMultipleBackendTest {
 
         injector = Guice.createInjector(override(new CCInProcessRuntimeModule(),
                                                  new HivemqMqttClientModule()).with(new JoynrPropertiesModule(properties),
-                                                                            new AbstractModule() {
-                                                                                @Override
-                                                                                protected void configure() {
-                                                                                    bind(MqttClientFactory.class).toInstance(hiveMqMqttClientFactory);
-                                                                                    bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
-                                                                                                        .toInstance(gbids);
-                                                                                }
-                                                                            }));
+                                                                                    new AbstractModule() {
+                                                                                        @Override
+                                                                                        protected void configure() {
+                                                                                            bind(MqttClientFactory.class).toInstance(hiveMqMqttClientFactory);
+                                                                                            bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                                                                                                .toInstance(gbids);
+                                                                                        }
+                                                                                    }));
         joynrRuntime = injector.getInstance(JoynrRuntime.class);
         waitForRemoveStale();
     }
