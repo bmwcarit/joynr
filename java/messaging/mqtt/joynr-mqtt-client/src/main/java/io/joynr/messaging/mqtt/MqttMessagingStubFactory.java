@@ -53,7 +53,7 @@ public class MqttMessagingStubFactory extends AbstractMiddlewareMessagingStubFac
         if (!gbidToMqttClientMap.containsKey(gbid)) {
             String msg = new StringBuilder().append("Gbid ")
                                             .append(gbid)
-                                            .append("is not known in MqttMessagingStubFactory")
+                                            .append(" is not known in MqttMessagingStubFactory")
                                             .toString();
             logger.error(msg);
             // do not retry
