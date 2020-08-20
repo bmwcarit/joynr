@@ -80,7 +80,7 @@
         <!-- Libraries -->
         <dependency>
             <groupId>io.joynr.java.messaging.mqtt</groupId>
-            <artifactId>paho-mqtt-client</artifactId>
+            <artifactId>hivemq-mqtt-client</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

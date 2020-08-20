@@ -30,7 +30,7 @@ import com.google.inject.util.Modules;
 
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -47,7 +47,7 @@ public class Bootstrap {
         joynrProperties.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "message_persistence_consumer_local_domain");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
 
-        Module runtimeModule = Modules.combine(new CCInProcessRuntimeModule(), new MqttPahoModule());
+        Module runtimeModule = Modules.combine(new CCInProcessRuntimeModule(), new HivemqMqttClientModule());
         JoynrInjectorFactory joynrInjectorFactory = new JoynrInjectorFactory(joynrProperties, runtimeModule);
         JoynrApplication application = joynrInjectorFactory.createApplication(ConsumerApplication.class);
 

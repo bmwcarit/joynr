@@ -43,7 +43,7 @@ import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Future;
@@ -91,7 +91,7 @@ public class AbstractMultipleVersionsEnd2EndTest {
         mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URL);
         mqttConfig.put(MessagingPropertyKeys.CHANNELID, createUuidString());
         mqttConfig.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
-        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
+        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule());
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(mqttConfig,
                                                                                              runtimeModule).createApplication(DummyJoynrApplication.class);
 

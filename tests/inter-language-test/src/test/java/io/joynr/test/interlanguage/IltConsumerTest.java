@@ -42,7 +42,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.proxy.ProxyBuilder;
@@ -121,9 +121,9 @@ public abstract class IltConsumerTest {
         }
 
         if (transport.contains("mqtt")) {
-            logger.info("getRuntimeModule: using MqttPahoModule");
+            logger.info("getRuntimeModule: using HivemqMqttClientModule");
             joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-            backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+            backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
         }
 
         logger.info("getRuntimeModule: Leaving");

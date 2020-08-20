@@ -32,7 +32,7 @@ import com.google.inject.util.Modules;
 import io.joynr.examples.messagepersistence.SimpleFileBasedMessagePersister;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
@@ -51,7 +51,7 @@ public class Bootstrap {
         // limit parallel processing of requests
         joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS, "2");
 
-        Module runtimeModule = Modules.combine(new CCInProcessRuntimeModule(), new MqttPahoModule());
+        Module runtimeModule = Modules.combine(new CCInProcessRuntimeModule(), new HivemqMqttClientModule());
         runtimeModule = Modules.override(runtimeModule).with(new AbstractModule() {
             @Override
             protected void configure() {

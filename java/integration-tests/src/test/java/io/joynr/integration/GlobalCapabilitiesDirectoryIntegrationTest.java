@@ -42,7 +42,7 @@ import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
@@ -74,12 +74,11 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
     private void waitForGlobalConnection(Injector injector) throws Exception {
         // wait some time for MQTT connection to be established
         Thread.sleep(FRESHNESS_UPDATE_INTERVAL_MS);
-        // TODO use JoynrStatusMetrics instead of unconditional sleep (does not work with PahoMqttClient, requires HivemqMqttClient):
-        // JoynrStatusMetrics statusMetrics = injector.getInstance(JoynrStatusMetrics.class);
-        // while (!(statusMetrics.getAllConnectionStatusMetrics().size() > 0)
-        //         || statusMetrics.getAllConnectionStatusMetrics().toArray(new ConnectionStatusMetrics[0])[0].isConnected()) {
-        //     Thread.sleep(10);
-        // }
+        JoynrStatusMetrics statusMetrics = injector.getInstance(JoynrStatusMetrics.class);
+        while (!(statusMetrics.getAllConnectionStatusMetrics().size() > 0)
+               || statusMetrics.getAllConnectionStatusMetrics().toArray(new ConnectionStatusMetrics[0])[0].isConnected()) {
+              Thread.sleep(10);
+        }
     }
 
     @Test
@@ -264,8 +263,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         properties.put(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS,
                        String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule())
-                                      // TODO uncomment code in waitForGlobalConnection() when switching to HivemqMqttClientModule)
-                                      .with(new MqttPahoModule(), new JoynrPropertiesModule(properties));
+                                      .with(new HivemqMqttClientModule(), new JoynrPropertiesModule(properties));
         return Guice.createInjector(runtimeModule);
     }
 
