@@ -48,7 +48,7 @@ import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
@@ -153,7 +153,7 @@ public class AccessControllerEnd2EndTest {
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(true);
             }
-        }, new MqttPahoModule());
+        }, new HivemqMqttClientModule());
 
         DummyJoynrApplication app = (DummyJoynrApplication) new JoynrInjectorFactory(properties,
                                                                                      module).createApplication(DummyJoynrApplication.class);

@@ -43,7 +43,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.ProviderAnnotations;
@@ -105,7 +105,7 @@ public class RoutingTableOverwriteEnd2EndTest {
     }
 
     private JoynrRuntime createCcRuntime(String runtimeId, Properties additionalProperties) {
-        Module module = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
+        Module module = Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule());
         return createCcRuntimeInternal(runtimeId, module, new Properties(), additionalProperties);
     }
 
@@ -113,7 +113,7 @@ public class RoutingTableOverwriteEnd2EndTest {
         Properties properties = new Properties();
         properties.putAll(webSocketConfig);
 
-        Module module = Modules.override(new CCWebSocketRuntimeModule()).with(new MqttPahoModule());
+        Module module = Modules.override(new CCWebSocketRuntimeModule()).with(new HivemqMqttClientModule());
         return createCcRuntimeInternal(runtimeId, module, new Properties(), additionalProperties);
     }
 

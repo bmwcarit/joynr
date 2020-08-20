@@ -34,7 +34,7 @@ import com.google.inject.util.Modules;
 
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import io.joynr.messaging.websocket.WebSocketEndpointFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -76,7 +76,7 @@ public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2
         ccConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_CC_CONNECTION_TYPE, "WEBSOCKET");
         injectorCC = new JoynrInjectorFactory(ccConfig,
                                               Modules.override(new CCWebSocketRuntimeModule())
-                                                     .with(new MqttPahoModule(), new AbstractModule() {
+                                                     .with(new HivemqMqttClientModule(), new AbstractModule() {
                                                          @Override
                                                          protected void configure() {
                                                              bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))

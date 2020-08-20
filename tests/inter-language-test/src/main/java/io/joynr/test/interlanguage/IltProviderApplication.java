@@ -34,7 +34,7 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -110,7 +110,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
             if (transport.contains("mqtt")) {
                 logger.info("Configuring MQTT...");
                 joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
-                backendTransportModules = Modules.combine(backendTransportModules, new MqttPahoModule());
+                backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }
             return Modules.override(runtimeModule).with(backendTransportModules);
         }

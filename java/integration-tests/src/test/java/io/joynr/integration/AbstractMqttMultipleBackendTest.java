@@ -54,8 +54,8 @@ import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttModule;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoClientFactory;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.types.ProviderQos;
@@ -80,7 +80,7 @@ public abstract class AbstractMqttMultipleBackendTest {
     protected GlobalCapabilitiesDirectoryClient gcdClient;
 
     @Mock
-    private MqttPahoClientFactory mqttPahoClientFactory;
+    private HivemqMqttClientFactory hiveMqMqttClientFactory;
 
     @Mock
     protected JoynrMqttClient joynrMqttClient1;
@@ -90,10 +90,10 @@ public abstract class AbstractMqttMultipleBackendTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        doReturn(joynrMqttClient1).when(mqttPahoClientFactory).createReceiver(TESTGBID1);
-        doReturn(joynrMqttClient1).when(mqttPahoClientFactory).createSender(TESTGBID1);
-        doReturn(joynrMqttClient2).when(mqttPahoClientFactory).createReceiver(TESTGBID2);
-        doReturn(joynrMqttClient2).when(mqttPahoClientFactory).createSender(TESTGBID2);
+        doReturn(joynrMqttClient1).when(hiveMqMqttClientFactory).createReceiver(TESTGBID1);
+        doReturn(joynrMqttClient1).when(hiveMqMqttClientFactory).createSender(TESTGBID1);
+        doReturn(joynrMqttClient2).when(hiveMqMqttClientFactory).createReceiver(TESTGBID2);
+        doReturn(joynrMqttClient2).when(hiveMqMqttClientFactory).createSender(TESTGBID2);
 
         properties = createProperties(TESTGBID1 + ", " + TESTGBID2, "tcp://localhost:1883, tcp://otherhost:1883");
 
@@ -130,11 +130,11 @@ public abstract class AbstractMqttMultipleBackendTest {
         shutdownRuntime();
 
         injector = Guice.createInjector(override(new CCInProcessRuntimeModule(),
-                                                 new MqttPahoModule()).with(new JoynrPropertiesModule(properties),
+                                                 new HivemqMqttClientModule()).with(new JoynrPropertiesModule(properties),
                                                                             new AbstractModule() {
                                                                                 @Override
                                                                                 protected void configure() {
-                                                                                    bind(MqttClientFactory.class).toInstance(mqttPahoClientFactory);
+                                                                                    bind(MqttClientFactory.class).toInstance(hiveMqMqttClientFactory);
                                                                                     bind(GlobalCapabilitiesDirectoryClient.class).toInstance(gcdClient);
                                                                                     bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
                                                                                                         .toInstance(gbids);
@@ -166,11 +166,11 @@ public abstract class AbstractMqttMultipleBackendTest {
         shutdownRuntime();
 
         injector = Guice.createInjector(override(new CCInProcessRuntimeModule(),
-                                                 new MqttPahoModule()).with(new JoynrPropertiesModule(properties),
+                                                 new HivemqMqttClientModule()).with(new JoynrPropertiesModule(properties),
                                                                             new AbstractModule() {
                                                                                 @Override
                                                                                 protected void configure() {
-                                                                                    bind(MqttClientFactory.class).toInstance(mqttPahoClientFactory);
+                                                                                    bind(MqttClientFactory.class).toInstance(hiveMqMqttClientFactory);
                                                                                     bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
                                                                                                         .toInstance(gbids);
                                                                                 }
