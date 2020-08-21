@@ -96,7 +96,7 @@
       <property value="sun-appserv-samples" name="DatabaseName" />
       <property value=";create=true" name="connectionAttributes" />
     </jdbc-connection-pool>
-    <managed-scheduled-executor-service jndi-name="concurrent/joynrMessagingScheduledExecutor" object-type="system-all"></managed-scheduled-executor-service>
+    <managed-scheduled-executor-service core-pool-size="100" jndi-name="concurrent/joynrMessagingScheduledExecutor" object-type="system-all"></managed-scheduled-executor-service>
   </resources>
   <servers>
     <server name="server" config-ref="server-config">

@@ -96,7 +96,7 @@
       <property value="sun-appserv-samples" name="DatabaseName" />
       <property value=";create=true" name="connectionAttributes" />
     </jdbc-connection-pool>
-    <managed-scheduled-executor-service jndi-name="concurrent/joynrMessagingScheduledExecutor" object-type="system-all"></managed-scheduled-executor-service>
+    <managed-scheduled-executor-service core-pool-size="100" jndi-name="concurrent/joynrMessagingScheduledExecutor" object-type="system-all"></managed-scheduled-executor-service>
   </resources>
   <servers>
     <server name="server" config-ref="server-config">
@@ -111,7 +111,6 @@
  <configs>
    <config name="server-config">
       <system-property name="JMS_PROVIDER_PORT" value="27676" description="Port Number that JMS Service will listen for remote clients connection." />
-      
       <http-service>
         <access-log/>
         <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"/>
@@ -234,8 +233,8 @@
         <jvm-options>-Dfelix.fileinstall.poll=5000</jvm-options>
         <!-- log level: 1 for error, 2 for warning, 3 for info and 4 for debug. -->
         <jvm-options>-Dfelix.fileinstall.log.level=2</jvm-options>
-        <!-- should new bundles be started or installed only? 
-             true => start, false => only install 
+        <!-- should new bundles be started or installed only?
+             true => start, false => only install
         -->
         <jvm-options>-Dfelix.fileinstall.bundles.new.start=true</jvm-options>
         <!-- should watched bundles be started transiently or persistently -->
