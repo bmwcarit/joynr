@@ -127,7 +127,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
      * methods also need to be declared in that interface, otherwise CDI won't recognise the method implementations as
      * producers.
      *
-     * @param joynrProperties  the joynr properties, if present, by {@link #prepareJoynrProperties(Properties)} to prepare the properties with which the injector is created.
+     * @param joynrProperties  the joynr properties, if present, by {@link #prepareJoynrProperties(Properties)} to
+     * prepare the properties with which the injector is created.
      * @param joynrLocalDomain the joynr local domain name to use for the application.
      * @param rawMessagePreprocessor can be optionally provided to intercept incoming messages and inspect or modify them
      * @param mqttClientIdProvider can be optionally provided to generate custom mqtt client id
@@ -146,17 +147,20 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
                                       JoynrStatusMetricsReceiver joynrStatusMetrics) {
         // CHECKSTYLE:ON
         if (joynrLocalDomain.isUnsatisfied()) {
-            String message = "No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
+            String message = "No local domain name specified. Please provide a value for the local domain via "
+                    + "@JoynrLocalDomain in your configuration EJB.";
             logger.error(message);
             throw new JoynrIllegalStateException(message);
         } else if (joynrLocalDomain.isAmbiguous()) {
-            String message = "Multiple local domain names specified. Please provide only one configuration EJB containing a value for the local domain via @JoynrLocalDomain.";
+            String message = "Multiple local domain names specified. Please provide only one configuration EJB "
+                    + "containing a value for the local domain via @JoynrLocalDomain.";
             logger.error(message);
             throw new JoynrIllegalStateException(message);
         }
         this.joynrLocalDomain = joynrLocalDomain.get();
         if (this.joynrLocalDomain == null || this.joynrLocalDomain.isEmpty()) {
-            String message = "Local domain name is NULL or EMPTY. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.";
+            String message = "Local domain name is NULL or EMPTY. Please provide a value for the local domain via "
+                    + "@JoynrLocalDomain in your configuration EJB.";
             logger.error(message);
             throw new JoynrIllegalStateException(message);
         }
@@ -201,8 +205,10 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         if (!joynrProperties.isUnsatisfied()) {
             if (!joynrProperties.isAmbiguous()) {
                 configuredProperties = joynrProperties.get();
+                logger.info("Got custom joynr properties: {}", configuredProperties);
             } else {
-                String message = "Multiple joynrProperties specified. Please provide only one configuration EJB containing a value for the joynrProperties via @JoynrProperties.";
+                String message = "Multiple joynrProperties specified. Please provide only one configuration EJB "
+                        + "containing a value for the joynrProperties via @JoynrProperties.";
                 logger.error(message);
                 throw new JoynrIllegalStateException(message);
             }
