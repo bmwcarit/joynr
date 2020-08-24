@@ -373,17 +373,8 @@ Errors from providers are reported by joynr to the calling proxies in the consum
 In case of async calls, the errors are reported to the Callback/Future, in case of sync calls, the
 exceptions are thrown and have to be handled in the consumer application.
 
-> NOTE:
-> Since joynr 1.9.0, `JoynrRuntimeException` is annotated with `@ApplicationException` to allow
-> better error handling in JEE.  
-> Because of this annotation, `JoynrRuntimeException`and all of its subtypes (except
-> `ProviderRuntimeException`) are not reported correctly. Instead, a
-> `java.lang.reflect.UndeclaredThrowableException` is reported to the calling proxy (joynr consumer
-> application), wrapped in a `ProviderRuntimeException`.  
-> All other exception types (in particular the joynr exceptions `ProviderRuntimeException` and
-> `ApplicationException`) work as expected.  
-> Even though a provider should not throw other JoynrRuntimeException types than
-> ProviderRuntimeException, this bug will be fixed in the near future.
+Note that `JoynrRuntimeException` is annotated with `@ApplicationException` to allow better error
+handling in JEE. This annotation is not to be confused with the joynr type `ApplicationException`.
 
 #### Injecting the calling principal
 
