@@ -116,7 +116,6 @@ public class DispatcherImpl implements Dispatcher {
                              subscriptionRequest.getSubscribedToName(),
                              (subscriptionRequest.getQos() == null) ? 0
                                      : subscriptionRequest.getQos().getExpiryDateMs(),
-                             message.getId(),
                              fromParticipantId,
                              toDiscoveryEntry.getParticipantId(),
                              toDiscoveryEntry.getDomain(),
