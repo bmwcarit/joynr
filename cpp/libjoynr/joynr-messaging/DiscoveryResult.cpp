@@ -50,7 +50,7 @@ boost::optional<types::DiscoveryEntry> DiscoveryResult::getLastSeen() const
     return entryWithLastSeenDate;
 }
 
-boost::optional<types::DiscoveryEntry> DiscoveryResult::getWithHighestPriority() const
+boost::optional<types::DiscoveryEntry> DiscoveryResult::getHighestPriority() const
 {
     boost::optional<joynr::types::DiscoveryEntry> entryWithHighestPriority;
     if (_discoveryEntries.empty()) {
@@ -67,7 +67,7 @@ boost::optional<types::DiscoveryEntry> DiscoveryResult::getWithHighestPriority()
     return entryWithHighestPriority;
 }
 
-boost::optional<types::DiscoveryEntry> DiscoveryResult::getWithLatestVersion() const
+boost::optional<types::DiscoveryEntry> DiscoveryResult::getLatestVersion() const
 {
     boost::optional<joynr::types::DiscoveryEntry> entryWithLatestVersion;
     if (_discoveryEntries.empty()) {
@@ -90,7 +90,7 @@ boost::optional<types::DiscoveryEntry> DiscoveryResult::getWithLatestVersion() c
     return entryWithLatestVersion;
 }
 
-boost::optional<types::DiscoveryEntry> DiscoveryResult::getWithParticipantId(
+boost::optional<types::DiscoveryEntry> DiscoveryResult::getParticipantId(
         const std::string& participantId) const
 {
     boost::optional<joynr::types::DiscoveryEntry> entryWithParticipantId;
