@@ -33,30 +33,18 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
 import joynr.Message;
-import joynr.system.RoutingTypes.Address;
 
 public class SimpleFileBasedMessagePersister implements MessagePersister {
     private static final Logger logger = LoggerFactory.getLogger(SimpleFileBasedMessagePersister.class);
     private static final String PERSIST_DIRECTORY = "persisted-messages";
     private static final String PERSISTED_MESSAGE_FILENAME_FORMAT = "%s_%s.message";
-    private final ObjectMapper objectMapper;
-
-    public SimpleFileBasedMessagePersister() {
-        objectMapper = new ObjectMapper();
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-    }
 
     @Override
     public boolean persist(String messageQueueId, DelayableImmutableMessage message) {
@@ -81,17 +69,12 @@ public class SimpleFileBasedMessagePersister implements MessagePersister {
             String serializedMessage = String.valueOf(message.getDelay(TimeUnit.MILLISECONDS)) + "\n";
             serializedMessage += String.valueOf(message.getRetriesCount()) + "\n";
             serializedMessage += Base64.getEncoder().encodeToString(message.getMessage().getSerializedMessage()) + "\n";
+            serializedMessage += message.getRecipient();
 
             Path persistedMessageFile = directory.resolve(String.format(PERSISTED_MESSAGE_FILENAME_FORMAT,
                                                                         messageQueueId,
                                                                         message.getMessage().getId()));
-            // InProcessAddresses cannot be serialized and do not have to be persisted
-            Set<Address> addresses = message.getDestinationAddresses()
-                                            .stream()
-                                            .filter(address -> !InProcessAddress.class.isInstance(address))
-                                            .collect(Collectors.toSet());
             try {
-                serializedMessage += objectMapper.writeValueAsString(addresses);
                 Files.write(persistedMessageFile, serializedMessage.getBytes("UTF-8"));
             } catch (IOException e) {
                 logger.error("Unable to persist {} / {}.", messageQueueId, message, e);
@@ -129,7 +112,7 @@ public class SimpleFileBasedMessagePersister implements MessagePersister {
             String delayInMsString = reader.readLine();
             String retriesCountString = reader.readLine();
             String base64SerialisedMessage = reader.readLine();
-            String destinationAddressesString = reader.readLine();
+            String destinationParticipantId = reader.readLine();
             if (delayInMsString == null || retriesCountString == null || base64SerialisedMessage == null) {
                 throw new IllegalArgumentException(String.format("Invalid message file %s. Content must be three lines.",
                                                                  file));
@@ -138,9 +121,7 @@ public class SimpleFileBasedMessagePersister implements MessagePersister {
                                                                            .decode(base64SerialisedMessage));
             deserializedMessage = new DelayableImmutableMessage(immutableMessage,
                                                                 Long.parseLong(delayInMsString),
-                                                                objectMapper.readValue(destinationAddressesString,
-                                                                                       new TypeReference<Set<Address>>() {
-                                                                                       }),
+                                                                destinationParticipantId,
                                                                 Integer.parseInt(retriesCountString));
         } catch (IOException | EncodingException | UnsuppportedVersionException e) {
             logger.error("Error reading {}.", file, e);
