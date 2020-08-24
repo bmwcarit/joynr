@@ -154,8 +154,9 @@ void ParticipantIdStorage::writeStoreToFile()
                 joynr::util::appendStringToFile(fileName, entry.toIniForm());
             } catch (const std::runtime_error& ex) {
                 JOYNR_LOG_ERROR(logger(),
-                                "Cannot save ParticipantId to file. Next application lifecycle "
-                                "might not function correctly. Exception: ",
+                                "Cannot save ParticipantId to file {}. Next application lifecycle "
+                                "might not function correctly. Exception: {}",
+                                fileName,
                                 ex.what());
                 entriesWrittenToDisk += writtenToDisk;
                 return;
