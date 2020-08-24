@@ -19,7 +19,6 @@
 #ifndef DISCOVERYRESULT_H
 #define DISCOVERYRESULT_H
 
-// TODO: include necessary headers
 #include <string>
 #include <vector>
 #include <boost/optional.hpp>
@@ -38,9 +37,9 @@ public:
     ~DiscoveryResult() = default;
 
     boost::optional<joynr::types::DiscoveryEntry> getLastSeen() const;
-    boost::optional<joynr::types::DiscoveryEntry> getWithHighestPriority() const;
-    boost::optional<joynr::types::DiscoveryEntry> getWithLatestVersion() const;
-    boost::optional<joynr::types::DiscoveryEntry> getWithParticipantId(
+    boost::optional<joynr::types::DiscoveryEntry> getHighestPriority() const;
+    boost::optional<joynr::types::DiscoveryEntry> getLatestVersion() const;
+    boost::optional<joynr::types::DiscoveryEntry> getParticipantId(
             const std::string& participantId) const;
     std::vector<types::DiscoveryEntry> getWithKeyword(const std::string& keyword) const;
 

@@ -35,7 +35,7 @@ public:
 };
 
 
-TEST_F(DiscoveryResultTest, testGetLastSeenHasNoValue)
+TEST_F(DiscoveryResultTest, testGetLastSeenHasNoValueWhenEntriesEmpty)
 {
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
@@ -43,31 +43,31 @@ TEST_F(DiscoveryResultTest, testGetLastSeenHasNoValue)
     EXPECT_FALSE(discoveryEntryLastSeen.has_value());
 }
 
-TEST_F(DiscoveryResultTest, testGetWithHighestPriorityHasNoValue)
+TEST_F(DiscoveryResultTest, testGetHighestPriorityHasNoValueWhenEntriesEmpty)
 {
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
-    boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithHighestPriority = discoveryResult.getWithHighestPriority();
+    boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithHighestPriority = discoveryResult.getHighestPriority();
     EXPECT_FALSE(discoveryEntryWithHighestPriority.has_value());
 }
 
-TEST_F(DiscoveryResultTest, testGetWithLatestVersionHasNoValue)
+TEST_F(DiscoveryResultTest, testGetLatestVersionHasNoValueWhenEntriesEmpty)
 {
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
-    boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithLatestVersion = discoveryResult.getWithLatestVersion();
+    boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithLatestVersion = discoveryResult.getLatestVersion();
     EXPECT_FALSE(discoveryEntryWithLatestVersion.has_value());
 }
 
-TEST_F(DiscoveryResultTest, testGetWithParticipantIdHasNoValue)
+TEST_F(DiscoveryResultTest, testGetParticipantIdHasNoValueWhenEntriesEmpty)
 {
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
-    boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithParticipantId = discoveryResult.getWithParticipantId("participantId");
+    boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithParticipantId = discoveryResult.getParticipantId("participantId");
     EXPECT_FALSE(discoveryEntryWithParticipantId.has_value());
 }
 
-TEST_F(DiscoveryResultTest, testGetWithKeywordHasNoValue)
+TEST_F(DiscoveryResultTest, testGetWithKeywordHasNoValueWhenEntriesEmpty)
 {
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
@@ -134,7 +134,7 @@ TEST_F(DiscoveryResultTest, testGetHighestPriority)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries {discoveryEntry2, discoveryEntry1};
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
 
-    joynr::types::DiscoveryEntry highPriorityDiscoveryEntry = discoveryResult.getWithHighestPriority().value();
+    joynr::types::DiscoveryEntry highPriorityDiscoveryEntry = discoveryResult.getHighestPriority().value();
 
     EXPECT_EQ(highPriorityDiscoveryEntry.getQos().getPriority(), highPriority);
 }
@@ -151,7 +151,7 @@ TEST_F(DiscoveryResultTest, testGetLastestVersionByMajor)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries {discoveryEntry2, discoveryEntry1};
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
 
-    joynr::types::DiscoveryEntry latestMajorVersionDiscoveryEntry = discoveryResult.getWithLatestVersion().value();
+    joynr::types::DiscoveryEntry latestMajorVersionDiscoveryEntry = discoveryResult.getLatestVersion().value();
 
     EXPECT_EQ(latestMajorVersionDiscoveryEntry.getProviderVersion(), latestVersion);
 }
@@ -168,9 +168,9 @@ TEST_F(DiscoveryResultTest, testGetLastestVersionByMinor)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries {discoveryEntry2, discoveryEntry1};
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
 
-    joynr::types::DiscoveryEntry latestMajorVersionDiscoveryEntry = discoveryResult.getWithLatestVersion().value();
+    joynr::types::DiscoveryEntry latestMinorVersionDiscoveryEntry = discoveryResult.getLatestVersion().value();
 
-    EXPECT_EQ(latestMajorVersionDiscoveryEntry.getProviderVersion(), latestVersion);
+    EXPECT_EQ(latestMinorVersionDiscoveryEntry.getProviderVersion(), latestVersion);
 }
 
 TEST_F(DiscoveryResultTest, testGetParticipantIdSuccess)
@@ -185,7 +185,7 @@ TEST_F(DiscoveryResultTest, testGetParticipantIdSuccess)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries {discoveryEntry2, discoveryEntry1};
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
 
-    joynr::types::DiscoveryEntry foundDiscoveryEntry = discoveryResult.getWithParticipantId(participantId1).value();
+    joynr::types::DiscoveryEntry foundDiscoveryEntry = discoveryResult.getParticipantId(participantId1).value();
 
     EXPECT_EQ(foundDiscoveryEntry.getParticipantId(), participantId1);
 }
@@ -203,7 +203,7 @@ TEST_F(DiscoveryResultTest, testGetParticipantIdHasNoValue)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries {discoveryEntry2, discoveryEntry1};
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
 
-    boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithNoValue = discoveryResult.getWithParticipantId(participantId3);
+    boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithNoValue = discoveryResult.getParticipantId(participantId3);
 
     EXPECT_FALSE(discoveryEntryWithNoValue.has_value());
 }
