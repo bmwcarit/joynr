@@ -67,7 +67,7 @@ public class RoutingTableOverwriteEnd2EndTest {
     @Rule
     public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
-    private static final long CONST_DEFAULT_TEST_TIMEOUT = 10000;
+    private static final long CONST_DEFAULT_TEST_TIMEOUT = 30000;
     private static int mqttBrokerPort = 1883;
     private Properties webSocketConfig;
     private Properties mqttConfig;
