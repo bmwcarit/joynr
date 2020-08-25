@@ -200,6 +200,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
     @Override
     public synchronized void shutdown() {
+        logger.debug("shutdown invoked");
         for (JoynrMqttClient client : sendingMqttClients.values()) {
             client.shutdown();
         }
@@ -210,6 +211,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                 }
             }
         }
+        Schedulers.shutdown();
+        logger.debug("shutdown finished");
     }
 
     private void createCombinedClient(String gbid) {
