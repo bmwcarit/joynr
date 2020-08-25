@@ -336,7 +336,7 @@ class CppInterfaceUtil extends InterfaceUtil {
 				onApplicationError(muesli::EnumTraits<«getMethodErrorEnum(serviceInterface, method)»>::Wrapper::getEnum(applicationError->getName()));
 			}
 			else {
-				const std::string errorMessage = "An ApplicationException type was received, but but none was expected. Is the provider version incompatible with the consumer?";
+				const std::string errorMessage = "An ApplicationException type was received, but none was expected. Is the provider version incompatible with the consumer?";
 				if (onRuntimeError) {
 					onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
 				}
