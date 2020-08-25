@@ -72,9 +72,6 @@ public class MessageQueueTest {
     private ImmutableMessage mockImmutableMessage2_multicast;
 
     @Mock
-    private Set<Address> multicastDestinationAddresses;
-
-    @Mock
     private DelayableImmutableMessage mockDelayableMessage3_request;
 
     @Mock
@@ -117,7 +114,6 @@ public class MessageQueueTest {
         when(mockDelayableMessage3_request.getMessage()).thenReturn(mockImmutableMessage3_request);
 
         when(mockImmutableMessage2_multicast.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
-        when(mockDelayableMessage2_multicast.getDestinationAddresses()).thenReturn(multicastDestinationAddresses);
         when(mockImmutableMessage3_request.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         ObjectMapper objectMapper = new ObjectMapper();
         when(mockImmutableMessage3_request.getReplyTo()).thenReturn(objectMapper.writeValueAsString(replyToAddress));
@@ -297,16 +293,6 @@ public class MessageQueueTest {
         verify(mockImmutableMessage3_request).getReplyTo();
         verify(routingTableMock).put(anyString(), Mockito.any(Address.class), anyBoolean(), anyLong());
         verify(routingTableMock).put(sender, replyToAddress, true, mockImmutableMessage3_request.getTtlMs());
-    }
-
-    @Test
-    public void testFetchMessagesFromPersistence_clearDestinationAddressesOfMulticast() throws Exception {
-        testFetchMessagesFromPersistence();
-
-        verify(mockDelayableMessage2_multicast).getDestinationAddresses();
-        verify(mockDelayableMessage3_request, times(0)).getDestinationAddresses();
-        verify(multicastDestinationAddresses).clear();
-
     }
 
     @Test

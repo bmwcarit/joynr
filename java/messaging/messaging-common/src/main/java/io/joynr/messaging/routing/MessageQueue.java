@@ -103,10 +103,6 @@ public class MessageQueue {
     }
 
     private void restoreMessage(DelayableImmutableMessage delayableImmutableMessage) {
-        if (delayableImmutableMessage.getMessage().getType() == Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST) {
-            // remove all addresses to trigger new address resolution to get also InProcessAddresses which are not persisted
-            delayableImmutableMessage.getDestinationAddresses().clear();
-        }
         // give potential recipients some time to register
         delayableImmutableMessage.setDelay(STARTUP_GRACE_PERIOD_MS);
         delayableImmutableMessages.put(delayableImmutableMessage);
