@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
@@ -89,7 +90,7 @@ public class AddressManagerNonMulticastTest {
 
     @Test
     public void testNoAddressFoundForNonMulticastMessage() {
-        Set<Address> result = subject.getAddresses(joynrMessage);
+        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
         assertEquals(0, result.size());
     }
 
@@ -99,13 +100,19 @@ public class AddressManagerNonMulticastTest {
         when(routingTable.get(PARTICIPANT_ID)).thenReturn(address);
         when(joynrMessage.getRecipient()).thenReturn(PARTICIPANT_ID);
 
-        Set<Address> result = subject.getAddresses(joynrMessage);
-        verify(routingTable).get(PARTICIPANT_ID);
-        verify(routingTable, times(0)).get(eq(PARTICIPANT_ID), anyString());
+        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(address, result.iterator().next());
+        assertEquals(PARTICIPANT_ID, result.iterator().next());
+
+        DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
+                                                                                   1000,
+                                                                                   result.iterator().next());
+        assertEquals(Optional.of(address), subject.getAddressForDelayableImmutableMessage(delayablemessage));
+
+        verify(routingTable).get(PARTICIPANT_ID);
+        verify(routingTable, times(0)).get(eq(PARTICIPANT_ID), anyString());
     }
 
     @Test
@@ -120,12 +127,18 @@ public class AddressManagerNonMulticastTest {
         customHeader.put(Message.CUSTOM_HEADER_GBID_KEY, gbidVal);
         when(joynrMessage.getCustomHeaders()).thenReturn(customHeader);
 
-        Set<Address> result = subject.getAddresses(joynrMessage);
-        verify(routingTable, times(0)).get(PARTICIPANT_ID);
-        verify(routingTable, times(1)).get(PARTICIPANT_ID, gbidVal);
+        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(address, result.iterator().next());
+        assertEquals(PARTICIPANT_ID, result.iterator().next());
+
+        DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
+                                                                                   1000,
+                                                                                   result.iterator().next());
+        assertEquals(Optional.of(address), subject.getAddressForDelayableImmutableMessage(delayablemessage));
+
+        verify(routingTable, times(0)).get(PARTICIPANT_ID);
+        verify(routingTable, times(1)).get(PARTICIPANT_ID, gbidVal);
     }
 }

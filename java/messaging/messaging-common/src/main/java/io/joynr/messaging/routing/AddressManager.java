@@ -20,6 +20,7 @@ package io.joynr.messaging.routing;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -34,9 +35,11 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 
 public class AddressManager {
     private static final Logger logger = LoggerFactory.getLogger(AddressManager.class);
+    public static final String multicastAddressCalculatorParticipantId = "joynr.internal.multicastAddressCalculatorParticipantId";
 
     private final MulticastReceiverRegistry multicastReceiversRegistry;
 
@@ -89,52 +92,85 @@ public class AddressManager {
     }
 
     /**
+     * Get the participantIds to which the passed in message should be sent to.
+     * @param message the message for which we want to find the participantIds to send it to.
+     * @return set of participantIds to send the message to. Will not be null, because if an participantId
+     * can't be determined, the returned set of addresses will be empty.
+     */
+    public Set<String> getParticipantIdsForImmutableMessage(ImmutableMessage message) {
+        Set<String> result = new HashSet<>();
+        String toParticipantId = message.getRecipient();
+        if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+            getRecipientsForMulticast(message, result);
+        } else if (toParticipantId != null) {
+            result.add(toParticipantId);
+        }
+        logger.trace("Found the following recipients for {}: {}", message, result);
+
+        return result;
+    }
+
+    /**
      * Get the address to which the passed in message should be sent to.
      * This can be an address contained in the {@link RoutingTable}, or a
      * multicast address calculated from the header content of the message.
      *
      * @param message the message for which we want to find an address to send it to.
-     * @return set of addresses to send the message to. Will not be null, because if an address
-     * can't be determined, the returned set of addresses will be empty.
+     * @return Optional of an address to send the message to. Will not be null, because if an address
+     * can't be determined, the returned Optional will be empty.
      */
-    public Set<Address> getAddresses(ImmutableMessage message) {
-        Set<Address> result = new HashSet<>();
-        String toParticipantId = message.getRecipient();
-        if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-            handleMulticastMessage(message, result);
-        } else if (toParticipantId != null && routingTable.containsKey(toParticipantId)) {
-            Map<String, String> customHeader = message.getCustomHeaders();
-            final String gbidVal = customHeader.get(Message.CUSTOM_HEADER_GBID_KEY);
-            Address address = null;
-            if (gbidVal == null) {
-                address = routingTable.get(toParticipantId);
-            } else {
-                address = routingTable.get(toParticipantId, gbidVal);
-            }
-            if (address != null) {
-                result.add(address);
-            }
+    public Optional<Address> getAddressForDelayableImmutableMessage(DelayableImmutableMessage message) {
+        Map<String, String> customHeader = message.getMessage().getCustomHeaders();
+        final String gbidVal = customHeader.get(Message.CUSTOM_HEADER_GBID_KEY);
+        Address address = null;
+        String recipient = message.getRecipient();
+        if (recipient.startsWith(multicastAddressCalculatorParticipantId)) {
+            address = determineAddressFromMulticastAddressCalculator(message, recipient);
+        } else if (gbidVal == null) {
+            address = routingTable.get(recipient);
+        } else {
+            address = routingTable.get(recipient, gbidVal);
         }
-        logger.trace("Found the following addresses for {}: {}", message, result);
-
-        return result;
+        return address == null ? Optional.empty() : Optional.of(address);
     }
 
-    private void handleMulticastMessage(ImmutableMessage message, Set<Address> result) {
+    private Address determineAddressFromMulticastAddressCalculator(DelayableImmutableMessage message,
+                                                                   String recipient) {
+        Address address = null;
+        Set<Address> addressSet = multicastAddressCalculator.calculate(message.getMessage());
+        if (addressSet.size() <= 1) {
+            for (Address calculatedAddress : addressSet) {
+                address = calculatedAddress;
+            }
+        } else {
+            // This case can only happen if we have multiple backends, which can only happen in case of MQTT
+            for (Address calculatedAddress : addressSet) {
+                MqttAddress mqttAddress = (MqttAddress) calculatedAddress;
+                String brokerUri = mqttAddress.getBrokerUri();
+                if (recipient.equals(multicastAddressCalculatorParticipantId + "_" + brokerUri)) {
+                    address = calculatedAddress;
+                    break;
+                }
+            }
+        }
+        return address;
+    }
+
+    private void getRecipientsForMulticast(ImmutableMessage message, Set<String> result) {
         if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
             if (multicastAddressCalculator.createsGlobalTransportAddresses()) {
                 // only global providers should multicast to the "outside world"
                 if (isProviderGloballyVisible(message.getSender())) {
-                    addMulticastReceiverAddressFromAddressCalculator(message, result);
+                    addReceiversFromAddressCalculator(message, result);
                 }
             } else {
                 // in case the address calculator does not provide an address
                 // to the "outside world" it is safe to forward the message
                 // regardless of the provider being globally visible or not
-                addMulticastReceiverAddressFromAddressCalculator(message, result);
+                addReceiversFromAddressCalculator(message, result);
             }
         }
-        addLocalMulticastReceiverAddressesFromRegistry(message, result);
+        addLocalMulticastReceiversFromRegistry(message, result);
     }
 
     private boolean isProviderGloballyVisible(String participantId) {
@@ -150,18 +186,21 @@ public class AddressManager {
         return isGloballyVisible;
     }
 
-    private void addMulticastReceiverAddressFromAddressCalculator(ImmutableMessage message, Set<Address> result) {
+    private void addReceiversFromAddressCalculator(ImmutableMessage message, Set<String> result) {
         Set<Address> calculatedAddresses = multicastAddressCalculator.calculate(message);
-        result.addAll(calculatedAddresses);
-    }
-
-    private void addLocalMulticastReceiverAddressesFromRegistry(ImmutableMessage message, Set<Address> result) {
-        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getRecipient());
-        for (String receiverParticipantId : receivers) {
-            Address address = routingTable.get(receiverParticipantId);
-            if (address != null) {
-                result.add(address);
+        if (calculatedAddresses.size() == 1) {
+            result.add(multicastAddressCalculatorParticipantId);
+        } else {
+            // This case can only happen if we have multiple backends, which can only happen in case of MQTT
+            for (Address address : calculatedAddresses) {
+                MqttAddress mqttAddress = (MqttAddress) address;
+                result.add(multicastAddressCalculatorParticipantId + "_" + mqttAddress.getBrokerUri());
             }
         }
+    }
+
+    private void addLocalMulticastReceiversFromRegistry(ImmutableMessage message, Set<String> result) {
+        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getRecipient());
+        result.addAll(receivers);
     }
 }
