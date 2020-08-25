@@ -21,6 +21,8 @@ package io.joynr.capabilities;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +34,9 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.runtime.JoynrInjectionConstants;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
+
 import joynr.types.DiscoveryEntry;
 
 /**
@@ -50,11 +55,12 @@ import joynr.types.DiscoveryEntry;
  * </p>
  */
 @Singleton
-public class ExpiredDiscoveryEntryCacheCleaner {
+public class ExpiredDiscoveryEntryCacheCleaner implements ShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(ExpiredDiscoveryEntryCacheCleaner.class);
 
     public static final String DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL = "joynr.cc.discovery.entry.cache.cleanup.interval";
+    private ScheduledFuture<?> scheduledFuture;
 
     /**
      * Implementations of this are registered with {@link #scheduleCleanUpForCaches(CleanupAction, DiscoveryEntryStore...)} to be
@@ -66,16 +72,26 @@ public class ExpiredDiscoveryEntryCacheCleaner {
 
     private ScheduledExecutorService scheduledExecutorService;
     private int cacheCleanupIntervalInMinutes;
+    private final ShutdownNotifier shutdownNotifier;
 
     @Inject
     public ExpiredDiscoveryEntryCacheCleaner(@Named(JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService scheduledExecutorService,
-                                             @Named(DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL) int cacheCleanupIntervalInMinutes) {
+                                             @Named(DISCOVERY_ENTRY_CACHE_CLEANUP_INTERVAL) int cacheCleanupIntervalInMinutes,
+                                             ShutdownNotifier shutdownNotifier) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.cacheCleanupIntervalInMinutes = cacheCleanupIntervalInMinutes;
+        this.shutdownNotifier = shutdownNotifier;
+        shutdownNotifier.registerForShutdown(this);
+    }
+
+    public void shutdown() {
+        logger.info("shutdown invoked");
+        scheduledFuture.cancel(true);
+        logger.info("shutdown finished");
     }
 
     public void scheduleCleanUpForCaches(final CleanupAction cleanupAction, final DiscoveryEntryStore<?>... caches) {
-        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+        scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 try {
