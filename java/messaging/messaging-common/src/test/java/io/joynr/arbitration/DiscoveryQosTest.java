@@ -78,7 +78,7 @@ public class DiscoveryQosTest {
 
     @Test
     public void testDefaultDiscoveryScope() {
-        assertEquals(DiscoveryScope.LOCAL_AND_GLOBAL, discoveryQos.getDiscoveryScope());
+        assertEquals(DiscoveryScope.LOCAL_THEN_GLOBAL, discoveryQos.getDiscoveryScope());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class DiscoveryQosTest {
     public void testToString() {
         String expectedToStringResult = "DiscoveryQos [arbitrationStrategy=LastSeen, cacheMaxAgeMs=0, "
                 + "customParameters=" + discoveryQos.getCustomParameters().toString() + ", "
-                + "discoveryScope=LOCAL_AND_GLOBAL, discoveryTimeoutMs=-1, providerMustSupportOnChange=false, "
+                + "discoveryScope=LOCAL_THEN_GLOBAL, discoveryTimeoutMs=-1, providerMustSupportOnChange=false, "
                 + "retryIntervalMs=-1]";
         assertEquals(expectedToStringResult, discoveryQos.toString());
     }
