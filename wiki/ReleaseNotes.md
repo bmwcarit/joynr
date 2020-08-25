@@ -28,6 +28,8 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
   necessary anymore. The generated code for Java and JEE is identical now.
   See [Generator documentation](generator.md).
+* **[Java]** The default discovery scope is consistent with other languages now. It is changed from
+    `LOCAL_AND_GLOBAL` to `LOCAL_THEN_GLOBAL`.
 * **[C++]** Cluster controller now uses the new `touch` and `removeStale` methods of
   [`GlobalCapabilitiesDirectory.fidl`](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl).
   The Global Capabilities Directory has to implement version 0.3 of the interface.
