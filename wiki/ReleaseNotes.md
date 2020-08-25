@@ -36,12 +36,21 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[Android]** Added ContentProvider that allows apps and other components to  implement 
   persistent providers, designed for specific use cases where the providers' configuration can 
   occur first thing in the component lifecycle.
+* **[JEE]** Added automatic provider registration retries and reporting of unsuccessful provider
+  registration. See
+  [documentation of joynr JEE integration](jee.md#provider-registration-retries-and-error-handling)
+  for more information.
 
 ## Configuration property changes
 * **[C++]** The configuration option `mqtt-max-message-size-bytes` was removed from messaging
   settings. Instead the value optionally provided in the CONNACK properties sent by the broker
   as response to CONNECT is used, if available; otherwise the size is limited to the maximum
   value a `std::int64_t` can hold.
+* **[JEE]** Introduced `PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES` and
+  `PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS` to configure the new internal registration
+  retry and registration error reporting mechanism.  
+  See [Java Configuration Reference](JavaSettings.md#jee-integration) for more details on these
+  properties.
 
 ## Bug fixes
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
