@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -91,6 +92,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private ScheduledExecutorService freshnessUpdateScheduler;
+    private ScheduledFuture<?> freshnessUpdateScheduledFuture;
 
     private DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
@@ -254,10 +256,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 globalCapabilitiesDirectoryClient.touch(callback, participantIds);
             }
         };
-        freshnessUpdateScheduler.scheduleAtFixedRate(command,
-                                                     freshnessUpdateIntervalMs,
-                                                     freshnessUpdateIntervalMs,
-                                                     TimeUnit.MILLISECONDS);
+        freshnessUpdateScheduledFuture = freshnessUpdateScheduler.scheduleAtFixedRate(command,
+                                                                                      freshnessUpdateIntervalMs,
+                                                                                      freshnessUpdateIntervalMs,
+                                                                                      TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -1092,6 +1094,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
+        logger.debug("shutdown invoked");
+
+        if (freshnessUpdateScheduledFuture != null) {
+            freshnessUpdateScheduledFuture.cancel(false);
+        }
         if (unregisterAllRegisteredCapabilities) {
             Set<DiscoveryEntry> allDiscoveryEntries = localDiscoveryEntryStore.getAllDiscoveryEntries();
 
@@ -1138,6 +1145,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
             }
         }
+        logger.debug("shutdown finished");
     }
 
     @Override
