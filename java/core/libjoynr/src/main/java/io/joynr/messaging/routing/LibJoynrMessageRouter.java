@@ -105,16 +105,15 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
-    protected Set<Address> getAddresses(ImmutableMessage message) {
-        Set<Address> result = super.getAddresses(message);
+    protected Set<String> getRecipients(ImmutableMessage message) {
+        Set<String> result = super.getRecipients(message);
 
-        if (result.isEmpty() && parentRouter != null
-                && message.getType() != Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST) {
+        if (parentRouter != null && message.getType() != Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST
+                && !routingTable.containsKey(message.getRecipient())) {
             String toParticipantId = message.getRecipient();
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {
                 super.addNextHop(toParticipantId, parentRouterMessagingAddress, true); // TODO: use appropriate boolean value in subsequent patch
-                result.add(parentRouterMessagingAddress);
             }
         }
 

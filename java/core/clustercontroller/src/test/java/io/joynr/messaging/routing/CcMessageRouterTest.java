@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -658,7 +659,7 @@ public class CcMessageRouterTest {
     }
 
     @Test
-    public void testRetryForNoParticipantFound() throws Exception {
+    public void testNoMessageCreatedWhenNoParticipantIdFound() throws Exception {
         final String unknownParticipantId = "I don't exist";
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setTtlAbsolute(true);
@@ -668,20 +669,20 @@ public class CcMessageRouterTest {
 
         messageRouter.route(immutableMessage);
         Thread.sleep(100);
-        verify(routingTable, atLeast(2)).containsKey(unknownParticipantId);
-        verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
+        verify(routingTable, times(1)).containsKey(unknownParticipantId);
+        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(messageQueue, never()).put(any());
     }
 
     @Test
-    public void testRepeatedAddressResolutionForWebSocketClient() throws Exception {
-        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+    public void testWebSocketClientParticipantIdsRetrievedOnlyOnce() throws Exception {
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setTtlAbsolute(true);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress();
-        final Set<Address> addressSet = new HashSet<>();
-        addressSet.add(websocketClientAddress);
-        doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
+        final Set<String> recipientSet = new HashSet<>();
+        recipientSet.add(joynrMessage.getImmutableMessage().getRecipient());
+        doReturn(recipientSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
 
         when(websocketClientMessagingStubFactoryMock.create(any(WebSocketClientAddress.class))).thenReturn(messagingStubMock);
         doThrow(new JoynrDelayMessageException(100, "test")).when(messagingStubMock)
@@ -692,9 +693,9 @@ public class CcMessageRouterTest {
         messageRouter.route(immutableMessage);
         Thread.sleep(500);
 
-        verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
+        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
-        verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
+        verify(messageQueue, atLeast(1)).put(passedDelayableMessage.capture());
         assertTrue(passedDelayableMessage.getAllValues().size() >= 2);
         Set<ImmutableMessage> passedImmutableMessages = passedDelayableMessage.getAllValues()
                                                                               .stream()
@@ -714,9 +715,10 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        final Set<Address> addressSet = new HashSet<>();
-        addressSet.add(channelAddress);
-        doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
+        final Set<String> participantIdSet = new HashSet<>();
+        participantIdSet.add(AddressManager.multicastAddressCalculatorParticipantId);
+        doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        doReturn(Optional.of(channelAddress)).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         doThrow(new JoynrDelayMessageException(200, "test42")).when(messagingStubMock)
                                                               .transmit(any(ImmutableMessage.class),
@@ -725,7 +727,8 @@ public class CcMessageRouterTest {
 
         messageRouter.route(immutableMessage);
         Thread.sleep(550);
-        verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
+
+        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
         assertTrue(passedDelayableMessage.getAllValues().size() >= 2);
@@ -745,9 +748,10 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        final Set<Address> addressSet = new HashSet<>();
-        addressSet.add(address);
-        doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
+        final Set<String> participantIdSet = new HashSet<>();
+        participantIdSet.add(joynrMessage.getImmutableMessage().getRecipient());
+        doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        doReturn(Optional.of(address)).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         doThrow(new JoynrDelayMessageException(200, "test")).when(messagingStubMock)
                                                             .transmit(any(ImmutableMessage.class),
@@ -757,7 +761,7 @@ public class CcMessageRouterTest {
         messageRouter.route(immutableMessage);
         Thread.sleep(ttlMs);
 
-        verify(addressManager).getAddresses(immutableMessage);
+        verify(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
         assertTrue("Size was " + passedDelayableMessage.getAllValues().size(),
@@ -794,7 +798,7 @@ public class CcMessageRouterTest {
         verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
 
         verify(mockMsgProcessedListener).messageProcessed(immutableMessage.getId());
-        verify(addressManager).getAddresses(immutableMessage);
+        verify(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
         verifyNoMoreInteractions(messagingStubMock);
     }
 
@@ -858,15 +862,18 @@ public class CcMessageRouterTest {
     public void testFailedTransmitDoesNotLeadToThreadStarvation() throws Exception {
         final int MESSAGE_LOAD = 10;
 
+        final String recipient = "to";
         ImmutableMessage failingMessage = mock(ImmutableMessage.class);
         when(failingMessage.isTtlAbsolute()).thenReturn(true);
         when(failingMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
-        when(failingMessage.getRecipient()).thenReturn("to");
+        when(failingMessage.getRecipient()).thenReturn(recipient);
         when(failingMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
 
-        Set<Address> addressSet = new HashSet<>();
-        addressSet.add(channelAddress);
-        doReturn(addressSet).when(addressManager).getAddresses(failingMessage);
+        Set<String> participantIdSet = new HashSet<>();
+        participantIdSet.add(recipient);
+
+        doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(failingMessage);
+        doReturn(Optional.of(channelAddress)).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -892,7 +899,7 @@ public class CcMessageRouterTest {
         when(anotherMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
         when(anotherMessage.getRecipient()).thenReturn("to");
         when(anotherMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
-        doReturn(addressSet).when(addressManager).getAddresses(anotherMessage);
+        doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(anotherMessage);
 
         final Semaphore semaphore = new Semaphore(0);
         doAnswer(new Answer<Object>() {

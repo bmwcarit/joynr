@@ -33,7 +33,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Singleton;
 
@@ -61,7 +60,6 @@ import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 abstract public class AbstractMessageRouter implements MessageRouter, MulticastReceiverRegistrar, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
@@ -267,12 +265,12 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         routeInternal(message, 0, 0);
     }
 
-    protected Set<Address> getAddresses(ImmutableMessage message) {
-        return addressManager.getAddresses(message);
+    protected Set<String> getRecipients(ImmutableMessage message) {
+        return addressManager.getParticipantIdsForImmutableMessage(message);
     }
 
-    private void checkFoundAddresses(Set<Address> foundAddresses, ImmutableMessage message) {
-        if (foundAddresses.isEmpty()) {
+    private void checkFoundAddress(Optional<Address> foundAddress, ImmutableMessage message) {
+        if (!foundAddress.isPresent()) {
             if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 // discard msg
                 throw new JoynrMessageNotSentException("Failed to route multicast publication: No address found for given message: "
@@ -287,8 +285,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                         + message);
             } else {
                 // any kind of request; retry routing
-                throw new JoynrIllegalStateException("Unable to find address for recipient with participant ID "
-                        + message.getRecipient());
+                throw new JoynrIllegalStateException("Unable to find addresses for message with ID " + message.getId());
             }
         }
     }
@@ -296,27 +293,22 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     private void routeInternal(final ImmutableMessage message, long delayMs, final int retriesCount) {
         logger.trace("Scheduling message {} with delay {} and retries {}", message, delayMs, retriesCount);
 
-        Set<Address> addresses = getAddresses(message);
-        try {
-            checkFoundAddresses(addresses, message);
-        } catch (JoynrMessageNotSentException error) {
-            logger.error("ERROR SENDING: aborting send of messageId: {}. Error:", message.getId(), error);
+        Set<String> recipients = getRecipients(message);
+        if (recipients.isEmpty()) {
+            //This can only happen in case of a multicast. Otherwise the participantId is taken directly from the ImmutableMessage.
+            String errormessage = "Failed to route multicast publication: No recipient found for given message: "
+                    + message;
+            logger.error("ERROR SENDING: aborting send of messageId: {}. Error:", message.getId(), errormessage);
             callMessageProcessedListeners(message.getId());
-            return;
-        } catch (Exception error) {
-            delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs, retriesCount);
-            logger.error("Rescheduling messageId: {} with delay {} ms, TTL is: {}. Error:",
-                         message.getId(),
-                         delayMs,
-                         dateFormatter.format(message.getTtlMs()),
-                         error);
         }
 
-        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message,
-                                                                                   delayMs,
-                                                                                   addresses,
-                                                                                   retriesCount);
-        scheduleMessage(delayableMessage);
+        for (String recipient : recipients) {
+            DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message,
+                                                                                       delayMs,
+                                                                                       recipient,
+                                                                                       retriesCount);
+            scheduleMessage(delayableMessage);
+        }
     }
 
     private void scheduleMessage(final DelayableImmutableMessage delayableMessage) {
@@ -409,16 +401,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs,
                                                                 delayableMessage.getRetriesCount());
                 }
-
-                if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(delayableMessage.getMessage().getType())
-                        || delayableMessage.getDestinationAddresses()
-                                           .removeIf(address -> address instanceof WebSocketClientAddress)) {
-                    // WebSocketClientAddresses have to be determined again in every retry because they change when a
-                    // client is restarted, e.g. after a crash.
-                    routeInternal(delayableMessage.getMessage(), delayMs, delayableMessage.getRetriesCount() + 1);
-                    return;
-                }
-
                 delayableMessage.setDelay(delayMs);
                 delayableMessage.setRetriesCount(delayableMessage.getRetriesCount() + 1);
                 logger.error("Rescheduling messageId: {} with delay {} ms, TTL: {}, retries: {}",
@@ -432,7 +414,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     logger.warn("Rescheduling of message failed (messageId {})", messageId);
                     callMessageProcessedListeners(messageId);
                 }
-                return;
             }
         };
         return failureAction;
@@ -446,15 +427,17 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         }
     }
 
-    private SuccessAction createMessageProcessedAction(final String messageId, final int numberOfCalls) {
+    private SuccessAction createMessageProcessedAction(final String messageId) {
         final SuccessAction successAction = new SuccessAction() {
-            private final AtomicInteger callCount = new AtomicInteger(numberOfCalls);
 
             @Override
             public void execute() {
-                if (callCount.decrementAndGet() == 0) {
-                    callMessageProcessedListeners(messageId);
-                }
+                /* In case of a multicast, the listener is already called when the message is sent to the first recipient,
+                 * i.e. the message is not fully processed if it has multiple recipients.
+                 * This is not a problem because the MessageProcessedListener is part of the backpressure mechanism
+                 * which ignores multicast messages (only request messages are counted), see
+                 * MqttMessagingSkeleton.transmit and SharedSubscriptionsMqttMessagingSkeleton.requestAccepted. */
+                callMessageProcessedListeners(messageId);
             }
         };
         return successAction;
@@ -531,31 +514,29 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     logger.trace("Starting processing of message {}", message);
                     checkExpiry(message);
 
-                    Set<Address> addresses = delayableMessage.getDestinationAddresses();
-                    if (addresses.isEmpty()) {
-                        // try again immediately (message has been scheduled with delay for retry)
-                        final int delayMs = 0;
-                        routeInternal(message, delayMs, delayableMessage.getRetriesCount() + 1);
+                    Optional<Address> optionalAddress = addressManager.getAddressForDelayableImmutableMessage(delayableMessage);
+                    try {
+                        checkFoundAddress(optionalAddress, message);
+                    } catch (JoynrMessageNotSentException error) {
+                        logger.error("ERROR SENDING: aborting send of messageId: {}. Error:", message.getId(), error);
+                        callMessageProcessedListeners(message.getId());
+                        continue;
+                    } catch (Exception error) {
+                        final long delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs,
+                                                                               delayableMessage.getRetriesCount() + 1);
+                        delayableMessage.setDelay(delayMs);
+                        delayableMessage.setRetriesCount(delayableMessage.getRetriesCount() + 1);
+                        scheduleMessage(delayableMessage);
                         continue;
                     }
 
-                    SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId(),
-                                                                                        addresses.size());
-                    // If multiple stub calls for a multicast to multiple destination addresses fail, the failure
-                    // action is called for each failing stub call. Hence, the same failureAction has to be used.
-                    // Otherwise, the message is rescheduled multiple times and the message queue is flooded with
-                    // entries for the same message until the transmission of every entry is successful for all
-                    // recipients. Also the recipients are flooded with the same message.
-                    // Open issue:
-                    // If only some stub calls fail, the rescheduled message will be sent to all its recipients again,
-                    // no matter if an earlier transmission attempt was already successful or not.
+                    SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId());
                     failureAction = createFailureAction(delayableMessage);
-                    for (Address address : addresses) {
-                        logger.trace(">>>>> SEND message {} to address {}", message.getId(), address);
+                    Address address = optionalAddress.get();
+                    logger.trace(">>>>> SEND message {} to address {}", message.getId(), address);
 
-                        IMessagingStub messagingStub = messagingStubFactory.create(address);
-                        messagingStub.transmit(message, messageProcessedAction, failureAction);
-                    }
+                    IMessagingStub messagingStub = messagingStubFactory.create(address);
+                    messagingStub.transmit(message, messageProcessedAction, failureAction);
                 } catch (InterruptedException e) {
                     logger.trace("Message Worker interrupted. Stopping.");
                     Thread.currentThread().interrupt();
