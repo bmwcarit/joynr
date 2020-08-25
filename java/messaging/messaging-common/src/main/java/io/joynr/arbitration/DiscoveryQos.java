@@ -31,7 +31,7 @@ public class DiscoveryQos {
 
     private static final ArbitrationStrategy DEFAULT_ARBITRATIONSTRATEGY = ArbitrationStrategy.LastSeen;
     private static final long DEFAULT_CACHEMAXAGE = 0L;
-    private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_AND_GLOBAL;
+    private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_THEN_GLOBAL;
     private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
 
     long cacheMaxAgeMs;
