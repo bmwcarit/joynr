@@ -224,7 +224,7 @@ Available values are as follows:
   capabilities directory.
 * **GLOBAL_ONLY** Only the global entries will be looked at.
 
-**Default discovery scope:** ```LOCAL_AND_GLOBAL```
+**Default discovery scope:** ```LOCAL_THEN_GLOBAL```
 
 Whenever global entries are involved, they are first searched in the local cache. In case no global
 entries are found in the cache, a remote lookup is triggered.
@@ -276,7 +276,7 @@ discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE); // optional, default 0
 // optional, default as stated above
 discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
 // optional, default as stated above
-discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_AND_GLOBAL);
+discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_THEN_GLOBAL);
 discoveryQos.setProviderMustSupportOnChange(true); // optional, default false
 discoveryQos.addCustomParameter(key, value); // optional, default none
 ```

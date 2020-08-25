@@ -5,7 +5,8 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.14.3
 
 ## API relevant changes
-None.
+* **[Java]** The default discovery scope is consistent with other languages now. It is changed from
+    `LOCAL_AND_GLOBAL` to `LOCAL_THEN_GLOBAL`.
 
 ## Bug fixes
 * **[C++]** Cluster controller now uses the new `touch` and `removeStale` methods of
