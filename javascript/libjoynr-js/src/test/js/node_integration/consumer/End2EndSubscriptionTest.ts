@@ -108,7 +108,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             }
         });
         await subScriptionDeferred.onReceive.promise;
-        await IntegrationUtils.waitALittle(100);
+        await IntegrationUtils.waitALittle(500);
         expect(spy.onReceive.mock.calls.length).toBe(expectedPublications);
         const calls = spy.onReceive.mock.calls;
         spy.onReceive.mockClear();
@@ -331,8 +331,18 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             return spy;
         }
 
-        function testMulticastWithPartitionsExtended(subscribePartitions: any, publicationPartitions: any, times: any) {
+        function testMulticastWithPartitionsExtended(
+            subscribePartitions: any,
+            publicationPartitions: any,
+            times: any,
+            timeout: number
+        ) {
             return setupMulticastSubscriptionWithPartitionAndReturnSpy(subscribePartitions)
+                .then(spy => {
+                    return IntegrationUtils.waitALittle(timeout).then(() => {
+                        return spy;
+                    });
+                })
                 .then(spy => {
                     return Promise.all(
                         publicationPartitions.map((partitions: any) => {
@@ -356,7 +366,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
                 });
         }
         function testMulticastWithPartitions(partitions: string[]) {
-            return testMulticastWithPartitionsExtended(partitions, [partitions], 1);
+            return testMulticastWithPartitionsExtended(partitions, [partitions], 1, 100);
         }
 
         it("with empty partitions", async () => {
@@ -371,28 +381,36 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             await testMulticastWithPartitions(["a", "b", "c", "d", "e", "f", "g"]);
         });
 
-        it("with multi-level partition including asterisk", async () => {
+        it("with multi-level publication partition including asterisk", async () => {
             await testMulticastWithPartitionsExtended(
                 ["a", "b", "c", "d", "e", "f", "*"],
                 [["a", "b", "c", "d", "e", "f"]],
-                1
+                1,
+                100
             );
+        }, 20000);
+
+        it("with multi-level subscribe partition including asterisk", async () => {
             await testMulticastWithPartitionsExtended(
                 ["a", "b", "c", "d", "e", "f", "*"],
                 [["a", "b", "c", "d", "e", "f", "g", "h"]],
-                3
+                3,
+                1000
             );
-        });
+        }, 20000);
 
-        it("with multi-level partition including plus sign", async () => {
-            await testMulticastWithPartitionsExtended(["a", "+", "c"], [["a", "b", "c"]], 1);
+        it("with publication partition including plus sign", async () => {
+            await testMulticastWithPartitionsExtended(["a", "+", "c"], [["a", "b", "c"]], 1, 1000);
+        }, 20000);
 
+        it("with multi-level publication partition including plus sign", async () => {
             await testMulticastWithPartitionsExtended(
                 ["a", "+", "c"],
                 [["a", "b", "c"], ["a", "b", "d"], ["a", "xyz", "c", "d", "e", "f"]],
-                2
+                2,
+                1000
             );
-        });
+        }, 20000);
 
         it("subscribe to the same non-selective broadcast with different partitions", async () => {
             const partitions0 = ["a", "b"];
