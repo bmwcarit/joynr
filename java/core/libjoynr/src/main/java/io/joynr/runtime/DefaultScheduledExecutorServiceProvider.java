@@ -78,6 +78,12 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
 
     @Override
     public void shutdown() {
+        logger.debug("shutdown invoked");
+        scheduler.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+        scheduler.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+        scheduler.setRemoveOnCancelPolicy(true);
+        scheduler.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+        scheduler.purge();
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(TERMINATION_TIMEOUT, TimeUnit.MILLISECONDS)) {
@@ -90,5 +96,6 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
             Thread.currentThread().interrupt();
             logger.error("Message Scheduler shutdown interrupted:", e);
         }
+        logger.debug("shutdown finished");
     }
 }
