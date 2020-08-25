@@ -563,7 +563,7 @@ compress all outgoing replies by default, even if the request was not compressed
 If the property set to be false then replies are only compressed if the corresponding request is set to be compressed.
 * **Type**: boolean
 * **User property**: `joynr.messaging.compressreplies`
-* **Default value**: false
+* **Default value**: `false`
 
 ### `MQTT_TOPIC_PREFIX_REPLYTO`
 Set the mqtt prefix to be prepended to replyTo topics when using shared subscriptions.
@@ -670,7 +670,7 @@ ConfigurableMessagingSettings.PROPERTY_GBIDS.
 * **REQUIRED if using the MQTTModule**
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.brokeruris`
-* **Default value**:
+* **Default value**: `tcp://localhost:1883`
 
 ### `PROPERTY_KEY_MQTT_USERNAME`
 The username the cluster controller uses to authenticate against the MQTT broker backend service.
@@ -705,7 +705,7 @@ Sets the type of the keystore file.
 * **OPTIONAL**
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.ssl.keystoretype`
-* **Default value**: "JKS"
+* **Default value**: `JKS`
 
 ### `PROPERTY_KEY_MQTT_TRUSTSTORE_PATH`
 Sets the path to a keystore file with a trusted CA certificate.
@@ -723,7 +723,7 @@ Sets the type of the truststore file.
 * **OPTIONAL**
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.ssl.truststoretype`
-* **Default value**: "JKS"
+* **Default value**: `JKS`
 
 ### `PROPERTY_KEY_MQTT_KEYSTORE_PWD`
 Sets the keystore's password
@@ -956,13 +956,35 @@ to prepare for shutdown in time.
 * **Type**: int
 * **User property**: `joynr.runtime.prepareforshutdowntimeout`
 * **Unit**: seconds
-* **Default value**: 5
+* **Default value**: `5`
 
 
 ## JEE Integration
 
 These properties are defined as constants in the
 `io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys` class.
+
+### `PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES`
+The maximum number of provider registration retry attempts for a single provider in case of errors.
+
+See [documentation of joynr JEE integration](jee.md#provider-registration-retries-and-error-handling)
+for more information on the provider registration in joynr JEE.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.jeeintegration.registration.retries`
+* **Default value**: `5`
+
+### `PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS`
+The wait time between provider registration retry attempts for a single provider.
+
+See [documentation of joynr JEE integration](jee.md#provider-registration-retries-and-error-handling)
+for more information on the provider registration in joynr JEE.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.jeeintegration.registration.retryintervalms`
+* **Default value**: `30000`
 
 ### `JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY`
 

@@ -260,6 +260,26 @@ public class MyServiceImpl implements MyServiceSync {
 }
 ```
 
+#### Provider registration: retries and error handling
+
+Joynr JEE integration automatically registers the providers in the GlobalCapabilitiesDirectory with
+the default registration parameters during startup (deployment).
+
+In case of errors, it will retry the registration until it succeeds or the maximum number of retry
+attempts is reached. Once a provider could be registered successfully, the loop continues with the
+next provider.  
+The retry behavior can be configured with the following properties:
+* [JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES](JavaSettings.md#property_jee_provider_registration_retries)
+* [JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS](JavaSettings.md#property_jee_provider_registration_retry_interval_ms)
+If the registration does not succeed within the configured limit, the deployment of the application
+will fail with an exception that reports the registration problems.
+
+> Note:
+> A single registration attempt may take up about to 60 seconds. The next registration attempt
+> will be triggered after the configured retry interval.  
+> The timout for the deployment in your application server may be reached before all registration
+> retries are finished.
+
 #### Customizing the provider registration parameters
 
 In order to set parameters like Provider QoS or GBID(s), provide an implementation of the
