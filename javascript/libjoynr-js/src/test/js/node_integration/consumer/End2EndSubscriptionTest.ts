@@ -64,6 +64,9 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
         onError: IntegrationUtils.Deferred;
     };
 
+    let spyOnReceiveCounter: number;
+    let spyOnReceiveCallsNumber: number;
+
     beforeEach(async () => {
         const settings = await abstractTest.beforeEach();
 
@@ -97,18 +100,14 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         radioProxy = settings.radioProxy!;
+
+        spyOnReceiveCallsNumber = 0;
+        spyOnReceiveCounter = 0;
     });
 
     async function expectMultiplePublications(spy: Spies, expectedPublications: number): Promise<any[]> {
-        let counter = 0;
-        spy.onReceive.mockImplementation(() => {
-            counter++;
-            if (counter === expectedPublications) {
-                subScriptionDeferred.onReceive.resolve();
-            }
-        });
         await subScriptionDeferred.onReceive.promise;
-        await IntegrationUtils.waitALittle(500);
+        await IntegrationUtils.waitALittle(100);
         expect(spy.onReceive.mock.calls.length).toBe(expectedPublications);
         const calls = spy.onReceive.mock.calls;
         spy.onReceive.mockClear();
@@ -337,8 +336,17 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
             times: any,
             timeout: number
         ) {
+            spyOnReceiveCallsNumber = times;
             return setupMulticastSubscriptionWithPartitionAndReturnSpy(subscribePartitions)
                 .then(spy => {
+                    // Mock implementation of onReceive function
+                    spy.onReceive.mockImplementation(() => {
+                        spyOnReceiveCounter++;
+                        if (spyOnReceiveCounter === spyOnReceiveCallsNumber) {
+                            subScriptionDeferred.onReceive.resolve();
+                        }
+                    });
+                    // Wait a little bit to be sure that subscribing is finished
                     return IntegrationUtils.waitALittle(timeout).then(() => {
                         return spy;
                     });
@@ -483,6 +491,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     it("subscribe to broadcastWithEnum and get burst", async () => {
         subscriptionQosOnChange.minIntervalMs = 0;
         const times = 100;
+        spyOnReceiveCallsNumber = times;
         subscriptionSettings.subscriptionQos = subscriptionQosOnChange;
         await radioProxy.broadcastWithEnum.subscribe(subscriptionSettings);
         await callOperation("triggerBroadcasts", {
