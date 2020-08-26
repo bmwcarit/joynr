@@ -4143,14 +4143,14 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
 
 TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterController)
 {
-    std::int64_t maxLastSeenMs = 100000.0;
+    std::int64_t maxLastSeenMs = 100000;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, removeStale(Eq(_clusterControllerId), maxLastSeenMs, _, _)).Times(1);
     _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControllerRetry)
 {
-    std::int64_t maxLastSeenMs = 100000.0;
+    std::int64_t maxLastSeenMs = 100000;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 removeStale(Eq(_clusterControllerId), maxLastSeenMs, _, _))
             .Times(2)
