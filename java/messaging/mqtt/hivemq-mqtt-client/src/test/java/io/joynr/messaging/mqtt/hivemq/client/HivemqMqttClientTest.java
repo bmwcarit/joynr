@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -79,7 +80,6 @@ public class HivemqMqttClientTest {
     @Mock
     private Mqtt5AsyncClient mockAsyncClient;
     private final int defaultKeepAliveTimerSec = 30;
-    private final int defaultMaxMessageSize = 0;
     private final boolean defaultCleanSession = false;
     private final int defaultConnectionTimeoutSec = 60;
     private final int defaultReconnectDelayMs = 1000;
@@ -131,7 +131,6 @@ public class HivemqMqttClientTest {
     private void createDefaultClient() {
         client = new HivemqMqttClient(mockRxClient,
                                       defaultKeepAliveTimerSec,
-                                      defaultMaxMessageSize,
                                       defaultCleanSession,
                                       defaultConnectionTimeoutSec,
                                       defaultReconnectDelayMs,
@@ -350,12 +349,14 @@ public class HivemqMqttClientTest {
         verify(mockConnectionStatusMetrics, times(1)).increaseConnectionAttempts();
     }
 
+    // the following 2 test cases do no longer work since the maximum message size is
+    // now set by the broker
+    @Ignore
     @Test
     public void publishMessage_throwsWhenMaxMessageSizeExceeded() throws Exception {
         final int maxMessageSize = 100;
         client = new HivemqMqttClient(mockRxClient,
                                       defaultKeepAliveTimerSec,
-                                      maxMessageSize,
                                       defaultCleanSession,
                                       defaultConnectionTimeoutSec,
                                       defaultReconnectDelayMs,
@@ -380,12 +381,12 @@ public class HivemqMqttClientTest {
         verify(mockFailureAction, times(0)).execute(any(Throwable.class));
     }
 
+    @Ignore
     @Test
     public void publishMessage_doesNotThrowWhenMaxMessageSizeNotExceeded() {
         final int maxMessageSize = 100;
         client = new HivemqMqttClient(mockRxClient,
                                       defaultKeepAliveTimerSec,
-                                      maxMessageSize,
                                       defaultCleanSession,
                                       defaultConnectionTimeoutSec,
                                       defaultReconnectDelayMs,

@@ -809,15 +809,6 @@ improve the performance.
 * **User property**: `joynr.messaging.mqtt.maxmsgsinflight`
 * **Default value**: `10`
 
-### `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
-Configures the maximum size for an outgoing MQTT message in bytes.
-A message larger than this size is discarded. A value of 0 means that the check is disabled.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.messaging.mqtt.maxmqttmessagesizebytes`
-* **Default value**: `0`
-
 ### `PROPERTY_KEY_MQTT_CLEAN_SESSION`
 Configures whether the mqtt client shall establish a clean session to the broker.
 Subscriptions will be reestablished by joynr in any case.

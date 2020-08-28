@@ -61,7 +61,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     private final Mqtt5RxClient client;
     private final Mqtt5ClientConfig clientConfig;
-    private final int maxMsgSizeBytes;
+    private final int maxMsgSizeBytes = 0;
     private final boolean cleanSession;
     private final int keepAliveTimeSeconds;
     private final int connectionTimeoutSec;
@@ -78,7 +78,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public HivemqMqttClient(Mqtt5RxClient client,
                             int keepAliveTimeSeconds,
-                            int maxMsgSizeBytes,
                             boolean cleanSession,
                             int connectionTimeoutSec,
                             int reconnectDelayMs,
@@ -89,7 +88,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
         this.client = client;
         clientConfig = client.getConfig();
         this.keepAliveTimeSeconds = keepAliveTimeSeconds;
-        this.maxMsgSizeBytes = maxMsgSizeBytes;
         this.cleanSession = cleanSession;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.reconnectDelayMs = reconnectDelayMs;
