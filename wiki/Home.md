@@ -71,14 +71,13 @@ Full featured communication paradigms mapped to a middleware-agnostic messaging 
 
 **Messaging adaption**
 
-Mapping of middleware-agnostic messaging to a specific transport middleware implementation (Atmosphere- and WebSocket messaging adaption)
+Mapping of middleware-agnostic messaging to a specific transport middleware implementation (WebSocket messaging adaption)
 
 **Messaging implementation**
 
  Open Source industry standard implementations are preferred.
  Currently:
- * Atmosphere-based via HTTP
- * mosquitto/paho/hivemq-mqtt-client for MQTT
+ * mosquitto/hivemq-mqtt-client for MQTT
  * WebSockets
 
 **OSI Transport Layer**
