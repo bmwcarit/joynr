@@ -1074,7 +1074,9 @@ void LocalCapabilitiesDirectory::remove(
                     fmt::format("Failed to remove participantId: {}. ParticipantId is not "
                                 "registered in cluster controller.",
                                 participantId));
-            onError(exception);
+            if(onError) {
+                onError(exception);
+            }
             return;
         }
         const types::DiscoveryEntry& entry = *optionalEntry;
