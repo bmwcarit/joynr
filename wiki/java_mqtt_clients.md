@@ -1,7 +1,6 @@
 # Java MQTT Clients
 
-If you want to use MQTT as joynr's transport layer, then
-you have a choice of using either the Paho MQTT client or the HiveMQ MQTT Client.
+If you want to use MQTT as joynr's transport layer, then you must use the HiveMQ MQTT Client.
 
 If you use the JEE Integration, then this will automatically use the HiveMQ MQTT Client.
 
@@ -16,15 +15,6 @@ uses MQTT 5
 	<dependency>
 		<groupId>io.joynr.java.messaging.mqtt</groupId>
 		<artifactId>hivemq-mqtt-client</artifactId>
-		<version>${joynr.version}</version>
-	</dependency>
-
-### Paho MQTT Client
-uses MQTT v3
-
-	<dependency>
-		<groupId>io.joynr.java.messaging.mqtt</groupId>
-		<artifactId>paho-mqtt-client</artifactId>
 		<version>${joynr.version}</version>
 	</dependency>
 
