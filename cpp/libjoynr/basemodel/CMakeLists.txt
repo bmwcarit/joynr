@@ -22,6 +22,7 @@ set(PUBLIC_HEADERS
 
     include/joynr/AbstractJoynrMessagingConnector.h
     include/joynr/AbstractJoynrProvider.h
+    include/joynr/ArbitrationResult.h
     include/joynr/ArbitrationStrategyFunction.h
     include/joynr/Arbitrator.h
     include/joynr/ArbitratorFactory.h
@@ -82,6 +83,7 @@ set(SOURCES
     provider/InterfaceRegistrar.cpp
     provider/RequestCaller.cpp
 
+    proxy/ArbitrationResult.cpp
     proxy/Arbitrator.cpp
     proxy/ArbitratorFactory.cpp
     proxy/DiscoveryQos.cpp
