@@ -112,7 +112,6 @@ public class HivemqMqttClientIntegrationTest {
         properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883, tcp://localhost:1883");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,60");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "30, 30");
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES, "0");
         properties.put(ConfigurableMessagingSettings.PROPERTY_GBIDS,
                        Arrays.stream(gbids).collect(Collectors.joining(",")));
         serializedMessage = new byte[10];

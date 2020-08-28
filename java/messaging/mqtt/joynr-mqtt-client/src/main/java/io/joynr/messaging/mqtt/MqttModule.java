@@ -64,7 +64,6 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC = "joynr.messaging.mqtt.connectiontimeoutssec";
     public static final String MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP = "joynr.internal.messaging.mqtt.gbidtoconnectiontimeoutsecmap";
     public static final String PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS = "joynr.messaging.mqtt.timetowaitms";
-    public static final String PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES = "joynr.messaging.mqtt.maxmqttmessagesizebytes";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_PATH = "joynr.messaging.mqtt.ssl.keystore";
     public static final String PROPERTY_KEY_MQTT_TRUSTSTORE_PATH = "joynr.messaging.mqtt.ssl.truststore";
     public static final String PROPERTY_KEY_MQTT_KEYSTORE_TYPE = "joynr.messaging.mqtt.ssl.keystoretype";

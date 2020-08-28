@@ -35,6 +35,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -91,7 +92,6 @@ public class HivemqMqttClientFactoryTest {
                                               defaultMqttGbidToBrokerUriMap,
                                               defaultMqttGbidToKeepAliveTimerSecMap,
                                               defaultMqttGbidToConnectionTimeoutSecMap,
-                                              defaultMaxMessageSize,
                                               defaultCleanSession,
                                               scheduledExecutorService,
                                               mockClientIdProvider,
@@ -140,6 +140,9 @@ public class HivemqMqttClientFactoryTest {
         verify(mockStatusReceiver, times(2)).addConnectionStatusMetrics(any(ConnectionStatusMetrics.class));
     }
 
+    // Test does not work any longer since HivemqMqttClientFactory does no longer
+    // handover a maxMessageSize
+    @Ignore
     @Test
     public void createdClientsHaveCorrectMaxMessageSize() throws Exception {
         final int maxMessageSize = 100;
@@ -147,7 +150,6 @@ public class HivemqMqttClientFactoryTest {
                                               defaultMqttGbidToBrokerUriMap,
                                               defaultMqttGbidToKeepAliveTimerSecMap,
                                               defaultMqttGbidToConnectionTimeoutSecMap,
-                                              maxMessageSize,
                                               defaultCleanSession,
                                               scheduledExecutorService,
                                               mockClientIdProvider,
