@@ -110,10 +110,6 @@
 		<Bug pattern="NM_CLASS_NOT_EXCEPTION"/>
 	</Match>
 	<Match>
-		<Class name="io.joynr.messaging.mqtt.paho.client.MqttPahoClient" />
-		<Bug pattern="SF_SWITCH_FALLTHROUGH"/>
-	</Match>
-	<Match>
 		<Class name="io.joynr.jeeintegration.context.JoynrJeeMessageContext" />
 		<Bug pattern="DC_DOUBLECHECK"/>
 	</Match>
