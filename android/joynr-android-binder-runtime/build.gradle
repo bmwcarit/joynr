@@ -103,7 +103,6 @@ android {
                     // messaging
                     "../../java/messaging/messaging-common/src/main/java/",
                     "../../java/messaging/mqtt/hivemq-mqtt-client/src/main/java",
-                    "../../java/messaging/mqtt/paho-mqtt-client/src/main/java",
                     "../../java/messaging/mqtt/joynr-mqtt-client/src/main/java/",
 
             ]
