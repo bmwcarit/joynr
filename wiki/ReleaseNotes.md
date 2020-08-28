@@ -40,6 +40,7 @@ the versioning scheme [here](JoynrVersioning.md).
   registration. See
   [documentation of joynr JEE integration](jee.md#provider-registration-retries-and-error-handling)
   for more information.
+* **[Java]** MqttPahoClient has been removed. Please use HivemqMqttClient instead.
 
 ## Configuration property changes
 * **[C++]** The configuration option `mqtt-max-message-size-bytes` was removed from messaging
