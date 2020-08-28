@@ -35,7 +35,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -138,41 +137,6 @@ public class HivemqMqttClientFactoryTest {
         factory.createReceiver(gbids[0]);
         factory.createSender(gbids[0]);
         verify(mockStatusReceiver, times(2)).addConnectionStatusMetrics(any(ConnectionStatusMetrics.class));
-    }
-
-    // Test does not work any longer since HivemqMqttClientFactory does no longer
-    // handover a maxMessageSize
-    @Ignore
-    @Test
-    public void createdClientsHaveCorrectMaxMessageSize() throws Exception {
-        final int maxMessageSize = 100;
-        factory = new HivemqMqttClientFactory(true,
-                                              defaultMqttGbidToBrokerUriMap,
-                                              defaultMqttGbidToKeepAliveTimerSecMap,
-                                              defaultMqttGbidToConnectionTimeoutSecMap,
-                                              defaultCleanSession,
-                                              scheduledExecutorService,
-                                              mockClientIdProvider,
-                                              mockStatusReceiver,
-                                              mockShutdownNotifier);
-
-        JoynrMqttClient receiver = factory.createReceiver(gbids[0]);
-        assertTrue(receiver instanceof HivemqMqttClient);
-        if (receiver instanceof HivemqMqttClient) {
-            HivemqMqttClient client = (HivemqMqttClient) receiver;
-            Field maxMessageSizeBytesField = client.getClass().getDeclaredField("maxMsgSizeBytes");
-            maxMessageSizeBytesField.setAccessible(true);
-            assertEquals(maxMessageSize, (int) (maxMessageSizeBytesField.get(client)));
-        }
-
-        JoynrMqttClient sender = factory.createSender(gbids[0]);
-        assertTrue(sender instanceof HivemqMqttClient);
-        if (sender instanceof HivemqMqttClient) {
-            HivemqMqttClient client = (HivemqMqttClient) sender;
-            Field maxMessageSizeBytesField = client.getClass().getDeclaredField("maxMsgSizeBytes");
-            maxMessageSizeBytesField.setAccessible(true);
-            assertEquals(maxMessageSize, (int) (maxMessageSizeBytesField.get(client)));
-        }
     }
 
     @Test
