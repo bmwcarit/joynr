@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -62,6 +63,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
@@ -170,6 +172,8 @@ public class CcMessageRouterTest {
     private Injector injector;
     private MutableMessageFactory messageFactory;
 
+    private long globalMaxRetryCount = 10;
+
     @Before
     public void setUp() throws Exception {
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
@@ -214,6 +218,8 @@ public class CcMessageRouterTest {
                                 .toInstance(routingTableCleanupIntervalMs);
                 bind(String.class).annotatedWith(Names.named(MessageQueue.MESSAGE_QUEUE_ID))
                                   .toInstance(createUuidString());
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT))
+                                .toInstance(globalMaxRetryCount);
 
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
@@ -373,6 +379,61 @@ public class CcMessageRouterTest {
                                                      any(FailureAction.class));
         verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress1);
         verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress2);
+    }
+
+    @Test
+    public void testMulticastIsOnlyResentForFailingAddress() throws Exception {
+        MqttAddress receiverAddress1 = new MqttAddress("http://testUrl", "channelId1");
+        MqttAddress receiverAddress2 = new MqttAddress("http://testUrl", "channelId2");
+        prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress2);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        IMessagingStub successfulMessagingStubMock = Mockito.mock(IMessagingStub.class);
+        IMessagingStub failingMessagingStubMock = Mockito.mock(IMessagingStub.class);
+        when(mqttMessagingStubFactoryMock.create(receiverAddress1)).thenReturn(successfulMessagingStubMock);
+        when(mqttMessagingStubFactoryMock.create(receiverAddress2)).thenReturn(failingMessagingStubMock);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                SuccessAction successAction = invocation.getArgumentAt(1, SuccessAction.class);
+                successAction.execute();
+                return null;
+            }
+        }).when(successfulMessagingStubMock)
+          .transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
+
+        doAnswer(new Answer<Void>() {
+            private int callCount = 0;
+
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                FailureAction failureAction = invocation.getArgumentAt(2, FailureAction.class);
+                if (callCount < 2) {
+                    callCount++;
+                    failureAction.execute(new JoynrDelayMessageException(10, "first retry"));
+                } else {
+                    failureAction.execute(new JoynrMessageNotSentException("do not retry thrice"));
+                }
+                return null;
+            }
+        }).when(failingMessagingStubMock)
+          .transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+
+        Thread.sleep(1000);
+
+        verify(successfulMessagingStubMock, times(1)).transmit(eq(immutableMessage),
+                                                               any(SuccessAction.class),
+                                                               any(FailureAction.class));
+        verify(failingMessagingStubMock, times(3)).transmit(eq(immutableMessage),
+                                                            any(SuccessAction.class),
+                                                            any(FailureAction.class));
+        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, atLeast(4)).getAddressForDelayableImmutableMessage(any());
+        verify(mqttMessagingStubFactoryMock, times(1)).create(receiverAddress1);
+        verify(mqttMessagingStubFactoryMock, times(3)).create(receiverAddress2);
     }
 
     private ImmutableMessage retryRoutingWith1msDelay(MessageRouter messageRouter, int ttlMs) throws Exception {
@@ -659,22 +720,6 @@ public class CcMessageRouterTest {
     }
 
     @Test
-    public void testNoMessageCreatedWhenNoParticipantIdFound() throws Exception {
-        final String unknownParticipantId = "I don't exist";
-        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
-        joynrMessage.setTtlAbsolute(true);
-        joynrMessage.setRecipient(unknownParticipantId);
-
-        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
-
-        messageRouter.route(immutableMessage);
-        Thread.sleep(100);
-        verify(routingTable, times(1)).containsKey(unknownParticipantId);
-        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
-        verify(messageQueue, never()).put(any());
-    }
-
-    @Test
     public void testWebSocketClientParticipantIdsRetrievedOnlyOnce() throws Exception {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setTtlAbsolute(true);
@@ -694,8 +739,12 @@ public class CcMessageRouterTest {
         Thread.sleep(500);
 
         verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, atLeast(2)).getAddressForDelayableImmutableMessage(any());
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
-        verify(messageQueue, atLeast(1)).put(passedDelayableMessage.capture());
+        verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
+        verify(messagingStubMock, atLeast(2)).transmit(eq(immutableMessage),
+                                                       any(SuccessAction.class),
+                                                       any(FailureAction.class));
         assertTrue(passedDelayableMessage.getAllValues().size() >= 2);
         Set<ImmutableMessage> passedImmutableMessages = passedDelayableMessage.getAllValues()
                                                                               .stream()
@@ -729,6 +778,7 @@ public class CcMessageRouterTest {
         Thread.sleep(550);
 
         verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, atLeast(2)).getAddressForDelayableImmutableMessage(any());
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
         assertTrue(passedDelayableMessage.getAllValues().size() >= 2);
@@ -740,7 +790,7 @@ public class CcMessageRouterTest {
         assertTrue(passedImmutableMessages.contains(immutableMessage));
     }
 
-    private void testOnlyOneAddressResolution(final Address address) throws Exception {
+    private void testOnlyOneParticipantIdResolution(final Address address) throws Exception {
         reset(messageQueue);
         final int ttlMs = 550;
 
@@ -761,7 +811,8 @@ public class CcMessageRouterTest {
         messageRouter.route(immutableMessage);
         Thread.sleep(ttlMs);
 
-        verify(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, atLeast(2)).getAddressForDelayableImmutableMessage(any());
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
         assertTrue("Size was " + passedDelayableMessage.getAllValues().size(),
@@ -775,30 +826,46 @@ public class CcMessageRouterTest {
     }
 
     @Test
-    public void testOnlyOneAddressResolutionForNonWebSocketClient() throws Exception {
-        testOnlyOneAddressResolution(channelAddress);
+    public void testOnlyOneParticipantIdResolution() throws Exception {
+        testOnlyOneParticipantIdResolution(channelAddress);
 
         when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
-        testOnlyOneAddressResolution(new MqttAddress("brokerUri", "topic"));
+        testOnlyOneParticipantIdResolution(new MqttAddress("brokerUri", "topic"));
 
         when(webSocketMessagingStubFactoryMock.create(any(WebSocketAddress.class))).thenReturn(messagingStubMock);
-        testOnlyOneAddressResolution(new WebSocketAddress(WebSocketProtocol.WS, "host", 42, "path"));
+        testOnlyOneParticipantIdResolution(new WebSocketAddress(WebSocketProtocol.WS, "host", 42, "path"));
+
+        when(websocketClientMessagingStubFactoryMock.create(any(WebSocketClientAddress.class))).thenReturn(messagingStubMock);
+        testOnlyOneParticipantIdResolution(new WebSocketClientAddress());
 
         when(inProcessMessagingStubFactoryMock.create(any(InProcessAddress.class))).thenReturn(messagingStubMock);
-        testOnlyOneAddressResolution(new InProcessAddress(mock(InProcessMessagingSkeleton.class)));
+        testOnlyOneParticipantIdResolution(new InProcessAddress(mock(InProcessMessagingSkeleton.class)));
     }
 
     private void testNotRoutableMessageIsDropped(final MutableMessage mutableMessage) throws Exception {
         final ImmutableMessage immutableMessage = mutableMessage.getImmutableMessage();
 
-        MessageProcessedListener mockMsgProcessedListener = mock(MessageProcessedListener.class);
+        final Set<String> recipientSet = new HashSet<>();
+        recipientSet.add(mutableMessage.getImmutableMessage().getRecipient());
+        doReturn(recipientSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        doReturn(Optional.empty()).when(addressManager).getAddressForDelayableImmutableMessage(any());
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        MessageProcessedListener mockMsgProcessedListener = new MessageProcessedListener() {
+            @Override
+            public void messageProcessed(String messageId) {
+                if (messageId.equals(immutableMessage.getId())) {
+                    countDownLatch.countDown();
+                }
+            }
+        };
         messageRouter.registerMessageProcessedListener(mockMsgProcessedListener);
 
         messageRouter.route(immutableMessage);
-        verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
-
-        verify(mockMsgProcessedListener).messageProcessed(immutableMessage.getId());
-        verify(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        assertTrue(countDownLatch.await(3000, TimeUnit.MILLISECONDS));
+        verify(messageQueue, times(1)).put(any(DelayableImmutableMessage.class));
+        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, times(1)).getAddressForDelayableImmutableMessage(any(DelayableImmutableMessage.class));
         verifyNoMoreInteractions(messagingStubMock);
     }
 
@@ -818,7 +885,7 @@ public class CcMessageRouterTest {
     }
 
     @Test
-    public void testMulticastMessageIsDroppedIfNoAddressIsFound() throws Exception {
+    public void testNotRoutableMulticastDropped() throws Exception {
         final MulticastPublication multicastPublication = new MulticastPublication(new JoynrRuntimeException("Test Exception"),
                                                                                    "multicastId");
         final MutableMessage mutableMessage = messageFactory.createMulticast(fromParticipantId,
@@ -826,6 +893,35 @@ public class CcMessageRouterTest {
                                                                              new MessagingQos());
 
         testNotRoutableMessageIsDropped(mutableMessage);
+    }
+
+    @Test
+    public void testMulticastMessageIsDroppedIfNoRecipientIsFound() throws Exception {
+        final MulticastPublication multicastPublication = new MulticastPublication(new JoynrRuntimeException("Test Exception"),
+                                                                                   "multicastId");
+        final MutableMessage mutableMessage = messageFactory.createMulticast(fromParticipantId,
+                                                                             multicastPublication,
+                                                                             new MessagingQos());
+
+        final ImmutableMessage immutableMessage = mutableMessage.getImmutableMessage();
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        MessageProcessedListener mockMsgProcessedListener = new MessageProcessedListener() {
+            @Override
+            public void messageProcessed(String messageId) {
+                if (messageId.equals(immutableMessage.getId())) {
+                    countDownLatch.countDown();
+                }
+            }
+        };
+        messageRouter.registerMessageProcessedListener(mockMsgProcessedListener);
+
+        messageRouter.route(immutableMessage);
+        assertTrue(countDownLatch.await(3000, TimeUnit.MILLISECONDS));
+        verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
+
+        verify(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        verifyNoMoreInteractions(messagingStubMock);
     }
 
     @Test
