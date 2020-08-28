@@ -116,6 +116,8 @@ public:
                     mqttConnectionDataVector = std::vector<
                             std::shared_ptr<JoynrClusterControllerMqttConnectionData>>());
 
+    DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
+
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::size_t argc,
             char* argv[],
@@ -234,7 +236,6 @@ private:
     std::string getSerializedGlobalClusterControllerAddress() const;
     const system::RoutingTypes::Address& getGlobalClusterControllerAddress() const;
 
-    DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
     std::shared_ptr<MulticastMessagingSkeletonDirectory> _multicastMessagingSkeletonDirectory;
 
     std::shared_ptr<CcMessageRouter> _ccMessageRouter;
