@@ -80,17 +80,14 @@ See the [Java Configuration Reference](JavaSettings.md) for a complete listing o
 configuration properties available to use in joynr Java applications.
 
 ## The external (global) transport middlewares
-joynr is able to communicate to other clusters via HTTP using Atmosphere, or MQTT using Eclipe Paho.
-Guice is also used to inject the required functionality. Though both (Atmosphere and MQTT) can be
-injected together at the same time joynr is only able to communicate over one global transport
-middleware at the same time. The only exception are fire and forget method calls which do not
-expect an answer.
+joynr is able to communicate to other clusters via MQTT using HiveMQ Client.
+Guice is also used to inject the required functionality.
 
 For details on configuring MQTT as the transport layer, please see the
 [Java MQTT Clients](./java_mqtt_clients.md) documentation.
 
 After choosing which RuntimeModule you are using, override it with the
-```AtmosphereMessagingModule``` or the ```MqttPahoModule```. See the Radio example, in particular
+```HivemqMqttClientModule```. See the Radio example, in particular
 ```MyRadioConsumerApplication``` and ```MyRadioProviderApplication``` for a detailed example of how
 this is done.
 
@@ -116,7 +113,7 @@ import io.joynr.exceptions.ApplicationException;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.mqtt.paho.client.MqttPahoModule;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
@@ -184,7 +181,7 @@ public static void main(String[] args) throws IOException {
     Properties appConfig = new Properties();
     appConfig.setProperty(APP_CONFIG_PROVIDER_DOMAIN, providerDomain);
 
-    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
+    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule());
 
     JoynrApplication myConsumerApp =
       new JoynrInjectorFactory(joynrConfig, runtimeModule).createApplication(
@@ -1337,7 +1334,7 @@ public static void main(String[] args) {
     joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
     Properties appConfig = new Properties();
     provisionAccessControl(joynrConfig, localDomain);
-    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new MqttPahoModule());
+    Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule());
     JoynrApplication joynrApplication =
         new JoynrInjectorFactory(joynrConfig,
             runtimeModule,
