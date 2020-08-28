@@ -104,7 +104,6 @@ public:
                       "test-resources/AclRclJoynrClusterControllerRuntimeTest.settings"),
               testSettings(settingsFilenameMqtt),
               ccSettings(testSettings),
-              runtime(nullptr),
               gpsLocation(1.1,                                     // longitude
                           2.2,                                     // latitude
                           3.3,                                     // altitude
@@ -142,11 +141,11 @@ public:
         serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
     }
 
-    ~JoynrClusterControllerRuntimeTest()
+    ~JoynrClusterControllerRuntimeTest() override = default;
+
+    void TearDown() override
     {
         if (runtime) {
-            runtime->deleteChannel();
-            runtime->stopExternalCommunication();
             runtime->shutdown();
             test::util::resetAndWaitUntilDestroyed(runtime);
         }
@@ -286,6 +285,32 @@ protected:
     const system::RoutingTypes::MqttAddress mqttGlobalAddress;
     const system::RoutingTypes::ChannelAddress httpGlobalAddress;
 };
+
+TEST_F(JoynrClusterControllerRuntimeTest, runtimeSimpleCreateAndDestroy)
+{
+    runtime = std::make_shared<JoynrClusterControllerRuntime>(
+            std::make_unique<Settings>(settingsFilenameMultipleAclRclFiles),
+            failOnFatalRuntimeError,
+            nullptr,
+            nullptr,
+            mockHttpMessageReceiver,
+            mockHttpMessageSender,
+            mockMqttMultipleConnections);
+    runtime.reset();
+}
+
+TEST_F(JoynrClusterControllerRuntimeTest, runtimeShutdownWithoutInit)
+{
+    runtime = std::make_shared<JoynrClusterControllerRuntime>(
+            std::make_unique<Settings>(settingsFilenameMultipleAclRclFiles),
+            failOnFatalRuntimeError,
+            nullptr,
+            nullptr,
+            mockHttpMessageReceiver,
+            mockHttpMessageSender,
+            mockMqttMultipleConnections);
+    runtime->shutdown();
+}
 
 TEST_F(JoynrClusterControllerRuntimeTest, loadMultipleAclRclFiles)
 {

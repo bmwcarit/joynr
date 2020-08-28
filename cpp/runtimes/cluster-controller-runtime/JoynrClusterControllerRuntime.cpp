@@ -18,7 +18,6 @@
  */
 #include "joynr/JoynrClusterControllerRuntime.h"
 
-#include <cassert>
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -250,10 +249,14 @@ void JoynrClusterControllerRuntime::init()
             _mqttConnectionDataVector.push_back(
                     std::make_shared<JoynrClusterControllerMqttConnectionData>());
         }
-    } else {
-        assert(_availableGbids.size() == _mqttConnectionDataVector.size());
+    } else if (_availableGbids.size() != _mqttConnectionDataVector.size()) {
+        static const exceptions::JoynrRuntimeException fatalError(
+                "Missmatch of availabale GBIDs available MQTT connection data.");
+        if (_onFatalRuntimeError) {
+            _onFatalRuntimeError(fatalError);
+        }
+        JOYNR_LOG_ERROR(logger(), fatalError.getMessage());
     }
-
     const BrokerUrl defaultBrokerUrl = _messagingSettings.getBrokerUrl();
 
     // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
@@ -316,8 +319,6 @@ void JoynrClusterControllerRuntime::init()
             const std::string receiverId = persist.getReceiverId();
             _httpMessageReceiver = std::make_shared<HttpReceiver>(
                     _messagingSettings, clusterControllerId, receiverId);
-
-            assert(_httpMessageReceiver != nullptr);
         }
     }
 
@@ -387,7 +388,6 @@ void JoynrClusterControllerRuntime::init()
                             clusterControllerId,
                             _availableGbids[brokerIndex],
                             _clusterControllerSettings.getMqttUnicastTopicPrefix()));
-                    assert(connectionData->getMqttMessageReceiver() != nullptr);
                 }
             } catch (const exceptions::JoynrRuntimeException& e) {
                 JOYNR_LOG_ERROR(logger(),
@@ -497,7 +497,6 @@ void JoynrClusterControllerRuntime::init()
     }
 
     /* LibJoynr */
-    assert(_ccMessageRouter);
     _messageSender = std::make_shared<MessageSender>(
             _ccMessageRouter, _keyChain, _messagingSettings.getTtlUpliftMs());
     _joynrDispatcher =
@@ -898,7 +897,9 @@ void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()
 void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProvider(
         const std::string& participantId)
 {
-    _localCapabilitiesDirectory->remove(participantId, nullptr, nullptr);
+    if (_localCapabilitiesDirectory) {
+        _localCapabilitiesDirectory->remove(participantId, nullptr, nullptr);
+    }
     for (std::shared_ptr<IDispatcher> currentDispatcher : _dispatcherList) {
         currentDispatcher->removeRequestCaller(participantId);
     }
@@ -974,20 +975,27 @@ void JoynrClusterControllerRuntime::startLocalCommunication()
 JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 {
     JOYNR_LOG_TRACE(logger(), "entering ~JoynrClusterControllerRuntime");
-    assert(_isShuttingDown);
+    shutdown();
     JOYNR_LOG_TRACE(logger(), "leaving ~JoynrClusterControllerRuntime");
 }
 
 void JoynrClusterControllerRuntime::startExternalCommunication()
 {
-    //    assert(joynrDispatcher!=NULL);
-    //    joynrDispatcher->startExternalCommunication();
-    //    joynrDispatcher->waitForMessaging();
     if (_doHttpMessaging) {
-        assert(_httpMessageReceiver != nullptr);
         if (!_httpMessagingIsRunning) {
-            _httpMessageReceiver->startReceiveQueue();
-            _httpMessagingIsRunning = true;
+            if (_httpMessageReceiver) {
+                _httpMessageReceiver->startReceiveQueue();
+                _httpMessagingIsRunning = true;
+            } else {
+                static const exceptions::JoynrConfigurationException fatalError(
+                        "Message receiver deleted before starting external communication. External "
+                        "communication not possible.");
+                if (_onFatalRuntimeError) {
+                    _onFatalRuntimeError(fatalError);
+                }
+                JOYNR_LOG_ERROR(logger(), fatalError.getMessage());
+                return;
+            }
         }
     }
     if (_doMqttMessaging && !_mqttMessagingIsRunning) {
@@ -1017,9 +1025,11 @@ void JoynrClusterControllerRuntime::stopExternalCommunication()
 
 void JoynrClusterControllerRuntime::shutdown()
 {
-    assert(!_isShuttingDown);
-    _isShuttingDown = true;
     std::lock_guard<std::mutex> lock(_proxyBuildersMutex);
+    if (_isShuttingDown) {
+        return;
+    }
+    _isShuttingDown = true;
     for (auto proxyBuilder : _proxyBuilders) {
         proxyBuilder->stop();
         proxyBuilder.reset();
@@ -1060,7 +1070,7 @@ void JoynrClusterControllerRuntime::shutdown()
                 ->unregisterSkeletons<system::RoutingTypes::MqttAddress>();
     }
 
-    if (_joynrDispatcher != nullptr) {
+    if (_joynrDispatcher) {
         _joynrDispatcher->shutdown();
         _joynrDispatcher.reset();
     }
@@ -1092,10 +1102,19 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
             std::move(mqttMessagingSkeletonFactory));
     runtime->init();
 
-    assert(runtime->_localCapabilitiesDirectory);
-    runtime->_localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(discoveryEntriesFile);
-    runtime->start();
-
+    if (runtime->_localCapabilitiesDirectory) {
+        runtime->_localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(
+                discoveryEntriesFile);
+        runtime->start();
+    } else {
+        static const exceptions::JoynrRuntimeException fatalError(
+                "Initialization of runtime failed to create local capabilities directory.");
+        if (onFatalRuntimeError) {
+            onFatalRuntimeError(fatalError);
+        }
+        JOYNR_LOG_ERROR(logger(), fatalError.getMessage());
+        runtime->shutdown();
+    }
     return runtime;
 }
 
