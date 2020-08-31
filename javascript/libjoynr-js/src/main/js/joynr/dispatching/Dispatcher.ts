@@ -293,6 +293,7 @@ class Dispatcher {
         publicationMessage.to = toParticipantId;
         publicationMessage.expiryDate = this.upLiftTtl(settings.expiryDate);
 
+        this.addRequestReplyIdCustomHeader(publicationMessage, publication.subscriptionId);
         if (log.isDebugEnabled()) {
             log.debug(`sendPublicationInternal, message = ${JSON.stringify(publicationMessage)}`);
         }
@@ -347,6 +348,14 @@ class Dispatcher {
     }
 
     /**
+     * @param joynrMessage
+     * @param requestReplyId
+     */
+    private addRequestReplyIdCustomHeader(joynrMessage: JoynrMessage, requestReplyId: string): void {
+        joynrMessage.setCustomHeaders({ z4: requestReplyId });
+    }
+
+    /**
      * @param settings
      * @param settings.from participantId of the sender
      * @param settings.toDiscoveryEntry DiscoveryEntry of the receiver
@@ -368,6 +377,7 @@ class Dispatcher {
         if (settings.messagingQos.customHeaders) {
             requestMessage.setCustomHeaders(settings.messagingQos.customHeaders);
         }
+        this.addRequestReplyIdCustomHeader(requestMessage, settings.request.requestReplyId);
 
         log.info(
             `calling ${settings.request.methodName}.`,
@@ -443,6 +453,10 @@ class Dispatcher {
             payload: JSONSerializer.stringify(settings.subscriptionRequest)
         });
 
+        if (settings.messagingQos.customHeaders) {
+            requestMessage.setCustomHeaders(settings.messagingQos.customHeaders);
+        }
+        this.addRequestReplyIdCustomHeader(requestMessage, settings.subscriptionRequest.subscriptionId);
         return this.sendJoynrMessage(requestMessage, settings);
     }
 
@@ -490,6 +504,10 @@ class Dispatcher {
                 from: settings.from
             })
         );
+        if (settings.messagingQos.customHeaders) {
+            requestMessage.setCustomHeaders(settings.messagingQos.customHeaders);
+        }
+        this.addRequestReplyIdCustomHeader(requestMessage, settings.subscriptionRequest.subscriptionId);
         return this.sendJoynrMessage(requestMessage, settings);
     }
 
@@ -544,6 +562,10 @@ class Dispatcher {
             type: JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_STOP,
             payload: JSONSerializer.stringify(settings.subscriptionStop)
         });
+        if (settings.messagingQos.customHeaders) {
+            message.setCustomHeaders(settings.messagingQos.customHeaders);
+        }
+        this.addRequestReplyIdCustomHeader(message, settings.subscriptionStop.subscriptionId);
         return this.sendJoynrMessage(message, settings);
     }
 
