@@ -233,7 +233,7 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         testPackageVersionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void packageVersionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
         useGlobalCommunication();
         registerPackageVersionedProvider();
@@ -246,7 +246,7 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         testNameVersionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void nameVersionedProxy_nameVersionedProvider_separateRuntime() throws Exception {
         useGlobalCommunication();
         registerNameVersionedProvider();
@@ -259,7 +259,7 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         testUnversionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void unversionedProxy_UnversionedProvider_separateRuntime() throws Exception {
         useGlobalCommunication();
         registerUnversionedProvider();
