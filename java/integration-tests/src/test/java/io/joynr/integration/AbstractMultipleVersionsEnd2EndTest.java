@@ -68,6 +68,10 @@ public class AbstractMultipleVersionsEnd2EndTest {
 
     static final long DISCOVERY_TIMEOUT_MS = 1000;
     static final long CONST_DEFAULT_TEST_TIMEOUT_MS = DISCOVERY_TIMEOUT_MS * 3;
+    // consider rescheduling of messages because of not yet connected MQTT on both sides
+    // and extra time for problems on shutdown of executor service taking extra 5 secs each
+    static final long CONST_GLOBAL_TEST_TIMEOUT_MS = DISCOVERY_TIMEOUT_MS * 3 + 20 * 1000;
+    static final long CONST_PROVIDER_REGISTRATION_TIMEOUT_MS = 6000;
     static final String DOMAIN_PREFIX = "MultipleVersionsTestDomain-";
     private static final String MQTT_BROKER_URL = "tcp://localhost:1883";
     private static final String PROXYBUILD_FAILED_MESSAGE = "Building of proxy failed: ";
@@ -156,7 +160,8 @@ public class AbstractMultipleVersionsEnd2EndTest {
                                              .register();
 
         try {
-            future.get(1000);
+            // message may get rescheduled when MQTT connection is not yet available
+            future.get(CONST_PROVIDER_REGISTRATION_TIMEOUT_MS);
         } catch (Exception e) {
             fail(REGISTERING_FAILED_MESSAGE + e);
         }

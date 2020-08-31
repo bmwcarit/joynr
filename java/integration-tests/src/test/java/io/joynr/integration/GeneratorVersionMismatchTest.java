@@ -343,7 +343,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         testPackageVersionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void packageVersionedProxy_nameVersionedProvider_separateRuntimes() throws Exception {
         useGlobalCommunication();
         registerNameVersionedProvider();
@@ -356,7 +356,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         testPackageVersionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void packageVersionedProxy_unversionedProvider_separateRuntime() throws Exception {
         useGlobalCommunication();
         registerUnversionedProvider();
@@ -369,7 +369,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         testNameVersionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void nameVersionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
         useGlobalCommunication();
         registerPackageVersionedProvider();
@@ -382,7 +382,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         testNameVersionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void nameVersionedProxy_unversionedProvider_separateRuntime() throws Exception {
         useGlobalCommunication();
         registerUnversionedProvider();
@@ -395,7 +395,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         testUnversionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void unversionedProxy_nameVersionedProvider_separateRuntime() throws Exception {
         useGlobalCommunication();
         registerNameVersionedProvider();
@@ -408,7 +408,7 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         testUnversionedTypes();
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void unversionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
         useGlobalCommunication();
         registerPackageVersionedProvider();
