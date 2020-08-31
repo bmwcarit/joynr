@@ -77,6 +77,7 @@ public class AccessControllerEnd2EndTest {
     @Rule
     public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
+    static final long CONST_GLOBAL_TEST_TIMEOUT_MS = 120000;
     private static final String TEST_DOMAIN = "test";
     private static final String GDAC_DOMAIN = "io.joynr";
     private static final long DISCOVERY_TIMEOUT = 14000;
@@ -112,7 +113,7 @@ public class AccessControllerEnd2EndTest {
         runtime.shutdown(true);
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void testAllowedRPCCallSucceeds() {
         createDefaultGDACEntries(TEST_DOMAIN,
                                  testProxy.INTERFACE_NAME,
@@ -127,7 +128,7 @@ public class AccessControllerEnd2EndTest {
         assertEquals(15, result.intValue());
     }
 
-    @Test
+    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
     public void testForbiddenRPCCallFails() {
         createDefaultGDACEntries(TEST_DOMAIN,
                                  testProxy.INTERFACE_NAME,
@@ -255,10 +256,11 @@ public class AccessControllerEnd2EndTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
-        discoveryQos.setDiscoveryTimeoutMs(DISCOVERY_TIMEOUT);
+        discoveryQos.setDiscoveryTimeoutMs(60000);
+        discoveryQos.setRetryIntervalMs(10000);
 
         MessagingQos messagingQos = new MessagingQos();
-        messagingQos.setTtl_ms(MESSAGING_TTL);
+        messagingQos.setTtl_ms(60000);
 
         GlobalDomainAccessControlListEditorProxy gdacListEditorProxy = runtime.getProxyBuilder(GDAC_DOMAIN,
                                                                                                GlobalDomainAccessControlListEditorProxy.class)
