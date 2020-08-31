@@ -67,7 +67,8 @@ Arbitrator::Arbitrator(
           _arbitrationStopped(false),
           _arbitrationThread(),
           _startTimePoint(),
-          _onceFlag()
+          _onceFlag(),
+          _filterByVersionAndArbitrationStrategy(true)
 {
 }
 
@@ -77,8 +78,9 @@ Arbitrator::~Arbitrator()
 }
 
 void Arbitrator::startArbitration(
-        std::function<void(const types::DiscoveryEntryWithMetaInfo& discoveryEntry)> onSuccess,
-        std::function<void(const exceptions::DiscoveryException& exception)> onError)
+        std::function<void(const joynr::ArbitrationResult& arbitrationResult)> onSuccess,
+        std::function<void(const exceptions::DiscoveryException& exception)> onError,
+        bool filterByVersionAndArbitrationStrategy)
 {
     if (_arbitrationRunning) {
         JOYNR_LOG_ERROR(logger(),
@@ -106,6 +108,8 @@ void Arbitrator::startArbitration(
 
     _onSuccessCallback = onSuccess;
     _onErrorCallback = onError;
+
+    _filterByVersionAndArbitrationStrategy = filterByVersionAndArbitrationStrategy;
 
     _arbitrationThread =
             std::thread([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())]() {
@@ -381,21 +385,85 @@ void Arbitrator::receiveCapabilitiesLookupResults(
         return;
     }
 
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> preFilteredDiscoveryEntries;
-    joynr::types::Version providerVersion;
-    std::size_t providersWithoutSupportOnChange = 0;
-    std::size_t providersWithIncompatibleVersion = 0;
-    for (const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry : discoveryEntries) {
-        const types::ProviderQos& providerQos = discoveryEntry.getQos();
-        JOYNR_LOG_TRACE(logger(), "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
-        providerVersion = discoveryEntry.getProviderVersion();
+    std::vector<types::DiscoveryEntryWithMetaInfo> filteredDiscoveryEntries =
+            filterDiscoveryEntriesBySupportOnChange(discoveryEntries);
 
-        if (_discoveryQos.getProviderMustSupportOnChange() &&
-            !providerQos.getSupportsOnChangeSubscriptions()) {
-            ++providersWithoutSupportOnChange;
-            continue;
+    if (filteredDiscoveryEntries.empty()) {
+        std::string errorMsg =
+                "There was more than one entries in capabilitiesEntries, but none supported "
+                "on change subscriptions.";
+        JOYNR_LOG_WARN(logger(), errorMsg);
+        _arbitrationError.setMessage(errorMsg);
+        return;
+    }
+
+    std::vector<types::DiscoveryEntryWithMetaInfo> selectedDiscoveryEntries;
+
+    if (_filterByVersionAndArbitrationStrategy) {
+        filteredDiscoveryEntries = filterDiscoveryEntriesByVersion(filteredDiscoveryEntries);
+
+        if (filteredDiscoveryEntries.empty()) {
+            std::string errorMsg =
+                    "There was more than one entries in capabilitiesEntries, but none "
+                    "was compatible.";
+            JOYNR_LOG_WARN(logger(), errorMsg);
+            _arbitrationError.setMessage(errorMsg);
+            return;
         }
 
+        types::DiscoveryEntryWithMetaInfo selectedDiscoveryEntry;
+        try {
+            selectedDiscoveryEntry = _arbitrationStrategyFunction->select(
+                    _discoveryQos.getCustomParameters(), filteredDiscoveryEntries);
+        } catch (const exceptions::DiscoveryException& e) {
+            _arbitrationError = e;
+        }
+
+        if (!selectedDiscoveryEntry.getParticipantId().empty()) {
+            selectedDiscoveryEntries.push_back(selectedDiscoveryEntry);
+        }
+    } else {
+        selectedDiscoveryEntries = filteredDiscoveryEntries;
+    }
+
+    if (!selectedDiscoveryEntries.empty()) {
+        joynr::ArbitrationResult arbitrationResult =
+                joynr::ArbitrationResult(selectedDiscoveryEntries);
+        if (_onSuccessCallback) {
+            std::call_once(_onceFlag, _onSuccessCallback, arbitrationResult);
+        }
+        _arbitrationFinished = true;
+    }
+}
+
+std::vector<types::DiscoveryEntryWithMetaInfo> Arbitrator::filterDiscoveryEntriesBySupportOnChange(
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries)
+{
+    std::vector<types::DiscoveryEntryWithMetaInfo> filteredDiscoveryEntries;
+    if (_discoveryQos.getProviderMustSupportOnChange()) {
+        for (const types::DiscoveryEntryWithMetaInfo& discoveryEntry : discoveryEntries) {
+            const types::ProviderQos& providerQos = discoveryEntry.getQos();
+            JOYNR_LOG_TRACE(
+                    logger(), "Looping over capabilitiesEntry: {}", discoveryEntry.toString());
+            if (!providerQos.getSupportsOnChangeSubscriptions()) {
+                continue;
+            }
+            filteredDiscoveryEntries.push_back(discoveryEntry);
+        }
+    } else {
+        filteredDiscoveryEntries = discoveryEntries;
+    }
+
+    return filteredDiscoveryEntries;
+}
+
+std::vector<types::DiscoveryEntryWithMetaInfo> Arbitrator::filterDiscoveryEntriesByVersion(
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries)
+{
+    std::vector<types::DiscoveryEntryWithMetaInfo> filteredDiscoveryEntries;
+    types::Version providerVersion;
+    for (const types::DiscoveryEntryWithMetaInfo& discoveryEntry : discoveryEntries) {
+        providerVersion = discoveryEntry.getProviderVersion();
         if (providerVersion.getMajorVersion() != _interfaceVersion.getMajorVersion() ||
             providerVersion.getMinorVersion() < _interfaceVersion.getMinorVersion()) {
             JOYNR_LOG_TRACE(logger(),
@@ -403,44 +471,12 @@ void Arbitrator::receiveCapabilitiesLookupResults(
                                     std::to_string(_interfaceVersion.getMajorVersion()) + "." +
                                     std::to_string(_interfaceVersion.getMinorVersion()));
             _discoveredIncompatibleVersions.insert(providerVersion);
-            ++providersWithIncompatibleVersion;
-            continue;
-        }
-
-        preFilteredDiscoveryEntries.push_back(discoveryEntry);
-    }
-
-    if (preFilteredDiscoveryEntries.empty()) {
-        std::string errorMsg;
-        if (providersWithoutSupportOnChange == discoveryEntries.size()) {
-            errorMsg = "There was more than one entries in capabilitiesEntries, but none supported "
-                       "on change subscriptions.";
-            JOYNR_LOG_WARN(logger(), errorMsg);
-            _arbitrationError.setMessage(errorMsg);
-        } else if ((providersWithoutSupportOnChange + providersWithIncompatibleVersion) ==
-                   discoveryEntries.size()) {
-            errorMsg = "There was more than one entries in capabilitiesEntries, but none "
-                       "was compatible.";
-            JOYNR_LOG_WARN(logger(), errorMsg);
-            _arbitrationError.setMessage(errorMsg);
-        }
-        return;
-    } else {
-        types::DiscoveryEntryWithMetaInfo res;
-
-        try {
-            res = _arbitrationStrategyFunction->select(
-                    _discoveryQos.getCustomParameters(), preFilteredDiscoveryEntries);
-        } catch (const exceptions::DiscoveryException& e) {
-            _arbitrationError = e;
-        }
-        if (!res.getParticipantId().empty()) {
-            if (_onSuccessCallback) {
-                std::call_once(_onceFlag, _onSuccessCallback, res);
-            }
-            _arbitrationFinished = true;
+        } else {
+            filteredDiscoveryEntries.push_back(discoveryEntry);
         }
     }
+
+    return filteredDiscoveryEntries;
 }
 
 std::int64_t Arbitrator::getDurationMs() const
