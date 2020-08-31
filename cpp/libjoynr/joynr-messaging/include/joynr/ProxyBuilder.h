@@ -251,7 +251,7 @@ void ProxyBuilder<T>::buildAsync(
         this,
         onSuccess = std::move(onSuccess),
         onError
-    ](const types::DiscoveryEntryWithMetaInfo& discoverEntry) mutable
+    ](const joynr::ArbitrationResult& arbitrationResult) mutable
     {
         // need to make sure own instance still exists before
         // accesssing internal inherited member runtime
@@ -266,7 +266,16 @@ void ProxyBuilder<T>::buildAsync(
             return;
         }
 
-        if (discoverEntry.getParticipantId().empty()) {
+        if (arbitrationResult.isEmpty()) {
+            onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
+                                                   "arbitrator but ArbitrationResult is empty"));
+            return;
+        }
+
+        types::DiscoveryEntryWithMetaInfo discoveryEntry =
+                arbitrationResult.getDiscoveryEntries().front();
+
+        if (discoveryEntry.getParticipantId().empty()) {
             onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
                                                    "arbitrator but ParticipantId is empty"));
             return;
@@ -274,18 +283,18 @@ void ProxyBuilder<T>::buildAsync(
 
         std::shared_ptr<T> proxy =
                 _proxyFactory.createProxy<T>(runtimeSharedPtr, _domain, _messagingQos);
-        proxy->handleArbitrationFinished(discoverEntry);
+        proxy->handleArbitrationFinished(discoveryEntry);
 
         JOYNR_LOG_INFO(logger(),
                        "DISCOVERY proxy: participantId {} created for provider participantId: {}, "
                        "domain: [{}], "
                        "interface: {}",
                        proxy->getProxyParticipantId(),
-                       discoverEntry.getParticipantId(),
+                       discoveryEntry.getParticipantId(),
                        _domain,
                        T::INTERFACE_NAME());
 
-        bool isGloballyVisible = !discoverEntry.getIsLocal();
+        bool isGloballyVisible = !discoveryEntry.getIsLocal();
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
         auto onSuccessAddNextHop = [onSuccess, proxy]() { onSuccess(std::move(proxy)); };
@@ -298,7 +307,7 @@ void ProxyBuilder<T>::buildAsync(
             }
         };
 
-        _messageRouter->setToKnown(discoverEntry.getParticipantId());
+        _messageRouter->setToKnown(discoveryEntry.getParticipantId());
         _messageRouter->addNextHop(proxy->getProxyParticipantId(),
                                    _dispatcherAddress,
                                    isGloballyVisible,
