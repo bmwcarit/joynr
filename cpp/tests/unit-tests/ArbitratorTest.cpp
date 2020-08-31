@@ -181,7 +181,7 @@ TEST_F(ArbitratorTest, arbitrationTimeout_callsOnErrorIfNoRetryIsPossible)
                                              _emptyGbidsVector,
                                              move(_lastSeenArbitrationStrategyFunction));
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo&) { FAIL(); };
+    auto onSuccess = [](const ArbitrationResult&) { FAIL(); };
 
     auto onError = [this](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException,
@@ -261,7 +261,8 @@ TEST_F(ArbitratorTest, arbitrationStrategy_lastSeen_selectsCorrectProvider)
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &lastSeenParticipantId](
-            const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+            const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry = arbitrationResult.getDiscoveryEntries().front();
         EXPECT_EQ(lastSeenParticipantId, discoveryEntry.getParticipantId());
         _semaphore.notify();
     };
@@ -327,7 +328,8 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_selectsCorrectProvide
 
     // Check that the correct participant was selected
     auto onSuccess =
-            [this, &participantIds](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+            [this, &participantIds](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry = arbitrationResult.getDiscoveryEntries().front();
         EXPECT_EQ(participantIds.back(), discoveryEntry.getParticipantId());
         _semaphore.notify();
     };
@@ -398,7 +400,8 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksVersion)
 
     // Check that one of the expected participant was selected
     auto onSuccess = [this, &expectedParticipantIds](
-            const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+            const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry = arbitrationResult.getDiscoveryEntries().front();
         EXPECT_TRUE(std::find(expectedParticipantIds.cbegin(),
                               expectedParticipantIds.cend(),
                               discoveryEntry.getParticipantId()) != expectedParticipantIds.cend());
@@ -472,7 +475,8 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksOnChange)
 
     // Check that the correct participant was selected
     auto onSuccess =
-            [this, &expectedParticipantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+            [this, &expectedParticipantId](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry = arbitrationResult.getDiscoveryEntries().front();
         EXPECT_EQ(expectedParticipantId, discoveryEntry.getParticipantId());
         EXPECT_EQ(true, discoveryEntry.getQos().getSupportsOnChangeSubscriptions());
         _semaphore.notify();
@@ -558,7 +562,8 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_selectsCorrectProvider)
 
     // Check that the correct participant was selected
     auto onSuccess =
-            [this, &expectedParticipantId](const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+            [this, &expectedParticipantId](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry = arbitrationResult.getDiscoveryEntries().front();
         EXPECT_EQ(expectedParticipantId, discoveryEntry.getParticipantId());
         _semaphore.notify();
     };
@@ -633,7 +638,8 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_checksVersion)
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantIds](
-            const types::DiscoveryEntryWithMetaInfo& discoveryEntry) {
+            const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo discoveryEntry = arbitrationResult.getDiscoveryEntries().front();
         EXPECT_TRUE(std::find(expectedParticipantIds.cbegin(),
                               expectedParticipantIds.cend(),
                               discoveryEntry.getParticipantId()) != expectedParticipantIds.cend());
@@ -680,7 +686,10 @@ TEST_F(ArbitratorTest, allowFourRetries_expectFiveDiscoveryAttempts)
                                          _emptyGbidsVector,
                                          move(_lastSeenArbitrationStrategyFunction));
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
+    };
     auto onError = [this](const exceptions::DiscoveryException&) { _semaphore.notify(); };
 
     lastSeenArbitrator->startArbitration(onSuccess, onError);
@@ -798,7 +807,10 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
+    };
 
     auto onError = [this, &expectedVersions](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException, noCompatibleProviderFoundException(expectedVersions));
@@ -891,7 +903,10 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
+    };
 
     auto onError = [this, &expectedVersions](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException, noCompatibleProviderFoundException(expectedVersions));
@@ -968,7 +983,9 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersion2);
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString(); };
 
     auto onError = [this, &expectedVersions](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException, noCompatibleProviderFoundException(expectedVersions));
@@ -1057,7 +1074,10 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
+    };
 
     auto onError = [this, &expectedVersions](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException, noCompatibleProviderFoundException(expectedVersions));
@@ -1107,8 +1127,9 @@ TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEnt
     auto arbitrator = ArbitratorFactory::createArbitrator(
             _domain, _interfaceName, version, _mockDiscovery, discoveryQos, _gbids);
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) {
-         FAIL() << "Got result: " << result.toString();
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
     };
     auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException,
@@ -1168,8 +1189,9 @@ TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEnt
     auto arbitrator = ArbitratorFactory::createArbitrator(
             _domain, _interfaceName, version, _mockDiscovery, discoveryQos, _gbids);
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) {
-         FAIL() << "Got result: " << result.toString();
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
     };
     auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException,
@@ -1263,7 +1285,7 @@ protected:
         auto arbitrator = ArbitratorFactory::createArbitrator(
                 _domain, _interfaceName, version, _mockDiscovery, discoveryQos, gbids);
 
-        auto onSuccess = [this](const types::DiscoveryEntryWithMetaInfo&) {
+        auto onSuccess = [this](const ArbitrationResult&) {
             _semaphore.notify();
         };
         auto onError = [this](const exceptions::DiscoveryException&) {
@@ -1332,8 +1354,9 @@ protected:
         auto arbitrator = ArbitratorFactory::createArbitrator(
                 _domain, _interfaceName, version, _mockDiscovery, discoveryQos, _gbids);
 
-        auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) {
-             FAIL() << "Got result: " << result.toString();
+        auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+            types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+            FAIL() << "Got result: " << result.toString();
         };
         auto onError = [this, &expectedErrorMessage](const exceptions::DiscoveryException& discoveryException) {
             EXPECT_THAT(discoveryException,
@@ -1440,7 +1463,10 @@ TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
     auto arbitrator = ArbitratorFactory::createArbitrator(
             _domain, _interfaceName, version, _mockDiscovery, discoveryQos, _emptyGbidsVector);
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
+    };
 
     auto onError = [this, &expectedExceptionMsg](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException,
@@ -1547,7 +1573,10 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
         };
     }
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
+    };
 
     auto arbitrator = std::make_shared<Arbitrator>(_domain,
                                                    _interfaceName,
@@ -1609,7 +1638,10 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
                                                 _emptyGbidsVector,
                                                 move(_lastSeenArbitrationStrategyFunction));
 
-    auto onSuccess = [](const types::DiscoveryEntryWithMetaInfo& result) { FAIL() << "Got result: " << result.toString(); };
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
+    };
 
     joynr::Semaphore onErrorSemaphore;
     auto onError = [&onErrorSemaphore, interfaceName](const exceptions::DiscoveryException& error) {
