@@ -33,6 +33,7 @@ import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.exceptions.MqttSessionExpiredException;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientConfig;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
+import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckRestrictions;
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
@@ -61,7 +62,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     private final Mqtt5RxClient client;
     private final Mqtt5ClientConfig clientConfig;
-    private final int maxMsgSizeBytes = 0;
+    private int maxMsgSizeBytes = Mqtt5ConnAckRestrictions.DEFAULT_MAXIMUM_PACKET_SIZE_NO_LIMIT;
     private final boolean cleanSession;
     private final int keepAliveTimeSeconds;
     private final int connectionTimeoutSec;
@@ -158,7 +159,11 @@ public class HivemqMqttClient implements JoynrMqttClient {
                     client.connect(mqtt5Connect)
                           .timeout(connectionTimeoutSec, TimeUnit.SECONDS)
                           .doOnSuccess(connAck -> {
-                              logger.info("{}: MQTT client connected: {}.", clientInformation, connAck);
+                              maxMsgSizeBytes = connAck.getRestrictions().getMaximumPacketSize();
+                              logger.info("{}: MQTT client connected: {}, maxMsgSizeBytes = {}.",
+                                          clientInformation,
+                                          connAck,
+                                          maxMsgSizeBytes);
                           })
                           .blockingGet();
                 } catch (Exception e) {
