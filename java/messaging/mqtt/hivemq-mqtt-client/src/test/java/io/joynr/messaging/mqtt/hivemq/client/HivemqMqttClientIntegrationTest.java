@@ -32,6 +32,8 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Field;
+
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -58,6 +60,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
+import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckRestrictions;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.joynr.common.JoynrPropertiesModule;
@@ -552,4 +555,28 @@ public class HivemqMqttClientIntegrationTest {
         clientReceiver.shutdown();
         clientSender.shutdown();
     }
+
+    // Note: In case another broker with configured non-default limit would be available,
+    //       this test could be cloned and it could be tested whether the real limit
+    //       set for that broker is returned.
+    @Test
+    public void maxMsgSizeBytesIsSetToNoLimit() throws Exception {
+        createHivemqMqttClientFactory();
+        HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
+        client.setMessageListener(mockReceiver2);
+        assertFalse(client.isShutdown());
+        client.start();
+
+        Thread.sleep(1000);
+
+        Field maxMsgSizeBytesField = HivemqMqttClient.class.getDeclaredField("maxMsgSizeBytes");
+        maxMsgSizeBytesField.setAccessible(true);
+        int maxMsgSizeBytes = (int) maxMsgSizeBytesField.get(client);
+        assertEquals(Mqtt5ConnAckRestrictions.DEFAULT_MAXIMUM_PACKET_SIZE_NO_LIMIT, maxMsgSizeBytes);
+
+        assertFalse(client.isShutdown());
+        client.shutdown();
+        assertTrue(client.isShutdown());
+    }
+
 }
