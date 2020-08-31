@@ -52,6 +52,10 @@ the versioning scheme [here](JoynrVersioning.md).
   retry and registration error reporting mechanism.  
   See [Java Configuration Reference](JavaSettings.md#jee-integration) for more details on these
   properties.
+* **[Java]** The MqttModule property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES` has been removed.
+  Instead the value optionally provided in the CONNACK properties sent by the broker
+  as response to CONNECT is used, if available; otherwise the size is limited to the default
+  value specified by HiveMQ client.
 
 ## Bug fixes
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
