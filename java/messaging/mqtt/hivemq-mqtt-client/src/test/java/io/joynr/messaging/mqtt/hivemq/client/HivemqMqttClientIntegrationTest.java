@@ -303,7 +303,7 @@ public class HivemqMqttClientIntegrationTest {
         // wait for subscription to be established
         clientReceiver.subscribe(ownTopic);
         // wait for subscription to be established
-        Thread.sleep(128);
+        Thread.sleep(1000);
 
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
@@ -311,7 +311,7 @@ public class HivemqMqttClientIntegrationTest {
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
                                     mockFailureAction);
-        Thread.sleep(512);
+        Thread.sleep(1000);
         verify(mockReceiver, times(1)).transmit(eq(serializedMessage), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
