@@ -30,6 +30,7 @@
 
 #include <boost/variant.hpp>
 
+#include "joynr/ArbitrationResult.h"
 #include "joynr/ArbitrationStrategyFunction.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/Future.h"
@@ -77,9 +78,9 @@ public:
      *  Arbitrate until successful or until a timeout occurs
      */
     void startArbitration(
-            std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry)>
-                    onSuccess,
-            std::function<void(const exceptions::DiscoveryException& exception)> onError);
+            std::function<void(const joynr::ArbitrationResult& arbitrationResult)> onSuccess,
+            std::function<void(const exceptions::DiscoveryException& exception)> onError,
+            bool filterByVersionAndArbitrationStrategy = true);
 
     void stopArbitration();
 
@@ -103,6 +104,12 @@ private:
 
     void assertNoPendingFuture();
 
+    std::vector<types::DiscoveryEntryWithMetaInfo> filterDiscoveryEntriesBySupportOnChange(
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
+
+    std::vector<types::DiscoveryEntryWithMetaInfo> filterDiscoveryEntriesByVersion(
+            const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
+
     std::mutex _pendingFutureMutex;
     boost::variant<
             std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>,
@@ -121,8 +128,7 @@ private:
     std::unordered_set<joynr::types::Version> _discoveredIncompatibleVersions;
     exceptions::DiscoveryException _arbitrationError;
     std::unique_ptr<const ArbitrationStrategyFunction> _arbitrationStrategyFunction;
-    std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo& discoveryEntry)>
-            _onSuccessCallback;
+    std::function<void(const joynr::ArbitrationResult& arbitrationResult)> _onSuccessCallback;
     std::function<void(const exceptions::DiscoveryException& exception)> _onErrorCallback;
 
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
@@ -134,6 +140,7 @@ private:
     std::thread _arbitrationThread;
     std::chrono::steady_clock::time_point _startTimePoint;
     std::once_flag _onceFlag;
+    bool _filterByVersionAndArbitrationStrategy;
     ADD_LOGGER(Arbitrator)
 };
 
