@@ -39,6 +39,7 @@ import TestEnum from "../../../generated/joynr/tests/testTypes/TestEnum";
 
 import Dispatcher from "../../../../main/js/joynr/dispatching/Dispatcher";
 import testUtil = require("../../testUtil");
+import SubscriptionQos from "../../../../main/js/joynr/proxy/SubscriptionQos";
 
 const providerId = "providerId";
 const proxyId = "proxyId";
@@ -509,6 +510,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         const sentMessage = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
         expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
+        expect(sentMessage.getCustomHeaders()["z4"]).toEqual(request.requestReplyId);
     });
 
     it("enriches requests with effort header", () => {
@@ -545,6 +547,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         expect(clusterControllerMessagingStub.transmit).toHaveBeenCalled();
         const sentMessage = clusterControllerMessagingStub.transmit.mock.calls.slice(-1)[0][0];
         expect(sentMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
+        expect(sentMessage.getCustomHeaders()["z4"]).toEqual(undefined);
     });
 
     it("enriches replies with custom headers from request", async () => {
@@ -578,6 +581,7 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
             clusterControllerMessagingStubTransmitCallsCount + 1
         );
         expect(sentReplyMessage.getCustomHeaders()[headerKey]).toEqual(headerValue);
+        expect(sentReplyMessage.getCustomHeaders()["z4"]).toEqual(request.requestReplyId);
     });
 
     it("sends subscription reply on subscription request", async () => {
@@ -643,5 +647,87 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         });
 
         await dispatcher.receive(joynrMessage);
+    });
+
+    function checkZ4Header(expectedHeader: any): void {
+        expect(clusterControllerMessagingStub.transmit).toHaveBeenCalledTimes(1);
+        const sentMessage = clusterControllerMessagingStub.transmit.mock.calls[0][0];
+        expect(sentMessage.getCustomHeaders()["z4"]).toEqual(expectedHeader);
+        clusterControllerMessagingStub.transmit.mockClear();
+    }
+
+    it("check z4 header for different variants of requests", async () => {
+        // subscriptionRequest
+        const subscriptionRequestId = "testSubscriptionRequestId";
+        const subscriptionRequest = new SubscriptionRequest({
+            subscribedToName: "attributeName",
+            subscriptionId: subscriptionRequestId,
+            qos: new SubscriptionQos()
+        });
+        await dispatcher.sendSubscriptionRequest({
+            from: proxyId,
+            toDiscoveryEntry,
+            messagingQos: new MessagingQos(),
+            subscriptionRequest: subscriptionRequest as any
+        });
+        checkZ4Header(subscriptionRequestId);
+
+        // broadcastSubscriptionRequest
+        const broadcastSubscriptionRequestId = "testBroadcastSubscriptionRequestId";
+        const broadcastSubscriptionRequest = new BroadcastSubscriptionRequest({
+            subscribedToName: "broadcastEvent",
+            subscriptionId: broadcastSubscriptionRequestId
+        } as any);
+        await dispatcher.sendBroadcastSubscriptionRequest({
+            from: proxyId,
+            toDiscoveryEntry,
+            messagingQos: new MessagingQos(),
+            subscriptionRequest: broadcastSubscriptionRequest as any
+        });
+        checkZ4Header(broadcastSubscriptionRequestId);
+
+        // multicastSubscriptionRequest
+        const multicastSubscriptionRequestId = "testMulticastSubscriptionRequestId";
+        const multicastSubscriptionRequest = new MulticastSubscriptionRequest({
+            subscribedToName: "multicastEvent",
+            subscriptionId: multicastSubscriptionRequestId,
+            multicastId: "multicastId"
+        } as any);
+        await dispatcher.sendBroadcastSubscriptionRequest({
+            from: proxyId,
+            toDiscoveryEntry,
+            messagingQos: new MessagingQos(),
+            subscriptionRequest: multicastSubscriptionRequest
+        });
+        expect(clusterControllerMessagingStub.transmit).toHaveBeenCalledTimes(0);
+
+        // subscriptionStop
+        const subscriptionStopId = "testSubscriptionStopId";
+        const subscriptionStop = new SubscriptionStop({
+            subscriptionId: subscriptionStopId
+        } as any);
+        await dispatcher.sendSubscriptionStop({
+            from: proxyId,
+            toDiscoveryEntry,
+            subscriptionStop: subscriptionStop as any,
+            messagingQos: new MessagingQos()
+        });
+        checkZ4Header(subscriptionStopId);
+
+        // publication
+        const expectedExpiryDate = Date.now() + 60000;
+        const publicationId = "testPublicationId";
+        const publication = SubscriptionPublication.create({
+            subscriptionId: publicationId
+        });
+        dispatcher.sendPublication(
+            {
+                from: proxyId,
+                to: toDiscoveryEntry,
+                expiryDate: expectedExpiryDate
+            },
+            publication
+        );
+        checkZ4Header(publicationId);
     });
 });

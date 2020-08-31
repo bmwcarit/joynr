@@ -322,6 +322,27 @@ describe("libjoynr-js.joynr.messaging.MessagingQos", () => {
         },
         {
             params: {
+                key: "z4",
+                value: "ZbNk-PPNRwu39RhtIYysJw"
+            },
+            ok: true
+        },
+        {
+            params: {
+                key: "z4",
+                value: "Hmkjq8OoTjub1gXzv3QkZg"
+            },
+            ok: true
+        },
+        {
+            params: {
+                key: "z4",
+                value: "Pc_oYOf2SOK6r3zM2HAvnQ"
+            },
+            ok: true
+        },
+        {
+            params: {
                 key: "key",
                 value: "wrongvalue$"
             },
