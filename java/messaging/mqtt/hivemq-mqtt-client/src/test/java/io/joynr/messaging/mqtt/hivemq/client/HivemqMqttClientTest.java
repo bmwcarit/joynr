@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
@@ -349,9 +350,6 @@ public class HivemqMqttClientTest {
         verify(mockConnectionStatusMetrics, times(1)).increaseConnectionAttempts();
     }
 
-    // the following 2 test cases do no longer work since the maximum message size is
-    // now set by the broker
-    @Ignore
     @Test
     public void publishMessage_throwsWhenMaxMessageSizeExceeded() throws Exception {
         final int maxMessageSize = 100;
@@ -365,6 +363,10 @@ public class HivemqMqttClientTest {
                                       defaultGbid,
                                       mockConnectionStatusMetrics);
         doReturn(MqttClientState.CONNECTED).when(mockClientConfig).getState();
+
+        Field maxMsgSizeBytesField = HivemqMqttClient.class.getDeclaredField("maxMsgSizeBytes");
+        maxMsgSizeBytesField.setAccessible(true);
+        maxMsgSizeBytesField.set(client, 100);
 
         byte[] largeSerializedMessage = new byte[maxMessageSize + 1];
         thrown.expect(JoynrMessageNotSentException.class);
@@ -381,9 +383,8 @@ public class HivemqMqttClientTest {
         verify(mockFailureAction, times(0)).execute(any(Throwable.class));
     }
 
-    @Ignore
     @Test
-    public void publishMessage_doesNotThrowWhenMaxMessageSizeNotExceeded() {
+    public void publishMessage_doesNotThrowWhenMaxMessageSizeNotExceeded() throws Exception {
         final int maxMessageSize = 100;
         client = new HivemqMqttClient(mockRxClient,
                                       defaultKeepAliveTimerSec,
@@ -394,6 +395,10 @@ public class HivemqMqttClientTest {
                                       true,
                                       defaultGbid,
                                       mockConnectionStatusMetrics);
+
+        Field maxMsgSizeBytesField = HivemqMqttClient.class.getDeclaredField("maxMsgSizeBytes");
+        maxMsgSizeBytesField.setAccessible(true);
+        maxMsgSizeBytesField.set(client, 100);
 
         byte[] shortSerializedMessage = new byte[maxMessageSize];
         Mqtt5Publish expectedPublish = Mqtt5Publish.builder()
