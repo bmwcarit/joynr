@@ -491,13 +491,14 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     it("subscribe to broadcastWithEnum and get burst", async () => {
         subscriptionQosOnChange.minIntervalMs = 0;
         const times = 100;
-        spyOnReceiveCallsNumber = times;
         subscriptionSettings.subscriptionQos = subscriptionQosOnChange;
         await radioProxy.broadcastWithEnum.subscribe(subscriptionSettings);
+        await IntegrationUtils.waitALittle(1000);
         await callOperation("triggerBroadcasts", {
             broadcastName: "broadcastWithEnum",
             times
         });
+        await IntegrationUtils.waitALittle(500);
         const calls = await expectMultiplePublications(subscriptionSettings, times);
         for (let i = 0; i < times; i++) {
             expect(calls[0][0].enumOutput).toEqual(Country.CANADA);
