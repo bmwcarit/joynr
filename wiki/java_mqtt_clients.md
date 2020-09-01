@@ -1,31 +1,30 @@
-# Java MQTT Clients
+# Java MQTT Client
 
-If you want to use MQTT as joynr's transport layer, then you must use the HiveMQ MQTT Client.
+joynr supports the HiveMQ MQTT Client with MQTT v5 protocol as transport layer.
 
-If you use the JEE Integration, then this will automatically use the HiveMQ MQTT Client.
+## JEE applications
 
-## Choosing the client in Java
+HiveMQ MQTT client is automatically used by the JEE Integration.
 
-In order to select which MQTT Client integration you want to use, simply include one of the
-following dependencies in your application (Maven dependency syntax shown):
+## Pure Java applications
 
-### HiveMQ MQTT Client
-uses MQTT 5
+For pure Java applications please include the following dependency in your application
+(Maven dependency syntax shown):
 
+```
 	<dependency>
 		<groupId>io.joynr.java.messaging.mqtt</groupId>
 		<artifactId>hivemq-mqtt-client</artifactId>
 		<version>${joynr.version}</version>
 	</dependency>
+```
 
 ## Configuration
 
-Both MQTT Integrations are configured with the same set of properties, as documented in the
+For detailed info about MQTT related configuration settings please refer to
 [Java ConfigurationReference](./JavaSettings.md).
 
-However, the HiveMQ MQTT Client integration only supports a subset of the configuration settings
-(because some are not relevant to the client). The following is a list of the settings supported by
-the integration:
+The following is a list of supported settings:
 
 * MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH
 * MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH
