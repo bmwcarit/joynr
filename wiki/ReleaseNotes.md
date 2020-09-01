@@ -41,10 +41,14 @@ None.
 # joynr 1.14.1
 
 ## API relevant changes
-* **[C++]** The `createRuntime` and `createRuntimeAsync` APIs in `JoynrRuntime` now support a 
-  `onFatalRuntimeError` callback, which is invoked in exceptional cases that render the runtime 
-  inoperable. The old APIs without this callback are deprecated now and will be removed in the 
+* **[C++]** The `createRuntime` and `createRuntimeAsync` APIs in `JoynrRuntime` now support a
+  `onFatalRuntimeError` callback, which is invoked in exceptional cases that render the runtime
+  inoperable. The old APIs without this callback are deprecated now and will be removed in the
   future.
+
+* **[TS]** The `joynr.load` now supports `onFatalRuntimeError` callback, which is invoked in
+  exceptional cases that render the runtime inoperable. The callback is optional but it is highly
+  recommended to provide an implementation. The old usage of this API does not break.
 
 ## Other changes
 * **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
@@ -56,8 +60,8 @@ None.
   whichever user they decide to in a system with multi-user capabilities.
 * **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
   tools (4.0.0).
-* **[Android]** Added ContentProvider that allows apps and other components to  implement 
-  persistent providers, designed for specific use cases where the providers' configuration can 
+* **[Android]** Added ContentProvider that allows apps and other components to  implement
+  persistent providers, designed for specific use cases where the providers' configuration can
   occur first thing in the component lifecycle.
 * **[JEE]** Added automatic provider registration retries and reporting of unsuccessful provider
   registration. See
