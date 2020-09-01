@@ -133,7 +133,6 @@ private:
         bool doCheck(const boost::system::error_code& ec) noexcept;
         void doClose(const std::string& errorMessage, const std::exception& error) noexcept;
         void doClose(const std::string& errorMessage) noexcept;
-        void doClose() noexcept;
 
         // Socket is always available, hence sending does not require any locks
         uds::socket _socket;

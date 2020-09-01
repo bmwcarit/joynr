@@ -241,8 +241,7 @@ void UdsServer::Connection::doReadInitBody() noexcept
                     }
                 });
     } catch (const std::exception& e) {
-        JOYNR_LOG_FATAL(logger(), "Failed to read init-frame for new connection: {}", e.what());
-        doClose();
+        doClose("Failed to read init-frame", e);
     }
 }
 
@@ -311,8 +310,7 @@ void UdsServer::Connection::doWrite() noexcept
 bool UdsServer::Connection::doCheck(const boost::system::error_code& error) noexcept
 {
     if (error) {
-        JOYNR_LOG_INFO(logger(), "Remote client connection disconnected: {}", error.message());
-        doClose();
+        doClose(error.message());
         return false;
     }
     return true;
@@ -326,14 +324,9 @@ void UdsServer::Connection::doClose(const std::string& errorMessage,
 
 void UdsServer::Connection::doClose(const std::string& errorMessage) noexcept
 {
-    const std::string clientId = _address.getId().empty() ? "[unknown ID]" : _address.getId();
-    JOYNR_LOG_FATAL(logger(), "Connection to {} corrupted: {}", clientId, errorMessage);
-    doClose();
-}
-
-void UdsServer::Connection::doClose() noexcept
-{
     if (!_closedDueToError.exchange(true)) {
+        const std::string clientId = _address.getId().empty() ? "[unknown ID]" : _address.getId();
+        JOYNR_LOG_FATAL(logger(), "Connection to {} corrupted: {}", clientId, errorMessage);
         if (!_address.getId().empty()) {
             try {
                 _disconnectedCallback(_address);
