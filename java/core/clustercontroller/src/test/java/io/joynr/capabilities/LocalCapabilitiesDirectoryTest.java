@@ -344,7 +344,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Test(timeout = TEST_TIMEOUT)
     public void add_global_invokesGcdAndCache() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
-        String[] expectedGbids = new String[]{ knownGbids[0] };
+        String[] expectedGbids = knownGbids;
 
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
         checkAddToGlobalCapabilitiesDirectoryClientAndCache(promise, expectedGbids);
@@ -370,10 +370,10 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void addWithGbids_global_emptyGbidArray_addsToDefaultBackend() throws InterruptedException {
+    public void addWithGbids_global_emptyGbidArray_addsToKnownBackends() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[0];
-        String[] expectedGbids = new String[]{ knownGbids[0] };
+        String[] expectedGbids = knownGbids;
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
         checkAddToGlobalCapabilitiesDirectoryClientAndCache(promise, expectedGbids);
     }

@@ -1427,14 +1427,15 @@ public void run() {
 }
 ```
 
-### Register provider in non-default backends
+### Register provider in custom backends
 
-If not specified otherwise, a new provider is registered only in the default backend (The first one
-defined in `PROPERTY_GBIDS` [Joynr Java Settings](JavaSettings.md) at the clustercontroller).  
-To register a provider in different backends, the respective GBIDs have to be included by calling
-`withGbids(selectedGbids)` in the `ProviderRegistrar`. The global registration itself will be
-performed by the clustercontroller via the GlobalCapabilitiesDirectory instance in the backend of
-the first provided **GBID**.
+If not specified otherwise, a new provider is registered in all known backends (defined by
+`PROPERTY_GBIDS` in [Joynr Java Settings](JavaSettings.md) at the cluster controller).
+To register a provider only to a subset of the known backends, the custom **GBID**s have to be
+defined by calling `withGbids(selectedGbids)` in the `ProviderRegistrar`.
+The `selectedGbids` must contain a subset of the **GBID**s configured at the cluster controller.
+The global capabilities directory identified by the first selected **GBID** performs the
+registration.
 
 ```java
 ...

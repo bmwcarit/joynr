@@ -335,7 +335,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
         if (gbids.length == 0) {
             // register provider in default backend
-            gbids = new String[]{ knownGbids[0] };
+            gbids = knownGbids;
         }
 
         discoveryEntry.setLastSeenDateMs(System.currentTimeMillis());
