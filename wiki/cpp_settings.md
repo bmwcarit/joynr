@@ -64,17 +64,6 @@ This setting defines the size of the sending-queue on UDS async-layer.
 * **Key**: `sending-queue-size`
 * **Default value**: `1024`
 
-### `read-write-timeout`
-
-This setting defines the timeout on read and write operations,
-after which an uds connection is deemed blocked and thus will be closed.
-
-* **OPTIONAL**
-* **Section name**: `uds`
-* **Type**: Unsigned integer value as string
-* **Key**: `read-write-timeout`
-* **Default value**: `1000`
-
 ## Cluster controller setings
 
 ### `ws-enabled`

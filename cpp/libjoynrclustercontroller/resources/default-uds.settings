@@ -1,4 +1,3 @@
 [uds]
 socket-path=/var/run/joynr/cluster-controller.sock
 connect-sleep-time-ms=500
-read-write-timeout=1000

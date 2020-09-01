@@ -56,13 +56,11 @@ TEST_F(UdsSettingsTest, intializedWithDefaultSettings)
     EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_CONNECT_SLEEP_TIME_MS()));
     EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_CLIENT_ID()));
     EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_SENDING_QUEUE_SIZE()));
-    EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_READ_WRITE_TIMEOUT()));
 
     EXPECT_EQ(udsSettings.getSocketPath(), joynr::UdsSettings::DEFAULT_SOCKET_PATH());
     EXPECT_EQ(udsSettings.getConnectSleepTimeMs(), joynr::UdsSettings::DEFAULT_CONNECT_SLEEP_TIME_MS());
     EXPECT_NE(udsSettings.getClientId(), "");
     EXPECT_EQ(udsSettings.getSendingQueueSize(), joynr::UdsSettings::DEFAULT_SENDING_QUEUE_SIZE());
-    EXPECT_EQ(udsSettings.getReadWriteTimeout(), joynr::UdsSettings::DEFAULT_READ_WRITE_TIMEOUT());
 }
 
 TEST_F(UdsSettingsTest, overrideDefaultSettings)
@@ -75,15 +73,11 @@ TEST_F(UdsSettingsTest, overrideDefaultSettings)
 
     const std::string expectedClientId("testClientId");
 
-    const std::chrono::milliseconds expectedReadWriteTimeout(2000);
-    EXPECT_NE(expectedReadWriteTimeout, joynr::UdsSettings::DEFAULT_READ_WRITE_TIMEOUT());
-
     Settings testSettings(testSettingsFileName);
     UdsSettings udsSettings(testSettings);
     udsSettings.setSocketPath(expectedSocketPath);
     udsSettings.setConnectSleepTimeMs(expectedConnectSleepTimeMs);
     udsSettings.setClientId(expectedClientId);
-    udsSettings.setReadWriteTimeout(expectedReadWriteTimeout);
 
     const std::string socketPath = udsSettings.getSocketPath();
     EXPECT_EQ(expectedSocketPath, socketPath);
@@ -99,9 +93,6 @@ TEST_F(UdsSettingsTest, overrideDefaultSettings)
     udsSettings.setSendingQueueSize(expectedSendingQueueSize);
     const auto sendingQueueSize = udsSettings.getSendingQueueSize();
     EXPECT_EQ(expectedSendingQueueSize, sendingQueueSize);
-
-    const std::chrono::milliseconds readWriteTimeout = udsSettings.getReadWriteTimeout();
-    EXPECT_EQ(expectedReadWriteTimeout, readWriteTimeout);
 }
 
 TEST_F(UdsSettingsTest, createsUdsAddress)

@@ -82,11 +82,6 @@ public:
     std::size_t getSendingQueueSize() const;
     void setSendingQueueSize(const std::size_t& queueSize);
 
-    static const std::string& SETTING_READ_WRITE_TIMEOUT();
-    static std::chrono::milliseconds DEFAULT_READ_WRITE_TIMEOUT();
-    std::chrono::milliseconds getReadWriteTimeout() const;
-    void setReadWriteTimeout(const std::chrono::milliseconds timeout);
-
     void printSettings() const;
 
     bool contains(const std::string& key) const;

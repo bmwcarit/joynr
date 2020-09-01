@@ -59,10 +59,6 @@ void UdsSettings::checkSettings()
     if (!_settings.contains(SETTING_SENDING_QUEUE_SIZE())) {
         setSendingQueueSize(DEFAULT_SENDING_QUEUE_SIZE());
     }
-
-    if (!_settings.contains(SETTING_READ_WRITE_TIMEOUT())) {
-        setReadWriteTimeout(DEFAULT_READ_WRITE_TIMEOUT());
-    }
 }
 
 const std::string& UdsSettings::SETTING_SOCKET_PATH()
@@ -162,29 +158,6 @@ void UdsSettings::setSendingQueueSize(const std::size_t& queueSize)
     _settings.set(UdsSettings::SETTING_SENDING_QUEUE_SIZE(), std::to_string(queueSize));
 }
 
-const std::string& UdsSettings::SETTING_READ_WRITE_TIMEOUT()
-{
-    static const std::string value("uds/read-write-timeout");
-    return value;
-}
-
-std::chrono::milliseconds UdsSettings::DEFAULT_READ_WRITE_TIMEOUT()
-{
-    static const std::chrono::milliseconds value(1000);
-    return value;
-}
-
-std::chrono::milliseconds UdsSettings::getReadWriteTimeout() const
-{
-    return std::chrono::milliseconds(
-            _settings.get<std::int64_t>(UdsSettings::SETTING_READ_WRITE_TIMEOUT()));
-}
-
-void UdsSettings::setReadWriteTimeout(const std::chrono::milliseconds timeout)
-{
-    _settings.set(UdsSettings::SETTING_READ_WRITE_TIMEOUT(), timeout.count());
-}
-
 joynr::system::RoutingTypes::UdsAddress UdsSettings::createClusterControllerMessagingAddress() const
 {
     return system::RoutingTypes::UdsAddress(getSocketPath());
@@ -221,11 +194,6 @@ void UdsSettings::printSettings() const
                    "SETTING: {} = {}",
                    SETTING_SENDING_QUEUE_SIZE(),
                    _settings.get<std::string>(SETTING_SENDING_QUEUE_SIZE()));
-
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_READ_WRITE_TIMEOUT(),
-                   _settings.get<std::string>(SETTING_READ_WRITE_TIMEOUT()));
 }
 
 } // namespace joynr
