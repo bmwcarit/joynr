@@ -276,61 +276,18 @@ void ProxyBuilder<T>::buildAsync(
             onError(exceptions::DiscoveryException(_runtimeAlreadyDestroyed));
             return;
         }
-        auto runtimeSharedPtr = _runtime.lock();
-        if (runtimeSharedPtr == nullptr) {
-            onError(exceptions::DiscoveryException(_runtimeAlreadyDestroyed));
-            return;
-        }
 
-        if (arbitrationResult.isEmpty()) {
-            onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
-                                                   "arbitrator but ArbitrationResult is empty"));
-            return;
-        }
-
-        types::DiscoveryEntryWithMetaInfo discoveryEntry =
-                arbitrationResult.getDiscoveryEntries().front();
-
-        if (discoveryEntry.getParticipantId().empty()) {
-            onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
-                                                   "arbitrator but ParticipantId is empty"));
-            return;
-        }
-
-        std::shared_ptr<T> proxy =
-                _proxyFactory.createProxy<T>(runtimeSharedPtr, _domain, _messagingQos);
-        proxy->handleArbitrationFinished(discoveryEntry);
-
-        JOYNR_LOG_INFO(logger(),
-                       "DISCOVERY proxy: participantId {} created for provider participantId: {}, "
-                       "domain: [{}], "
-                       "interface: {}",
-                       proxy->getProxyParticipantId(),
-                       discoveryEntry.getParticipantId(),
-                       _domain,
-                       T::INTERFACE_NAME());
-
-        bool isGloballyVisible = !discoveryEntry.getIsLocal();
-        constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-        const bool isSticky = false;
-        auto onSuccessAddNextHop = [onSuccess, proxy]() { onSuccess(std::move(proxy)); };
-        auto onErrorAddNextHop = [onError](
-                const joynr::exceptions::ProviderRuntimeException& providerRuntimeException) {
+        auto onSuccessBuildInternalAsync =
+                [onSuccess](std::shared_ptr<T> proxy) { onSuccess(std::move(proxy)); };
+        auto onErrorBuildInternalAsync =
+                [onError](const exceptions::DiscoveryException& discoveryRuntimeException) {
             if (onError) {
-                onError(exceptions::DiscoveryException(
-                        "Proxy could not be added to parent router: " +
-                        providerRuntimeException.getMessage()));
+                onError(discoveryRuntimeException);
             }
         };
 
-        _messageRouter->setToKnown(discoveryEntry.getParticipantId());
-        _messageRouter->addNextHop(proxy->getProxyParticipantId(),
-                                   _dispatcherAddress,
-                                   isGloballyVisible,
-                                   expiryDateMs,
-                                   isSticky,
-                                   onSuccessAddNextHop,
-                                   onErrorAddNextHop);
+        buildInternalAsync(
+                arbitrationResult, onSuccessBuildInternalAsync, onErrorBuildInternalAsync);
     };
 
     auto arbitrator = ArbitratorFactory::createArbitrator(
