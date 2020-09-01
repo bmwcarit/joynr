@@ -33,7 +33,13 @@ import joynr.types.ProviderQos;
  */
 public interface JoynrRuntime {
     /**
-     * Registers a provider in the joynr framework for the default GBID
+     * Registers a provider with the joynr communication framework asynchronously.
+     *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to all GBIDs configured in the cluster controller.
+     *
+     * The global capabilities directory identified by the first selected GBID performs
+     * the registration.
      *
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
@@ -50,7 +56,13 @@ public interface JoynrRuntime {
     Future<Void> registerProvider(String domain, Object provider, ProviderQos providerQos);
 
     /**
-     * Registers a provider in the joynr framework for the default GBID
+     * Registers a provider with the joynr communication framework asynchronously.
+     *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to all GBIDs configured in the cluster controller.
+     *
+     * The global capabilities directory identified by the first selected GBID performs
+     * the registration.
      *
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
@@ -72,7 +84,14 @@ public interface JoynrRuntime {
                                   boolean awaitGlobalRegistration);
 
     /**
-     * Registers a provider in the joynr framework for the provided GBIDs
+     * Registers a provider with the joynr communication framework asynchronously.
+     *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to the GBIDs provided with the 'gbids' parameter.
+     * If the 'gbids' parameter is empty, the GBIDs configured in the cluster controller are used.
+     *
+     * The global capabilities directory identified by the first selected GBID performs
+     * the registration.
      *
      * @param domain
      *            The domain the provider should be registered for. Has to be identical at the client to be able to find
@@ -84,8 +103,8 @@ public interface JoynrRuntime {
      * @param providerQos
      *            The provider's quality of service settings.
      * @param gbids
-     *            The GBIDs in which the provider shall be registered. This parameter may be provided as String
-     *            array with zero elements, in which case the provider is registered in the default backend.
+     *            Subset of GBIDs configured in the cluster controller for custom global
+     *            registration.
      * @param awaitGlobalRegistration
      *            If true, wait for global registration to complete or timeout in case of problems.
      * @return Returns a Future which can be used to check the registration status.

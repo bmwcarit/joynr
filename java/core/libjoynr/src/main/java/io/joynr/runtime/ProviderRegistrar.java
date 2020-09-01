@@ -42,11 +42,16 @@ import joynr.types.ProviderQos;
  * registerInAllBackends():
  *
  *     ProviderQos:
- *         The provider's quality of service settings.
+ *         The provider's quality of service settings. Per default local and global scope
+ *         registration is selected.
  *
  *     Gbids:
- *         The GBIDs in which the provider shall be registered. By default, the provider is registered in the
- *         default backend.
+ *         If registration to local and global scope is requested, the provider is registered per
+ *         default to all GBIDs configured in the cluster controller.
+ *         The 'Gbids' parameter can be provided to override the GBIDs selection in the cluster
+ *         controller.
+ *         The global capabilities directory identified by the first selected GBID performs the
+ *         registration.
  *
  *     AwaitGlobalRegistration:
  *         If true, wait for global registration to complete or timeout, if required.
@@ -97,8 +102,10 @@ public class ProviderRegistrar {
 
     /**
      * @param gbids
-     *            The GBIDs in which the provider shall be registered. This parameter may be provided as String
-     *            array with zero elements, in which case the provider is registered in the default backend.
+     *            Subset of GBIDs configured in the cluster controller for custom global
+     *            registration.
+     *            If the 'gbids' parameter is empty, the GBIDs configured in the cluster controller
+     *            are used (reset to default behavior).
      */
     public ProviderRegistrar withGbids(String[] gbids) {
         if (gbids == null) {
