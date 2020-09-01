@@ -32,6 +32,7 @@ namespace joynr
 
 class MessagingQos;
 class DiscoveryQos;
+class ArbitrationResult;
 namespace exceptions
 {
 class DiscoveryException;
@@ -66,6 +67,14 @@ public:
     virtual void buildAsync(
             std::function<void(std::shared_ptr<T> proxy)> onSuccess,
             std::function<void(const exceptions::DiscoveryException&)> onError) noexcept = 0;
+
+    /**
+     * @brief Build the proxy object based on arbitration result
+     *
+     * @param arbitrationResult: discovery entries received by arbitration
+     * @return The proxy object
+     */
+    virtual std::shared_ptr<T> build(const joynr::ArbitrationResult& arbitrationResult) = 0;
 
     /**
      * @brief Sets the messaging qos settings

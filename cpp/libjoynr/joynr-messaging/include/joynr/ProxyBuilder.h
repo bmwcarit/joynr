@@ -115,6 +115,14 @@ public:
             std::function<void(const exceptions::DiscoveryException&)> onError) noexcept override;
 
     /**
+     * @brief Build the proxy object based on arbitration result
+     *
+     * @param arbitrationResult: discovery entries received by arbitration
+     * @return The proxy object
+     */
+    std::shared_ptr<T> build(const ArbitrationResult& arbitrationResult) override;
+
+    /**
      * @brief OPTIONAL - Sets the messaging Qos settings. If no messaging Qos is provided, a default
      * one will be used (see MessagingQos.h).
      * @param messagingQos The message quality of service settings
@@ -146,6 +154,14 @@ public:
     std::shared_ptr<IProxyBuilder<T>> setGbids(const std::vector<std::string>& _gbids) override;
 
 private:
+    /**
+     * Build the proxy object asynchronously for internal usage
+     */
+    void buildInternalAsync(
+            const joynr::ArbitrationResult& arbitrationResult,
+            std::function<void(std::shared_ptr<T> proxy)> onSuccess,
+            std::function<void(const exceptions::DiscoveryException&)> onError) noexcept;
+
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
     std::weak_ptr<JoynrRuntimeImpl> _runtime;
@@ -321,6 +337,97 @@ void ProxyBuilder<T>::buildAsync(
             _domain, T::INTERFACE_NAME(), interfaceVersion, _discoveryProxy, _discoveryQos, _gbids);
     arbitrator->startArbitration(std::move(arbitrationSucceeds), std::move(onError));
     _arbitrators.push_back(std::move(arbitrator));
+}
+
+template <class T>
+void ProxyBuilder<T>::buildInternalAsync(
+        const ArbitrationResult& arbitrationResult,
+        std::function<void(std::shared_ptr<T>)> onSuccess,
+        std::function<void(const exceptions::DiscoveryException&)> onError) noexcept
+{
+    auto runtimeSharedPtr = _runtime.lock();
+    if (runtimeSharedPtr == nullptr) {
+        onError(exceptions::DiscoveryException(_runtimeAlreadyDestroyed));
+        return;
+    }
+
+    if (arbitrationResult.isEmpty()) {
+        onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
+                                               "arbitrator but ArbitrationResult is empty"));
+        return;
+    }
+
+    types::DiscoveryEntryWithMetaInfo discoveryEntry =
+            arbitrationResult.getDiscoveryEntries().front();
+
+    if (discoveryEntry.getParticipantId().empty()) {
+        onError(exceptions::DiscoveryException("Arbitration was set to successfull by "
+                                               "arbitrator but ParticipantId is empty"));
+        return;
+    }
+
+    std::shared_ptr<T> proxy =
+            _proxyFactory.createProxy<T>(runtimeSharedPtr, _domain, _messagingQos);
+    proxy->handleArbitrationFinished(discoveryEntry);
+
+    JOYNR_LOG_INFO(logger(),
+                   "DISCOVERY proxy: participantId {} created for provider participantId: {}, "
+                   "domain: [{}], "
+                   "interface: {}",
+                   proxy->getProxyParticipantId(),
+                   discoveryEntry.getParticipantId(),
+                   _domain,
+                   T::INTERFACE_NAME());
+
+    bool isGloballyVisible = !discoveryEntry.getIsLocal();
+    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
+    const bool isSticky = false;
+    auto onSuccessAddNextHop = [onSuccess, proxy]() { onSuccess(std::move(proxy)); };
+    auto onErrorAddNextHop =
+            [onError](const joynr::exceptions::ProviderRuntimeException& providerRuntimeException) {
+        if (onError) {
+            onError(exceptions::DiscoveryException("Proxy could not be added to parent router: " +
+                                                   providerRuntimeException.getMessage()));
+        }
+    };
+
+    _messageRouter->setToKnown(discoveryEntry.getParticipantId());
+    _messageRouter->addNextHop(proxy->getProxyParticipantId(),
+                               _dispatcherAddress,
+                               isGloballyVisible,
+                               expiryDateMs,
+                               isSticky,
+                               onSuccessAddNextHop,
+                               onErrorAddNextHop);
+}
+
+template <class T>
+std::shared_ptr<T> ProxyBuilder<T>::build(const ArbitrationResult& arbitrationResult)
+{
+    auto runtimeSharedPtr = _runtime.lock();
+    if (runtimeSharedPtr == nullptr) {
+        throw exceptions::DiscoveryException(_runtimeAlreadyDestroyed);
+    }
+    auto proxyFuture = std::make_shared<Future<std::shared_ptr<T>>>();
+
+    auto onSuccess =
+            [proxyFuture](std::shared_ptr<T> proxy) { proxyFuture->onSuccess(std::move(proxy)); };
+
+    auto onError = [proxyFuture](const exceptions::DiscoveryException& exception) {
+        proxyFuture->onError(std::make_shared<exceptions::DiscoveryException>(exception));
+    };
+
+    buildInternalAsync(arbitrationResult, std::move(onSuccess), std::move(onError));
+
+    std::shared_ptr<T> createdProxy;
+    try {
+        proxyFuture->get(createdProxy);
+    } catch (const exceptions::DiscoveryException& discoveryException) {
+        JOYNR_LOG_ERROR(logger(), "Build of proxy failed: {}", discoveryException.getMessage());
+        throw discoveryException;
+    }
+
+    return createdProxy;
 }
 
 template <class T>
