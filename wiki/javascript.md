@@ -57,10 +57,12 @@ unique, as each name will become a property of the Proxy object.
 
 # Building a Javascript application
 
-A Javascript joynr application must import `joynr` and call `joynr.load(provisioning)`
-in order to load the joynr API. After the promise resolves joynr can be used to build either a
-[consumer application](#Building a Javascript consumer application),
-a [provider application](#Building a Javascript Provider application) or a combination of both.
+A Javascript joynr application must import `joynr` and call
+`joynr.load(provisioning, onFatalRuntimeError?)` in order to load the joynr API. The callback
+ `onFatalRuntimeError` is optional but highly recommended to provide an implementation. After the
+ promise resolves, joynr can be used to build either a
+ [consumer application](#Building a Javascript consumer application), a [provider application]
+ (#Building a Javascript Provider application) or a combination of both.
 
 ## Required imports
 
@@ -125,7 +127,13 @@ const provisioning: WebSocketLibjoynrProvisioning = {
   }
 }; // ignore other settings for this example.
 
-await joynr.load(provisioning);
+// onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+// implementation. Here is an example:
+const onFatalRuntimeError = (error: JoynrRuntimeException) => {
+    console.log(`Unexpected joynr runtime error occured: ${error}`);
+};
+
+await joynr.load(provisioning, onFatalRuntimeError);
 
 // build proxies/provider here as described later.
 
