@@ -85,7 +85,6 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         while (!(statusMetrics.getAllConnectionStatusMetrics().size() > 0)
                 && statusMetrics.getAllConnectionStatusMetrics()
                                 .toArray(new ConnectionStatusMetrics[0])[0].isConnected()) {
-            statusMetrics.getAllConnectionStatusMetrics().toArray(new ConnectionStatusMetrics[0]);
             Thread.sleep(10);
         }
     }
