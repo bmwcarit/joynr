@@ -39,6 +39,16 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
@@ -54,6 +64,11 @@
 					<artifactId>jstl</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>jsr311-api</artifactId>
 		</dependency>
 
 		<dependency>
@@ -95,6 +110,14 @@
 		<dependency>
 			<groupId>io.joynr.smrf.java</groupId>
 			<artifactId>smrf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.smrf.java</groupId>
+			<artifactId>smrf-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.smrf.java</groupId>
+			<artifactId>smrf-api</artifactId>
 			<version>${smrf.version}</version>
 		</dependency>
 		<dependency>

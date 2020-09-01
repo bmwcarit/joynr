@@ -35,25 +35,43 @@
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
 
-	    <dependency>
+		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 		</dependency>
 
-	    <dependency>
-	    	<groupId>
-	    		io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence
-	    	</groupId>
-	    	<artifactId>persistence-common</artifactId>
-	    	<version>${project.version}</version>
-	    </dependency>
+		<dependency>
+			<groupId>
+				io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence
+			</groupId>
+			<artifactId>persistence-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>bounceproxy-controller-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>channel-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-	    <dependency>
-	    	<groupId>org.hamcrest</groupId>
-	    	<artifactId>hamcrest-library</artifactId>
-	    	<scope>test</scope>
-	    </dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>

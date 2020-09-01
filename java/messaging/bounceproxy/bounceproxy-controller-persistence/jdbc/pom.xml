@@ -36,6 +36,10 @@ limitations under the License.
 
 	<dependencies>
 		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>
 				io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence
 			</groupId>
@@ -43,8 +47,33 @@ limitations under the License.
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>bounceproxy-controller-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>channel-service</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>service-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-jpa_2.0_spec</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.openjpa</groupId>
 			<artifactId>openjpa-jdbc</artifactId>
+			<version>2.4.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.openjpa</groupId>
+			<artifactId>openjpa-kernel</artifactId>
 			<version>2.4.2</version>
 		</dependency>
 		<dependency>

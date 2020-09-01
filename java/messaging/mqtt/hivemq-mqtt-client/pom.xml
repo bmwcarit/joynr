@@ -30,6 +30,14 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-multibindings</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
 			<version>${project.version}</version>
@@ -48,6 +56,10 @@
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>status-metrics</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.reactivex.rxjava2</groupId>
+			<artifactId>rxjava</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.hivemq</groupId>

@@ -38,7 +38,15 @@
 	</properties>
 
 	<dependencies>
-
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>service-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>channel-service</artifactId>

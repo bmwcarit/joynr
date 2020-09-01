@@ -36,8 +36,17 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
 			<artifactId>bounceproxy-controller</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence</groupId>
+			<artifactId>persistence-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
