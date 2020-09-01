@@ -151,38 +151,36 @@ TEST_F(UdsServerTest, robustness_sendException_otherClientsNotAffected)
 
 TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffected)
 {
-    Semaphore semaphore;
+    Semaphore connectSemaphore, disconnectSemaphore;
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> goodClientSender;
-    // connected callback called for good client and erroneousClientMessage
-    EXPECT_CALL(mockUdsServerCallbacks, connected(_, _))
-            .Times(2)
-            .WillOnce(DoAll(SaveArg<1>(&goodClientSender),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)))
-            .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
-    // disconnected callback called for good client and erroneousClientMessage
-    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(2).WillRepeatedly(
-            InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    /*
+     * Connected callback called for good client and erroneous client which causes error after init
+     * frame. All errors are introduced in the cookie of the corresponding frame.
+     */
+    EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(2).WillOnce(
+            DoAll(SaveArg<1>(&goodClientSender),
+                  InvokeWithoutArgs(&connectSemaphore, &Semaphore::notify)));
+    // disconnected callback called for erroneous client, not for good client
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(1).WillRepeatedly(
+            InvokeWithoutArgs(&disconnectSemaphore, &Semaphore::notify));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
-    ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectSemaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for good client.";
 
     // connected and disconnected callbacks are not called if init message is invalid
-    ErroneousClient erroneousClientCookie(_udsSettings);
-    EXPECT_TRUE(erroneousClientCookie.write(smrf::ByteVector(100, 0x01)));
-    EXPECT_TRUE(erroneousClientCookie.waitTillClose())
+    ErroneousClient errorInInitFrame(_udsSettings);
+    EXPECT_TRUE(errorInInitFrame.write(smrf::ByteVector(100, 0x01)));
+    EXPECT_TRUE(errorInInitFrame.waitTillClose())
             << "Erroneous client still connected to server after providing invalid cookie.";
 
-    ErroneousClient erroneousClientMessage(_udsSettings);
-    joynr::system::RoutingTypes::UdsClientAddress addr("evilMessage");
+    ErroneousClient errorInFrameAfterInit(_udsSettings);
+    joynr::system::RoutingTypes::UdsClientAddress addr("errorInFrameAfterInit");
     joynr::UdsFrameBufferV1 initFrame(addr);
-    EXPECT_TRUE(erroneousClientMessage.write(initFrame.raw()));
-    ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
-            << "Failed to receive connection callback for erroneous client.";
-    EXPECT_TRUE(erroneousClientMessage.write(smrf::ByteVector(100, 0x01)));
-    ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+    EXPECT_TRUE(errorInFrameAfterInit.write(initFrame.raw()));
+    EXPECT_TRUE(errorInFrameAfterInit.write(smrf::ByteVector(100, 0x01)));
+    ASSERT_TRUE(disconnectSemaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive disconnection callback for erroneous message.";
 
     const smrf::ByteVector message(1, 1);
@@ -190,9 +188,112 @@ TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffec
     ASSERT_EQ(waitFor(_messagesReceivedByClient, 1), 1)
             << "Erroneous clients affected good client connection.";
     EXPECT_EQ(_messagesReceivedByClient[0], message);
-    stopClient();
-    EXPECT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
-            << "Failed to receive disconnection call.";
+
+    // Disconnection currently only called fro errorneous client
+    Mock::VerifyAndClearExpectations(&mockUdsServerCallbacks);
+}
+
+TEST_F(UdsServerTest, robustness_nonblockingRead)
+{
+    const smrf::Byte goodMessage = 42;
+    Semaphore messageSemaphore;
+    MockUdsServerCallbacks mockUdsServerCallbacks;
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, ElementsAre(goodMessage), _))
+            .WillOnce(InvokeWithoutArgs(&messageSemaphore, &Semaphore::notify));
+    // disconnected not called, since no connection loss (UDS socket has per default no timeout)
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(0);
+    auto server = createServer(mockUdsServerCallbacks);
+    server->start();
+    ASSERT_EQ(waitClientConnected(true), true) << "Good client is not connected to server.";
+
+    ErroneousClient erroneousClient(_udsSettings);
+    joynr::system::RoutingTypes::UdsClientAddress addr("invalidLengthMessage");
+    joynr::UdsFrameBufferV1 initFrame(addr);
+    EXPECT_TRUE(erroneousClient.write(initFrame.raw()));
+
+    const smrf::Byte incompletedMessage = 0xFF;
+    const smrf::ByteVector incompletePayload(42, incompletedMessage);
+    const smrf::ByteArrayView incompletePayloadView(incompletePayload);
+    joynr::UdsFrameBufferV1 frameWithInvalidSize(incompletePayloadView);
+    UdsFrameBufferV1::BodyLength sizeGreaterThanTransmittedBytes = incompletePayload.size() + 100;
+    auto* frameData = static_cast<smrf::Byte*>(frameWithInvalidSize.header().data());
+    std::memcpy(frameData + sizeof(UdsFrameBufferV1::Cookie),
+                &sizeGreaterThanTransmittedBytes,
+                sizeof(UdsFrameBufferV1::BodyLength));
+    /*
+     * The write operation is acomplished without any error, as soon as the 42 payload bytes
+     * are stored in the underlying OS UDS buffer,
+     */
+    EXPECT_TRUE(erroneousClient.write(frameWithInvalidSize.raw()));
+
+    // Just ensure that the erroneous client triggers the write before the good client
+    std::this_thread::yield();
+
+    /*
+     * The UdsServer uses ASIO with one thread for all connections. If the async-read OPs
+     * would block, till the expected bytes are received, the previous incomplete
+     * payload transmission would block peristently since UDS sockets do not
+     * have timeouts per default.
+     * boost::asio::detail::read_op however uses "async_read_some" and continues with
+     * the next OP, if no bytes are in the underying OS UDS buffer.
+     */
+    sendFromClient(goodMessage);
+    ASSERT_TRUE(messageSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive message from good client.";
+
+    /*
+     * Assure that no disconnection has been called yet and the content of the good-message
+     * has been received.
+     */
+    Mock::VerifyAndClearExpectations(&mockUdsServerCallbacks);
+}
+
+TEST_F(UdsServerTest, robustness_nonblockingWrite)
+{
+    Semaphore connectionSemaphore;
+    MockUdsServerCallbacks mockUdsServerCallbacks;
+    std::shared_ptr<joynr::IUdsSender> tmpClientSender, goodClientSender, blockingClientSender;
+    EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(2).WillRepeatedly(
+            DoAll(SaveArg<1>(&tmpClientSender),
+                  InvokeWithoutArgs(&connectionSemaphore, &Semaphore::notify)));
+    // disconnected not called, since no connection loss (UDS socket has per default no timeout)
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(0);
+    auto server = createServer(mockUdsServerCallbacks);
+    server->start();
+    ASSERT_TRUE(connectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive connection callback for good client.";
+    goodClientSender = tmpClientSender;
+
+    _udsSettings.setClientId("blockMessageProcessing");
+    BlockReceptionClient blockingClient(_udsSettings);
+    blockingClient.start();
+    ASSERT_TRUE(connectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive connection callback for blocking client.";
+    blockingClientSender = tmpClientSender;
+
+    // Cause OS UDS buffer reaching limit (the size of OS UDS buffer is e.g. round about 1kB)
+    for (unsigned int i = 0; i < 1024; i++) {
+        sendToClient(blockingClientSender, smrf::ByteVector(1024, 1));
+        std::this_thread::yield();
+    }
+
+    /*
+     * The UdsServer uses ASIO with one thread for all connections. If the async-write OP
+     * for transimission to blocking-client would block till the OS UDS buffer has sufficient
+     * bytes to store, transmissions to other clients would block as well.
+     * boost::asio::detail::write_op however uses "async_write_some" and continues with
+     * the next OP, if not all bytes can be stored in the underying OS UDS buffer.
+     */
+    const smrf::ByteVector message(1, 1);
+    sendToClient(goodClientSender, message);
+    ASSERT_EQ(waitFor(_messagesReceivedByClient, 1), 1)
+            << "Erroneous clients affected good client connection.";
+    EXPECT_EQ(_messagesReceivedByClient[0], message);
+
+    ASSERT_TRUE(blockingClient.stopBlockingAndWaitForReceivedBytes(1024 * 1024));
+
+    // Assure that no disconnection has been called yet
+    Mock::VerifyAndClearExpectations(&mockUdsServerCallbacks);
 }
 
 TEST_F(UdsServerTest, sendToClientWhileClientDisconnection)
@@ -227,9 +328,6 @@ TEST_F(UdsServerTest, stopServerWhileSending)
     auto server = createServer(mockUdsServerCallbacks);
     EXPECT_CALL(mockUdsServerCallbacks, connected(_, _)).Times(1).WillOnce(
             DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0); // Not registered
-    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
-            .Times(0); // Only called when client disconnects, but not when server stops before
     server->start();
     ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback.";

@@ -100,6 +100,53 @@ protected:
         }
     };
 
+    class BlockReceptionClient : public joynr::UdsClient
+    {
+    private:
+        std::atomic_bool _blockReception;
+        std::atomic_uint64_t _receviedBytes;
+
+    public:
+        BlockReceptionClient(const joynr::UdsSettings& settings)
+                : joynr::UdsClient(settings,
+                                   [](const joynr::exceptions::JoynrRuntimeException&) {}),
+                  _blockReception{true},
+                  _receviedBytes{0}
+        {
+            setReceiveCallback([this](smrf::ByteVector&& payload) mutable {
+                const auto totalbytes = _receviedBytes.load() + payload.size();
+                _receviedBytes.store(totalbytes);
+                while (_blockReception.load()) {
+                    std::this_thread::yield();
+                }
+            });
+        }
+
+        void stopBlocking()
+        {
+            _blockReception.store(false);
+        }
+
+        bool stopBlockingAndWaitForReceivedBytes(const std::size_t& bytesExpected)
+        {
+            const auto tbegin = std::chrono::steady_clock::now();
+            stopBlocking();
+            while (_waitPeriodForClientServerCommunication >
+                   (std::chrono::steady_clock::now() - tbegin)) {
+                std::this_thread::sleep_for(_retryIntervalDuringClientServerCommunication);
+                if (bytesExpected == _receviedBytes.load()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        ~BlockReceptionClient() override
+        {
+            stopBlocking();
+        }
+    };
+
     std::unique_ptr<joynr::UdsServer> createServer()
     {
         return std::make_unique<joynr::UdsServer>(_udsSettings);
