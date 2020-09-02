@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -424,10 +424,10 @@ public class CcMessageRouterTest {
 
     @Test
     public void testDelayWithExponentialBackoffLimit() throws Exception {
-        final long routingDuration = 1000;
-        final long sendMsgRetryIntervalMs = 50;
-        final long maxDelayMs = 70;
-        final long toleranceMs = 20;
+        final long routingDuration = 10000;
+        final long sendMsgRetryIntervalMs = 500;
+        final long maxDelayMs = 700;
+        final long toleranceMs = 200;
 
         Module testMaxRetryCountModule = Modules.override(testModule).with(new AbstractModule() {
             @Override
@@ -482,9 +482,9 @@ public class CcMessageRouterTest {
         // test idea is that on average more than sendMsgRetryIntervalMs ms are needed.
         // -> at least one run exists that takes longer than sendMsgRetryIntervalMs
         // -> exponential backoff for the retry interval is active
-        final long routingDuration = 1000;
-        final long sendMsgRetryIntervalMs = 20;
-        final long expectedAverageIntervalMs = 50;
+        final long routingDuration = 10000;
+        final long sendMsgRetryIntervalMs = 200;
+        final long expectedAverageIntervalMs = 500;
 
         final long maxruns = routingDuration / expectedAverageIntervalMs;
 
@@ -684,13 +684,13 @@ public class CcMessageRouterTest {
         doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
 
         when(websocketClientMessagingStubFactoryMock.create(any(WebSocketClientAddress.class))).thenReturn(messagingStubMock);
-        doThrow(new JoynrDelayMessageException(20, "test")).when(messagingStubMock)
-                                                           .transmit(any(ImmutableMessage.class),
-                                                                     any(SuccessAction.class),
-                                                                     any(FailureAction.class));
+        doThrow(new JoynrDelayMessageException(100, "test")).when(messagingStubMock)
+                                                            .transmit(any(ImmutableMessage.class),
+                                                                      any(SuccessAction.class),
+                                                                      any(FailureAction.class));
 
         messageRouter.route(immutableMessage);
-        Thread.sleep(60);
+        Thread.sleep(500);
 
         verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
@@ -718,14 +718,13 @@ public class CcMessageRouterTest {
         addressSet.add(channelAddress);
         doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
 
-        doThrow(new JoynrDelayMessageException(20, "test42")).when(messagingStubMock)
-                                                             .transmit(any(ImmutableMessage.class),
-                                                                       any(SuccessAction.class),
-                                                                       any(FailureAction.class));
+        doThrow(new JoynrDelayMessageException(200, "test42")).when(messagingStubMock)
+                                                              .transmit(any(ImmutableMessage.class),
+                                                                        any(SuccessAction.class),
+                                                                        any(FailureAction.class));
 
         messageRouter.route(immutableMessage);
-        Thread.sleep(100);
-
+        Thread.sleep(550);
         verify(addressManager, atLeast(2)).getAddresses(immutableMessage);
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
@@ -740,7 +739,7 @@ public class CcMessageRouterTest {
 
     private void testOnlyOneAddressResolution(final Address address) throws Exception {
         reset(messageQueue);
-        final int ttlMs = 60;
+        final int ttlMs = 550;
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(ttlMs).getValue());
         joynrMessage.setTtlAbsolute(true);
@@ -750,10 +749,10 @@ public class CcMessageRouterTest {
         addressSet.add(address);
         doReturn(addressSet).when(addressManager).getAddresses(immutableMessage);
 
-        doThrow(new JoynrDelayMessageException(20, "test")).when(messagingStubMock)
-                                                           .transmit(any(ImmutableMessage.class),
-                                                                     any(SuccessAction.class),
-                                                                     any(FailureAction.class));
+        doThrow(new JoynrDelayMessageException(200, "test")).when(messagingStubMock)
+                                                            .transmit(any(ImmutableMessage.class),
+                                                                      any(SuccessAction.class),
+                                                                      any(FailureAction.class));
 
         messageRouter.route(immutableMessage);
         Thread.sleep(ttlMs);
