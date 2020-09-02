@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.google.inject.util.Modules;
 
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
+import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.integration.AbstractProviderProxyEnd2EndTest.TestProvider;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -67,7 +68,7 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
 
     // This timeout must be shared by all integration test environments and
     // cannot be too short.
-    private static final int CONST_DEFAULT_TEST_TIMEOUT = 30000;
+    private static final int CONST_DEFAULT_TEST_TIMEOUT = 60000;
 
     private static final String MAX_MESSAGE_SIZE = "4000000";
 
@@ -83,8 +84,13 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
     private String domain;
 
     // The timeouts should not be to small because some test environments are slow
-    protected MessagingQos messagingQos = new MessagingQos(10000);
-    protected DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
+    protected MessagingQos messagingQos = new MessagingQos(40000);
+    protected DiscoveryQos discoveryQos;
+
+    public MqttTwoConnectionsProviderProxyEnd2EndTest() {
+        discoveryQos = new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
+        discoveryQos.setRetryIntervalMs(5000);
+    }
 
     @BeforeClass
     public static void setupBaseConfig() {
@@ -148,6 +154,7 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
 
         providerRuntime.getProviderRegistrar(domain, provider)
                        .withProviderQos(testProviderQos)
+                       .awaitGlobalRegistration()
                        .register()
                        .get(CONST_DEFAULT_TEST_TIMEOUT);
 
