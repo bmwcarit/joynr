@@ -93,25 +93,71 @@ MATCHER_P2(pointerToAddressWithSerializedAddress, addressType, serializedAddress
 
 static constexpr std::int64_t conversionDelayToleranceMs = 1000;
 
-bool compareConvertedGlobalDiscoveryEntries(const types::DiscoveryEntry& expected,
+bool compareDiscoveryEntries(const types::DiscoveryEntry& expected,
                                             const types::DiscoveryEntry& actual) {
-    return expected.getDomain() == actual.getDomain() &&
-           expected.getInterfaceName() == actual.getInterfaceName() &&
-           expected.getParticipantId() == actual.getParticipantId() && expected.getQos() == actual.getQos() &&
-           (expected.getLastSeenDateMs() + conversionDelayToleranceMs) >= actual.getLastSeenDateMs() &&
-           expected.getProviderVersion() == actual.getProviderVersion() &&
-           (expected.getExpiryDateMs() + conversionDelayToleranceMs) >= actual.getExpiryDateMs() &&
-           expected.getPublicKeyId() == actual.getPublicKeyId();
+    if (expected.getDomain() != actual.getDomain()) {
+        std::cerr << "Expected domain: " << expected.getDomain()
+                  << ", actual: " << actual.getDomain() << std::endl;
+        return false;
+    }
+    if (expected.getInterfaceName() != actual.getInterfaceName()) {
+        std::cerr << "Expected interfaceName: " << expected.getInterfaceName()
+                  << ", actual: " << actual.getInterfaceName() << std::endl;
+        return false;
+    }
+    if (expected.getParticipantId() != actual.getParticipantId()) {
+        std::cerr << "Expected participantId: " << expected.getParticipantId()
+                  << ", actual: " << actual.getParticipantId() << std::endl;
+        return false;
+    }
+    if (expected.getQos() != actual.getQos()) {
+        std::cerr << "Expected qos: " << expected.getQos().toString()
+                  << ", actual: " << actual.getQos().toString() << std::endl;
+        return false;
+    }
+    if (expected.getLastSeenDateMs() > actual.getLastSeenDateMs()) {
+        std::cerr << "Expected lastSeenDateMs: >= " << expected.getLastSeenDateMs()
+                  << ", actual: " << actual.getLastSeenDateMs() << std::endl;
+        return false;
+    }
+    if (expected.getLastSeenDateMs() + conversionDelayToleranceMs < actual.getLastSeenDateMs()) {
+        std::cerr << "Expected lastSeenDateMs: <= " << expected.getLastSeenDateMs()
+                  << " + " << conversionDelayToleranceMs << ", actual: "
+                  << actual.getLastSeenDateMs() << std::endl;
+        return false;
+    }
+    if (expected.getProviderVersion() != actual.getProviderVersion()) {
+        std::cerr << "Expected providerVersion: " << expected.getProviderVersion().toString()
+                  << ", actual: " << actual.getProviderVersion().toString() << std::endl;
+        return false;
+    }
+    if (expected.getExpiryDateMs() > actual.getExpiryDateMs()) {
+        std::cerr << "Expected expiryDateMs: >= " << expected.getExpiryDateMs()
+                  << ", actual: " << actual.getExpiryDateMs() << std::endl;
+        return false;
+    }
+    if (expected.getExpiryDateMs() + conversionDelayToleranceMs < actual.getExpiryDateMs()) {
+        std::cerr << "Expected expiryDateMs: <= " << expected.getExpiryDateMs()
+                  << " + " << conversionDelayToleranceMs << ", actual: "
+                  << actual.getExpiryDateMs() << std::endl;
+        return false;
+    }
+    if (expected.getPublicKeyId() != actual.getPublicKeyId()) {
+        std::cerr << "Expected publicKeyId: " << expected.getPublicKeyId()
+                  << ", actual: " << actual.getPublicKeyId() << std::endl;
+        return false;
+    }
+    return true;
 }
 
-MATCHER_P(AnConvertedGlobalDiscoveryEntry, other, "")
+MATCHER_P(DiscoveryEntryMatcher, other, "")
 {
-    return compareConvertedGlobalDiscoveryEntries(other, arg);
+    return compareDiscoveryEntries(other, arg);
 }
 
 MATCHER_P(GlobalDiscoveryEntryMatcher, other, "")
 {
-    return compareConvertedGlobalDiscoveryEntries(other, arg) &&
+    return compareDiscoveryEntries(other, arg) &&
            other.getAddress() == arg.getAddress();
 }
 
@@ -401,7 +447,7 @@ public:
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
         auto onSuccess = [this, expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
-            EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result));
+            EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result));
             _semaphore.notify();
         };
 
@@ -526,7 +572,7 @@ public:
         const bool awaitGlobalRegistration = true;
 
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(_entry)),
+                add(Matcher<const types::GlobalDiscoveryEntry&>(DiscoveryEntryMatcher(_entry)),
                 _, _, _, _)).Times(1)
                 .WillOnce(InvokeArgument<3>(expectedError));
 
@@ -870,9 +916,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
     std::vector<std::string> expectedGbids {_KNOWN_GBIDS[0]};
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                insertInLocalCapabilitiesStorage(AnConvertedGlobalDiscoveryEntry(_entry)))
+                insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry)))
                .Times(1);
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(AnConvertedGlobalDiscoveryEntry(_entry), Eq(expectedGbids))).Times(1);
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(DiscoveryEntryMatcher(_entry), Eq(expectedGbids))).Times(1);
 
     _localCapabilitiesDirectoryWithMockCapStorage->add(
             _entry,
@@ -889,7 +935,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocalEntry_callsMockStorage)
     _entry.setQos(providerQos);
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                insertInLocalCapabilitiesStorage(AnConvertedGlobalDiscoveryEntry(_entry)))
+                insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry)))
                .Times(1);
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(_,_)).Times(0);
 
@@ -925,7 +971,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGloba
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
              add(Matcher<const types::GlobalDiscoveryEntry&>(
-                     AnConvertedGlobalDiscoveryEntry(_entry)), _, _, _, _))
+                     DiscoveryEntryMatcher(_entry)), _, _, _, _))
             .WillOnce(InvokeArgument<2>());
 
     _localCapabilitiesDirectory->add(
@@ -939,7 +985,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGloba
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
              add(Matcher<const types::GlobalDiscoveryEntry&>(
-                     AnConvertedGlobalDiscoveryEntry(_entry)), _, _, _, _))
+                     DiscoveryEntryMatcher(_entry)), _, _, _, _))
             .WillOnce(InvokeArgument<2>());
 
     _localCapabilitiesDirectory->add(
@@ -1007,7 +1053,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addSameGbidTwiceInARow)
 
      EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
               add(Matcher<const types::GlobalDiscoveryEntry&>(
-                      AnConvertedGlobalDiscoveryEntry(_entry)), Eq(expectedGbids), _, _, _)).Times(2)
+                      DiscoveryEntryMatcher(_entry)), Eq(expectedGbids), _, _, _)).Times(2)
              .WillRepeatedly(InvokeArgument<2>());
 
      _localCapabilitiesDirectory->add(
@@ -1103,7 +1149,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAll)
     const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
     const bool awaitGlobalRegistration = true;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(_entry)),
+            add(Matcher<const types::GlobalDiscoveryEntry&>(DiscoveryEntryMatcher(_entry)),
             Eq(expectedGbids), _, _, _)).Times(1)
             .WillOnce(InvokeArgument<2>());
 
@@ -1153,7 +1199,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllIsProperlyRejected_exception)
     const bool awaitGlobalRegistration = true;
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-            add(Matcher<const types::GlobalDiscoveryEntry&>(AnConvertedGlobalDiscoveryEntry(_entry)),
+            add(Matcher<const types::GlobalDiscoveryEntry&>(DiscoveryEntryMatcher(_entry)),
             Eq(_KNOWN_GBIDS), _, _, _)).Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddWithException));
 
@@ -1248,7 +1294,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(false, _entry);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-            add(AnConvertedGlobalDiscoveryEntry(_entry), Eq(_KNOWN_GBIDS), _, _, _))
+            add(DiscoveryEntryMatcher(_entry), Eq(_KNOWN_GBIDS), _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<2>());
 
@@ -1268,7 +1314,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        createLookupSuccessFunction(1, result),
                                        _unexpectedOnDiscoveryErrorFunction);
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    EXPECT_TRUE(std::find(result.cbegin(), result.cend(), expectedEntry) != result.cend());
+    ASSERT_EQ(1, result.size());
+    EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result.front()));
 
     // search in the 3rd backend for global entries. There is only one entry
     result = {};
@@ -1280,7 +1327,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    EXPECT_TRUE(std::find(result.cbegin(), result.cend(), expectedEntry) != result.cend());
+    ASSERT_EQ(1, result.size());
+    EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result.front()));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest,
@@ -1295,7 +1343,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(false, _entry);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-            add(AnConvertedGlobalDiscoveryEntry(_entry), Eq(_KNOWN_GBIDS), _, _, _))
+            add(DiscoveryEntryMatcher(_entry), Eq(_KNOWN_GBIDS), _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<2>());
 
@@ -1308,7 +1356,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
     auto onSuccess = [this, expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result));
+        EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result));
         _semaphore.notify();
     };
 
@@ -1775,7 +1823,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_localThenGlobal_l
     auto onSuccess = [this, &expectedEntry]
             (const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
         ASSERT_EQ(1, result.size());
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result[0]));
+        EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result[0]));
         _semaphore.notify();
     };
 
@@ -1841,7 +1889,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByParticipantId_localThenGlobal_loc
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
     auto onSuccess = [this, &expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
-        EXPECT_EQ(expectedEntry, result);
+        EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result));
         _semaphore.notify();
     };
 
@@ -1927,14 +1975,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(entry1)),
+                            DiscoveryEntryMatcher(entry1)),
                     _,
                     _,
                     _,
                     _)).Times(1);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(entry2)),
+                            DiscoveryEntryMatcher(entry2)),
                     _,
                     _,
                     _,
@@ -1959,14 +2007,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(expectedEntry1)),
+                            DiscoveryEntryMatcher(expectedEntry1)),
                     _,
                     _,
                     _,
                     _)).Times(1);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(expectedEntry2)),
+                            DiscoveryEntryMatcher(expectedEntry2)),
                     _,
                     _,
                     _,
@@ -1982,7 +2030,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
 
     // check that the dates are also updated in local store and global cache
     auto onSuccess = [this, expectedEntry1] (const types::DiscoveryEntryWithMetaInfo& result) {
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry1, result));
+        EXPECT_TRUE(compareDiscoveryEntries(expectedEntry1, result));
         _semaphore.notify();
     };
 
@@ -2020,7 +2068,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
-                            AnConvertedGlobalDiscoveryEntry(entry1)),
+                            DiscoveryEntryMatcher(entry1)),
                     _,
                     _,
                     _,
@@ -2054,7 +2102,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 add(AllOf(Property(&joynr::types::GlobalDiscoveryEntry::getParticipantId,
                                    Eq(entry1.getParticipantId())),
                           Matcher<const types::GlobalDiscoveryEntry&>(
-                              AnConvertedGlobalDiscoveryEntry(expectedEntry1))),
+                              DiscoveryEntryMatcher(expectedEntry1))),
                 _,
                 _,
                 _,
@@ -2141,7 +2189,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_TRUE(onSuccessCalled);
 
     auto onSuccess = [this, expectedEntry] (const types::DiscoveryEntryWithMetaInfo& result) {
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry,result));
+        EXPECT_TRUE(compareDiscoveryEntries(expectedEntry,result));
         _semaphore.notify();
     };
 
@@ -3033,7 +3081,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
     providerQos.setScope(types::ProviderScope::GLOBAL);
 
     _defaultExpiryDateMs = TimePoint::now().toMilliseconds() +
-                   _purgeExpiredDiscoveryEntriesIntervalMs;
+                   _purgeExpiredDiscoveryEntriesIntervalMs / 3;
 
     std::int64_t longerExpiryDateMs =
             TimePoint::now().toMilliseconds() +
@@ -3626,8 +3674,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
 
     EXPECT_EQ(2, cachedGlobalDiscoveryEntries.size());
     // Compare cached entries to expected entries
-    EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(entry2, cachedGlobalDiscoveryEntries[0]));
-    EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(entry3, cachedGlobalDiscoveryEntries[1]));
+    EXPECT_TRUE(compareDiscoveryEntries(entry2, cachedGlobalDiscoveryEntries[0]));
+    EXPECT_TRUE(compareDiscoveryEntries(entry3, cachedGlobalDiscoveryEntries[1]));
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _))
             .WillRepeatedly(InvokeArgument<4>(types::DiscoveryError::INTERNAL_ERROR));
@@ -3754,7 +3802,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
     auto onSuccess = [this, expectedEntry] (const std::vector<types::DiscoveryEntryWithMetaInfo>& results) {
         EXPECT_EQ(1, results.size());
         const types::DiscoveryEntryWithMetaInfo& result = results.at(0);
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result));
+        EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result));
         _semaphore.notify();
     };
 
@@ -3815,7 +3863,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
     auto onSuccess = [this, expectedEntry] (const std::vector<types::DiscoveryEntryWithMetaInfo>& results) {
         EXPECT_EQ(1, results.size());
         const types::DiscoveryEntryWithMetaInfo& result = results.at(0);
-        EXPECT_TRUE(compareConvertedGlobalDiscoveryEntries(expectedEntry, result));
+        EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result));
         _semaphore.notify();
     };
     _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
