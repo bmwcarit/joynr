@@ -52,14 +52,9 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.ProviderRegistrar;
-import joynr.tests.AnonymousVersionedStruct2;
 import joynr.tests.AnonymousVersionedStruct;
-import joynr.tests.DefaultMultipleVersionsInterface2Provider;
 import joynr.tests.DefaultMultipleVersionsInterfaceProvider;
-import joynr.tests.InterfaceVersionedStruct2;
 import joynr.tests.InterfaceVersionedStruct;
-import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -86,7 +81,6 @@ public class AbstractMultipleVersionsEnd2EndTest {
     private Semaphore proxyBuiltSemaphore;
     Semaphore noCompatibleProviderFoundCallbackSemaphore;
     String domain;
-    private DefaultMultipleVersionsInterface2Provider nameVersionedProvider;
     private joynr.tests.v2.DefaultMultipleVersionsInterfaceProvider packageVersionedProvider;
     private DefaultMultipleVersionsInterfaceProvider unversionedProvider;
 
@@ -133,10 +127,6 @@ public class AbstractMultipleVersionsEnd2EndTest {
 
     @After
     public void tearDown() {
-        if (nameVersionedProvider != null) {
-            providerRuntime.unregisterProvider(domain, nameVersionedProvider);
-            nameVersionedProvider = null;
-        }
         if (packageVersionedProvider != null) {
             providerRuntime.unregisterProvider(domain, packageVersionedProvider);
             packageVersionedProvider = null;
@@ -197,37 +187,6 @@ public class AbstractMultipleVersionsEnd2EndTest {
             fail(PROXYBUILD_FAILED_MESSAGE + e);
         }
         return proxy;
-    }
-
-    void registerNameVersionedProvider() {
-        nameVersionedProvider = new DefaultMultipleVersionsInterface2Provider() {
-
-            @Override
-            public Promise<GetVersionedStructDeferred> getVersionedStruct(VersionedStruct2 input) {
-                GetVersionedStructDeferred deferred = new GetVersionedStructDeferred();
-                final Promise<GetVersionedStructDeferred> promise = new Promise<GetVersionedStructDeferred>(deferred);
-                deferred.resolve(new VersionedStruct2(input.getFlag2()));
-                return promise;
-            }
-
-            @Override
-            public Promise<GetAnonymousVersionedStructDeferred> getAnonymousVersionedStruct(AnonymousVersionedStruct2 input) {
-                GetAnonymousVersionedStructDeferred deferred = new GetAnonymousVersionedStructDeferred();
-                final Promise<GetAnonymousVersionedStructDeferred> promise = new Promise<GetAnonymousVersionedStructDeferred>(deferred);
-                deferred.resolve(new AnonymousVersionedStruct2(input.getFlag2()));
-                return promise;
-            }
-
-            @Override
-            public Promise<GetInterfaceVersionedStructDeferred> getInterfaceVersionedStruct(InterfaceVersionedStruct2 input) {
-                GetInterfaceVersionedStructDeferred deferred = new GetInterfaceVersionedStructDeferred();
-                final Promise<GetInterfaceVersionedStructDeferred> promise = new Promise<GetInterfaceVersionedStructDeferred>(deferred);
-                deferred.resolve(new InterfaceVersionedStruct2(input.getFlag1(), input.getFlag2()));
-                return promise;
-            }
-
-        };
-        registerProvider(nameVersionedProvider, domain);
     }
 
     void registerPackageVersionedProvider() {

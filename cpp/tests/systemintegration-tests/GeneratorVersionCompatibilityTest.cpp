@@ -20,7 +20,6 @@
 
 #include "joynr/Settings.h"
 #include "joynr/tests/v2/DefaultMultipleVersionsInterfaceProvider.h"
-#include "joynr/tests/DefaultMultipleVersionsInterface2Provider.h"
 #include "joynr/tests/MultipleVersionsInterfaceProxy.h"
 
 #include "joynr/JoynrRuntime.h"
@@ -62,22 +61,6 @@ TEST_F(GeneratorVersionCompatibilityTest, proxyCreationAgainstPackagedProviderSu
     joynr::types::ProviderQos providerQos;
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     runtime->registerProvider<tests::v2::MultipleVersionsInterfaceProvider>(
-            testDomain, testProvider, providerQos);
-
-    std::shared_ptr<ProxyBuilder<tests::MultipleVersionsInterfaceProxy>> testProxyBuilder(
-            runtime->createProxyBuilder<tests::MultipleVersionsInterfaceProxy>(testDomain));
-
-    EXPECT_NO_THROW(testProxyBuilder->setMessagingQos(messagingQos)
-                            ->setDiscoveryQos(discoveryQos)
-                            ->build());
-}
-
-TEST_F(GeneratorVersionCompatibilityTest, proxyCreationAgainstNameProviderSucceeds)
-{
-    auto testProvider = std::make_shared<tests::DefaultMultipleVersionsInterface2Provider>();
-    joynr::types::ProviderQos providerQos;
-    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    runtime->registerProvider<tests::MultipleVersionsInterface2Provider>(
             testDomain, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::MultipleVersionsInterfaceProxy>> testProxyBuilder(

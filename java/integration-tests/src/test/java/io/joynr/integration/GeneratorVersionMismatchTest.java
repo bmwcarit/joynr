@@ -33,30 +33,21 @@ import org.junit.Test;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import joynr.exceptions.MethodInvocationException;
-import joynr.tests.AnonymousVersionedStruct2;
 import joynr.tests.AnonymousVersionedStruct;
-import joynr.tests.DefaultMultipleVersionsInterface1Provider;
-import joynr.tests.InterfaceVersionedStruct2;
 import joynr.tests.InterfaceVersionedStruct;
-import joynr.tests.MultipleVersionsInterface1Proxy;
-import joynr.tests.MultipleVersionsInterface2Proxy;
 import joynr.tests.MultipleVersionsInterfaceProxy;
-import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
+
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 
 public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2EndTest {
 
     private joynr.tests.v1.DefaultMultipleVersionsInterfaceProvider packageVersionedProviderV1;
-    private DefaultMultipleVersionsInterface1Provider NameVersionedProviderV1;
 
     @Override
     @After
     public void tearDown() {
         if (packageVersionedProviderV1 != null) {
             providerRuntime.unregisterProvider(domain, packageVersionedProviderV1);
-        }
-        if (NameVersionedProviderV1 != null) {
-            providerRuntime.unregisterProvider(domain, NameVersionedProviderV1);
         }
 
         super.tearDown();
@@ -66,26 +57,6 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         final joynr.tests.v2.MultipleVersionsInterfaceProxy proxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
                                                                                new HashSet<String>(Arrays.asList(domain)),
                                                                                false);
-
-        // wait for the proxy created error callback to be called
-        assertTrue("Unexpected successful proxy creation or timeout",
-                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(DISCOVERY_TIMEOUT_MS * 2,
-                                                                         TimeUnit.MILLISECONDS));
-
-        try {
-            proxy.getTrue();
-            fail("Proxy call didn't cause a discovery exception");
-        } catch (NoCompatibleProviderFoundException | MultiDomainNoCompatibleProviderFoundException e) {
-            // These exceptions are expected, so no need to fail here.
-        } catch (Exception e) {
-            fail("Expected a *NoCompatibleProviderFoundException, but got: " + e);
-        }
-    }
-
-    private void checkNameVersionedProxyV2() throws Exception {
-        final MultipleVersionsInterface2Proxy proxy = buildProxy(MultipleVersionsInterface2Proxy.class,
-                                                                 new HashSet<String>(Arrays.asList(domain)),
-                                                                 false);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
@@ -131,11 +102,6 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         registerProvider(packageVersionedProviderV1, domain);
     }
 
-    private void registerNameVersionedProviderV1() throws Exception {
-        NameVersionedProviderV1 = new DefaultMultipleVersionsInterface1Provider();
-        registerProvider(NameVersionedProviderV1, domain);
-    }
-
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testNoCompatibleProviderFound_packageVersionedProviderV1_packageVersionedProxyV2() throws Exception {
         registerPackageVersionedProviderV1();
@@ -143,32 +109,8 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
-    public void testNoCompatibleProviderFound_packageVersionedProviderV1_nameVersionedProxyV2() throws Exception {
-        registerPackageVersionedProviderV1();
-        checkNameVersionedProxyV2();
-    }
-
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
     public void testNoCompatibleProviderFound_packageVersionedProviderV1_unversionedProxyV2() throws Exception {
         registerPackageVersionedProviderV1();
-        checkUnversionedProxyV2();
-    }
-
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
-    public void testNoCompatibleProviderFound_NameVersionedProviderV1_packageVersionedProxyV2() throws Exception {
-        registerNameVersionedProviderV1();
-        checkPackageVersionedProxyV2();
-    }
-
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
-    public void testNoCompatibleProviderFound_NameVersionedProviderV1_nameVersionedProxyV2() throws Exception {
-        registerNameVersionedProviderV1();
-        checkNameVersionedProxyV2();
-    }
-
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
-    public void testNoCompatibleProviderFound_NameVersionedProviderV1_unversionedProxyV2() throws Exception {
-        registerNameVersionedProviderV1();
         checkUnversionedProxyV2();
     }
 
@@ -179,29 +121,6 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         final joynr.tests.v1.MultipleVersionsInterfaceProxy proxy = buildProxy(joynr.tests.v1.MultipleVersionsInterfaceProxy.class,
                                                                                new HashSet<String>(Arrays.asList(domain)),
                                                                                false);
-
-        // wait for the proxy created error callback to be called
-        assertTrue("Unexpected successful proxy creation or timeout",
-                   noCompatibleProviderFoundCallbackSemaphore.tryAcquire(DISCOVERY_TIMEOUT_MS * 2,
-                                                                         TimeUnit.MILLISECONDS));
-
-        try {
-            proxy.getTrue();
-            fail("Proxy call didn't cause a discovery exception");
-        } catch (NoCompatibleProviderFoundException | MultiDomainNoCompatibleProviderFoundException e) {
-            // These exceptions are expected, so no need to fail here.
-        } catch (Exception e) {
-            fail("Expected a *NoCompatibleProviderFoundException, but got: " + e);
-        }
-    }
-
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT_MS)
-    public void testNoCompatibleProviderFound_unversionedProviderV2_nameVersionedProxyV1() throws Exception {
-        registerUnversionedProvider();
-
-        final MultipleVersionsInterface1Proxy proxy = buildProxy(MultipleVersionsInterface1Proxy.class,
-                                                                 new HashSet<String>(Arrays.asList(domain)),
-                                                                 false);
 
         // wait for the proxy created error callback to be called
         assertTrue("Unexpected successful proxy creation or timeout",
@@ -293,28 +212,6 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         }, MethodInvocationException.class);
     }
 
-    private void testNameVersionedTypes() throws Exception {
-        final MultipleVersionsInterface2Proxy nameVersionedProxy = buildProxy(MultipleVersionsInterface2Proxy.class,
-                                                                              new HashSet<String>(Arrays.asList(domain)),
-                                                                              true);
-
-        final AnonymousVersionedStruct2 input1 = new AnonymousVersionedStruct2(random.nextBoolean());
-        expectException(x -> {
-            nameVersionedProxy.getAnonymousVersionedStruct(input1);
-        }, MethodInvocationException.class);
-
-        final VersionedStruct2 input2 = new VersionedStruct2(random.nextBoolean());
-        expectException(x -> {
-            nameVersionedProxy.getVersionedStruct(input2);
-        }, MethodInvocationException.class);
-
-        final InterfaceVersionedStruct2 input3 = new InterfaceVersionedStruct2(random.nextBoolean(),
-                                                                               random.nextBoolean());
-        expectException(x -> {
-            nameVersionedProxy.getInterfaceVersionedStruct(input3);
-        }, MethodInvocationException.class);
-    }
-
     private void testUnversionedTypes() throws Exception {
         final MultipleVersionsInterfaceProxy unversionedProxy = buildProxy(MultipleVersionsInterfaceProxy.class,
                                                                            new HashSet<String>(Arrays.asList(domain)),
@@ -338,19 +235,6 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
     }
 
     @Test
-    public void packageVersionedProxy_nameVersionedProvider_singleRuntime() throws Exception {
-        registerNameVersionedProvider();
-        testPackageVersionedTypes();
-    }
-
-    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
-    public void packageVersionedProxy_nameVersionedProvider_separateRuntimes() throws Exception {
-        useGlobalCommunication();
-        registerNameVersionedProvider();
-        testPackageVersionedTypes();
-    }
-
-    @Test
     public void packageVersionedProxy_unversionedProvider_singleRuntime() throws Exception {
         registerUnversionedProvider();
         testPackageVersionedTypes();
@@ -361,45 +245,6 @@ public class GeneratorVersionMismatchTest extends AbstractMultipleVersionsEnd2En
         useGlobalCommunication();
         registerUnversionedProvider();
         testPackageVersionedTypes();
-    }
-
-    @Test
-    public void nameVersionedProxy_packageVersionedProvider_singleRuntime() throws Exception {
-        registerPackageVersionedProvider();
-        testNameVersionedTypes();
-    }
-
-    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
-    public void nameVersionedProxy_packageVersionedProvider_separateRuntime() throws Exception {
-        useGlobalCommunication();
-        registerPackageVersionedProvider();
-        testNameVersionedTypes();
-    }
-
-    @Test
-    public void nameVersionedProxy_unversionedProvider_singleRuntime() throws Exception {
-        registerUnversionedProvider();
-        testNameVersionedTypes();
-    }
-
-    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
-    public void nameVersionedProxy_unversionedProvider_separateRuntime() throws Exception {
-        useGlobalCommunication();
-        registerUnversionedProvider();
-        testNameVersionedTypes();
-    }
-
-    @Test
-    public void unversionedProxy_nameVersionedProvider_singleRuntime() throws Exception {
-        registerNameVersionedProvider();
-        testUnversionedTypes();
-    }
-
-    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
-    public void unversionedProxy_nameVersionedProvider_separateRuntime() throws Exception {
-        useGlobalCommunication();
-        registerNameVersionedProvider();
-        testUnversionedTypes();
     }
 
     @Test

@@ -111,12 +111,6 @@ if(${GENERATE_SOURCES})
         OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}/gen-with-version"
         MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/test/franca-with-version"
         GENERATION_LANGUAGE "cpp"
-        ADD_VERSION_TO name
-    )
-    JoynrGenerator(
-        OUTPUTPATH "${CMAKE_CURRENT_SOURCE_DIR}/gen-with-version"
-        MODELPATH "${CMAKE_CURRENT_SOURCE_DIR}/../../basemodel/src/test/franca-with-version"
-        GENERATION_LANGUAGE "cpp"
         ADD_VERSION_TO package
     )
 endif(${GENERATE_SOURCES})

@@ -22,10 +22,10 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/tests/DefaultMultipleVersionsInterfaceProvider.h"
-#include "joynr/tests/DefaultMultipleVersionsInterface1Provider.h"
-#include "joynr/tests/DefaultMultipleVersionsInterface2Provider.h"
-#include "joynr/tests/MultipleVersionsInterface1Proxy.h"
-#include "joynr/tests/MultipleVersionsInterface2Proxy.h"
+#include "joynr/tests/v1/DefaultMultipleVersionsInterfaceProvider.h"
+#include "joynr/tests/v2/DefaultMultipleVersionsInterfaceProvider.h"
+#include "joynr/tests/MultipleVersionsInterfaceProxy.h"
+#include "joynr/tests/v1/MultipleVersionsInterfaceProxy.h"
 #include "joynr/tests/v2/MultipleVersionsInterfaceProxy.h"
 
 #include "tests/JoynrTest.h"
@@ -107,21 +107,21 @@ protected:
             selectedRuntime = runtime1;
         }
 
-        auto testProvider1 = std::make_shared<tests::DefaultMultipleVersionsInterface1Provider>();
-        runtime1->registerProvider<tests::MultipleVersionsInterface1Provider>(
+        auto testProvider1 = std::make_shared<tests::v1::DefaultMultipleVersionsInterfaceProvider>();
+        runtime1->registerProvider<tests::v1::MultipleVersionsInterfaceProvider>(
                 testDomain, testProvider1, providerQos);
-        auto testProvider2 = std::make_shared<tests::DefaultMultipleVersionsInterface2Provider>();
-        selectedRuntime->registerProvider<tests::MultipleVersionsInterface2Provider>(
+        auto testProvider2 = std::make_shared<tests::v2::DefaultMultipleVersionsInterfaceProvider>();
+        selectedRuntime->registerProvider<tests::v2::MultipleVersionsInterfaceProvider>(
                 testDomain, testProvider2, providerQos);
 
-        setAndCheckAttribute<tests::MultipleVersionsInterface1Proxy>(
+        setAndCheckAttribute<tests::v1::MultipleVersionsInterfaceProxy>(
                 runtime1, expectedUInt8Result1);
-        setAndCheckAttribute<tests::MultipleVersionsInterface2Proxy>(
+        setAndCheckAttribute<tests::v2::MultipleVersionsInterfaceProxy>(
                 selectedRuntime, expectedUInt8Result2);
 
-        runtime1->unregisterProvider<tests::MultipleVersionsInterface1Provider>(
+        runtime1->unregisterProvider<tests::v1::MultipleVersionsInterfaceProvider>(
                 testDomain, testProvider1);
-        selectedRuntime->unregisterProvider<tests::MultipleVersionsInterface2Provider>(
+        selectedRuntime->unregisterProvider<tests::v2::MultipleVersionsInterfaceProvider>(
                 testDomain, testProvider2);
     }
 
@@ -145,7 +145,8 @@ TEST_F(MultipleVersionsTest, twoProxiesOfDifferentVersioningTypesVsOneProvider)
     runtime1->registerProvider<tests::MultipleVersionsInterfaceProvider>(
             testDomain, testProvider, providerQos);
 
-    setAndCheckAttribute<tests::MultipleVersionsInterface2Proxy>(runtime1, expectedUInt8Result1);
+    //tests::MultipleVersionsInterfaceProxy has interface version 2 with no version generation
+    setAndCheckAttribute<tests::MultipleVersionsInterfaceProxy>(runtime1, expectedUInt8Result1);
     setAndCheckAttribute<tests::v2::MultipleVersionsInterfaceProxy>(runtime1, expectedUInt8Result2);
 
     runtime1->unregisterProvider<tests::MultipleVersionsInterfaceProvider>(

@@ -87,7 +87,7 @@ class NamingUtil {
 	}
 
 	def joynrName(FType type){
-		type.name + if (nameWithVersion) type.versionSuffix else ''
+		type.name
 	}
 
 	def joynrName(FField member) {
@@ -95,7 +95,7 @@ class NamingUtil {
 	}
 
 	def joynrName(FInterface iFace){
-		iFace.name + if (nameWithVersion) iFace.versionSuffix else ''
+		iFace.name
 	}
 
 	def joynrName(FMethod method) {

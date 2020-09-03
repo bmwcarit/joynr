@@ -87,18 +87,6 @@
 							<addVersionTo>none</addVersionTo>
 						</configuration>
 					</execution>
-					<execution>
-						<id>generate-common-test-classes-with-name-version</id>
-						<phase>generate-test-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
-							<outputPath>${basedir}/gen-with-version</outputPath>
-							<addVersionTo>name</addVersionTo>
-						</configuration>
-					</execution>
 				</executions>
 				<dependencies>
 					<dependency>

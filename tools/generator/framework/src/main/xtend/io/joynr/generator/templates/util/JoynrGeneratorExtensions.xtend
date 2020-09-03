@@ -361,9 +361,11 @@ class JoynrGeneratorExtensions {
 		}
 		if (nameWithVersion){
 			println(
-				"WARNING: --addVersionTo=name is DEPRECATED." +
-				" Only package versioning will be supported in future versions of the generator."
+				"ERROR: --addVersionTo=name is no longer supported." +
+				" Only package versioning is supported. To fix this, please either set --addVersionTo=package " +
+				" or (preferably) remove the --addVersionTo option entirely"
 			)
+			throw new IllegalArgumentException(" --addVersionTo=name is set. This configuration is now illegal");
 		}
 	}
 }

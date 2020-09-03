@@ -27,17 +27,10 @@ import java.util.HashSet;
 import org.junit.Test;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import joynr.tests.AnonymousVersionedStruct2;
 import joynr.tests.AnonymousVersionedStruct;
-import joynr.tests.DefaultMultipleVersionsInterface1Provider;
-import joynr.tests.DefaultMultipleVersionsInterface2Provider;
 import joynr.tests.DefaultMultipleVersionsInterfaceProvider;
-import joynr.tests.InterfaceVersionedStruct2;
 import joynr.tests.InterfaceVersionedStruct;
-import joynr.tests.MultipleVersionsInterface1Proxy;
-import joynr.tests.MultipleVersionsInterface2Proxy;
 import joynr.tests.MultipleVersionsInterfaceProxy;
-import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct2;
 import joynr.tests.MultipleVersionsTypeCollection.VersionedStruct;
 
 public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2EndTest {
@@ -45,7 +38,7 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
     private static final String UNREGISTERING_FAILED_MESSAGE = "Unregistering of provider failed: ";
 
     /*
-    * This test tests if 3 proxies of same interface (name versioned, package versioned, unversioned) can connect to
+    * This test tests if 2 proxies of same interface (package versioned, unversioned) can connect to
     * one provider (unversioned) and communicate with this without mutual interference.
     */
     @Test
@@ -56,9 +49,6 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         registerProvider(unversionedProvider, domain);
 
         // build fitting proxies
-        MultipleVersionsInterface2Proxy nameVersionedProxy = buildProxy(MultipleVersionsInterface2Proxy.class,
-                                                                        new HashSet<String>(Arrays.asList(domain)),
-                                                                        true);
         joynr.tests.v2.MultipleVersionsInterfaceProxy packageVersionedProxy = buildProxy(joynr.tests.v2.MultipleVersionsInterfaceProxy.class,
                                                                                          new HashSet<String>(Arrays.asList(domain)),
                                                                                          true);
@@ -68,62 +58,20 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
 
         try {
             //set UInt8Attribute1 and check if it can be retrieved correctly
-            nameVersionedProxy.setUInt8Attribute1((byte) 100);
-            Byte value1 = nameVersionedProxy.getUInt8Attribute1();
-            Byte value2 = packageVersionedProxy.getUInt8Attribute1();
-            Byte value3 = unversionedProxy.getUInt8Attribute1();
+            unversionedProxy.setUInt8Attribute1((byte) 100);
+            Byte value1 = packageVersionedProxy.getUInt8Attribute1();
+            Byte value2 = unversionedProxy.getUInt8Attribute1();
             assertEquals((byte) value1, 100);
             assertEquals((byte) value2, 100);
-            assertEquals((byte) value3, 100);
 
             packageVersionedProxy.setUInt8Attribute1((byte) 50);
-            value1 = nameVersionedProxy.getUInt8Attribute1();
-            value2 = packageVersionedProxy.getUInt8Attribute1();
-            value3 = unversionedProxy.getUInt8Attribute1();
+            value1 = packageVersionedProxy.getUInt8Attribute1();
+            value2 = unversionedProxy.getUInt8Attribute1();
             assertEquals((byte) value1, 50);
             assertEquals((byte) value2, 50);
-            assertEquals((byte) value3, 50);
 
             // unregister provider
             providerRuntime.unregisterProvider(domain, unversionedProvider);
-        } catch (JoynrRuntimeException e) {
-            fail(UNREGISTERING_FAILED_MESSAGE + e);
-        }
-    }
-
-    /*
-     * This test tests if 2 providers of same interface and different versions can be registered in a single runtime
-     * and 2 proxies can communicate with those without mutual interference.
-     */
-    @Test
-    public void twoNameVersionedProvidersInSingleRuntime() throws Exception {
-        // register providers
-        DefaultMultipleVersionsInterface1Provider provider1 = new DefaultMultipleVersionsInterface1Provider();
-        DefaultMultipleVersionsInterface2Provider provider2 = new DefaultMultipleVersionsInterface2Provider();
-
-        registerProvider(provider1, domain);
-        registerProvider(provider2, domain);
-
-        // build fitting proxies
-        MultipleVersionsInterface1Proxy proxy1 = buildProxy(MultipleVersionsInterface1Proxy.class,
-                                                            new HashSet<String>(Arrays.asList(domain)),
-                                                            true);
-        MultipleVersionsInterface2Proxy proxy2 = buildProxy(MultipleVersionsInterface2Proxy.class,
-                                                            new HashSet<String>(Arrays.asList(domain)),
-                                                            true);
-
-        //set UInt8Attribute1 and check if it can be retrieved correctly
-        proxy1.setUInt8Attribute1((byte) 100);
-        proxy2.setUInt8Attribute1((byte) 50);
-        Byte value1 = proxy1.getUInt8Attribute1();
-        Byte value2 = proxy2.getUInt8Attribute1();
-        assertEquals((byte) value1, 100);
-        assertEquals((byte) value2, 50);
-
-        // unregister providers
-        try {
-            providerRuntime.unregisterProvider(domain, provider1);
-            providerRuntime.unregisterProvider(domain, provider2);
         } catch (JoynrRuntimeException e) {
             fail(UNREGISTERING_FAILED_MESSAGE + e);
         }
@@ -143,12 +91,12 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         registerProvider(provider2, domain);
 
         // build fitting proxies
-        MultipleVersionsInterface1Proxy proxy1 = buildProxy(MultipleVersionsInterface1Proxy.class,
-                                                            new HashSet<String>(Arrays.asList(domain)),
-                                                            true);
-        MultipleVersionsInterface2Proxy proxy2 = buildProxy(MultipleVersionsInterface2Proxy.class,
-                                                            new HashSet<String>(Arrays.asList(domain)),
-                                                            true);
+        joynr.tests.v1.MultipleVersionsInterfaceProxy proxy1 = buildProxy(joynr.tests.v1.MultipleVersionsInterfaceProxy.class,
+                                                                          new HashSet<String>(Arrays.asList(domain)),
+                                                                          true);
+        MultipleVersionsInterfaceProxy proxy2 = buildProxy(MultipleVersionsInterfaceProxy.class,
+                                                           new HashSet<String>(Arrays.asList(domain)),
+                                                           true);
 
         //set UInt8Attribute1 and check if it can be retrieved correctly
         proxy1.setUInt8Attribute1((byte) 100);
@@ -187,26 +135,6 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         assertEquals(input3.getFlag2(), output3.getFlag2());
     }
 
-    private void testNameVersionedTypes() throws Exception {
-        final MultipleVersionsInterface2Proxy nameVersionedProxy = buildProxy(MultipleVersionsInterface2Proxy.class,
-                                                                              new HashSet<String>(Arrays.asList(domain)),
-                                                                              true);
-
-        final AnonymousVersionedStruct2 input1 = new AnonymousVersionedStruct2(random.nextBoolean());
-        final AnonymousVersionedStruct2 output1 = nameVersionedProxy.getAnonymousVersionedStruct(input1);
-        assertEquals(input1.getFlag2(), output1.getFlag2());
-
-        final VersionedStruct2 input2 = new VersionedStruct2(random.nextBoolean());
-        final VersionedStruct2 output2 = nameVersionedProxy.getVersionedStruct(input2);
-        assertEquals(input2.getFlag2(), output2.getFlag2());
-
-        final InterfaceVersionedStruct2 input3 = new InterfaceVersionedStruct2(random.nextBoolean(),
-                                                                               random.nextBoolean());
-        final InterfaceVersionedStruct2 output3 = nameVersionedProxy.getInterfaceVersionedStruct(input3);
-        assertEquals(input3.getFlag1(), output3.getFlag1());
-        assertEquals(input3.getFlag2(), output3.getFlag2());
-    }
-
     private void testUnversionedTypes() throws Exception {
         final MultipleVersionsInterfaceProxy unversionedProxy = buildProxy(MultipleVersionsInterfaceProxy.class,
                                                                            new HashSet<String>(Arrays.asList(domain)),
@@ -238,19 +166,6 @@ public class MultipleVersionsEnd2EndTest extends AbstractMultipleVersionsEnd2End
         useGlobalCommunication();
         registerPackageVersionedProvider();
         testPackageVersionedTypes();
-    }
-
-    @Test
-    public void nameVersionedProxy_nameVersionedProvider_singleRuntime() throws Exception {
-        registerNameVersionedProvider();
-        testNameVersionedTypes();
-    }
-
-    @Test(timeout = CONST_GLOBAL_TEST_TIMEOUT_MS)
-    public void nameVersionedProxy_nameVersionedProvider_separateRuntime() throws Exception {
-        useGlobalCommunication();
-        registerNameVersionedProvider();
-        testNameVersionedTypes();
     }
 
     @Test
