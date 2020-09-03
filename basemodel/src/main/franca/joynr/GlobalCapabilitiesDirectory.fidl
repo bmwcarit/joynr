@@ -344,8 +344,9 @@ interface GlobalCapabilitiesDirectory{
 	}
 
 	<**
-		@description: Event that is fired when a new GlobalDiscoveryEntry is added or an existing
-			entry is changed or removed.  The event includes the affected GlobalDiscoveryEntry as
+		@description: [DEPRECATED (This broadcast has never been implemented and tested.)]
+			Event that is fired when a new GlobalDiscoveryEntry is added or an existing
+			entry is changed or removed. The event includes the affected GlobalDiscoveryEntry as
 			well as the type of change.
 			MULTICAST PARTITIONS:
 			This event is broadcasted using the following partition structure:
