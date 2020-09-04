@@ -100,7 +100,7 @@ protected:
             break;
         }
         DltContext& dltContext = getInstance().dltContext;
-        constexpr std::size_t maxLength = 2048;
+        constexpr std::size_t maxLength = 1024;
         spdlog::memory_buf_t formatted;
         _formatter->format(msg, formatted);
         const std::size_t length = formatted.size();
