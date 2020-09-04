@@ -26,6 +26,23 @@ asadmin start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=t
 # asadmin set-log-levels io.joynr.messaging=FINEST
 ### hide periodic RoutingTable.purge logs
 # asadmin set-log-levels io.joynr.messaging.routing.RoutingTableImpl=FINE
+asadmin set-log-levels io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClient=FINE
+asadmin set-log-levels io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory=FINE
+asadmin set-log-levels io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider=FINE
+asadmin set-log-levels io.joynr.messaging.mqtt.MqttMessagingSkeleton=FINE
+asadmin set-log-levels io.joynr.messaging.mqtt.MqttMessagingStub=FINE
+asadmin set-log-levels io.joynr.dispatching.RequestReplyManagerImpl=FINE
+asadmin set-log-levels io.joynr.dispatching.rpc.RequestInterpreter=FINE
+asadmin set-log-levels io.joynr.dispatching.rpc.RpcAsyncRequestReplyCaller=FINE
+asadmin set-log-levels io.joynr.proxy.JoynrMessagingConnectorInvocationHandler=FINE
+asadmin set-log-levels io.joynr.arbitration.Arbitrator=FINE
+asadmin set-log-levels io.joynr.proxy.ProxyBuilderDefaultImpl=FINE
+asadmin set-log-levels io.joynr.capabilities.LocalCapabilitiesDirectoryImpl=FINE
+asadmin set-log-levels io.joynr.capabilities.CapabilitiesRegistrarImpl=FINE
+asadmin set-log-levels io.joynr.messaging.routing.RoutingTableImpl=FINE
+asadmin set-log-levels io.joynr.dispatching.subscription.SubscriptionManagerImpl=FINE
+asadmin set-log-levels io.joynr.dispatching.DispatcherImpl=FINE
+asadmin set-log-levels io.joynr.discovery.jee.GlobalCapabilitiesDirectoryEjb=FINEST
 
 if [ -d "/data/logs" ]
 then
