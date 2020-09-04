@@ -58,6 +58,11 @@ None.
   in the same war file with different registration settings, e.g. different domains. See the
   [JEE documentation](jee.md#implementing-services-joynr-providers) for more details.
 
+* **[Java, JEE]** DelayableImmutableMessage now contains a participantId instead of a set of
+  addresses. Any custom message persistency has to be adjusted.
+  Have a look at our documentation for more details on [MessagePersister in joynr Java](./java.md)
+  and [MessagePersister in joynr JEE](./jee.md).
+
 ## Other changes
 * **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
   the registration is applied to all backends instead of the default one. See also documentation of
