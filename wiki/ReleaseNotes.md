@@ -45,6 +45,8 @@ the versioning scheme [here](JoynrVersioning.md).
   [documentation of joynr JEE integration](jee.md#provider-registration-retries-and-error-handling)
   for more information.
 * **[Java]** MqttPahoClient has been removed. Please use HivemqMqttClient instead.
+* **[ALL]** Marked broadcast `globalDiscoveryEntryChanged ` in `GlobalCapabilitiesDirectory.fidl`
+  as deprecated because it has never been implemented, used or tested.
 
 ## Configuration property changes
 * **[C++]** The configuration option `mqtt-max-message-size-bytes` was removed from messaging
