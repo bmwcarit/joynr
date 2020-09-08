@@ -1215,6 +1215,90 @@ TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEnt
     arbitrator->stopArbitration();
 }
 
+/**
+ * Test whether discovery entries are filtered by version and arbitartion strategy,
+ * if filterByVersionAndArbitrationStartegy is disabled
+*/
+TEST_F(ArbitratorTest, filterByVersionAndArbitrationStrategy_disabled_versionAndStrategyNotChecked)
+{
+    DiscoveryQos discoveryQos;
+    discoveryQos.setDiscoveryTimeoutMs(_defaultDiscoveryTimeoutMs);
+    discoveryQos.setRetryIntervalMs(_defaultRetryIntervalMs);
+    joynr::types::Version providerVersion(47, 11);
+
+    auto arbitrator =
+            std::make_shared<Arbitrator>(_domain,
+                                         _interfaceName,
+                                         providerVersion,
+                                         _mockDiscovery,
+                                         discoveryQos,
+                                         _emptyGbidsVector,
+                                         move(_lastSeenArbitrationStrategyFunction));
+
+    types::ProviderQos providerQos(
+            std::vector<types::CustomParameter>(), // custom provider parameters
+            42,                                    // priority
+            joynr::types::ProviderScope::GLOBAL,   // discovery scope
+            false                                  // supports on change notifications
+            );
+
+    types::Version incorrectProviderVersion(providerVersion.getMajorVersion() - 1, providerVersion.getMinorVersion());
+    types::DiscoveryEntryWithMetaInfo discoveryEntry1 = types::DiscoveryEntryWithMetaInfo(incorrectProviderVersion,
+                                                                                         _domain,
+                                                                                         _interfaceName,
+                                                                                         "participantId1",
+                                                                                         providerQos,
+                                                                                         _lastSeenDateMs,
+                                                                                         _expiryDateMs,
+                                                                                         _publicKeyId,
+                                                                                         true);
+
+    types::DiscoveryEntryWithMetaInfo discoveryEntry2 = types::DiscoveryEntryWithMetaInfo(providerVersion,
+                                                                                         _domain,
+                                                                                         _interfaceName,
+                                                                                         "participantId2",
+                                                                                         providerQos,
+                                                                                         _lastSeenDateMs,
+                                                                                         _expiryDateMs,
+                                                                                         _publicKeyId,
+                                                                                         true);
+
+    // Create a list of discovery entries
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries {discoveryEntry1, discoveryEntry2};
+
+    auto mockFuture = std::make_shared<
+            joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
+    mockFuture->onSuccess(discoveryEntries);
+    ON_CALL(*_mockDiscovery,
+            lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
+        .WillByDefault(Return(mockFuture));
+
+    // Check that the correct participant was selected
+    auto onSuccess = [this, &discoveryEntries, &discoveryEntry1, &discoveryEntry2](
+            const ArbitrationResult& arbitrationResult) {
+        EXPECT_EQ(arbitrationResult.getDiscoveryEntries().size(), 2);
+        bool foundDiscoveryEntry1 = false;
+        bool foundDiscoveryEntry2 = false;
+        for (const auto& entry : discoveryEntries) {
+            if (entry.getParticipantId() == discoveryEntry1.getParticipantId()) {
+                foundDiscoveryEntry1 = true;
+            }
+            if (entry.getParticipantId() == discoveryEntry2.getParticipantId()) {
+                foundDiscoveryEntry2 = true;
+            }
+        }
+        EXPECT_TRUE(foundDiscoveryEntry1);
+        EXPECT_TRUE(foundDiscoveryEntry2);
+        _semaphore.notify();
+    };
+
+    auto onError = [](const exceptions::DiscoveryException& e) { FAIL() << "Got exception: " << e.getMessage(); };
+
+    arbitrator->startArbitration(onSuccess, onError, false);
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
+    arbitrator->stopArbitration();
+}
+
 /*
  * Tests that the arbitrators report the exception from the discoveryProxy if the lookup fails
  * during the last retry
