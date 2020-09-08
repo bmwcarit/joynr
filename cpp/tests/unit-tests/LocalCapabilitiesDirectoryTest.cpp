@@ -3882,19 +3882,248 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
+
 TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
 {
     // make sure that there is only one runtime that is periodically calling touch
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
+
+    std::string participantId1 = "participantId1";
+
+    // set gbid, it should be one of the known
+    std::string gbid = _KNOWN_GBIDS[1];
+    std::vector<std::string> gbids {gbid};
+
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+
+    _entry.setLastSeenDateMs(0);
+    _entry.setExpiryDateMs(0);
+    _entry.setQos(providerQos);
+    _entry.setParticipantId(participantId1);
+    _localCapabilitiesDirectory->add(
+                _entry,
+                false,
+                gbids,
+                createAddOnSuccessFunction(),
+                _unexpectedOnDiscoveryErrorFunction);
+
+    std::vector<std::string> expectedParticipantIds {participantId1};
+
+    // wait for add call
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _, _, _)).Times(0);
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
     Semaphore gcdSemaphore(0);
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, _, _, _))
-            .Times(2)
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), UnorderedElementsAreArray(expectedParticipantIds), Eq(gbid), _, _)).Times(2)
             .WillRepeatedly(ReleaseSemaphore(&gcdSemaphore));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
     EXPECT_FALSE(gcdSemaphore.waitFor(std::chrono::milliseconds(150)));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(100)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, touchNotCalled_noParticipantIdsToTouch_entryHasLocalScope)
+{
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
+
+    std::string participantId1 = "participantId1";
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    _entry.setLastSeenDateMs(0);
+    _entry.setExpiryDateMs(0);
+    _entry.setQos(providerQos);
+    _entry.setParticipantId(participantId1);
+    _localCapabilitiesDirectory->add(
+            _entry,
+            createAddOnSuccessFunction(),
+            _unexpectedProviderRuntimeExceptionFunction);
+
+    // wait for add call
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _, _, _)).Times(0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_multipleParticipantIdsForSingleGbid)
+{
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
+
+    std::string participantId1 = "participantId1";
+    std::string participantId2 = "participantId2";
+
+    // set gbid, it should be one of the known
+    std::string gbid = _KNOWN_GBIDS[1];
+    std::vector<std::string> gbids {gbid};
+
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+
+    _entry.setLastSeenDateMs(0);
+    _entry.setExpiryDateMs(0);
+    _entry.setQos(providerQos);
+    _entry.setParticipantId(participantId1);
+    _localCapabilitiesDirectory->add(
+                _entry,
+                false,
+                gbids,
+                createAddOnSuccessFunction(),
+                _unexpectedOnDiscoveryErrorFunction);
+
+    types::DiscoveryEntry entry2(_entry);
+    entry2.setParticipantId(participantId2);
+    _localCapabilitiesDirectory->add(
+                entry2,
+                false,
+                gbids,
+                createAddOnSuccessFunction(),
+                _unexpectedOnDiscoveryErrorFunction);
+
+    std::vector<std::string> expectedParticipantIds {participantId1, participantId2};
+
+    // wait for 2 add calls
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+
+    std::vector<std::string> capturedParticipantIds;
+    std::string capturedGbid;
+
+    Semaphore touchSemaphore(0);
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<1>(&capturedParticipantIds), SaveArg<2>(&capturedGbid), ReleaseSemaphore(&touchSemaphore)));
+    EXPECT_TRUE(touchSemaphore.waitFor(std::chrono::milliseconds(250)));
+
+    // Compare captured results with the given ones
+    bool foundParticipantId1 = false;
+    bool foundParticipantId2 = false;
+
+    for (const auto& actualParticipantId : capturedParticipantIds) {
+        if (actualParticipantId == participantId1) {
+            foundParticipantId1 = true;
+        }
+        if (actualParticipantId == participantId2) {
+            foundParticipantId2 = true;
+        }
+    }
+
+    EXPECT_EQ(capturedParticipantIds.size(), 2);
+    EXPECT_EQ(capturedGbid, gbid);
+    EXPECT_TRUE(foundParticipantId1);
+    EXPECT_TRUE(foundParticipantId2);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_singleParticipantIdForMultipleGbids)
+{
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
+
+    std::string participantId1 = "participantId1";
+
+    // set gbid, it should be one of the known
+    std::string gbid1 = _KNOWN_GBIDS[0];
+    std::string gbid2 = _KNOWN_GBIDS[1];
+    std::vector<std::string> gbids {gbid1, gbid2};
+
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+
+    _entry.setLastSeenDateMs(0);
+    _entry.setExpiryDateMs(0);
+    _entry.setQos(providerQos);
+    _entry.setParticipantId(participantId1);
+    _localCapabilitiesDirectory->add(
+                _entry,
+                false,
+                gbids,
+                createAddOnSuccessFunction(),
+                _unexpectedOnDiscoveryErrorFunction);
+
+    std::vector<std::string> expectedParticipantIds {participantId1};
+
+    // wait for add call
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+
+    std::vector<std::string> capturedParticipantIds;
+
+    Semaphore touchSemaphore(0);
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, Eq(gbid1), _, _))
+            .WillOnce(DoAll(SaveArg<1>(&capturedParticipantIds), ReleaseSemaphore(&touchSemaphore)));
+    EXPECT_TRUE(touchSemaphore.waitFor(std::chrono::milliseconds(250)));
+
+    EXPECT_EQ(capturedParticipantIds.size(), 1);
+    EXPECT_EQ(capturedParticipantIds[0], participantId1);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, touchCalledTwice_twoParticipantIdsForDifferentGbids)
+{
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
+
+    std::string participantId1 = "participantId1";
+    std::string participantId2 = "participantId2";
+
+    // set gbid, it should be one of the known
+    std::string gbid1 = _KNOWN_GBIDS[0];
+    std::string gbid2 = _KNOWN_GBIDS[1];
+    std::vector<std::string> gbids1 {gbid1};
+    std::vector<std::string> gbids2 {gbid2};
+
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+
+    _entry.setLastSeenDateMs(0);
+    _entry.setExpiryDateMs(0);
+    _entry.setQos(providerQos);
+    _entry.setParticipantId(participantId1);
+    _localCapabilitiesDirectory->add(
+                _entry,
+                false,
+                gbids1,
+                createAddOnSuccessFunction(),
+                _unexpectedOnDiscoveryErrorFunction);
+
+    types::DiscoveryEntry entry2(_entry);
+    entry2.setParticipantId(participantId2);
+    _localCapabilitiesDirectory->add(
+                entry2,
+                false,
+                gbids2,
+                createAddOnSuccessFunction(),
+                _unexpectedOnDiscoveryErrorFunction);
+
+    // wait for 2 add calls
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+
+    std::string actualGbid1;
+    std::string actualGbid2;
+    std::vector<std::string> participantIds1;
+    std::vector<std::string> participantIds2;
+
+    Semaphore touchSemaphore(0);
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<1>(&participantIds1), SaveArg<2>(&actualGbid1), ReleaseSemaphore(&touchSemaphore)))
+            .WillOnce(DoAll(SaveArg<1>(&participantIds2), SaveArg<2>(&actualGbid2), ReleaseSemaphore(&touchSemaphore)));
+    EXPECT_TRUE(touchSemaphore.waitFor(std::chrono::milliseconds(250)));
+    EXPECT_TRUE(touchSemaphore.waitFor(std::chrono::milliseconds(250)));
+
+    ASSERT_EQ(1, participantIds1.size());
+    ASSERT_EQ(1, participantIds2.size());
+    if (gbid1 == actualGbid1) {
+        EXPECT_EQ(participantId1, participantIds1[0]);
+        EXPECT_EQ(participantId2, participantIds2[0]);
+        EXPECT_EQ(gbid2, actualGbid2);
+    } else if (gbid2 == actualGbid1) {
+        EXPECT_EQ(participantId2, participantIds1[0]);
+        EXPECT_EQ(participantId1, participantIds2[0]);
+        EXPECT_EQ(gbid1, actualGbid2);
+    } else {
+        FAIL() << "Test of twoParticipantIdsForDifferentGbids failed!";
+    }
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUsesGlobalOnes)
