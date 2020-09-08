@@ -327,26 +327,13 @@ class JoynrGeneratorExtensions {
 
 	def printVersionWarnings(FInterface fInterface, boolean packageWithVersion, boolean namewithVersion) {
 		if(commentContainsNoVersionGeneration(fInterface) && (packageWithVersion || nameWithVersion)) {
-			var versionGeneration = "";
-			if(packageWithVersion) {
-				versionGeneration = "package";
-			}
-			else {
-				versionGeneration = "name";
-			}
 			println(
-				"WARNING: --addVersionTo option is set to "
-				+ versionGeneration +
+				"ERROR: --addVersionTo option is set " +
 				" despite #noVersionGeneration being set for interface "
-				+ fInterface.name + ". This will disable versioning in future versions of the generator."
+				+ fInterface.name + ". Please decide whether you want to generate versioning and " +
+				" adjust your settings accordingly (Only package versioning is supported)."
 			)
-		}
-		if(!commentContainsNoVersionGeneration(fInterface) && !(packageWithVersion || nameWithVersion)) {
-			println(
-				"WARNING: --addVersionTo option is not set or none despite" +
-				"#noVersionGeneration not being set for interface " + fInterface.name +
-				". This will enable package versioning in future versions of the generator."
-			)
+			throw new IllegalArgumentException("--addVersionTo is not 'none' despite #noVersionGeneration being set in the fidl.");
 		}
 		if (nameWithVersion){
 			println(
