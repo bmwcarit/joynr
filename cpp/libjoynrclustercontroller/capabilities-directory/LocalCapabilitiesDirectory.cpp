@@ -150,31 +150,95 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
 
     std::vector<std::string> participantIds = getParticipantIdsToTouch();
 
-    auto onSuccess = [ ccId = _clusterControllerId, participantIds ]()
-    {
-        if (logger().getLogLevel() == LogLevel::Trace) {
-            const std::string participantIdConcat = boost::algorithm::join(participantIds, ", ");
-            JOYNR_LOG_TRACE(logger(),
-                            "touch(ccId={}, participantIds={}) succeeded.",
-                            ccId,
-                            participantIdConcat);
-        } else {
-            JOYNR_LOG_DEBUG(logger(), "touch succeeded.");
+    if (participantIds.empty()) {
+        JOYNR_LOG_DEBUG(logger(),
+                        "touch(clusterControllerId={}) has not been called, because there are no "
+                        "providers to touch",
+                        _clusterControllerId);
+        scheduleFreshnessUpdate();
+        return;
+    }
+
+    // Get map of gbids to participantIds to touch
+    std::map<std::string, std::vector<std::string>> gbidsToParticipantIdsMap;
+    for (const std::string& gbid : _knownGbids) {
+        gbidsToParticipantIdsMap[gbid];
+    }
+
+    for (const std::string& participantIdToTouch : participantIds) {
+        std::vector<std::string> gbids =
+                _localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantIdToTouch);
+
+        if (gbids.empty()) {
+            JOYNR_LOG_WARN(logger(),
+                           "touch(clusterControllerId={}) cannot be called for provider with "
+                           "participantId {}, no GBID found.",
+                           _clusterControllerId,
+                           participantIdToTouch);
+            break;
         }
-    };
 
-    auto onError = [ ccId = _clusterControllerId, participantIds ](
-            const joynr::exceptions::JoynrRuntimeException& error)
-    {
-        JOYNR_LOG_ERROR(logger(),
-                        "touch(ccId={}, participantIds={}) failed: {}",
-                        ccId,
-                        boost::algorithm::join(participantIds, ", "),
-                        error.getMessage());
-    };
+        // Get first gbid mapped to participantIdToTouch
+        std::string gbidToTouch = gbids[0];
 
-    _globalCapabilitiesDirectoryClient->touch(
-            _clusterControllerId, participantIds, std::move(onSuccess), std::move(onError));
+        // Update map of gbids to participantIds
+        if (gbidsToParticipantIdsMap.find(gbidToTouch) == gbidsToParticipantIdsMap.cend()) {
+            JOYNR_LOG_ERROR(logger(),
+                            "Found GBID {} for particpantId {} to touch is unknown.",
+                            gbidToTouch,
+                            participantIdToTouch);
+            continue;
+        }
+        gbidsToParticipantIdsMap[gbidToTouch].emplace_back(participantIdToTouch);
+    }
+
+    for (const auto& entity : gbidsToParticipantIdsMap) {
+        std::string gbid = entity.first;
+        std::vector<std::string> participantIdsToTouch = entity.second;
+
+        if (participantIdsToTouch.empty()) {
+            JOYNR_LOG_DEBUG(logger(),
+                            "touch(clusterControllerId={}, gbid={}) has not been called, because "
+                            "there are no providers to touch for gbid {}",
+                            _clusterControllerId,
+                            gbid,
+                            gbid);
+            continue;
+        }
+
+        auto onSuccess = [ ccId = _clusterControllerId, participantIdsToTouch, gbid ]()
+        {
+            if (logger().getLogLevel() == LogLevel::Trace) {
+                const std::string participantIdConcat =
+                        boost::algorithm::join(participantIdsToTouch, ", ");
+                JOYNR_LOG_TRACE(logger(),
+                                "touch(ccId={}, participantIds={}, gbid={}) succeeded.",
+                                ccId,
+                                participantIdConcat,
+                                gbid);
+            } else {
+                JOYNR_LOG_DEBUG(logger(), "touch for GBID {} succeeded.", gbid);
+            }
+        };
+
+        auto onError = [ ccId = _clusterControllerId, participantIdsToTouch, gbid ](
+                const joynr::exceptions::JoynrRuntimeException& error)
+        {
+            JOYNR_LOG_ERROR(logger(),
+                            "touch(ccId={}, participantIds={}, gbid={}) failed: {}",
+                            ccId,
+                            boost::algorithm::join(participantIdsToTouch, ", "),
+                            gbid,
+                            error.getMessage());
+        };
+
+        _globalCapabilitiesDirectoryClient->touch(_clusterControllerId,
+                                                  participantIdsToTouch,
+                                                  gbid,
+                                                  std::move(onSuccess),
+                                                  std::move(onError));
+    }
+
     scheduleFreshnessUpdate();
 }
 
