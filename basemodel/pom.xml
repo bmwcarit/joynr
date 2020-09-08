@@ -54,6 +54,9 @@
 				<directory>src/test/franca</directory>
 			</testResource>
 			<testResource>
+			      <directory>src/test/franca-unversioned</directory>
+			</testResource>
+			<testResource>
 				<directory>src/test/franca-with-version</directory>
 			</testResource>
 		</testResources>

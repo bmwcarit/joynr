@@ -16,17 +16,30 @@
  * limitations under the License.
  * #L%
  */
+package tests
 
-import End2EndAbstractTest from "../End2EndAbstractTest";
+<**
+		@description: anonymous typeCollection with major version 2
+**>
+typeCollection {
+	version {
+		major 2
+		minor 0
+	}
+	struct AnonymousVersionedStruct {
+		Boolean flag2
+	}
+}
 
-describe("Compatibility tests for providers created by new generator", () => {
-    it("Provider with version in package name and original proxy", async () => {
-        const abstractTest = new End2EndAbstractTest(
-            "ProviderWithVersionedPackageNameTest",
-            "TestMultipleVersionsInterfaceProcess",
-            { versioning: "packageVersion2" }
-        );
-
-        return abstractTest.beforeEach().then(abstractTest.afterEach);
-    });
-});
+<**
+		@description: named typeCollection with major version 2
+**>
+typeCollection MultipleVersionsTypeCollection {
+	version {
+		major 2
+		minor 0
+	}
+	struct VersionedStruct {
+		Boolean flag2
+	}
+}

@@ -274,33 +274,9 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>TestMultipleInterfaceVersions2.fidl</model>
+							<model>TestMultipleInterfaceVersions2Unversioned.fidl</model>
 							<outputPath>${basedir}/src/test/generated</outputPath>
 							<addVersionTo>none</addVersionTo>
-						</configuration>
-					</execution>
-					<execution>
-						<id>generate-common-test-classes-with-name-version1</id>
-						<phase>generate-test-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>TestMultipleInterfaceVersions1.fidl</model>
-							<outputPath>${basedir}/src/test/generated</outputPath>
-							<addVersionTo>name</addVersionTo>
-						</configuration>
-					</execution>
-					<execution>
-						<id>generate-common-test-classes-with-name-version2</id>
-						<phase>generate-test-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<model>TestMultipleInterfaceVersions2.fidl</model>
-							<outputPath>${basedir}/src/test/generated</outputPath>
-							<addVersionTo>name</addVersionTo>
 						</configuration>
 					</execution>
 				</executions>

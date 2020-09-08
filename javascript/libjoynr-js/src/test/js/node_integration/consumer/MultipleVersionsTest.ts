@@ -20,13 +20,9 @@
  */
 import * as IntegrationUtils from "../IntegrationUtils";
 
-import MultipleVersionsInterfaceProviderNameVersion1 from "../../../generated/joynr/tests/MultipleVersionsInterface1Provider";
-import MultipleVersionsInterfaceProviderNameVersion2 from "../../../generated/joynr/tests/MultipleVersionsInterface2Provider";
-import MultipleVersionsInterfaceProviderPackageVersion1 from "../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider";
-import MultipleVersionsInterfaceProviderPackageVersion2 from "../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider";
 import MultipleVersionsInterfaceProviderUnversioned from "../../../generated/joynr/tests/MultipleVersionsInterfaceProvider";
-import MultipleVersionsInterfaceProxyNameVersion1 from "../../../generated/joynr/tests/MultipleVersionsInterface1Proxy";
-import MultipleVersionsInterfaceProxyNameVersion2 from "../../../generated/joynr/tests/MultipleVersionsInterface2Proxy";
+import MultipleVersionsInterfaceProxyUnversioned from "../../../generated/joynr/tests/MultipleVersionsInterfaceProxy";
+import MultipleVersionsInterfaceProxyPackageVersion1 from "../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProxy";
 import MultipleVersionsInterfaceProxyPackageVersion2 from "../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProxy";
 import ProviderImplementation from "../provider/MultipleVersionsInterfaceProviderImplementation";
 import provisioning from "../../../resources/joynr/provisioning/provisioning_cc";
@@ -101,80 +97,22 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
         expect(value2).toEqual(100);
     }
 
-    /**
-     * Two providers of different version can not be registered in a single runtime.
-     * (They are both registered with the same participant id and thus seen as one.)
-     * @Todo: Get this test to pass.
-     */
-    it("2 proxies and 2 providers of different versions in same runtime (name version vs. name version)", async () => {
-        // build and register providers
-        const [provider1, provider2] = await Promise.all([
-            buildProvider(MultipleVersionsInterfaceProviderNameVersion1),
-            buildProvider(MultipleVersionsInterfaceProviderNameVersion2)
-        ]);
-
-        // build fitting proxies
-        const [proxy1, proxy2] = await Promise.all([
-            buildProxy(MultipleVersionsInterfaceProxyNameVersion1),
-            buildProxy(MultipleVersionsInterfaceProxyNameVersion2)
-        ]);
-
-        // set primitive type attributes and check if values can be retrieved properly by proxies
-        // without mutual interference
-        await setUInt8AttributesAndCheck(proxy1, proxy2);
-
-        // unregister providers
-        await Promise.all([
-            joynr.registration.unregisterProvider(domain, provider1),
-            joynr.registration.unregisterProvider(domain, provider2)
-        ]);
-    });
-
-    /**
-     * Two providers of different version can not be registered in a single runtime.
-     * (They are both registered with the same participant id and thus seen as one.)
-     * @Todo: Get this test to pass.
-     */
-    it("2 proxies and 2 providers of different versions in same runtime (name version vs. package version)", async () => {
-        // build and register providers
-        const [provider1, provider2] = await Promise.all([
-            buildProvider(MultipleVersionsInterfaceProviderPackageVersion1),
-            buildProvider(MultipleVersionsInterfaceProviderPackageVersion2)
-        ]);
-
-        // build fitting proxies
-        const [proxy1, proxy2] = await Promise.all([
-            buildProxy(MultipleVersionsInterfaceProxyNameVersion1),
-            buildProxy(MultipleVersionsInterfaceProxyNameVersion2)
-        ]);
-
-        // set primitive type attributes and check if values can be retrieved properly by proxies
-        // without mutual interference
-        await setUInt8AttributesAndCheck(proxy1, proxy2);
-
-        // unregister providers
-        await Promise.all([
-            joynr.registration.unregisterProvider(domain, provider1),
-            joynr.registration.unregisterProvider(domain, provider2)
-        ]);
-    });
-
     it("2 proxies of different versioning types vs. unversioned provider", async () => {
         // build and register provider
         const multipleVersionsInterfaceProvider1 = await buildProvider(MultipleVersionsInterfaceProviderUnversioned);
         // build fitting proxies
         const [proxy1, proxy2] = await Promise.all([
-            buildProxy<MultipleVersionsInterfaceProxyNameVersion2>(MultipleVersionsInterfaceProxyNameVersion2),
+            buildProxy<MultipleVersionsInterfaceProxyUnversioned>(MultipleVersionsInterfaceProxyUnversioned),
             buildProxy<MultipleVersionsInterfaceProxyPackageVersion2>(MultipleVersionsInterfaceProxyPackageVersion2)
         ]);
 
         // check if attributes can be set and retrieved correctly by both proxies
-        await Promise.all([proxy1.uInt8Attribute2.set({ value: 100 }), proxy2.uInt8Attribute1.set({ value: 50 })]);
+        await Promise.all([proxy1.uInt8Attribute1.set({ value: 100 }), proxy2.uInt8Attribute2.set({ value: 50 })]);
 
         const [value1, value2] = await Promise.all([proxy1.uInt8Attribute1.get(), proxy2.uInt8Attribute2.get()]);
 
-        expect(value1).toEqual(50);
-        expect(value2).toEqual(100);
+        expect(value1).toEqual(100);
+        expect(value2).toEqual(50);
 
         await joynr.registration.unregisterProvider(domain, multipleVersionsInterfaceProvider1);
     });
@@ -186,7 +124,7 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
             "",
             domain,
             {
-                versioning: "nameVersion1",
+                versioning: "packageVersion1",
                 noJoynrShutdown: true
             }
         );
@@ -200,7 +138,7 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
             "",
             domain,
             {
-                versioning: "nameVersion2",
+                versioning: "packageVersion2",
                 noJoynrShutdown: true
             }
         );
@@ -216,8 +154,8 @@ describe("libjoynr-js.integration.MultipleVersionsTest", () => {
 
         // build fitting proxies
         const [proxy1, proxy2] = await Promise.all([
-            buildProxy(MultipleVersionsInterfaceProxyNameVersion1),
-            buildProxy(MultipleVersionsInterfaceProxyNameVersion2)
+            buildProxy(MultipleVersionsInterfaceProxyPackageVersion1),
+            buildProxy(MultipleVersionsInterfaceProxyPackageVersion2)
         ]);
 
         // set attributes and check if values can be retrieved properly by proxies without mutual interference

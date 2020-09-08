@@ -7,6 +7,7 @@
     "joynr-includes/test": [
       "../../../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions1.fidl",
       "../../../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions2.fidl",
+      "../../../../basemodel/src/test/franca-unversioned/TestMultipleInterfaceVersions2Unversioned.fidl",
       "../../../../basemodel/src/test/franca-with-version/TestMultipleTypeVersions1.fidl",
       "../../../../basemodel/src/test/franca-with-version/TestMultipleTypeVersions2.fidl",
       "../../../../basemodel/src/test/franca/FrancaNameTest.fidl",

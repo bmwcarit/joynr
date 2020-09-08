@@ -20,7 +20,10 @@ package tests
 
 import tests.* from "TestMultipleTypeVersions2.fidl"
 
-// this interface is used to build a provider and a proxy trying to use different versions of the same interface
+// This interface is used to build a provider and a proxy trying to use different
+// versions of the same interface, with and without generator versioning.
+// See also ../franca-unversioned/TestMultipleInterfaceVersions2Unversioned.fidl
+// for a copy of this interface with disabled version generation.
 interface MultipleVersionsInterface {
 		version { major 2 minor 0 }
 

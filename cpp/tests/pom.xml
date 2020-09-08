@@ -82,7 +82,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions2.fidl</model>
+							<model>${basedir}/../../basemodel/src/test/franca-unversioned/TestMultipleInterfaceVersions2Unversioned.fidl</model>
 							<outputPath>${basedir}/gen-with-version</outputPath>
 							<addVersionTo>none</addVersionTo>
 						</configuration>

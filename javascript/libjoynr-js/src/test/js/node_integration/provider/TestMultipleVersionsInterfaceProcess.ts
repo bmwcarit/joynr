@@ -21,8 +21,6 @@ import * as ChildProcessUtils from "../ChildProcessUtils";
 
 import joynr from "joynr";
 import provisioning from "../../../resources/joynr/provisioning/provisioning_cc";
-import MultipleVersionsInterfaceProviderNameVersion1 from "../../../generated/joynr/tests/MultipleVersionsInterface1Provider";
-import MultipleVersionsInterfaceProviderNameVersion2 from "../../../generated/joynr/tests/MultipleVersionsInterface2Provider";
 import MultipleVersionsInterfaceProviderPackageVersion1 from "../../../generated/joynr/tests/v1/MultipleVersionsInterfaceProvider";
 import MultipleVersionsInterfaceProviderPackageVersion2 from "../../../generated/joynr/tests/v2/MultipleVersionsInterfaceProvider";
 import ProviderImplementation from "./MultipleVersionsInterfaceProviderImplementation";
@@ -43,12 +41,6 @@ async function initializeTest(_provisioningSuffix: any, providedDomain: string, 
     });
 
     switch (settings.versioning) {
-        case "nameVersion1":
-            MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion1;
-            break;
-        case "nameVersion2":
-            MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderNameVersion2;
-            break;
         case "packageVersion1":
             MultipleVersionsInterfaceProvider = MultipleVersionsInterfaceProviderPackageVersion1;
             break;

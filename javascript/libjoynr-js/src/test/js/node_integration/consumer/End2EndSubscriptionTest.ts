@@ -379,15 +379,15 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
 
         it("with empty partitions", async () => {
             await testMulticastWithPartitions([]);
-        });
+        }, 20000);
 
         it("with first-level partition", async () => {
             await testMulticastWithPartitions(["a"]);
-        });
+        }, 20000);
 
         it("with multi-level partition", async () => {
             await testMulticastWithPartitions(["a", "b", "c", "d", "e", "f", "g"]);
-        });
+        }, 20000);
 
         it("with multi-level publication partition including asterisk", async () => {
             await testMulticastWithPartitionsExtended(

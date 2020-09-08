@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,17 @@
  */
 package tests
 
-import tests.* from "TestMultipleTypeVersions1.fidl"
+import tests.* from "TestMultipleTypeVersions2Unversioned.fidl"
 
 // This interface is used to build a provider and a proxy trying to use different
 // versions of the same interface, with and without generator versioning.
+// This file is a copy of ../franca-with-version/TestMultipleInterfaceVersions2.fidl
+// with additional #noVersionGeneration comment.
+<**
+		@description: #noVersionGeneration
+**>
 interface MultipleVersionsInterface {
-		version { major 1 minor 0 }
+		version { major 2 minor 0 }
 
 		method getTrue {
 				out {
@@ -60,7 +65,10 @@ interface MultipleVersionsInterface {
 
 		attribute UInt8 uInt8Attribute1
 
+		attribute UInt8 uInt8Attribute2
+
 		struct InterfaceVersionedStruct {
-			Boolean flag
+			Boolean flag1
+			Boolean flag2
 		}
 }
