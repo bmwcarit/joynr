@@ -20,6 +20,7 @@ package io.joynr.generator.templates.util
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import javax.inject.Singleton
+import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FBasicTypeId
@@ -55,7 +56,8 @@ class NamingUtil {
 		if (modelElement instanceof FTypeCollection
 			&& (modelElement as FTypeCollection).version !== null) {
 			// This also works for interfaces because FInterface is a subtype of FTypeCollection
-			return (if (packageWithVersion) '.v' else '') + (modelElement as FTypeCollection).version.major;
+			return (if (!commentContainsNoVersionGeneration(modelElement)) '.v' else '') +
+			 (modelElement as FTypeCollection).version.major;
 		} else if (modelElement instanceof FType) {
 			if (modelElement.partOfTypeCollection) {
 				return getVersionSuffix(modelElement.typeCollection);
@@ -133,5 +135,17 @@ class NamingUtil {
 			return null;
 			// throw new IllegalStateException("The typename cannot be resolved" + (if (type == null) ", because the invoked parameter is null " else (" for type " + type)))
 		}
+	}
+
+	def boolean commentContainsNoVersionGeneration(FModelElement element){
+		if (element.comment === null) {
+			return false
+		}
+		for (comment : element.comment.elements) {
+			if (comment.type == FAnnotationType::DESCRIPTION && comment.rawText.contains("#noVersionGeneration")) {
+				return true
+			}
+		}
+		return false
 	}
 }

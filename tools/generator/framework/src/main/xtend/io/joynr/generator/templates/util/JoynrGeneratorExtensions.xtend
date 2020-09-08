@@ -81,7 +81,8 @@ class JoynrGeneratorExtensions {
 						fModelElement.eResource.toString) + " cannot be parsed correctly"
 			throw new IllegalStateException(errorMsg);
 		} else if (fModelElement.eContainer instanceof FModel) {
-			return (fModelElement.eContainer as FModel).joynrName + if (packageWithVersion) getVersionSuffix(fModelElement) else '';
+			val generateVersion = !commentContainsNoVersionGeneration(fModelElement);
+			return (fModelElement.eContainer as FModel).joynrName + if (generateVersion) getVersionSuffix(fModelElement) else '';
 		} else if (fModelElement instanceof FMethod) {
 			// include interface name for unnamed error enums (defined or extended inside method definition)
 			val finterface = fModelElement.eContainer as FModelElement
@@ -322,18 +323,6 @@ class JoynrGeneratorExtensions {
 					 + fType.name + "\" in " + path)
 			}
 		}
-	}
-
-	def boolean commentContainsNoVersionGeneration(FModelElement element){
-		if (element.comment === null) {
-			return false
-		}
-		for (comment : element.comment.elements) {
-			if (comment.type == FAnnotationType::DESCRIPTION && comment.rawText.contains("#noVersionGeneration")) {
-				return true
-			}
-		}
-		return false
 	}
 
 	def printVersionWarnings(FInterface fInterface, boolean packageWithVersion, boolean namewithVersion) {
