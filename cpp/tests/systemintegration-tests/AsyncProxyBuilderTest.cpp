@@ -118,3 +118,129 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
 
     EXPECT_TRUE(onErrorCalledSemaphore.waitFor(std::chrono::seconds(10)));
 }
+
+TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_succeeds)
+{
+    const std::string domain = "testArbitrationResultSuccessDomain";
+    auto testProvider = std::make_shared<MockTestProvider>();
+
+    types::ProviderQos providerQos;
+    providerQos.setPriority(2);
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    std::string participantId =
+            runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
+
+    // Fake ArbitrationResult to build proxy
+    joynr::types::Version interfaceVersion(tests::testProvider::MAJOR_VERSION, tests::testProvider::MINOR_VERSION);
+    types::DiscoveryEntryWithMetaInfo discoveryEntry = types::DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                                                                         domain,
+                                                                                         tests::testProvider::INTERFACE_NAME(),
+                                                                                         "participantId1",
+                                                                                         providerQos,
+                                                                                         9900,
+                                                                                         15000,
+                                                                                         "_publicKeyId1",
+                                                                                         true);
+
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries {discoveryEntry};
+    ArbitrationResult arbitrationResult = ArbitrationResult(discoveryEntries);
+
+    std::shared_ptr<tests::testProxy> proxy = testProxyBuilder
+            ->setMessagingQos(MessagingQos(50000))
+            ->setDiscoveryQos(discoveryQos)
+            ->build(arbitrationResult);
+    EXPECT_NE(nullptr, proxy);
+
+    runtime->unregisterProvider(participantId);
+}
+
+TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_throwsException_whenArbitrationResultEmpty)
+{
+    const std::string domain = "testArbitrationResultSuccessDomain";
+    auto testProvider = std::make_shared<MockTestProvider>();
+
+    types::ProviderQos providerQos;
+    providerQos.setPriority(2);
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    std::string participantId =
+            runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
+
+    ArbitrationResult arbitrationResult = ArbitrationResult();
+
+    bool exceptionThrown = false;
+    bool messageFound = false;
+    try {
+        std::shared_ptr<tests::testProxy> proxy = testProxyBuilder
+                ->setMessagingQos(MessagingQos(50000))
+                ->setDiscoveryQos(discoveryQos)
+                ->build(arbitrationResult);
+    } catch (const exceptions::DiscoveryException& e) {
+        std::string exceptionMessage = e.getMessage();
+        std::string expectedSubstring = "ArbitrationResult is empty";
+        messageFound = exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
+        exceptionThrown = true;
+    }
+
+    EXPECT_TRUE(exceptionThrown);
+    EXPECT_TRUE(messageFound);
+
+    runtime->unregisterProvider(participantId);
+}
+
+TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_throwsException_whenParticipantIdEmpty)
+{
+    const std::string domain = "testArbitrationResultSuccessDomain";
+    auto testProvider = std::make_shared<MockTestProvider>();
+
+    types::ProviderQos providerQos;
+    providerQos.setPriority(2);
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    std::string participantId =
+            runtime->registerProvider<tests::testProvider>(domain, testProvider, providerQos);
+
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
+
+    // Fake ArbitrationResult to build proxy
+    joynr::types::Version interfaceVersion(tests::testProvider::MAJOR_VERSION, tests::testProvider::MINOR_VERSION);
+    types::DiscoveryEntryWithMetaInfo discoveryEntry = types::DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                                                                         domain,
+                                                                                         tests::testProvider::INTERFACE_NAME(),
+                                                                                         "",
+                                                                                         providerQos,
+                                                                                         9900,
+                                                                                         15000,
+                                                                                         "_publicKeyId1",
+                                                                                         true);
+
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries {discoveryEntry};
+    ArbitrationResult arbitrationResult = ArbitrationResult(discoveryEntries);
+
+    bool exceptionThrown = false;
+    bool messageFound = false;
+    try {
+        std::shared_ptr<tests::testProxy> proxy = testProxyBuilder
+                ->setMessagingQos(MessagingQos(50000))
+                ->setDiscoveryQos(discoveryQos)
+                ->build(arbitrationResult);
+    } catch (const exceptions::DiscoveryException& e) {
+        std::string exceptionMessage = e.getMessage();
+        std::string expectedSubstring = "ParticipantId is empty";
+        messageFound = exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
+        exceptionThrown = true;
+    }
+
+    EXPECT_TRUE(exceptionThrown);
+    EXPECT_TRUE(messageFound);
+
+    runtime->unregisterProvider(participantId);
+}
