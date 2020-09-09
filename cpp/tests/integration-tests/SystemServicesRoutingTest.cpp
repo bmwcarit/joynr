@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ public:
               mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageSender(std::make_shared<MockTransportMessageSender>()),
-              mqttMultipleConnections(std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>()),
               discoveryQos(),
               routingProxyBuilder(nullptr),
               routingProxy(nullptr),
@@ -73,8 +72,7 @@ public:
 
         std::string serializedChannelAddress =
                 joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
-        std::string serializedMqttAddress =
-                joynr::serializer::serializeToJson(mqttGlobalAddress);
+        std::string serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
 
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(
                               mockMessageReceiverHttp).get()),
@@ -96,8 +94,7 @@ public:
                                                                   nullptr,
                                                                   nullptr,
                                                                   mockMessageReceiverHttp,
-                                                                  mockMessageSender,
-                                                                  mqttMultipleConnections);
+                                                                  mockMessageSender);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
     }
@@ -147,7 +144,6 @@ protected:
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<MockTransportMessageSender> mockMessageSender;
-    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>> mqttMultipleConnections;
     DiscoveryQos discoveryQos;
     std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
     std::shared_ptr<joynr::system::RoutingProxy> routingProxy;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@ public:
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<ITransportMessageSender> mockMessageSenderMqtt;
-    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>> mqttMultipleConnections;
     DiscoveryQos discoveryQos;
     std::shared_ptr<ProxyBuilder<joynr::system::DiscoveryProxy>> discoveryProxyBuilder;
     std::shared_ptr<joynr::system::DiscoveryProxy> discoveryProxy;
@@ -70,7 +69,6 @@ public:
               mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageSenderMqtt(std::make_shared<MockTransportMessageSender>()),
-              mqttMultipleConnections(std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>()),
               discoveryQos(),
               discoveryProxyBuilder(nullptr),
               discoveryProxy(nullptr),
@@ -98,8 +96,7 @@ public:
 
         std::string serializedChannelAddress =
                 joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
-        std::string serializedMqttAddress =
-                joynr::serializer::serializeToJson(mqttGlobalAddress);
+        std::string serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
 
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(
                               mockMessageReceiverHttp).get()),
@@ -111,8 +108,7 @@ public:
                 .WillRepeatedly(Return(serializedMqttAddress));
         EXPECT_CALL(
                 *(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)),
-                getGlobalClusterControllerAddress())
-                .WillRepeatedly(ReturnRef(mqttGlobalAddress));
+                getGlobalClusterControllerAddress()).WillRepeatedly(ReturnRef(mqttGlobalAddress));
 
         // runtime can only be created, after MockCommunicationManager has been told to return
         // a channelId for getReceiveChannelId.
@@ -121,8 +117,7 @@ public:
                                                                   nullptr,
                                                                   nullptr,
                                                                   mockMessageReceiverHttp,
-                                                                  nullptr,
-                                                                  mqttMultipleConnections);
+                                                                  nullptr);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
 
@@ -153,10 +148,12 @@ public:
     }
 
 protected:
-    void genericAddLookupRemoveDiscoveryEntryTest(std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result,
-                                                  std::string domain,
-                                                  std::string interfaceName,
-                                                  joynr::types::DiscoveryQos discoveryQosLocal) {
+    void genericAddLookupRemoveDiscoveryEntryTest(
+            std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result,
+            std::string domain,
+            std::string interfaceName,
+            joynr::types::DiscoveryQos discoveryQosLocal)
+    {
         discoveryProxy = discoveryProxyBuilder->setMessagingQos(MessagingQos(5000))
                                  ->setDiscoveryQos(discoveryQos)
                                  ->build();
@@ -206,7 +203,8 @@ protected:
         EXPECT_EQ(expectedResult[0].getParticipantId(), result[0].getParticipantId());
         EXPECT_EQ(expectedResult[0].getQos(), result[0].getQos());
         EXPECT_TRUE(expectedResult[0].getLastSeenDateMs() <= result[0].getLastSeenDateMs() &&
-                    result[0].getLastSeenDateMs() <= (expectedResult[0].getLastSeenDateMs() + 5000));
+                    result[0].getLastSeenDateMs() <=
+                            (expectedResult[0].getLastSeenDateMs() + 5000));
         EXPECT_EQ(expectedResult[0].getExpiryDateMs(), result[0].getExpiryDateMs());
         EXPECT_EQ(expectedResult[0].getPublicKeyId(), result[0].getPublicKeyId());
 

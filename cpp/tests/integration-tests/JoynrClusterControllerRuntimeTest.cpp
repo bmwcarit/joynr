@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,8 +84,6 @@ public:
     std::shared_ptr<MockTransportMessageReceiver> mockMqttMessageReceiver;
     std::shared_ptr<MockTransportMessageSender> mockMqttMessageSender;
     std::shared_ptr<MockMosquittoConnection> mockMosquittoConnection;
-    std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
-            mockMqttMultipleConnections;
     Semaphore semaphore;
     std::string serializedChannelAddress;
     std::string serializedMqttAddress;
@@ -130,7 +128,6 @@ public:
                                                                 std::chrono::seconds(1),
                                                                 false,
                                                                 "testClientId")),
-              mockMqttMultipleConnections(),
               semaphore(0),
               globalMqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic"),
               globalMqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl"),
@@ -168,34 +165,21 @@ public:
         EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .Times(0);
 
-        mockMqttMultipleConnections.push_back(
-                std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
-        auto connectionData =
-                std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
-                        mockMqttMultipleConnections[0]);
-
-        EXPECT_CALL(*connectionData, getMqttMessageReceiver())
-                .WillRepeatedly(Return(mockMqttMessageReceiver));
-
-        EXPECT_CALL(*connectionData, getMqttMessageSender())
-                .WillRepeatedly(Return(mockMqttMessageSender));
-
-        EXPECT_CALL(*connectionData, getMosquittoConnection())
-                .WillRepeatedly(Return(mockMosquittoConnection));
-
         EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .WillOnce(::testing::Return(serializedMqttAddress));
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .WillOnce(::testing::ReturnRef(mqttGlobalAddress));
 
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(
+        auto testRuntime = std::make_shared<JoynrClusterControllerRuntimeMockMqtt>(
                 std::make_unique<Settings>(settingsFilenameMqtt),
                 failOnFatalRuntimeError,
                 nullptr,
                 nullptr,
                 mockHttpMessageReceiver,
-                mockHttpMessageSender,
-                mockMqttMultipleConnections);
+                mockHttpMessageSender);
+        testRuntime->mockJoynrClusterControllerMqttConnectionData(
+                mockMosquittoConnection, mockMqttMessageReceiver, mockMqttMessageSender);
+        runtime = testRuntime;
         runtime->init();
     }
 
@@ -203,54 +187,26 @@ public:
     {
         EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .Times(0);
-
-        std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>>
-                connectionDataVector;
-        for (std::uint8_t i = 0; i < 3; i++) {
-            mockMqttMultipleConnections.push_back(
-                    std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
-
-            auto connectionData =
-                    std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
-                            mockMqttMultipleConnections[i]);
-            connectionDataVector.push_back(connectionData);
-
-            EXPECT_CALL(*connectionDataVector[i], getMqttMessageReceiver())
-                    .WillRepeatedly(Return(mockMqttMessageReceiver));
-
-            EXPECT_CALL(*connectionDataVector[i], getMqttMessageSender()).Times(3);
-
-            EXPECT_CALL(*connectionDataVector[i], getMosquittoConnection())
-                    .WillRepeatedly(Return(mockMosquittoConnection));
-        }
-
         EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .WillOnce(::testing::Return(serializedMqttAddress));
         EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
                 .WillOnce(::testing::ReturnRef(mqttGlobalAddress));
 
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(
+        auto testRuntime = std::make_shared<JoynrClusterControllerRuntimeMockMqtt>(
                 std::make_unique<Settings>(settingsFilenameMqttMultipleBackends),
                 failOnFatalRuntimeError,
                 nullptr,
                 nullptr,
                 mockHttpMessageReceiver,
-                mockHttpMessageSender,
-                mockMqttMultipleConnections);
+                mockHttpMessageSender);
+        testRuntime->mockJoynrClusterControllerMqttConnectionData(
+                mockMosquittoConnection, mockMqttMessageReceiver, mockMqttMessageSender);
+        runtime = testRuntime;
         runtime->init();
     }
 
     void createRuntimeHttp()
     {
-        mockMqttMultipleConnections.push_back(
-                std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
-        auto connectionData =
-                std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
-                        mockMqttMultipleConnections[0]);
-
-        EXPECT_CALL(*connectionData, getMqttMessageReceiver())
-                .WillRepeatedly(Return(mockMqttMessageReceiver));
-
         // runtime can only be created, after MockMessageReceiver has been told to return
         // a channelId for getReceiveChannelId.
         EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress())
@@ -260,14 +216,16 @@ public:
         EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .Times(0);
 
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(
+        auto testRuntime = std::make_shared<JoynrClusterControllerRuntimeMockMqtt>(
                 std::make_unique<Settings>(settingsFilenameHttp),
                 failOnFatalRuntimeError,
                 nullptr,
                 nullptr,
                 mockHttpMessageReceiver,
-                mockHttpMessageSender,
-                mockMqttMultipleConnections);
+                mockHttpMessageSender);
+        testRuntime->mockJoynrClusterControllerMqttConnectionData(
+                mockMosquittoConnection, mockMqttMessageReceiver, mockMqttMessageSender);
+        runtime = testRuntime;
         runtime->init();
     }
 
@@ -301,8 +259,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeSimpleCreateAndDestroy)
             nullptr,
             nullptr,
             mockHttpMessageReceiver,
-            mockHttpMessageSender,
-            mockMqttMultipleConnections);
+            mockHttpMessageSender);
     runtime.reset();
 }
 
@@ -314,8 +271,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeShutdownWithoutInit)
             nullptr,
             nullptr,
             mockHttpMessageReceiver,
-            mockHttpMessageSender,
-            mockMqttMultipleConnections);
+            mockHttpMessageSender);
     runtime->shutdown();
 }
 
@@ -335,12 +291,10 @@ TEST_F(JoynrClusterControllerRuntimeTest, loadMultipleAclRclFiles)
             nullptr,
             nullptr,
             mockHttpMessageReceiver,
-            mockHttpMessageSender,
-            mockMqttMultipleConnections);
-
-    runtime->init();
+            mockHttpMessageSender);
 
     ASSERT_TRUE(runtime != nullptr);
+    runtime->init();
 }
 
 TEST_F(JoynrClusterControllerRuntimeTest, instantiateRuntimeMqtt)
@@ -391,18 +345,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
             [msg](std::function<void(smrf::ByteVector && )> onMessageReceived) mutable {
         onMessageReceived(std::move(msg));
     };
-
-    mockMqttMultipleConnections.push_back(
-            std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
-    auto connectionData = std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
-            mockMqttMultipleConnections[0]);
-
-    EXPECT_CALL(*connectionData, getMqttMessageReceiver())
-            .WillRepeatedly(Return(mockMqttMessageReceiver));
-
-    EXPECT_CALL(*connectionData, getMqttMessageSender()).Times(3);
-    EXPECT_CALL(*connectionData, getMosquittoConnection()).Times(1);
-
+    EXPECT_CALL(*mockMqttMessagingSkeleton, onMessageReceivedMock(msg));
     EXPECT_CALL(*mockMqttMessageReceiver, registerReceiveCallback(_))
             .WillOnce(Invoke(registerReceivedCallbackHelper));
     EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
@@ -410,16 +353,17 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
     EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
             .WillOnce(::testing::ReturnRef(mqttGlobalAddress));
 
-    EXPECT_CALL(*mockMqttMessagingSkeleton, onMessageReceivedMock(msg));
-
-    runtime = std::make_shared<JoynrClusterControllerRuntime>(
+    auto testRuntime = std::make_shared<JoynrClusterControllerRuntimeMockMqtt>(
             std::make_unique<Settings>(settingsFilenameMqtt),
             failOnFatalRuntimeError,
             nullptr,
             mockMqttMessagingSkeletonFactory,
             mockHttpMessageReceiver,
-            mockHttpMessageSender,
-            mockMqttMultipleConnections);
+            mockHttpMessageSender);
+    auto mqttConnectionDataMocks = testRuntime->mockJoynrClusterControllerMqttConnectionData(
+            mockMosquittoConnection, mockMqttMessageReceiver, mockMqttMessageSender);
+    EXPECT_CALL(*mqttConnectionDataMocks[0], getMqttMessageSender()).Times(3);
+    runtime = testRuntime;
     runtime->init();
 }
 
@@ -467,8 +411,7 @@ TEST_F(JoynrClusterControllerRuntimeTest,
                     nullptr,
                     nullptr,
                     mockHttpMessageReceiver,
-                    mockHttpMessageSender,
-                    mockMqttMultipleConnections),
+                    mockHttpMessageSender),
             exceptions::JoynrRuntimeException);
 }
 
@@ -476,35 +419,27 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeAllowsEmptyGbid)
 {
     EXPECT_CALL(*mockHttpMessageReceiver, getSerializedGlobalClusterControllerAddress()).Times(0);
 
-    std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>> connectionDataVector;
-    mockMqttMultipleConnections.push_back(
-            std::make_shared<MockJoynrClusterControllerMqttConnectionData>());
-
-    auto connectionData = std::dynamic_pointer_cast<MockJoynrClusterControllerMqttConnectionData>(
-            mockMqttMultipleConnections[0]);
-    connectionDataVector.push_back(connectionData);
-
-    EXPECT_CALL(*connectionDataVector[0], getMqttMessageReceiver()).Times(5).WillRepeatedly(
-            Return(mockMqttMessageReceiver));
-
-    EXPECT_CALL(*connectionDataVector[0], getMqttMessageSender()).Times(3);
-
-    EXPECT_CALL(*connectionDataVector[0], getMosquittoConnection()).Times(3).WillRepeatedly(
-            Return(mockMosquittoConnection));
-
     EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
             .WillOnce(::testing::Return(serializedMqttAddress));
     EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
             .WillOnce(::testing::ReturnRef(mqttGlobalAddress));
 
-    runtime = std::make_shared<JoynrClusterControllerRuntime>(
+    auto testRuntime = std::make_shared<JoynrClusterControllerRuntimeMockMqtt>(
             std::make_unique<Settings>(settingsFilenameMqttMultipleBackendsEmptyDefaultGbid),
             failOnFatalRuntimeError,
             nullptr,
             nullptr,
             mockHttpMessageReceiver,
-            mockHttpMessageSender,
-            mockMqttMultipleConnections);
+            mockHttpMessageSender);
+    auto mqttConnectionDataMocks = testRuntime->mockJoynrClusterControllerMqttConnectionData(
+            mockMosquittoConnection, mockMqttMessageReceiver, mockMqttMessageSender);
+    EXPECT_CALL(*mqttConnectionDataMocks[0], getMqttMessageReceiver()).Times(5);
+
+    EXPECT_CALL(*mqttConnectionDataMocks[0], getMqttMessageSender()).Times(3);
+
+    EXPECT_CALL(*mqttConnectionDataMocks[0], getMosquittoConnection()).Times(2);
+    runtime = testRuntime;
+
     runtime->init();
     runtime->startExternalCommunication();
 
