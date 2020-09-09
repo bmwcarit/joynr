@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,9 +128,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::shared_ptr<IKeychain> keyChain,
         MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory,
         std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver,
-        std::shared_ptr<ITransportMessageSender> httpMessageSender,
-        std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
-                mqttConnectionDataVector)
+        std::shared_ptr<ITransportMessageSender> httpMessageSender)
         : JoynrRuntimeImpl(*settings, std::move(onFatalRuntimeError), std::move(keyChain)),
           _joynrDispatcher(),
           _subscriptionManager(),
@@ -141,7 +139,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _httpMessageSender(httpMessageSender),
           _httpMessagingSkeleton(nullptr),
           _mqttMessagingSkeletonFactory(std::move(mqttMessagingSkeletonFactory)),
-          _mqttConnectionDataVector(mqttConnectionDataVector),
           _dispatcherList(),
           _settings(std::move(settings)),
           _libjoynrSettings(*(this->_settings)),
@@ -242,21 +239,17 @@ void JoynrClusterControllerRuntime::init()
     _udsSettings.printSettings();
 
     fillAvailableGbidsVector();
-
-    if (_mqttConnectionDataVector.empty()) {
-        // Create entries for MqttConnection(s)
-        for (std::uint8_t i = 0; i < _availableGbids.size(); i++) {
-            _mqttConnectionDataVector.push_back(
-                    std::make_shared<JoynrClusterControllerMqttConnectionData>());
-        }
-    } else if (_availableGbids.size() != _mqttConnectionDataVector.size()) {
-        static const exceptions::JoynrRuntimeException fatalError(
-                "Missmatch of availabale GBIDs available MQTT connection data.");
-        if (_onFatalRuntimeError) {
-            _onFatalRuntimeError(fatalError);
-        }
-        JOYNR_LOG_ERROR(logger(), fatalError.getMessage());
+    /*
+     * Even if MQTT messaging is not enabled, the corresponding data vector entries need to be
+     * accessible
+     * _mqttConnectionDataVector can be preinitialized by derived class.
+     */
+    while (_mqttConnectionDataVector.size() < _availableGbids.size()) {
+        _mqttConnectionDataVector.push_back(
+                std::make_shared<JoynrClusterControllerMqttConnectionData>());
     }
+    _mqttConnectionDataVector.resize(_availableGbids.size()); // Sizes must be equal!
+
     const BrokerUrl defaultBrokerUrl = _messagingSettings.getBrokerUrl();
 
     // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP

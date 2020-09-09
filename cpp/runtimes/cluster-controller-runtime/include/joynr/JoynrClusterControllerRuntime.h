@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,10 +109,7 @@ public:
             std::shared_ptr<IKeychain> _keyChain = nullptr,
             MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
             std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
-            std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr,
-            std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
-                    mqttConnectionDataVector = std::vector<
-                            std::shared_ptr<JoynrClusterControllerMqttConnectionData>>());
+            std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr);
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
 
