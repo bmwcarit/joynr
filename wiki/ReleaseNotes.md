@@ -2,6 +2,20 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.11.6
+
+This is a non-content release, only necessary due to an error while releasing Java
+artifacts on Maven Central.
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
 # joynr 1.11.5
 
 ## API relevant changes
