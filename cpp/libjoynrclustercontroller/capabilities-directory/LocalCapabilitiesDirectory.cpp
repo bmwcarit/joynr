@@ -148,56 +148,7 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
                 timerError.message());
     }
 
-    std::vector<std::string> participantIds;
-
-    const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                     std::chrono::system_clock::now().time_since_epoch()).count();
-    const std::int64_t newExpiryDateMs = now + _defaultExpiryIntervalMs;
-    {
-        std::lock_guard<std::recursive_mutex> expiryDateUpdateLock(
-                _localCapabilitiesDirectoryStore->getCacheLock());
-        for (auto entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
-            bool refresh_entry = false;
-            if (now > entry.getLastSeenDateMs()) {
-                entry.setLastSeenDateMs(now);
-                refresh_entry = true;
-            }
-            if (newExpiryDateMs > entry.getExpiryDateMs()) {
-                entry.setExpiryDateMs(newExpiryDateMs);
-                refresh_entry = true;
-            }
-            if (refresh_entry) {
-                if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
-                    participantIds.push_back(entry.getParticipantId());
-                }
-                _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(entry);
-            }
-        }
-        for (auto participantId : participantIds) {
-            auto globalEntryOptional =
-                    _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(
-                            participantId);
-            if (!(globalEntryOptional.has_value())) {
-                continue;
-            }
-            auto globalEntry = globalEntryOptional.get();
-            bool refresh_entry = false;
-            if (now > globalEntry.getLastSeenDateMs()) {
-                globalEntry.setLastSeenDateMs(now);
-                refresh_entry = true;
-            }
-            if (newExpiryDateMs > globalEntry.getExpiryDateMs()) {
-                globalEntry.setExpiryDateMs(newExpiryDateMs);
-                refresh_entry = true;
-            }
-            if (refresh_entry) {
-                _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
-                        globalEntry,
-                        _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
-                                globalEntry.getParticipantId()));
-            }
-        }
-    }
+    std::vector<std::string> participantIds = getParticipantIdsToTouch();
 
     auto onSuccess = [ ccId = _clusterControllerId, participantIds ]()
     {
@@ -1389,6 +1340,60 @@ void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
                                                     clusterControllerStartDateMs,
                                                     std::move(onSuccess),
                                                     std::move(onRuntimeError));
+}
+
+std::vector<std::string> LocalCapabilitiesDirectory::getParticipantIdsToTouch()
+{
+    std::vector<std::string> participantIds;
+    const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                     std::chrono::system_clock::now().time_since_epoch()).count();
+    const std::int64_t newExpiryDateMs = now + _defaultExpiryIntervalMs;
+    {
+        std::lock_guard<std::recursive_mutex> expiryDateUpdateLock(
+                _localCapabilitiesDirectoryStore->getCacheLock());
+        for (auto entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
+            bool refresh_entry = false;
+            if (now > entry.getLastSeenDateMs()) {
+                entry.setLastSeenDateMs(now);
+                refresh_entry = true;
+            }
+            if (newExpiryDateMs > entry.getExpiryDateMs()) {
+                entry.setExpiryDateMs(newExpiryDateMs);
+                refresh_entry = true;
+            }
+            if (refresh_entry) {
+                if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
+                    participantIds.push_back(entry.getParticipantId());
+                }
+                _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(entry);
+            }
+        }
+        for (auto participantId : participantIds) {
+            auto globalEntryOptional =
+                    _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(
+                            participantId);
+            if (!(globalEntryOptional.has_value())) {
+                continue;
+            }
+            auto globalEntry = globalEntryOptional.get();
+            bool refresh_entry = false;
+            if (now > globalEntry.getLastSeenDateMs()) {
+                globalEntry.setLastSeenDateMs(now);
+                refresh_entry = true;
+            }
+            if (newExpiryDateMs > globalEntry.getExpiryDateMs()) {
+                globalEntry.setExpiryDateMs(newExpiryDateMs);
+                refresh_entry = true;
+            }
+            if (refresh_entry) {
+                _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
+                        globalEntry,
+                        _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
+                                globalEntry.getParticipantId()));
+            }
+        }
+    }
+    return participantIds;
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(

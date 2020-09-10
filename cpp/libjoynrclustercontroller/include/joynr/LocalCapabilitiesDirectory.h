@@ -303,6 +303,8 @@ private:
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::types::DiscoveryError::Enum&)> onError);
     bool hasProviderPermission(const types::DiscoveryEntry& discoveryEntry);
+
+    std::vector<std::string> getParticipantIdsToTouch();
 };
 
 class LocalCapabilitiesCallback : public ILocalCapabilitiesCallback
