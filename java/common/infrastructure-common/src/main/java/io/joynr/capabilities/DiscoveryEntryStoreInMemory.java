@@ -69,7 +69,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
      * capabilities .DiscoveryEntry)
      */
     @Override
-    public synchronized void add(T discoveryEntry) {
+    public void add(T discoveryEntry) {
         if (discoveryEntry.getDomain() == null || discoveryEntry.getInterfaceName() == null
                 || discoveryEntry.getParticipantId() == null) {
             String message = "discoveryEntry being registered is not complete: " + discoveryEntry;
