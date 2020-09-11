@@ -62,10 +62,11 @@ public:
                                    std::function<void()> onSuccess,
                                    std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 
-    MOCK_METHOD4(touch, void(const std::string& clusterControllerId,
-                     const std::vector<std::string>& participantIds,
-                     std::function<void()> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+    MOCK_METHOD5(touch, void(const std::string& clusterControllerId,
+                             const std::vector<std::string>& participantIds,
+                             const std::string& gbid,
+                             std::function<void()> onSuccess,
+                             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
 };
 
 #endif // TESTS_MOCK_MOCKGLOBALCAPABILITIESDIRECTORYCLIENT_H

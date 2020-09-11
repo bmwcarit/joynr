@@ -124,11 +124,13 @@ void GlobalCapabilitiesDirectoryClient::lookup(
 void GlobalCapabilitiesDirectoryClient::touch(
         const std::string& clusterControllerId,
         const std::vector<std::string>& participantIds,
+        const std::string& gbid,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError)
 {
     MessagingQos touchMessagingQos = _messagingQos;
     touchMessagingQos.setTtl(_touchTtl);
+    touchMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbid);
     _capabilitiesProxy->touchAsync(clusterControllerId,
                                    participantIds,
                                    std::move(onSuccess),
