@@ -63,11 +63,9 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     // Fixes FindBug warning: DL: Synchronization on Boolean
     private Object storeLock = new Object();
 
-    public DiscoveryEntryStoreInMemory(CapabilitiesProvisioning staticProvisioning,
-                                       int maximumNumberOfNonStickyEntries) {
+    public DiscoveryEntryStoreInMemory(int maximumNumberOfNonStickyEntries) {
         logger.info("Creating CapabilitiesStore with static provisioning, maximumNumberOfNonStickyEntries = {}",
                     maximumNumberOfNonStickyEntries);
-        //add(staticProvisioning.getCapabilityEntries());
         this.maximumNumberOfNonStickyEntries = maximumNumberOfNonStickyEntries;
     }
 

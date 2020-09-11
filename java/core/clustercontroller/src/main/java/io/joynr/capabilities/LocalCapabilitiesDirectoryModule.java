@@ -28,12 +28,12 @@ import joynr.types.GlobalDiscoveryEntry;
 public class LocalCapabilitiesDirectoryModule extends AbstractModule {
     @Provides
     DiscoveryEntryStore<DiscoveryEntry> providesLocalStore() {
-        return new DiscoveryEntryStoreInMemory<DiscoveryEntry>(null, 0);
+        return new DiscoveryEntryStoreInMemory<DiscoveryEntry>(0);
     }
 
     @Provides
     DiscoveryEntryStore<GlobalDiscoveryEntry> providesGlobalCache() {
-        return new DiscoveryEntryStoreInMemory<GlobalDiscoveryEntry>(null, 1000);
+        return new DiscoveryEntryStoreInMemory<GlobalDiscoveryEntry>(1000);
     }
 
     @Override

@@ -49,7 +49,7 @@ public class DiscoveryEntryStoreInMemoryTest {
 
     @Before
     public void setUp() {
-        discoveryEntryStore = new DiscoveryEntryStoreInMemory<DiscoveryEntry>(null, maxiumNumberOfNonStickyEntries);
+        discoveryEntryStore = new DiscoveryEntryStoreInMemory<DiscoveryEntry>(maxiumNumberOfNonStickyEntries);
 
         localProviderQos.setScope(ProviderScope.LOCAL);
         globalProviderQos.setScope(ProviderScope.GLOBAL);
@@ -87,7 +87,7 @@ public class DiscoveryEntryStoreInMemoryTest {
         assertTrue(storeLimit < maxCount);
         assertTrue(globalEntry.getExpiryDateMs() != Long.MAX_VALUE);
 
-        discoveryEntryStore = new DiscoveryEntryStoreInMemory<DiscoveryEntry>(null, storeLimit);
+        discoveryEntryStore = new DiscoveryEntryStoreInMemory<DiscoveryEntry>(storeLimit);
 
         for (int i = 0; i < storeLimit; i++) {
             final boolean isSticky = true;
