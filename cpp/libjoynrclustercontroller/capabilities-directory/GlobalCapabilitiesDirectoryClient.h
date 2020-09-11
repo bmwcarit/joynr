@@ -117,6 +117,7 @@ public:
 
     void touch(const std::string& clusterControllerId,
                const std::vector<std::string>& participantIds,
+               const std::string& gbid,
                std::function<void()> onSuccess = nullptr,
                std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError =
                        nullptr) override;

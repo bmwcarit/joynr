@@ -192,7 +192,8 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testTouch)
 {
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
-    std::string clusterControllerId = "dummyClustercontrollerId";
+    const std::string clusterControllerId = "dummyClustercontrollerId";
+    const std::string gbid = "dummyGbid";
     const std::vector<std::string> participantIds = { "dummyParticipantId" };
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, touchAsyncMock(Eq(clusterControllerId), Eq(participantIds), _, _, _))
@@ -201,9 +202,14 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testTouch)
 
     globalCapabilitiesDirectoryClient->touch(clusterControllerId,
                                              participantIds,
+                                             gbid,
                                              onSuccess,
                                              onRuntimeError);
     ASSERT_EQ(clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count(), messagingQosCapture->getTtl());
+
+    const auto foundGbidMessageHeader = messagingQosCapture->getCustomMessageHeaders().find(joynr::Message::CUSTOM_HEADER_GBID_KEY());
+    ASSERT_TRUE(foundGbidMessageHeader != messagingQosCapture->getCustomMessageHeaders().cend());
+    ASSERT_EQ(gbid, foundGbidMessageHeader->second);
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveStale)
