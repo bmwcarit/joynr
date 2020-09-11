@@ -793,7 +793,7 @@ void LocalCapabilitiesDirectory::add(
                 discoveryEntry.getDomain()));
         return;
     }
-    const auto gbidsForAdd = gbids.size() == 0 ? std::vector<std::string>{_knownGbids[0]} : gbids;
+    const auto gbidsForAdd = gbids.size() == 0 ? _knownGbids : gbids;
     addInternal(discoveryEntry,
                 awaitGlobalRegistration,
                 std::move(gbidsForAdd),
