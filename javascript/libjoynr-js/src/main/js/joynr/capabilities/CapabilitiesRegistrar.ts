@@ -103,6 +103,13 @@ class CapabilitiesRegistrar {
     /**
      * Registers a provider so that it is publicly available
      *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to all GBIDs configured in the cluster controller.
+     *
+     * The 'gbids' parameter can be provided to override the GBIDs selection in the cluster
+     * controller. The global capabilities directory identified by the first selected GBID performs
+     * the registration.
+     *
      * @param settings the arguments object for this function call
      * @param settings.domain
      * @param settings.provider
@@ -115,7 +122,8 @@ class CapabilitiesRegistrar {
      *            The application setting the participantId is responsible for guaranteeing uniqueness.
      * @param [settings.awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
      *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
-     * @param settings.gbids optional array of gbids to register provider to. If undefined or empty cc will use default gbid.
+     * @param settings.gbids Optional subset of GBIDs configured in the cluster controller for custom global
+     * registration.
      *
      * @returns an A+ promise
      */
@@ -240,6 +248,13 @@ class CapabilitiesRegistrar {
     /**
      * Registers a provider so that it is publicly available
      *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to all GBIDs configured in the cluster controller.
+     *
+     * The 'gbids' parameter can be provided to override the GBIDs selection in the cluster
+     * controller. The global capabilities directory identified by the first selected GBID performs
+     * the registration.
+     *
      * @param domain
      * @param provider
      * @param provider.interfaceName
@@ -250,7 +265,8 @@ class CapabilitiesRegistrar {
      * @param [participantId] optional. If not set, a globally unique UUID participantId will be generated, and persisted to localStorage.
      * @param [awaitGlobalRegistration] optional. If provided and set to true registerProvider will wait until local and global
      *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
-     * @param gbids optional. Array of global backend identifiers to configure the backends to register to.
+     * @param gbids: Optional subset of GBIDs configured in the cluster controller for custom global
+     * registration.
      *
      * @returns an A+ promise
      */
