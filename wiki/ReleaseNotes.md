@@ -29,6 +29,9 @@ None.
 
 * **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
  tools (4.0.0).
+* **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
+  the registration is applied to all backends instead of the default one. See also documentation of
+  [joynr usage with multiple backends](./multiple-backends.md).
 
 ## Bug fixes
 
@@ -52,6 +55,16 @@ None.
   recommended to provide an implementation. The old usage of this API does not break.
 
 ## Other changes
+* **[C++]** Raise required minimum Boost version from 1.58.0 to 1.65.0.
+* **[C++,TS]** Support Unix Domain Sockets for communication between libjoynr and cluster
+  controller. The C++ cluster controller accepts UDS client and WebSocket clients in parallel by
+  default.  
+  For more information about the (optional) UDS configuration options in C++ see
+  [Joynr C++ Settings](/wiki/cpp_settings.md).  
+  For the (optional) configuration options in joynr TS see
+  [JavaScript settings](/wiki/JavaScriptSettings.md).
+* **[TS]** Communication via UDS is now default. To use WebSocket communication, call
+  `joynr.selectRuntime` with `WebSocketLibjoynrRuntime` before calling `joynr.load()`.
 * **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
   necessary anymore. The generated code for Java and JEE is identical now.
   See [Generator documentation](generator.md).

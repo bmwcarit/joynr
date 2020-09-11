@@ -74,19 +74,17 @@ MQTT specific settings for multiple backends:
 
 ## (Global) Provider registration with multiple backends
 
-By default, a provider is registered in the default (first) backend (GBID), i.e. the BE identified by the first configured GBID at the CC.
+If registration to local and global scope is requested by the QOS configuration, the provider is
+registered to all GBIDs configured in the CC.
 
-A provider can also be registered easily (without knowledge about the available GBIDs) in all BEs (GBIDs) configured at the CC, by calling a special `registerInAllKnownBackends()` method.
-
-In both cases, the global registration (for all GBIDs) is performed by the CC via the GCD instance in the CC's default BE, i.e. the BE of the first configured GBID.
-
-To register a provider in different backends and/or via different JDS instances, a list of GBIDs has to be selected as parameter for the provider registration. The first selected GBID determines the GCD instance that will be used by the CC to perform the global registration.
+All language specific interfaces for provider registration provide a 'gbids' parameter, allowing an
+override of the GBIDs selection in the cluster controller. The global capabilities directory
+identified by the first selected GBID performs the registration.
 
 Please refer to the language specific developer guides for further details on the provider registration:
 * Java: [Java Developer Guide](wiki/java.md#building-a-java-provider-application)
 * C\+\+: [C++ Developer Guide](wiki/cplusplus.md#registering-provider)
 * Javascript: [JavaScript Developer Guide](wiki/javascript.md#building-a-javascript-provider-application)
-
 
 ## (Global) Proxy creation (discovery) with multiple backends
 

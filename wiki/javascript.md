@@ -840,14 +840,17 @@ When registering a provider implementation for a specific Franca interface, the 
 the interface, the provider's domain and the provider's quality of service settings are passed as
 parameters.
 
+If registration to local and global scope is requested by 'ProviderQos', the provider is registered
+to all GBIDs configured in the cluster controller.
+
+The 'gbids' parameter can be provided to override the GBIDs selection in the cluster controller.
+The global capabilities directory identified by the first selected GBID performs the registration.
+
 * awaitGlobalRegistration: optional - set to true in case the registration promise should wait till
 global registration is also completed in the GlobalCapabilitiesDirectory instead of only the
 LocalCapabilitiesDirectory in the cluster-controller.
-* gbids: optional - By default, global providers are only registered in the default backend. The
-default backend is the first **GBID** configured at the cluster-controller. Configuring gbids allows
-the registration of the capabilities at the other backends. These backends need to be preconfigured
-at the clustercontroller and valid backends. The global registration itself will be performed by the
-GlobalCapabilitiesDirectory instance in the backend of the first provided **GBID**.
+* gbids: Optional subset of GBIDs configured in the cluster controller for custom global
+registration.
 
 ```typescript
 import joynr from "joynr";
