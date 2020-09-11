@@ -812,7 +812,7 @@ const int LocalCapabilitiesDirectoryTest::_TIMEOUT(2000);
 
 TEST_F(LocalCapabilitiesDirectoryTest, add_global_invokesGcd)
 {
-    checkAddToGcdClient({_KNOWN_GBIDS[0]});
+    checkAddToGcdClient(_KNOWN_GBIDS);
 
     _localCapabilitiesDirectory->add(_entry, createAddOnSuccessFunction(), _unexpectedProviderRuntimeExceptionFunction);
 
@@ -860,10 +860,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, addWithGbids_global_multipleGbids_invokes
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, addWithGbids_global_emptyGbidVector_addsToDefaultBackend)
+TEST_F(LocalCapabilitiesDirectoryTest, addWithGbids_global_emptyGbidVector_addsToKnownBackends)
 {
     const std::vector<std::string>& gbids{};
-    const std::vector<std::string>& expectedGbids {_KNOWN_GBIDS[0]};
+    const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
     const bool awaitGlobalRegistration = true;
     checkAddToGcdClient(expectedGbids);
 
@@ -913,7 +913,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
     _entry.setQos(providerQos);
-    std::vector<std::string> expectedGbids {_KNOWN_GBIDS[0]};
+    const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry)))
@@ -1921,7 +1921,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilities_invokesGcdClient)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 remove(Eq(_dummyParticipantIdsVector[0]),
-                       Eq(std::vector<std::string>{_KNOWN_GBIDS[0]}), _, _, _)).Times(1);
+                       Eq(_KNOWN_GBIDS), _, _, _)).Times(1);
 
     _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0],
             _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
@@ -3632,9 +3632,16 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                               TimePoint::now().toMilliseconds(),
                                               _defaultExpiryDateMs,
                                               _PUBLIC_KEY_ID);
-
-    _localCapabilitiesDirectory->add(entry1, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
-    _localCapabilitiesDirectory->add(entry2, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    _localCapabilitiesDirectory->add(entry1,
+                                     false,
+                                     {_KNOWN_GBIDS[0]},
+                                     _defaultOnSuccess,
+                                     _unexpectedOnDiscoveryErrorFunction);
+    _localCapabilitiesDirectory->add(entry2,
+                                     false,
+                                     {_KNOWN_GBIDS[0]},
+                                     _defaultOnSuccess,
+                                     _unexpectedOnDiscoveryErrorFunction);
     _localCapabilitiesDirectory->add(entry3,
                                     false,
                                     {_KNOWN_GBIDS[1], _KNOWN_GBIDS[2]},
