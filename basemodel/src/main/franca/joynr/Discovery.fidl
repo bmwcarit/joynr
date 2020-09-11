@@ -31,60 +31,69 @@ import types.* from "DiscoveryTypes.fidl"
 **>
 interface Discovery {
 
-	version {major 0 minor 2}
+	version {major 0 minor 3}
 
 
 	<**
-		@description: Adds a provider to the joynr discovery. In case of global registration,
-			it will be registered for the default backend (via the GCD instance in the default
-			backend).
+		@description: Adds a provider to the joynr discovery directory.
+			If registration to local and global scope is requested by the registration
+			configuration, the provider is registered to all GBIDs configured in the cluster
+			controller. The global capabilities directory identified by the first GBID
+			performs the registration.
 	**>
 	method add {
 		in {
 			<**
-				@description: the new DiscoveryEntry to be added
+				@description: Provider information and registration configuration
 			**>
 			DiscoveryEntry discoveryEntry
 		}
 	}
 
 	<**
-		@description: Adds a provider to the joynr discovery. In case of global registration,
-			it will be registered for the default backend (via the GCD instance in the default
-			backend).
+		@description: Adds a provider to the joynr discovery directory.
+			If registration to local and global scope is requested by the registration
+			configuration, the provider is registered to all GBIDs configured in the cluster
+			controller. The global capabilities directory identified by the first GBID
+			performs the registration.
 	**>
 	method add {
 		in {
 			<**
-				@description: the new DiscoveryEntry to be added
+				@description: Provider information and registration configuration
 			**>
 			DiscoveryEntry discoveryEntry
 			<**
 				@description: if true, the response will be delayed either until
-					global registration succeeded or failed
+					global registration succeeded or failed (only applicable to global scope)
 			**>
 			Boolean awaitGlobalRegistration
 		}
 	}
 
 	<**
-		@description: Adds a provider to the joynr discovery directory for selected backends.
-			The global registration will be done via the GCD instance in the backend identified
-			by the first gbid of the gbids parameter.
+		@description: Adds a provider to the joynr discovery directory.
+			If registration to local and global scope is requested by the registration
+			configuration, the provider is registered to all GBIDs configured in the cluster
+			controller.
+			The 'gbids' parameter can be provided to override the GBIDs selection in the cluster
+			controller. The global capabilities directory identified by the first selected GBID
+			performs the registration.
 	**>
 	method add {
 		in {
 			<**
-				@description: the new DiscoveryEntry to be added
+				@description: Provider information and registration configuration
 			**>
 			DiscoveryEntry discoveryEntry
 			<**
 				@description: if true, the response will be delayed either until
-					global registration succeeded or failed
+					global registration succeeded or failed (only applicable to global scope)
 			**>
 			Boolean awaitGlobalRegistration
 			<**
-				@description: Global Backend IDs for which the provider is registered.
+				@description: Subset of GBIDs configured in the cluster controller for
+				custom global registration (only applicable to global scope)
 			**>
 			String[] gbids
 		}

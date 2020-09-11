@@ -15,6 +15,9 @@ the versioning scheme [here](JoynrVersioning.md).
   recommended to provide an implementation. The old usage of this API does not break.
 
 ## Other changes
+* **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
+  the registration is applied to all backends instead of the default one. See also documentation of
+  [joynr usage with multiple backends](./multiple-backends.md).
 * **[C++]** Raise required minimum Boost version from 1.58.0 to 1.65.0.
 * **[C++,TS]** Support Unix Domain Sockets for communication between libjoynr and cluster
   controller. The C++ cluster controller accepts UDS client and WebSocket clients in parallel by

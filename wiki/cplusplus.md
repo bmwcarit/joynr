@@ -898,15 +898,9 @@ The following optional parameters are supported:
    GBIDs. The passed GBIDs must be known to the cluster-controller, which means that they also have
    to be in the cluster-controller's list of available GBIDs.  
    If the parameter is omitted, the cluster controller uses the first GBID of its configured list
-   of available GBIDs for the registation process and registers the provider just for the default
-   backend.
+   of available GBIDs for the registation process and registers the provider to all known backends.
 
 Note that the optional parameters are ordered, e.g. if providing 3. then 1. and 2. have to be provided as well.
-
-The APIs ```registerProviderInAllBackends``` and ```registerProviderInAllBackendsAsync``` allow to register
-a provider in all backends known to the cluster controller without explictly specifying the GBIDs via API.
-The cluster controller uses the first GBID of its configured list of available GBIDs for the registration
-process. The signature of those APIs is similar to their counterparts above without the GBIDs parameter.
 
 ### Shutting down
 On exit of the application it should cleanly unregister any providers the application had registered earlier and free resources.
