@@ -64,6 +64,14 @@ public:
 
     /**
      * @brief Registers a provider with the joynr communication framework asynchronously.
+     *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to all GBIDs configured in the cluster controller.
+     *
+     * The 'gbids' parameter can be provided to override the GBIDs selection in the cluster
+     * controller. The global capabilities directory identified by the first selected GBID performs
+     * the registration.
+     *
      * @tparam TIntfProvider The interface class of the provider to register. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
      * @param domain The domain to register the provider on. Has to be
@@ -77,9 +85,9 @@ public:
      * otherwise it will not; default is true
      * @param awaitGlobalRegistration if set to true, onSuccess will be invoked only after global
      * registration succeeded, respectively onError will be invoked only after global registration
-     * failed; default is false
-     * @param gbids: The GBIDs in which the provider shall be registered; default is empty list
-     * in which case the provider is registered in the default backend.
+     * failed; default is false (only applicable to global scope)
+     * @param gbids: Optional subset of GBIDs configured in the cluster controller for custom global
+     * registration (only applicable to global scope)
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
@@ -106,6 +114,14 @@ public:
 
     /**
      * @brief Registers a provider with the joynr communication framework.
+     *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to all GBIDs configured in the cluster controller.
+     *
+     * The 'gbids' parameter can be provided to override the GBIDs selection in the cluster
+     * controller. The global capabilities directory identified by the first selected GBID performs
+     * the registration.
+     *
      * @tparam TIntfProvider The interface class of the provider to register. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
      * @param domain The domain to register the provider on. Has to be
@@ -116,9 +132,9 @@ public:
      * otherwise it will not; default is true
      * @param awaitGlobalRegistration if set to true, method will block until global registration
      * succeeded, respectively it will throw an exception in case global registration failed;
-     * default is false
-     * @param gbids: The GBIDs in which the provider shall be registered; default is empty list
-     * in which case the provider is registered in the default backend.
+     * default is false (only applicable to global scope)
+     * @param gbids: Optional subset of GBIDs configured in the cluster controller for custom global
+     * registration (only applicable to global scope)
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */

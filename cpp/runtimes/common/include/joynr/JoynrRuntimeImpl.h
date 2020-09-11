@@ -82,6 +82,14 @@ public:
 
     /**
      * @brief Registers a provider with the joynr communication framework asynchronously.
+     *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to all GBIDs configured in the cluster controller.
+     *
+     * The 'gbids' parameter can be provided to override the GBIDs selection in the cluster
+     * controller. The global capabilities directory identified by the first selected GBID performs
+     * the registration.
+     *
      * @tparam TIntfProvider The interface class of the provider to register. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
      * @param domain The domain to register the provider on. Has to be
@@ -94,8 +102,9 @@ public:
      * @param persist if set to true, participant ID of the provider will be persisted,
      * otherwise it will not; default is true
      * @param awaitGlobalRegistration: true if global registration should be waited for
-     * @param gbids: The GBIDs in which the provider shall be registered; default is empty list
-     * in which case the provider is registered in the default backend.
+     * (only applicable to global scope)
+     * @param gbids: Optional subset of GBIDs configured in the cluster controller for custom global
+     * registration (only applicable to global scope)
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
@@ -112,6 +121,12 @@ public:
     {
         assert(_capabilitiesRegistrar);
         assert(!domain.empty());
+        /*
+         * Though the description states that for an empty GBID list, the
+         * registration should be applied to all, the 'addToAll' is set to false.
+         * Instead on the CC side, the 'add' processing is taking care that registration
+         * is applied to all known backends.
+         */
         const bool addToAll = false;
         return _capabilitiesRegistrar->addAsync(domain,
                                                 provider,
@@ -125,8 +140,15 @@ public:
     }
 
     /**
-     * @brief Registers a provider with the joynr communication framework
-     * in all backends known to the cluster controller (in case of global registration).
+     * @brief Registers a provider with the joynr communication framework.
+     *
+     * If registration to local and global scope is requested by 'providerQos' parameter,
+     * the provider is registered to all GBIDs configured in the cluster controller.
+     *
+     * The 'gbids' parameter can be provided to override the GBIDs selection in the cluster
+     * controller. The global capabilities directory identified by the first selected GBID performs
+     * the registration.
+     *
      * @tparam TIntfProvider The interface class of the provider to register. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
      * @param domain The domain to register the provider on. Has to be
@@ -136,8 +158,9 @@ public:
      * @param persist if set to true, participant ID of the provider will be persisted,
      * otherwise it will not; default is true
      * @param awaitGlobalRegistration: true if global registration should be waited for
-     * @param gbids: The GBIDs in which the provider shall be registered; default is empty list
-     * in which case the provider is registered in the default backend.
+     * (only applicable to global scope)
+     * @param gbids: Optional subset of GBIDs configured in the cluster controller for custom global
+     * registration (only applicable to global scope)
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
      */
