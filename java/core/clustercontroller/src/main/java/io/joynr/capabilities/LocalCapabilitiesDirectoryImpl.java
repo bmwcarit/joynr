@@ -1216,21 +1216,27 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public void removeStaleProvidersOfClusterController() {
+        for (String gbid : knownGbids) {
+            removeStaleProvidersOfClusterController(gbid);
+        }
+    }
+
+    private void removeStaleProvidersOfClusterController(String gbid) {
         Callback<Void> callback = new Callback<Void>() {
             @Override
             public void onSuccess(Void result) {
-                logger.info("RemoveStale(maxLastSeenDateMs={}) succeeded.", ccStartUpDateInMs);
+                logger.info("RemoveStale in gbid={} (maxLastSeenDateMs={}) succeeded.", gbid, ccStartUpDateInMs);
             }
 
             @Override
             public void onFailure(JoynrRuntimeException error) {
-                logger.error("RemoveStale(maxLastSeenDateMs={}) failed.", ccStartUpDateInMs, error);
+                logger.error("RemoveStale in gbid={} (maxLastSeenDateMs={}) failed.", gbid, ccStartUpDateInMs, error);
                 if (!(error instanceof JoynrMessageNotSentException
                         && error.getMessage().contains("Address type not supported"))) {
-                    removeStaleProvidersOfClusterController();
+                    removeStaleProvidersOfClusterController(gbid);
                 }
             }
         };
-        globalCapabilitiesDirectoryClient.removeStale(callback, ccStartUpDateInMs);
+        globalCapabilitiesDirectoryClient.removeStale(callback, ccStartUpDateInMs, gbid);
     }
 }

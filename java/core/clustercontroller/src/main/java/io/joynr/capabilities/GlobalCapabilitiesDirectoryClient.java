@@ -174,9 +174,10 @@ public class GlobalCapabilitiesDirectoryClient {
     /**
      * Remove stale providers from the specific cluster controller
      */
-    public void removeStale(Callback<Void> callback, long maxLastSeenDateMs) {
+    public void removeStale(Callback<Void> callback, long maxLastSeenDateMs, String gbid) {
         long removeStaleTtl = 60 * 60 * 1000L;
         MessagingQos messagingQos = new MessagingQos(removeStaleTtl);
+        messagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, gbid);
         getGcdProxy().removeStale(callback, localChannelId, maxLastSeenDateMs, messagingQos);
     }
 }
