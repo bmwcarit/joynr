@@ -33,16 +33,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -373,12 +370,13 @@ public class GlobalCapabilitiesDirectoryClientTest {
     @Test
     public void testRemoveStale() {
         // Test whether removeStale() of the GlobalCapabilitiesDirectoryProxy 
-        // called once with the given value of max last seen date in milliseconds.
+        // called once with the given gbid and value of max last seen date in milliseconds.
         final long maxLastSeenDateMs = 1000000L;
         final long expectedRemoveStaleTtl = 60 * 60 * 1000L;
         final MessagingQos messagingQos = new MessagingQos(expectedRemoveStaleTtl);
+        messagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, GBID_DEFAULT_BACKEND);
 
-        subject.removeStale(callbackVoidMock, maxLastSeenDateMs);
+        subject.removeStale(callbackVoidMock, maxLastSeenDateMs, GBID_DEFAULT_BACKEND);
 
         verify(globalCapabilitiesDirectoryProxyMock, times(1)).removeStale(eq(callbackVoidMock),
                                                                            eq(channelId),
@@ -391,7 +389,6 @@ public class GlobalCapabilitiesDirectoryClientTest {
         final String[] testParticipantIds = new String[]{ "participantId1", "participantId2" };
         final String[] expectedParticipantIds = testParticipantIds.clone();
         final String expectedGbid = "dummyGbid";
-        final MessagingQos messagingQos = new MessagingQos(FRESHNESS_UPDATE_INTERVAL_MS);
 
         subject.touch(callbackVoidMock, testParticipantIds, expectedGbid);
 

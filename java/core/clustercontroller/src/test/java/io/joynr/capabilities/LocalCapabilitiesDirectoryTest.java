@@ -71,7 +71,6 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.GbidArrayFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.AbstractDeferred;
@@ -3052,18 +3051,22 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Test
     public void removeStaleProvidersOfClusterController_invokesGcdClient() {
-        // Test whether removeStale() of GlobalCapabiltiesDirectoryClient is called once
+        // Test whether removeStale() of GlobalCapabiltiesDirectoryClient is called once for all known backends
         // and captured argument of maxLastSeenDateMs differs from current time less than threshold.
         final long currentDateMs = System.currentTimeMillis();
         ArgumentCaptor<Long> maxLastSeenDateCaptor = ArgumentCaptor.forClass(Long.class);
         final long toleranceMs = 200L;
 
         localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
-        verify(globalCapabilitiesDirectoryClient, times(1)).removeStale(Matchers.<Callback<Void>> any(),
-                                                                        maxLastSeenDateCaptor.capture());
+        ArgumentCaptor<String> gbidCaptor = ArgumentCaptor.forClass(String.class);
+        verify(globalCapabilitiesDirectoryClient, times(knownGbids.length)).removeStale(Matchers.<Callback<Void>> any(),
+                                                                                        maxLastSeenDateCaptor.capture(),
+                                                                                        gbidCaptor.capture());
 
         assertTrue(maxLastSeenDateCaptor.getValue() <= currentDateMs);
         assertTrue(currentDateMs - maxLastSeenDateCaptor.getValue() <= toleranceMs);
+        List<String> actualGbids = gbidCaptor.getAllValues();
+        assertEquals(Arrays.asList(knownGbids), actualGbids);
     }
 
     @Test
@@ -3073,36 +3076,43 @@ public class LocalCapabilitiesDirectoryTest {
         int numberOfOnFailureCalls = 2;
         JoynrRuntimeException exception = new JoynrRuntimeException("removeStale failed");
 
-        doAnswer(new Answer<Future<Void>>() {
-            private int count = 0;
+        for (String gbid : knownGbids) {
+            doAnswer(new Answer<Future<Void>>() {
+                private int count = 0;
 
-            @Override
-            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
-                Future<Void> result = new Future<Void>();
-                @SuppressWarnings("unchecked")
-                Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
-                if (count++ == numberOfOnFailureCalls) {
-                    callback.onSuccess(null);
+                @Override
+                public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                    Future<Void> result = new Future<Void>();
+                    @SuppressWarnings("unchecked")
+                    Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+                    if (count++ == numberOfOnFailureCalls) {
+                        callback.onSuccess(null);
+                        result.onSuccess(null);
+                        return result;
+                    }
+                    callback.onFailure(exception);
                     result.onSuccess(null);
                     return result;
                 }
-                callback.onFailure(exception);
-                result.onSuccess(null);
-                return result;
-            }
-        }).when(globalCapabilitiesDirectoryClient).removeStale(Matchers.<Callback<Void>> any(), anyLong());
+            }).when(globalCapabilitiesDirectoryClient)
+              .removeStale(Matchers.<Callback<Void>> any(), anyLong(), eq(gbid));
+        }
 
         localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
 
-        int numberOfVerifiedFunctionCalls = numberOfOnFailureCalls + 1;
-        verify(globalCapabilitiesDirectoryClient,
-               times(numberOfVerifiedFunctionCalls)).removeStale(Matchers.<Callback<Void>> any(), anyLong());
+        int numberOfCalls = numberOfOnFailureCalls + 1; // one time success
+
+        for (String gbid : knownGbids) {
+            verify(globalCapabilitiesDirectoryClient, times(numberOfCalls)).removeStale(Matchers.<Callback<Void>> any(),
+                                                                                        anyLong(),
+                                                                                        eq(gbid));
+        }
     }
 
     @Test
     public void removeStaleProvidersOfClusterController_calledOnceIfMessageNotSent() {
         // Test whether removeStale() of GlobalCapabiltiesDirectoryClient is called once when exception
-        // has a type JoynrMessageNotSentException and contains "Address type not supported" message
+        // in a gbid has a type JoynrMessageNotSentException and contains "Address type not supported" message
         JoynrRuntimeException exception = new JoynrMessageNotSentException("Address type not supported");
 
         doAnswer(new Answer<Future<Void>>() {
@@ -3115,10 +3125,14 @@ public class LocalCapabilitiesDirectoryTest {
                 result.onSuccess(null);
                 return result;
             }
-        }).when(globalCapabilitiesDirectoryClient).removeStale(Matchers.<Callback<Void>> any(), anyLong());
+        }).when(globalCapabilitiesDirectoryClient).removeStale(Matchers.<Callback<Void>> any(), anyLong(), anyString());
 
         localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
 
-        verify(globalCapabilitiesDirectoryClient, times(1)).removeStale(Matchers.<Callback<Void>> any(), anyLong());
+        for (String gbid : knownGbids) {
+            verify(globalCapabilitiesDirectoryClient, times(1)).removeStale(Matchers.<Callback<Void>> any(),
+                                                                            anyLong(),
+                                                                            eq(gbid));
+        }
     }
 }
