@@ -225,7 +225,13 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveStale)
 
     globalCapabilitiesDirectoryClient->removeStale(clusterControllerId,
                                                    maxLastSeenMs,
+                                                   gbids[0],
                                                    onSuccess,
                                                    onRuntimeError);
    ASSERT_EQ(expectedTtl, messagingQosCapture->getTtl());
+
+   auto messageHeaders = messagingQosCapture->getCustomMessageHeaders();
+   auto gbidEntry = messageHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY());
+   ASSERT_NE(gbidEntry, messageHeaders.end());
+   ASSERT_EQ(gbids[0], gbidEntry->second);
 }
