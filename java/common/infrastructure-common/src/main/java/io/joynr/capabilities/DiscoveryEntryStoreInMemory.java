@@ -65,7 +65,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     private Object storeLock = new Object();
 
     public DiscoveryEntryStoreInMemory(int maximumNumberOfNonStickyEntries) {
-        logger.info("Creating CapabilitiesStore with static provisioning, maximumNumberOfNonStickyEntries = {}",
+        logger.info("Creating CapabilitiesStore, maximumNumberOfNonStickyEntries = {}",
                     maximumNumberOfNonStickyEntries);
         this.maximumNumberOfNonStickyEntries = maximumNumberOfNonStickyEntries;
     }
