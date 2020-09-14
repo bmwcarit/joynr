@@ -81,7 +81,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
+    public synchronized void add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
         for (GlobalDiscoveryEntry entry : globalDiscoveryEntries) {
             if (entry != null) {
                 add(entry);
@@ -92,7 +92,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
+    public synchronized void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         logger.debug("Adding global discovery entry to own gbid {}: {}", gcdGbid, globalDiscoveryEntry);
         if (!addInternal(globalDiscoveryEntry, gcdGbid)) {
             throw new ProviderRuntimeException("INTERNAL_ERROR: Unable to add DiscoveryEntry for "
@@ -178,7 +178,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) throws ApplicationException {
+    public synchronized void add(GlobalDiscoveryEntry globalDiscoveryEntry,
+                                 String[] gbids) throws ApplicationException {
         logger.debug("Adding global discovery entry to {}: {}", Arrays.toString(gbids), globalDiscoveryEntry);
         switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
@@ -201,7 +202,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName) {
+    public synchronized GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName) {
         logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}",
                      Arrays.toString(domains),
                      interfaceName,
@@ -223,9 +224,9 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public GlobalDiscoveryEntry[] lookup(String[] domains,
-                                         String interfaceName,
-                                         String[] gbids) throws ApplicationException {
+    public synchronized GlobalDiscoveryEntry[] lookup(String[] domains,
+                                                      String interfaceName,
+                                                      String[] gbids) throws ApplicationException {
         logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and Gbids {}",
                      Arrays.toString(domains),
                      interfaceName,
@@ -296,7 +297,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public GlobalDiscoveryEntry lookup(String participantId) {
+    public synchronized GlobalDiscoveryEntry lookup(String participantId) {
         logger.debug("Looking up global discovery entry for participantId {} and own Gbid {}", participantId, gcdGbid);
         String[] gcdGbidArray = { gcdGbid };
         try {
@@ -311,7 +312,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
+    public synchronized GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
         logger.debug("Looking up global discovery entry for participantId {} and Gbids {}",
                      participantId,
                      Arrays.toString(gbids));
@@ -373,7 +374,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void remove(String[] participantIds) {
+    public synchronized void remove(String[] participantIds) {
         int deletedCount = removeInternal(participantIds);
         logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
     }
@@ -418,12 +419,12 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void remove(String participantId) {
+    public synchronized void remove(String participantId) {
         remove(new String[]{ participantId });
     }
 
     @Override
-    public void remove(String participantId, String[] gbids) throws ApplicationException {
+    public synchronized void remove(String participantId, String[] gbids) throws ApplicationException {
         switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
             logger.error("Error removing participantId {}: INVALID GBIDs: {}", participantId, Arrays.toString(gbids));
@@ -469,7 +470,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void touch(String clusterControllerId) {
+    public synchronized void touch(String clusterControllerId) {
         logger.debug("Touch called. Updating discovery entries from cluster controller with id {}",
                      clusterControllerId);
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.clusterControllerId = :clusterControllerId";
@@ -484,7 +485,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void touch(String clusterControllerId, String[] participantIds) {
+    public synchronized void touch(String clusterControllerId, String[] participantIds) {
         logger.debug("Touch called. Updating discovery entries from cluster controller with id={}, participantIds={}.",
                      clusterControllerId,
                      participantIds);
@@ -518,7 +519,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public void removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
+    public synchronized void removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
         logger.debug("RemoveStale called. Removing stale entries for ccId={}, maxLastSeenDateMs={}.",
                      clusterControllerId,
                      maxLastSeenDateMs);
