@@ -248,7 +248,8 @@ private:
                               std::vector<types::DiscoveryEntry>&& localEntries,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
                               joynr::types::DiscoveryScope::Enum discoveryScope);
-
+    void removeStaleProvidersOfClusterController(const std::int64_t& clusterControllerStartDateMs,
+                                                 const std::string gbid);
     /*
      * Returns a list of capabilities matching the given domain and interfaceName and gbids.
      * This is an asynchronous request, must supply a callback.

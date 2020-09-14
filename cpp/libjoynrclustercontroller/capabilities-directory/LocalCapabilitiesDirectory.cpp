@@ -1375,35 +1375,49 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 }
 
 void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
-        const std::int64_t& clusterControllerStartDateMs)
+        const std::int64_t& clusterControllerStartDateMs,
+        const std::string gbid)
 {
-    auto onSuccess = [ ccId = _clusterControllerId, clusterControllerStartDateMs ]()
+    auto onSuccess = [ ccId = _clusterControllerId, clusterControllerStartDateMs, gbid ]()
     {
         JOYNR_LOG_TRACE(logger(),
-                        "RemoveStale(ccId={}, maxLastSeenDateMs={}) succeeded.",
+                        "RemoveStale(ccId={}, gbid={}, maxLastSeenDateMs={}) succeeded.",
                         ccId,
+                        gbid,
                         clusterControllerStartDateMs);
     };
 
     auto onRuntimeError = [
         ccId = _clusterControllerId,
         clusterControllerStartDateMs,
+        gbid,
         thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())
     ](const joynr::exceptions::JoynrRuntimeException& error)
     {
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             JOYNR_LOG_ERROR(logger(),
-                            "RemoveStale(ccId={}, maxLastSeenDateMs={}) failed: {}",
+                            "RemoveStale(ccId={}, gbid={}, maxLastSeenDateMs={}) failed: {}",
                             ccId,
+                            gbid,
                             clusterControllerStartDateMs,
                             error.getMessage());
-            thisSharedPtr->removeStaleProvidersOfClusterController(clusterControllerStartDateMs);
+            thisSharedPtr->removeStaleProvidersOfClusterController(
+                    clusterControllerStartDateMs, gbid);
         }
     };
     _globalCapabilitiesDirectoryClient->removeStale(_clusterControllerId,
                                                     clusterControllerStartDateMs,
+                                                    gbid,
                                                     std::move(onSuccess),
                                                     std::move(onRuntimeError));
+}
+
+void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
+        const std::int64_t& clusterControllerStartDateMs)
+{
+    for (const auto gbid : _knownGbids) {
+        removeStaleProvidersOfClusterController(clusterControllerStartDateMs, gbid);
+    }
 }
 
 std::vector<std::string> LocalCapabilitiesDirectory::getParticipantIdsToTouch()

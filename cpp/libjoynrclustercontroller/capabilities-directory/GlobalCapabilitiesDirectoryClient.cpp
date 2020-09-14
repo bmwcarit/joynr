@@ -149,10 +149,12 @@ void GlobalCapabilitiesDirectoryClient::setProxy(
 void GlobalCapabilitiesDirectoryClient::removeStale(
         const std::string& clusterControllerId,
         std::int64_t maxLastSeenDateMs,
+        const std::string gbid,
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeError)
 {
     MessagingQos removeStaleMessagingQos = _messagingQos;
+    removeStaleMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbid);
     removeStaleMessagingQos.setTtl(_removeStaleTtl);
     _capabilitiesProxy->removeStaleAsync(clusterControllerId,
                                          maxLastSeenDateMs,

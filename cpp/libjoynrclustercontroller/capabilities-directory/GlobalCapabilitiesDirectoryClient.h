@@ -128,6 +128,7 @@ public:
 
     void removeStale(const std::string& clusterControllerId,
                      std::int64_t maxLastSeenDateMs,
+                     const std::string gbid,
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                              onRuntimeError) override;
