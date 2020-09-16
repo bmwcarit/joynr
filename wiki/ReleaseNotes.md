@@ -5,6 +5,11 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.15.0
 
 ## API relevant changes
+* **[Java, TS]** The API `registerInAllKnownBackends()` is deprecated, since registration in all
+  backends is now the default behavior.
+* **[C++]** The APIs `registerProviderInAllBackends` and
+  `registerProviderInAllBackendsAsync` are deprecated, since registration in all backends
+  is now the default behavior.
 * **[C++]** The `createRuntime` and `createRuntimeAsync` APIs in `JoynrRuntime` now support a
   `onFatalRuntimeError` callback, which is invoked in exceptional cases that render the runtime
   inoperable. The old APIs without this callback are deprecated now and will be removed in the

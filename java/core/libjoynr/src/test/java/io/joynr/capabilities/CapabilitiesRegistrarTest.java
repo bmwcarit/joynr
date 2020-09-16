@@ -137,6 +137,7 @@ public class CapabilitiesRegistrarTest {
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
+    @Deprecated
     private void verifyRegisterInallKnownBackendsResults(boolean awaitGlobalRegistration) {
         verify(localDiscoveryAggregator).addToAll(any(CallbackWithModeledError.class),
                                                   discoveryEntryCaptor.capture(),
@@ -182,6 +183,7 @@ public class CapabilitiesRegistrarTest {
     }
 
     @Test
+    @Deprecated
     public void testRegisterInAllKnownBackendsWithoutAwaitGlobalRegistration() {
         boolean awaitGlobalRegistration = false;
         registrar.registerInAllKnownBackends(domain, testProvider, providerQos, awaitGlobalRegistration);
@@ -189,6 +191,7 @@ public class CapabilitiesRegistrarTest {
     }
 
     @Test
+    @Deprecated
     public void testRegisterInAllKnownBackendsWithAwaitGlobalRegistration() {
         boolean awaitGlobalRegistration = true;
         registrar.registerInAllKnownBackends(domain, testProvider, providerQos, awaitGlobalRegistration);

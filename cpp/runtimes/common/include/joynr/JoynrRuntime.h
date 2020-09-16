@@ -183,6 +183,12 @@ public:
      * failed; default is false
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
+     *
+     * [[deprecated("Use registerProviderAsync(const std::string&, std::shared_ptr<TIntfProvider>,
+     *                                         const joynr::types::ProviderQos&,
+     *                                         std::function<void()>, std::function<void(const
+     *                                         exceptions::JoynrRuntimeException&)>, bool, bool,
+     *                                         std::vector<std::string>) instead.")]]
      */
     template <class TIntfProvider>
     std::string registerProviderInAllBackendsAsync(
@@ -219,6 +225,10 @@ public:
      * default is false
      * @return The globally unique participant ID of the provider. It is assigned by the joynr
      * communication framework.
+     *
+     * [[deprecated("Use registerProvider(const std::string&, std::shared_ptr<TIntfProvider>,
+     *                                    const joynr::types::ProviderQos&, bool, bool,
+     *                                    std::vector<std::string>) instead.")]]
      */
     template <class TIntfProvider>
     std::string registerProviderInAllBackends(const std::string& domain,

@@ -119,6 +119,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
     }
 
     @Test
+    @Deprecated
     public void testCorrectBackendIsContactedForAddToAll() throws Exception {
         String gcdTopic = getGcdTopic();
 
