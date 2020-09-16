@@ -20,6 +20,7 @@ package io.joynr.capabilities;
 
 import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
 import static io.joynr.util.JoynrUtil.createUuidString;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
@@ -41,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -388,13 +390,20 @@ public class GlobalCapabilitiesDirectoryClientTest {
     public void testTouchAsync() {
         final String[] testParticipantIds = new String[]{ "participantId1", "participantId2" };
         final String[] expectedParticipantIds = testParticipantIds.clone();
+        final String expectedGbid = "dummyGbid";
         final MessagingQos messagingQos = new MessagingQos(FRESHNESS_UPDATE_INTERVAL_MS);
 
-        subject.touch(callbackVoidMock, testParticipantIds);
+        subject.touch(callbackVoidMock, testParticipantIds, expectedGbid);
 
+        ArgumentCaptor<MessagingQos> messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
         verify(globalCapabilitiesDirectoryProxyMock, times(1)).touch(eq(callbackVoidMock),
                                                                      eq(channelId),
                                                                      eq(expectedParticipantIds),
-                                                                     eq(messagingQos));
+                                                                     messagingQosCaptor.capture());
+
+        assertEquals(FRESHNESS_UPDATE_INTERVAL_MS, messagingQosCaptor.getValue().getRoundTripTtl_ms());
+        assertTrue(messagingQosCaptor.getValue().getCustomMessageHeaders().containsKey(Message.CUSTOM_HEADER_GBID_KEY));
+        assertEquals(expectedGbid,
+                     messagingQosCaptor.getValue().getCustomMessageHeaders().get(Message.CUSTOM_HEADER_GBID_KEY));
     }
 }
