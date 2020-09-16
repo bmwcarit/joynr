@@ -1427,7 +1427,7 @@ public void run() {
 }
 ```
 
-### Register provider in custom backends
+### Register provider
 
 If not specified otherwise, a new provider is registered in all known backends (defined by
 `PROPERTY_GBIDS` in [Joynr Java Settings](JavaSettings.md) at the cluster controller).
@@ -1444,7 +1444,7 @@ public void run() {
 ...
     Future<Void> future = runtime.getProviderRegistrar(localDomain, <interface>Provider)
                                  .withProviderQos(someProviderQos) // optional
-                                 .withGbids(new String[] { "gbid1","gbid2" })
+                                 .withGbids(new String[] { "gbid1","gbid2" }) // optional
                                  .awaitGlobalRegistration() // optional
                                  .register();
     try {
@@ -1463,21 +1463,6 @@ public void run() {
 
 The passed GBIDs have to be known to the cluster-controller, which means that they also have to be
 defined in `PROPERTY_GBIDS`[Joynr Java Settings](JavaSettings.md).
-
-To register a provider in all backends known to the cluster-controller, the
-`registerInAllBackends()` method can be used.
-
-```java
-...
-@Override
-public void run() {
-     Future<Void> future = runtime.getProviderRegistrar(localDomain, <interface>Provider)
-                                  .registerInAllBackends();
-     ...
-}
-...
-
-```
 
 ### Register provider with fixed (custom) participantId
 

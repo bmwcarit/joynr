@@ -800,8 +800,7 @@ ProviderImplementation as argument.
 The signature of the ProviderImplementation is included in the generated code.
 
 Upon successful creation, the application can register all **Capabilities** it provides by calling
-`joynr.registration.register(settings)`, or
-`joynr.registration.registerInAllKnownBackends(settings)`.
+`joynr.registration.register(settings)`.
 
 ## The Provider quality of service
 

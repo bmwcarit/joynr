@@ -96,6 +96,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
+    @Deprecated
     public Future<Void> registerInAllKnownBackends(final String domain,
                                                    Object provider,
                                                    ProviderQos providerQos,

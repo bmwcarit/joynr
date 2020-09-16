@@ -148,6 +148,7 @@ class CapabilitiesRegistrar {
      *            registration succeeds or timeout is reached: otherwise registerProvider only waits for local registration.
      *
      * @returns an A+ promise
+     * @deprecated Use `register` instead.
      */
     public async registerInAllKnownBackends(settings: RegistrationSettings): Promise<string> {
         return this.registerInternal(settings, { registerToAllBackends: true });

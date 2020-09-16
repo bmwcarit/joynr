@@ -140,7 +140,10 @@ public class ProviderRegistrar {
     /**
      * Register the provider in all known backends. Configured GBIDs will be ignored.
      * @return Returns a Future which can be used to check the registration status.
+     * 
+     * @deprecated Use {@link #register()} instead.
      */
+    @Deprecated
     public Future<Void> registerInAllBackends() {
         return capabilitiesRegistrar.registerInAllKnownBackends(domain, provider, providerQos, awaitGlobalRegistration);
     }

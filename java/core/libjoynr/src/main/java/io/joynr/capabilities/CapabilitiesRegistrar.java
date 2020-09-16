@@ -57,7 +57,10 @@ public interface CapabilitiesRegistrar {
      * @param awaitGlobalRegistration
      *            If true, wait for global registration to complete or timeout, if required.
      * @return registration future
+     * @deprecated Use 
+     *             {@link #registerProvider(String, Object, ProviderQos, String[], awaitGlobalRegistration)} instead.
      */
+    @Deprecated
     Future<Void> registerInAllKnownBackends(final String domain,
                                             Object provider,
                                             ProviderQos providerQos,
