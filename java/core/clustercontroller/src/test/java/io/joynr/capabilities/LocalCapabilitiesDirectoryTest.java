@@ -2883,7 +2883,8 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(Math.abs(expiryDateCaptor.getValue() - expectedExpiryDateMs) <= toleranceMs);
 
         verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
-                                                                  eq(expectedParticipantIds));
+                                                                  eq(expectedParticipantIds),
+                                                                  anyString());
     }
 
     @Test

@@ -253,7 +253,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         logger.error("touch(participantIds={}) failed: {}", participantIdsStr, error);
                     }
                 };
-                globalCapabilitiesDirectoryClient.touch(callback, participantIds);
+                // TODO: change knownGbids[0] argument later
+                globalCapabilitiesDirectoryClient.touch(callback, participantIds, knownGbids[0]);
             }
         };
         freshnessUpdateScheduledFuture = freshnessUpdateScheduler.scheduleAtFixedRate(command,

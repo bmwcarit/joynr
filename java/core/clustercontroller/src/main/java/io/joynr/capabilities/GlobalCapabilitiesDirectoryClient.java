@@ -165,8 +165,9 @@ public class GlobalCapabilitiesDirectoryClient {
 
     }
 
-    public void touch(Callback<Void> callback, String[] participantIds) {
+    public void touch(Callback<Void> callback, String[] participantIds, String targetGbid) {
         MessagingQos messagingQos = new MessagingQos(freshnessUpdateIntervalMs);
+        messagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
         getGcdProxy().touch(callback, localChannelId, participantIds, messagingQos);
     }
 
