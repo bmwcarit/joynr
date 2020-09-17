@@ -71,6 +71,7 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.GbidArrayFactory;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.AbstractDeferred;
@@ -114,7 +115,7 @@ public class LocalCapabilitiesDirectoryTest {
     private static final String INTERFACE_NAME = "interfaceName";
     private static final String TEST_URL = "http://testUrl";
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
-    private static final long freshnessUpdateIntervalMs = 3600000; // 1h
+    private static final long freshnessUpdateIntervalMs = 300;
     private static final long DEFAULT_EXPIRY_TIME_MS = 3628800000l;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
@@ -2850,13 +2851,32 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Test(timeout = TEST_TIMEOUT)
     public void callTouchForGlobalParticipantIds() throws InterruptedException {
+        final String participantId1 = "participantId1";
+        final String participantId2 = "participantId2";
+
         final long expectedLastSeenDateMs = System.currentTimeMillis();
         final long expectedExpiryDateMs = expectedLastSeenDateMs + DEFAULT_EXPIRY_TIME_MS;
         final long toleranceMs = 200l;
+
+        GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
+
+        entry1.getQos().setScope(ProviderScope.GLOBAL);
+        entry1.setParticipantId(participantId1);
+        entry1.setLastSeenDateMs(expectedLastSeenDateMs);
+        entry1.setExpiryDateMs(expectedExpiryDateMs);
+
+        GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(entry1);
+        entry2.setParticipantId(participantId2);
+
+        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(entry1);
+        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(entry2);
+        checkPromiseSuccess(promiseAdd1, "add failed");
+        checkPromiseSuccess(promiseAdd2, "add failed");
+
         ArgumentCaptor<Long> lastSeenDateCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<Long> expiryDateCaptor = ArgumentCaptor.forClass(Long.class);
 
-        String[] touchedParticipantIds = new String[]{ "participantId1", "participantId2" };
+        String[] touchedParticipantIds = new String[]{ participantId1, participantId2 };
         String[] expectedParticipantIds = touchedParticipantIds.clone();
         when(localDiscoveryEntryStoreMock.touchDiscoveryEntries(anyLong(),
                                                                 anyLong())).thenReturn(touchedParticipantIds);
@@ -2885,6 +2905,149 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
                                                                   eq(expectedParticipantIds),
                                                                   anyString());
+    }
+
+    @Test
+    public void touchNotCalled_noParticipantIdsToTouch() throws InterruptedException {
+        String[] participantIdsToTouch = new String[0];
+        when(localDiscoveryEntryStoreMock.touchDiscoveryEntries(anyLong(),
+                                                                anyLong())).thenReturn(participantIdsToTouch);
+
+        verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
+                                                                        eq(freshnessUpdateIntervalMs),
+                                                                        eq(freshnessUpdateIntervalMs),
+                                                                        eq(TimeUnit.MILLISECONDS));
+
+        Runnable runnable = runnableCaptor.getValue();
+        runnable.run();
+
+        verify(globalCapabilitiesDirectoryClient, times(0)).touch(Matchers.<Callback<Void>> any(), any(), anyString());
+    }
+
+    @Test
+    public void touchCalledOnce_multipleParticipantIdsForSingleGbid() throws InterruptedException {
+        String participantId1 = "participantId1";
+        String participantId2 = "participantId2";
+
+        String gbid = knownGbids[1];
+        String[] gbids = { gbid };
+
+        GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
+
+        entry1.getQos().setScope(ProviderScope.GLOBAL);
+        entry1.setParticipantId(participantId1);
+        entry1.setExpiryDateMs(0l);
+        entry1.setLastSeenDateMs(0l);
+
+        GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(entry1);
+        entry2.setParticipantId(participantId2);
+
+        Promise<Add1Deferred> promiseAdd1 = localCapabilitiesDirectory.add(entry1, false, gbids);
+        Promise<Add1Deferred> promiseAdd2 = localCapabilitiesDirectory.add(entry2, false, gbids);
+        checkPromiseSuccess(promiseAdd1, "add failed");
+        checkPromiseSuccess(promiseAdd2, "add failed");
+
+        // Mock return values of localDiscoveryEntryStore.touchDiscoveryEntries
+        String[] participantIdsToTouch = new String[]{ participantId1, participantId2 };
+        when(localDiscoveryEntryStoreMock.touchDiscoveryEntries(anyLong(),
+                                                                anyLong())).thenReturn(participantIdsToTouch);
+
+        verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
+                                                                        eq(freshnessUpdateIntervalMs),
+                                                                        eq(freshnessUpdateIntervalMs),
+                                                                        eq(TimeUnit.MILLISECONDS));
+
+        Runnable runnable = runnableCaptor.getValue();
+        runnable.run();
+
+        verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
+                                                                  eq(participantIdsToTouch),
+                                                                  eq(gbid));
+    }
+
+    @Test
+    public void touchCalledOnce_singleParticipantIdForMultipleGbids() throws InterruptedException {
+        String participantId1 = "participantId1";
+
+        String gbid1 = knownGbids[1];
+        String gbid2 = knownGbids[2];
+        String[] gbids = { gbid1, gbid2 };
+
+        GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
+
+        entry1.getQos().setScope(ProviderScope.GLOBAL);
+        entry1.setParticipantId(participantId1);
+        entry1.setExpiryDateMs(0l);
+        entry1.setLastSeenDateMs(0l);
+
+        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(entry1, false, gbids);
+        checkPromiseSuccess(promiseAdd, "add failed");
+
+        // Mock return values of localDiscoveryEntryStore.touchDiscoveryEntries
+        String[] participantIdsToTouch = new String[]{ participantId1 };
+        when(localDiscoveryEntryStoreMock.touchDiscoveryEntries(anyLong(),
+                                                                anyLong())).thenReturn(participantIdsToTouch);
+
+        verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
+                                                                        eq(freshnessUpdateIntervalMs),
+                                                                        eq(freshnessUpdateIntervalMs),
+                                                                        eq(TimeUnit.MILLISECONDS));
+
+        Runnable runnable = runnableCaptor.getValue();
+        runnable.run();
+
+        verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
+                                                                  eq(participantIdsToTouch),
+                                                                  eq(gbid1));
+    }
+
+    @Test
+    public void touchCalledTwice_twoParticipantIdsForDifferentGbids() throws InterruptedException {
+        String participantId1 = "participantId1";
+        String participantId2 = "participantId2";
+
+        String gbid1 = knownGbids[1];
+        String gbid2 = knownGbids[2];
+        String[] gbids1 = { gbid1 };
+        String[] gbids2 = { gbid2 };
+
+        GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
+
+        entry1.getQos().setScope(ProviderScope.GLOBAL);
+        entry1.setParticipantId(participantId1);
+        entry1.setExpiryDateMs(0l);
+        entry1.setLastSeenDateMs(0l);
+
+        GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(entry1);
+        entry2.setParticipantId(participantId2);
+
+        Promise<Add1Deferred> promiseAdd1 = localCapabilitiesDirectory.add(entry1, false, gbids1);
+        Promise<Add1Deferred> promiseAdd2 = localCapabilitiesDirectory.add(entry2, false, gbids2);
+        checkPromiseSuccess(promiseAdd1, "add failed");
+        checkPromiseSuccess(promiseAdd2, "add failed");
+
+        // Mock return values of localDiscoveryEntryStore.touchDiscoveryEntries
+        String[] participantIdsToTouch = new String[]{ participantId1, participantId2 };
+        when(localDiscoveryEntryStoreMock.touchDiscoveryEntries(anyLong(),
+                                                                anyLong())).thenReturn(participantIdsToTouch);
+
+        verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
+                                                                        eq(freshnessUpdateIntervalMs),
+                                                                        eq(freshnessUpdateIntervalMs),
+                                                                        eq(TimeUnit.MILLISECONDS));
+
+        Runnable runnable = runnableCaptor.getValue();
+        runnable.run();
+
+        String[] expectedParticipantIds1 = new String[]{ participantId1 };
+        String[] expectedParticipantIds2 = new String[]{ participantId2 };
+        verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
+                                                                  eq(expectedParticipantIds1),
+                                                                  eq(gbid1));
+
+        verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
+                                                                  eq(expectedParticipantIds2),
+                                                                  eq(gbid2));
     }
 
     @Test
