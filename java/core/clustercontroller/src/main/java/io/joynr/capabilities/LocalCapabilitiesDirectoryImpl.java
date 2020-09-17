@@ -23,6 +23,7 @@ import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRES
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -232,29 +233,75 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 // Touches all discovery entries, but only returns the participantIds of global ones 
                 String[] participantIds = localDiscoveryEntryStore.touchDiscoveryEntries(lastSeenDateMs, expiryDateMs);
-
                 // update globalDiscoveryEntryCache
                 globalDiscoveryEntryCache.touchDiscoveryEntries(participantIds, lastSeenDateMs, expiryDateMs);
 
-                Callback<Void> callback = new Callback<Void>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        if (logger.isTraceEnabled()) {
-                            String participantIdsStr = String.join(",", participantIds);
-                            logger.trace("touch(participantIds={}) succeeded.", participantIdsStr);
-                        } else {
-                            logger.debug("touch succeeded.");
-                        }
+                if (participantIds == null || participantIds.length == 0) {
+                    logger.debug("touch has not been called, because there are no providers to touch");
+                    return;
+                }
+
+                final Map<String, List<String>> gbidToParticipantIdsListMap = new HashMap<>();
+                for (String gbid : knownGbids) {
+                    gbidToParticipantIdsListMap.put(gbid, Collections.emptyList());
+                }
+
+                for (String participantIdToTouch : participantIds) {
+                    List<String> gbids = globalProviderParticipantIdToGbidListMap.get(participantIdToTouch);
+
+                    if (gbids == null || gbids.isEmpty()) {
+                        logger.warn("touch cannot be called for provider with participantId {}, no GBID found.",
+                                    participantIdToTouch);
+                        break;
                     }
 
-                    @Override
-                    public void onFailure(JoynrRuntimeException error) {
-                        String participantIdsStr = String.join(",", participantIds);
-                        logger.error("touch(participantIds={}) failed: {}", participantIdsStr, error);
+                    String gbidToTouch = gbids.get(0);
+                    if (!gbidToParticipantIdsListMap.containsKey(gbidToTouch)) {
+                        logger.error("Found GBID {} for particpantId {} to touch is unknown.",
+                                     gbidToTouch,
+                                     participantIdToTouch);
+                        continue;
                     }
-                };
-                // TODO: change knownGbids[0] argument later
-                globalCapabilitiesDirectoryClient.touch(callback, participantIds, knownGbids[0]);
+                    List<String> participantIdsToTouch = new ArrayList<String>(gbidToParticipantIdsListMap.get(gbidToTouch));
+                    participantIdsToTouch.add(participantIdToTouch);
+                    gbidToParticipantIdsListMap.put(gbidToTouch, participantIdsToTouch);
+                }
+
+                for (Map.Entry<String, List<String>> entry : gbidToParticipantIdsListMap.entrySet()) {
+                    String gbid = entry.getKey();
+                    List<String> participantIdsToTouch = entry.getValue();
+
+                    if (participantIdsToTouch.isEmpty()) {
+                        logger.debug("touch(gbid={}) has not been called, because there are no providers to touch for gbid {}",
+                                     gbid,
+                                     String.join(",", participantIdsToTouch));
+                        continue;
+                    }
+
+                    Callback<Void> callback = new Callback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            if (logger.isTraceEnabled()) {
+                                String participantIdsStr = String.join(",", participantIdsToTouch);
+                                logger.trace("touch(participantIds={}, gbid={}) succeeded.", participantIdsStr, gbid);
+                            } else {
+                                logger.debug("touch for gbid {} succeeded.", gbid);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(JoynrRuntimeException error) {
+                            String participantIdsStr = String.join(",", participantIdsToTouch);
+                            logger.error("touch(participantIds={}, gbid={}) failed: {}",
+                                         participantIdsStr,
+                                         gbid,
+                                         error);
+                        }
+                    };
+                    globalCapabilitiesDirectoryClient.touch(callback,
+                                                            participantIdsToTouch.toArray(new String[participantIdsToTouch.size()]),
+                                                            gbid);
+                }
             }
         };
         freshnessUpdateScheduledFuture = freshnessUpdateScheduler.scheduleAtFixedRate(command,
