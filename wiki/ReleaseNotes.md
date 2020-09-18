@@ -2,6 +2,18 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.12
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** The cache for GlobalDiscoveryEntries is now limited to 1000 non-sticky
+  entries. The oldest entry will be removed first, when the limit is exceeded.
+
+## Configuration property changes
+None.
+
 # joynr 1.8.11
 
 ## API relevant changes
