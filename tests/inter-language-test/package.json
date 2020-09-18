@@ -1,6 +1,6 @@
 {
   "name": "inter-language-test",
-  "version": "1.8.11",
+  "version": "1.8.12",
   "license": "Apache-2.0",
   "description": "Inter-Language Tests",
   "main": "src/main/js/consumer.js",
