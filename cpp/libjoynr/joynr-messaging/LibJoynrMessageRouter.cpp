@@ -683,9 +683,14 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
     }
 
     if (!providerAddress) {
-        JOYNR_LOG_ERROR(logger(),
-                        "No routing entry for multicast provider (providerParticipantId=" +
-                                providerParticipantId + ") found.");
+        const std::string errorMsg =
+                "No routing entry for multicast provider (providerParticipantId=" +
+                providerParticipantId + ") found.";
+        JOYNR_LOG_ERROR(logger(), errorMsg);
+        if (onError) {
+            onError(exceptions::ProviderRuntimeException("unable to removeMulticastReceiver. " +
+                                                         errorMsg));
+        }
         return;
     }
 
