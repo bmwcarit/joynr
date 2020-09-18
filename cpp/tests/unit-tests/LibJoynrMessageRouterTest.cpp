@@ -304,6 +304,40 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiverOfInProcessProvider_cal
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
+TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiver_callsOnErrorWhenNoRoutingEntryFound)
+{
+    auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(_runtime);
+    auto mockRoutingProxyRef = mockRoutingProxy.get();
+
+    _messageRouter->setParentAddress(std::string("parentParticipantId"), _localTransport);
+    _messageRouter->setParentRouter(std::move(mockRoutingProxy));
+
+    const std::string multicastId("multicastId");
+    const std::string subscriberParticipantId("subscriberParticipantId");
+    const std::string providerParticipantId("testProviderParticipantId");
+    EXPECT_CALL(*mockRoutingProxyRef,
+                removeMulticastReceiverAsyncMock(
+                        _, _, _, _, _, _))
+            .Times(0);
+    Semaphore errorCallbackCalled;
+    joynr::exceptions::ProviderRuntimeException callException;
+    std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
+            [&errorCallbackCalled, &callException](const joynr::exceptions::ProviderRuntimeException& e) {
+        callException = e;
+        errorCallbackCalled.notify();
+    };
+    auto onSuccess = []() { FAIL() << "onSuccess called"; };
+    _messageRouter->removeMulticastReceiver(
+            multicastId,
+            subscriberParticipantId,
+            providerParticipantId,
+            onSuccess,
+            onError);
+    EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_THAT(callException.what(), HasSubstr("unable to removeMulticastReceiver. "));
+    EXPECT_THAT(callException.what(), HasSubstr("No routing entry for multicast provider (providerParticipantId=testProviderParticipantId) found."));
+}
+
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouter)
 {
     auto mockRoutingProxy = std::make_unique<MockRoutingProxy>(_runtime);
