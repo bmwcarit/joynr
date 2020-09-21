@@ -1,7 +1,7 @@
 FROM fedora:30
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2020-07-08-13-00
+ENV REFRESHED_AT 2020-09-21-08-00
 
 ###################################################
 # create data directories and volumes
@@ -134,17 +134,24 @@ RUN asadmin start-domain && \
 
 RUN chmod -R 777 /opt/payara41
 
-###################################################
-# build and install mosquitto 1.6.8 mqtt broker
+###################################################################################
+# build and install mosquitto 1.6.12 mqtt broker
+# with additional fixes and joynr API extension
 # do not build documentation
 # use default settings
-###################################################
+# Extra Git commits from upstream (to be removed when updating to 1.6.13 or later):
+# 298d8494 Fix send quota being incorrecly reset on reconnect.
+# 3806296c Ld symbol of the mosquitto_property_copy_all has global bind now.
+# 7804c3f0 Note that 1024 "limit" is from operating systems, not Mosquitto.
+# 938e17a3 Fix incorrect authentication-method property type in mosquitto_sub man.
+# 0bdf630c (tag: v1.6.12) Merge branch 'fixes'
+###################################################################################
 COPY 0001-Introduce-mosquitto_connect_bind_async_v5-API.patch /tmp/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch
 RUN . /etc/profile \
     && cd /opt \
     && git clone https://github.com/eclipse/mosquitto \
     && cd mosquitto \
-    && git checkout v1.6.8 \
+    && git checkout 298d8494 \
     && git am -k /tmp/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch \
     && make WITH_WEBSOCKETS=yes DOCDIRS= prefix=/usr install -j4
 
