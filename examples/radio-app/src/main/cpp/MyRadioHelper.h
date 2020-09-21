@@ -21,6 +21,8 @@
 
 #include "joynr/Logger.h"
 #include <string>
+#include <termios.h>
+#include <unistd.h>
 
 /**
  * A helper class for use by the MyRadio consumer and provider applications
@@ -39,6 +41,10 @@ public:
 
     static int getch();
 
+    static void setDirectInputMode();
+
+    static void restoreInputMode();
+
     static const std::string& MISSING_NAME();
     /**
      * Output a prominent log message at level INFO
@@ -46,6 +52,8 @@ public:
     static void prettyLog(joynr::Logger& logger, const std::string& message);
 
 private:
+    static termios terminalSettingsBackup;
+
     ADD_LOGGER(MyRadioHelper)
 };
 

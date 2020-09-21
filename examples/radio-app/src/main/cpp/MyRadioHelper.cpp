@@ -25,8 +25,25 @@
 
 using namespace joynr;
 
+termios MyRadioHelper::terminalSettingsBackup;
+
 MyRadioHelper::MyRadioHelper()
 {
+}
+
+void MyRadioHelper::setDirectInputMode()
+{
+    // termios terminalSettingsBackup;
+    tcgetattr(STDIN_FILENO, &terminalSettingsBackup);
+
+    termios terminalSettings = MyRadioHelper::terminalSettingsBackup;
+    terminalSettings.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &terminalSettings);
+}
+
+void MyRadioHelper::restoreInputMode()
+{
+    tcsetattr(STDIN_FILENO, TCSANOW, &MyRadioHelper::terminalSettingsBackup);
 }
 
 int MyRadioHelper::getch()

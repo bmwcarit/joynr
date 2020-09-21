@@ -17,10 +17,14 @@
  * #L%
  */
 
+#include <atomic>
 #include <cassert>
+#include <fcntl.h>
 #include <limits>
 #include <string>
 #include <stdint.h>
+#include <sys/select.h>
+#include <sys/socket.h>
 #include <memory>
 
 #include "MyRadioHelper.h"
@@ -133,12 +137,13 @@ private:
     ADD_LOGGER(NewStationDiscoveredBroadcastListener)
 };
 
+static int fds[2];
+
 //------- Main entry point -------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
     using joynr::vehicle::Radio::AddFavoriteStationErrorEnum;
-
 // Register app at the dlt-daemon for logging
 #ifdef JOYNR_ENABLE_DLT_LOGGING
     DLT_REGISTER_APP("JYRC", argv[0]);
@@ -162,9 +167,30 @@ int main(int argc, char* argv[])
     std::string dir(MyRadioHelper::getAbsolutePathToExectuable(programName));
 
     // Initialise the JOYn runtime
+    // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+    // implementation.
+    if (socketpair(PF_LOCAL, SOCK_STREAM, 0, fds) == -1) {
+        MyRadioHelper::prettyLog(
+                logger,
+                "Could not create socketpair to handle unblocking stdin when a callback is called");
+        return 1;
+    }
+    std::atomic_bool isRuntimeOkay(true);
+    std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+            [&](const joynr::exceptions::JoynrRuntimeException& exception) {
+        isRuntimeOkay.store(false);
+        MyRadioHelper::prettyLog(
+                logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
+        // make sure the background thread terminates, do not block
+        int opt = fcntl(fds[0], F_GETFL, 0);
+        fcntl(fds[0], F_SETFL, opt | O_NONBLOCK);
+        write(fds[0], "q", 1);
+    };
+
     std::string pathToMessagingSettings(dir + "/resources/radio-app-consumer.settings");
 
-    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::shared_ptr<JoynrRuntime> runtime =
+            JoynrRuntime::createRuntime(pathToMessagingSettings, onFatalRuntimeError);
 
     // Create proxy builder
     std::shared_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
@@ -331,10 +357,32 @@ int main(int argc, char* argv[])
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, "METHOD: calling shuffle stations");
     proxy->shuffleStations();
-    // Run until the user hits q
+    // Run until the user hits q or a fatal runtime error happens (onFatalRuntimeError is called)
     int key;
+    int retval;
 
-    while ((key = MyRadioHelper::getch()) != 'q') {
+    MyRadioHelper::setDirectInputMode();
+    while (1) {
+        fd_set rfds;
+        FD_ZERO(&rfds);
+        FD_SET(STDIN_FILENO, &rfds);
+        FD_SET(fds[1], &rfds);
+        retval = select(fds[1] + 1, &rfds, NULL, NULL, NULL);
+        if (retval == -1) {
+            MyRadioHelper::prettyLog(logger, "Select returned error, leaving loop");
+            break;
+        }
+        if (FD_ISSET(fds[1], &rfds)) {
+            MyRadioHelper::prettyLog(logger, "Fatal runtime error detected, leaving loop");
+            break;
+        }
+        if (FD_ISSET(STDIN_FILENO, &rfds)) {
+            key = getchar();
+            if (key == 'q') {
+                break;
+            }
+        }
+
         joynr::vehicle::GeoPosition location;
         joynr::vehicle::Country::Enum country;
         switch (key) {
@@ -356,6 +404,7 @@ int main(int argc, char* argv[])
             break;
         }
     }
+    MyRadioHelper::restoreInputMode();
 
     // unsubscribe
     std::string currentStationSubscriptionId;
@@ -386,5 +435,5 @@ int main(int argc, char* argv[])
                         e.getMessage());
     }
 
-    return 0;
+    return isRuntimeOkay.load() ? 0 : 1;
 }
