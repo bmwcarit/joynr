@@ -75,6 +75,7 @@ public class JoynrIntegrationBeanTest {
 
     private static final String LOCAL_DOMAIN = "local.domain";
     private static final String MY_CUSTOM_DOMAIN = "my.custom.domain";
+    private static final String SETTINGS_DOMAIN = "settings.domain";
 
     private static final int REGISTRATION_RETRY_INTERVAL = 500;
     private static final int REGISTRATION_RETRIES = 2;
@@ -179,6 +180,12 @@ public class JoynrIntegrationBeanTest {
         @Override
         public String[] createGbids() {
             return new String[]{ "gbid1", "gbid2" };
+        }
+
+        @Override
+        public String createDomain() {
+            String domain = SETTINGS_DOMAIN;
+            return domain;
         }
 
         @Override
@@ -322,7 +329,8 @@ public class JoynrIntegrationBeanTest {
         ProviderQos expectedProviderQos = new ProviderQos();
         expectedProviderQos.setPriority(100L);
         String[] expectedGbids = new String[]{ "gbid1", "gbid2" };
-        verify(joynrRuntime).getProviderRegistrar(eq(LOCAL_DOMAIN), any());
+        String expectedDomain = SETTINGS_DOMAIN;
+        verify(joynrRuntime).getProviderRegistrar(eq(expectedDomain), any());
         verify(providerRegistrar).withProviderQos(expectedProviderQos);
         verify(providerRegistrar).withGbids(expectedGbids);
         verify(providerRegistrar).awaitGlobalRegistration();
