@@ -57,6 +57,15 @@ public interface ProviderRegistrationSettingsFactory {
     }
 
     /**
+     * This method is called in order to obtain a custom domain for registering the service with.
+     *
+     * @return the domain which joynr will use for service registration.
+     */
+    default String createDomain() {
+        return null;
+    }
+
+    /**
      * This method is queried on each bean which implements this interface in order to check if it
      * can provide settings for a given service interface.
      *

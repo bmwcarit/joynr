@@ -138,11 +138,13 @@ public class JoynrIntegrationBean {
             // try to find customized settings for the registration
             ProviderQos providerQos = null;
             String[] gbids = null;
+            String domain = null;
 
             for (ProviderRegistrationSettingsFactory factory : providerSettingsFactories) {
                 if (factory.providesFor(serviceInterface)) {
                     providerQos = factory.createProviderQos();
                     gbids = factory.createGbids();
+                    domain = factory.createDomain();
                     break;
                 }
             }
@@ -156,7 +158,9 @@ public class JoynrIntegrationBean {
                 gbids = new String[0];
             }
 
-            String domain = getDomainForProvider(beanClass);
+            if (domain == null) {
+                domain = getDomainForProvider(beanClass);
+            }
 
             // register provider
             ProviderRegistrar registrar = runtime.getProviderRegistrar(domain, provider)
