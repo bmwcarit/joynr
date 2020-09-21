@@ -280,9 +280,35 @@ will fail with an exception that reports the registration problems.
 > The timout for the deployment in your application server may be reached before all registration
 > retries are finished.
 
+
+#### <a name="provider_domain"></a> Customizing the registration domain
+
+In some cases you might want to register your providers under a different domain than the
+application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
+
+In order to do so, provide an implementation of `ProviderRegistrationSettingsFactory` (see
+the following section) or use the `@ProviderDomain` annotation on your implementing bean
+in addition to the `@ServiceProvider` annotation.
+
+The value you provide will be used as the domain when registering the bean as a joynr provider.
+The `@ProviderDomain` annotation will only be used if your `ProviderRegistrationSettingsFactory`
+does not override the method `createDomain` or you do not provide an implementation of
+`ProviderRegistrationSettingsFactory` at all.
+
+Here is an example of what the `@ProviderDomain` annotation looks like:
+
+```java
+@ServiceProvider(serviceInterface = MyServiceSync.class)
+@ProviderDomain(MY_CUSTOM_DOMAIN)
+private static class CustomDomainMyServiceBean implements MyServiceSync {
+    ...
+}
+```
+
+
 #### Customizing the provider registration parameters
 
-In order to set parameters like Provider QoS or GBID(s), provide an implementation of the
+In order to set parameters like Provider QoS, GBID(s) or domain, provide an implementation of the
 `ProviderRegistrationSettingsFactory` interface. You can provide multiple beans implementing this
 interface. The first one found which returns `true` to `providesFor(Class)` for a given service
 interface will be used by joynr to obtain settings needed to perform the service registration.
@@ -314,28 +340,16 @@ public class MyServiceProviderSettingsFactory implements ProviderRegistrationSet
     }
 
     @Override
+    public String createDomain() {
+        String domain = "testdomain";
+        return domain;
+    }
+
+    @Override
     public boolean providesFor(Class<?> serviceInterface) {
         return MyServiceSync.class.equals(serviceInterface);
     }
 
-}
-```
-
-#### <a name="provider_domain"></a> Customizing the registration domain
-
-In some cases you might want to register your providers under a different domain than the
-application default (specified via `@JoynrLocalDomain`, see configuration documentation above).
-
-In order to do so, use the `@ProviderDomain` annotation on your implementing bean in addition
-to the `@ServiceProvider` annotation. The value you provide will be used as the domain when
-registering the bean as a joynr provider.
-Here is an example of what that looks like:
-
-```java
-@ServiceProvider(serviceInterface = MyServiceSync.class)
-@ProviderDomain(MY_CUSTOM_DOMAIN)
-private static class CustomDomainMyServiceBean implements MyServiceSync {
-    ...
 }
 ```
 

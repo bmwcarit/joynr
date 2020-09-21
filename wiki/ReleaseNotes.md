@@ -14,10 +14,11 @@ the versioning scheme [here](JoynrVersioning.md).
   `onFatalRuntimeError` callback, which is invoked in exceptional cases that render the runtime
   inoperable. The old APIs without this callback are deprecated now and will be removed in the
   future.
-
 * **[TS]** The `joynr.load` now supports `onFatalRuntimeError` callback, which is invoked in
   exceptional cases that render the runtime inoperable. The callback is optional but it is highly
   recommended to provide an implementation. The old usage of this API does not break.
+* **[JEE]** Interface `ProviderRegistrationSettingsFactory` allows to specify domain registration
+  setting as well. See the [JEE documentation](jee.md#implementing-services-joynr-providers) for more details.
 
 ## Other changes
 * **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
