@@ -143,8 +143,8 @@ public abstract class AbstractMqttMultipleBackendTest {
         joynrRuntime = injector.getInstance(JoynrRuntime.class);
     }
 
-    private void waitForRemoveStale() throws InterruptedException {
-        // joynrMqttClient1 is called once at startup because ClusterControllerRuntime calls removeStale
+    private CountDownLatch waitForRemoveStale(JoynrMqttClient joynrMqttClient) throws InterruptedException {
+        // removeStale is called once at startup because ClusterControllerRuntime calls removeStale
         CountDownLatch cdl = new CountDownLatch(1);
         doAnswer(new Answer<Void>() {
             @Override
@@ -152,14 +152,13 @@ public abstract class AbstractMqttMultipleBackendTest {
                 cdl.countDown();
                 return null;
             }
-        }).when(joynrMqttClient1).publishMessage(anyString(),
-                                                 any(byte[].class),
-                                                 anyInt(),
-                                                 anyLong(),
-                                                 any(SuccessAction.class),
-                                                 any(FailureAction.class));
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
-        reset(joynrMqttClient1);
+        }).when(joynrMqttClient).publishMessage(anyString(),
+                                                any(byte[].class),
+                                                anyInt(),
+                                                anyLong(),
+                                                any(SuccessAction.class),
+                                                any(FailureAction.class));
+        return cdl;
     }
 
     protected void createJoynrRuntime() throws InterruptedException {
@@ -175,8 +174,15 @@ public abstract class AbstractMqttMultipleBackendTest {
                                                                                                                 .toInstance(gbids);
                                                                                         }
                                                                                     }));
+        CountDownLatch cdl1 = waitForRemoveStale(joynrMqttClient1);
+        CountDownLatch cdl2 = waitForRemoveStale(joynrMqttClient2);
+
         joynrRuntime = injector.getInstance(JoynrRuntime.class);
-        waitForRemoveStale();
+
+        assertTrue(cdl1.await(10, TimeUnit.SECONDS));
+        reset(joynrMqttClient1);
+        assertTrue(cdl2.await(10, TimeUnit.SECONDS));
+        reset(joynrMqttClient2);
     }
 
     protected Answer<Void> createVoidCountDownAnswer(CountDownLatch countDownLatch) {
