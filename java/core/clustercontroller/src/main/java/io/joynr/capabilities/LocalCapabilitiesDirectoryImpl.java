@@ -257,7 +257,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                     String gbidToTouch = gbids.get(0);
                     if (!gbidToParticipantIdsListMap.containsKey(gbidToTouch)) {
-                        logger.error("Found GBID {} for particpantId {} to touch is unknown.",
+                        logger.error("touch: found GBID {} for particpantId {} is unknown.",
                                      gbidToTouch,
                                      participantIdToTouch);
                         continue;
@@ -272,9 +272,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     List<String> participantIdsToTouch = entry.getValue();
 
                     if (participantIdsToTouch.isEmpty()) {
-                        logger.debug("touch(gbid={}) has not been called, because there are no providers to touch for gbid {}",
-                                     gbid,
-                                     String.join(",", participantIdsToTouch));
+                        logger.debug("touch(gbid={}) has not been called because there are no providers to touch for it.",
+                                     gbid);
                         continue;
                     }
 
@@ -285,7 +284,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                 String participantIdsStr = String.join(",", participantIdsToTouch);
                                 logger.trace("touch(participantIds={}, gbid={}) succeeded.", participantIdsStr, gbid);
                             } else {
-                                logger.debug("touch for gbid {} succeeded.", gbid);
+                                logger.debug("touch(gbid={}) succeeded.", gbid);
                             }
                         }
 
@@ -295,7 +294,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                             logger.error("touch(participantIds={}, gbid={}) failed: {}",
                                          participantIdsStr,
                                          gbid,
-                                         error);
+                                         error.toString());
                         }
                     };
                     globalCapabilitiesDirectoryClient.touch(callback,
