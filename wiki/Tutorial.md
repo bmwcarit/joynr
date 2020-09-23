@@ -163,7 +163,17 @@ can be stopped by hitting `q`. The provider will be unregistered and the applica
 
 ```c++
 ...
-std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings, pathToMessagingSettings);
+// onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+// implementation.
+bool isRuntimeOkay = true;
+std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+        [&] (const joynr::exceptions::JoynrRuntimeException& exception) {
+    isRuntimeOkay = false;
+    MyRadioHelper::prettyLog(logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
+};
+
+std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings,
+  onFatalRuntimeError, pathToMessagingSettings);
 // Initialize the quality of service settings
 // Set the priority so that the consumer application always uses the most recently started provider
 std::chrono::milliseconds millisSinceEpoch =
@@ -176,10 +186,12 @@ std::shared_ptr<MyRadioProvider> provider(new MyRadioProvider());
 runtime->registerProvider<vehicle::RadioProvider>(providerDomain, provider, providerQos);
 ...
 
-// Unregister the provider
-runtime->unregisterProvider<vehicle::RadioProvider>(
-        providerDomain, provider);
+if (isRuntimeOkay) {
+    // Unregister the provider
+    runtime->unregisterProvider<vehicle::RadioProvider>(providerDomain, provider);
+}
 
+return isRuntimeOkay ? 0 : 1;
 ```
 
 **Java: [\<RADIO_HOME\>/src/main/java/io/joynr/demo/MyRadioProviderApplication.java]
@@ -245,8 +257,17 @@ you added to the interface, and add a print statement so that you can see the re
 int main(int argc, char* argv[])
 {
     ...
+    // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+    // implementation.
+    bool isRuntimeOkay = true;
+    std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+            [&] (const joynr::exceptions::JoynrRuntimeException& exception) {
+        isRuntimeOkay = false;
+        MyRadioHelper::prettyLog(logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
+    };
+
     std::shared_ptr<JoynrRuntime> runtime =
-            JoynrRuntime::createRuntime(pathToMessagingSettings);
+            JoynrRuntime::createRuntime(pathToMessagingSettings, onFatalRuntimeError);
 
     // Create proxy builder
     std::unique_ptr<ProxyBuilder<vehicle::RadioProxy>> proxyBuilder =
@@ -306,6 +327,8 @@ int main(int argc, char* argv[])
     MyRadioHelper::prettyLog(logger, "METHOD: calling shuffle stations");
     proxy->shuffleStations();
 }
+
+return isRuntimeOkay ? 0 : 1;
 ...
 ```
 
