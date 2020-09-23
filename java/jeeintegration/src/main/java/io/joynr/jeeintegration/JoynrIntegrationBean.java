@@ -141,7 +141,7 @@ public class JoynrIntegrationBean {
             String domain = null;
 
             for (ProviderRegistrationSettingsFactory factory : providerSettingsFactories) {
-                if (factory.providesFor(serviceInterface)) {
+                if (factory.providesFor(serviceInterface, beanClass)) {
                     providerQos = factory.createProviderQos();
                     gbids = factory.createGbids();
                     domain = factory.createDomain();

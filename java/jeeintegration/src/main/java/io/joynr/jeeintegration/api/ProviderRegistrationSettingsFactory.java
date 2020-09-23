@@ -76,4 +76,21 @@ public interface ProviderRegistrationSettingsFactory {
      *         interface.
      */
     boolean providesFor(Class<?> serviceInterface);
+
+    /**
+     * This method is queried on each bean which implements this interface in order to check if it
+     * can provide settings for a given service interface and an implemented service provider bean.
+     *
+     * @param serviceInterface
+     *            the service interface for which joynr is trying to find registration settings.
+     *
+     * @param serviceProviderBean
+     *            the service provider bean for which joynr is trying to find registration settings.
+     *
+     * @return <code>true</code> if the implementing bean is responsible for the settings of this
+     *         interface and the provider bean.
+     */
+    default boolean providesFor(Class<?> serviceInterface, Class<?> serviceProviderBean) {
+        return providesFor(serviceInterface);
+    }
 }
