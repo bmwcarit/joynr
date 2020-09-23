@@ -49,10 +49,18 @@ std::shared_ptr<joynr::JoynrRuntime> createRuntime(const std::string& pathToSett
         throw std::invalid_argument("All three ssl options must be provided (cert, key, ca-cert)");
     }
 
+    // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+    // implementation.
+    std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+            [](const joynr::exceptions::JoynrRuntimeException& exception) {
+        std::cout << "Unexpected joynr runtime error occured: " << exception.getMessage()
+                  << std::endl;
+    };
+
     std::shared_ptr<JoynrRuntime> runtime;
     try {
         runtime = JoynrRuntime::createRuntime(
-                pathToSettings, pathToMessagingSettingsDefault, keychain);
+                pathToSettings, onFatalRuntimeError, pathToMessagingSettingsDefault, keychain);
     } catch (...) {
         runtime = nullptr;
     }

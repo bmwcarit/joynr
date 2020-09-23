@@ -104,8 +104,16 @@ int main(int argc, char* argv[])
             wsSettings.setClusterControllerMessagingUrl(ccUrlForTLS);
         }
 
-        std::shared_ptr<joynr::JoynrRuntime> runtime(
-                joynr::JoynrRuntime::createRuntime(std::move(joynrSettings), std::move(keyChain)));
+        // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+        // implementation.
+        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+                [&](const joynr::exceptions::JoynrRuntimeException& exception) {
+            std::cout << "Unexpected joynr runtime error occured: " << exception.getMessage()
+                      << std::endl;
+        };
+
+        std::shared_ptr<joynr::JoynrRuntime> runtime(joynr::JoynrRuntime::createRuntime(
+                std::move(joynrSettings), std::move(onFatalRuntimeError), std::move(keyChain)));
 
         std::shared_ptr<PerformanceTestEchoProvider> provider =
                 std::make_shared<PerformanceTestEchoProvider>();

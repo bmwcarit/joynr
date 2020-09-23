@@ -117,9 +117,18 @@ int main(int argc, char* argv[])
             boost::filesystem::system_complete(boost::filesystem::path(programName));
     std::string dir(fullPath.parent_path().string());
 
+    // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+    // implementation.
+    std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+            [&](const joynr::exceptions::JoynrRuntimeException& exception) {
+        JOYNR_LOG_ERROR(
+                logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
+    };
+
     // Initialise the joynr runtime
     std::string pathToMessagingSettings(dir + "/resources/memory-usage-consumer.settings");
-    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::shared_ptr<JoynrRuntime> runtime =
+            JoynrRuntime::createRuntime(pathToMessagingSettings, onFatalRuntimeError);
 
     // Create proxy builder
     std::shared_ptr<ProxyBuilder<tests::performance::EchoProxy>> proxyBuilder =

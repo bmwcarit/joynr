@@ -59,10 +59,18 @@ protected:
         // Get the provider domain
         JOYNR_LOG_INFO(logger(), "Creating proxy for provider on domain {}", providerDomain);
 
+        // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+        // implementation.
+        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+                [&](const joynr::exceptions::JoynrRuntimeException& exception) {
+            JOYNR_LOG_ERROR(
+                    logger(), "Unexpected joynr runtime error occured: " + exception.getMessage());
+        };
+
         // Initialise the JOYn runtime
         std::string pathToMessagingSettings("resources/robustness-tests-consumer.settings");
 
-        runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+        runtime = JoynrRuntime::createRuntime(pathToMessagingSettings, onFatalRuntimeError);
 
         // Create proxy builder
         proxyBuilder = runtime->createProxyBuilder<TestInterfaceProxy>(providerDomain);

@@ -25,10 +25,17 @@ using joynr::JoynrRuntime;
 
 void ProviderTest::init()
 {
+    // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+    // implementation.
+    std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+            [&] (const joynr::exceptions::JoynrRuntimeException& exception) {
+        JOYNR_LOG_ERROR(logger(), "Unexpected joynr runtime error occured: " + exception.getMessage());
+    };
+
     for(int i=0; i < input.numOfRuntimes; i++)
     {
         runTimeContainer runTimeContainerTmp;
-        runTimeContainerTmp.runtime = JoynrRuntime::createRuntime(input.pathToLibJoynrSettings, input.pathToMessagingSettings);
+        runTimeContainerTmp.runtime = JoynrRuntime::createRuntime(input.pathToLibJoynrSettings, onFatalRuntimeError, input.pathToMessagingSettings);
         myRunTimeContainerList.push_back(runTimeContainerTmp);
     }
 

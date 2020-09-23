@@ -47,10 +47,18 @@ protected:
         // Get the current program directory
         std::string dir(IltHelper::getAbsolutePathToExecutable(globalIltProgramName));
 
+        // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+        // implementation.
+        std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+                [&](const joynr::exceptions::JoynrRuntimeException& exception) {
+            JOYNR_LOG_ERROR(
+                    logger(), "Unexpected joynr runtime error occured: " + exception.getMessage());
+        };
+
         // Initialize the joynr runtime
         std::string pathToMessagingSettings(dir + "/resources/ilt-consumer.settings");
 
-        runtime = joynr::JoynrRuntime::createRuntime(pathToMessagingSettings);
+        runtime = joynr::JoynrRuntime::createRuntime(pathToMessagingSettings, onFatalRuntimeError);
 
         // Create proxy builder
         proxyBuilder = runtime->createProxyBuilder<joynr::interlanguagetest::TestInterfaceProxy>(

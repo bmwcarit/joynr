@@ -74,11 +74,21 @@ void ConsumerTest::init()
 {
     JOYNR_LOG_TRACE(logger(), "initialisation started");
 
+    // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+    // implementation.
+    std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+            [&](const joynr::exceptions::JoynrRuntimeException& exception) {
+        JOYNR_LOG_ERROR(
+                logger(), "Unexpected joynr runtime error occured: " + exception.getMessage());
+    };
+
     // Initialize the joynr runtimes
     for (int i = 0; i < testParams.numOfRuntimes; i++) {
         runTimeContainer runTimeContainerTmp;
-        runTimeContainerTmp.runtime = joynr::JoynrRuntime::createRuntime(
-                testParams.pathToLibJoynrSettings, testParams.pathToMessagingSettings);
+        runTimeContainerTmp.runtime =
+                joynr::JoynrRuntime::createRuntime(testParams.pathToLibJoynrSettings,
+                                                   onFatalRuntimeError,
+                                                   testParams.pathToMessagingSettings);
         myRunTimeContainerList.emplace_back(std::move(runTimeContainerTmp));
     }
 

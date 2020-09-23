@@ -73,12 +73,22 @@ int main(int argc, char* argv[])
     // Get the current program directory
     std::string dir(IltHelper::getAbsolutePathToExecutable(programName));
 
+    // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+    // implementation.
+    std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+            [&](const joynr::exceptions::JoynrRuntimeException& exception) {
+        JOYNR_LOG_ERROR(
+                logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
+        semaphore.notify();
+    };
+
     // Initialise the JOYn runtime
     std::string pathToMessagingSettings(dir + "/resources/ilt-provider.settings");
     // not used
     // std::string pathToLibJoynrSettings(dir.toStdString() +
     // "/resources/test-app-provider.libjoynr.settings");
-    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToMessagingSettings);
+    std::shared_ptr<JoynrRuntime> runtime =
+            JoynrRuntime::createRuntime(pathToMessagingSettings, onFatalRuntimeError);
 
     // create provider instance
     std::shared_ptr<IltProvider> provider(new IltProvider());

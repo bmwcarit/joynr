@@ -70,6 +70,14 @@ int main(int argc, char** argv)
             boost::filesystem::system_complete(boost::filesystem::path(programName));
     std::string dir = fullPath.parent_path().string();
 
+    // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
+    // implementation.
+    std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
+            [&](const joynr::exceptions::JoynrRuntimeException& exception) {
+        JOYNR_LOG_ERROR(
+                logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
+    };
+
     // Initialize the joynr runtime
     std::string pathToLibJoynrSettings(dir + "/resources/robustness-tests-provider.settings");
     std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynrSettings);
