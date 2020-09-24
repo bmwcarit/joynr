@@ -7,88 +7,18 @@ the versioning scheme [here](JoynrVersioning.md).
 ## API relevant changes
 * **[Java]** The default discovery scope is consistent with other languages now. It is changed from
     `LOCAL_AND_GLOBAL` to `LOCAL_THEN_GLOBAL`.
-
-## Bug fixes
-* **[C++]** Cluster controller now uses the new `touch` and `removeStale` methods of
-  [`GlobalCapabilitiesDirectory.fidl`](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl).
-  The Global Capabilities Directory has to implement version 0.3 of the interface.
-* **[Java, JEE]** Fixed some cases, where an UndeclaredThrowableException was returned when
-    customer provider method implementation code was using an unsupported exception type
-    (neither ProviderRuntimeException nor ApplicationException where applicable).
-    Now a ProviderRuntimeException will be returned which contains the text of the original
-    exception in such cases.
-* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
-  occurs after connection has been established
-
-## Other Changes
-None.
-
-# joynr 1.14.2
-
-## Other changes
-
-* **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
- tools (4.0.0).
-* **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
-  the registration is applied to all backends instead of the default one. See also documentation of
-  [joynr usage with multiple backends](./multiple-backends.md).
-
-## Bug fixes
-
-* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
-  occurs after connection has been established
-* **[C++]** Fixed memory leak in MosquittoConnection
-* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
-* **[Java]** Expiration date of provisioned discovery entries is now set to maximum value
-* **[Java]** Routing entries for RoutingProvider and DiscoveryProvider are now sticky
-
-# joynr 1.14.1
-
-## API relevant changes
 * **[Java, TS]** The API `registerInAllKnownBackends()` is deprecated, since registration in all
   backends is now the default behavior.
 * **[C++]** The APIs `registerProviderInAllBackends` and
   `registerProviderInAllBackendsAsync` are deprecated, since registration in all backends
   is now the default behavior.
-* **[C++]** The `createRuntime` and `createRuntimeAsync` APIs in `JoynrRuntime` now support a
+* **[C++]** The `createRuntime` and `createRuntimeAsync` APIs in `JoynrRuntime` now support an optional
   `onFatalRuntimeError` callback, which is invoked in exceptional cases that render the runtime
-  inoperable. The old APIs without this callback are deprecated now and will be removed in the
+  inoperable. The old APIs without this callback are deprecated now and may be removed in the
   future.
-
 * **[TS]** The `joynr.load` now supports `onFatalRuntimeError` callback, which is invoked in
   exceptional cases that render the runtime inoperable. The callback is optional but it is highly
   recommended to provide an implementation. The old usage of this API does not break.
-
-## Other changes
-* **[C++]** Raise required minimum Boost version from 1.58.0 to 1.65.0.
-* **[C++,TS]** Support Unix Domain Sockets for communication between libjoynr and cluster
-  controller. The C++ cluster controller accepts UDS client and WebSocket clients in parallel by
-  default.  
-  For more information about the (optional) UDS configuration options in C++ see
-  [Joynr C++ Settings](/wiki/cpp_settings.md).  
-  For the (optional) configuration options in joynr TS see
-  [JavaScript settings](/wiki/JavaScriptSettings.md).
-* **[TS]** Communication via UDS is now default. To use WebSocket communication, call
-  `joynr.selectRuntime` with `WebSocketLibjoynrRuntime` before calling `joynr.load()`.
-* **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
-  necessary anymore. The generated code for Java and JEE is identical now.
-  See [Generator documentation](generator.md).
-* **[Android]** Added support for multi-user in the Android Binder runtime, allowing Android
-  Services to be bound either as the system user or as a specific user. The implementation is
-  tailored for the CC to run in user 0 (system), and joynr app clients can connect on
-  whichever user they decide to in a system with multi-user capabilities.
-* **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
-  tools (4.0.0).
-* **[Android]** Added ContentProvider that allows apps and other components to  implement
-  persistent providers, designed for specific use cases where the providers' configuration can
-  occur first thing in the component lifecycle.
-* **[JEE]** Added automatic provider registration retries and reporting of unsuccessful provider
-  registration. See
-  [documentation of joynr JEE integration](jee.md#provider-registration-retries-and-error-handling)
-  for more information.
-* **[Java]** MqttPahoClient has been removed. Please use HivemqMqttClient instead.
-* **[ALL]** Marked broadcast `globalDiscoveryEntryChanged ` in `GlobalCapabilitiesDirectory.fidl`
-  as deprecated because it has never been implemented, used or tested.
 
 ## Configuration property changes
 * **[C++]** The configuration option `mqtt-max-message-size-bytes` was removed from messaging
@@ -106,10 +36,68 @@ None.
   value specified by HiveMQ client.
 
 ## Bug fixes
+* **[Java, JEE]** Fixed some cases, where an UndeclaredThrowableException was returned when
+  customer provider method implementation code was using an unsupported exception type
+  (neither ProviderRuntimeException nor ApplicationException where applicable).
+  Now a ProviderRuntimeException will be returned which contains the text of the original
+  exception in such cases.
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+
+## Other Changes
+* **[C++]** Cluster controller now uses the new `touch` and `removeStale` methods of
+  [`GlobalCapabilitiesDirectory.fidl`](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl).
+  The Global Capabilities Directory has to implement version 0.3 of the interface.
+* **[C++]** Raise required minimum Boost version from 1.58.0 to 1.65.0.
+* **[Android]** Added ContentProvider that allows apps and other components to  implement
+  persistent providers, designed for specific use cases where the providers' configuration can
+  occur first thing in the component lifecycle.
+* **[JEE]** Added automatic provider registration retries and reporting of unsuccessful provider
+  registration. See
+  [documentation of joynr JEE integration](jee.md#provider-registration-retries-and-error-handling)
+  for more information.
+* **[Java]** MqttPahoClient has been removed. Please use HivemqMqttClient instead.
+* **[ALL]** Marked broadcast `globalDiscoveryEntryChanged ` in `GlobalCapabilitiesDirectory.fidl`
+  as deprecated because it has never been implemented, used or tested.
+* **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
+  the registration is applied to all backends instead of the default one. See also documentation of
+  [joynr usage with multiple backends](./multiple-backends.md).
+
+# joynr 1.14.2
+
+## Other changes
+
+* **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
+ tools (4.0.0).
+
+## Bug fixes
+
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
+* **[C++]** Fixed memory leak in MosquittoConnection
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+* **[Java]** Expiration date of provisioned discovery entries is now set to maximum value
+* **[Java]** Routing entries for RoutingProvider and DiscoveryProvider are now sticky
+
+# joynr 1.14.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
+  necessary anymore. The generated code for Java and JEE is identical now.
+  See [Generator documentation](generator.md).
+* **[Android]** Added support for multi-user in the Android Binder runtime, allowing Android
+  Services to be bound either as the system user or as a specific user. The implementation is
+  tailored for the CC to run in user 0 (system), and joynr app clients can connect on
+  whichever user they decide to in a system with multi-user capabilities.
+
+## Bug fixes
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
     This is fixed and replies will now expire at the same time as the original request.
-* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 
 # joynr 1.14.0
 
