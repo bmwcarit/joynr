@@ -169,7 +169,7 @@ public class JoynrIntegrationBeanTest {
         }
     }
 
-    private static class MyProviderSettingsFactory implements ProviderRegistrationSettingsFactory {
+    private static class MyProviderSettingsFactoryBase implements ProviderRegistrationSettingsFactory {
         @Override
         public ProviderQos createProviderQos() {
             ProviderQos providerQos = new ProviderQos();
@@ -191,6 +191,25 @@ public class JoynrIntegrationBeanTest {
         @Override
         public boolean providesFor(Class<?> serviceInterface) {
             return MyServiceSync.class.isAssignableFrom(serviceInterface);
+        }
+    }
+
+    private static class MyProviderSettingsFactoryWithCorrectProvidesForBeanClass
+            extends MyProviderSettingsFactoryBase {
+        @Override
+        public boolean providesFor(Class<?> serviceInterface, Class<?> serviceProviderBean) {
+            return (MyServiceSync.class.isAssignableFrom(serviceInterface)
+                    && MyServiceBean.class.isAssignableFrom(serviceProviderBean));
+        }
+    }
+
+    private static class MyProviderSettingsFactoryWithIncorrectProvidesForBeanClass
+            extends MyProviderSettingsFactoryBase {
+        // Implement function that will return false by checking CustomDomainMyServiceBean instead of MyServiceBean
+        @Override
+        public boolean providesFor(Class<?> serviceInterface, Class<?> serviceProviderBean) {
+            return (MyServiceSync.class.isAssignableFrom(serviceInterface)
+                    && CustomDomainMyServiceBean.class.isAssignableFrom(serviceProviderBean));
         }
     }
 
@@ -299,12 +318,12 @@ public class JoynrIntegrationBeanTest {
     }
 
     @Test
-    public void testRegisterProviderUsingSettingsFromFactory() {
+    public void testRegisterProviderUsingSettingsFromFactoryWithDefaultProvidesForFunction() {
         // given we have a bean implementing a joynr provider...
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
         // ...and a factory for customized provider registration settings
-        MyProviderSettingsFactory settingsFactory = new MyProviderSettingsFactory();
+        MyProviderSettingsFactoryBase settingsFactory = new MyProviderSettingsFactoryBase();
 
         //... and the bean manager mock returns this factory wrapped in a bean
         doAnswer(new Answer<Object>() {
@@ -313,7 +332,7 @@ public class JoynrIntegrationBeanTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 @SuppressWarnings("rawtypes")
                 Bean factoryAsBean = mock(Bean.class);
-                when(factoryAsBean.getBeanClass()).thenReturn(MyProviderSettingsFactory.class);
+                when(factoryAsBean.getBeanClass()).thenReturn(MyProviderSettingsFactoryBase.class);
                 when(factoryAsBean.create(null)).thenReturn(settingsFactory);
 
                 Set<Bean<?>> providerSettingsFactoryBeans = new HashSet<>();
@@ -331,6 +350,82 @@ public class JoynrIntegrationBeanTest {
         String[] expectedGbids = new String[]{ "gbid1", "gbid2" };
         String expectedDomain = SETTINGS_DOMAIN;
         verify(joynrRuntime).getProviderRegistrar(eq(expectedDomain), any());
+        verify(providerRegistrar).withProviderQos(expectedProviderQos);
+        verify(providerRegistrar).withGbids(expectedGbids);
+        verify(providerRegistrar).awaitGlobalRegistration();
+        verify(providerRegistrar).register();
+    }
+
+    @Test
+    public void testRegisterProviderUsingSettingsWithCorrectProvidesForBeanClassFunction() {
+        // given we have a bean implementing a joynr provider...
+        when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
+
+        // ...and a factory for customized provider registration settings with a correct function providesFor(interface, beanClass)
+        MyProviderSettingsFactoryBase settingsFactory = new MyProviderSettingsFactoryWithCorrectProvidesForBeanClass();
+
+        //... and the bean manager mock returns this factory wrapped in a bean
+        doAnswer(new Answer<Object>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("rawtypes")
+                Bean factoryAsBean = mock(Bean.class);
+                when(factoryAsBean.getBeanClass()).thenReturn(MyProviderSettingsFactoryWithCorrectProvidesForBeanClass.class);
+                when(factoryAsBean.create(null)).thenReturn(settingsFactory);
+
+                Set<Bean<?>> providerSettingsFactoryBeans = new HashSet<>();
+                providerSettingsFactoryBeans.add(factoryAsBean);
+                return providerSettingsFactoryBeans;
+            }
+        }).when(beanManager).getBeans(eq(ProviderRegistrationSettingsFactory.class), any());
+
+        // when we initialize the subject (and register providers)
+        subject.initialise();
+
+        // then the runtime is called with the correct parameters from the factory
+        ProviderQos expectedProviderQos = new ProviderQos();
+        expectedProviderQos.setPriority(100L);
+        String[] expectedGbids = new String[]{ "gbid1", "gbid2" };
+        String expectedDomain = SETTINGS_DOMAIN;
+        verify(joynrRuntime).getProviderRegistrar(eq(expectedDomain), any());
+        verify(providerRegistrar).withProviderQos(expectedProviderQos);
+        verify(providerRegistrar).withGbids(expectedGbids);
+        verify(providerRegistrar).awaitGlobalRegistration();
+        verify(providerRegistrar).register();
+    }
+
+    @Test
+    public void testRegisterProviderUsingSettingsWithIncorrectProvidesForBeanClassFunction() {
+        // given we have a bean implementing a joynr provider...
+        when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
+
+        // ...and a factory for customized provider registration settings with an incorrect function providesFor(interface, beanClass)
+        MyProviderSettingsFactoryBase settingsFactory = new MyProviderSettingsFactoryWithIncorrectProvidesForBeanClass();
+
+        //... and the bean manager mock returns this factory wrapped in a bean
+        doAnswer(new Answer<Object>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("rawtypes")
+                Bean factoryAsBean = mock(Bean.class);
+                when(factoryAsBean.getBeanClass()).thenReturn(MyProviderSettingsFactoryWithIncorrectProvidesForBeanClass.class);
+                when(factoryAsBean.create(null)).thenReturn(settingsFactory);
+
+                Set<Bean<?>> providerSettingsFactoryBeans = new HashSet<>();
+                providerSettingsFactoryBeans.add(factoryAsBean);
+                return providerSettingsFactoryBeans;
+            }
+        }).when(beanManager).getBeans(eq(ProviderRegistrationSettingsFactory.class), any());
+
+        // when we initialize the subject (and register providers)
+        subject.initialise();
+
+        // then the runtime is called with the default parameters
+        ProviderQos expectedProviderQos = new ProviderQos();
+        String[] expectedGbids = {};
+        verify(joynrRuntime).getProviderRegistrar(eq(LOCAL_DOMAIN), any());
         verify(providerRegistrar).withProviderQos(expectedProviderQos);
         verify(providerRegistrar).withGbids(expectedGbids);
         verify(providerRegistrar).awaitGlobalRegistration();
