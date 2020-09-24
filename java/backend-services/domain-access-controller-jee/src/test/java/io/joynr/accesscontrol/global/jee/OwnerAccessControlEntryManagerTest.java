@@ -71,7 +71,7 @@ public class OwnerAccessControlEntryManagerTest {
                                      DomainRoleEntryManager.class,
                                      OwnerAccessControlEntryEntity.class,
                                      OwnerAccessControlEntryManager.class,
-                                     JoynrConfigurationProvider.class)
+                                     TestJoynrConfigurationProvider.class)
                          .addAsLibraries(files)
                          .addAsResource("test-persistence.xml", "META-INF/persistence.xml")
                          .addAsWebInfResource(new File("src/main/webapp/WEB-INF/beans.xml"));
