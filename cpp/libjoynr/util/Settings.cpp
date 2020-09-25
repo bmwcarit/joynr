@@ -33,18 +33,18 @@ Settings::Settings() : _filename(), _propertyTree(), _loaded(false)
 {
 }
 
-Settings::Settings(const std::string& filename)
+Settings::Settings(const std::string& filename, bool throwIfError)
         : _filename(filename), _propertyTree(), _loaded(false)
 {
     try {
-        JOYNR_LOG_INFO(logger(), "attempting to read settings file: {}", filename);
         ptree::read_ini(filename, _propertyTree);
         _loaded = true;
+        JOYNR_LOG_INFO(logger(), "Attempt reading {} succeeded.", filename);
     } catch (const ptree::ini_parser_error& e) {
-        JOYNR_LOG_ERROR(logger(), "Could not read settings file: {}", e.what());
-        // The file does not exist or is an invalid format.
-        // Match the behaviour of QSettings and ignore/overwrite
-        // But leave loaded as false
+        if (throwIfError) {
+            throw e;
+        }
+        JOYNR_LOG_INFO(logger(), "Could not read properties from {}.", filename);
     }
 }
 
@@ -115,11 +115,38 @@ bool Settings::contentChanged(const boost::property_tree::ptree& propertyTreeToC
 void Settings::fillEmptySettingsWithDefaults(const std::string& defaultsFilename)
 {
     const std::string cmakeSettingsPath = CMAKE_JOYNR_SETTINGS_INSTALL_DIR;
-    Settings cmakeDefaultSettings(cmakeSettingsPath + "/" + defaultsFilename);
-    Settings relativeDefaultSettings("resources/" + defaultsFilename);
+    const std::string absolutePath = cmakeSettingsPath + "/" + defaultsFilename;
+    const std::string relativePath = "resources/" + defaultsFilename;
+    Settings cmakeDefaultSettings;
+    Settings relativeDefaultSettings;
+    bool loadedAbsolute = false;
+    try {
+        Settings::merge(Settings(absolutePath, true), cmakeDefaultSettings, true);
+        loadedAbsolute = true;
+        JOYNR_LOG_INFO(logger(), "Attempt reading {} succeeded.", absolutePath);
+    } catch (const ptree::ini_parser_error&) {
+    }
 
-    Settings::merge(relativeDefaultSettings, *this, false);
-    Settings::merge(cmakeDefaultSettings, *this, false);
+    bool loadedRelative = false;
+    try {
+        Settings::merge(Settings(relativePath, true), relativeDefaultSettings, true);
+        loadedRelative = true;
+        JOYNR_LOG_INFO(logger(), "Attempt reading {} succeeded.", relativePath);
+    } catch (const ptree::ini_parser_error&) {
+    }
+
+    if (loadedAbsolute || loadedRelative) {
+        Settings::merge(relativeDefaultSettings, *this, false);
+        Settings::merge(cmakeDefaultSettings, *this, false);
+        _loaded = true;
+    }
+
+    if (!loadedAbsolute && !loadedRelative) {
+        JOYNR_LOG_ERROR(logger(),
+                        "Could not read properties from absolute path {} and relative path {}",
+                        absolutePath,
+                        relativePath);
+    }
 }
 
 void Settings::merge(const boost::property_tree::ptree& from,

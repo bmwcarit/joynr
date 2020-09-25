@@ -29,6 +29,7 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 #include "joynr/AbstractGlobalMessagingSkeleton.h"
 #include "joynr/BrokerUrl.h"
@@ -116,6 +117,8 @@
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeleton.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonNonTLS.h"
 #include "libjoynrclustercontroller/websocket/WebSocketCcMessagingSkeletonTLS.h"
+
+namespace ptree = boost::property_tree;
 
 namespace joynr
 {
@@ -206,13 +209,16 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
         const std::string settingsFileName(argv[i]);
 
         // Read the settings file
-        JOYNR_LOG_INFO(logger(), "Loading settings file: {}", settingsFileName);
-        Settings currentSettings(settingsFileName);
+        Settings currentSettings;
+        try {
+            Settings::merge(Settings(settingsFileName), currentSettings, true);
+        } catch (const ptree::ini_parser_error& e) {
+            JOYNR_LOG_FATAL(
+                    logger(), "Can not read properties from {} {}", settingsFileName, e.message());
+        }
 
         // Check for errors
         if (!currentSettings.isLoaded()) {
-            JOYNR_LOG_FATAL(
-                    logger(), "Provided settings file {} could not be loaded.", settingsFileName);
             return nullptr;
         }
 
@@ -232,11 +238,6 @@ void JoynrClusterControllerRuntime::init()
       * libjoynr side skeleton & dispatcher
       * This needs some preparation of libjoynr and clustercontroller parts.
       */
-    _messagingSettings.printSettings();
-    _libjoynrSettings.printSettings();
-    _wsSettings.printSettings();
-    _udsSettings.printSettings();
-
     fillAvailableGbidsVector();
     /*
      * Even if MQTT messaging is not enabled, the corresponding data vector entries need to be
@@ -265,7 +266,6 @@ void JoynrClusterControllerRuntime::init()
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::MQTTS) ||
         brokerProtocol == joynr::system::RoutingTypes::MqttProtocol::getLiteral(
                                   joynr::system::RoutingTypes::MqttProtocol::Enum::TCP)) {
-        JOYNR_LOG_DEBUG(logger(), "MQTT-Messaging");
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(
                 _clusterControllerSettings.getMqttMulticastTopicPrefix(), _availableGbids);
         _doMqttMessaging = true;
@@ -313,6 +313,11 @@ void JoynrClusterControllerRuntime::init()
                     _messagingSettings, clusterControllerId, receiverId);
         }
     }
+
+    _clusterControllerSettings.printSettings();
+    _libjoynrSettings.printSettings();
+    _wsSettings.printSettings();
+    _udsSettings.printSettings();
 
     if (_doMqttMessaging) {
         const std::string ccMqttClientIdPrefix = _clusterControllerSettings.getMqttClientIdPrefix();

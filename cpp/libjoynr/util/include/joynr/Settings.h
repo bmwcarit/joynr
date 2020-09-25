@@ -46,7 +46,7 @@ public:
      * @brief Read settings from a file
      * @param filename The name of the file to read settings from
      */
-    explicit Settings(const std::string& filename);
+    explicit Settings(const std::string& filename, bool throwIfError = false);
 
     /**
      * @brief Indicates if the settings file was parsed and loaded

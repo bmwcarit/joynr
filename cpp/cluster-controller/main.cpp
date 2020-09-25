@@ -46,7 +46,6 @@ std::string getVersionInfo()
 void printUsage(joynr::Logger& logger, const std::string& programName)
 {
     JOYNR_LOG_INFO(logger, "Joynr package revision: " JOYNR_PACKAGE_REVISION ".");
-    JOYNR_LOG_INFO(logger, "USAGE: No settings provided. Starting with default settings.");
     JOYNR_LOG_INFO(logger,
                    "USAGE: {}  <file.settings>... [-d <discoveryEntries.json>] [--version|-v]",
                    programName);
@@ -69,14 +68,17 @@ int main(int argc, char* argv[])
     // init a logger
     joynr::Logger logger("Runtime");
 
+    // Always print Joynr version.
+    printVersionToStdOut();
+
     // Check the usage.
     const std::string programName(argv[0]);
     if (argc == 1) {
         printUsage(logger, programName);
+        JOYNR_LOG_INFO(logger,
+                       "No custom settings provided. Starting "
+                       "with default settings.");
     }
-
-    // Always print Joynr version.
-    printVersionToStdOut();
 
     // create the cluster controller runtime
     std::shared_ptr<joynr::JoynrClusterControllerRuntime> clusterControllerRuntime;
