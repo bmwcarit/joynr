@@ -44,6 +44,7 @@
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Eq;
+using ::testing::HasSubstr;
 using ::testing::InSequence;
 using ::testing::InvokeArgument;
 using ::testing::Mock;
