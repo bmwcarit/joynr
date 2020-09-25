@@ -309,12 +309,20 @@ private static class CustomDomainMyServiceBean implements MyServiceSync {
 #### Customizing the provider registration parameters
 
 In order to set parameters like Provider QoS, GBID(s) or domain, provide an implementation of the
-`ProviderRegistrationSettingsFactory` interface. You can provide multiple beans implementing this
-interface. The first one found which returns `true` to `providesFor(Class)` for a given service
-interface will be used by joynr to obtain settings needed to perform the service registration.
+`ProviderRegistrationSettingsFactory` interface. 
+
+You can provide multiple beans implementing this interface. The first one found which returns
+`true` to `providesFor(serviceInterface, serviceProviderBean)` for a given service interface and
+implementing class will be used by joynr to obtain settings needed to perform the service registration.
 There is no guarantee in which order the factories will be asked, so it's safer to just provide
-one factory for a given service interface type. If no factory is found to provide settings, then
-the joynr runtime uses default values.
+one factory for a given service interface type and its implementation.
+
+By default (if you do not provide an implementation for `providesFor(serviceInterface, serviceProviderBean)`),
+the `serviceProviderBean` class is ignored and the selection of a matching factory is just based on the
+`serviceInterface` class. This makes the extended `providesFor` method backwards compatible with the original
+implementation that just considered the service interface.
+
+If no factory is found to provide settings, then the joynr runtime uses default values.
 
 Note that you can also implement the interface just partially with the settings you care about. For
 the rest the default methods of the interface will be invoked. Here is an example of what a (full)
@@ -348,6 +356,11 @@ public class MyServiceProviderSettingsFactory implements ProviderRegistrationSet
     @Override
     public boolean providesFor(Class<?> serviceInterface) {
         return MyServiceSync.class.equals(serviceInterface);
+    }
+
+    @Override
+    public boolean providesFor(Class<?> serviceInterface, Class<?> serviceProviderBean) {
+        return (MyServiceSync.class.equals(serviceInterface) && MyServiceBean.class.equals(serviceProviderBean));
     }
 
 }

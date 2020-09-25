@@ -51,6 +51,11 @@ None.
   recommended to provide an implementation. The old usage of this API does not break.
 * **[JEE]** Interface `ProviderRegistrationSettingsFactory` allows to specify domain registration
   setting as well. See the [JEE documentation](jee.md#implementing-services-joynr-providers) for more details.
+* **[JEE]** Interface `ProviderRegistrationSettingsFactory` provides access to the actual
+  implementation (the provider bean annotated with @ServiceProvider) of an interface in
+  addition to the service interface class itself. This allows multiple instances of a provider
+  in the same war file with different registration settings, e.g. different domains. See the
+  [JEE documentation](jee.md#implementing-services-joynr-providers) for more details.
 
 ## Other changes
 * **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
