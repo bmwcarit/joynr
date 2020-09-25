@@ -13,6 +13,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME}
     # for includes like #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+    PUBLIC "$<INSTALL_INTERFACE:${JOYNR_INSTALL_INCLUDEDIR}>"
 )
 target_link_objlibraries(${PROJECT_NAME}
     PUBLIC Joynr::RuntimeCommon
@@ -38,6 +39,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME}
     # for includes like #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
     PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../.."
+    PUBLIC "$<INSTALL_INTERFACE:${JOYNR_INSTALL_INCLUDEDIR}>"
 )
 target_link_objlibraries(${PROJECT_NAME}
     PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
