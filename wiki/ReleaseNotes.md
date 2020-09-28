@@ -87,6 +87,103 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
   occurs after connection has been established
 
+# joynr 1.14.3
+
+## API relevant changes
+* **[Java]** The default discovery scope is consistent with other languages now. It is changed from
+    `LOCAL_AND_GLOBAL` to `LOCAL_THEN_GLOBAL`.
+* **[Java, TS]** The API `registerInAllKnownBackends()` is deprecated, since registration in all
+  backends is now the default behavior.
+* **[C++]** The APIs `registerProviderInAllBackends` and
+  `registerProviderInAllBackendsAsync` are deprecated, since registration in all backends
+  is now the default behavior.
+* **[C++]** The `createRuntime` and `createRuntimeAsync` APIs in `JoynrRuntime` now support an optional
+  `onFatalRuntimeError` callback, which is invoked in exceptional cases that render the runtime
+  inoperable. The old APIs without this callback are deprecated now and may be removed in the
+  future.
+* **[TS]** The `joynr.load` now supports `onFatalRuntimeError` callback, which is invoked in
+  exceptional cases that render the runtime inoperable. The callback is optional but it is highly
+  recommended to provide an implementation. The old usage of this API does not break.
+
+## Configuration property changes
+* **[C++]** The configuration option `mqtt-max-message-size-bytes` was removed from messaging
+  settings. Instead the value optionally provided in the CONNACK properties sent by the broker
+  as response to CONNECT is used, if available; otherwise the size is limited to the maximum
+  value a `std::int64_t` can hold.
+* **[JEE]** Introduced `PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES` and
+  `PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS` to configure the new internal registration
+  retry and registration error reporting mechanism.  
+  See [Java Configuration Reference](JavaSettings.md#jee-integration) for more details on these
+  properties.
+* **[Java]** The MqttModule property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES` has been removed.
+  Instead the value optionally provided in the CONNACK properties sent by the broker
+  as response to CONNECT is used, if available; otherwise the size is limited to the default
+  value specified by HiveMQ client.
+
+## Bug fixes
+* **[Java, JEE]** Fixed some cases, where an UndeclaredThrowableException was returned when
+  customer provider method implementation code was using an unsupported exception type
+  (neither ProviderRuntimeException nor ApplicationException where applicable).
+  Now a ProviderRuntimeException will be returned which contains the text of the original
+  exception in such cases.
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+
+## Other Changes
+* **[C++]** Cluster controller now uses the new `touch` and `removeStale` methods of
+  [`GlobalCapabilitiesDirectory.fidl`](../basemodel/src/main/franca/joynr/GlobalCapabilitiesDirectory.fidl).
+  The Global Capabilities Directory has to implement version 0.3 of the interface.
+* **[C++]** Raise required minimum Boost version from 1.58.0 to 1.65.0.
+* **[Android]** Added ContentProvider that allows apps and other components to  implement
+  persistent providers, designed for specific use cases where the providers' configuration can
+  occur first thing in the component lifecycle.
+* **[JEE]** Added automatic provider registration retries and reporting of unsuccessful provider
+  registration. See
+  [documentation of joynr JEE integration](jee.md#provider-registration-retries-and-error-handling)
+  for more information.
+* **[Java]** MqttPahoClient has been removed. Please use HivemqMqttClient instead.
+* **[ALL]** Marked broadcast `globalDiscoveryEntryChanged ` in `GlobalCapabilitiesDirectory.fidl`
+  as deprecated because it has never been implemented, used or tested.
+* **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
+  the registration is applied to all backends instead of the default one. See also documentation of
+  [joynr usage with multiple backends](./multiple-backends.md).
+
+# joynr 1.14.2
+
+## Other changes
+
+* **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
+ tools (4.0.0).
+
+## Bug fixes
+
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
+* **[C++]** Fixed memory leak in MosquittoConnection
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+* **[Java]** Expiration date of provisioned discovery entries is now set to maximum value
+* **[Java]** Routing entries for RoutingProvider and DiscoveryProvider are now sticky
+
+# joynr 1.14.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE, Generator]** The generator flag for generating JEE code is deprecated now and not
+  necessary anymore. The generated code for Java and JEE is identical now.
+  See [Generator documentation](generator.md).
+* **[Android]** Added support for multi-user in the Android Binder runtime, allowing Android
+  Services to be bound either as the system user or as a specific user. The implementation is
+  tailored for the CC to run in user 0 (system), and joynr app clients can connect on
+  whichever user they decide to in a system with multi-user capabilities.
+
+## Bug fixes
+* **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
+    absolute TTL timestamp of the request, resulting in replies that virtually never expired.
+    This is fixed and replies will now expire at the same time as the original request.
+
 # joynr 1.14.0
 
 ## API relevant changes
@@ -194,6 +291,62 @@ None.
   Classes generated with the new generator will therefore not be compatible with old library versions.
 * **[Android]** Fixed Binder race condition on Android version of joynr.
 * **[Android]** Added message queue for joynr initialization procedure.
+
+## Configuration property changes
+None.
+
+# joynr 1.11.6
+
+This is a non-content release, only necessary due to an error while releasing Java
+artifacts on Maven Central.
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+# joynr 1.11.5
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+## Bug fixes
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+
+# joynr 1.11.4
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+## Bug fixes
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
+
+# joynr 1.11.3
+
+## API relevant changes
+None
+
+## Other changes
+* **[C++]** Fixed memory leaks in MosquittoConnection
+* **[C++]** Prevent ProxyBuilder callbacks to be called multiple times
+  and / or onSuccess and onError callbacks to be both called.
 
 ## Configuration property changes
 None.
@@ -374,6 +527,39 @@ None.
   `joynr.messaging.mqtt.connectiontimeoutssec` changed to `joynr.messaging.mqtt.connectiontimeoutssec`.
   Now, multiple connection timeouts can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
+
+# joynr 1.8.12
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** The cache for GlobalDiscoveryEntries is now limited to 1000 non-sticky
+  entries. The oldest entry will be removed first, when the limit is exceeded.
+
+## Configuration property changes
+None.
+
+# joynr 1.8.11
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** HivemqMqttClient now checks for maxmimum message size the same way as was
+  already implemented for MqttPahoClient, see property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
+  See the [Java Configuration Reference](JavaSettings.md) for details about this property.
+* **[Java, JEE]** Singleton JeeJoynrServiceLocator will now be created at startup time.
+
+# joynr 1.8.10
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Fixed automatically generated `DiscoveryQos` when using the
+  `GuidedProxyBuilder` to actually use the default values, instead of invalid
+  values.
 
 # joynr 1.8.9
 
