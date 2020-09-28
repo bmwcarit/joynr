@@ -27,7 +27,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.Stateless;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -55,7 +59,16 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 
-@Stateless
+// There is only one instance of GlobalCapabilitiesDirectoryEjb, with a single EntityManager.
+// Only one method can be called at a time due to exclusive WRITE lock.
+// Transaction is automatically committed / rolled back when leaving the method to avoid conflicts.
+// EntityManager cache is cleared before first query per method to invalidate any cache that
+// might have become inconsistent because of direct database SQL operations (UPDATE, DELETE)
+// bypassing the cache.
+
+@Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.CONTAINER)
+@Lock(LockType.WRITE)
 @ServiceProvider(serviceInterface = GlobalCapabilitiesDirectorySync.class)
 @Transactional(rollbackOn = Exception.class)
 public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirectoryService {
@@ -81,7 +94,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized void add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
+    public void add(GlobalDiscoveryEntry[] globalDiscoveryEntries) {
         for (GlobalDiscoveryEntry entry : globalDiscoveryEntries) {
             if (entry != null) {
                 add(entry);
@@ -92,7 +105,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
+    public void add(GlobalDiscoveryEntry globalDiscoveryEntry) {
         logger.debug("Adding global discovery entry to own gbid {}: {}", gcdGbid, globalDiscoveryEntry);
         if (!addInternal(globalDiscoveryEntry, gcdGbid)) {
             throw new ProviderRuntimeException("INTERNAL_ERROR: Unable to add DiscoveryEntry for "
@@ -101,6 +114,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     private boolean addInternal(GlobalDiscoveryEntry globalDiscoveryEntry, String... gbids) {
+        entityManager.clear();
         if (globalDiscoveryEntry.getDomain() == null || globalDiscoveryEntry.getInterfaceName() == null
                 || globalDiscoveryEntry.getParticipantId() == null || globalDiscoveryEntry.getAddress() == null) {
             final String msg = String.format("DiscoveryEntry being registered is incomplete: %s", globalDiscoveryEntry);
@@ -166,6 +180,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                     logger.trace("Merging discoveryEntry {} to the persisted entries.", globalDiscoveryEntry);
                     entityManager.merge(entity);
                 }
+                entityManager.flush();
             }
         } catch (Exception e) {
             logger.error("Error adding discoveryEntry for participantId {} and gbids {}:",
@@ -178,8 +193,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized void add(GlobalDiscoveryEntry globalDiscoveryEntry,
-                                 String[] gbids) throws ApplicationException {
+    public void add(GlobalDiscoveryEntry globalDiscoveryEntry, String[] gbids) throws ApplicationException {
         logger.debug("Adding global discovery entry to {}: {}", Arrays.toString(gbids), globalDiscoveryEntry);
         switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
@@ -202,7 +216,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName) {
+    public GlobalDiscoveryEntry[] lookup(String[] domains, String interfaceName) {
         logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and own Gbid {}",
                      Arrays.toString(domains),
                      interfaceName,
@@ -224,9 +238,10 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized GlobalDiscoveryEntry[] lookup(String[] domains,
-                                                      String interfaceName,
-                                                      String[] gbids) throws ApplicationException {
+    public GlobalDiscoveryEntry[] lookup(String[] domains,
+                                         String interfaceName,
+                                         String[] gbids) throws ApplicationException {
+        entityManager.clear();
         logger.debug("Looking up global discovery entries for domains {} and interfaceName {} and Gbids {}",
                      Arrays.toString(domains),
                      interfaceName,
@@ -297,7 +312,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized GlobalDiscoveryEntry lookup(String participantId) {
+    public GlobalDiscoveryEntry lookup(String participantId) {
         logger.debug("Looking up global discovery entry for participantId {} and own Gbid {}", participantId, gcdGbid);
         String[] gcdGbidArray = { gcdGbid };
         try {
@@ -312,7 +327,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
+    public GlobalDiscoveryEntry lookup(String participantId, String[] gbids) throws ApplicationException {
+        entityManager.clear();
         logger.debug("Looking up global discovery entry for participantId {} and Gbids {}",
                      participantId,
                      Arrays.toString(gbids));
@@ -374,12 +390,13 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized void remove(String[] participantIds) {
+    public void remove(String[] participantIds) {
         int deletedCount = removeInternal(participantIds);
         logger.debug("Deleted {} entries (number of IDs passed in {})", deletedCount, participantIds.length);
     }
 
     private int removeInternal(String[] participantIds, String... gbids) {
+        entityManager.clear();
         int deletedCount = 0;
 
         String[] addaptedGbidArray = gbids.clone();
@@ -414,17 +431,18 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                         .setParameter("gbid", gcdGbid)
                                         .executeUpdate();
         }
+        entityManager.flush();
 
         return deletedCount;
     }
 
     @Override
-    public synchronized void remove(String participantId) {
+    public void remove(String participantId) {
         remove(new String[]{ participantId });
     }
 
     @Override
-    public synchronized void remove(String participantId, String[] gbids) throws ApplicationException {
+    public void remove(String participantId, String[] gbids) throws ApplicationException {
         switch (GcdUtilities.validateGbids(gbids, gcdGbid, validGbids)) {
         case INVALID:
             logger.error("Error removing participantId {}: INVALID GBIDs: {}", participantId, Arrays.toString(gbids));
@@ -470,7 +488,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized void touch(String clusterControllerId) {
+    public void touch(String clusterControllerId) {
+        entityManager.clear();
         logger.debug("Touch called. Updating discovery entries from cluster controller with id {}",
                      clusterControllerId);
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.clusterControllerId = :clusterControllerId";
@@ -481,11 +500,14 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         for (GlobalDiscoveryEntryPersisted globalDiscoveryEntryPersisted : query.getResultList()) {
             globalDiscoveryEntryPersisted.setLastSeenDateMs(now);
             globalDiscoveryEntryPersisted.setExpiryDateMs(now + defaultExpiryTimeMs);
+            entityManager.merge(globalDiscoveryEntryPersisted);
         }
+        entityManager.flush();
     }
 
     @Override
-    public synchronized void touch(String clusterControllerId, String[] participantIds) {
+    public void touch(String clusterControllerId, String[] participantIds) {
+        entityManager.clear();
         logger.debug("Touch called. Updating discovery entries from cluster controller with id={}, participantIds={}.",
                      clusterControllerId,
                      participantIds);
@@ -507,7 +529,6 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                         .setParameter("newExpiryDateMs", now + defaultExpiryTimeMs)
                                         .executeUpdate();
         entityManager.flush();
-        entityManager.clear();
         if (participantIds.length > updatedCount) {
             logger.warn("Touch(ccId={}, participantIds={}) succeeded, but updated only {} entries.",
                         clusterControllerId,
@@ -519,7 +540,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
     }
 
     @Override
-    public synchronized void removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
+    public void removeStale(String clusterControllerId, Long maxLastSeenDateMs) {
+        entityManager.clear();
         logger.debug("RemoveStale called. Removing stale entries for ccId={}, maxLastSeenDateMs={}.",
                      clusterControllerId,
                      maxLastSeenDateMs);
@@ -530,6 +552,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                                             .setParameter("clusterControllerId", clusterControllerId)
                                             .setParameter("maxLastSeenDateMs", maxLastSeenDateMs)
                                             .executeUpdate();
+            entityManager.flush();
             logger.info("Deleted {} stale entries for ccId={}, maxLastSeenDateMs={}.",
                         deletedCount,
                         clusterControllerId,
@@ -542,5 +565,4 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
             throw new ProviderRuntimeException("RemoveStale failed: " + e.toString());
         }
     }
-
 }
