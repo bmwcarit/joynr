@@ -184,7 +184,7 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
         // Update map of gbids to participantIds
         if (gbidsToParticipantIdsMap.find(gbidToTouch) == gbidsToParticipantIdsMap.cend()) {
             JOYNR_LOG_ERROR(logger(),
-                            "Found GBID {} for particpantId {} to touch is unknown.",
+                            "touch: found GBID {} for particpantId {} is unknown.",
                             gbidToTouch,
                             participantIdToTouch);
             continue;
@@ -199,9 +199,8 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
         if (participantIdsToTouch.empty()) {
             JOYNR_LOG_DEBUG(logger(),
                             "touch(clusterControllerId={}, gbid={}) has not been called, because "
-                            "there are no providers to touch for gbid {}",
+                            "there are no providers to touch for it.",
                             _clusterControllerId,
-                            gbid,
                             gbid);
             continue;
         }
@@ -217,7 +216,7 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
                                 participantIdConcat,
                                 gbid);
             } else {
-                JOYNR_LOG_DEBUG(logger(), "touch for GBID {} succeeded.", gbid);
+                JOYNR_LOG_DEBUG(logger(), "touch(gbid={}) succeeded.", gbid);
             }
         };
 
