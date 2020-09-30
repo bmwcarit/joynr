@@ -1448,27 +1448,26 @@ std::vector<std::string> LocalCapabilitiesDirectory::getParticipantIdsToTouch()
             }
         }
         for (auto participantId : participantIds) {
-            auto globalEntryOptional =
+            auto globalEntry =
                     _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(
                             participantId);
-            if (!(globalEntryOptional.has_value())) {
+            if (!globalEntry) {
                 continue;
             }
-            auto globalEntry = globalEntryOptional.get();
             bool refresh_entry = false;
-            if (now > globalEntry.getLastSeenDateMs()) {
-                globalEntry.setLastSeenDateMs(now);
+            if (now > globalEntry->getLastSeenDateMs()) {
+                globalEntry->setLastSeenDateMs(now);
                 refresh_entry = true;
             }
-            if (newExpiryDateMs > globalEntry.getExpiryDateMs()) {
-                globalEntry.setExpiryDateMs(newExpiryDateMs);
+            if (newExpiryDateMs > globalEntry->getExpiryDateMs()) {
+                globalEntry->setExpiryDateMs(newExpiryDateMs);
                 refresh_entry = true;
             }
             if (refresh_entry) {
                 _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
-                        globalEntry,
+                        *globalEntry,
                         _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
-                                globalEntry.getParticipantId()));
+                                globalEntry->getParticipantId()));
             }
         }
     }
