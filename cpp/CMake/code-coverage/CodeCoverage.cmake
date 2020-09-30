@@ -14,6 +14,7 @@
 # Copyright (C) 2017 BMW Car IT GmbH
 
 # Check prereqs
+FIND_PACKAGE( PythonInterp )
 FIND_PROGRAM( GCOV_PATH gcov )
 FIND_PROGRAM( LCOV_PATH lcov )
 FIND_PROGRAM( GENHTML_PATH genhtml )
@@ -62,11 +63,11 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname)
 		COMMAND ${_testrunner}
 		
 		# Capturing lcov counters and generating report
-		COMMAND ${LCOV_PATH} --directory . --capture --output-file ${_outputname}.info
+		COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture --output-file ${_outputname}.info
 		COMMAND ${LCOV_PATH} --remove ${_outputname}.info 'libs/*' '${CMAKE_SOURCE_DIR}/tests/*' '/usr/*' 'ThirdParty/*' --output-file ${_outputname}.info.cleaned
 		COMMAND ${GENHTML_PATH} -o ${_outputname} ${_outputname}.info.cleaned
 		COMMAND ${CMAKE_COMMAND} -E remove ${_outputname}.info ${_outputname}.info.cleaned
-                COMMAND ${TAR_PATH} -cjf joynr-cpp-coverage.bz2 ${CMAKE_BINARY_DIR}/coverage
+		COMMAND ${TAR_PATH} -cjf joynr-cpp-coverage.bz2 ${CMAKE_BINARY_DIR}/coverage
 		
 		DEPENDS ${_testrunner}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -101,8 +102,7 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE_COBERTURA _targetname _testrunner _outputname
 		${_testrunner} ${_arguments}
 
 		# Running gcovr
-		#COMMAND ${GCOVR_PATH} -x -r ${CMAKE_SOURCE_DIR} -o ${_outputname}.xml
-		COMMAND ${GCOVR_PATH} -x -r ${CMAKE_SOURCE_DIR} -o ${_outputname}.xml -e ${_gcovrExclude}
+		COMMAND ${GCOVR_PATH} -x -j 4 -r ${CMAKE_SOURCE_DIR} -o ${_outputname}.xml -e ${_gcovrExclude} ${CMAKE_BINARY_DIR}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 		COMMENT "Running gcovr to produce Cobertura code coverage report."
 	)
