@@ -2,6 +2,24 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.1
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Stabilization of flaky tests that sometimes failed in CI
+* **[C++]** Use the new `onFatalRuntimeError` callback in the examples and tests
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++, Java]** Fix some log statements related to periodic freshness updates
+  (aka "touch")
+* **[C++]** Fix usage of `boost::optional` in order to still be compatible with
+  Boost 1.65.0
+
 # joynr 1.15.0
 
 ## API relevant changes
