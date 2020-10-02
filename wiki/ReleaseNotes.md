@@ -2,6 +2,23 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.14.4
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Stabilization of flaky tests that sometimes failed in CI
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++, Java]** Fix some log statements related to periodic freshness updates
+  (aka "touch")
+* **[C++]** Fix usage of `boost::optional` in order to still be compatible with
+  Boost 1.65.0
+
 # joynr 1.14.3
 
 ## API relevant changes
@@ -210,6 +227,62 @@ None.
 ## Configuration property changes
 None.
 
+# joynr 1.11.6
+
+This is a non-content release, only necessary due to an error while releasing Java
+artifacts on Maven Central.
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+# joynr 1.11.5
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+## Bug fixes
+* **[Generator, C++]** Correctly reference enum values with fully qualified name where required
+
+# joynr 1.11.4
+
+## API relevant changes
+None
+
+## Other changes
+None.
+
+## Configuration property changes
+None.
+
+## Bug fixes
+* **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
+  occurs after connection has been established
+
+# joynr 1.11.3
+
+## API relevant changes
+None
+
+## Other changes
+* **[C++]** Fixed memory leaks in MosquittoConnection
+* **[C++]** Prevent ProxyBuilder callbacks to be called multiple times
+  and / or onSuccess and onError callbacks to be both called.
+
+## Configuration property changes
+None.
+
 # joynr 1.11.2
 
 ## API relevant changes
@@ -386,6 +459,39 @@ None.
   `joynr.messaging.mqtt.connectiontimeoutssec` changed to `joynr.messaging.mqtt.connectiontimeoutssec`.
   Now, multiple connection timeouts can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
+
+# joynr 1.8.12
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** The cache for GlobalDiscoveryEntries is now limited to 1000 non-sticky
+  entries. The oldest entry will be removed first, when the limit is exceeded.
+
+## Configuration property changes
+None.
+
+# joynr 1.8.11
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** HivemqMqttClient now checks for maxmimum message size the same way as was
+  already implemented for MqttPahoClient, see property `PROPERTY_KEY_MQTT_MAX_MESSAGE_SIZE_BYTES`
+  See the [Java Configuration Reference](JavaSettings.md) for details about this property.
+* **[Java, JEE]** Singleton JeeJoynrServiceLocator will now be created at startup time.
+
+# joynr 1.8.10
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java, JEE]** Fixed automatically generated `DiscoveryQos` when using the
+  `GuidedProxyBuilder` to actually use the default values, instead of invalid
+  values.
 
 # joynr 1.8.9
 
