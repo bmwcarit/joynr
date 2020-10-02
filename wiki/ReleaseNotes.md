@@ -2,6 +2,20 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.2
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.15.1
 
 ## API-relevant Changes
