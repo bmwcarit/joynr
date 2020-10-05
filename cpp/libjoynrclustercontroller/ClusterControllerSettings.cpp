@@ -393,7 +393,7 @@ int ClusterControllerSettings::DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_
 std::chrono::milliseconds ClusterControllerSettings::
         DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()
 {
-    static const std::chrono::milliseconds value(1UL * 60UL * 60UL * 1000UL); // 1 hour
+    static const std::chrono::milliseconds value(6UL * 60UL * 60UL * 1000UL); // 6 hours
     return value;
 }
 
