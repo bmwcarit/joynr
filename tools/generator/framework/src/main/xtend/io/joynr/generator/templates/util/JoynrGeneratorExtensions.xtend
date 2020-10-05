@@ -3,7 +3,7 @@ package io.joynr.generator.templates.util
 /*
  * !!!
  * 
- * Copyright (C) 2011 - 2018 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import java.util.Arrays
 import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
 import org.eclipse.xtext.generator.IFileSystemAccess
-import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArrayType
 import org.franca.core.franca.FBasicTypeId
 import org.franca.core.franca.FBroadcast
@@ -325,8 +324,8 @@ class JoynrGeneratorExtensions {
 		}
 	}
 
-	def printVersionWarnings(FInterface fInterface, boolean packageWithVersion, boolean namewithVersion) {
-		if(commentContainsNoVersionGeneration(fInterface) && (packageWithVersion || nameWithVersion)) {
+	def checkVersioningOption(FInterface fInterface, boolean packageWithVersion) {
+		if(commentContainsNoVersionGeneration(fInterface) && (packageWithVersion)) {
 			println(
 				"ERROR: --addVersionTo option is set " +
 				" despite #noVersionGeneration being set for interface "
@@ -334,14 +333,6 @@ class JoynrGeneratorExtensions {
 				" adjust your settings accordingly (Only package versioning is supported)."
 			)
 			throw new IllegalArgumentException("--addVersionTo is not 'none' despite #noVersionGeneration being set in the fidl.");
-		}
-		if (nameWithVersion){
-			println(
-				"ERROR: --addVersionTo=name is no longer supported." +
-				" Only package versioning is supported. To fix this, please either set --addVersionTo=package " +
-				" or (preferably) remove the --addVersionTo option entirely"
-			)
-			throw new IllegalArgumentException(" --addVersionTo=name is set. This configuration is now illegal");
 		}
 	}
 }

@@ -49,7 +49,6 @@ public class BroadcastUtilTest {
             protected void configure() {
                 bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
                                    .toInstance(false);
-                bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)).to(false);
             }
         }).getInstance(BroadcastUtil.class);
 

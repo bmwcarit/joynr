@@ -62,8 +62,6 @@ public class JoynrJavaGeneratorExtensionsTest {
                                    .toInstance(false);
                 bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
                                    .toInstance(false);
-                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION))
-                                   .toInstance(false);
             }
         });
         fixture = injector.getInstance(JoynrJavaGeneratorExtensions.class);

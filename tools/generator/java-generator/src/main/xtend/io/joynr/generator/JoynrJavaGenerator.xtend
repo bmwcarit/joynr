@@ -63,10 +63,6 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject extension JoynrJavaGeneratorExtensions
 
 	@Inject
-	@Named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)
-	public boolean nameWithVersion;
-
-	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -104,7 +100,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
 		for (fInterface : fModel.interfaces) {
-			printVersionWarnings(fInterface, packageWithVersion, nameWithVersion)
+			checkVersioningOption(fInterface, packageWithVersion)
 			interfacesGenerator.doGenerate(fInterface, fsa)
 			if (generateProxyCode) {
 				proxyGenerator.doGenerate(fInterface, fsa)

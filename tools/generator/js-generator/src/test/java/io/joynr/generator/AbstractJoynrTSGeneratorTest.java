@@ -94,8 +94,6 @@ public abstract class AbstractJoynrTSGeneratorTest {
                                                                                       .to(true);
                                                                         bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
                                                                                       .to(false);
-                                                                        bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION))
-                                                                                      .to(false);
                                                                         bindConstant().annotatedWith(Names.named("generateProxyCode"))
                                                                                       .to(arguments.getGenerateProxyCode());
                                                                         bindConstant().annotatedWith(Names.named("generateProviderCode"))

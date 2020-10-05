@@ -2,7 +2,7 @@ package io.joynr.generator.templates.util
 /*
  * !!!
  *
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package io.joynr.generator.templates.util
  */
 
 import com.google.inject.Inject
-import com.google.inject.name.Named
 import javax.inject.Singleton
 import org.franca.core.franca.FAnnotationType
 import org.franca.core.franca.FArgument
@@ -39,18 +38,9 @@ import org.franca.core.franca.FTypedElement
 @Singleton
 class NamingUtil {
 
-	public final static String JOYNR_GENERATOR_NAMEWITHVERSION  = "JOYNR_GENERATOR_NAMEWITHVERSION";
 	public final static String JOYNR_GENERATOR_PACKAGEWITHVERSION = "JOYNR_GENERATOR_PACKAGEWITHVERSION";
 
 	@Inject extension TypeUtil;
-
-	@Inject
-	@Named(JOYNR_GENERATOR_NAMEWITHVERSION)
-	public boolean nameWithVersion;
-
-	@Inject
-	@Named(JOYNR_GENERATOR_PACKAGEWITHVERSION)
-	public boolean packageWithVersion;
 
 	def String getVersionSuffix(FModelElement modelElement) {
 		if (modelElement instanceof FTypeCollection

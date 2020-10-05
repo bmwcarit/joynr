@@ -77,8 +77,6 @@ public class Executor {
                                    .toInstance(arguments.clean());
                 bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
                                    .toInstance(arguments.addVersionToPackage());
-                bind(Boolean.class).annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION))
-                                   .toInstance(arguments.addVersionToName());
             }
         });
         this.outputFileSystem = injector.getInstance(IFileSystemAccess.class);

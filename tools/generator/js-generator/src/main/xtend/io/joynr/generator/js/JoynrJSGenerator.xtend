@@ -51,10 +51,6 @@ class JoynrJSGenerator implements IJoynrGenerator {
 	@Inject extension JoynrJSGeneratorExtensions
 
 	@Inject
-	@Named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)
-	public boolean nameWithVersion;
-
-	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -90,7 +86,7 @@ class JoynrJSGenerator implements IJoynrGenerator {
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
 		for (francaIntf : fModel.interfaces) {
-			printVersionWarnings(francaIntf, packageWithVersion, nameWithVersion)
+			checkVersioningOption(francaIntf, packageWithVersion)
 
 			// since the proxy code at the moment contains exported interfaces
 			// required to implement a provider, we have to create the proxy code

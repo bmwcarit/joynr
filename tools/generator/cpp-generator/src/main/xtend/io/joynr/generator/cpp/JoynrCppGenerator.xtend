@@ -62,10 +62,6 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	protected extension JoynrGeneratorExtensions;
 
 	@Inject
-	@Named(NamingUtil.JOYNR_GENERATOR_NAMEWITHVERSION)
-	public boolean nameWithVersion;
-
-	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -105,7 +101,7 @@ class JoynrCppGenerator implements IJoynrGenerator{
 		checkForNamedArrays(fModel, input.URI.path);
 
 		for (fInterface : fModel.interfaces) {
-			printVersionWarnings(fInterface, packageWithVersion, nameWithVersion)
+			checkVersioningOption(fInterface, packageWithVersion)
 		}
 
 		SupportedFrancaFeatureChecker.checkModel(fModel)
