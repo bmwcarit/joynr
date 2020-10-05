@@ -118,8 +118,10 @@ public class InvocationArguments {
         usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("       " + dumpVersionDefinition() + "\n");
         usageString.append("         DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead. See generator documentation for more information.\n");
+        usageString.append("         If this option is 'package' when #noVersionGeneration is set, this leads to an Exception, and the generation will be aborted.\n");
+        usageString.append("         If #noVersionGeneration is not set, this option has to be absent or 'package', else an Exception as well as an abort will occur as well.\n");
+        usageString.append("         Generally, it's best not to use this setting at all since it will be removed very soon.\n");
         usageString.append("         package: interface/typecollection major versions (if existing) are added as an additional package \"v<version>\"\n");
-        usageString.append("         name: interface/typecollection major versions (if existing) are appended to the interface/type name\n");
         usageString.append("         none: interface/typecollection versions do not affect the generated name and package of interfaces and types\n");
         usageString.append("         default: none\n");
         usageString.append("         Note:\n");
@@ -146,7 +148,7 @@ public class InvocationArguments {
     }
 
     private static String dumpVersionDefinition() {
-        return "-addVersionTo <package, name, none>";
+        return "-addVersionTo <package, none>";
     }
 
     private static String dumpGenerationLanguageDefinition() {
@@ -164,6 +166,8 @@ public class InvocationArguments {
                 setGenerate(args[i + 1].equalsIgnoreCase("true"));
                 i++;
             } else if (args[i].equalsIgnoreCase("-addVersionTo")) {
+                logger.warn("DEPRECATION WARNING: Usage of outdated -addVersionTo option detected."
+                        + " Set the #noVersionGeneration comment in fidl files instead.");
                 setAddVersionTo(args[i + 1]);
                 i++;
             } else if (args[i].equalsIgnoreCase("-generationId")) {
@@ -247,10 +251,6 @@ public class InvocationArguments {
         return "package".equalsIgnoreCase(addVersionTo);
     }
 
-    public boolean addVersionToName() {
-        return "name".equalsIgnoreCase(addVersionTo);
-    }
-
     public void checkArguments() {
         checkArguments(false);
     }
@@ -276,8 +276,8 @@ public class InvocationArguments {
                     + dumpRootGeneratorDefinition() + " OR " + dumpGenerationLanguageDefinition());
             errorMessages.append(newLine);
         }
-        if (addVersionTo != null && !(addVersionTo.equalsIgnoreCase("package") || addVersionTo.equalsIgnoreCase("name")
-                || addVersionTo.equalsIgnoreCase("none"))) {
+        if (addVersionTo != null
+                && !(addVersionTo.equalsIgnoreCase("package") || addVersionTo.equalsIgnoreCase("none"))) {
             errorMessages.append("- Version inclusion specifier was invalid. Please invoke the generator with the following argument: "
                     + dumpVersionDefinition());
             errorMessages.append(newLine);
