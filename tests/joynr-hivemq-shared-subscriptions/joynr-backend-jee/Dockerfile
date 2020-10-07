@@ -1,7 +1,6 @@
 FROM payara/server-full:4.181
 
 COPY target/discovery-directory-jee.war /discovery-directory-jee.war
-COPY target/domain-access-controller-jee.war /domain-access-controller-jee.war
 COPY start-me-up.sh /start-me-up.sh
 
 RUN ls /opt/payara41/glassfish/bin
@@ -24,7 +23,6 @@ RUN asadmin start-domain && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true" && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile healthcheck-configure --enabled=true --dynamic=true && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile deploy /discovery-directory-jee.war && \
-	asadmin --user admin --passwordfile=/tmp/pwdfile deploy /domain-access-controller-jee.war && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.messaging=FINE && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.dispatching=FINE && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.jeeintegration=FINE || \

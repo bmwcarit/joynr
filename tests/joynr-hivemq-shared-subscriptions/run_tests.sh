@@ -13,9 +13,10 @@ then
 fi
 
 echo "wait 6 minutes, then log the result of the docker containers"
+echo "Started: $(date)"
 sleep 360
 
-docker-compose logs -t > sst-full.log
+docker-compose logs --no-color -t > sst-full.log
 
 echo "stop all containers"
 docker-compose stop
