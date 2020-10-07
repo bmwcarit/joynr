@@ -240,7 +240,7 @@ public class MonitorRestEndpoint {
 
     private PingServiceAsync getService() {
         if (pingServiceClient == null) {
-            final int messagesTtlMs = 60000;
+            final int messagesTtlMs = 70000;
             pingServiceClient = serviceLocator.get(PingServiceAsync.class,
                                                    "io.joynr.backpressure.test.provider",
                                                    messagesTtlMs);

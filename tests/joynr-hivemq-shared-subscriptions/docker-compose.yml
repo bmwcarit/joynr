@@ -3,20 +3,23 @@ version: '3.0'
 services:
 
   hivemq:
-    image: 'hivemq/hivemq3'
+    image: 'hivemq/hivemq4'
     container_name: mqttbroker
     networks:
       - sharedSubscriptionNetwork
     environment:
+      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
                  backpressure-provider-large,backpressure-monitor-app,test-driver
-      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+
 
   joynrbackend:
-    build: joynr-backend-jee/
     image: "joynr-backend-jee:latest"
+    build: joynr-backend-jee/
     container_name: joynrbackend
+    depends_on:
+      - "hivemq"
     environment:
       - MQTT_BROKER_URL=tcp://mqttbroker:1883
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
