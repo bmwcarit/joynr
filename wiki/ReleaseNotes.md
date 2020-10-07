@@ -26,7 +26,8 @@ None.
 * **[C++]** Use the new `onFatalRuntimeError` callback in the examples and tests
 
 ## Configuration Property Changes
-None.
+* **[Java]** Increased default value of PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+  from 3600000 ms (1 hour) to 21600000 ms (6 hours).
 
 ## Bug Fixes
 * **[C++, Java]** Fix some log statements related to periodic freshness updates

@@ -259,7 +259,7 @@ updates the ```lastSeenDateMs``` of all capabilities registered via this cluster
 * **OPTIONAL**
 * **Type**: long
 * **User property**: `joynr.capabilities.freshnessupdateintervalms`
-* **Default value**: `3600000`
+* **Default value**: `21600000` (6 hours)
 
 ### `PROPERTY_GBIDS`
 
