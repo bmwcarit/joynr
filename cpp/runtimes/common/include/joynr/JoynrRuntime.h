@@ -362,6 +362,12 @@ public:
         return _runtimeImpl->createProxyBuilder<TIntfProxy>(domain);
     }
 
+    template <class TIntfProxy>
+    std::shared_ptr<GuidedProxyBuilder> createGuidedProxyBuilder(const std::string& domain)
+    {
+        return _runtimeImpl->createGuidedProxyBuilder<TIntfProxy>(domain);
+    }
+
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param pathToLibjoynrSettings

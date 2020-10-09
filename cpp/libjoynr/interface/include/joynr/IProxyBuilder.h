@@ -69,7 +69,7 @@ public:
             std::function<void(const exceptions::DiscoveryException&)> onError) noexcept = 0;
 
     /**
-     * @brief Build the proxy object based on arbitration result
+     * Build the proxy object based on arbitration result. For internal use only!
      *
      * @param arbitrationResult: discovery entries received by arbitration
      * @return The proxy object

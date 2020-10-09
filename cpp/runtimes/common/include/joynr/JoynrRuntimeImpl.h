@@ -30,6 +30,7 @@
 
 #include "joynr/CapabilitiesRegistrar.h"
 #include "joynr/Future.h"
+#include "joynr/GuidedProxyBuilder.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
 #include "joynr/LocalDiscoveryAggregator.h"
 #include "joynr/MessagingSettings.h"
@@ -404,6 +405,31 @@ public:
         std::lock_guard<std::mutex> lock(_proxyBuildersMutex);
         _proxyBuilders.push_back(proxyBuilder);
         return proxyBuilder;
+    }
+
+    template <class TIntfProxy>
+    std::shared_ptr<GuidedProxyBuilder> createGuidedProxyBuilder(const std::string& domain)
+    {
+        if (!_proxyFactory) {
+            throw exceptions::JoynrRuntimeException(
+                    "Exception in JoynrRuntime: Cannot perform arbitration as "
+                    "runtime is not yet fully initialized.");
+        }
+
+        std::string interfaceName = TIntfProxy::INTERFACE_NAME();
+        auto guidedProxyBuilder = std::make_shared<GuidedProxyBuilder>(shared_from_this(),
+                                                                       *_proxyFactory,
+                                                                       _requestCallerDirectory,
+                                                                       _discoveryProxy,
+                                                                       domain,
+                                                                       _dispatcherAddress,
+                                                                       getMessageRouter(),
+                                                                       _messagingSettings,
+                                                                       interfaceName);
+
+        std::lock_guard<std::mutex> lock(_proxyBuildersMutex);
+        _proxyBuilders.push_back(guidedProxyBuilder);
+        return guidedProxyBuilder;
     }
 
     static std::unique_ptr<Settings> createSettings(const std::string& pathToLibjoynrSettings,
