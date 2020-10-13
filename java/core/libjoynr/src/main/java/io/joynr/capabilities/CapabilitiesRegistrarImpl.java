@@ -126,8 +126,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                            System.currentTimeMillis() + defaultExpiryTimeMs,
                                                            defaultPublicKeyId);
         final boolean isGloballyVisible = (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
-        messageRouter.addNextHop(participantId, libjoynrMessagingAddress, isGloballyVisible);
         providerDirectory.add(participantId, providerContainer);
+        messageRouter.addNextHop(participantId, libjoynrMessagingAddress, isGloballyVisible);
         return discoveryEntry;
     }
 
@@ -175,6 +175,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         final int majorVersion = ProviderAnnotations.getMajorVersion(provider);
         final int minorVersion = ProviderAnnotations.getMinorVersion(provider);
         final String participantId = participantIdStorage.getProviderParticipantId(domain, interfaceName, majorVersion);
+        final Future<Void> newFuture = new Future<Void>();
         Callback<Void> callback = new Callback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -184,6 +185,20 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                             interfaceName,
                             majorVersion,
                             minorVersion);
+                try {
+                    messageRouter.removeNextHop(participantId);
+                } catch (Exception error) {
+                    // removeNextHop throws only in case of libjoynr runtime if the communication with the CC fails or parentRouterProxy is not (yet) set
+                    logger.error("Error while removing routing entry of unregistered provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}: ",
+                                 participantId,
+                                 domain,
+                                 interfaceName,
+                                 majorVersion,
+                                 minorVersion,
+                                 error);
+                }
+                providerDirectory.remove(participantId);
+                newFuture.resolve();
             }
 
             @Override
@@ -195,9 +210,11 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                              majorVersion,
                              minorVersion,
                              error);
+                newFuture.onFailure(error);
             }
         };
-        providerDirectory.remove(participantId);
-        return localDiscoveryAggregator.remove(callback, participantId);
+
+        localDiscoveryAggregator.remove(callback, participantId);
+        return newFuture;
     }
 }
