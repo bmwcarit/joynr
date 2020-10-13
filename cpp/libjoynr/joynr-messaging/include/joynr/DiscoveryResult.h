@@ -24,6 +24,7 @@
 #include <boost/optional.hpp>
 
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/types/CustomParameter.h"
 
 namespace joynr
@@ -31,6 +32,8 @@ namespace joynr
 class DiscoveryResult
 {
 public:
+    explicit DiscoveryResult(
+            const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& discoveryEntries);
     explicit DiscoveryResult(const std::vector<joynr::types::DiscoveryEntry>& discoveryEntries);
 
     DiscoveryResult() = default;

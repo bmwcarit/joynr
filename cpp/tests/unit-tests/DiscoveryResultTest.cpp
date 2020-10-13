@@ -75,6 +75,31 @@ TEST_F(DiscoveryResultTest, testGetWithKeywordHasNoValueWhenEntriesEmpty)
     EXPECT_TRUE(discoveryEntriesWithKeyword.empty());
 }
 
+TEST_F(DiscoveryResultTest, testDiscoveryResultConstructorWithMetaInfo)
+{
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry1 = joynr::types::DiscoveryEntryWithMetaInfo();
+    discoveryEntry1.setParticipantId("participantId1");
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry2 = joynr::types::DiscoveryEntryWithMetaInfo();
+    discoveryEntry2.setParticipantId("participantId2");
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedDiscoveryEntries {discoveryEntry1, discoveryEntry2};
+
+    discoveryResult = joynr::DiscoveryResult(expectedDiscoveryEntries);
+    std::vector<joynr::types::DiscoveryEntry> actualDiscoveryEntries = discoveryResult.getAllDiscoveryEntries();
+
+    bool discoveryEntry1Found = false;
+    bool discoveryEntry2Found = false;
+    for (const auto& actualEntry : actualDiscoveryEntries) {
+        if (actualEntry.getParticipantId() == discoveryEntry1.getParticipantId()) {
+            discoveryEntry1Found = true;
+        }
+        if (actualEntry.getParticipantId() == discoveryEntry2.getParticipantId()) {
+            discoveryEntry2Found = true;
+        }
+    }
+    EXPECT_TRUE(discoveryEntry1Found && discoveryEntry2Found);
+    EXPECT_EQ(expectedDiscoveryEntries.size(), actualDiscoveryEntries.size());
+}
+
 TEST_F(DiscoveryResultTest, testGetAllDiscoveryEntries)
 {
     joynr::types::DiscoveryEntry discoveryEntry1 = joynr::types::DiscoveryEntry();

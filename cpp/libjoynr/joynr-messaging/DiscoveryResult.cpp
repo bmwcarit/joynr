@@ -24,6 +24,15 @@
 namespace joynr
 {
 
+DiscoveryResult::DiscoveryResult(
+        const std::vector<types::DiscoveryEntryWithMetaInfo>& discoveryEntries)
+        : _discoveryEntries()
+{
+    for (joynr::types::DiscoveryEntry discoveryEntry : discoveryEntries) {
+        _discoveryEntries.push_back(discoveryEntry);
+    }
+}
+
 DiscoveryResult::DiscoveryResult(const std::vector<types::DiscoveryEntry>& discoveryEntries)
         : _discoveryEntries(discoveryEntries)
 {
