@@ -169,7 +169,7 @@ public class HivemqMqttClientIntegrationTest {
 
         clientReceiver.subscribe(ownTopic);
         // wait for subscription to be established
-        Thread.sleep(128);
+        Thread.sleep(1000);
 
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
@@ -209,7 +209,7 @@ public class HivemqMqttClientIntegrationTest {
 
                 clientReceiver.subscribe(topic);
                 // wait for subscription to be established
-                Thread.sleep(128);
+                Thread.sleep(1000);
 
                 final CountDownLatch threadsLatch = new CountDownLatch(count);
                 final CountDownLatch publishedLatch = new CountDownLatch(count);
@@ -272,7 +272,7 @@ public class HivemqMqttClientIntegrationTest {
                 }
 
                 clientReceiver.unsubscribe(topic);
-                Thread.sleep(512);
+                Thread.sleep(1000);
 
                 verify(mockReceiver, times(count)).transmit(any(byte[].class), any(FailureAction.class));
                 verify(mockReceiver2, times(0)).transmit(any(byte[].class), any(FailureAction.class));
@@ -347,11 +347,11 @@ public class HivemqMqttClientIntegrationTest {
         client.start();
 
         client.subscribe(testTopic);
-        Thread.sleep(128);
+        Thread.sleep(1000);
         client.unsubscribe(testTopic);
-        Thread.sleep(128);
+        Thread.sleep(1000);
         client.unsubscribe(testTopic);
-        Thread.sleep(128);
+        Thread.sleep(1000);
         client.shutdown();
         assertTrue(client.isShutdown());
     }
