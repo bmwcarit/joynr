@@ -390,8 +390,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
             Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(discoveryEntry.getParticipantId(),
                                                                                               Long.MAX_VALUE);
-            DiscoveryEntry localEntry = optionalDiscoveryEntry.isPresent() ? optionalDiscoveryEntry.get() : null;
-            if (discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL) && localEntry.equals(discoveryEntry)) {
+            if (optionalDiscoveryEntry.isPresent() && discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
+                    && optionalDiscoveryEntry.get().equals(discoveryEntry)) {
                 // in this case, no further need for global registration is required. Registration completed.
                 deferred.resolve();
                 return new Promise<>(deferred);
