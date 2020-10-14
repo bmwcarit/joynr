@@ -21,7 +21,9 @@ package io.joynr.capabilities;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,14 +32,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import io.joynr.JoynrVersion;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.MessageRouter;
@@ -48,8 +54,8 @@ import io.joynr.provider.ProviderContainer;
 import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
+import io.joynr.proxy.Future;
 import joynr.types.DiscoveryEntry;
-import joynr.types.DiscoveryError;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -198,12 +204,65 @@ public class CapabilitiesRegistrarTest {
         verifyRegisterInallKnownBackendsResults(awaitGlobalRegistration);
     }
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void unregisterProvider() {
-        registrar.unregisterProvider(domain, testProvider);
+    private static Answer<Future<Void>> createRemoveAnswerWithSuccess() {
+        return new Answer<Future<Void>>() {
+            @Override
+            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                Future<Void> result = new Future<Void>();
+                @SuppressWarnings("unchecked")
+                Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+                callback.onSuccess(null);
+                result.onSuccess(null);
+                return result;
+            }
+        };
+    }
 
-        verify(localDiscoveryAggregator).remove(any(Callback.class), eq(participantId));
-        verify(providerDirectory).remove(eq(participantId));
+    private static Answer<Future<Void>> createRemoveAnswerWithException(JoynrRuntimeException exception) {
+        return new Answer<Future<Void>>() {
+            @Override
+            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                Future<Void> result = new Future<Void>();
+                @SuppressWarnings("unchecked")
+                Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+                callback.onFailure(exception);
+                result.onSuccess(null);
+                return result;
+            }
+        };
+    }
+
+    @Test
+    public void unregisterProvider_succeeded() {
+        doAnswer(createRemoveAnswerWithSuccess()).when(localDiscoveryAggregator).remove(Matchers.<Callback<Void>> any(),
+                                                                                        eq(participantId));
+        try {
+            Future<Void> future = registrar.unregisterProvider(domain, testProvider);
+            verify(localDiscoveryAggregator).remove(Matchers.<Callback<Void>> any(), eq(participantId));
+            future.get(5000);
+            verify(providerDirectory).remove(eq(participantId));
+            verify(messageRouter).removeNextHop(eq(participantId));
+        } catch (Exception e) {
+            Assert.fail("Unexpected exception from unregisterProvider: " + e);
+        }
+    }
+
+    @Test
+    public void unregisterProvider_failsWithException() {
+        JoynrRuntimeException expectedException = new JoynrRuntimeException("remove failed");
+        doAnswer(createRemoveAnswerWithException(expectedException)).when(localDiscoveryAggregator)
+                                                                    .remove(Matchers.<Callback<Void>> any(),
+                                                                            eq(participantId));
+
+        try {
+            Future<Void> future = registrar.unregisterProvider(domain, testProvider);
+            verify(localDiscoveryAggregator).remove(Matchers.<Callback<Void>> any(), eq(participantId));
+            future.get(5000);
+            Assert.fail("unregisterProvider expected to fail with exception");
+        } catch (Exception exception) {
+            verify(providerDirectory, times(0)).remove(eq(participantId));
+            verify(messageRouter, times(0)).removeNextHop(eq(participantId));
+            Assert.assertEquals(expectedException, exception);
+        }
     }
 }
