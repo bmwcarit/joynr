@@ -5,16 +5,29 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.15.2
 
 ## API-relevant Changes
-None.
+* **[JEE]** Interface `ProviderRegistrationSettingsFactory` provides access to the actual
+  implementation (the provider bean annotated with @ServiceProvider) of an interface in
+  addition to the service interface class itself. This allows multiple instances of a provider
+  in the same war file with different registration settings, e.g. different domains. See the
+  [JEE documentation](jee.md#implementing-services-joynr-providers) for more details.
+* **[Java, JEE]** DelayableImmutableMessage now contains a participantId instead of a set of
+  addresses. Any custom message persistency has to be adjusted.
+  Have a look at our documentation for more details on [MessagePersister in joynr Java](./java.md)
+  and [MessagePersister in joynr JEE](./jee.md).
 
 ## Other Changes
-None.
+* **[C++]** Fixed misleading error logs when attempting to read settings files from different paths.
+  Error is now logged only in case no settings can be loaded.
 
 ## Configuration Property Changes
-None.
+* **[Java]** Increased default value of PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+  from 3600000 ms (1 hour) to 21600000 ms (6 hours).
+* **[C++]** Increased default value of SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
+  from 3600000 ms (1 hour) to 21600000 ms (6 hours).
 
 ## Bug Fixes
-None.
+* **[Java, JEE]** Fixed retransmission of multicast publication messages in case of errors:
+  Multicast publications are not multiplicated anymore.
 
 # joynr 1.15.1
 
@@ -26,8 +39,7 @@ None.
 * **[C++]** Use the new `onFatalRuntimeError` callback in the examples and tests
 
 ## Configuration Property Changes
-* **[Java]** Increased default value of PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS
-  from 3600000 ms (1 hour) to 21600000 ms (6 hours).
+None.
 
 ## Bug Fixes
 * **[C++, Java]** Fix some log statements related to periodic freshness updates
@@ -52,16 +64,6 @@ None.
   recommended to provide an implementation. The old usage of this API does not break.
 * **[JEE]** Interface `ProviderRegistrationSettingsFactory` allows to specify domain registration
   setting as well. See the [JEE documentation](jee.md#implementing-services-joynr-providers) for more details.
-* **[JEE]** Interface `ProviderRegistrationSettingsFactory` provides access to the actual
-  implementation (the provider bean annotated with @ServiceProvider) of an interface in
-  addition to the service interface class itself. This allows multiple instances of a provider
-  in the same war file with different registration settings, e.g. different domains. See the
-  [JEE documentation](jee.md#implementing-services-joynr-providers) for more details.
-
-* **[Java, JEE]** DelayableImmutableMessage now contains a participantId instead of a set of
-  addresses. Any custom message persistency has to be adjusted.
-  Have a look at our documentation for more details on [MessagePersister in joynr Java](./java.md)
-  and [MessagePersister in joynr JEE](./jee.md).
 
 ## Other changes
 * **[FIDL]** Changed *add provider* functionality for multiple backends. If no GBIDs specified,
@@ -129,6 +131,23 @@ None.
 * **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 * **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
   occurs after connection has been established
+
+# joynr 1.14.4
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Stabilization of flaky tests that sometimes failed in CI
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++, Java]** Fix some log statements related to periodic freshness updates
+  (aka "touch")
+* **[C++]** Fix usage of `boost::optional` in order to still be compatible with
+  Boost 1.65.0
 
 # joynr 1.14.3
 
