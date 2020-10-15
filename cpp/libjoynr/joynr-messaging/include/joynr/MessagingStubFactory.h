@@ -21,6 +21,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -88,6 +89,7 @@ private:
     using Map = std::unordered_map<K, V, AddressPtrHash, AddressPtrCompare>;
     ThreadSafeMap<AddressPtr, std::shared_ptr<IMessagingStub>, Map> _address2MessagingStubMap;
     std::vector<std::shared_ptr<IMiddlewareMessagingStubFactory>> _factoryList;
+    std::mutex mutex;
 };
 
 } // namespace joynr

@@ -29,7 +29,7 @@
 namespace joynr
 {
 
-MessagingStubFactory::MessagingStubFactory() : _address2MessagingStubMap(), _factoryList()
+MessagingStubFactory::MessagingStubFactory() : _address2MessagingStubMap(), _factoryList(), mutex()
 {
 }
 
@@ -38,6 +38,7 @@ std::shared_ptr<IMessagingStub> MessagingStubFactory::create(
 {
     std::shared_ptr<IMessagingStub> stub = _address2MessagingStubMap.value(destinationAddress);
     if (!stub) {
+        std::unique_lock<std::mutex> lock(mutex);
         for (auto const& factory : _factoryList) {
             if (factory->canCreate(*destinationAddress)) {
                 auto createStub = factory->create(*destinationAddress);
@@ -54,7 +55,8 @@ std::shared_ptr<IMessagingStub> MessagingStubFactory::create(
 void MessagingStubFactory::remove(
         const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
 {
-    if (contains(destinationAddress)) {
+    std::unique_lock<std::mutex> lock(mutex);
+    if (_address2MessagingStubMap.contains(destinationAddress)) {
         _address2MessagingStubMap.remove(destinationAddress);
     }
 }
@@ -68,11 +70,13 @@ bool MessagingStubFactory::contains(
 void MessagingStubFactory::registerStubFactory(
         std::shared_ptr<IMiddlewareMessagingStubFactory> factory)
 {
+    std::unique_lock<std::mutex> lock(mutex);
     _factoryList.push_back(std::move(factory));
 }
 
 void MessagingStubFactory::shutdown()
 {
+    std::unique_lock<std::mutex> lock(mutex);
     _factoryList.clear();
 }
 
