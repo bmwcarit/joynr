@@ -615,7 +615,7 @@ TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
     unregisterProvider();
 
     std::int64_t minInterval_ms = 50;
-    std::int64_t publicationTtl = 50;
+    std::int64_t publicationTtl = 500;
     auto subscriptionQosAttribute =
             std::make_shared<OnChangeSubscriptionQos>(500000, // validity_ms
                                                       publicationTtl,
