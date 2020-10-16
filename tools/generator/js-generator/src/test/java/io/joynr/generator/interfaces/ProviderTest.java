@@ -20,36 +20,43 @@ package io.joynr.generator.interfaces;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.generator.AbstractJoynrTSGeneratorTest;
 
 public class ProviderTest extends AbstractJoynrTSGeneratorTest {
-    @Before
-    public void setup() throws Exception {
-        final boolean generateProxy = false;
-        final boolean generateProvider = true;
-        super.setup(generateProxy, generateProvider);
-    }
 
-    @Test
-    public void testProviderAndProxyCodeFound() {
-        Map<String, String> result = generate("multi-out-method-test.fidl");
+    private final boolean generateProxy = false;
+    private final boolean generateProvider = true;
+
+    private void testProviderAndProxyCodeFound(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
+
+        Map<String, String> result = generate("multi-out-method-test" + (generateVersion ? "" : "_noversiongeneration")
+                + ".fidl");
         assertNotNull(result);
         boolean providerFound = false;
         // since the user code might need parts of the generated proxy code
         // as well at the moment even for provider implementation, we do not
-        //  check for non-existance of proxy files here.
+        //  check for non-existence of proxy files here.
         for (Map.Entry<String, String> entry : result.entrySet()) {
             if (entry.getKey().contains("Provider")) {
                 providerFound = true;
             }
         }
         assertTrue("Expected provider files not found", providerFound);
+    }
+
+    @Test
+    public void testProviderAndProxyCodeFound_withVersioning() throws Exception {
+        testProviderAndProxyCodeFound(true);
+    }
+
+    @Test
+    public void testProviderAndProxyCodeFound_noVersioning() throws Exception {
+        testProviderAndProxyCodeFound(false);
     }
 }

@@ -22,27 +22,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 
 public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGeneratorTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenerateStatelessAsyncInterfaceTest.class);
+    private final boolean generateProxy = true;
+    private final boolean generateProvider = true;
 
-    @Before
-    public void setup() throws Exception {
-        final boolean generateProxy = true;
-        final boolean generateProvider = true;
-        super.setup(generateProxy, generateProvider);
-    }
+    private void testGeneratesStatelessAsyncInterfaceWithAllMethods(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
 
-    @Test
-    public void testGeneratesStatelessAsyncInterfaceWithAllMethods() throws Exception {
-        Map<String, String> result = generate("stateless-async-test.fidl");
+        Map<String, String> result = generate("stateless-async-test" + (generateVersion ? "" : "_noversiongeneration")
+                + ".fidl");
         TestResult testResult = new TestResult();
         result.forEach((filename, fileContent) -> {
             if (filename.endsWith("StatelessAsync")) {
@@ -70,8 +63,10 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
                         && fileContent.contains("String threeInData"));
                 testResult.setWithErrorMethodFound(fileContent.contains("void withError(")
                         && fileContent.contains("String inData"));
-                testResult.setTestTypeInputImportFound(fileContent.contains("import joynr.statelessasync.testTypeCollection.TestTypeInput;"));
-                testResult.setTestTypeOutputImportNotFound(!fileContent.contains("import joynr.statelessasync.testTypeCollection.TestTypeOutput;"));
+                testResult.setTestTypeInputImportFound(fileContent.contains("import joynr.statelessasync"
+                        + (generateVersion ? ".v0" : "") + ".testTypeCollection.TestTypeInput;"));
+                testResult.setTestTypeOutputImportNotFound(!fileContent.contains("import joynr.statelessasync"
+                        + (generateVersion ? ".v0" : "") + ".testTypeCollection.TestTypeOutput;"));
             }
         });
         assertTrue(testResult.isStatelessAsyncInterfaceFound());
@@ -87,6 +82,16 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
         assertTrue(testResult.isWithErrorMethodFound());
         assertTrue(testResult.isTestTypeInputImportFound());
         assertTrue(testResult.isTestTypeOutputImportNotFound());
+    }
+
+    @Test
+    public void testGeneratesStatelessAsyncInterfaceWithAllMethods_withVersioning() throws Exception {
+        testGeneratesStatelessAsyncInterfaceWithAllMethods(true);
+    }
+
+    @Test
+    public void testGeneratesStatelessAsyncInterfaceWithAllMethods_noVersioning() throws Exception {
+        testGeneratesStatelessAsyncInterfaceWithAllMethods(false);
     }
 
     private static class TestResult {

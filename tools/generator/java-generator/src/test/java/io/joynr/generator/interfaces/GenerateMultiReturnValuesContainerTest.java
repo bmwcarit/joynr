@@ -23,23 +23,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 
 public class GenerateMultiReturnValuesContainerTest extends AbstractJoynrJavaGeneratorTest {
 
-    @Before
-    public void setup() throws Exception {
-        final boolean generateProxy = true;
-        final boolean generateProvider = true;
-        super.setup(generateProxy, generateProvider);
-    }
+    private final boolean generateProxy = true;
+    private final boolean generateProvider = true;
 
-    @Test
-    public void testGenerateMultiReturnMethod() {
-        Map<String, String> result = generate("multi-out-method-test.fidl");
+    private void testGenerateMultiReturnMethod(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
+
+        Map<String, String> result = generate("multi-out-method-test" + (generateVersion ? "" : "_noversiongeneration")
+                + ".fidl");
         assertNotNull(result);
         boolean containerFound = false;
         for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -50,6 +47,16 @@ public class GenerateMultiReturnValuesContainerTest extends AbstractJoynrJavaGen
             }
         }
         assertTrue(containerFound);
+    }
+
+    @Test
+    public void testGenerateMultiReturnMethod_withVersioning() throws Exception {
+        testGenerateMultiReturnMethod(true);
+    }
+
+    @Test
+    public void testGenerateMultiReturnMethod_noVersioning() throws Exception {
+        testGenerateMultiReturnMethod(false);
     }
 
 }

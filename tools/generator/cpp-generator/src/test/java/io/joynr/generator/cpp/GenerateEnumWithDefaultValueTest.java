@@ -22,22 +22,18 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.generator.AbstractJoynrCppGeneratorTest;
 
 public class GenerateEnumWithDefaultValueTest extends AbstractJoynrCppGeneratorTest {
 
-    @Before
-    public void setup() throws Exception {
-        final boolean generateProxy = true;
-        final boolean generateProvider = true;
-        super.setup(generateProxy, generateProvider);
-    }
+    private final boolean generateProxy = true;
+    private final boolean generateProvider = true;
 
     @Test
     public void testGeneratesEnumwithDefaultValue() throws Exception {
+        super.setup(generateProxy, generateProvider, true);
         Map<String, String> result = generate("test-struct-with-default-enum-value.fidl");
         TestResult testResult = new TestResult();
         result.forEach((filename, fileContent) -> {

@@ -23,9 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
@@ -36,19 +34,14 @@ import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
  */
 public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGeneratorTest {
 
-    @SuppressWarnings("unused")
-    private static final Logger logger = Logger.getLogger(GenerateFireAndForgetMethodsTest.class.getName());
+    private final boolean generateProxy = true;
+    private final boolean generateProvider = true;
 
-    @Before
-    public void setup() throws Exception {
-        final boolean generateProxy = true;
-        final boolean generateProvider = true;
-        super.setup(generateProxy, generateProvider);
-    }
+    private void testGenerateFireAndForgetMethod(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
 
-    @Test
-    public void testGenerateFireAndForgetMethod() {
-        Map<String, String> result = generate("fire-and-forget-test.fidl");
+        Map<String, String> result = generate("fire-and-forget-test" + (generateVersion ? "" : "_noversiongeneration")
+                + ".fidl");
         assertNotNull(result);
         boolean fireAndForgetFound = false;
         boolean syncAsyncFound = false;
@@ -75,8 +68,20 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
     }
 
     @Test
-    public void testDontGenerateFireAndForgetMethod() {
-        Map<String, String> result = generate("no-fire-and-forget-test.fidl");
+    public void testGenerateFireAndForgetMethod_withVersioning() throws Exception {
+        testGenerateFireAndForgetMethod(true);
+    }
+
+    @Test
+    public void testGenerateFireAndForgetMethod_noVersioning() throws Exception {
+        testGenerateFireAndForgetMethod(false);
+    }
+
+    private void testDontGenerateFireAndForgetMethod(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
+
+        Map<String, String> result = generate("no-fire-and-forget-test"
+                + (generateVersion ? "" : "_noversiongeneration") + ".fidl");
         assertNotNull(result);
         for (Map.Entry<String, String> entry : result.entrySet()) {
             if (entry.getKey().endsWith("Sync") || entry.getKey().endsWith("Async")) {
@@ -86,42 +91,96 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
     }
 
     @Test
-    public void testGenerateMixedFireAndForgetMethod() {
-        Map<String, String> result = generate("fire-and-forget-mixed-test.fidl");
+    public void testDontGenerateFireAndForgetMethod_withVersioning() throws Exception {
+        testDontGenerateFireAndForgetMethod(true);
+    }
+
+    @Test
+    public void testDontGenerateFireAndForgetMethod_noVersioning() throws Exception {
+        testDontGenerateFireAndForgetMethod(false);
+    }
+
+    private void testGenerateMixedFireAndForgetMethod(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
+
+        Map<String, String> result = generate("fire-and-forget-mixed-test"
+                + (generateVersion ? "" : "_noversiongeneration") + ".fidl");
         assertNotNull(result);
+        boolean fireAndForgetFound = false;
+        boolean syncAsyncFound = false;
         for (Map.Entry<String, String> entry : result.entrySet()) {
             if (entry.getKey().endsWith("Sync") || entry.getKey().endsWith("Async")) {
                 assertTrue(entry.getValue().contains("callMeTwo("));
                 assertFalse(entry.getValue().contains("callMe("));
+                syncAsyncFound = true;
             } else if (entry.getKey().endsWith("FireAndForget")) {
                 assertFalse(entry.getValue().contains("callMeTwo("));
                 assertTrue(entry.getValue().contains("callMe("));
+                fireAndForgetFound = true;
             }
         }
+        assertTrue(fireAndForgetFound);
+        assertTrue(syncAsyncFound);
     }
 
     @Test
-    public void testGenerateFireAndForgetWithTypes() {
-        Map<String, String> result = generate("fire-and-forget-with-types.fidl");
+    public void testGenerateMixedFireAndForgetMethod_withVersioning() throws Exception {
+        testGenerateMixedFireAndForgetMethod(true);
+    }
+
+    @Test
+    public void testGenerateMixedFireAndForgetMethod_noVersioning() throws Exception {
+        testGenerateMixedFireAndForgetMethod(false);
+    }
+
+    private void testGenerateFireAndForgetWithTypes(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
+
+        Map<String, String> result = generate("fire-and-forget-with-types"
+                + (generateVersion ? "" : "_noversiongeneration") + ".fidl");
         assertNotNull(result);
+        boolean fireAndForgetFound = false;
+        boolean syncAsyncFound = false;
+        boolean providerFound = false;
         for (Map.Entry<String, String> entry : result.entrySet()) {
             if (entry.getKey().endsWith("FireAndForget")) {
                 assertTrue(entry.getValue().contains("MyStruct message"));
-                assertTrue(entry.getValue().contains("import joynr.fireandforget.MyStruct"));
+                assertTrue(entry.getValue()
+                                .contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "") + ".MyStruct"));
                 assertFalse(entry.getValue().contains("MyOtherStruct otherMessage"));
-                assertFalse(entry.getValue().contains("import joynr.fireandforget.MyOtherStruct"));
+                assertFalse(entry.getValue().contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
+                        + ".MyOtherStruct"));
+                fireAndForgetFound = true;
             } else if (entry.getKey().endsWith("Sync") || entry.getKey().endsWith("Async")) {
                 assertFalse(entry.getValue().contains("MyStruct message"));
-                assertFalse(entry.getValue().contains("import joynr.fireandforget.MyStruct"));
+                assertFalse(entry.getValue().contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
+                        + ".MyStruct"));
                 assertTrue(entry.getValue().contains("MyOtherStruct otherMessage"));
-                assertTrue(entry.getValue().contains("import joynr.fireandforget.MyOtherStruct"));
-            } else if (entry.getKey().endsWith(".FireAndForgetProvider")) {
+                assertTrue(entry.getValue().contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
+                        + ".MyOtherStruct"));
+                syncAsyncFound = true;
+            } else if (entry.getKey().endsWith("FireAndForgetWithTypesTestProvider")) {
                 assertTrue(entry.getValue().contains("MyStruct message"));
-                assertTrue(entry.getValue().contains("import joynr.fireandforget.MyStruct"));
+                assertTrue(entry.getValue()
+                                .contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "") + ".MyStruct"));
                 assertTrue(entry.getValue().contains("MyOtherStruct otherMessage"));
-                assertTrue(entry.getValue().contains("import joynr.fireandforget.MyOtherStruct"));
+                assertTrue(entry.getValue().contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
+                        + ".MyOtherStruct"));
+                providerFound = true;
             }
         }
+        assertTrue(fireAndForgetFound);
+        assertTrue(syncAsyncFound);
+        assertTrue(providerFound);
     }
 
+    @Test
+    public void testGenerateFireAndForgetWithTypes_withVersioning() throws Exception {
+        testGenerateFireAndForgetWithTypes(true);
+    }
+
+    @Test
+    public void testGenerateFireAndForgetWithTypes_noVersioning() throws Exception {
+        testGenerateFireAndForgetWithTypes(false);
+    }
 }

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.generator.interfaces;
+package io.joynr.generator.cpp.interfaces;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -24,22 +24,20 @@ import static org.junit.Assert.fail;
 
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.generator.AbstractJoynrCppGeneratorTest;
 
 public class ProviderTest extends AbstractJoynrCppGeneratorTest {
-    @Before
-    public void setup() throws Exception {
-        final boolean generateProxy = false;
-        final boolean generateProvider = true;
-        super.setup(generateProxy, generateProvider);
-    }
 
-    @Test
-    public void testOnlyProviderCodeFound() {
-        Map<String, String> result = generate("multi-out-method-test.fidl");
+    private final boolean generateProxy = false;
+    private final boolean generateProvider = true;
+
+    private void testOnlyProviderCodeFound(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
+
+        Map<String, String> result = generate("multi-out-method-test" + (generateVersion ? "" : "_noversiongeneration")
+                + ".fidl");
         assertNotNull(result);
         boolean providerFound = false;
         for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -52,4 +50,15 @@ public class ProviderTest extends AbstractJoynrCppGeneratorTest {
         }
         assertTrue("Expected provider code not found", providerFound);
     }
+
+    @Test
+    public void testOnlyProviderCodeFound_withVersioning() throws Exception {
+        testOnlyProviderCodeFound(true);
+    }
+
+    @Test
+    public void testOnlyProviderCodeFound_noVersioning() throws Exception {
+        testOnlyProviderCodeFound(false);
+    }
+
 }

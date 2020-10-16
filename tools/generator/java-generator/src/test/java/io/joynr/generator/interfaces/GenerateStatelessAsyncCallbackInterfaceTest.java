@@ -25,33 +25,26 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 
 public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJavaGeneratorTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenerateStatelessAsyncCallbackInterfaceTest.class);
+    private final boolean generateProxy = true;
+    private final boolean generateProvider = true;
 
-    @Before
-    public void setup() throws Exception {
-        final boolean generateProxy = true;
-        final boolean generateProvider = true;
-        super.setup(generateProxy, generateProvider);
-    }
+    private void testGeneratesStatelessAsyncCallbackInterfaceWithAllMethods(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
 
-    @Test
-    public void testGeneratesStatelessAsyncCallbackInterfaceWithAllMethods() throws Exception {
-        Map<String, String> result = generate("stateless-async-test.fidl");
+        Map<String, String> result = generate("stateless-async-test" + (generateVersion ? "" : "_noversiongeneration")
+                + ".fidl");
         TestResult testResult = new TestResult();
         Pattern noOutMethodPattern = Pattern.compile("void noOutMethodSuccess\\(");
         result.forEach((filename, fileContent) -> {
             if (filename.endsWith("StatelessAsyncCallback")) {
                 // Comment in to manually inspect the generator output during testing
-                //System.out.println("Stateless async callback interface:\n" + fileContent);
+                // System.out.println("Stateless async callback interface:\n" + fileContent);
                 testResult.setStatelessAsyncCallbackInterfaceFound(true);
                 testResult.setExtendsStatelessAsyncCallback(fileContent.contains("import io.joynr.proxy.StatelessAsyncCallback;")
                         && fileContent.contains("extends StatelessAsyncCallback"));
@@ -74,9 +67,12 @@ public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJa
                 testResult.setWithErrorMethodFound(fileContent.contains("default void withErrorSuccess(")
                         && fileContent.contains("String outData"));
                 testResult.setWithErrorMethodFailedFound(fileContent.contains("default void withErrorFailed(")
-                        && fileContent.contains("joynr.statelessasync.StatelessAsyncTest.WithErrorErrorEnum error,"));
-                testResult.setTestTypeInputImportNotFound(!fileContent.contains("import joynr.statelessasync.testTypeCollection.TestTypeInput;"));
-                testResult.setTestTypeOutputImportFound(fileContent.contains("import joynr.statelessasync.testTypeCollection.TestTypeOutput;"));
+                        && fileContent.contains("joynr.statelessasync" + (generateVersion ? ".v0" : "")
+                                + ".StatelessAsyncTest.WithErrorErrorEnum error,"));
+                testResult.setTestTypeInputImportNotFound(!fileContent.contains("import joynr.statelessasync"
+                        + (generateVersion ? ".v0" : "") + ".testTypeCollection.TestTypeInput;"));
+                testResult.setTestTypeOutputImportFound(fileContent.contains("import joynr.statelessasync"
+                        + (generateVersion ? ".v0" : "") + ".testTypeCollection.TestTypeOutput;"));
             }
         });
         assertTrue(testResult.isStatelessAsyncCallbackInterfaceFound());
@@ -92,6 +88,16 @@ public class GenerateStatelessAsyncCallbackInterfaceTest extends AbstractJoynrJa
         assertTrue(testResult.isWithErrorMethodFailedFound());
         assertTrue(testResult.isTestTypeInputImportNotFound());
         assertTrue(testResult.isTestTypeOutputImportFound());
+    }
+
+    @Test
+    public void testGeneratesStatelessAsyncCallbackInterfaceWithAllMethods_withVersioning() throws Exception {
+        testGeneratesStatelessAsyncCallbackInterfaceWithAllMethods(true);
+    }
+
+    @Test
+    public void testGeneratesStatelessAsyncCallbackInterfaceWithAllMethods_noVersioning() throws Exception {
+        testGeneratesStatelessAsyncCallbackInterfaceWithAllMethods(false);
     }
 
     private static class TestResult {

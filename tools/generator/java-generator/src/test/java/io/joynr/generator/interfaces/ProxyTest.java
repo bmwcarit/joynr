@@ -24,22 +24,20 @@ import static org.junit.Assert.fail;
 
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 
 public class ProxyTest extends AbstractJoynrJavaGeneratorTest {
-    @Before
-    public void setup() throws Exception {
-        final boolean generateProxy = true;
-        final boolean generateProvider = false;
-        super.setup(generateProxy, generateProvider);
-    }
 
-    @Test
-    public void testOnlyProxyCodeFound() {
-        Map<String, String> result = generate("multi-out-method-test.fidl");
+    private final boolean generateProxy = true;
+    private final boolean generateProvider = false;
+
+    private void testOnlyProxyCodeFound(final boolean generateVersion) throws Exception {
+        super.setup(generateProxy, generateProvider, generateVersion);
+
+        Map<String, String> result = generate("multi-out-method-test" + (generateVersion ? "" : "_noversiongeneration")
+                + ".fidl");
         assertNotNull(result);
         boolean proxyFound = false;
         for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -52,5 +50,15 @@ public class ProxyTest extends AbstractJoynrJavaGeneratorTest {
             }
         }
         assertTrue("Expected proxy code not found", proxyFound);
+    }
+
+    @Test
+    public void testOnlyProxyCodeFound_withVersioning() throws Exception {
+        testOnlyProxyCodeFound(true);
+    }
+
+    @Test
+    public void testOnlyProxyCodeFound_noVersioning() throws Exception {
+        testOnlyProxyCodeFound(false);
     }
 }

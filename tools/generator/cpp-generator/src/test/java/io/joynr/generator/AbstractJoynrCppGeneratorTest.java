@@ -37,7 +37,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
 import org.franca.core.dsl.FrancaIDLStandaloneSetup;
-import org.junit.Before;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -48,7 +47,6 @@ import io.joynr.generator.loading.IUriProvider;
 import io.joynr.generator.loading.ModelStore;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 import io.joynr.generator.templates.util.NamingUtil;
-import io.joynr.generator.templates.util.TypeUtil;
 import io.joynr.generator.util.FileSystemAccessUtil;
 import io.joynr.generator.util.InvocationArguments;
 import io.joynr.generator.cpp.JoynrCppGenerator;
@@ -71,7 +69,7 @@ public abstract class AbstractJoynrCppGeneratorTest {
     @Inject
     private IFileSystemAccess outputFileSystem;
 
-    public void setup(boolean generateProxy, boolean generateProvider) throws Exception {
+    public void setup(boolean generateProxy, boolean generateProvider, boolean generateVersion) throws Exception {
         temporaryOutputDirectory = Files.createTempDirectory(null).toFile();
         temporaryOutputDirectory.deleteOnExit();
         InvocationArguments arguments = new InvocationArguments();
@@ -94,7 +92,7 @@ public abstract class AbstractJoynrCppGeneratorTest {
                                                                         bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
                                                                                       .to(true);
                                                                         bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
-                                                                                      .to(false);
+                                                                                      .to(generateVersion);
                                                                         bindConstant().annotatedWith(Names.named("generationId"))
                                                                                       .to("5");
                                                                         bindConstant().annotatedWith(Names.named("generateProxyCode"))
@@ -124,6 +122,22 @@ public abstract class AbstractJoynrCppGeneratorTest {
      * @return a map of generated filename to content of that file.
      */
     protected Map<String, String> generate(String fidlFilename) {
+        return generate(fidlFilename, false);
+    }
+
+    /**
+     * You can call this method to trigger generation of all Java artifacts for the
+     * given FIDL file, where the file must be found on the classpath.
+     * The result is a map containing entries keyed by the generated Java filename
+     * (without the .java ending) and the value being the content of the
+     * generated file.
+     *
+     * @param fidlFilename the name of the file on the classpath from which to trigger generation.
+     * @param returnFullPath whether the returned filenames should contain the full path
+     *
+     * @return a map of generated filename to content of that file.
+     */
+    protected Map<String, String> generate(String fidlFilename, boolean returnFullPath) {
         Map<String, String> result = new HashMap<>();
         URL resourceUrl = AbstractJoynrCppGeneratorTest.class.getClassLoader().getResource(fidlFilename);
         try {
@@ -136,22 +150,30 @@ public abstract class AbstractJoynrCppGeneratorTest {
                 }
             });
             generator.doGenerate(modelStore.getResources().iterator().next(), outputFileSystem);
-            result = readAllCppFilesRecursively(temporaryOutputDirectory);
+            result = readAllCppFilesRecursively(temporaryOutputDirectory, returnFullPath);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, "Problem loading file: " + fidlFilename, e);
         }
         return result;
     }
 
-    private Map<String, String> readAllCppFilesRecursively(File inDirectory) {
+    private Map<String, String> readAllCppFilesRecursively(File inDirectory, boolean returnFullPath) {
         assert inDirectory != null;
         assert inDirectory.isDirectory();
         Map<String, String> result = new HashMap<>();
         for (File file : inDirectory.listFiles()) {
             if (file.isFile() && file.getName().endsWith(".cpp")) {
-                result.put(file.getName().replaceAll("\\.cpp$", ""), readContent(file));
+                if (returnFullPath) {
+                    try {
+                        result.put(file.getCanonicalPath().replaceAll("\\.cpp$", ""), readContent(file));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    result.put(file.getName().replaceAll("\\.cpp$", ""), readContent(file));
+                }
             } else if (file.isDirectory()) {
-                result.putAll(readAllCppFilesRecursively(file));
+                result.putAll(readAllCppFilesRecursively(file, returnFullPath));
             }
         }
         return result;
