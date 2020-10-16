@@ -335,6 +335,95 @@ Use the buildAsync method of ProxyBuilder to create a proxy asynchronously:
                 ->buildAsync(onSuccess, onError);
 ```
 
+## The guided proxy builder
+For an enhanced control over the proxy creation process, the GuidedProxyBuilder can be used.
+It separates provider discovery (`GuidedProxyBuilder::discover()` or
+`GuidedProxyBuilder.discoverAsync()`) from the actual proxy creation `GuidedProxyBuilder::buildProxy()`. 
+The GuidedProxyBuilder adds more flexibility to the provider selection than the
+[arbitration strategies available through DiscoveryQos](#the-discovery-quality-of-service).
+In particular, you can discover available versions of providers of a particular interface
+before creating a proxy. See also [Generator documentation](generator.md) for versioning of
+the generated interface code. The `buildProxy` and the corresponding `discover` methods must be
+called on the same instance of GuidedProxyBuilder.
+
+Note: Like the `ProxyBuilder`, the `GuidedProxyBuilder` can be be configured with `DiscoveryQos`.
+Regardless, the selected arbitration strategy will be ignored as provider selection is a
+manual step to be executed by the user between provider discovery and proxy building.
+
+For a creation of `GuidedProxyBuilder`, similar to the [ProxyBuilder creation](#creating-the-runtime-and-proxy-builder)
+as a prerequisite, provider and consumer domain and also interface name should be defined as shown below.
+
+```cpp
+    std::shared_ptr<GuildedProxyBuilder> guidedProxyBuilder =
+        runtime->createGuidedProxyBuilder<<Package>::v5::<Interface>Proxy>(providerDomain);
+```
+
+Example for the synchronous usage of a `GuidedProxyBuilder`:
+
+```cpp
+...
+DiscoveryResult discoveryResult;
+try {
+    discoveryResult = guidedProxyBuilder
+        ->setMessagingQos(...) //optional
+        ->setDiscoveryQos(...) //optional
+        ->setGbids(...) //optional
+            // same optional setters as in ProxyBuilder
+        .discover();
+} catch (const exceptions::DiscoveryException& e) {
+    // handle errors
+}
+
+boost::optional<types::DiscoveryEntry> lastSeenEntryOptional = discoveryResult.getLastSeen();
+/* Other possibilities to retrieve DiscoveryEntries from DiscoveryResult:
+    boost::optional<types::DiscoveryEntry> highestPriorityEntry = discoveryResult.getHighestPriority();
+    boost::optional<types::DiscoveryEntry> latestVersionEntry = discoveryResult.getLastestVersion();
+    boost::optional<types::DiscoveryEntry> entry = discoveryResult.getParticipantId(participantId);
+    const std::vector<types::DiscoveryEntry>& allDiscoveryEntries = discoveryResult.getAllDiscoveryEntries();
+    std::vector<types::DiscoveryEntry> discoveryEntriesWithKey = discoveryResult.getWithKeyword(keyword);
+*/
+
+types::DiscoveryEntry discoveryEntry;
+if (lastSeenEntryOptional.has_value()) {
+    discoveryEntry = lastSeenEntryOptional.value();
+} else {
+    // handle errors
+}
+
+
+if (discoveryEntry.getProviderVersion().getMajorVersion() == 4) {
+    // use the generated proxy interface for version 4.x
+    try {
+        /* Note: <Interface>Proxy class and its version used for the proxy building should not be necessarily 
+                 identical to the class version that has been used for the creation of the GuidedProxyBuilder.
+                 However, the names (<Interface>) of both interface proxy classes must be the same.
+        */
+        std::shared_ptr<<Package>::v4::<Interface>Proxy> proxy = testGuidedProxyBuilder->buildProxy<<Package>::v4::<Interface>Proxy>(discoveryEntry.getParticipantId());
+    } catch (const exceptions::DiscoveryException& e) {
+        // handle errors
+    }
+} else {
+    ...
+}
+...
+```
+
+Use the `discoverAsync` method of `GuidedProxyBuilder` to discover providers asynchronously:
+
+```cpp
+    ...
+    auto discoveryResultFuture = guidedProxyBuider->discoverAsync(onSuccess, onError);
+    ...
+    // get a discovery result from the future when it is necessary
+    DiscoveryResult discoveryResult;
+    try {
+        discoveryResultFuture->get(discoveryResult);
+    } catch (const exceptions::DiscoveryException& exception) {
+        // handle errors
+    }
+    ...
+```
+
 ## Synchronous Remote procedure calls
 While the provider executes the call asynchronously in any case, the consumer will wait until the call is finished, i.e. the thread will be blocked.
 Note that the message order on Joynr RPCs will not be preserved.

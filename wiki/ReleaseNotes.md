@@ -2,6 +2,15 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.3
+
+## API-relevant Changes
+* **[C++]** Implemented the `GuidedProxyBuilder`, which allows extended control
+  over how proxies are built after executing a lookup. In particular, the provider
+  version can be determined before actually building the proxy. The `GuidedProxyBuilder`
+  can be retrieved via the `createGuidedProxyBuilder` method through the `JoynrRuntime` (C++).
+  See the [C++ documentation](cplusplus.md#the-guided-proxy-builder).
+
 # joynr 1.15.2
 
 ## API-relevant Changes
