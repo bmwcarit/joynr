@@ -40,7 +40,6 @@ JoynrRuntimeImpl::JoynrRuntimeImpl(
         std::shared_ptr<IKeychain> keyChain)
         : _singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
           _proxyFactory(nullptr),
-          _requestCallerDirectory(nullptr),
           _participantIdStorage(nullptr),
           _capabilitiesRegistrar(nullptr),
           _messagingSettings(settings),

@@ -287,7 +287,6 @@ public:
     {
         return std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
                                                           *_proxyFactory,
-                                                          _requestCallerDirectory,
                                                           _discoveryProxy,
                                                           domain,
                                                           _dispatcherAddress,

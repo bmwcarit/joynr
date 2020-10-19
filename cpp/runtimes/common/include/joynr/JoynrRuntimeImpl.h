@@ -396,7 +396,6 @@ public:
 
         auto proxyBuilder = std::make_shared<ProxyBuilder<TIntfProxy>>(shared_from_this(),
                                                                        *_proxyFactory,
-                                                                       _requestCallerDirectory,
                                                                        _discoveryProxy,
                                                                        domain,
                                                                        _dispatcherAddress,
@@ -419,7 +418,6 @@ public:
         std::string interfaceName = TIntfProxy::INTERFACE_NAME();
         auto guidedProxyBuilder = std::make_shared<GuidedProxyBuilder>(shared_from_this(),
                                                                        *_proxyFactory,
-                                                                       _requestCallerDirectory,
                                                                        _discoveryProxy,
                                                                        domain,
                                                                        _dispatcherAddress,
@@ -468,8 +466,6 @@ protected:
 
     /** @brief Factory for creating proxy instances */
     std::unique_ptr<ProxyFactory> _proxyFactory;
-    /** Is forwarded to proxy builder objects. They use it to identify in-process providers **/
-    std::shared_ptr<IRequestCallerDirectory> _requestCallerDirectory;
     /** @brief Creates and persists participant id */
     std::shared_ptr<ParticipantIdStorage> _participantIdStorage;
     /** @brief Class that handles provider registration/deregistration */

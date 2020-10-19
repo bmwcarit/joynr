@@ -24,7 +24,6 @@ namespace joynr
 GuidedProxyBuilder::GuidedProxyBuilder(
         std::weak_ptr<JoynrRuntimeImpl> runtime,
         ProxyFactory& proxyFactory,
-        std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
         std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
@@ -33,7 +32,6 @@ GuidedProxyBuilder::GuidedProxyBuilder(
         std::string interfaceName)
         : _runtime(std::move(runtime)),
           _proxyFactory(proxyFactory),
-          _requestCallerDirectory(requestCallerDirectory),
           _discoveryProxy(discoveryProxy),
           _dispatcherAddress(dispatcherAddress),
           _messageRouter(messageRouter),

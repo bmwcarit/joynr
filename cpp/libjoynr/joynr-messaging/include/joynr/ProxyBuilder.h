@@ -72,7 +72,6 @@ public:
      */
     ProxyBuilder(std::weak_ptr<JoynrRuntimeImpl> _runtime,
                  ProxyFactory& _proxyFactory,
-                 std::shared_ptr<IRequestCallerDirectory> _requestCallerDirectory,
                  std::weak_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy,
                  const std::string& _domain,
                  std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress,
@@ -166,7 +165,6 @@ private:
 
     std::weak_ptr<JoynrRuntimeImpl> _runtime;
     ProxyFactory& _proxyFactory;
-    std::shared_ptr<IRequestCallerDirectory> _requestCallerDirectory;
     std::weak_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
     std::vector<std::shared_ptr<Arbitrator>> _arbitrators;
     std::mutex _arbitratorsMutex;
@@ -191,7 +189,6 @@ template <class T>
 ProxyBuilder<T>::ProxyBuilder(
         std::weak_ptr<JoynrRuntimeImpl> runtime,
         ProxyFactory& proxyFactory,
-        std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
         std::weak_ptr<system::IDiscoveryAsync> discoveryProxy,
         const std::string& domain,
         std::shared_ptr<const system::RoutingTypes::Address> dispatcherAddress,
@@ -199,7 +196,6 @@ ProxyBuilder<T>::ProxyBuilder(
         MessagingSettings& messagingSettings)
         : _runtime(std::move(runtime)),
           _proxyFactory(proxyFactory),
-          _requestCallerDirectory(requestCallerDirectory),
           _discoveryProxy(discoveryProxy),
           _arbitrators(),
           _arbitratorsMutex(),

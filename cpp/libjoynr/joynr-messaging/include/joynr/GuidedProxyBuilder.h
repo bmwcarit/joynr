@@ -40,7 +40,6 @@ public:
     GuidedProxyBuilder(
             std::weak_ptr<JoynrRuntimeImpl> runtime,
             ProxyFactory& proxyFactory,
-            std::shared_ptr<IRequestCallerDirectory> requestCallerDirectory,
             std::weak_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
             const std::string& domain,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
@@ -77,7 +76,6 @@ private:
     // NOTE: necessary for ProxyBuilder creation
     std::weak_ptr<JoynrRuntimeImpl> _runtime;
     ProxyFactory& _proxyFactory;
-    std::shared_ptr<IRequestCallerDirectory> _requestCallerDirectory;
     std::weak_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress;
     std::shared_ptr<IMessageRouter> _messageRouter;
@@ -144,7 +142,6 @@ std::shared_ptr<TProxy> GuidedProxyBuilder::buildProxy(const std::string& partic
     ArbitrationResult arbitrationResult = ArbitrationResult(discoveryEntries);
     auto proxyBuilder = std::make_shared<ProxyBuilder<TProxy>>(_runtime,
                                                                _proxyFactory,
-                                                               _requestCallerDirectory,
                                                                _discoveryProxy,
                                                                _domain,
                                                                _dispatcherAddress,
