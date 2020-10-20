@@ -78,7 +78,7 @@ bool Settings::sync()
         }
     } catch (const ptree::ini_parser_error& e) {
         JOYNR_LOG_ERROR(logger(),
-                        "settings file \"{}\" cannot be written due to the following error: {})",
+                        "settings file \"{}\" cannot be written due to the following error: {}",
                         _filename,
                         e.message());
     }

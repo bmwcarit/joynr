@@ -1079,36 +1079,36 @@ void ClusterControllerSettings::printSettings() const
     JOYNR_LOG_INFO(logger(), "SETTING: {} = {}", SETTING_USE_ONLY_LDAS(), getUseOnlyLDAS());
 
     JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {})",
+                   "SETTING: {} = {}",
                    SETTING_ACCESS_CONTROL_ENABLE(),
                    _settings.get<std::string>(SETTING_ACCESS_CONTROL_ENABLE()));
     JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {})",
+                   "SETTING: {} = {}",
                    SETTING_ACCESS_CONTROL_AUDIT(),
                    _settings.get<std::string>(SETTING_ACCESS_CONTROL_AUDIT()));
     JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {})",
+                   "SETTING: {} = {}",
                    SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                    getCapabilitiesFreshnessUpdateIntervalMs().count());
     JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {})",
+                   "SETTING: {} = {}",
                    SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED(),
                    isGlobalCapabilitiesDirectoryCompressedMessagesEnabled());
 
     JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {})",
+                   "SETTING: {} = {}",
                    SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS(),
                    getPurgeExpiredDiscoveryEntriesIntervalMs());
 
     if (_settings.get<bool>(SETTING_ACCESS_CONTROL_ENABLE())) {
         JOYNR_LOG_INFO(logger(),
-                       "SETTING: {} = {})",
+                       "SETTING: {} = {}",
                        SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS(),
                        _settings.get<std::string>(
                                SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_ADDRESS()));
         JOYNR_LOG_INFO(
                 logger(),
-                "SETTING: {} = {})",
+                "SETTING: {} = {}",
                 SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID(),
                 _settings.get<std::string>(
                         SETTING_ACCESS_CONTROL_GLOBAL_DOMAIN_ACCESS_CONTROLLER_PARTICIPANTID()));
