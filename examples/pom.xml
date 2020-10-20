@@ -29,31 +29,26 @@
 	</parent>
 
 	<modules>
+		<module>custom-headers</module>
+		<module>message-persistence</module>
 		<module>radio-app</module>
 		<module>radio-jee</module>
-		<module>location-tester</module>
 		<module>stateless-async</module>
-		<module>message-persistence</module>
-		<module>custom-headers</module>
 	</modules>
 	<profiles>
 		<!-- Only include javascript examples when javascript is available -->
 		<profile>
 			<id>javascript</id>
 			<modules>
-				<module>radio-app</module>
-				<module>radio-jee</module>
-				<module>location-tester</module>
+				<module>radio-node</module>
 			</modules>
 		</profile>
 		<!-- Only include Android examples when Android is available -->
 		<profile>
 			<id>android</id>
 			<modules>
-				<module>radio-app</module>
-				<module>radio-jee</module>
-				<module>location-tester</module>
 				<module>android</module>
+				<module>location-tester</module>
 			</modules>
 		</profile>
 		<profile>
