@@ -147,10 +147,6 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         expect(constructors.CapabilitiesRegistrar.setDefaultExpiryIntervalMs).not.toHaveBeenCalled();
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
-
     it("will set the default discoveryQos settings correctly", async () => {
         const discoveryRetryDelayMs = 100;
         const discoveryTimeoutMs = 200;
@@ -188,6 +184,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
             onMessageCallback: expect.anything(),
             onFatalRuntimeError: onFatalRuntimeErrorCallBack
         });
+        await runtime.shutdown();
     });
 
     it("will initialize UdsClient with default values when provisioning undefined", async () => {
@@ -205,6 +202,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
             onMessageCallback: expect.anything(),
             onFatalRuntimeError: onFatalRuntimeErrorCallBack
         });
+        await runtime.shutdown();
     });
 
     it("will initialize UdsAddress (ccAddress) with correct socket path", async () => {
@@ -216,6 +214,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         expect(spies.UdsAddress).toHaveBeenCalledWith({
             path: expectedSocketPath
         });
+        await runtime.shutdown();
     });
 
     it("will initialize UdsClientAddress with correct client id", async () => {
@@ -227,6 +226,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         expect(spies.UdsClientAddress).toHaveBeenCalledWith({
             id: expectedUdsClientId
         });
+        await runtime.shutdown();
     });
 
     it("will set routing proxy after building of RoutingProxy", async () => {
@@ -270,6 +270,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         await runtime.start(provisioning);
 
         expect(mocks.MessageReplyToAddressCalculator.setReplyToAddress).toHaveBeenCalledWith("testAddress");
+        await runtime.shutdown();
     });
 
     it("will use the default persistency settings", async () => {
@@ -282,6 +283,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         expect(spies.PublicationManager.mock.calls.length).toEqual(1);
         expect(spies.UdsClient.mock.calls.length).toEqual(1);
         expect(spies.PublicationManager.mock.calls[0][1]).toEqual(mocks.LocalStorageNode);
+        await runtime.shutdown();
     });
 
     it("enables MessageRouter Persistency if configured", async () => {
@@ -293,6 +295,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         expect(spies.MessageRouter).toHaveBeenCalledWith(
             expect.objectContaining({ persistency: mocks.LocalStorageNode })
         );
+        await runtime.shutdown();
     });
 
     it("enables ParticipantIdStorage persistency if configured", async () => {
@@ -301,6 +304,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         await runtime.start(provisioning);
         expect(spies.ParticipantIdStorage.mock.calls.length).toEqual(1);
         expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
+        await runtime.shutdown();
     });
 
     it("disables PublicationManager persistency if configured", async () => {
@@ -309,6 +313,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         await runtime.start(provisioning);
         expect(spies.PublicationManager.mock.calls.length).toEqual(1);
         expect(spies.PublicationManager.mock.calls[0][1]).toBeUndefined();
+        await runtime.shutdown();
     });
 
     it("will call MessageQueue with the settings from the provisioning", async () => {
@@ -320,6 +325,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         expect(spies.MessageQueue).toHaveBeenCalledWith({
             maxQueueSizeInKBytes
         });
+        await runtime.shutdown();
     });
 
     it("will call Dispatcher with the settings from the provisioning", async () => {
@@ -329,6 +335,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         await runtime.start(provisioning);
         expect(spies.Dispatcher.mock.calls.length).toEqual(1);
         expect(spies.Dispatcher.mock.calls[0][2]).toEqual(ttlUpLiftMs);
+        await runtime.shutdown();
     });
 
     it("will call MessagingQos with the settings from the provisioning", async () => {
@@ -337,6 +344,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.MessagingQos).toHaveBeenCalledWith({ ttl });
+        await runtime.shutdown();
     });
 
     it("calls UdsClient.enableShutdownMode in terminateAllSubscriptions", async () => {
@@ -380,7 +388,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
 
         await runtime.start(provisioning);
 
-        runtime.shutdown({ clearSubscriptionsEnabled: false });
+        await runtime.shutdown({ clearSubscriptionsEnabled: false });
         expect(mocks.SubscriptionManager.terminateSubscriptions).not.toHaveBeenCalled();
     });
 
@@ -393,11 +401,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         expect(mocks.UdsClient.shutdown).toHaveBeenCalled();
     });
 
-    afterEach(done => {
-        if (runtime !== null) {
-            runtime.shutdown();
-            jest.clearAllMocks();
-            done();
-        }
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 });

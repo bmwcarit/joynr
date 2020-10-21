@@ -179,6 +179,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
             provisioning: expect.any(Object),
             keychain: undefined
         });
+        await runtime.shutdown();
     });
 
     it("will use the default persistency settings", async () => {
@@ -190,6 +191,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
         expect(spies.PublicationManager.mock.calls.length).toEqual(1);
         expect(spies.PublicationManager.mock.calls[0][1]).toEqual(mocks.LocalStorageNode);
+        await runtime.shutdown();
     });
 
     it("enables MessageRouter Persistency if configured", async () => {
@@ -201,6 +203,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         expect(spies.MessageRouter).toHaveBeenCalledWith(
             expect.objectContaining({ persistency: mocks.LocalStorageNode })
         );
+        await runtime.shutdown();
     });
 
     it("enables ParticipantIdStorage persistency if configured", async () => {
@@ -209,6 +212,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         await runtime.start(provisioning);
         expect(spies.ParticipantIdStorage.mock.calls.length).toEqual(1);
         expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
+        await runtime.shutdown();
     });
 
     it("disables PublicationManager persistency if configured", async () => {
@@ -217,6 +221,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         await runtime.start(provisioning);
         expect(spies.PublicationManager.mock.calls.length).toEqual(1);
         expect(spies.PublicationManager.mock.calls[0][1]).toBeUndefined();
+        await runtime.shutdown();
     });
 
     it("will call MessageQueue with the settings from the provisioning", async () => {
@@ -228,6 +233,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         expect(spies.MessageQueue).toHaveBeenCalledWith({
             maxQueueSizeInKBytes
         });
+        await runtime.shutdown();
     });
 
     it("will call Dispatcher with the settings from the provisioning", async () => {
@@ -237,6 +243,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         await runtime.start(provisioning);
         expect(spies.Dispatcher.mock.calls.length).toEqual(1);
         expect(spies.Dispatcher.mock.calls[0][2]).toEqual(ttlUpLiftMs);
+        await runtime.shutdown();
     });
 
     it("will call MessagingQos with the settings from the provisioning", async () => {
@@ -245,6 +252,7 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         runtime = new WebSocketLibjoynrRuntime(onFatalRuntimeError);
         await runtime.start(provisioning);
         expect(spies.MessagingQos).toHaveBeenCalledWith({ ttl });
+        await runtime.shutdown();
     });
 
     it("will set the signingCallback to the joynrMessage.prototype", async () => {
