@@ -1,10 +1,9 @@
 To try out the Radio example the following preliminary steps are necessary:
 
-1. run "mvn install -p javascript" in <JOYNR_ROOT>
+1. run "mvn install -P javascript" in <JOYNR_ROOT>
 2. run the following commands in <JOYNR_ROOT>/examples/radio-node
 
 ```
-mvn install
 npm install
 ```
 
