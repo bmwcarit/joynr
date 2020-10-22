@@ -28,6 +28,13 @@
 								<include>**</include>
 							</includes>
 						</fileset>
+						<fileset>
+							<directory>${basedir}/</directory>
+							<includes>
+								<include>radioLocalStorage*</include>
+								<include>node_modules/**</include>
+							</includes>
+						</fileset>
 					</filesets>
 				</configuration>
 			</plugin>
