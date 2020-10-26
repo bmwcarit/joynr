@@ -310,32 +310,6 @@ public class RequestReplyManagerImpl
         requestInterpreter.execute(replyCallback, requestCaller, request);
     }
 
-    @Override
-    public void handleReply(final Reply reply) {
-        String callbackId = statelessAsyncRequestReplyIdManager.getCallbackId(reply);
-        boolean stateless = !reply.getRequestReplyId().equals(callbackId);
-        final ReplyCaller callBack = stateless ? replyCallerDirectory.get(callbackId)
-                : replyCallerDirectory.remove(callbackId);
-        if (callBack == null) {
-            logger.warn("No reply caller found for id: {}", callbackId);
-            return;
-        }
-        callBack.messageCallBack(reply);
-    }
-
-    @Override
-    public void handleError(Request request, Throwable error) {
-        boolean stateless = request.getStatelessAsyncCallbackMethodId() != null;
-        String callbackId = stateless ? request.getStatelessAsyncCallbackMethodId() : request.getRequestReplyId();
-        if (callbackId != null) {
-            ReplyCaller replyCaller = stateless ? replyCallerDirectory.get(callbackId)
-                    : replyCallerDirectory.remove(callbackId);
-            if (replyCaller != null) {
-                replyCaller.error(error);
-            }
-        }
-    }
-
     private void queueRequest(final ProviderCallback<Reply> replyCallback,
                               final String providerParticipantId,
                               Request request,
@@ -368,6 +342,32 @@ public class RequestReplyManagerImpl
             cleanupSchedulerFuturesMap.put(providerParticipantId, cleanupSchedulerFuturesList);
         }
         cleanupSchedulerFuturesMap.get(providerParticipantId).add(cleanupSchedulerFuture);
+    }
+
+    @Override
+    public void handleReply(final Reply reply) {
+        String callbackId = statelessAsyncRequestReplyIdManager.getCallbackId(reply);
+        boolean stateless = !reply.getRequestReplyId().equals(callbackId);
+        final ReplyCaller callBack = stateless ? replyCallerDirectory.get(callbackId)
+                : replyCallerDirectory.remove(callbackId);
+        if (callBack == null) {
+            logger.warn("No reply caller found for id: {}", callbackId);
+            return;
+        }
+        callBack.messageCallBack(reply);
+    }
+
+    @Override
+    public void handleError(Request request, Throwable error) {
+        boolean stateless = request.getStatelessAsyncCallbackMethodId() != null;
+        String callbackId = stateless ? request.getStatelessAsyncCallbackMethodId() : request.getRequestReplyId();
+        if (callbackId != null) {
+            ReplyCaller replyCaller = stateless ? replyCallerDirectory.get(callbackId)
+                    : replyCallerDirectory.remove(callbackId);
+            if (replyCaller != null) {
+                replyCaller.error(error);
+            }
+        }
     }
 
     @Override
