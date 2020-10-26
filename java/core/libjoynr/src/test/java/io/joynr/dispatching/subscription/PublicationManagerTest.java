@@ -141,7 +141,7 @@ public class PublicationManagerTest {
         when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
         when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
 
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(false);
+        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(null);
 
         doReturn(Optional.of(valueToPublishPromise)).when(attributePollInterpreter)
                                                     .execute(any(ProviderContainer.class), any(Method.class));
@@ -176,7 +176,6 @@ public class PublicationManagerTest {
                                                                            SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
 
         when(requestCallerDirectory.get(eq(providerId))).thenReturn(providerContainer);
-        when(requestCallerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
         List<BroadcastFilter> noFilters = new ArrayList<>();
@@ -233,7 +232,6 @@ public class PublicationManagerTest {
                                                                            SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
         List<BroadcastFilter> noFilters = new ArrayList<>();
@@ -288,7 +286,6 @@ public class PublicationManagerTest {
                                                                            SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         final Semaphore onReceiveSemaphore = new Semaphore(0);
         doAnswer(new Answer<Object>() {
@@ -327,7 +324,6 @@ public class PublicationManagerTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -362,7 +358,6 @@ public class PublicationManagerTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -392,7 +387,6 @@ public class PublicationManagerTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -423,7 +417,6 @@ public class PublicationManagerTest {
         SubscriptionRequest subscriptionRequest2 = new SubscriptionRequest(subscriptionId2, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
 
@@ -536,7 +529,6 @@ public class PublicationManagerTest {
                                                                                    filterParameters,
                                                                                    qos);
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -592,7 +584,6 @@ public class PublicationManagerTest {
                                                                                    qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -648,7 +639,6 @@ public class PublicationManagerTest {
                                                                                    filterParameters,
                                                                                    qos);
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -703,7 +693,6 @@ public class PublicationManagerTest {
                                                                                    qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -749,7 +738,6 @@ public class PublicationManagerTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -765,7 +753,6 @@ public class PublicationManagerTest {
         subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 

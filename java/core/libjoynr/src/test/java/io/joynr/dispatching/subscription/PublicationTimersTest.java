@@ -132,7 +132,6 @@ public class PublicationTimersTest {
                                                                            SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
 

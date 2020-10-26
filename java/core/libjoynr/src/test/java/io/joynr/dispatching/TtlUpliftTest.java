@@ -426,7 +426,6 @@ public class TtlUpliftTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -463,7 +462,6 @@ public class TtlUpliftTest {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManagerWithTtlUplift.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
                                                                PROVIDER_PARTICIPANT_ID,
@@ -586,7 +584,6 @@ public class TtlUpliftTest {
                                                                                    qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
 
@@ -625,7 +622,6 @@ public class TtlUpliftTest {
                                                                                    qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(true);
 
         publicationManagerWithTtlUplift.addSubscriptionRequest(PROXY_PARTICIPANT_ID,
                                                                PROVIDER_PARTICIPANT_ID,

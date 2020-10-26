@@ -68,7 +68,7 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
                                final ReplyCaller replyCaller,
                                final ExpiryDate roundTripTtlExpirationDate) {
         logger.trace("AddReplyCaller: requestReplyId: {}, expiryDate: {}", requestReplyId, roundTripTtlExpirationDate);
-        if (super.contains(requestReplyId)) {
+        if (super.get(requestReplyId) != null) {
             logger.error("RequestReplyId should not be replicated: {}", requestReplyId);
         } else {
             super.add(requestReplyId, replyCaller);

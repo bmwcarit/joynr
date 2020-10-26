@@ -175,7 +175,6 @@ public class PushingPublicationTest {
                                                         any(MessagingQos.class));
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
-        when(providerDirectory.contains(eq(providerId))).thenReturn(true);
 
     }
 

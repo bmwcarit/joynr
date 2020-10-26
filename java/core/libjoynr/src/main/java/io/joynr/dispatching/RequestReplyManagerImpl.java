@@ -282,7 +282,8 @@ public class RequestReplyManagerImpl
         OneWayCallable oneWayCallable = new OneWayCallable(requestHandler,
                                                            ExpiryDate.fromAbsolute(expiryDate),
                                                            String.valueOf(request));
-        if (providerDirectory.contains(providerParticipantId)) {
+        ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+        if (providerContainer != null) {
             oneWayCallable.call();
         } else {
             if (!oneWayRequestQueue.containsKey(providerParticipantId)) {
@@ -297,8 +298,9 @@ public class RequestReplyManagerImpl
                               String providerParticipant,
                               Request request,
                               long expiryDate) {
-        if (providerDirectory.contains(providerParticipant)) {
-            handleRequest(replyCallback, providerDirectory.get(providerParticipant).getRequestCaller(), request);
+        ProviderContainer providerContainer = providerDirectory.get(providerParticipant);
+        if (providerContainer != null) {
+            handleRequest(replyCallback, providerContainer.getRequestCaller(), request);
         } else {
             queueRequest(replyCallback, providerParticipant, request, ExpiryDate.fromAbsolute(expiryDate));
             logger.info("Provider participantId: {} not found, queuing request message.", providerParticipant);

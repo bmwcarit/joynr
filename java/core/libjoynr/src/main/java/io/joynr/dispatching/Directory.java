@@ -69,10 +69,6 @@ public abstract class Directory<T> {
         }
     }
 
-    public boolean contains(String id) {
-        return entryMap.containsKey(id);
-    }
-
     public T get(String id) {
         return entryMap.get(id);
     }

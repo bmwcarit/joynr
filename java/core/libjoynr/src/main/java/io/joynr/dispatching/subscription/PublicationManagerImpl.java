@@ -477,11 +477,9 @@ public class PublicationManagerImpl
                                                                   subscriptionRequest);
         }
 
-        if (providerDirectory.contains(providerParticipantId)) {
-            addSubscriptionRequest(proxyParticipantId,
-                                   providerParticipantId,
-                                   subscriptionRequest,
-                                   providerDirectory.get(providerParticipantId));
+        ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+        if (providerContainer != null) {
+            addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest, providerContainer);
         } else {
             logger.trace("Adding subscription request for non existing provider to queue.");
             PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
