@@ -11,6 +11,21 @@ the versioning scheme [here](JoynrVersioning.md).
   can be retrieved via the `createGuidedProxyBuilder` method through the `JoynrRuntime` (C++).
   See the [C++ documentation](cplusplus.md#the-guided-proxy-builder).
 
+## Other Changes
+* **[TS]** Improved Maven javascript profile and Maven clean phase for radio-node example:
+  radio-node is now included in Maven javascript profile and clean plugin removes everything.
+* **[C++]** Examples and test projects are now versioned in CMakeLists.txt instead of appending
+  the version to the project name.
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed pure virtual method call that could occur if internal data got modified while
+  being used
+* **[C++]** Stabilized broadcast integration tests.
+* **[TS]** Fixed UnhandledPromiseRejectionWarnings in unit tests.
+
 # joynr 1.15.2
 
 ## API-relevant Changes
