@@ -37,12 +37,16 @@ import showHelp from "./console_common";
 import readline from "readline";
 import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
 import WebSocketLibjoynrRuntime from "joynr/joynr/start/WebSocketLibjoynrRuntime";
+import JoynrRuntimeException from "../../../../../javascript/libjoynr-js/src/main/js/joynr/exceptions/JoynrRuntimeException";
 
 const persistencyLocation = "./radioLocalStorageConsumer";
 const localStorage = new LocalStorage({ location: persistencyLocation, clearPersistency: false });
 let subscriptionQosOnChange: OnChangeSubscriptionQos;
 
 type Subscribable<T> = { [K in keyof T]: T[K] extends { subscribe: Function } ? K : never }[keyof T];
+
+let isRuntimeOkay = true;
+const rl = readline.createInterface(process.stdin, process.stdout);
 
 function runDemo(radioProxy: RadioProxy): Promise<void> {
     prettyLog("ATTRIBUTE GET: currentStation...");
@@ -96,7 +100,7 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
     const promise = new Promise<void>(resolve => {
         res = resolve;
     });
-    const rl = readline.createInterface(process.stdin, process.stdout);
+
     rl.setPrompt(">> ");
     const MODES = {
         HELP: {
@@ -213,6 +217,7 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
             });
     }
 
+    // Run until the user hits q or a fatal runtime error happens (onFatalRuntimeError is called)
     rl.on("line", line => {
         const input = line.trim().split(" ");
         switch (input[0]) {
@@ -396,12 +401,18 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
             socketPath: process.env.udspath,
             clientId: process.env.udsclientid,
             connectSleepTimeMs: Number(process.env.udsconnectsleeptimems)
-        }
+        };
         // no selectRuntime: UdsLibJoynrRuntime is default
     }
 
     await localStorage.init();
-    await joynr.load(provisioning);
+    // onFatalRuntimeError callback is optional, it is highly recommended to provide an implementation.
+    const onFatalRuntimeError = (error: JoynrRuntimeException) => {
+        isRuntimeOkay = false;
+        log(`Unexpected joynr runtime error occurred: ${error}`);
+        rl.close();
+    };
+    await joynr.load(provisioning, onFatalRuntimeError);
     log("joynr started");
     const messagingQos = new joynr.messaging.MessagingQos({
         ttl: 60000
@@ -420,7 +431,7 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
     log("exiting...");
     await joynr.shutdown();
     log("shutdown completed...");
-    process.exit(0);
+    process.exit(isRuntimeOkay ? 0 : 1);
 })().catch(e => {
     log(`error running radioProxy: ${e}`);
     joynr.shutdown();

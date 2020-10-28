@@ -31,10 +31,14 @@ import RadioProvider from "../generated/js/joynr/vehicle/RadioProvider";
 import MyRadioProvider from "./MyRadioProvider";
 import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
 import WebSocketLibjoynrRuntime from "joynr/joynr/start/WebSocketLibjoynrRuntime";
+import JoynrRuntimeException from "../../../../../javascript/libjoynr-js/src/main/js/joynr/exceptions/JoynrRuntimeException";
 
 const provisioning: InProcessProvisioning &
     WebSocketLibjoynrProvisioning &
     UdsLibJoynrProvisioning = require("./provisioning_common");
+
+let isRuntimeOkay = true;
+const rl = readline.createInterface(process.stdin, process.stdout);
 
 const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
     let res: Function;
@@ -42,7 +46,6 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
         res = resolve;
     });
 
-    const rl = readline.createInterface(process.stdin, process.stdout);
     rl.setPrompt(">> ");
     const MODES = {
         HELP: {
@@ -72,6 +75,7 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
         }
     };
 
+    // Run until the user hits q or a fatal runtime error happens (onFatalRuntimeError is called)
     rl.on("line", line => {
         const input = line.trim().split(" ");
         switch (input[0]) {
@@ -149,12 +153,18 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
                 socketPath: process.env.udspath,
                 clientId: process.env.udsclientid,
                 connectSleepTimeMs: Number(process.env.udsconnectsleeptimems)
-            }
+            };
             // no selectRuntime: UdsLibJoynrRuntime is default
         }
     }
+    // onFatalRuntimeError callback is optional, it is highly recommended to provide an implementation.
+    const onFatalRuntimeError = (error: JoynrRuntimeException) => {
+        isRuntimeOkay = false;
+        log(`Unexpected joynr runtime error occurred: ${error}`);
+        rl.close();
+    };
 
-    await joynr.load(provisioning);
+    await joynr.load(provisioning, onFatalRuntimeError);
     log("joynr started");
 
     const providerQos = new joynr.types.ProviderQos({
@@ -184,9 +194,23 @@ const runInteractiveConsole = function(radioProvider: MyRadioProvider) {
     );
     log("provider registered successfully");
     await runInteractiveConsole(radioProviderImpl);
-    await joynr.registration.unregisterProvider(domain, radioProvider);
-    await joynr.shutdown();
-    process.exit(0);
+
+    if (isRuntimeOkay) {
+        // unregister provider only when runtime is still in OK. When it crashes, no need to unregister the provider
+        // as runtime is already gone.
+        try {
+            await joynr.registration.unregisterProvider(domain, radioProvider);
+        } catch (e) {
+            log(`Error occurs while unregistering provider: ${e}`);
+        }
+    }
+    try {
+        await joynr.shutdown();
+    } catch (e) {
+        log(`Error occurs while joynr shutdown: ${e}`);
+        isRuntimeOkay = false;
+    }
+    process.exit(isRuntimeOkay ? 0 : 1);
 })().catch(async e => {
     log(`error running radioProvider: ${e}`);
     await joynr.shutdown();
