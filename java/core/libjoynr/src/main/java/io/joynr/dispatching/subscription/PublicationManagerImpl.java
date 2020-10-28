@@ -103,6 +103,8 @@ public class PublicationManagerImpl
     private Dispatcher dispatcher;
     private ProviderDirectory providerDirectory;
 
+    private Object requestQueueLock;
+
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
     private long ttlUpliftMs = 0;
@@ -194,6 +196,7 @@ public class PublicationManagerImpl
         super();
         this.dispatcher = dispatcher;
         this.providerDirectory = providerDirectory;
+        this.requestQueueLock = new Object();
         this.cleanupScheduler = cleanupScheduler;
         this.subscriptionRequestStorage = subscriptionRequestStorage;
         this.queuedSubscriptionRequests = new MultiMap<>();
@@ -477,16 +480,22 @@ public class PublicationManagerImpl
                                                                   subscriptionRequest);
         }
 
-        ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
-        if (providerContainer != null) {
-            addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest, providerContainer);
-        } else {
-            logger.trace("Adding subscription request for non existing provider to queue.");
-            PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
-                                                                                       proxyParticipantId,
-                                                                                       subscriptionRequest);
-            queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
-            subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(), publicationInformation);
+        synchronized (requestQueueLock) {
+            ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+            if (providerContainer != null) {
+                addSubscriptionRequest(proxyParticipantId,
+                                       providerParticipantId,
+                                       subscriptionRequest,
+                                       providerContainer);
+            } else {
+                logger.trace("Adding subscription request for non existing provider to queue.");
+                PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
+                                                                                           proxyParticipantId,
+                                                                                           subscriptionRequest);
+                queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
+                subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
+                                                          publicationInformation);
+            }
         }
     }
 
@@ -608,16 +617,18 @@ public class PublicationManagerImpl
      * @param providerContainer provider container
      */
     private void restoreQueuedSubscription(String providerId, ProviderContainer providerContainer) {
-        Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
-        Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
-        while (queuedRequestsIterator.hasNext()) {
-            PublicationInformation publicationInformation = queuedRequestsIterator.next();
-            queuedRequestsIterator.remove();
-            if (!isExpired(publicationInformation)) {
-                addSubscriptionRequest(publicationInformation.getProxyParticipantId(),
-                                       publicationInformation.getProviderParticipantId(),
-                                       publicationInformation.subscriptionRequest,
-                                       providerContainer);
+        synchronized (requestQueueLock) {
+            Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
+            Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
+            while (queuedRequestsIterator.hasNext()) {
+                PublicationInformation publicationInformation = queuedRequestsIterator.next();
+                queuedRequestsIterator.remove();
+                if (!isExpired(publicationInformation)) {
+                    addSubscriptionRequest(publicationInformation.getProxyParticipantId(),
+                                           publicationInformation.getProviderParticipantId(),
+                                           publicationInformation.subscriptionRequest,
+                                           providerContainer);
+                }
             }
         }
     }
@@ -837,10 +848,12 @@ public class PublicationManagerImpl
     @Override
     public void entryRemoved(String providerParticipantId) {
         stopPublicationByProviderId(providerParticipantId);
-        ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
-        if (providerContainer != null) {
-            providerContainer.getSubscriptionPublisher()
-                             .unregisterMulticastListener(multicastListeners.remove(providerParticipantId));
+        synchronized (requestQueueLock) {
+            ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+            if (providerContainer != null) {
+                providerContainer.getSubscriptionPublisher()
+                                 .unregisterMulticastListener(multicastListeners.remove(providerParticipantId));
+            }
         }
     }
 
