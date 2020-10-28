@@ -162,29 +162,39 @@ UdsServer::Connection::Connection(uds::socket&& socket,
     JOYNR_LOG_DEBUG(logger(), "Established new connection with username '{}'", _username);
 }
 
+std::string UdsServerUtil::getUserNameByUid(uid_t uid)
+{
+    std::string username;
+    struct passwd passwd;
+    struct passwd* result;
+    char buf[1024];
+    int rc;
+
+    if (!(rc = getpwuid_r(uid, &passwd, buf, sizeof(buf), &result))) {
+        if (result) {
+            username = std::string(passwd.pw_name, strnlen(passwd.pw_name, 256UL));
+        } else {
+            JOYNR_LOG_INFO(logger(), "Could not find username for uid {}", uid);
+        }
+    } else {
+        JOYNR_LOG_ERROR(logger(), "Could not find username for uid {}, errno {}", uid, rc);
+    }
+    if (username.empty()) {
+        username = std::to_string(uid);
+    }
+    return username;
+}
+
 std::string UdsServer::Connection::getUserName()
 {
-    std::string username("anonymous");
+    std::string username;
     struct ucred ucred;
     socklen_t len = sizeof(ucred);
     int sockfd = _socket.native_handle();
     if (!getsockopt(sockfd, SOL_SOCKET, SO_PEERCRED, &ucred, &len)) {
-        struct passwd passwd;
-        struct passwd* result;
-        char buf[1024];
-        int rc;
-
-        if (!(rc = getpwuid_r(ucred.uid, &passwd, buf, sizeof(buf), &result))) {
-            if (result) {
-                username = std::string(passwd.pw_name, strnlen(passwd.pw_name, 256UL));
-            } else {
-                JOYNR_LOG_ERROR(logger(), "Could not find username for uid {}", ucred.uid);
-            }
-        } else {
-            JOYNR_LOG_ERROR(
-                    logger(), "Could not find username for uid {}, errno {}", ucred.uid, rc);
-        }
+        username = UdsServerUtil::getUserNameByUid(ucred.uid);
     } else {
+        username = std::string("anonymous");
         int storedErrno = errno;
         JOYNR_LOG_ERROR(
                 logger(), "Could not obtain peer credentials from socket, errno {}", storedErrno);

@@ -442,3 +442,11 @@ TEST_F(UdsServerTest, receivedCallbackException)
     sendFromClient(1);
     ASSERT_EQ(waitClientConnected(false), false);
 }
+
+TEST_F(UdsServerTest, getUserName)
+{
+    std::string username = UdsServerUtil::getUserNameByUid(0);
+    ASSERT_EQ(username, "root");
+    username = UdsServerUtil::getUserNameByUid(3000);
+    ASSERT_EQ(username, "3000");
+}

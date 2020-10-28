@@ -45,6 +45,15 @@ class UdsFrameBufferV1;
 template <typename FRAME>
 class UdsSendQueue;
 
+class UdsServerUtil
+{
+public:
+    static std::string getUserNameByUid(uid_t uid);
+
+private:
+    ADD_LOGGER(UdsServerUtil)
+};
+
 class UdsServer
 {
 public:
