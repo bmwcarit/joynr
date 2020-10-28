@@ -2,7 +2,7 @@
 BuildRoot:      /data/build/joynr/package/RPM/joynr
 Summary:        joynr base package including executables, libraries and default settings
 Name:           joynr
-Version:        1.15.3
+Version:        1.15.4
 Release:        1
 License:        Apache License, Version 2.0
 Group:          unknown
