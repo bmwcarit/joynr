@@ -287,7 +287,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
 
         joynrRuntime.unregisterProvider(TESTDOMAIN, provider);
 
-        assertTrue(removeCountDownLatch.await(500, TimeUnit.MILLISECONDS));
+        assertTrue(removeCountDownLatch.await(1500, TimeUnit.MILLISECONDS));
     }
 
     private static interface MessageCreator {

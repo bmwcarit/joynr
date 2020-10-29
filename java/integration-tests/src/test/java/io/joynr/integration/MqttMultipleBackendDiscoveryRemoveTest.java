@@ -112,7 +112,7 @@ public class MqttMultipleBackendDiscoveryRemoveTest extends MqttMultipleBackendD
         }
         future = registrar.register();
 
-        assertTrue(publishCountDownLatch.await(500, TimeUnit.MILLISECONDS));
+        assertTrue(publishCountDownLatch.await(1500, TimeUnit.MILLISECONDS));
         verify(otherClient, times(0)).publishMessage(anyString(),
                                                      any(byte[].class),
                                                      anyInt(),
@@ -161,7 +161,7 @@ public class MqttMultipleBackendDiscoveryRemoveTest extends MqttMultipleBackendD
 
         joynrRuntime.unregisterProvider(TESTDOMAIN, provider);
 
-        assertTrue(publishCountDownLatch.await(500, TimeUnit.MILLISECONDS));
+        assertTrue(publishCountDownLatch.await(1500, TimeUnit.MILLISECONDS));
         verify(otherClient, times(0)).publishMessage(anyString(),
                                                      any(byte[].class),
                                                      anyInt(),

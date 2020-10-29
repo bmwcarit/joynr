@@ -73,7 +73,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         }
         registrar.register();
 
-        assertTrue(publishCountDownLatch.await(500, TimeUnit.MILLISECONDS));
+        assertTrue(publishCountDownLatch.await(1500, TimeUnit.MILLISECONDS));
         verify(otherClient, times(0)).publishMessage(anyString(),
                                                      any(byte[].class),
                                                      anyInt(),
@@ -137,7 +137,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
                     .awaitGlobalRegistration()
                     .registerInAllBackends();
 
-        assertTrue(publishCountDownLatch.await(500, TimeUnit.MILLISECONDS));
+        assertTrue(publishCountDownLatch.await(1500, TimeUnit.MILLISECONDS));
         verify(joynrMqttClient2, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
                                                           anyInt(),
