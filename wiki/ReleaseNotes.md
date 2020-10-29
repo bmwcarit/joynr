@@ -2,6 +2,13 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.4
+
+## API-relevant Changes
+
+## Other Changes
+* **[TS]** Use `onFatalRuntimeError` callback in the examples
+
 # joynr 1.15.3
 
 ## API-relevant Changes
