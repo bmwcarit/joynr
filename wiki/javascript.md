@@ -130,7 +130,7 @@ const provisioning: WebSocketLibjoynrProvisioning = {
 // onFatalRuntimeError callback is optional, but it is highly recommended to provide an
 // implementation. Here is an example:
 const onFatalRuntimeError = (error: JoynrRuntimeException) => {
-    console.log(`Unexpected joynr runtime error occured: ${error}`);
+    console.log(`Unexpected joynr runtime error occurred: ${error}`);
 };
 
 await joynr.load(provisioning, onFatalRuntimeError);

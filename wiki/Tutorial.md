@@ -169,7 +169,7 @@ bool isRuntimeOkay = true;
 std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
         [&] (const joynr::exceptions::JoynrRuntimeException& exception) {
     isRuntimeOkay = false;
-    MyRadioHelper::prettyLog(logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
+    MyRadioHelper::prettyLog(logger, "Unexpected joynr runtime error occurred: " + exception.getMessage());
 };
 
 std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntime(pathToLibJoynSettings,
@@ -263,7 +263,7 @@ int main(int argc, char* argv[])
     std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
             [&] (const joynr::exceptions::JoynrRuntimeException& exception) {
         isRuntimeOkay = false;
-        MyRadioHelper::prettyLog(logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
+        MyRadioHelper::prettyLog(logger, "Unexpected joynr runtime error occurred: " + exception.getMessage());
     };
 
     std::shared_ptr<JoynrRuntime> runtime =
