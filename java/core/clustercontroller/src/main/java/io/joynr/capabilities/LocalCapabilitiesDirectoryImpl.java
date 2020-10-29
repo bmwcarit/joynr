@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -47,6 +49,7 @@ import com.google.inject.name.Named;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -92,13 +95,17 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
     }
 
-    private ScheduledExecutorService freshnessUpdateScheduler;
+    private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> freshnessUpdateScheduledFuture;
 
     private DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache;
     private final Map<String, List<String>> globalProviderParticipantIdToGbidListMap;
+    private final ConcurrentLinkedQueue<GlobalAddRemoveQueueEntry> globalAddRemoveQueue;
+    private Semaphore globalAddRemoveQueueSemaphore;
+    private Semaphore globalAddRemoveWorkerSemaphore;
+    private GlobalAddRemoveQueueWorker globalAddRemoveQueueWorker;
 
     private MessageRouter messageRouter;
 
@@ -166,6 +173,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         // set up current date as the start time of the cluster controller
         this.ccStartUpDateInMs = System.currentTimeMillis();
         globalProviderParticipantIdToGbidListMap = new HashMap<>();
+        globalAddRemoveQueue = new ConcurrentLinkedQueue<>();
+        globalAddRemoveQueueSemaphore = new Semaphore(0);
+        globalAddRemoveWorkerSemaphore = new Semaphore(1);
+        globalAddRemoveQueueWorker = new GlobalAddRemoveQueueWorker();
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.messageRouter = messageRouter;
@@ -193,7 +204,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
             }
         }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
-        this.freshnessUpdateScheduler = freshnessUpdateScheduler;
+        this.scheduler = freshnessUpdateScheduler;
+        this.scheduler.schedule(globalAddRemoveQueueWorker, 0, TimeUnit.MILLISECONDS);
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
         shutdownNotifier.registerForShutdown(this);
     }
@@ -220,7 +232,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             newGbidsList.addAll(nonDuplicateOldGbids);
         }
         globalProviderParticipantIdToGbidListMap.put(participantId, newGbidsList);
-
     }
 
     private void setUpPeriodicFreshnessUpdate(final long freshnessUpdateIntervalMs) {
@@ -246,25 +257,27 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     gbidToParticipantIdsListMap.put(gbid, Collections.emptyList());
                 }
 
-                for (String participantIdToTouch : participantIds) {
-                    List<String> gbids = globalProviderParticipantIdToGbidListMap.get(participantIdToTouch);
+                synchronized (globalDiscoveryEntryCache) {
+                    for (String participantIdToTouch : participantIds) {
+                        List<String> gbids = globalProviderParticipantIdToGbidListMap.get(participantIdToTouch);
 
-                    if (gbids == null || gbids.isEmpty()) {
-                        logger.warn("touch cannot be called for provider with participantId {}, no GBID found.",
-                                    participantIdToTouch);
-                        break;
-                    }
+                        if (gbids == null || gbids.isEmpty()) {
+                            logger.warn("touch cannot be called for provider with participantId {}, no GBID found.",
+                                        participantIdToTouch);
+                            break;
+                        }
 
-                    String gbidToTouch = gbids.get(0);
-                    if (!gbidToParticipantIdsListMap.containsKey(gbidToTouch)) {
-                        logger.error("touch: found GBID {} for particpantId {} is unknown.",
-                                     gbidToTouch,
-                                     participantIdToTouch);
-                        continue;
+                        String gbidToTouch = gbids.get(0);
+                        if (!gbidToParticipantIdsListMap.containsKey(gbidToTouch)) {
+                            logger.error("touch: found GBID {} for particpantId {} is unknown.",
+                                         gbidToTouch,
+                                         participantIdToTouch);
+                            continue;
+                        }
+                        List<String> participantIdsToTouch = new ArrayList<String>(gbidToParticipantIdsListMap.get(gbidToTouch));
+                        participantIdsToTouch.add(participantIdToTouch);
+                        gbidToParticipantIdsListMap.put(gbidToTouch, participantIdsToTouch);
                     }
-                    List<String> participantIdsToTouch = new ArrayList<String>(gbidToParticipantIdsListMap.get(gbidToTouch));
-                    participantIdsToTouch.add(participantIdToTouch);
-                    gbidToParticipantIdsListMap.put(gbidToTouch, participantIdsToTouch);
                 }
 
                 for (Map.Entry<String, List<String>> entry : gbidToParticipantIdsListMap.entrySet()) {
@@ -303,10 +316,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
             }
         };
-        freshnessUpdateScheduledFuture = freshnessUpdateScheduler.scheduleAtFixedRate(command,
-                                                                                      freshnessUpdateIntervalMs,
-                                                                                      freshnessUpdateIntervalMs,
-                                                                                      TimeUnit.MILLISECONDS);
+        freshnessUpdateScheduledFuture = scheduler.scheduleAtFixedRate(command,
+                                                                       freshnessUpdateIntervalMs,
+                                                                       freshnessUpdateIntervalMs,
+                                                                       TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -482,7 +495,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                          globalDiscoveryEntry.getInterfaceName(),
                          globalDiscoveryEntry.getProviderVersion());
 
-            globalCapabilitiesDirectoryClient.add(new CallbackWithModeledError<Void, DiscoveryError>() {
+            globalAddRemoveQueue.add(new GlobalAddRemoveQueueEntry(new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
                 public void onSuccess(Void nothing) {
@@ -495,6 +508,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
                         globalDiscoveryEntryCache.add(globalDiscoveryEntry);
                     }
+                    globalAddRemoveQueue.poll();
+                    globalAddRemoveWorkerSemaphore.release();
                     deferred.resolve();
                 }
 
@@ -508,6 +523,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     if (awaitGlobalRegistration == true) {
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
+                    globalAddRemoveQueue.poll();
+                    globalAddRemoveWorkerSemaphore.release();
                     deferred.reject(new ProviderRuntimeException(exception.toString()));
                 }
 
@@ -521,9 +538,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     if (awaitGlobalRegistration == true) {
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
+                    globalAddRemoveQueue.poll();
+                    globalAddRemoveWorkerSemaphore.release();
                     deferred.reject(errorEnum);
                 }
-            }, globalDiscoveryEntry, gbids);
+            }, globalDiscoveryEntry, gbids));
+            globalAddRemoveQueueSemaphore.release();
         }
     }
 
@@ -560,12 +580,23 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         globalDiscoveryEntryCache.remove(participantId);
                         globalProviderParticipantIdToGbidListMap.remove(participantId);
                     }
+                    globalAddRemoveQueue.poll();
+                    globalAddRemoveWorkerSemaphore.release();
                 }
 
                 @Override
                 public void onFailure(JoynrRuntimeException error) {
-                    // do nothing
-                    logger.warn("Failed to remove participantId {}: {}", participantId, error);
+                    //check for instance of JoynrTimeoutException for retrying
+                    if (error instanceof JoynrTimeoutException) {
+                        logger.warn("Failed to remove participantId {} due to timeout, retrying: {}",
+                                    participantId,
+                                    error);
+                        globalAddRemoveQueueSemaphore.release();
+                    } else {
+                        logger.warn("Failed to remove participantId {}: {}", participantId, error);
+                        globalAddRemoveQueue.poll();
+                    }
+                    globalAddRemoveWorkerSemaphore.release();
                 }
 
                 @Override
@@ -577,8 +608,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         logger.warn("Error removing participantId {} globally: {}. Removing local entry.",
                                     participantId,
                                     errorEnum);
-                        globalDiscoveryEntryCache.remove(participantId);
-                        globalProviderParticipantIdToGbidListMap.remove(participantId);
+                        synchronized (globalDiscoveryEntryCache) {
+                            globalDiscoveryEntryCache.remove(participantId);
+                            globalProviderParticipantIdToGbidListMap.remove(participantId);
+                        }
                         break;
                     case INVALID_GBID:
                     case UNKNOWN_GBID:
@@ -587,16 +620,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         // do nothing
                         logger.warn("Failed to remove participantId {}: {}", participantId, errorEnum);
                     }
+                    globalAddRemoveQueue.poll();
+                    globalAddRemoveWorkerSemaphore.release();
                 }
             };
-            if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
-                List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(participantId);
-                globalCapabilitiesDirectoryClient.remove(callback,
-                                                         participantId,
-                                                         gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
-            } else {
-                logger.warn("Participant {} is not registered globally and cannot be removed!", participantId);
-            }
+            globalAddRemoveQueue.add(new GlobalAddRemoveQueueEntry(callback, participantId));
+            globalAddRemoveQueueSemaphore.release();
         }
 
         // Remove endpoint addresses
@@ -679,7 +708,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (entry == null) {
             return false;
         }
-        List<String> entryBackends = globalProviderParticipantIdToGbidListMap.get(entry.getParticipantId());
+        List<String> entryBackends;
+        synchronized (globalDiscoveryEntryCache) {
+            entryBackends = globalProviderParticipantIdToGbidListMap.get(entry.getParticipantId());
+        }
         if (entryBackends != null) {
             // local provider which is globally registered
             if (gbidSet.stream().anyMatch(gbid -> entryBackends.contains(gbid))) {
@@ -1143,6 +1175,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
         logger.debug("shutdown invoked");
 
+        globalAddRemoveQueueWorker.stop();
         if (freshnessUpdateScheduledFuture != null) {
             freshnessUpdateScheduledFuture.cancel(false);
         }
@@ -1180,11 +1213,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                   .map(dEntry -> dEntry.getParticipantId())
                                                                   .collect(Collectors.toList());
                     for (String participantId : participantIds) {
-                        if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
-                            globalCapabilitiesDirectoryClient.remove(callback,
-                                                                     participantId,
-                                                                     globalProviderParticipantIdToGbidListMap.get(participantId)
-                                                                                                             .toArray(new String[0]));
+                        synchronized (globalDiscoveryEntryCache) {
+                            List<String> gbidList = globalProviderParticipantIdToGbidListMap.get(participantId);
+                            if (gbidList != null) {
+                                globalCapabilitiesDirectoryClient.remove(callback,
+                                                                         participantId,
+                                                                         gbidList.toArray(new String[0]));
+                            }
                         }
                     }
                 } catch (DiscoveryException e) {
@@ -1237,5 +1272,77 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         };
         globalCapabilitiesDirectoryClient.removeStale(callback, ccStartUpDateInMs, gbid);
+    }
+
+    public class GlobalAddRemoveQueueWorker implements Runnable {
+
+        private Logger logger = LoggerFactory.getLogger(GlobalAddRemoveQueueWorker.class);
+        private volatile boolean isStopped = false;
+
+        public void stop() {
+            isStopped = true;
+            globalAddRemoveQueueSemaphore.release();
+            globalAddRemoveWorkerSemaphore.release();
+        }
+
+        @Override
+        public void run() {
+            while (!isStopped) {
+                if (!acquireSemaphores()) {
+                    continue;
+                }
+                if (isStopped) {
+                    break;
+                }
+                GlobalAddRemoveQueueEntry next = globalAddRemoveQueue.peek();
+                if (next == null) {
+                    logger.error("Retrieved addRemoveQueueEntry is null. Skipping and continuing.");
+                    continue;
+                }
+                switch (next.mode) {
+                case ADD:
+                    logger.debug("Calling GCDClient add.");
+                    globalCapabilitiesDirectoryClient.add(next.callback, next.globalDiscoveryEntry, next.gbids);
+                    break;
+                case REMOVE:
+                    synchronized (globalDiscoveryEntryCache) {
+                        if (globalProviderParticipantIdToGbidListMap.containsKey(next.participantId)) {
+                            logger.debug("Calling GCDClient remove.");
+                            List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(next.participantId);
+                            globalCapabilitiesDirectoryClient.remove(next.callback,
+                                                                     next.participantId,
+                                                                     gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
+                        } else {
+                            logger.warn("Participant {} is not registered globally and cannot be removed!",
+                                        next.participantId);
+                            globalAddRemoveQueue.poll();
+                            globalAddRemoveWorkerSemaphore.release();
+                        }
+                    }
+                    break;
+                default:
+                    logger.error("Unknown operation in GlobalAddRemoveQueue.");
+                    globalAddRemoveQueue.poll();
+                    globalAddRemoveWorkerSemaphore.release();
+                }
+            }
+        }
+
+        private boolean acquireSemaphores() {
+            try {
+                globalAddRemoveQueueSemaphore.acquire();
+            } catch (InterruptedException e) {
+                logger.error("globalAddRemoveQueueSemaphore.acquire() interrupted", e);
+                return false;
+            }
+            try {
+                globalAddRemoveWorkerSemaphore.acquire();
+            } catch (InterruptedException e) {
+                logger.error("globalAddRemoveWorkerSemaphore.acquire() interrupted", e);
+                globalAddRemoveQueueSemaphore.release();
+                return false;
+            }
+            return true;
+        }
     }
 }
