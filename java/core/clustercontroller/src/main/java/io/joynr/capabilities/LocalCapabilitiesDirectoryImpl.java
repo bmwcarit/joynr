@@ -232,7 +232,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             newGbidsList.addAll(nonDuplicateOldGbids);
         }
         globalProviderParticipantIdToGbidListMap.put(participantId, newGbidsList);
-
     }
 
     private void setUpPeriodicFreshnessUpdate(final long freshnessUpdateIntervalMs) {
