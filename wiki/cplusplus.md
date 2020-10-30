@@ -156,6 +156,48 @@ asynchronously:
 The ```JoynrRuntime``` instance that is returned by ```createRuntimeAsync``` MUST NOT be
 used before ```onSuccess``` is called.
 
+WARNING: In case of error by the runtime creation when the `onError` callback is called, do not
+call `createRuntimeAsync` inside of this callback function in order to retry a runtime creation.
+`JoynrRuntime` instance must be reset before the new initialization. Please just use the `onError` callback
+function to signalize about the problem to the environment and leave the callback as soon as possible. For example:
+
+```cpp
+    Future<void> runtimeFuture;
+
+    auto onSuccess = [&]() {
+        runtimeFuture.onSuccess();
+    };
+
+    auto onError = [&](const exceptions::JoynrRuntimeException& exception) {
+        runtimeFuture.onError(exception);
+    };
+
+    std::shared_ptr<IKeychain> keychain = createMyKeychain();
+
+    std::shared_ptr<JoynrRuntime> runtime = JoynrRuntime::createRuntimeAsync(
+        pathToLibJoynrSettings,
+        onFatalRuntimeError,
+        onSuccess,
+        onError,
+        pathToMessagingSettings,
+        keychain);
+    ...
+    try {
+        runtimeFuture.get();
+    } catch (const exceptions::JoynrRuntimeException& exception) {
+        // Reset JoynrRuntime instance 
+        runtime.reset();
+        // Initialize runtime again if necessary
+        runtime = JoynrRuntime::createRuntimeAsync(
+            pathToLibJoynrSettings,
+            onFatalRuntimeError,
+            onSuccess,
+            onError,
+            pathToMessagingSettings,
+            keychain);
+    }
+```
+
 ## The discovery quality of service
 
 The class ```DiscoveryQos``` configures how the search for a provider will be handled. It has the following members:
