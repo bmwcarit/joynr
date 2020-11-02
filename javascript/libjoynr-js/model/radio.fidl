@@ -43,6 +43,7 @@ typeCollection radiotypes {
 
 <**
 	@description : "This is a description about the radio interface"
+                       #noVersionGeneration
  **>
 interface Radio {
 	version { major 47 minor 11 }

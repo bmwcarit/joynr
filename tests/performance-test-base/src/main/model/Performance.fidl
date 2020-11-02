@@ -18,7 +18,6 @@
  */
 package tests.performance
 
-
 typeCollection Types {
     version { major 0 minor 1 }
 
@@ -30,6 +29,9 @@ typeCollection Types {
     }
 }
 
+<**
+        @description: #noVersionGeneration
+**>
 interface Echo {
     version { major 0 minor 1 }
 

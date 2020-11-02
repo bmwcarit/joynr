@@ -87,6 +87,9 @@ typeCollection testTypes {
 
 }
 
+<**
+        @description: #noVersionGeneration
+**>
 interface TestWithoutVersion {
 	struct StructInsideInterfaceWithoutVersion {
 		Int32 a
@@ -103,6 +106,9 @@ interface TestWithoutVersion {
     broadcast emptyBroadcast {}
 }
 
+<**
+        @description: #noVersionGeneration
+**>
 interface TestWithVersion {
 	version { major 47 minor 11 }
 
@@ -122,6 +128,9 @@ interface TestWithVersion {
 }
 
 //this interface starts in lower case (in contrary to our modelling guidelines) for testing purposes
+<**
+        @description: #noVersionGeneration
+**>
 interface test {
 	version { major 47 minor 11 }
 

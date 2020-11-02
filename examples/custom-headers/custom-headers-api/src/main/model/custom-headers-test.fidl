@@ -18,6 +18,9 @@
  */
 package examples.customheaders
 
+<**
+        @description: #noVersionGeneration
+**>
 interface HeaderPing {
 	version { major 0 minor 1 }
 

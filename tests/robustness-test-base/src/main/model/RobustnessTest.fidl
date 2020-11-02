@@ -26,6 +26,9 @@ typeCollection {
     }
 }
 
+<**
+        @description: #noVersionGeneration
+**>
 interface TestInterface {
         version { major 0 minor 1 }
 

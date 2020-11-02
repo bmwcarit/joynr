@@ -20,6 +20,9 @@ package vehicle
 
 import types.Localisation.* from "LocalisationTypes.fidl"
 
+<**
+        @description: #noVersionGeneration
+**>
 interface Gps{
 
 	version {major 0 minor 1}
@@ -39,6 +42,9 @@ interface Gps{
 	}
 }
 
+<**
+        @description: #noVersionGeneration
+**>
 interface Localisation {
 	version {major 0 minor 1}
 

@@ -55,7 +55,9 @@ typeCollection exampleTypes {
 	}
 }
 
-<** @description : "This interface is purely for testing puposes, to test all the different combinations of arguments passed through joynr" **>
+<** @description : "This interface is purely for testing puposes, to test all the different combinations of arguments passed through joynr"
+                   #noVersionGeneration
+ **>
 interface Datatypes {
 
 	attribute Boolean booleanAttribute

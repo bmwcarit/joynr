@@ -21,6 +21,7 @@ package interlanguagetest
 // interface inheritance is not supported (ignored by the generator)
 <**
 	@description: desc
+                      #noVersionGeneration
 	@details: details
 	@see: see
 **>

@@ -19,6 +19,9 @@
 package tests.graceful.shutdown
 
 
+<**
+        @description: #noVersionGeneration
+**>
 interface Echo {
     version { major 0 minor 1 }
 
@@ -33,6 +36,9 @@ interface Echo {
 
 }
 
+<**
+        @description: #noVersionGeneration
+**>
 interface SecondLevelService {
     version { major 0 minor 1 }
 

@@ -38,6 +38,7 @@ interface NavigationPrimitive {
 		the navigation system inside the car. The navigation system stores a
 		list of <code>Trip</code>s. A trip could be activated and used
 		for guidance.
+                #noVersionGeneration
 	@see: Trip
 **>
 interface Navigation{

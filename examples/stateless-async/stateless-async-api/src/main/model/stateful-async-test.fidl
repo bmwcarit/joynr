@@ -32,6 +32,9 @@ typeCollection {
     }
 }
 
+<**
+        @description: #noVersionGeneration
+**>
 interface VehicleState {
     version { major 0 minor 1 }
 

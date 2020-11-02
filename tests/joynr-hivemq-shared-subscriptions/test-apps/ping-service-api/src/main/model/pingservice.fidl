@@ -18,6 +18,9 @@
  */
 package io.joynr.sharedsubscriptions.test
 
+<**
+        @description: #noVersionGeneration
+**>
 interface PingService {
 
 	<**
