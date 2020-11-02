@@ -71,11 +71,9 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
     public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     private static final String TEST_DOMAIN = "test";
-    private static final long DISCOVERY_TIMEOUT = 5000;
-    private static final long FRESHNESS_UPDATE_INTERVAL_MS = 500;
+    private static final long DISCOVERY_TIMEOUT = 10000;
+    private static final long FRESHNESS_UPDATE_INTERVAL_MS = 1000;
 
-    private JoynrRuntime runtimeFirst;
-    private JoynrRuntime runtimeSecond;
     private DefaulttestProvider testProvider;
 
     private void waitForGlobalConnection(Injector injector) throws Exception {
@@ -101,7 +99,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         Injector injector = createInjector();
         runtime = injector.getInstance(JoynrRuntime.class);
         try {
-            registerProvider(runtime);
+            registerProvider(runtime, TEST_DOMAIN);
         } catch (Exception e) {
             runtime.shutdown(true);
             fail("Provider registration failed: " + e.toString());
@@ -214,6 +212,13 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
 
     @Test
     public void testRemoveStaleProvidersOfClusterController() throws Exception {
+        JoynrRuntime runtimeFirst;
+        JoynrRuntime runtimeSecond;
+        String providerDomain = TEST_DOMAIN + "_removeStaleProvidersOfClusterController";
+
+        int numberOfProxyBuildRetries = 5;
+        int iterator = 1;
+
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
@@ -227,7 +232,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         runtimeFirst = createRuntime();
         // register provider
         try {
-            registerProvider(runtimeFirst);
+            registerProvider(runtimeFirst, providerDomain);
         } catch (Exception e) {
             runtimeFirst.shutdown(true);
             fail("Provider registration failed: " + e.toString());
@@ -238,29 +243,36 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
 
         // create cluster controller second time
         runtimeSecond = createRuntime();
-        // wait some time to make sure that removeStale has been published and processed
-        Thread.sleep(1000);
 
-        // build proxy when provider are unregistered
-        runtimeSecond.getProxyBuilder(TEST_DOMAIN, testProxy.class)
-                     .setDiscoveryQos(discoveryQos)
-                     .build(new ProxyCreatedCallback<testProxy>() {
-                         @Override
-                         public void onProxyCreationFinished(testProxy result) {
-                             future.onSuccess(null);
-                         }
+        while (iterator <= numberOfProxyBuildRetries) {
+            // wait some time to make sure that removeStale has been published and processed
+            Thread.sleep(iterator * 1000);
+            // build proxy when provider are unregistered
+            runtimeSecond.getProxyBuilder(providerDomain, testProxy.class)
+                         .setDiscoveryQos(discoveryQos)
+                         .build(new ProxyCreatedCallback<testProxy>() {
+                             @Override
+                             public void onProxyCreationFinished(testProxy result) {
+                                 future.onSuccess(null);
+                             }
 
-                         @Override
-                         public void onProxyCreationError(JoynrRuntimeException error) {
-                             future.onFailure(error);
-                         }
-                     });
-        try {
-            future.get(DISCOVERY_TIMEOUT + 1000);
-            fail("runtimeSecond.getProxyBuilder().build() should throw Exception!");
-        } catch (Exception e) {
-            boolean isFound = e.getMessage().indexOf("Unable to find provider") != -1 ? true : false;
-            assertTrue("Unexpected error: " + e, isFound);
+                             @Override
+                             public void onProxyCreationError(JoynrRuntimeException error) {
+                                 future.onFailure(error);
+                             }
+                         });
+            iterator++;
+            try {
+                future.get(DISCOVERY_TIMEOUT + 1000);
+                if (iterator == numberOfProxyBuildRetries) {
+                    runtimeSecond.shutdown(true);
+                    fail("runtimeSecond.getProxyBuilder().build() should throw Exception!");
+                }
+            } catch (Exception e) {
+                boolean isFound = e.getMessage().indexOf("Unable to find provider") != -1 ? true : false;
+                assertTrue("Unexpected error: " + e, isFound);
+                break;
+            }
         }
 
         runtimeSecond.shutdown(true);
@@ -280,14 +292,14 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         return injector.getInstance(JoynrRuntime.class);
     }
 
-    private void registerProvider(JoynrRuntime runtime) throws Exception {
+    private void registerProvider(JoynrRuntime runtime, String domain) throws Exception {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.GLOBAL);
         providerQos.setPriority(System.currentTimeMillis());
 
         testProvider = new DefaulttestProvider();
 
-        runtime.getProviderRegistrar(TEST_DOMAIN, testProvider)
+        runtime.getProviderRegistrar(domain, testProvider)
                .withProviderQos(providerQos)
                .awaitGlobalRegistration()
                .register()
