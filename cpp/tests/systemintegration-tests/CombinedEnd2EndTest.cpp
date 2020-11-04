@@ -697,8 +697,15 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     providerQos.setPriority(millisSinceEpoch.count());
     providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
+
+    const bool persist = true;
+    const bool awaitGlobalRegistration = true;
     std::string participantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+            _runtime1->registerProvider<tests::testProvider>(_domainName,
+                                                             testProvider,
+                                                             providerQos,
+                                                             persist,
+                                                             awaitGlobalRegistration);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -714,16 +721,19 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     // Publications will be sent maintaining this minimum interval provided, even if the value
     // changes more often. This prevents the consumer from being flooded by updated values.
     // The filtering happens on the provider's side, thus also preventing excessive network traffic.
-    // This value is provided in milliseconds. The minimum value for minInterval is 500 ms.
-    std::int64_t minInterval_ms = 500;
+    // This value is provided in milliseconds. The minimum value for minInterval is 0 ms.
+    // Make sure this test fails when the min value is changed in onChangeSubscriptionQos
+    ASSERT_LE(OnChangeSubscriptionQos::MIN_MIN_INTERVAL_MS(), 0);
+
+    std::int64_t minInterval_ms = 0;
     auto subscriptionQos =
             std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
-                                                      1000,            // publication ttl
+                                                      10000,            // publication ttl
                                                       minInterval_ms); // minInterval_ms
     auto future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
-    JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
+    JOYNR_ASSERT_NO_THROW({ future->get(10000, subscriptionId); });
 
     auto invokeSetter = [testProvider](std::int64_t value) {
         auto onSuccess = []() {};
@@ -738,17 +748,11 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
 
     // Change the location multiple times
-    for (int i = 0; i < 5; ++i) {
-        invokeSetter(i);
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
-    for (int i = 0; i < 5; ++i) {
-        invokeSetter(i + 5);
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 50));
-    for (int i = 0; i < 5; ++i) {
-        invokeSetter(i + 10);
-    }
+    invokeSetter(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 100));
+    invokeSetter(2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms + 100));
+    invokeSetter(3);
 
     // Wait for 3 subscription messages to arrive
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
