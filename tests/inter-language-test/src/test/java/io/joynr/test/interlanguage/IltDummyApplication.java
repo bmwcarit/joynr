@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
  */
 package io.joynr.test.interlanguage;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.AcceptsMessageReceiver;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.MessageReceiverType;
+import io.joynr.util.ObjectMapper;
 
 @AcceptsMessageReceiver(MessageReceiverType.ANY)
 public class IltDummyApplication extends AbstractJoynrApplication {

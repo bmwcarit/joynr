@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.exceptions.JoynrException;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.provider.Deferred;
@@ -50,6 +48,7 @@ import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
+import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingSubscriptionPublisher;
 import joynr.system.RoutingTypes.ChannelAddress;

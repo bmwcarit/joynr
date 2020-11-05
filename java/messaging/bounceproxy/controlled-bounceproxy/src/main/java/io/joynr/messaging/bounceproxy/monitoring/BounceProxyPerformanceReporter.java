@@ -2,7 +2,7 @@
  * #%L
  * joynr::java::messaging::bounceproxy::controlled-bounceproxy
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrHttpException;
 import io.joynr.messaging.bounceproxy.BounceProxyControllerUrl;
 import io.joynr.messaging.bounceproxy.BounceProxyPropertyKeys;
+import io.joynr.util.ObjectMapper;
 
 /**
  * Reporter for performance measures of the bounce proxy instance.

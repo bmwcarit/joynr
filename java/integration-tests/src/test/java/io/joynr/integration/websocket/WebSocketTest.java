@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,6 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
@@ -61,6 +59,7 @@ import io.joynr.messaging.websocket.WebSocketMessagingStub;
 import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientFactory;
 import io.joynr.messaging.websocket.server.WebSocketJettyServerFactory;
 import io.joynr.servlet.ServletUtil;
+import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.OneWayRequest;
 import joynr.system.RoutingTypes.WebSocketAddress;
