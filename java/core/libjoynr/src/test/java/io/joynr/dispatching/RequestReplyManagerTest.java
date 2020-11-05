@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -80,6 +79,7 @@ import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.util.JoynrThreadFactory;
+import io.joynr.util.ObjectMapper;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;

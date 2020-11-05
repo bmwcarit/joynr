@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -36,6 +35,7 @@ import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageDeserializer;
 import io.joynr.smrf.MessageDeserializerImpl;
 import io.joynr.smrf.UnsuppportedVersionException;
+import io.joynr.util.ObjectMapper;
 
 /**
  * This class wraps binary SMRF messages and provides access to the serialized attributes

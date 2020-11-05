@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,13 @@ import javax.ws.rs.core.UriInfo;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Injector;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.ServletMessageReceiver;
 import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.messaging.JeeMessagingEndpoint;
+import io.joynr.util.ObjectMapper;
 import joynr.MutableMessage;
 
 /**

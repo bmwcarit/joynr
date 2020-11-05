@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ package io.joynr.messaging.websocket.jetty.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -30,6 +29,7 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import io.joynr.messaging.websocket.WebSocketEndpointFactory;
 import io.joynr.messaging.websocket.WebsocketModule;
+import io.joynr.util.ObjectMapper;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 

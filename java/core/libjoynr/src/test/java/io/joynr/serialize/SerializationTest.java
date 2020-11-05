@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -62,6 +61,7 @@ import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.util.MultiMap;
+import io.joynr.util.ObjectMapper;
 import io.joynr.util.ReflectionUtils;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;

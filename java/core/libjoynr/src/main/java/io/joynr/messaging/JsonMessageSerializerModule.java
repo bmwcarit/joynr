@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
@@ -39,6 +38,7 @@ import io.joynr.messaging.serialize.JoynrListSerializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
 import io.joynr.messaging.serialize.OneWayRequestDeserializer;
 import io.joynr.messaging.serialize.RequestDeserializer;
+import io.joynr.util.ObjectMapper;
 import joynr.OneWayRequest;
 import joynr.Request;
 

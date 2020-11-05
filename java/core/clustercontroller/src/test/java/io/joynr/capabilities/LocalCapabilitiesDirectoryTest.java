@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,8 +68,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl.GlobalAddRemoveQueueWorker;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrException;
@@ -88,6 +86,7 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;

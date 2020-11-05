@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
+import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 import joynr.system.RoutingTypes.MqttAddress;

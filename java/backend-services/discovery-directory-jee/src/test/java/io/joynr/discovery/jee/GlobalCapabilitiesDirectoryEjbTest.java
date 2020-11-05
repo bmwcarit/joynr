@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,11 +52,10 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersistedKey;
+import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;

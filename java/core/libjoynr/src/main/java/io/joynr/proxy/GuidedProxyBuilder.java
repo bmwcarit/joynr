@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.Arbitrator;
@@ -39,6 +37,7 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.util.ReflectionUtils;
+import io.joynr.util.ObjectMapper;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
