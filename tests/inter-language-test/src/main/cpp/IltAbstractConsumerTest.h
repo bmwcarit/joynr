@@ -72,7 +72,8 @@ public:
 
         // Find the provider with the highest priority set in ProviderQos
         joynr::DiscoveryQos discoveryQos;
-        discoveryQos.setDiscoveryTimeoutMs(40000);
+        discoveryQos.setDiscoveryTimeoutMs(60000);
+        discoveryQos.setRetryIntervalMs(5000);
         discoveryQos.setCacheMaxAgeMs(std::numeric_limits<std::int64_t>::max());
         discoveryQos.setArbitrationStrategy(
                 joynr::DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);

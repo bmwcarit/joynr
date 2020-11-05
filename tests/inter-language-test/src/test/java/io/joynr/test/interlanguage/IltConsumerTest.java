@@ -178,7 +178,8 @@ public abstract class IltConsumerTest {
         consumerRuntime = getRuntime(joynrConfig);
 
         DiscoveryQos discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryTimeoutMs(10000);
+        discoveryQos.setDiscoveryTimeoutMs(60000);
+        discoveryQos.setRetryIntervalMs(5000);
         discoveryQos.setCacheMaxAgeMs(Long.MAX_VALUE);
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
 
