@@ -97,6 +97,17 @@ public:
                 mockGlobalCapabilitiesDirectoryProxy, messagingQos);
     }
 
+    void TearDown() override
+    {
+        if (globalCapabilitiesDirectoryClient) {
+            /*
+             * Assure that a shutdown is accomplished before calls used by the
+             * callbacks are deleted.
+             */
+            globalCapabilitiesDirectoryClient->shutdown();
+        }
+    }
+
 protected:
     const std::string capDomain;
     const std::string capInterface;
@@ -195,6 +206,92 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
             capParticipantId, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterSuccess)
+{
+    std::function<void()> onSuccessCallback;
+    Semaphore semaphore;
+
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<2>(&onSuccessCallback),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
+    globalCapabilitiesDirectoryClient->remove(
+            capParticipantId, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
+    onSuccessCallback();
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveRetryAfterTimeout)
+{
+    std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
+    Semaphore semaphore;
+    constexpr unsigned int numberOfTimeouts = 10;
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+            .Times(numberOfTimeouts + 1)
+            .WillRepeatedly(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
+                                  InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                                  Return(mockFuture)));
+    globalCapabilitiesDirectoryClient->remove(
+            capParticipantId, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
+    const exceptions::JoynrTimeOutException timeoutException("Test timeout");
+    for (unsigned int i = 0; i < numberOfTimeouts; i++) {
+        onRuntimeErrorCallback(timeoutException);
+        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "No retry after timeout number "
+                                                                 << i + 1 << ".";
+    }
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterRuntimeException)
+{
+    std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
+    Semaphore semaphore;
+
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
+    globalCapabilitiesDirectoryClient->remove(
+            capParticipantId, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
+    onRuntimeErrorCallback(exceptions::JoynrRuntimeException("Some runtime exception"));
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterApplicationException)
+{
+    std::function<void(const types::DiscoveryError::Enum&)> onApplicationErrorCallback;
+    Semaphore semaphore;
+
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<3>(&onApplicationErrorCallback),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
+    globalCapabilitiesDirectoryClient->remove(
+            capParticipantId, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
+    onApplicationErrorCallback(types::DiscoveryError::Enum::UNKNOWN_GBID);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveDeletionWhileRetry)
+{
+    std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
+    Semaphore semaphore;
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
+                                  InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                                  Return(mockFuture)));
+    globalCapabilitiesDirectoryClient->remove(
+            capParticipantId, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
+    onRuntimeErrorCallback(exceptions::JoynrTimeOutException("Test timeout"));
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testTouch)

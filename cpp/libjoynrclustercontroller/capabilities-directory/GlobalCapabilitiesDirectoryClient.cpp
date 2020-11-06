@@ -25,6 +25,7 @@
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/Message.h"
+#include "joynr/Semaphore.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
@@ -114,48 +115,17 @@ void GlobalCapabilitiesDirectoryClient::remove(
 {
     MessagingQos removeMessagingQos = _messagingQos;
     removeMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
-    using std::move;
-    _sequentialTasks.add([
-        this,
-        participantId,
-        gbids{move(gbids)},
-        onSuccess{move(onSuccess)},
-        onError{move(onError)},
-        onRuntimeError{move(onRuntimeError)},
-        removeMessagingQos{move(removeMessagingQos)}
-
-    ]() mutable {
-        auto future = std::make_shared<Future<void>>();
-        onSuccess = [ future, onSuccess{move(onSuccess)} ]()
-        {
-            if (onSuccess) {
-                onSuccess();
-            }
-            future->onSuccess();
-        };
-        onError = [ future, onError{move(onError)} ](const joynr::types::DiscoveryError::Enum& e)
-        {
-            if (onError) {
-                onError(e);
-            }
-            future->onError(std::make_shared<exceptions::JoynrRuntimeException>(
-                    "Stop remove operation due to ApplicationException."));
-        };
-        onRuntimeError = [ future, onRuntimeError{move(onRuntimeError)} ](
-                const exceptions::JoynrRuntimeException& e)
-        {
-            if (onRuntimeError) {
-                onRuntimeError(e);
-            }
-            future->onError(std::make_shared<exceptions::JoynrRuntimeException>(e));
-        };
-        _capabilitiesProxy->removeAsync(participantId,
-                                        move(gbids),
-                                        move(onSuccess),
-                                        move(onError),
-                                        move(onRuntimeError),
-                                        move(removeMessagingQos));
-        return future;
+    auto retryRemoveOperation =
+            std::make_shared<RetryRemoveOperation>(_capabilitiesProxy,
+                                                   participantId,
+                                                   gbids,
+                                                   std::move(onSuccess),
+                                                   std::move(onError),
+                                                   std::move(onRuntimeError),
+                                                   std::move(removeMessagingQos));
+    _sequentialTasks.add([retryRemoveOperation]() {
+        retryRemoveOperation->execute();
+        return retryRemoveOperation;
     });
 }
 
@@ -245,6 +215,88 @@ void GlobalCapabilitiesDirectoryClient::removeStale(
                                          std::move(onSuccess),
                                          std::move(onRuntimeError),
                                          removeStaleMessagingQos);
+}
+
+GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::RetryRemoveOperation(
+        const std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>& capabilitiesProxy,
+        const std::string& participantId,
+        const std::vector<std::string>& gbids,
+        std::function<void()>&& onSuccessFunc,
+        std::function<void(const types::DiscoveryError::Enum&)>&& onApplicationErrorFunc,
+        std::function<void(const exceptions::JoynrRuntimeException&)>&& onRuntimeErrorFunc,
+        boost::optional<MessagingQos> qos)
+        : Future<void>(),
+          _capabilitiesProxy{capabilitiesProxy},
+          _participantId{participantId},
+          _gbids{gbids},
+          _onSuccess{onSuccessFunc},
+          _onApplicationError{onApplicationErrorFunc},
+          _onRuntimeError{onRuntimeErrorFunc},
+          _qos{qos}
+{
+}
+
+void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::execute()
+{
+    if (StatusCodeEnum::IN_PROGRESS == getStatus()) {
+        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy =
+                _capabilitiesProxy.lock();
+        if (capabilitiesProxy) {
+            using std::placeholders::_1;
+            capabilitiesProxy->removeAsync(
+                    _participantId,
+                    _gbids,
+                    std::bind(&RetryRemoveOperation::forwardSuccess, shared_from_this()),
+                    std::bind(
+                            &RetryRemoveOperation::forwardApplicationError, shared_from_this(), _1),
+                    std::bind(&RetryRemoveOperation::retryOrForwardRuntimeError,
+                              shared_from_this(),
+                              _1),
+                    _qos);
+        } else {
+            const exceptions::JoynrRuntimeException proxyNotAvailable(
+                    "Remove operation retry aborted since proxy not available.");
+            if (_onRuntimeError) {
+                _onRuntimeError(proxyNotAvailable);
+            }
+            onError(std::make_shared<exceptions::JoynrRuntimeException>(proxyNotAvailable));
+        }
+    } else {
+        if (_onRuntimeError) {
+            _onRuntimeError(exceptions::JoynrRuntimeException("Remove operation retry canceled."));
+        }
+    }
+}
+
+void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::forwardSuccess()
+{
+    if (_onSuccess) {
+        _onSuccess();
+    }
+    onSuccess();
+}
+
+void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::forwardApplicationError(
+        const types::DiscoveryError::Enum& e)
+{
+    if (_onApplicationError) {
+        _onApplicationError(e);
+    }
+    onError(std::make_shared<exceptions::JoynrRuntimeException>(
+            "Stop remove operation due to ApplicationException."));
+}
+
+void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::retryOrForwardRuntimeError(
+        const exceptions::JoynrRuntimeException& e)
+{
+    if (typeid(exceptions::JoynrTimeOutException) == typeid(e)) {
+        execute();
+    } else {
+        if (_onRuntimeError) {
+            _onRuntimeError(e);
+        }
+        onError(std::make_shared<exceptions::JoynrRuntimeException>(e));
+    }
 }
 
 } // namespace joynr
