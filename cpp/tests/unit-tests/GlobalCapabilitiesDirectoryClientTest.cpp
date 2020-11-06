@@ -36,49 +36,50 @@
 using namespace ::testing;
 using namespace joynr;
 
-class GlobalCapabilitiesDirectoryClientTest: public TestWithParam<std::string>
+class GlobalCapabilitiesDirectoryClientTest : public TestWithParam<std::string>
 {
 public:
-
     GlobalCapabilitiesDirectoryClientTest()
-        : settings(std::make_unique<Settings>()),
-          messagingSettings(*settings),
-          clusterControllerSettings(*settings),
-          mockJoynrRuntime(std::make_shared<MockJoynrRuntime>(*settings)),
-          mockMessageSender(std::make_shared<MockMessageSender>()),
-          joynrMessagingConnectorFactory(
-              std::make_shared<JoynrMessagingConnectorFactory>(mockMessageSender,
-                                                               nullptr)),
-          mockGlobalCapabilitiesDirectoryProxy(
-              std::make_shared<MockGlobalCapabilitiesDirectoryProxy>(mockJoynrRuntime, joynrMessagingConnectorFactory)),
-          globalCapabilitiesDirectoryClient(
-                  std::make_shared<GlobalCapabilitiesDirectoryClient>(clusterControllerSettings)),
-          capDomain("testDomain"),
-          capInterface("testInterface"),
-          capParticipantId("testParticipantId"),
-          capPublicKeyId("publicKeyId"),
-          capLastSeenMs(0),
-          capExpiryDateMs(1000),
-          capSerializedChannelAddress("testChannelId"),
-          gbids({"gbid1", "gbid2"}),
-          messagingTtl(10000),
-          capProviderQos(),
-          providerVersion(47, 11),
-          globalDiscoveryEntry(providerVersion,
-                               capDomain,
-                               capInterface,
-                               capParticipantId,
-                               capProviderQos,
-                               capLastSeenMs,
-                               capExpiryDateMs,
-                               capPublicKeyId,
-                               capSerializedChannelAddress),
-          messagingQos(10000),
-          mockFuture(std::make_shared<joynr::Future<void>>()),
-          onSuccess([](){}),
-          onError([](const types::DiscoveryError::Enum& /*error*/) {}),
-          onRuntimeError([](const exceptions::JoynrRuntimeException& /*error*/) {})
-    {}
+            : settings(std::make_unique<Settings>()),
+              messagingSettings(*settings),
+              clusterControllerSettings(*settings),
+              mockJoynrRuntime(std::make_shared<MockJoynrRuntime>(*settings)),
+              mockMessageSender(std::make_shared<MockMessageSender>()),
+              joynrMessagingConnectorFactory(
+                      std::make_shared<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr)),
+              mockGlobalCapabilitiesDirectoryProxy(
+                      std::make_shared<MockGlobalCapabilitiesDirectoryProxy>(
+                              mockJoynrRuntime,
+                              joynrMessagingConnectorFactory)),
+              globalCapabilitiesDirectoryClient(std::make_shared<GlobalCapabilitiesDirectoryClient>(
+                      clusterControllerSettings)),
+              capDomain("testDomain"),
+              capInterface("testInterface"),
+              capParticipantId("testParticipantId"),
+              capPublicKeyId("publicKeyId"),
+              capLastSeenMs(0),
+              capExpiryDateMs(1000),
+              capSerializedChannelAddress("testChannelId"),
+              gbids({"gbid1", "gbid2"}),
+              messagingTtl(10000),
+              capProviderQos(),
+              providerVersion(47, 11),
+              globalDiscoveryEntry(providerVersion,
+                                   capDomain,
+                                   capInterface,
+                                   capParticipantId,
+                                   capProviderQos,
+                                   capLastSeenMs,
+                                   capExpiryDateMs,
+                                   capPublicKeyId,
+                                   capSerializedChannelAddress),
+              messagingQos(10000),
+              mockFuture(std::make_shared<joynr::Future<void>>()),
+              onSuccess([]() {}),
+              onError([](const types::DiscoveryError::Enum& /*error*/) {}),
+              onRuntimeError([](const exceptions::JoynrRuntimeException& /*error*/) {})
+    {
+    }
 
     ADD_LOGGER(GlobalCapabilitiesDirectoryClientTest)
     std::unique_ptr<Settings> settings;
@@ -92,8 +93,8 @@ public:
 
     void SetUp() override
     {
-        globalCapabilitiesDirectoryClient->setProxy(mockGlobalCapabilitiesDirectoryProxy,
-                                                    messagingQos);
+        globalCapabilitiesDirectoryClient->setProxy(
+                mockGlobalCapabilitiesDirectoryProxy, messagingQos);
     }
 
 protected:
@@ -116,9 +117,9 @@ protected:
     std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError;
 };
 
-
-
-void testMessagingQosForCustomHeaderGbidKey(std::string gbid, std::shared_ptr<joynr::MessagingQos> messagingQos) {
+void testMessagingQosForCustomHeaderGbidKey(std::string gbid,
+                                            std::shared_ptr<joynr::MessagingQos> messagingQos)
+{
     ASSERT_NE(messagingQos, nullptr);
     auto customMessageHeaders = messagingQos->getCustomMessageHeaders();
     ASSERT_EQ(gbid, customMessageHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY())->second);
@@ -128,21 +129,25 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd)
 {
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .WillRepeatedly(DoAll(SaveArg<5>(&messagingQosCapture), Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->add(
+            globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupDomainInterface)
 {
     std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccessForLookup =
-            [](const std::vector<types::GlobalDiscoveryEntry>& /*result*/){};
+            [](const std::vector<types::GlobalDiscoveryEntry>& /*result*/) {};
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     const std::vector<std::string> domains = {capDomain};
-    auto mockLookupFuture = std::make_shared<joynr::Future<std::vector<joynr::types::GlobalDiscoveryEntry>>>();
+    auto mockLookupFuture =
+            std::make_shared<joynr::Future<std::vector<joynr::types::GlobalDiscoveryEntry>>>();
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, lookupAsyncMock(Eq(domains), Eq(capInterface), Eq(gbids), _, _, _, _))
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                lookupAsyncMock(Eq(domains), Eq(capInterface), Eq(gbids), _, _, _, _))
             .WillRepeatedly(DoAll(SaveArg<6>(&messagingQosCapture), Return(mockLookupFuture)));
 
     globalCapabilitiesDirectoryClient->lookup(domains,
@@ -159,18 +164,15 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupDomainInterface)
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupParticipantId)
 {
     std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccessForLookup =
-            [](const std::vector<types::GlobalDiscoveryEntry>& /*result*/){};
+            [](const std::vector<types::GlobalDiscoveryEntry>& /*result*/) {};
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     auto mockLookupFuture = std::make_shared<joynr::Future<joynr::types::GlobalDiscoveryEntry>>();
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, lookupAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                lookupAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillRepeatedly(DoAll(SaveArg<5>(&messagingQosCapture), Return(mockLookupFuture)));
-    globalCapabilitiesDirectoryClient->lookup(capParticipantId,
-                                              gbids,
-                                              messagingTtl,
-                                              onSuccessForLookup,
-                                              onError,
-                                              onRuntimeError);
+    globalCapabilitiesDirectoryClient->lookup(
+            capParticipantId, gbids, messagingTtl, onSuccessForLookup, onError, onRuntimeError);
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
     ASSERT_EQ(messagingTtl, messagingQosCapture->getTtl());
 }
@@ -179,13 +181,11 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
 {
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillRepeatedly(DoAll(SaveArg<5>(&messagingQosCapture), Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->remove(capParticipantId,
-                                              gbids,
-                                              onSuccess,
-                                              onError,
-                                              onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(
+            capParticipantId, gbids, onSuccess, onError, onRuntimeError);
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
 }
 
@@ -194,20 +194,19 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testTouch)
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     const std::string clusterControllerId = "dummyClustercontrollerId";
     const std::string gbid = "dummyGbid";
-    const std::vector<std::string> participantIds = { "dummyParticipantId" };
+    const std::vector<std::string> participantIds = {"dummyParticipantId"};
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, touchAsyncMock(Eq(clusterControllerId), Eq(participantIds), _, _, _))
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                touchAsyncMock(Eq(clusterControllerId), Eq(participantIds), _, _, _))
             .WillRepeatedly(DoAll(SaveArg<4>(&messagingQosCapture), Return(mockFuture)));
 
+    globalCapabilitiesDirectoryClient->touch(
+            clusterControllerId, participantIds, gbid, onSuccess, onRuntimeError);
+    ASSERT_EQ(clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count(),
+              messagingQosCapture->getTtl());
 
-    globalCapabilitiesDirectoryClient->touch(clusterControllerId,
-                                             participantIds,
-                                             gbid,
-                                             onSuccess,
-                                             onRuntimeError);
-    ASSERT_EQ(clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count(), messagingQosCapture->getTtl());
-
-    const auto foundGbidMessageHeader = messagingQosCapture->getCustomMessageHeaders().find(joynr::Message::CUSTOM_HEADER_GBID_KEY());
+    const auto foundGbidMessageHeader = messagingQosCapture->getCustomMessageHeaders().find(
+            joynr::Message::CUSTOM_HEADER_GBID_KEY());
     ASSERT_TRUE(foundGbidMessageHeader != messagingQosCapture->getCustomMessageHeaders().cend());
     ASSERT_EQ(gbid, foundGbidMessageHeader->second);
 }
@@ -219,19 +218,17 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveStale)
     const std::int64_t maxLastSeenMs = 100000.0;
     const std::int64_t expectedTtl = 3600000.0;
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, removeStaleAsyncMock(Eq(clusterControllerId), Eq(maxLastSeenMs), _, _, _))
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                removeStaleAsyncMock(Eq(clusterControllerId), Eq(maxLastSeenMs), _, _, _))
             .Times(1)
             .WillOnce(DoAll(SaveArg<4>(&messagingQosCapture), Return(mockFuture)));
 
-    globalCapabilitiesDirectoryClient->removeStale(clusterControllerId,
-                                                   maxLastSeenMs,
-                                                   gbids[0],
-                                                   onSuccess,
-                                                   onRuntimeError);
-   ASSERT_EQ(expectedTtl, messagingQosCapture->getTtl());
+    globalCapabilitiesDirectoryClient->removeStale(
+            clusterControllerId, maxLastSeenMs, gbids[0], onSuccess, onRuntimeError);
+    ASSERT_EQ(expectedTtl, messagingQosCapture->getTtl());
 
-   auto messageHeaders = messagingQosCapture->getCustomMessageHeaders();
-   auto gbidEntry = messageHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY());
-   ASSERT_NE(gbidEntry, messageHeaders.end());
-   ASSERT_EQ(gbids[0], gbidEntry->second);
+    auto messageHeaders = messagingQosCapture->getCustomMessageHeaders();
+    auto gbidEntry = messageHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY());
+    ASSERT_NE(gbidEntry, messageHeaders.end());
+    ASSERT_EQ(gbids[0], gbidEntry->second);
 }
