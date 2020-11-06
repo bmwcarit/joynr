@@ -24,6 +24,7 @@ set(PUBLIC_HEADERS
     include/joynr/CachedValue.h
     include/joynr/ContentWithDecayTime.h
     include/joynr/Future.h
+    include/joynr/TaskSequencer.h
     include/joynr/HashUtil.h
     include/joynr/ObjectWithDecayTime.h
     include/joynr/PrivateCopyAssign.h

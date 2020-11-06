@@ -100,6 +100,9 @@ private:
 // -------------------------------------------------------------------------------------------------
 
 template <class... Ts>
+class TaskSequencer;
+
+template <class... Ts>
 /**
  * @brief Class for monitoring the status of a request by applications.
  *
@@ -112,6 +115,8 @@ template <class... Ts>
  */
 class Future : public FutureBase
 {
+    friend class TaskSequencer<Ts...>;
+
 public:
     /**
      * @brief Constructor
@@ -196,6 +201,8 @@ template <>
  */
 class Future<void> : public FutureBase
 {
+    friend class TaskSequencer<void>;
+
 public:
     Future() = default;
 
