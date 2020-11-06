@@ -41,6 +41,7 @@ import org.franca.core.franca.FType
 import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FTypeRef
 import org.franca.core.franca.FTypedElement
+import org.franca.core.franca.FAnnotationType
 
 class JoynrGeneratorExtensions {
 
@@ -65,7 +66,7 @@ class JoynrGeneratorExtensions {
 		return model.interfaces
 	}
 
-	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName) {
+	def String getPackageNameInternal(FModelElement fModelElement, boolean useOwnName, boolean generateVersion) {
 		if (fModelElement === null) {
 			throw new IllegalStateException(
 				"Generator could not proceed with code generation, since JoynGeneratorExtensions.getPackageNameInternal has been invoked with an empty model element");
@@ -80,8 +81,7 @@ class JoynrGeneratorExtensions {
 						fModelElement.eResource.toString) + " cannot be parsed correctly"
 			throw new IllegalStateException(errorMsg);
 		} else if (fModelElement.eContainer instanceof FModel) {
-			val generateVersion = !commentContainsNoVersionGeneration(fModelElement);
-			return (fModelElement.eContainer as FModel).joynrName + if (generateVersion) getVersionSuffix(fModelElement) else '';
+			return (fModelElement.eContainer as FModel).joynrName + getVersionSuffix(fModelElement, generateVersion);
 		} else if (fModelElement instanceof FMethod) {
 			// include interface name for unnamed error enums (defined or extended inside method definition)
 			val finterface = fModelElement.eContainer as FModelElement
@@ -91,38 +91,38 @@ class JoynrGeneratorExtensions {
 					"with a FMethod element which is not defined inside an interface"
 				throw new IllegalStateException(errorMsg);
 			}
-			return finterface.getPackageNameInternal(false) + '.' + finterface.joynrName
+			return finterface.getPackageNameInternal(false, generateVersion) + '.' + finterface.joynrName
 		}
-		return (fModelElement.eContainer as FModelElement).getPackageNameInternal(true) +
+		return (fModelElement.eContainer as FModelElement).getPackageNameInternal(true, generateVersion) +
 			(if (useOwnName) '.' + fModelElement.joynrName else '')
 	}
 
-	def getPackageName(FModelElement fModelElement) {
-		getPackageNameInternal(fModelElement, false)
+	def getPackageName(FModelElement fModelElement, boolean generateVersion) {
+		getPackageNameInternal(fModelElement, false, generateVersion)
 	}
 
-	def getPackageNames(FModelElement fModelElement) {
-		getPackageNames(fModelElement, "\\.")
+	def getPackageNames(FModelElement fModelElement, boolean generateVersion) {
+		getPackageNames(fModelElement, "\\.", generateVersion)
 	}
 
-	def getPackageNames(FModelElement fModelElement, String separator) {
-		Arrays::stream(fModelElement.packageName.split(separator)).iterator()
+	def getPackageNames(FModelElement fModelElement, String separator, boolean generateVersion) {
+		Arrays::stream(fModelElement.getPackageName(generateVersion).split(separator)).iterator()
 	}
 
-	def getPackagePathWithJoynrPrefix(FType datatype, String separator, boolean includeTypeCollection) {
-		var packagePath = getPackagePathWithJoynrPrefix(datatype, separator);
+	def getPackagePathWithJoynrPrefix(FType datatype, String separator, boolean includeTypeCollection, boolean generateVersion) {
+		var packagePath = getPackagePathWithJoynrPrefix(datatype, separator, generateVersion);
 		if (includeTypeCollection && datatype.isPartOfNamedTypeCollection) {
 			packagePath += separator + datatype.typeCollectionName;
 		}
 		return packagePath
 	}
 
-	def getPackagePathWithJoynrPrefix(FModelElement fModelElement, String separator) {
-		joynrGenerationPrefix + separator + getPackagePathWithoutJoynrPrefix(fModelElement, separator)
+	def getPackagePathWithJoynrPrefix(FModelElement fModelElement, String separator, boolean generateVersion) {
+		joynrGenerationPrefix + separator + getPackagePathWithoutJoynrPrefix(fModelElement, separator, generateVersion)
 	}
 
-	def getPackagePathWithoutJoynrPrefix(FModelElement fModelElement, String separator) {
-		return getPackageName(fModelElement).replace('.', separator)
+	def getPackagePathWithoutJoynrPrefix(FModelElement fModelElement, String separator, boolean generateVersion) {
+		return getPackageName(fModelElement, generateVersion).replace('.', separator)
 	}
 
 	def getFullyQualifiedName(FInterface fInterface) {
@@ -177,13 +177,14 @@ class JoynrGeneratorExtensions {
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		InterfaceTemplate generator
+		InterfaceTemplate generator,
+		boolean generateVersion
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate.toString);
+			fsa.generateFile(path, generator.generate(generateVersion).toString);
 		}
 	}
 
@@ -192,52 +193,56 @@ class JoynrGeneratorExtensions {
 		String path,
 		BroadcastTemplate generator,
 		FInterface serviceInterface,
-		FBroadcast broadcast
+		FBroadcast broadcast,
+		boolean generateVersion
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(serviceInterface, broadcast).toString);
+			fsa.generateFile(path, generator.generate(serviceInterface, broadcast, generateVersion).toString);
 		}
 	}
 
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		EnumTemplate generator
+		EnumTemplate generator,
+		boolean generateVersion
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate.toString);
+			fsa.generateFile(path, generator.generate(generateVersion).toString);
 		}
 	}
 
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		MapTemplate generator
+		MapTemplate generator,
+		boolean generateVersion
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate.toString);
+			fsa.generateFile(path, generator.generate(generateVersion).toString);
 		}
 	}
 
 	def generateFile(
 		IFileSystemAccess fsa,
 		String path,
-		CompoundTypeTemplate generator
+		CompoundTypeTemplate generator,
+		boolean generateVersion
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate.toString);
+			fsa.generateFile(path, generator.generate(generateVersion).toString);
 		}
 	}
 
@@ -245,27 +250,28 @@ class JoynrGeneratorExtensions {
 		IFileSystemAccess fsa,
 		String path,
 		TypeDefTemplate generator,
-		FTypeDef typeDefType
+		FTypeDef typeDefType,
+		boolean generateVersion
 	) {
 		if (clean) {
 			fsa.deleteFile(path);
 		}
 		if (generate) {
-			fsa.generateFile(path, generator.generate(typeDefType).toString);
+			fsa.generateFile(path, generator.generate(typeDefType, generateVersion).toString);
 		}
 	}
 
 	// Convert a data type declaration into a string giving the typename
-	def String getJoynrTypeName(FTypedElement element) {
-		var typeName = getJoynrTypeName(element.type)
+	def String getJoynrTypeName(FTypedElement element, boolean generateVersion) {
+		var typeName = getJoynrTypeName(element.type, generateVersion)
 		if (isArray(element)) {
 			typeName += "[]"
 		}
 		return typeName
 	}
 
-	def String getJoynrTypeName(FType type) {
-		buildPackagePath(type, ".", true) + "." + type.joynrName
+	def String getJoynrTypeName(FType type, boolean generateVersion) {
+		buildPackagePath(type, ".", true, generateVersion) + "." + type.joynrName
 	}
 
 	def String getJoynrTypeName(FBasicTypeId predefined) {
@@ -283,27 +289,27 @@ class JoynrGeneratorExtensions {
 		}
 	}
 
-	def String getJoynrTypeName(FTypeRef datatypeRef) {
+	def String getJoynrTypeName(FTypeRef datatypeRef, boolean generateVersion) {
 		if (datatypeRef.isTypeDef) {
-			getJoynrTypeName((datatypeRef.derived as FTypeDef).actualType)
+			getJoynrTypeName((datatypeRef.derived as FTypeDef).actualType, generateVersion)
 		} else if (datatypeRef.complex) {
-			getJoynrTypeName(datatypeRef.derived)
+			getJoynrTypeName(datatypeRef.derived, generateVersion)
 		} else {
 			getJoynrTypeName(datatypeRef.getPrimitive)
 		}
 	}
 
-	def buildPackagePath(FType datatype, String separator) {
-		return buildPackagePath(datatype, separator, false);
+	def buildPackagePath(FType datatype, String separator, boolean generateVersion) {
+		return buildPackagePath(datatype, separator, false, generateVersion);
 	}
 
-	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection) {
+	def buildPackagePath(FType datatype, String separator, boolean includeTypeCollection, boolean generateVersion) {
 		if (datatype === null) {
 			return "";
 		}
 		var packagepath = "";
 		try {
-			packagepath = getPackagePathWithJoynrPrefix(datatype, separator);
+			packagepath = getPackagePathWithJoynrPrefix(datatype, separator, generateVersion);
 		} catch (IllegalStateException e) {
 			// if an illegal StateException has been thrown, we tried to get the package for a primitive type, so the packagepath stays empty.
 		}
@@ -322,6 +328,18 @@ class JoynrGeneratorExtensions {
 					 + fType.name + "\" in " + path)
 			}
 		}
+	}
+
+	def boolean commentContainsNoVersionGeneration(FInterface fInterface){
+		if (fInterface.comment === null) {
+			return false
+		}
+		for (comment : fInterface.comment.elements) {
+			if (comment.type == FAnnotationType::DESCRIPTION && comment.rawText.contains("#noVersionGeneration")) {
+				return true
+			}
+		}
+		return false
 	}
 
 	def checkVersioningOption(FInterface fInterface, boolean packageWithVersion) {

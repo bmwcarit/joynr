@@ -26,5 +26,5 @@ import org.franca.core.franca.FInterface;
  */
 public interface BroadcastTemplate {
 
-    public CharSequence generate(FInterface serviceInterface, FBroadcast broadcast);
+    public CharSequence generate(FInterface serviceInterface, FBroadcast broadcast, boolean generateVersion);
 }

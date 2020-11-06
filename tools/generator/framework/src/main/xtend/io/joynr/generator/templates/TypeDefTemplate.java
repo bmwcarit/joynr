@@ -25,5 +25,5 @@ import org.franca.core.franca.FTypeDef;
  */
 public interface TypeDefTemplate {
 
-    public CharSequence generate(FTypeDef typeDefType);
+    public CharSequence generate(FTypeDef typeDefType, boolean generateVersion);
 }

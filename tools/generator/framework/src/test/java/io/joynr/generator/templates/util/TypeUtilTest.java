@@ -62,6 +62,7 @@ public class TypeUtilTest {
 
     @Test
     public void testMultipleOutParameters() throws Exception {
+        final boolean generateVersion = true;
         URL fixtureURL = TypeUtilTest.class.getResource("MultipleOutParameters.fidl");
         ModelLoader loader = new ModelLoader(fixtureURL.getPath());
         Resource fixtureResource = loader.getResources().iterator().next();
@@ -95,7 +96,7 @@ public class TypeUtilTest {
         String complexDatatype = model.getTypeCollections().get(0).getTypes().get(0).getName();
         FMethod fixture = model.getInterfaces().get(0).getMethods().get(0);
 
-        Iterator<String> result = typeUtil.getTypeNamesForOutputParameter(fixture).iterator();
+        Iterator<String> result = typeUtil.getTypeNamesForOutputParameter(fixture, generateVersion).iterator();
         assertEquals(result.next(), stringDatatype);
         assertEquals(result.next(), numberDatatype);
         assertEquals(result.next(), complexDatatype);

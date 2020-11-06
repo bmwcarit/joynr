@@ -29,11 +29,23 @@ abstract class AbstractTypeUtil extends TypeUtil{
 
 	def String getTypeName(FBasicTypeId datatype)
 
+	def String getTypeName(FType datatype, boolean generateVersion)
+
 	def String getTypeName(FType datatype)
 
 	def String getTypeNameForList(FBasicTypeId datatype)
 
 	def String getTypeNameForList(FType datatype)
+
+	def String getTypeNameForList(FType datatype, boolean generateVersion)
+
+	def String getTypeName(FTypeRef type, boolean generateVersion) {
+		if (type.derived !== null) {
+			type.derived.getTypeName(generateVersion)
+		} else {
+			type.predefined.typeName
+		}
+	}
 
 	def String getTypeName(FTypeRef type) {
 		if (type.derived !== null) {
@@ -51,31 +63,63 @@ abstract class AbstractTypeUtil extends TypeUtil{
 		}
 	}
 
-	def String getTypeName (FTypedElement typedElement) {
+	def String getTypeNameForList(FTypeRef type, boolean generateVersion) {
+		if (type.derived !== null) {
+			type.derived.getTypeNameForList(generateVersion)
+		} else {
+			type.predefined.typeNameForList
+		}
+	}
+
+	def String getTypeName(FTypedElement typedElement, boolean generateVersion) {
 		var result =
 				if (isArray(typedElement))
-					typedElement.type.typeNameForList
+					typedElement.type.getTypeNameForList(generateVersion)
 				else
-					typedElement.type.typeName
+					typedElement.type.getTypeName(generateVersion)
 		if (result === null) {
 			throw new IllegalStateException ("Datatype for element " + typedElement.name + " could not be found");
 		}
 		return result;
 	}
 
-	def Iterable<String> mapParametersToTypeName(FMethod method) {
-		mapParametersToTypeName(method.outArgs)
+	def String getTypeName(FTypedElement typedElement) {
+		var result =
+				if (isArray(typedElement))
+					typedElement.type.typeNameForList
+				else
+					typedElement.type.getTypeName
+		if (result === null) {
+			throw new IllegalStateException ("Datatype for element " + typedElement.name + " could not be found");
+		}
+		return result;
+	}
+
+	def Iterable<String> mapParametersToTypeName(FMethod method, boolean generateVersion) {
+		mapParametersToTypeName(method.outArgs, generateVersion)
 	}
 
 	// Convert an collection of parameters to their typenames
-	def Iterable<String> mapParametersToTypeName(Iterable<FArgument> parameters) {
+	def Iterable<String> mapParametersToTypeName(Iterable<FArgument> parameters, boolean generateVersion) {
 		val result = new ArrayList<String>();
 		if (parameters.empty) {
 			result.add("void");
 		} else {
 			for (FArgument parameter : parameters) {
-				result.add(parameter.typeName)
+				result.add(parameter.getTypeName(generateVersion))
 			}
+		}
+		return result;
+	}
+
+	def getTypeNamesForOutputParameter (FMethod method, boolean generateVersion) {
+		val result = new ArrayList<String>();
+		val types = method.outArgs;
+		if (types === null || types.empty) {
+			result.add("void");
+		}
+		for (FArgument argument : types) {
+			result.add(argument.getTypeName(generateVersion));
 		}
 		return result;
 	}

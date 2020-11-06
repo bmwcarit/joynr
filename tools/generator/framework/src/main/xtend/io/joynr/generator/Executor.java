@@ -127,6 +127,7 @@ public class Executor {
 
     public void generate() {
         ModelLoader modelLoader = prepareGeneratorEnvironment();
+        IJoynrGenerator joynrGenerator = (IJoynrGenerator) generator;
         for (Resource resource : modelLoader.getResources()) {
             if (resource.getErrors().size() > 0) {
                 StringBuilder errorMsg = new StringBuilder();
@@ -138,9 +139,14 @@ public class Executor {
                 logger.log(Level.SEVERE, errorMsg.toString());
                 System.exit(-1);
             } else {
-                generator.doGenerate(resource, outputFileSystem);
+                joynrGenerator.updateCommunicationModelGeneration(resource);
+                joynrGenerator.doGenerate(resource, outputFileSystem);
             }
         }
+        for (Resource resource : modelLoader.getResources()) {
+            joynrGenerator.generateCommunicationModel(resource, outputFileSystem);
+        }
+        joynrGenerator.clearCommunicationModelGenerationSettings();
     }
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException,

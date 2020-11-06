@@ -39,5 +39,5 @@ abstract class TypeTemplate {
 		}
 	}
 
-	def CharSequence generate()
+	def CharSequence generate(boolean generateVersion)
 }

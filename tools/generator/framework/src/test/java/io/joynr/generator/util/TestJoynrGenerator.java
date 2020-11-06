@@ -56,4 +56,19 @@ public class TestJoynrGenerator implements IJoynrGenerator {
     public Module getGeneratorModule() {
         return null;
     }
+
+    @Override
+    public void updateCommunicationModelGeneration(Resource resource) {
+        //do nothing
+    }
+
+    @Override
+    public void generateCommunicationModel(Resource input, IFileSystemAccess sourceFileSystem) {
+        //do nothing
+    }
+
+    @Override
+    public void clearCommunicationModelGenerationSettings() {
+        //do nothing
+    }
 }

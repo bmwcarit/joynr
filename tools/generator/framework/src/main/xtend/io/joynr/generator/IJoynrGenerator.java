@@ -22,6 +22,9 @@ package io.joynr.generator;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.emf.ecore.resource.Resource;
+
+import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.IGenerator;
 
 import com.google.inject.Module;
@@ -35,4 +38,10 @@ public interface IJoynrGenerator extends IGenerator {
     public Set<String> supportedParameters();
 
     public Module getGeneratorModule();
+
+    public void updateCommunicationModelGeneration(Resource input);
+
+    public void generateCommunicationModel(Resource input, IFileSystemAccess fsa);
+
+    public void clearCommunicationModelGenerationSettings();
 }
