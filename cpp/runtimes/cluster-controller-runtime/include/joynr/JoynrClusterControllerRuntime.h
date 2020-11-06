@@ -66,6 +66,7 @@ class ITransportMessageSender;
 class IWebsocketCcMessagingSkeleton;
 class InProcessMessagingSkeleton;
 class JoynrClusterControllerMqttConnectionData;
+class GlobalCapabilitiesDirectoryClient;
 class LocalCapabilitiesDirectory;
 class LocalCapabilitiesDirectoryStore;
 class LocalDomainAccessController;
@@ -164,6 +165,7 @@ protected:
     std::shared_ptr<SubscriptionManager> _subscriptionManager;
     std::shared_ptr<IMessageSender> _messageSender;
 
+    std::shared_ptr<GlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectory;
 
     std::shared_ptr<InProcessMessagingSkeleton> _libJoynrMessagingSkeleton;

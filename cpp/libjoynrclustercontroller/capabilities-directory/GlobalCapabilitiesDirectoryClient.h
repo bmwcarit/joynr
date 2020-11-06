@@ -27,6 +27,7 @@
 
 #include "joynr/JoynrClusterControllerExport.h"
 #include "joynr/Logger.h"
+#include "joynr/TaskSequencer.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/types/DiscoveryError.h"
@@ -71,7 +72,10 @@ public:
      */
     GlobalCapabilitiesDirectoryClient(const ClusterControllerSettings& clusterControllerSettings);
 
-    ~GlobalCapabilitiesDirectoryClient() override = default;
+    ~GlobalCapabilitiesDirectoryClient() override;
+
+    /* Shutdown all internal processes */
+    void shutdown();
 
     /*
        Add a capabilities record to the directory
@@ -136,6 +140,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClient);
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> _capabilitiesProxy;
+    TaskSequencer<void> _sequentialTasks;
     MessagingQos _messagingQos;
     const std::uint64_t _touchTtl;
     const std::uint64_t _removeStaleTtl;

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,6 +41,17 @@ GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
 {
 }
 
+GlobalCapabilitiesDirectoryClient::~GlobalCapabilitiesDirectoryClient()
+{
+    shutdown();
+}
+
+void GlobalCapabilitiesDirectoryClient::shutdown()
+{
+    // Assure that all captures to class members are released.
+    _sequentialTasks.cancel();
+}
+
 void GlobalCapabilitiesDirectoryClient::add(
         const types::GlobalDiscoveryEntry& entry,
         const std::vector<std::string>& gbids,
@@ -50,12 +61,48 @@ void GlobalCapabilitiesDirectoryClient::add(
 {
     MessagingQos addMessagingQos = _messagingQos;
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
-    _capabilitiesProxy->addAsync(entry,
-                                 std::move(gbids),
-                                 std::move(onSuccess),
-                                 std::move(onError),
-                                 std::move(onRuntimeError),
-                                 addMessagingQos);
+    using std::move;
+    _sequentialTasks.add([
+        this,
+        entry,
+        gbids,
+        onSuccess{move(onSuccess)},
+        onError{move(onError)},
+        onRuntimeError{move(onRuntimeError)},
+        addMessagingQos{move(addMessagingQos)}
+    ]() mutable {
+        auto future = std::make_shared<Future<void>>();
+        onSuccess = [ future, onSuccess{move(onSuccess)} ]()
+        {
+            if (onSuccess) {
+                onSuccess();
+            }
+            future->onSuccess();
+        };
+        onError = [ future, onError{move(onError)} ](const joynr::types::DiscoveryError::Enum& e)
+        {
+            if (onError) {
+                onError(e);
+            }
+            future->onError(std::make_shared<exceptions::JoynrRuntimeException>(
+                    "Stop add operation due to ApplicationException."));
+        };
+        onRuntimeError = [ future, onRuntimeError{move(onRuntimeError)} ](
+                const exceptions::JoynrRuntimeException& e)
+        {
+            if (onRuntimeError) {
+                onRuntimeError(e);
+            }
+            future->onError(std::make_shared<exceptions::JoynrRuntimeException>(e));
+        };
+        _capabilitiesProxy->addAsync(entry,
+                                     move(gbids),
+                                     move(onSuccess),
+                                     move(onError),
+                                     move(onRuntimeError),
+                                     addMessagingQos);
+        return future;
+    });
 }
 
 void GlobalCapabilitiesDirectoryClient::remove(
@@ -67,12 +114,49 @@ void GlobalCapabilitiesDirectoryClient::remove(
 {
     MessagingQos removeMessagingQos = _messagingQos;
     removeMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
-    _capabilitiesProxy->removeAsync(participantId,
-                                    std::move(gbids),
-                                    std::move(onSuccess),
-                                    std::move(onError),
-                                    std::move(onRuntimeError),
-                                    std::move(removeMessagingQos));
+    using std::move;
+    _sequentialTasks.add([
+        this,
+        participantId,
+        gbids{move(gbids)},
+        onSuccess{move(onSuccess)},
+        onError{move(onError)},
+        onRuntimeError{move(onRuntimeError)},
+        removeMessagingQos{move(removeMessagingQos)}
+
+    ]() mutable {
+        auto future = std::make_shared<Future<void>>();
+        onSuccess = [ future, onSuccess{move(onSuccess)} ]()
+        {
+            if (onSuccess) {
+                onSuccess();
+            }
+            future->onSuccess();
+        };
+        onError = [ future, onError{move(onError)} ](const joynr::types::DiscoveryError::Enum& e)
+        {
+            if (onError) {
+                onError(e);
+            }
+            future->onError(std::make_shared<exceptions::JoynrRuntimeException>(
+                    "Stop remove operation due to ApplicationException."));
+        };
+        onRuntimeError = [ future, onRuntimeError{move(onRuntimeError)} ](
+                const exceptions::JoynrRuntimeException& e)
+        {
+            if (onRuntimeError) {
+                onRuntimeError(e);
+            }
+            future->onError(std::make_shared<exceptions::JoynrRuntimeException>(e));
+        };
+        _capabilitiesProxy->removeAsync(participantId,
+                                        move(gbids),
+                                        move(onSuccess),
+                                        move(onError),
+                                        move(onRuntimeError),
+                                        move(removeMessagingQos));
+        return future;
+    });
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(

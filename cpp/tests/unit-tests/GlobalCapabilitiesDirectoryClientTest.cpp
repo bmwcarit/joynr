@@ -128,12 +128,16 @@ void testMessagingQosForCustomHeaderGbidKey(std::string gbid,
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd)
 {
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
+    Semaphore semaphore;
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
-            .WillRepeatedly(DoAll(SaveArg<5>(&messagingQosCapture), Return(mockFuture)));
+            .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
 }
 
@@ -180,12 +184,16 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupParticipantId)
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
 {
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
+    Semaphore semaphore;
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
-            .WillRepeatedly(DoAll(SaveArg<5>(&messagingQosCapture), Return(mockFuture)));
+            .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
     globalCapabilitiesDirectoryClient->remove(
             capParticipantId, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
 }
 

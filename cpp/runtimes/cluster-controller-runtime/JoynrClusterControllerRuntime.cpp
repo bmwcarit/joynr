@@ -624,11 +624,11 @@ void JoynrClusterControllerRuntime::init()
     auto provisionedDiscoveryEntries = getProvisionedEntries();
     _discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);
 
-    auto globalCapabilitiesDirectoryClient =
+    _globalCapabilitiesDirectoryClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(_clusterControllerSettings);
     _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
             _clusterControllerSettings,
-            globalCapabilitiesDirectoryClient,
+            _globalCapabilitiesDirectoryClient,
             _localCapabilitiesDirectoryStore,
             globalClusterControllerAddress,
             _ccMessageRouter,
@@ -694,7 +694,7 @@ void JoynrClusterControllerRuntime::init()
 
     capabilitiesProxyBuilder->setMessagingQos(messagingQos);
 
-    globalCapabilitiesDirectoryClient->setProxy(capabilitiesProxyBuilder->build(), messagingQos);
+    _globalCapabilitiesDirectoryClient->setProxy(capabilitiesProxyBuilder->build(), messagingQos);
 
     // Do this after local capabilities directory and message router have been initialized.
     enableAccessController(provisionedDiscoveryEntries);
@@ -1066,6 +1066,9 @@ void JoynrClusterControllerRuntime::shutdown()
     }
     if (_subscriptionManager) {
         _subscriptionManager->shutdown();
+    }
+    if (_globalCapabilitiesDirectoryClient) {
+        _globalCapabilitiesDirectoryClient->shutdown();
     }
     if (_localCapabilitiesDirectory) {
         _localCapabilitiesDirectory->shutdown();
