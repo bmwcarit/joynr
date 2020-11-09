@@ -22,12 +22,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +38,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.statusmetrics.ConnectionStatusMetrics;
@@ -54,7 +52,6 @@ public class HivemqMqttClientFactoryTest {
     private HashMap<String, String> defaultMqttGbidToBrokerUriMap;
     private HashMap<String, Integer> defaultMqttGbidToKeepAliveTimerSecMap;
     private HashMap<String, Integer> defaultMqttGbidToConnectionTimeoutSecMap;
-    private final int defaultMaxMessageSize = 0;
     private final boolean defaultCleanSession = false;
     private final ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(42);
     private final String defaultClientId = "HivemqMqttClientFactoryTest-" + System.currentTimeMillis();
