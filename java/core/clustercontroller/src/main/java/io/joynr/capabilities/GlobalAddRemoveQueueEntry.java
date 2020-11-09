@@ -29,10 +29,12 @@ public class GlobalAddRemoveQueueEntry {
 
     public GlobalAddRemoveQueueEntry(CallbackWithModeledError<Void, DiscoveryError> callback,
                                      GlobalDiscoveryEntry globalDiscoveryEntry,
+                                     long expiryDateMs,
                                      String[] gbids) {
         mode = MODE.ADD;
         this.callback = callback;
         this.globalDiscoveryEntry = globalDiscoveryEntry;
+        this.expiryDateMs = expiryDateMs;
         this.gbids = gbids;
         this.participantId = "";
     }
@@ -42,6 +44,7 @@ public class GlobalAddRemoveQueueEntry {
         this.callback = callback;
         this.participantId = participantId;
         this.globalDiscoveryEntry = null;
+        this.expiryDateMs = 0L;
         this.gbids = null;
     }
 
@@ -50,4 +53,5 @@ public class GlobalAddRemoveQueueEntry {
     public final String participantId;
     public final GlobalDiscoveryEntry globalDiscoveryEntry;
     public final String[] gbids;
+    public final long expiryDateMs;
 }
