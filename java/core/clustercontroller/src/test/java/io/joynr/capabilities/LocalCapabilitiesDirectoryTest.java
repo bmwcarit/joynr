@@ -3318,20 +3318,20 @@ public class LocalCapabilitiesDirectoryTest {
         final String participantId1 = "participantId1";
         final String participantId2 = "participantId2";
 
-        final long expectedLastSeenDateMs = System.currentTimeMillis();
-        final long expectedExpiryDateMs = expectedLastSeenDateMs + DEFAULT_EXPIRY_TIME_MS;
+        DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(discoveryEntry);
+        discoveryEntry1.getQos().setScope(ProviderScope.GLOBAL);
+        discoveryEntry1.setParticipantId(participantId1);
 
-        GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
-        entry1.getQos().setScope(ProviderScope.GLOBAL);
-        entry1.setParticipantId(participantId1);
-        entry1.setLastSeenDateMs(expectedLastSeenDateMs);
-        entry1.setExpiryDateMs(expectedExpiryDateMs);
+        DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(discoveryEntry);
+        discoveryEntry2.setParticipantId(participantId2);
 
-        GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(entry1);
-        entry2.setParticipantId(participantId2);
+        GlobalDiscoveryEntry globalDiscoveryEntry1 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry1,
+                                                                                                         globalAddress1);
+        GlobalDiscoveryEntry globalDiscoveryEntry2 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry2,
+                                                                                                         globalAddress1);
 
-        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(entry1);
-        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(entry2);
+        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry1);
+        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry2);
 
         InOrder inOrder = inOrder(globalCapabilitiesDirectoryClient);
 
@@ -3342,7 +3342,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         inOrder.verify(globalCapabilitiesDirectoryClient)
                .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                    argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(entry1)),
+                    argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry1)),
                     remainingTtlCapture.capture(),
                     any(String[].class));
 
@@ -3350,7 +3350,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         inOrder.verify(globalCapabilitiesDirectoryClient)
                .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                    argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(entry2)),
+                    argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry2)),
                     remainingTtlCapture.capture(),
                     any(String[].class));
 
@@ -3361,8 +3361,8 @@ public class LocalCapabilitiesDirectoryTest {
                                               .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                       anyString(),
                                                       any(String[].class));
-        localCapabilitiesDirectory.remove(entry2);
-        localCapabilitiesDirectory.remove(entry1);
+        localCapabilitiesDirectory.remove(discoveryEntry2);
+        localCapabilitiesDirectory.remove(discoveryEntry1);
 
         assertTrue(cdl.await(10, TimeUnit.SECONDS));
 
