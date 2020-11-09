@@ -198,15 +198,15 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
     @Override
     public synchronized void shutdown() {
         logger.debug("shutdown invoked");
-        for (JoynrMqttClient client : sendingMqttClients.values()) {
-            client.shutdown();
-        }
         if (separateConnections) {
             for (JoynrMqttClient client : receivingMqttClients.values()) {
                 if (!client.isShutdown()) {
                     client.shutdown();
                 }
             }
+        }
+        for (JoynrMqttClient client : sendingMqttClients.values()) {
+            client.shutdown();
         }
         Schedulers.shutdown();
         logger.debug("shutdown finished");
