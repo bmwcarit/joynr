@@ -54,7 +54,6 @@ import com.google.inject.name.Names;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
@@ -152,7 +151,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
         GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
 
         // when we call the add method with it
-        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, gbids);
+        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, DEFAULT_TTL_ADD_AND_REMOVE, gbids);
 
         // then the GCD proxy is called with the expected parameters and QoS
         verify(globalCapabilitiesDirectoryProxyMock).add(eq(addCallbackWithModeledErrorMock),
@@ -163,17 +162,12 @@ public class GlobalCapabilitiesDirectoryClientTest {
 
     @Test
     public void testAddWithCustomTTL() {
-        // given a GCD client with custom ttl...
-        final String[] gbids = new String[]{ GBID_DEFAULT_BACKEND };
-        Properties properties = new Properties();
-        properties.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS,
-                       String.valueOf(CUSTOM_TTL));
-        GlobalCapabilitiesDirectoryClient subjectInject = createGCDClientWithProperties(properties);
-        // ...and some discovery entry
+        // given some discovery entry
         GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
+        final String[] gbids = new String[]{ GBID_DEFAULT_BACKEND };
 
-        // when we call the add method on this client
-        subjectInject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, gbids);
+        // when we call the add method on the GCD client with custom ttl
+        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, CUSTOM_TTL, gbids);
 
         // then the GCD proxy is called with the expected parameters and QoS
         expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
@@ -192,7 +186,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
         expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
 
         // when we call the add method with them
-        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, gbids);
+        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, DEFAULT_TTL_ADD_AND_REMOVE, gbids);
 
         // then the custom header in the GCD proxy call contains the desired gbid
         // and the call as well gets the desired callback and global discovery entry
@@ -203,10 +197,10 @@ public class GlobalCapabilitiesDirectoryClientTest {
     }
 
     @Test
-    public void testRemoveSingleParticipant() {
-        // given some participantId
+    public void testRemoveSingleParticipantFromMultipleGbids() {
+        // given some participantId and GBIDs
         final String testParticipantId = "testParticipantId";
-        final String[] targetGbids = new String[]{ "myjoynrbackend", "myjoynrbackend2" };
+        final String[] targetGbids = new String[]{ "myjoynrbackend1", "myjoynrbackend2" };
         // when we call the remove method with it
         subject.remove(addCallbackWithModeledErrorMock, testParticipantId, targetGbids);
 
@@ -219,20 +213,14 @@ public class GlobalCapabilitiesDirectoryClientTest {
     }
 
     @Test
-    public void testRemoveSingleParticipantWithCustomTTL() {
-        // given a GCD client with custom ttl...
-        Properties properties = new Properties();
-        properties.put(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS,
-                       String.valueOf(CUSTOM_TTL));
-        GlobalCapabilitiesDirectoryClient subjectInject = createGCDClientWithProperties(properties);
-        // ...and some participantId list
+    public void testRemoveSingleParticipantFromSingleGbid() {
+        // given some participantId and GBIDs
         final String testParticipantId = "testParticipantId";
         final String[] targetGbids = new String[]{ "myjoynrbackend" };
-        // when we call the remove method on this client
-        subjectInject.remove(addCallbackWithModeledErrorMock, testParticipantId, targetGbids);
+        // when we call the remove method with it
+        subject.remove(addCallbackWithModeledErrorMock, testParticipantId, targetGbids);
 
         // then the GCD proxy is called with the expected parameters and QoS
-        expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
         expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbids[0]);
         verify(globalCapabilitiesDirectoryProxyMock).remove(eq(addCallbackWithModeledErrorMock),
                                                             eq(testParticipantId),

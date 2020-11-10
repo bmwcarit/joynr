@@ -61,7 +61,6 @@ public class GlobalCapabilitiesDirectoryClient {
     private final String domain;
     private final DiscoveryQos discoveryQos;
     private final ProxyBuilderFactory proxyBuilderFactory;
-    private final String[] allGbids; // index 0 is the default backend
 
     private GlobalCapabilitiesDirectoryProxy gcdProxy;
 
@@ -78,15 +77,13 @@ public class GlobalCapabilitiesDirectoryClient {
 
     @Inject
     public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
-                                             @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry,
-                                             @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbidsArray) {
+                                             @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry) {
         this.proxyBuilderFactory = proxyBuilderFactory;
         this.domain = capabilitiesDirectoryEntry.getDomain();
         this.discoveryQos = new DiscoveryQos(30000,
                                              ArbitrationStrategy.HighestPriority,
                                              DiscoveryQos.NO_MAX_AGE,
                                              DiscoveryScope.GLOBAL_ONLY);
-        this.allGbids = gbidsArray.clone();
     }
 
     private synchronized GlobalCapabilitiesDirectoryProxy getGcdProxy() {
@@ -101,8 +98,9 @@ public class GlobalCapabilitiesDirectoryClient {
     // add methods
     public void add(CallbackWithModeledError<Void, DiscoveryError> callbackWithModeledError,
                     GlobalDiscoveryEntry globalDiscoveryEntry,
+                    long ttlMs,
                     String[] gbids) {
-        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlMs);
         qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, gbids[0]);
         getGcdProxy().add(callbackWithModeledError, globalDiscoveryEntry, gbids, qosWithGbidCustomHeader);
     }

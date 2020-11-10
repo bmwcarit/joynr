@@ -235,6 +235,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
             }
         }).when(gcdClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                gdeCaptor.capture(),
+                               anyLong(),
                                any(String[].class));
 
         Future<Void> future = joynrRuntime.getProviderRegistrar(TESTDOMAIN, provider)

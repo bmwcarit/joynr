@@ -48,11 +48,12 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
@@ -119,9 +120,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private final String[] knownGbids;
 
     // Start up time of the cluster controller
-    private long ccStartUpDateInMs;
-
-    private long defaultExpiryTimeMs;
+    private final long ccStartUpDateInMs;
+    private final long defaultExpiryTimeMs;
+    private final long defaultTtlAddAndRemove;
 
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
@@ -185,6 +186,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
         this.knownGbids = knownGbids.clone();
         this.defaultExpiryTimeMs = defaultExpiryTimeMs;
+        this.defaultTtlAddAndRemove = MessagingQos.DEFAULT_TTL;
         Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = capabilitiesProvisioning.getDiscoveryEntries();
         this.globalDiscoveryEntryCache.add(provisionedDiscoveryEntries);
         for (GlobalDiscoveryEntry provisionedEntry : provisionedDiscoveryEntries) {
@@ -495,6 +497,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                          globalDiscoveryEntry.getInterfaceName(),
                          globalDiscoveryEntry.getProviderVersion());
 
+            long expiryDateMs = System.currentTimeMillis() + defaultTtlAddAndRemove;
             globalAddRemoveQueue.add(new GlobalAddRemoveQueueEntry(new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
@@ -542,7 +545,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     globalAddRemoveWorkerSemaphore.release();
                     deferred.reject(errorEnum);
                 }
-            }, globalDiscoveryEntry, gbids));
+            }, globalDiscoveryEntry, expiryDateMs, gbids));
             globalAddRemoveQueueSemaphore.release();
         }
     }
@@ -1281,6 +1284,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         public void stop() {
             isStopped = true;
+            globalAddRemoveQueue.clear();
             globalAddRemoveQueueSemaphore.release();
             globalAddRemoveWorkerSemaphore.release();
         }
@@ -1297,12 +1301,22 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 GlobalAddRemoveQueueEntry next = globalAddRemoveQueue.peek();
                 if (next == null) {
                     logger.error("Retrieved addRemoveQueueEntry is null. Skipping and continuing.");
+                    globalAddRemoveQueue.poll();
+                    globalAddRemoveWorkerSemaphore.release();
                     continue;
                 }
+
                 switch (next.mode) {
                 case ADD:
-                    logger.debug("Calling GCDClient add.");
-                    globalCapabilitiesDirectoryClient.add(next.callback, next.globalDiscoveryEntry, next.gbids);
+                    long remainingTtl = next.expiryDateMs - System.currentTimeMillis();
+                    if (next.expiryDateMs < System.currentTimeMillis()) {
+                        next.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                        continue;
+                    }
+                    globalCapabilitiesDirectoryClient.add(next.callback,
+                                                          next.globalDiscoveryEntry,
+                                                          remainingTtl,
+                                                          next.gbids);
                     break;
                 case REMOVE:
                     synchronized (globalDiscoveryEntryCache) {

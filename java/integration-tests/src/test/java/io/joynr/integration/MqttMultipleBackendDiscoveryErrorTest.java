@@ -86,6 +86,7 @@ public class MqttMultipleBackendDiscoveryErrorTest extends AbstractMqttMultipleB
     private void checkGcdClientAddLookupNotCalled() {
         verify(gcdClient, times(0)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                         any(GlobalDiscoveryEntry.class),
+                                        anyLong(),
                                         any(String[].class));
         verify(gcdClient,
                times(0)).lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
@@ -297,6 +298,7 @@ public class MqttMultipleBackendDiscoveryErrorTest extends AbstractMqttMultipleB
             }
         }).when(gcdClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                any(GlobalDiscoveryEntry.class),
+                               anyLong(),
                                any(String[].class));
 
         testAddWithDiscoveryError(gbidsForAdd, expectedError);
@@ -304,6 +306,7 @@ public class MqttMultipleBackendDiscoveryErrorTest extends AbstractMqttMultipleB
         ArgumentCaptor<GlobalDiscoveryEntry> gdeCaptor = ArgumentCaptor.forClass(GlobalDiscoveryEntry.class);
         verify(gcdClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                               gdeCaptor.capture(),
+                              anyLong(),
                               eq(expectedGbids));
         assertEquals(TESTDOMAIN, gdeCaptor.getValue().getDomain());
         assertEquals(testProxy.INTERFACE_NAME, gdeCaptor.getValue().getInterfaceName());
