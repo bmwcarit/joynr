@@ -2,6 +2,21 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.5
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Updated jackson to version 2.11.3
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[Java]** ObjectMapper is now protected by ReentrantReadWriteLock
+  to avoid potential occurrence of ConcurrentModificationException
+
 # joynr 1.15.4
 
 ## API-relevant Changes

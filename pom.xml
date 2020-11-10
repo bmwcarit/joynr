@@ -414,7 +414,7 @@
 			are referenced.
 		-->
 		<jersey.version>1.19.4</jersey.version>
-		<jackson.version>2.10.2</jackson.version>
+		<jackson.version>2.11.3</jackson.version>
 		<guice.version>3.0</guice.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
