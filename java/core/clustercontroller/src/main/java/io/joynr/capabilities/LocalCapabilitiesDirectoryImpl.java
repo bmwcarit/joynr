@@ -553,6 +553,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public io.joynr.provider.Promise<io.joynr.provider.DeferredVoid> remove(String participantId) {
+        // TODO see TODO comments in LocalCapabilitiesDirectoryTest.testProcessingExpiredQueuedGcdActions when modifying the implementation
         DeferredVoid deferred = new DeferredVoid();
         Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(participantId,
                                                                                           Long.MAX_VALUE);
@@ -1320,13 +1321,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                               remainingTtl,
                                                               next.gbids);
                     } catch (Exception exception) {
-                        logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
-                                     next.globalDiscoveryEntry.getParticipantId(),
-                                     next.globalDiscoveryEntry.getDomain(),
-                                     next.globalDiscoveryEntry.getInterfaceName(),
-                                     next.globalDiscoveryEntry.getProviderVersion(),
-                                     exception);
-                        next.callback.onFailure(new JoynrRuntimeException("Global provider registration failed."));
+                        if (exception instanceof JoynrRuntimeException) {
+                            next.callback.onFailure((JoynrRuntimeException) exception);
+                        } else {
+                            next.callback.onFailure(new JoynrRuntimeException("Global registration failed: "
+                                    + exception.toString()));
+                        }
                     }
                     break;
                 case REMOVE:
@@ -1339,8 +1339,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                          next.participantId,
                                                                          gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
                             } catch (Exception exception) {
-                                logger.error("Failed to remove participantId {}: ", next.participantId, exception);
-                                next.callback.onFailure(new JoynrRuntimeException("Failed to remove participantId."));
+                                if (exception instanceof JoynrRuntimeException) {
+                                    next.callback.onFailure((JoynrRuntimeException) exception);
+                                } else {
+                                    next.callback.onFailure(new JoynrRuntimeException("Global remove failed: "
+                                            + exception.toString()));
+                                }
                             }
                         } else {
                             logger.warn("Participant {} is not registered globally and cannot be removed!",
@@ -1396,14 +1400,16 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
 
                 try {
+                    if (nextAddEntry == null) {
+                        globalAddRemoveWorkerSemaphore.acquire();
+                        return true;
+                    }
                     if (globalAddRemoveWorkerSemaphore.tryAcquire(remainingTtl, TimeUnit.MILLISECONDS)) {
                         return true;
                     }
-                    if (nextAddEntry != null) {
-                        nextAddEntry.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
-                        globalAddRemoveQueue.remove(nextAddEntry);
-                        continue;
-                    }
+                    nextAddEntry.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                    globalAddRemoveQueue.remove(nextAddEntry);
+                    continue;
                 } catch (InterruptedException e) {
                     logger.error("globalAddRemoveWorkerSemaphore.acquire() interrupted", e);
                     globalAddRemoveQueueSemaphore.release();

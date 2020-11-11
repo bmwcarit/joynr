@@ -114,7 +114,7 @@ import joynr.types.Version;
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryTest {
     private static final int TEST_TIMEOUT = 10000;
-    private static final int PROMISE_TIMEOUT_MS = 2000;
+    private static final int DEFAULT_WAIT_TIME_MS = 5000; // value should be shorter than TEST_TIMEOUT
     private static final String INTERFACE_NAME = "interfaceName";
     private static final String TEST_URL = "http://testUrl";
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
@@ -170,6 +170,8 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Captor
     private ArgumentCaptor<GlobalAddRemoveQueueWorker> addRemoveQueueRunnableCaptor;
+
+    private Thread addRemoveWorker;
 
     private static class DiscoveryEntryStoreVarargMatcher
             extends ArgumentMatcher<DiscoveryEntryStore<? extends DiscoveryEntry>[]> implements VarargMatcher {
@@ -310,8 +312,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                              anyLong(),
                                                              eq(TimeUnit.MILLISECONDS));
         Runnable runnable = addRemoveQueueRunnableCaptor.getValue();
-        Thread thread = new Thread(runnable);
-        thread.start();
+        addRemoveWorker = new Thread(runnable);
+        addRemoveWorker.start();
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),
@@ -341,6 +343,7 @@ public class LocalCapabilitiesDirectoryTest {
     public void tearDown() throws Exception {
         GlobalAddRemoveQueueWorker runnable = (GlobalAddRemoveQueueWorker) addRemoveQueueRunnableCaptor.getValue();
         runnable.stop();
+        addRemoveWorker.join();
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -664,7 +667,7 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
 
         checkPromiseSuccess(promise, "add failed");
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         verify(localDiscoveryEntryStoreMock,
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
@@ -986,6 +989,33 @@ public class LocalCapabilitiesDirectoryTest {
                 Object[] args = invocation.getArguments();
                 ((Callback<Void>) args[0]).onSuccess(null);
                 cdl.countDown();
+                return null;
+            }
+        };
+    }
+
+    private static Answer<Void> createAnswerWithDelayedSuccess(CountDownLatch cdlStart,
+                                                               CountDownLatch cdlDone,
+                                                               long delay) {
+        return new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                @SuppressWarnings("unchecked")
+                Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+                new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        cdlStart.countDown();
+                        try {
+                            Thread.sleep(delay);
+                            cdlDone.countDown();
+                        } catch (Exception e) {
+                            fail("SLEEP INTERRUPTED");
+                        }
+                        callback.onSuccess(null);
+                    }
+                }).start();
                 return null;
             }
         };
@@ -2819,7 +2849,7 @@ public class LocalCapabilitiesDirectoryTest {
                 fail("Unexpected fulfillment when expecting rejection.");
             }
         });
-        assertTrue(countDownLatch.await(PROMISE_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(countDownLatch.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
     }
 
     private static void checkPromiseError(Promise<?> promise,
@@ -2843,7 +2873,7 @@ public class LocalCapabilitiesDirectoryTest {
                 fail("Unexpected fulfillment when expecting rejection.");
             }
         });
-        assertTrue(countDownLatch.await(PROMISE_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(countDownLatch.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
     }
 
     private static void checkPromiseErrorInProviderRuntimeException(Promise<?> promise,
@@ -2866,7 +2896,7 @@ public class LocalCapabilitiesDirectoryTest {
                 fail("Unexpected fulfillment when expecting rejection.");
             }
         });
-        assertTrue(countDownLatch.await(PROMISE_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(countDownLatch.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
     }
 
     private static Object[] checkPromiseSuccess(Promise<? extends AbstractDeferred> promise,
@@ -2886,7 +2916,7 @@ public class LocalCapabilitiesDirectoryTest {
             }
         });
         assertTrue(onRejectionMessage + ": promise timeout",
-                   countDownLatch.await(PROMISE_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+                   countDownLatch.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         return result.toArray(new Object[result.size()]);
     }
 
@@ -2929,7 +2959,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         localCapabilitiesDirectory.remove(discoveryEntry);
 
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(globalCapabilitiesDirectoryClient).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                          eq(globalDiscoveryEntry.getParticipantId()),
                                                          any(String[].class));
@@ -2979,7 +3009,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         localCapabilitiesDirectory.remove(globalDiscoveryEntry);
 
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         verify(globalCapabilitiesDirectoryClient).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                          any(String.class),
@@ -3012,8 +3042,8 @@ public class LocalCapabilitiesDirectoryTest {
         GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(entry1);
         entry2.setParticipantId(participantId2);
 
-        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(entry1);
-        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(entry2);
+        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(entry1, true);
+        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(entry2, true);
         checkPromiseSuccess(promiseAdd1, "add failed");
         checkPromiseSuccess(promiseAdd2, "add failed");
 
@@ -3054,7 +3084,7 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(Math.abs(lastSeenDateCaptor.getValue() - expectedLastSeenDateMs) <= toleranceMs);
         assertTrue(Math.abs(expiryDateCaptor.getValue() - expectedExpiryDateMs) <= toleranceMs);
 
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
                                                                   eq(expectedParticipantIds),
@@ -3096,8 +3126,8 @@ public class LocalCapabilitiesDirectoryTest {
         GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(entry1);
         entry2.setParticipantId(participantId2);
 
-        Promise<Add1Deferred> promiseAdd1 = localCapabilitiesDirectory.add(entry1, false, gbids);
-        Promise<Add1Deferred> promiseAdd2 = localCapabilitiesDirectory.add(entry2, false, gbids);
+        Promise<Add1Deferred> promiseAdd1 = localCapabilitiesDirectory.add(entry1, true, gbids);
+        Promise<Add1Deferred> promiseAdd2 = localCapabilitiesDirectory.add(entry2, true, gbids);
         checkPromiseSuccess(promiseAdd1, "add failed");
         checkPromiseSuccess(promiseAdd2, "add failed");
 
@@ -3119,7 +3149,7 @@ public class LocalCapabilitiesDirectoryTest {
         Thread.sleep(freshnessUpdateIntervalMs); // make sure that the initial delay has expired before starting the runnable
         Runnable runnable = runnableCaptor.getValue();
         runnable.run();
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
                                                                   eq(participantIdsToTouch),
@@ -3141,7 +3171,7 @@ public class LocalCapabilitiesDirectoryTest {
         entry1.setExpiryDateMs(0l);
         entry1.setLastSeenDateMs(0l);
 
-        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(entry1, false, gbids);
+        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(entry1, true, gbids);
         checkPromiseSuccess(promiseAdd, "add failed");
 
         // Mock return values of localDiscoveryEntryStore.touchDiscoveryEntries
@@ -3162,8 +3192,7 @@ public class LocalCapabilitiesDirectoryTest {
         Thread.sleep(freshnessUpdateIntervalMs); // make sure that the initial delay has expired before starting the runnable
         Runnable runnable = runnableCaptor.getValue();
         runnable.run();
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
-
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
                                                                   eq(participantIdsToTouch),
                                                                   eq(gbid1));
@@ -3189,8 +3218,8 @@ public class LocalCapabilitiesDirectoryTest {
         GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(entry1);
         entry2.setParticipantId(participantId2);
 
-        Promise<Add1Deferred> promiseAdd1 = localCapabilitiesDirectory.add(entry1, false, gbids1);
-        Promise<Add1Deferred> promiseAdd2 = localCapabilitiesDirectory.add(entry2, false, gbids2);
+        Promise<Add1Deferred> promiseAdd1 = localCapabilitiesDirectory.add(entry1, true, gbids1);
+        Promise<Add1Deferred> promiseAdd2 = localCapabilitiesDirectory.add(entry2, true, gbids2);
         checkPromiseSuccess(promiseAdd1, "add failed");
         checkPromiseSuccess(promiseAdd2, "add failed");
 
@@ -3215,7 +3244,7 @@ public class LocalCapabilitiesDirectoryTest {
         Thread.sleep(freshnessUpdateIntervalMs); // make sure that the initial delay has expired before starting the runnable
         Runnable runnable = runnableCaptor.getValue();
         runnable.run();
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         verify(globalCapabilitiesDirectoryClient, times(1)).touch(Matchers.<Callback<Void>> any(),
                                                                   eq(expectedParticipantIds1),
@@ -3330,19 +3359,20 @@ public class LocalCapabilitiesDirectoryTest {
         GlobalDiscoveryEntry globalDiscoveryEntry2 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry2,
                                                                                                          globalAddress1);
 
-        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry1);
-        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry2);
+        final boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry1, awaitGlobalRegistration);
+        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry2, awaitGlobalRegistration);
+
+        checkPromiseSuccess(promiseAdd1, "add failed");
+        checkPromiseSuccess(promiseAdd2, "add failed");
 
         InOrder inOrder = inOrder(globalCapabilitiesDirectoryClient);
 
         ArgumentCaptor<Long> remainingTtlCapture = ArgumentCaptor.forClass(Long.class);
 
-        checkPromiseSuccess(promiseAdd1, "add failed");
-        checkPromiseSuccess(promiseAdd2, "add failed");
-
         inOrder.verify(globalCapabilitiesDirectoryClient)
                .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                    argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry1)),
+                    argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry1)),
                     remainingTtlCapture.capture(),
                     any(String[].class));
 
@@ -3350,7 +3380,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         inOrder.verify(globalCapabilitiesDirectoryClient)
                .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                    argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry2)),
+                    argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry2)),
                     remainingTtlCapture.capture(),
                     any(String[].class));
 
@@ -3364,7 +3394,7 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.remove(discoveryEntry2);
         localCapabilitiesDirectory.remove(discoveryEntry1);
 
-        assertTrue(cdl.await(10, TimeUnit.SECONDS));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         inOrder.verify(globalCapabilitiesDirectoryClient)
                .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -3375,4 +3405,107 @@ public class LocalCapabilitiesDirectoryTest {
                        eq(participantId1),
                        any(String[].class));
     }
+
+    private static class GlobalDiscoveryEntryWithParticipantIdMatcher extends ArgumentMatcher<GlobalDiscoveryEntry> {
+        private GlobalDiscoveryEntry expected;
+
+        private GlobalDiscoveryEntryWithParticipantIdMatcher(GlobalDiscoveryEntry expected) {
+            this.expected = expected;
+        }
+
+        @Override
+        public boolean matches(Object argument) {
+            assertNotNull(argument);
+            GlobalDiscoveryEntry actual = (GlobalDiscoveryEntry) argument;
+            return expected.getParticipantId() == actual.getParticipantId()
+                    && expected.getAddress().equals(actual.getAddress());
+        }
+    }
+
+    private void setNewDefaultTtlAddAndRemove(long defaulTtlMs) throws ReflectiveOperationException {
+
+        Field defaulTtlMsField = LocalCapabilitiesDirectoryImpl.class.getDeclaredField("defaultTtlAddAndRemove");
+        defaulTtlMsField.setAccessible(true);
+        defaulTtlMsField.set((Object) localCapabilitiesDirectory, defaulTtlMs);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void testProcessingExpiredQueuedGcdActions() throws Exception {
+        reset(globalCapabilitiesDirectoryClient);
+
+        // defaultTtlAddAndRemove = 60000ms (MessagingQos.DEFAULT_TTL) is too long, we reduce it to 1000ms for the test
+        setNewDefaultTtlAddAndRemove(1000);
+
+        final String participantId1 = "participantId1";
+        final String participantId2 = "participantId2";
+
+        DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(discoveryEntry);
+        discoveryEntry1.getQos().setScope(ProviderScope.GLOBAL);
+        discoveryEntry1.setParticipantId(participantId1);
+
+        DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(discoveryEntry1);
+        discoveryEntry2.setParticipantId(participantId2);
+
+        GlobalDiscoveryEntry globalDiscoveryEntry1 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry1,
+                                                                                                         globalAddress1);
+        GlobalDiscoveryEntry globalDiscoveryEntry2 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry2,
+                                                                                                         globalAddress1);
+
+        final long delay = 1500;
+        CountDownLatch cdlAddDelayStarted = new CountDownLatch(1);
+        CountDownLatch cdlAddDelayDone = new CountDownLatch(1);
+        doAnswer(createAnswerWithDelayedSuccess(cdlAddDelayStarted,
+                                                cdlAddDelayDone,
+                                                delay)).when(globalCapabilitiesDirectoryClient)
+                                                       .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                            argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry1)),
+                                                            anyLong(),
+                                                            any(String[].class));
+
+        // 3 actions. 2 lcd.add and 1 lcd.remove
+        final Boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry1, awaitGlobalRegistration);
+        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry2, awaitGlobalRegistration);
+        assertTrue(cdlAddDelayStarted.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        CountDownLatch cdlRemove = new CountDownLatch(1);
+        doAnswer(createAnswerWithSuccess(cdlRemove)).when(globalCapabilitiesDirectoryClient)
+                                                    .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                            eq(participantId1),
+                                                            any(String[].class));
+        //localCapabilitiesDirectory.remove(discoveryEntry1); // TODO uncomment this line when LCD.remove is changed
+
+        JoynrRuntimeException expectedException = new JoynrRuntimeException("Failed to process global registration in time, please try again");
+        checkPromiseException(promiseAdd2, new ProviderRuntimeException(expectedException.toString()));
+
+        // second add failed before first add has finished, remove not yet executed
+        assertEquals(1, cdlAddDelayDone.getCount());
+        assertEquals(1, cdlRemove.getCount());
+
+        checkPromiseSuccess(promiseAdd1, "add failed");
+        assertTrue(cdlAddDelayDone.await(0, TimeUnit.MILLISECONDS));
+
+        localCapabilitiesDirectory.remove(discoveryEntry1); // TODO move this line up when LCD.remove is changed
+        assertTrue(cdlRemove.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        InOrder inOrder = inOrder(globalCapabilitiesDirectoryClient);
+
+        inOrder.verify(globalCapabilitiesDirectoryClient, times(1))
+               .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                    argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry1)),
+                    anyLong(),
+                    any(String[].class));
+
+        inOrder.verify(globalCapabilitiesDirectoryClient, times(1))
+               .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                       eq(participantId1),
+                       any(String[].class));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(0)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry2)),
+                             anyLong(),
+                             any(String[].class));
+    }
+
 }
