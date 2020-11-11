@@ -5,9 +5,25 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.15.4
 
 ## API-relevant Changes
+None.
 
 ## Other Changes
-* **[TS]** Use `onFatalRuntimeError` callback in the examples
+* **[TS]** Use `onFatalRuntimeError` callback in the examples.
+* **[C++]** In UDS case, use stringified UID for ACL checks if username for UID cannot be
+  determined.
+* **[Java,C++]** Serialized global add (register provider) and remove (unregister provider) requests
+  to assure consistent state of local and global capabilities directory.
+* **[C++]** Improved documentation of `createRuntimeAsync()`.
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed potential NullPointerException and race conditions in RequestReplyManager and
+  PublicationManager.
+* **[Java]** Added missing removal of routing entry when unregistering a provider to avoid
+  unnecessary memory usage.
+* **[Java]** Fixed delayed shutdown caused by improper cleanup in HivemqMqttClient.shutdown.
 
 # joynr 1.15.3
 
