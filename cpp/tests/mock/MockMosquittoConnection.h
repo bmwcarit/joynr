@@ -34,7 +34,8 @@ public:
                             std::chrono::seconds mqttReconnectDelayTimeSeconds,
                             std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
                             bool isMqttExponentialBackoffEnabled,
-                            const std::string& clientId)
+                            const std::string& clientId,
+                            const std::string& gbid)
         : MosquittoConnection(
               ccSettings,
               brokerUrl,
@@ -42,7 +43,8 @@ public:
               mqttReconnectDelayTimeSeconds,
               mqttReconnectMaxDelayTimeSeconds,
               isMqttExponentialBackoffEnabled,
-              clientId) {}
+              clientId,
+              gbid) {}
 
     MOCK_CONST_METHOD0(getMqttPrio, std::string());
     MOCK_CONST_METHOD0(getMqttQos, std::uint16_t());

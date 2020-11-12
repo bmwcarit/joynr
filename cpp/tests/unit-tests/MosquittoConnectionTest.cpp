@@ -79,7 +79,8 @@ protected:
     std::shared_ptr<MosquittoConnection> createMosquittoConnection(
             std::shared_ptr<joynr::Semaphore> readyToSendSemaphore,
             const std::string clientId,
-            const std::string channelId
+            const std::string channelId,
+            const std::string gbid
             )
     {
         auto mosquittoConnection = std::make_shared<MosquittoConnection>(
@@ -89,7 +90,8 @@ protected:
                 _mqttReconnectDelayTimeSeconds,
                 _mqttReconnectMaxDelayTimeSeconds,
                 _isMqttExponentialBackoffEnabled,
-                clientId);
+                clientId,
+                gbid);
 
         // register connection to channelId
         mosquittoConnection->registerChannelId(channelId);
@@ -128,11 +130,12 @@ TEST_F(MosquittoConnectionTest, generalTest)
     // create two MosquittoConnections using different clientIds and channels,
     // both connections connect to the same broker
     auto readyToSendSemaphore1 = std::make_shared<joynr::Semaphore>(0);
+    std::string gbid1("gbid1");
     auto mosquittoConnection1 = createMosquittoConnection(
                 readyToSendSemaphore1,
                 clientId1,
-                channelId1
-                );
+                channelId1,
+                gbid1);
     mosquittoConnection1->registerReceiveCallback([](smrf::ByteVector&& msg) {
             std::ignore = msg;
             ADD_FAILURE() << "We do not expect to receive msgs on connection1";
@@ -145,11 +148,12 @@ TEST_F(MosquittoConnectionTest, generalTest)
     EXPECT_TRUE(mosquittoConnection1->isReadyToSend());
 
     auto readyToSendSemaphore2 = std::make_shared<joynr::Semaphore>(0);
+    std::string gbid2("gbid2");
     auto mosquittoConnection2 = createMosquittoConnection(
                 readyToSendSemaphore2,
                 clientId2,
-                channelId2
-                );
+                channelId2,
+                gbid2);
 
     auto msgReceived2 = std::make_shared<joynr::Semaphore>(0);
     const std::string recipient2 = "recipient2";
@@ -210,11 +214,12 @@ TEST_F(MosquittoConnectionTest, deliverMessageWithinItsExpiryIntervalAfterReconn
 
     // connection1
     auto readyToSendSemaphore1 = std::make_shared<joynr::Semaphore>(0);
+    std::string gbid3("gbid3");
     auto mosquittoConnection1 = createMosquittoConnection(
                 readyToSendSemaphore1,
                 clientId3,
-                channelId3
-                );
+                channelId3,
+                gbid3);
 
     // we do not plan to receive msgs on connection1, but we have to
     // set registerReceiveCallback.
@@ -228,11 +233,12 @@ TEST_F(MosquittoConnectionTest, deliverMessageWithinItsExpiryIntervalAfterReconn
 
     // connection2
     auto readyToSendSemaphore2 = std::make_shared<joynr::Semaphore>(0);
+    std::string gbid4("gbid4");
     auto mosquittoConnection2 = createMosquittoConnection(
                 readyToSendSemaphore2,
                 clientId4,
-                channelId4
-                );
+                channelId4,
+                gbid4);
 
     const std::string dummyRecipient = "dummyRecipient";
     const std::string dummyPayload = "dummyPayload";
@@ -297,10 +303,12 @@ TEST_F(MosquittoConnectionTest, noMessageDeliveryWhenExceedingItsExpiryIntervalA
 
     // connection1
     auto readyToSendSemaphore1 = std::make_shared<joynr::Semaphore>(0);
+    std::string gbid5("gbid5");
     auto mosquittoConnection1 = createMosquittoConnection(
                 readyToSendSemaphore1,
                 clientId5,
-                channelId5
+                channelId5,
+                gbid5
                 );
 
     // we do not plan to receive msgs on connection1, but we have to
@@ -316,10 +324,12 @@ TEST_F(MosquittoConnectionTest, noMessageDeliveryWhenExceedingItsExpiryIntervalA
 
     // connection2
     auto readyToSendSemaphore2 = std::make_shared<joynr::Semaphore>(0);
+    std::string gbid6("gbid6");
     auto mosquittoConnection2 = createMosquittoConnection(
                 readyToSendSemaphore2,
                 clientId6,
-                channelId6
+                channelId6,
+                gbid6
                 );
 
     const std::string anotherDummyRecipient = "anotherDummyRecipient";

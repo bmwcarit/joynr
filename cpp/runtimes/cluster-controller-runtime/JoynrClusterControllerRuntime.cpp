@@ -355,7 +355,8 @@ void JoynrClusterControllerRuntime::init()
                                                               mqttReconnectDelayTimeSeconds,
                                                               mqttReconnectMaxDelayTimeSeconds,
                                                               isMqttExponentialBackoffEnabled,
-                                                              mqttClientId);
+                                                              mqttClientId,
+                                                              _availableGbids[brokerIndex]);
 
                 const auto& connectionData = _mqttConnectionDataVector[brokerIndex];
 
