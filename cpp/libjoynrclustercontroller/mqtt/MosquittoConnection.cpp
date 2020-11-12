@@ -46,7 +46,8 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
                                          std::chrono::seconds mqttReconnectDelayTimeSeconds,
                                          std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
                                          bool isMqttExponentialBackoffEnabled,
-                                         const std::string& clientId)
+                                         const std::string& clientId,
+                                         const std::string& gbid)
         : _brokerUrl(brokerUrl),
           _mqttKeepAliveTimeSeconds(mqttKeepAliveTimeSeconds),
           _mqttReconnectDelayTimeSeconds(mqttReconnectDelayTimeSeconds),
@@ -75,7 +76,8 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
           _restartSemaphore(0),
           _restartThread(),
           _mosq(nullptr),
-          _mqttMaximumPacketSize(0)
+          _mqttMaximumPacketSize(0),
+          _gbid(gbid)
 {
     JOYNR_LOG_INFO(logger(), "Init mosquitto connection using MQTT client ID: {}", clientId);
 

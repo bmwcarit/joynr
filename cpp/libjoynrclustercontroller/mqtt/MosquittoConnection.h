@@ -64,7 +64,8 @@ public:
                                  std::chrono::seconds mqttReconnectDelayTimeSeconds,
                                  std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
                                  bool isMqttExponentialBackoffEnabled,
-                                 const std::string& clientId);
+                                 const std::string& clientId,
+                                 const std::string& gbid);
 
     virtual ~MosquittoConnection();
 
@@ -189,6 +190,7 @@ private:
     std::thread _restartThread;
     struct mosquitto* _mosq;
     uint32_t _mqttMaximumPacketSize;
+    std::string _gbid;
 
     static constexpr std::int32_t sessionExpiryInterval = std::numeric_limits<std::int32_t>::max();
 

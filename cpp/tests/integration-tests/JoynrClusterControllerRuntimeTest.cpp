@@ -81,6 +81,7 @@ public:
     std::shared_ptr<MockTransportMessageSender> mockHttpMessageSender;
     std::shared_ptr<MockTransportMessageReceiver> mockMqttMessageReceiver;
     std::shared_ptr<MockTransportMessageSender> mockMqttMessageSender;
+    std::string gbid;
     std::shared_ptr<MockMosquittoConnection> mockMosquittoConnection;
     Semaphore semaphore;
     std::string serializedChannelAddress;
@@ -118,6 +119,7 @@ public:
               mockHttpMessageSender(std::make_shared<MockTransportMessageSender>()),
               mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
               mockMqttMessageSender(std::make_shared<MockTransportMessageSender>()),
+              gbid("gbid"),
               mockMosquittoConnection(
                       std::make_shared<MockMosquittoConnection>(ccSettings,
                                                                 joynr::BrokerUrl("testBrokerUrl"),
@@ -125,7 +127,8 @@ public:
                                                                 std::chrono::seconds(1),
                                                                 std::chrono::seconds(1),
                                                                 false,
-                                                                "testClientId")),
+                                                                "testClientId",
+                                                                gbid)),
               semaphore(0),
               globalMqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic"),
               globalMqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl"),

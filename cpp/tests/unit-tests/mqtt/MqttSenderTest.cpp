@@ -56,6 +56,7 @@ protected:
         std::chrono::seconds mqttReconnectMaxDelayTimeSeconds(1);
         bool isMqttExponentialBackoffEnabled(false);
         const std::string clientId("testClientId");
+        const std::string gbid("gbid");
 
         mockMosquittoConnection =
                 std::make_shared<MockMosquittoConnection>(ccSettings,
@@ -64,7 +65,8 @@ protected:
                                                           mqttReconnectDelayTimeSeconds,
                                                           mqttReconnectMaxDelayTimeSeconds,
                                                           isMqttExponentialBackoffEnabled,
-                                                          clientId);
+                                                          clientId,
+                                                          gbid);
 
         mqttSender = std::make_shared<MqttSender>(mockMosquittoConnection);
 
