@@ -58,6 +58,14 @@ protected:
         }
     };
 
+    TestTaskSequencer::TaskWithExpiryDate createTestTaskWithExpiryDate(bool fulfillPromise = true) {
+        TestTaskSequencer::TaskWithExpiryDate timeoutTask;
+        timeoutTask.task = createTestTask(fulfillPromise);
+        timeoutTask.expiryDateMs = 500;
+        timeoutTask.timeout = [](){};
+        return timeoutTask;
+    }
+
     TestTaskSequencer::Task createTestTask(bool fulfillPromise = true)
     {
         auto creationId = _creationCounter;
@@ -116,7 +124,7 @@ TEST_F(TaskSequencerTest, addSequence)
     static constexpr std::uint64_t numberOfTasks = 1000;
     std::vector<TaskState> expectedSequence;
     for (std::uint64_t i = 0; i < numberOfTasks; i++) {
-        test.add(createTestTask());
+        test.add(createTestTaskWithExpiryDate());
         expectedSequence.push_back({i, i});
     }
     const auto sequence = waitForTestFutureCreation(expectedSequence.size());
@@ -127,10 +135,10 @@ TEST_F(TaskSequencerTest, addConcurrency)
 {
     TestTaskSequencer test;
     static constexpr std::uint64_t numberOfTasks = 1000;
-    std::vector<TestTaskSequencer::Task> tasks;
+    std::vector<TestTaskSequencer::TaskWithExpiryDate> tasks;
     std::set<std::uint64_t> expectedExecutions;
     for (std::uint64_t i = 0; i < numberOfTasks; i++) {
-        tasks.push_back(createTestTask());
+        tasks.push_back(createTestTaskWithExpiryDate());
         expectedExecutions.insert(i);
     }
     std::vector<std::future<void>> addAsync;
@@ -159,9 +167,9 @@ TEST_F(TaskSequencerTest, cancelBeforeDtor)
 TEST_F(TaskSequencerTest, cancelOngoingTask)
 {
     TestTaskSequencer test;
-    test.add(createTestTask());
-    test.add(createTestTask(false));
-    test.add(createTestTask());
+    test.add(createTestTaskWithExpiryDate());
+    test.add(createTestTaskWithExpiryDate(false));
+    test.add(createTestTaskWithExpiryDate());
     auto sequence = waitForTestFutureCreation(2);
     EXPECT_EQ(2, sequence.size());
     test.cancel();
@@ -174,8 +182,8 @@ TEST_F(TaskSequencerTest, cancelReleasesTaskMemory)
     TestTaskSequencer test;
     auto sharedPromise = std::make_shared<std::uint64_t>(42);
     std::weak_ptr<std::uint64_t> refPromise(sharedPromise);
-    test.add(createTestTask(false)); // Block execution, so next task remains in task queue
-    test.add([this, sharedPromise]() { return createTestFuture(*sharedPromise); });
+    test.add(createTestTaskWithExpiryDate(false)); // Block execution, so next task remains in task queue
+    test.add({[this, sharedPromise]() { return createTestFuture(*sharedPromise); }, 500, [](){}});
     sharedPromise.reset();
     std::this_thread::yield();
     EXPECT_FALSE(refPromise.expired()) << "Test setup does not capture memory in task queue.";
@@ -188,11 +196,11 @@ TEST_F(TaskSequencerTest, cancelReleasesFutureMemory)
     TestTaskSequencer test;
     auto sharedPromise = std::make_shared<std::uint64_t>(42);
     std::weak_ptr<std::uint64_t> refPromise(sharedPromise);
-    test.add([this, sharedPromise]() {
+    test.add({[this, sharedPromise]() {
         auto newFuture = std::make_shared<TestFuture>();
         newFuture->_memorySharedByPromise = sharedPromise;
         return newFuture;
-    });
+    }, 500, [](){}});
     sharedPromise.reset();
     std::this_thread::yield();
     EXPECT_FALSE(refPromise.expired()) << "Test setup does not capture memory in future";
@@ -203,10 +211,10 @@ TEST_F(TaskSequencerTest, cancelReleasesFutureMemory)
 TEST_F(TaskSequencerTest, runRobustness)
 {
     TestTaskSequencer test;
-    test.add([]() { return std::shared_ptr<TestFuture>(); });
-    test.add([]() -> std::shared_ptr<TestFuture> { throw 42; });
-    test.add(nullptr);
-    test.add(createTestTask());
+    test.add({[]() { return std::shared_ptr<TestFuture>(); }, 500, [](){}});
+    test.add({[]() -> std::shared_ptr<TestFuture> { throw 42; }, 500, [](){}});
+    test.add({nullptr, 500, [](){}});
+    test.add(createTestTaskWithExpiryDate());
     auto sequence = waitForTestFutureCreation(1);
     EXPECT_EQ(1, sequence.size());
 }

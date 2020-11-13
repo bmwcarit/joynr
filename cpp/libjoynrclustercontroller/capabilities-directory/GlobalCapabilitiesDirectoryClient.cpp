@@ -28,6 +28,7 @@
 #include "joynr/Semaphore.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
+#include "joynr/TimePoint.h"
 
 namespace joynr
 {
@@ -63,7 +64,11 @@ void GlobalCapabilitiesDirectoryClient::add(
     MessagingQos addMessagingQos = _messagingQos;
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
     using std::move;
-    _sequentialTasks.add([
+    TaskSequencer<void>::TaskWithExpiryDate timeoutTask;
+    timeoutTask.expiryDateMs = static_cast<std::uint64_t>(TimePoint::now().toMilliseconds()) +
+                               addMessagingQos.getTtl();
+    timeoutTask.timeout = []() {};
+    timeoutTask.task = [
         this,
         entry,
         gbids,
@@ -71,7 +76,8 @@ void GlobalCapabilitiesDirectoryClient::add(
         onError{move(onError)},
         onRuntimeError{move(onRuntimeError)},
         addMessagingQos{move(addMessagingQos)}
-    ]() mutable {
+    ]() mutable
+    {
         auto future = std::make_shared<Future<void>>();
         onSuccess = [ future, onSuccess{move(onSuccess)} ]()
         {
@@ -103,7 +109,9 @@ void GlobalCapabilitiesDirectoryClient::add(
                                      move(onRuntimeError),
                                      addMessagingQos);
         return future;
-    });
+    };
+
+    _sequentialTasks.add(timeoutTask);
 }
 
 void GlobalCapabilitiesDirectoryClient::remove(
@@ -123,10 +131,15 @@ void GlobalCapabilitiesDirectoryClient::remove(
                                                    std::move(onError),
                                                    std::move(onRuntimeError),
                                                    std::move(removeMessagingQos));
-    _sequentialTasks.add([retryRemoveOperation]() {
+    TaskSequencer<void>::TaskWithExpiryDate timeoutTask;
+    timeoutTask.task = [retryRemoveOperation]() {
         retryRemoveOperation->execute();
         return retryRemoveOperation;
-    });
+    };
+    timeoutTask.expiryDateMs = std::numeric_limits<std::uint64_t>::max();
+    timeoutTask.timeout = []() {};
+
+    _sequentialTasks.add(timeoutTask);
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(

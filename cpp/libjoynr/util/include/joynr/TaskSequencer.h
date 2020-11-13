@@ -17,8 +17,8 @@
  * #L%
  */
 
-#ifndef FUTURE_SEQUENCER
-#define FUTURE_SEQUENCER
+#ifndef TASK_SEQUENCER
+#define TASK_SEQUENCER
 
 #include <atomic>
 #include <condition_variable>
@@ -62,6 +62,13 @@ public:
      */
     using Task = std::function<FutureSP()>;
 
+    struct TaskWithExpiryDate
+    {
+        Task task;
+        std::uint64_t expiryDateMs;
+        std::function<void()> timeout;
+    };
+
     /** @brief Creates queue processor. */
     TaskSequencer() : _isRunning{true}, _future{nothingToDo()}
     {
@@ -81,10 +88,10 @@ public:
      * @brief add tasks to processor FIFO queue.
      * @param task New task
      */
-    void add(Task&& task)
+    void add(const TaskWithExpiryDate& taskWithExpiryDate)
     {
         std::unique_lock<std::mutex> lock(_tasksMutex);
-        _tasks.push(task);
+        _tasks.push_back(taskWithExpiryDate);
         _tasksChanged.notify_all();
     }
 
@@ -105,14 +112,14 @@ public:
 
         {
             std::unique_lock<std::mutex> lock(_tasksMutex);
-            std::queue<Task> releasePendingTasksMemeory;
-            _tasks.swap(releasePendingTasksMemeory);
+            std::vector<TaskWithExpiryDate> releasePendingTasksMemory;
+            _tasks.swap(releasePendingTasksMemory);
             _tasksChanged.notify_all();
         }
         _worker.join();
 
-        auto releaseCurrentFutureMemeory = nothingToDo();
-        _future.swap(releaseCurrentFutureMemeory);
+        auto releaseCurrentFutureMemory = nothingToDo();
+        _future.swap(releaseCurrentFutureMemory);
     }
 
 private:
@@ -120,7 +127,7 @@ private:
     FutureSP _future;
     std::mutex _tasksMutex;
     std::condition_variable _tasksChanged;
-    std::queue<Task> _tasks;
+    std::vector<TaskWithExpiryDate> _tasks;
     std::thread _worker;
 
     void run()
@@ -135,12 +142,12 @@ private:
                         _tasksChanged.wait(lock);
                     }
                     if (!_tasks.empty()) {
-                        Task nextTask = std::move(_tasks.front());
-                        _tasks.pop();
-                        if (!nextTask) {
+                        TaskWithExpiryDate nextTask = std::move(_tasks.front());
+                        _tasks.erase(_tasks.begin());
+                        if (!nextTask.task) {
                             throw std::runtime_error("Dropping null-task.");
                         }
-                        _future = nextTask();
+                        _future = nextTask.task();
                     }
                 }
                 if (!_future) {
@@ -172,4 +179,4 @@ private:
 
 } // namespace joynr
 
-#endif // FUTURE_SEQUENCER
+#endif // TASK_SEQUENCER
