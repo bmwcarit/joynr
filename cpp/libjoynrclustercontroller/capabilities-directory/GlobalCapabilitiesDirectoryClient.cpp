@@ -64,21 +64,35 @@ void GlobalCapabilitiesDirectoryClient::add(
     MessagingQos addMessagingQos = _messagingQos;
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
     using std::move;
-    TaskSequencer<void>::TaskWithExpiryDate timeoutTask;
-    timeoutTask.expiryDateMs = static_cast<std::uint64_t>(TimePoint::now().toMilliseconds()) +
-                               addMessagingQos.getTtl();
-    timeoutTask.timeout = []() {};
-    timeoutTask.task = [
+    TaskSequencer<void>::TaskWithExpiryDate taskWithExpiryDate;
+    taskWithExpiryDate.expiryDateMs =
+            static_cast<std::uint64_t>(TimePoint::now().toMilliseconds()) +
+            addMessagingQos.getTtl();
+    taskWithExpiryDate.timeout = []() {};
+    taskWithExpiryDate.task = [
         this,
         entry,
         gbids,
         onSuccess{move(onSuccess)},
         onError{move(onError)},
         onRuntimeError{move(onRuntimeError)},
-        addMessagingQos{move(addMessagingQos)}
+        addMessagingQos{move(addMessagingQos)},
+        timeoutTaskExpiryDate = taskWithExpiryDate.expiryDateMs
     ]() mutable
     {
         auto future = std::make_shared<Future<void>>();
+        std::int64_t remainingAddTtl = static_cast<std::int64_t>(timeoutTaskExpiryDate) -
+                                       TimePoint::now().toMilliseconds();
+
+        if (remainingAddTtl < 0) {
+            onRuntimeError(exceptions::JoynrRuntimeException(
+                    "Failed to process global registration in time, please try again!"));
+            future->onSuccess();
+            return future;
+        }
+
+        addMessagingQos.setTtl(static_cast<std::uint64_t>(remainingAddTtl));
+
         onSuccess = [ future, onSuccess{move(onSuccess)} ]()
         {
             if (onSuccess) {
@@ -111,7 +125,7 @@ void GlobalCapabilitiesDirectoryClient::add(
         return future;
     };
 
-    _sequentialTasks.add(timeoutTask);
+    _sequentialTasks.add(taskWithExpiryDate);
 }
 
 void GlobalCapabilitiesDirectoryClient::remove(
