@@ -39,7 +39,8 @@ GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
           _messagingQos(),
           _touchTtl(static_cast<std::uint64_t>(
                   clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())),
-          _removeStaleTtl(3600000)
+          _removeStaleTtl(3600000),
+          _sequentialTasks(_messagingQos.getTtl())
 {
 }
 
@@ -68,7 +69,10 @@ void GlobalCapabilitiesDirectoryClient::add(
     taskWithExpiryDate.expiryDateMs =
             static_cast<std::uint64_t>(TimePoint::now().toMilliseconds()) +
             addMessagingQos.getTtl();
-    taskWithExpiryDate.timeout = []() {};
+    taskWithExpiryDate.timeout = [onRuntimeError]() {
+        onRuntimeError(exceptions::JoynrRuntimeException(
+                "Failed to process global registration in time, please try again"));
+    };
     taskWithExpiryDate.task = [
         this,
         entry,
@@ -84,9 +88,9 @@ void GlobalCapabilitiesDirectoryClient::add(
         std::int64_t remainingAddTtl = static_cast<std::int64_t>(timeoutTaskExpiryDate) -
                                        TimePoint::now().toMilliseconds();
 
-        if (remainingAddTtl < 0) {
+        if (static_cast<std::int64_t>(timeoutTaskExpiryDate) <= TimePoint::now().toMilliseconds()) {
             onRuntimeError(exceptions::JoynrRuntimeException(
-                    "Failed to process global registration in time, please try again!"));
+                    "Failed to process global registration in time, please try again"));
             future->onSuccess();
             return future;
         }

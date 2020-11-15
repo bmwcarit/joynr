@@ -33,6 +33,7 @@
 #include "joynr/Future.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/TimePoint.h"
 
 namespace joynr
 {
@@ -46,6 +47,14 @@ namespace joynr
  * @note
  * To avoid implicit runtime changes in the sequence of DTOR calls on shutdown, the provided cancel
  * method releases ownership of all shared memory captured by pending tasks or futures.
+ *
+ * @note
+ * The TaskSequencer cancels queued tasks as soon as they are expired: It calls the timeout()
+ * function provided in TaskWithExpiryDate and removes the expired tasks from the queue.
+ * TaskSequencer assumes that the tasks which do not have an unlimited expiry
+ * (= std::numeric_limits<std::uint64_t>::max() ) date are ordered, i.e. a new task that
+ * is added should have an expiryDate that is not less than the expiryDate of any previously
+ * added task with not unlimited expiry date.
  *
  * @tparam Ts Future return types
  */
@@ -69,8 +78,16 @@ public:
         std::function<void()> timeout;
     };
 
-    /** @brief Creates queue processor. */
-    TaskSequencer() : _isRunning{true}, _future{nothingToDo()}
+    /**
+     * @brief Creates queue processor.
+     * @param defaultTimeToWait - if there are no further tasks in the queue,
+     *        this time in milliseconds is used to wait for the current task to
+     *        complete until the queue is checked for expired tasks again even if
+     *        the current task has not completed yet. If the queue is not empty,
+     *        the wait time is calculated from the task with the minimum expiry date.
+     */
+    TaskSequencer(std::uint64_t defaultTimeToWait = std::numeric_limits<std::uint64_t>::max())
+            : _isRunning{true}, _future{nothingToDo()}, _defaultTimeToWait{defaultTimeToWait}
     {
         _worker = std::thread(&TaskSequencer::run, this);
     }
@@ -86,7 +103,7 @@ public:
 
     /**
      * @brief add tasks to processor FIFO queue.
-     * @param task New task
+     * @param taskWithExpiryDate New task with expiry date
      */
     void add(const TaskWithExpiryDate& taskWithExpiryDate)
     {
@@ -129,39 +146,87 @@ private:
     std::condition_variable _tasksChanged;
     std::vector<TaskWithExpiryDate> _tasks;
     std::thread _worker;
+    const std::uint64_t _defaultTimeToWait;
 
     void run()
     {
         while (_isRunning.load()) {
-            _future->_resultFuture.wait();
-            _future = nothingToDo();
-            try {
-                if (_isRunning.load()) {
-                    std::unique_lock<std::mutex> lock(_tasksMutex);
-                    if (_tasks.empty()) {
-                        _tasksChanged.wait(lock);
+            std::uint64_t timeToWait = _defaultTimeToWait;
+            {
+                std::unique_lock<std::mutex> lock(_tasksMutex);
+                if (!_tasks.empty()) {
+                    auto taskWithMinExpiryDate = std::min_element(
+                            _tasks.begin(),
+                            _tasks.end(),
+                            [](const TaskWithExpiryDate& first, const TaskWithExpiryDate& second) {
+                                return first.expiryDateMs < second.expiryDateMs;
+                            });
+
+                    timeToWait = taskWithMinExpiryDate->expiryDateMs -
+                                 static_cast<std::uint64_t>(TimePoint::now().toMilliseconds());
+
+                    if (taskWithMinExpiryDate->expiryDateMs <=
+                        static_cast<std::uint64_t>(TimePoint::now().toMilliseconds())) {
+                        taskWithMinExpiryDate->timeout();
+                        _tasks.erase(taskWithMinExpiryDate);
+                        continue;
                     }
-                    if (!_tasks.empty()) {
-                        TaskWithExpiryDate nextTask = std::move(_tasks.front());
-                        _tasks.erase(_tasks.begin());
-                        if (!nextTask.task) {
-                            throw std::runtime_error("Dropping null-task.");
+                }
+            }
+            auto futureStatus =
+                    _future->_resultFuture.wait_for(std::chrono::milliseconds(timeToWait));
+
+            if (futureStatus != std::future_status::ready) {
+                std::unique_lock<std::mutex> lock(_tasksMutex);
+                for (auto it = _tasks.begin(); it != _tasks.end();) {
+                    if (it->expiryDateMs <=
+                        static_cast<std::uint64_t>(TimePoint::now().toMilliseconds())) {
+                        it->timeout();
+                        it = _tasks.erase(it);
+                    } else if (it->expiryDateMs != std::numeric_limits<std::uint64_t>::max()) {
+                        break;
+                    } else {
+                        ++it;
+                    }
+                }
+            } else {
+                _future = nothingToDo();
+                try {
+                    if (_isRunning.load()) {
+                        std::unique_lock<std::mutex> lock(_tasksMutex);
+                        if (_tasks.empty()) {
+                            _tasksChanged.wait(lock);
                         }
-                        _future = nextTask.task();
+                        if (!_tasks.empty()) {
+                            TaskWithExpiryDate nextTask = std::move(_tasks.front());
+                            if (nextTask.expiryDateMs <=
+                                static_cast<std::uint64_t>(TimePoint::now().toMilliseconds())) {
+                                nextTask.timeout();
+                                _tasks.erase(_tasks.begin());
+                                continue;
+                            } else {
+                                _tasks.erase(_tasks.begin());
+                                if (!nextTask.task) {
+                                    throw std::runtime_error("Dropping null-task.");
+                                }
+                                _future = nextTask.task();
+                            }
+                        }
                     }
+                    if (!_future) {
+                        throw std::runtime_error("Future factory created empty task.");
+                    }
+                } catch (const std::exception& e) {
+                    JOYNR_LOG_ERROR(logger(),
+                                    "Task creation failed, continue with next task: {}",
+                                    e.what());
+                    _future = nothingToDo();
+                } catch (...) {
+                    JOYNR_LOG_ERROR(
+                            logger(),
+                            "Task creation failed for unknown reasons, continue with next task.");
+                    _future = nothingToDo();
                 }
-                if (!_future) {
-                    throw std::runtime_error("Future factory created empty task.");
-                }
-            } catch (const std::exception& e) {
-                JOYNR_LOG_ERROR(
-                        logger(), "Task creation failed, continue with next task: {}", e.what());
-                _future = nothingToDo();
-            } catch (...) {
-                JOYNR_LOG_ERROR(
-                        logger(),
-                        "Task creation failed for unknown reasons, continue with next task.");
-                _future = nothingToDo();
             }
         }
     }

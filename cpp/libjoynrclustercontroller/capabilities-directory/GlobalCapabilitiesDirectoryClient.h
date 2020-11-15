@@ -171,10 +171,10 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClient);
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> _capabilitiesProxy;
-    TaskSequencer<void> _sequentialTasks;
     MessagingQos _messagingQos;
     const std::uint64_t _touchTtl;
     const std::uint64_t _removeStaleTtl;
+    TaskSequencer<void> _sequentialTasks;
     ADD_LOGGER(GlobalCapabilitiesDirectoryClient)
 };
 
