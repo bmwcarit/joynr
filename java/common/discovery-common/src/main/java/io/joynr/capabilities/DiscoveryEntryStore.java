@@ -42,6 +42,8 @@ public interface DiscoveryEntryStore<T extends DiscoveryEntry> {
 
     public abstract Set<T> getAllDiscoveryEntries();
 
+    public abstract Set<T> getAllGlobalEntries();
+
     public abstract boolean hasDiscoveryEntry(T discoveryEntry);
 
     /**

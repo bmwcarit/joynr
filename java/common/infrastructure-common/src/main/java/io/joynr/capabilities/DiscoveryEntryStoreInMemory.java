@@ -312,6 +312,19 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     }
 
     @Override
+    public HashSet<T> getAllGlobalEntries() {
+        HashSet<T> allGlobalEntries = new HashSet<T>();
+        synchronized (storeLock) {
+            for (T discoveryEntry : capabilityKeyToCapabilityMapping.values()) {
+                if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
+                    allGlobalEntries.add(discoveryEntry);
+                }
+            }
+        }
+        return allGlobalEntries;
+    }
+
+    @Override
     public boolean hasDiscoveryEntry(DiscoveryEntry discoveryEntry) {
         synchronized (storeLock) {
             String discoveryEntryId = domainInterfaceParticipantIdKey(discoveryEntry.getDomain(),
