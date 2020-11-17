@@ -144,9 +144,7 @@ public class ObjectMapper {
     public void enableDefaultTypingAsProperty(DefaultTyping applicability, String propertyName) {
         lock.writeLock().lock();
         try {
-            realObjectMapper.activateDefaultTypingAsProperty(realObjectMapper.getPolymorphicTypeValidator(),
-                                                             applicability,
-                                                             propertyName);
+            realObjectMapper.enableDefaultTypingAsProperty(applicability, propertyName);
         } finally {
             lock.writeLock().unlock();
         }
