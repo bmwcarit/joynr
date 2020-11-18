@@ -47,7 +47,8 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		return relativePath
 	}
 
-	def generateProxy(IFileSystemAccess fsa){
+	def generateProxy(IFileSystemAccess fsa, boolean generateVersion){
+		super.generate(generateVersion)
 		var fileName = path + "" + proxyName + ".ts"
 		if (clean) {
 			fsa.deleteFile(fileName)
@@ -55,7 +56,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		if (generate) {
 			fsa.generateFile(
 				fileName,
-				generate().toString
+				generate(generateVersion).toString
 			)
 		}
 	}
@@ -64,7 +65,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 		francaIntf.joynrName + "Proxy"
 	}
 
-	override generate()'''
+	override generate(boolean generateVersion)'''
 	«val generationDate = (new Date()).toString»
 	«val attributes = getAttributes(francaIntf)»
 	«val methodNames = getMethodNames(francaIntf)»
@@ -84,7 +85,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 	import JoynrDiscoveryQos = require("joynr/joynr/proxy/DiscoveryQos");
 
 	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-		import «datatype.joynrName» = require("«relativePathToBase() + datatype.getDependencyPath()»");
+		import «datatype.joynrName» = require("«relativePathToBase() + datatype.getDependencyPath(generateVersion)»");
 	«ENDFOR»
 
 	namespace «proxyName» {
@@ -206,7 +207,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 			this.settings = settings;
 			«FOR attribute : attributes»
 			«val attributeName = attribute.joynrName»
-			this.«attributeName» = new «attribute.proxyAttributeName»<«attribute.tsTypeName»>(this, "«attributeName»", "«attribute.joynrTypeName»");
+			this.«attributeName» = new «attribute.proxyAttributeName»<«attribute.tsTypeName»>(this, "«attributeName»", "«attribute.getJoynrTypeName(generateVersion)»");
 			«ENDFOR»
 			«FOR operationName : methodNames»
 			this.«operationName» = new ProxyOperation(this, "«operationName»", [
@@ -216,7 +217,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					«FOR param: getInputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : "«param.joynrTypeName»"
+							type : "«param.getJoynrTypeName(generateVersion)»"
 						}
 					«ENDFOR»
 					],
@@ -224,7 +225,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 						«FOR param: getOutputParameters(operation) SEPARATOR ","»
 						{
 							name : "«param.joynrName»",
-							type : "«param.joynrTypeName»"
+							type : "«param.getJoynrTypeName(generateVersion)»"
 						}
 						«ENDFOR»
 					],
@@ -247,7 +248,7 @@ class ProxyGenerator extends InterfaceJsTemplate {
 					«FOR param: event.outputParameters SEPARATOR ", "»
 					{
 						name : "«param.joynrName»",
-						type : "«param.joynrTypeName»"
+						type : "«param.getJoynrTypeName(generateVersion)»"
 					}
 					«ENDFOR»
 				],

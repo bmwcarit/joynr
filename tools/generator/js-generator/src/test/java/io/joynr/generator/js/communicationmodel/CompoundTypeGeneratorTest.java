@@ -67,7 +67,7 @@ public class CompoundTypeGeneratorTest {
             }
         }).getInstance(JsTemplateFactory.class);
         CompoundTypeGenerator generator = templateFactory.createCompoundTypeGenerator(structType);
-        generator.generate();
+        generator.generate(true);
     }
 
 }

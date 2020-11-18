@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.generator.IFileSystemAccess;
 import org.eclipse.xtext.generator.JavaIoFileSystemAccess;
 import org.franca.core.dsl.FrancaIDLStandaloneSetup;
@@ -147,7 +148,11 @@ public abstract class AbstractJoynrTSGeneratorTest {
                     return new HashSet<URI>(Arrays.asList(resourceUri));
                 }
             });
-            generator.doGenerate(modelStore.getResources().iterator().next(), outputFileSystem);
+            Resource input = modelStore.getResources().iterator().next();
+            generator.doGenerate(input, outputFileSystem);
+            generator.updateCommunicationModelGeneration(input);
+            generator.generateCommunicationModel(input, outputFileSystem);
+            generator.clearCommunicationModelGenerationSettings();
             result = readAllTSFilesRecursively(temporaryOutputDirectory, returnFullPath);
         } catch (URISyntaxException e) {
             logger.log(Level.SEVERE, "Problem loading file: " + fidlFilename, e);

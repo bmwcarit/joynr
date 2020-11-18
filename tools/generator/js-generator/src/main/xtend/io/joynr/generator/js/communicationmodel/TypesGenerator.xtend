@@ -37,9 +37,9 @@ class TypesGenerator {
 	@Inject extension NamingUtil
 	@Inject JsTemplateFactory templateFactory
 
-	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa) {
+	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa, boolean generateVersion) {
 		for (type : filterComplex(types)) {
-			val path = type.buildPackagePath(File::separator, true)
+			val path = type.buildPackagePath(File::separator, true, generateVersion)
 
 			val fileName = path + File::separator + type.joynrName + ".ts"
 			if (clean) {
@@ -48,22 +48,22 @@ class TypesGenerator {
 			if (generate) {
 				fsa.generateFile(
 					fileName,
-					generateType(type)
+					generateType(type, generateVersion)
 				)
 			}
 		}
 	}
 
-	def generateType(FType type) {
+	def generateType(FType type, boolean generateVersion) {
 		if (type instanceof FEnumerationType) {
 			var enumTypeGenerator = templateFactory.createEnumTypeGenerator(type)
-			enumTypeGenerator.generate()
+			enumTypeGenerator.generate(generateVersion)
 		} else if (type instanceof FCompoundType) {
 			var compoundTypeGenerator = templateFactory.createCompoundTypeGenerator(type)
-			compoundTypeGenerator.generate()
+			compoundTypeGenerator.generate(generateVersion)
 		} else if (type instanceof FMapType) {
 			var mapTypeGenerator = templateFactory.createMapTypeGenerator(type)
-			mapTypeGenerator.generate()
+			mapTypeGenerator.generate(generateVersion)
 		}
 	}
 }

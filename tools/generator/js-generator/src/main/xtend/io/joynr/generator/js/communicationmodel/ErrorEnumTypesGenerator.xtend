@@ -36,14 +36,14 @@ class ErrorEnumTypesGenerator {
 
 	@Inject JsTemplateFactory templateFactory
 
-	def generateErrorEnumTypes(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa){
+	def generateErrorEnumTypes(FInterface fInterface, Iterable<FType> types, IFileSystemAccess fsa, boolean generateVersion){
 		var methodToErrorEnumName = fInterface.methodToErrorEnumName
 
 		for (method: getMethods(fInterface)) {
 			var enumType = method.errors;
 			if (enumType !== null) {
 				enumType.name = methodToErrorEnumName.get(method);
-				val path = getPackagePathWithJoynrPrefix(enumType, File::separator)
+				val path = getPackagePathWithJoynrPrefix(enumType, File::separator, generateVersion)
 				val fileName = path + File::separator + enumType.joynrName + ".ts"
 				if (clean) {
 					fsa.deleteFile(fileName)
@@ -52,7 +52,7 @@ class ErrorEnumTypesGenerator {
 					var enumTypeGenerator = templateFactory.createEnumTypeGenerator(enumType)
 					fsa.generateFile(
 						fileName,
-						enumTypeGenerator.generate()
+						enumTypeGenerator.generate(generateVersion)
 					)
 				}
 			}

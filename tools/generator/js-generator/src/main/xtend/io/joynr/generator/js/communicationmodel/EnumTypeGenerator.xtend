@@ -38,7 +38,7 @@ class EnumTypeGenerator extends EnumTemplate {
 		super(type)
 	}
 
-	override generate() '''
+	override generate(boolean generateVersion) '''
 	«val generationDate = (new Date()).toString»
 	«val enumElements = getEnumElementsAndBaseEnumElements(type)»
 	«val enumNames = type.joynrName + "Names"»
@@ -55,8 +55,8 @@ class EnumTypeGenerator extends EnumTemplate {
 	 * 	«appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
 	 */
 	class «type.joynrName» extends JoynrEnum<«type.joynrName».«enumNames»> {
-		public static _typeName: string = "«type.joynrTypeName»";
-		public _typeName: string = "«type.joynrTypeName»";
+		public static _typeName: string = "«type.getJoynrTypeName(generateVersion)»";
+		public _typeName: string = "«type.getJoynrTypeName(generateVersion)»";
 
 		public constructor({name, value}: {name: «type.joynrName».«enumNames», value: «type.joynrName».«enumNames» | number}){
 			super(name, value);

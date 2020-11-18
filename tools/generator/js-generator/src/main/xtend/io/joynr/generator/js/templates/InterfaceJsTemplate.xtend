@@ -38,10 +38,12 @@ abstract class InterfaceJsTemplate extends InterfaceTemplate {
 	 */
 	protected int packagePathDepth
 
-	override init() {
-		super.init()
-		val packagePathWithJoynrPrefix = getPackagePathWithJoynrPrefix(francaIntf, File::separator)
+	override generate(boolean generateVersion) {
+		val packagePathWithJoynrPrefix = getPackagePathWithJoynrPrefix(francaIntf, File::separator, generateVersion)
 		path = File::separator + packagePathWithJoynrPrefix + File::separator
 		packagePathDepth = packagePathWithJoynrPrefix.split(Pattern.quote(File::separator)).length
+		'''
+		'''
 	}
+
 }

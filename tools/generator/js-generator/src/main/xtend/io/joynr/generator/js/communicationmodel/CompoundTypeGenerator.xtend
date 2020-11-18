@@ -42,9 +42,9 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		super(type)
 	}
 
-	override generate() '''
+	override generate(boolean generateVersion) '''
 		«IF type instanceof FStructType»
-			«generateStructType(type)»
+			«generateStructType(type, generateVersion)»
 		«ELSEIF type instanceof FUnionType»
 			«generateUnionType(type)»
 		«ENDIF»
@@ -65,7 +65,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		tsTypeNames.filter[it.equals(structTypeName)].length > 0;
 	}
 
-	def generateStructType(FStructType type) '''
+	def generateStructType(FStructType type, boolean generateVersion) '''
 	«val generationDate = (new Date()).toString»
 	«val members = type.members»
 	«val membersRecursive = type.membersRecursive»
@@ -73,12 +73,12 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 		import JoynrCompound = require("joynr/joynr/types/JoynrCompound");
 	«ELSE»
 		«IF !membersRecursive.hasImport(type.base)»
-		import «type.base.tsTypeName» = require("«type.base.getRelativeImportPath(type)»");
+		import «type.base.tsTypeName» = require("«type.base.getRelativeImportPath(type, generateVersion)»");
 		«ENDIF»
 	«ENDIF»
 	«val filteredImports = membersRecursive.filterDuplicateTypeNames»
 	«FOR member : filteredImports»
-	«val importPath = member.getRelativeImportPath(type)»
+	«val importPath = member.getRelativeImportPath(type, generateVersion)»
 	«IF importPath !== null»
 	import «member.type.tsTypeName» = require("«importPath»");
 	«ENDIF»
@@ -101,8 +101,8 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 	 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
 	 */
 	class «type.joynrName» extends «IF type.base === null»JoynrCompound«ELSE»«type.base.joynrName»«ENDIF» {
-		public static _typeName: string = "«type.joynrTypeName»";
-		public _typeName: string = "«type.joynrTypeName»";
+		public static _typeName: string = "«type.getJoynrTypeName(generateVersion)»";
+		public _typeName: string = "«type.getJoynrTypeName(generateVersion)»";
 
 		«FOR member : members»
 		«IF member.comment !== null»
@@ -148,7 +148,7 @@ class CompoundTypeGenerator extends CompoundTypeTemplate {
 
 		public static readonly _memberTypes: Record<string, string> = {
 			«FOR member : membersRecursive SEPARATOR ","»
-				«member.joynrName»: "«member.joynrTypeName»"
+				«member.joynrName»: "«member.getJoynrTypeName(generateVersion)»"
 			«ENDFOR»
 		};
 

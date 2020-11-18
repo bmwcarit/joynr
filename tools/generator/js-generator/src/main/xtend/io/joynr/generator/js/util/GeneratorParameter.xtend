@@ -87,16 +87,16 @@ class GeneratorParameter {
 		parameters === null || parameters.get(anonymuousDefineKey) === null || !parameters.get(anonymuousDefineKey).equalsIgnoreCase("false")
 	}
 
-	def defineName(FModelElement element){
-		defineName(element, element.joynrName)
+	def defineName(FModelElement element, boolean generateVersion){
+		defineName(element, element.joynrName, generateVersion)
 	}
-	def defineName(FModelElement element, String moduleName){
+	def defineName(FModelElement element, String moduleName, boolean generateVersion){
 		if (anonymuousDefine){
 			""
 		} else if (element instanceof FType){
-			"\"" + definePrefix + element.buildPackagePath("/", true) + "/" + moduleName + "\", "
+			"\"" + definePrefix + element.buildPackagePath("/", true, generateVersion) + "/" + moduleName + "\", "
 		} else {
-			"\"" + definePrefix + getPackagePathWithJoynrPrefix(element, "/") + "/" + moduleName + "\", "
+			"\"" + definePrefix + getPackagePathWithJoynrPrefix(element, "/", generateVersion) + "/" + moduleName + "\", "
 		}
 	}
 }

@@ -46,7 +46,8 @@ class ProviderGenerator extends InterfaceJsTemplate {
 		return relativePath
 	}
 
-	def generateProvider(IFileSystemAccess fsa){
+	def generateProvider(IFileSystemAccess fsa, boolean generateVersion){
+		super.generate(generateVersion)
 		var fileName = path + "" + providerName + ".ts"
 		if (clean) {
 			fsa.deleteFile(fileName)
@@ -54,7 +55,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 		if (generate) {
 			fsa.generateFile(
 				fileName,
-				generate().toString
+				generate(generateVersion).toString
 			)
 		}
 	}
@@ -63,14 +64,14 @@ class ProviderGenerator extends InterfaceJsTemplate {
 		francaIntf.joynrName + "Provider"
 	}
 
-	override generate()'''
+	override generate(boolean generateVersion)'''
 	«val generationDate = (new Date()).toString»
 	«val attributes = getAttributes(francaIntf)»
 	«val methodNames = getMethodNames(francaIntf)»
 	«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
 	«val events = getEvents(francaIntf)»
 	«FOR datatype : francaIntf.getAllComplexTypes(typeSelectorIncludingErrorTypesAndTransitiveTypes)»
-	import «datatype.joynrName» = require("«relativePathToBase() + datatype.getDependencyPath()»");
+	import «datatype.joynrName» = require("«relativePathToBase() + datatype.getDependencyPath(generateVersion)»");
 	«ENDFOR»
 	«IF attributes.length > 0»
 	import {«FOR attributeType: attributes.providerAttributeNames SEPARATOR ','»«attributeType» «ENDFOR»} from "joynr/joynr/provider/ProviderAttribute";
@@ -186,7 +187,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 			// defining provider members
 			«FOR attribute: attributes»
 				«val attributeName = attribute.joynrName»
-				this.«attributeName» = new «attribute.providerAttributeName»<«attribute.tsTypeName»>(this, implementation.«attributeName», "«attributeName»", "«attribute.joynrTypeName»");
+				this.«attributeName» = new «attribute.providerAttributeName»<«attribute.tsTypeName»>(this, implementation.«attributeName», "«attributeName»", "«attribute.getJoynrTypeName(generateVersion)»");
 			«ENDFOR»
 	
 			«FOR methodName : methodNames»
@@ -197,18 +198,18 @@ class ProviderGenerator extends InterfaceJsTemplate {
 							«FOR param: getInputParameters(operation) SEPARATOR ","»
 								{
 									name : "«param.joynrName»",
-									type : "«param.joynrTypeName»"
+									type : "«param.getJoynrTypeName(generateVersion)»"
 								}
 							«ENDFOR»
 						],
 						error: {
-							type: "«determErrorTypeName(operation, methodToErrorEnumName.get(operation))»"
+							type: "«determErrorTypeName(operation, methodToErrorEnumName.get(operation), generateVersion)»"
 						},
 						outputParameter: [
 							«FOR param: getOutputParameters(operation) SEPARATOR ","»
 								{
 									name : "«param.joynrName»",
-									type : "«param.joynrTypeName»"
+									type : "«param.getJoynrTypeName(generateVersion)»"
 								}
 							«ENDFOR»
 						]
@@ -226,7 +227,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 						«FOR param : getOutputParameters(event) SEPARATOR ","»
 							{
 								name : "«param.joynrName»",
-								type : "«param.joynrTypeName»"
+								type : "«param.getJoynrTypeName(generateVersion)»"
 							}
 						«ENDFOR»
 					],
@@ -265,14 +266,14 @@ class ProviderGenerator extends InterfaceJsTemplate {
 
 	'''
 
-	def determErrorTypeName(FMethod method, String errorEnumName) {
+	def determErrorTypeName(FMethod method, String errorEnumName, boolean generateVersion) {
 		var enumType = method.errors;
 		if (enumType !== null) {
 			enumType.name = errorEnumName;
-			return getTypeNameForErrorEnumType(method, enumType);
+			return getTypeNameForErrorEnumType(method, enumType, generateVersion);
 		}
 		else if (method.errorEnum !== null){
-			return method.errorEnum.joynrTypeName;
+			return method.errorEnum.getJoynrTypeName(generateVersion);
 		}
 		else {
 			return "no error enumeration given"

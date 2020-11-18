@@ -62,6 +62,9 @@ class JoynrJSGenerator implements IJoynrGenerator {
 	@Named("generateProviderCode")
 	public boolean generateProviderCode;
 
+	boolean generateVersionedCommunicationModel = false;
+	boolean generateUnversionedCommunicationModel = false;
+
 	override getLanguageId() {
 		"javascript"
 	}
@@ -74,6 +77,22 @@ class JoynrJSGenerator implements IJoynrGenerator {
 		}
 	}
 
+	override updateCommunicationModelGeneration(Resource input) {
+		val fModel = input.contents.get(0) as FModel
+		if(fModel.interfaces.size == 0) {
+			generateVersionedCommunicationModel = true;
+		}
+		for (fInterface : fModel.interfaces) {
+			checkVersioningOption(fInterface, packageWithVersion)
+			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			if (generateVersioning) {
+				generateVersionedCommunicationModel = true
+			} else {
+				generateUnversionedCommunicationModel = true
+			}
+		}
+	}
+
 	override doGenerate(Resource input, IFileSystemAccess fsa) {
 		val isFrancaIDLResource = input.URI.fileExtension.equals(FrancaPersistenceManager.FRANCA_FILE_EXTENSION)
 		checkArgument(isFrancaIDLResource, "Unknown input: " + input)
@@ -81,36 +100,59 @@ class JoynrJSGenerator implements IJoynrGenerator {
 		val fModel = input.contents.get(0) as FModel // francaPersistenceManager.loadModel(input.URI, input.URI)
 		checkForNamedArrays(fModel, input.URI.path);
 
-		val types = findAllFTypes(input)
-
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
 		for (francaIntf : fModel.interfaces) {
 			checkVersioningOption(francaIntf, packageWithVersion)
+			val generateVersioning = !commentContainsNoVersionGeneration(francaIntf)
 
 			// since the proxy code at the moment contains exported interfaces
 			// required to implement a provider, we have to create the proxy code
 			// also for the provider.
 			if (generateProxyCode || generateProviderCode) {
 				var proxyGenerator = templateFactory.createProxyGenerator(francaIntf)
-				proxyGenerator.generateProxy(fsa)
+				proxyGenerator.generateProxy(fsa, generateVersioning)
 			}
 
 			if (generateProviderCode) {
 				var providerGenerator = templateFactory.createProviderGenerator(francaIntf)
-				providerGenerator.generateProvider(fsa)
+				providerGenerator.generateProvider(fsa, generateVersioning)
 			}
 		}
-		fModel.interfaces.forEach [
-			generateTypes(types, fsa)
-			generateErrorEnumTypes(types, fsa)
-		]
+	}
 
-		if (!fModel.typeCollections.empty) {
-			fModel.typeCollections.forEach [
-				generateTypes(it.types, fsa)
+	override generateCommunicationModel(Resource input, IFileSystemAccess fsa) {
+		val fModel = input.contents.get(0) as FModel
+		val types = findAllFTypes(input)
+		if (generateVersionedCommunicationModel) {
+			fModel.interfaces.forEach [
+				generateTypes(types, fsa, true)
+				generateErrorEnumTypes(types, fsa, true)
 			]
 		}
+		if (generateUnversionedCommunicationModel) {
+			fModel.interfaces.forEach [
+				generateTypes(types, fsa, false)
+				generateErrorEnumTypes(types, fsa, false)
+			]
+		}
+		if (!fModel.typeCollections.empty) {
+			if (generateVersionedCommunicationModel) {
+				fModel.typeCollections.forEach [
+					generateTypes(it.types, fsa, true) // isn't this already included in types = findAllFTypes(input)?
+				]
+			}
+			if (generateUnversionedCommunicationModel) {
+				fModel.typeCollections.forEach [
+					generateTypes(it.types, fsa, false) // isn't this already included in types = findAllFTypes(input)?
+				]
+			}
+		}
+	}
+
+	override clearCommunicationModelGenerationSettings() {
+		generateVersionedCommunicationModel = false;
+		generateUnversionedCommunicationModel = false;
 	}
 
 	def Iterable<FInterface> findAllFInterfaces(Resource resource) {

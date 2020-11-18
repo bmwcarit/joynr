@@ -155,6 +155,14 @@ class JSTypeUtil extends AbstractTypeUtil {
 			datatype.joynrName + " could not be mapped to an implementation datatype")
 	}
 
+	override getTypeName(FType datatype, boolean generateVersion) {
+		throw new IllegalStateException("Unsupported method called for JS!")
+	}
+
+	override getTypeNameForList(FType datatype, boolean generateVersion) {
+		throw new IllegalStateException("Unsupported method called for JS!")
+	}
+
 	override getTypeNameForList(FBasicTypeId datatype) {
 		"Array." + datatype.typeName
 	}
@@ -210,33 +218,33 @@ class JSTypeUtil extends AbstractTypeUtil {
 		return result;
 	}
 
-	def String getRelativeImportPath (FTypedElement typedElement, FType parentElement) {
+	def String getRelativeImportPath (FTypedElement typedElement, FType parentElement, boolean generateVersion) {
 		var type = typedElement.type;
-		return getRelativeImportPath(type, parentElement);
+		return getRelativeImportPath(type, parentElement, generateVersion);
 	}
 
-	def String getRelativeImportPath (FTypeRef type, FType parentElement) {
+	def String getRelativeImportPath (FTypeRef type, FType parentElement, boolean generateVersion) {
 		if (type.derived !== null){
 			var Path childPath;
-			var parentPath = Paths.get(parentElement.dependencyPath);
+			var parentPath = Paths.get(parentElement.getDependencyPath(generateVersion));
 			if (type.derived instanceof FTypeDefImpl){
 				var typeRef = type.derived as FTypeDefImpl;
 				if (typeRef.actualType.derived !== null){
-					childPath = Paths.get(typeRef.actualType.derived.dependencyPath);
+					childPath = Paths.get(typeRef.actualType.derived.getDependencyPath(generateVersion));
 				} else {
 					return null;
 				}
 			} else {
-				childPath = Paths.get(type.derived.dependencyPath);
+				childPath = Paths.get(type.derived.getDependencyPath(generateVersion));
 			}
 			return "." + File::separator + parentPath.getParent().relativize(childPath).toString();
 		}
 		return null;
 	}
 
-	def String getRelativeImportPath (FType type, FType parentElement) {
-		var parentPath = Paths.get(parentElement.dependencyPath);
-		var childPath = Paths.get(type.dependencyPath);
+	def String getRelativeImportPath (FType type, FType parentElement, boolean generateVersion) {
+		var parentPath = Paths.get(parentElement.getDependencyPath(generateVersion));
+		var childPath = Paths.get(type.getDependencyPath(generateVersion));
 		return "." + File::separator + parentPath.getParent().relativize(childPath).toString();
 	}
 
@@ -443,12 +451,12 @@ class JSTypeUtil extends AbstractTypeUtil {
 	def getExemplaryInstantiationForArgument(FArgument argument)
 	'''"«escapeQuotes(argument.joynrName)»": «getDefaultValue(argument)»«IF isArray(argument)»]«ENDIF»'''
 
-	def getTypeNameForErrorEnumType(FMethod method, FEnumerationType errorEnumType) {
-		joynrGenerationPrefix + "." + method.packageName + "." + errorEnumType.joynrName
+	def getTypeNameForErrorEnumType(FMethod method, FEnumerationType errorEnumType, boolean generateVersion) {
+		joynrGenerationPrefix + "." + method.getPackageName(generateVersion) + "." + errorEnumType.joynrName
 	}
 
-	def getDependencyPath(FType datatype) {
-		return datatype.buildPackagePath(File.separator, true)
+	def getDependencyPath(FType datatype, boolean generateVersion) {
+		return datatype.buildPackagePath(File.separator, true, generateVersion)
 					+ File.separator
 					+ datatype.joynrName
 	}

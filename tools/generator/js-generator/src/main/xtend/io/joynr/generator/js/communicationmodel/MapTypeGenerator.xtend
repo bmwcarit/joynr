@@ -38,11 +38,11 @@ class MapTypeGenerator extends MapTemplate {
 		super(type)
 	}
 
-	override generate() '''
+	override generate(boolean generateVersion) '''
 	«val generationDate = (new Date()).toString»
 	«val mapType = type.valueType.tsTypeName»
 	«IF !type.valueType.isPrimitive»
-	import «type.valueType.tsTypeName» = require("«type.valueType.getRelativeImportPath(type)»")
+	import «type.valueType.tsTypeName» = require("«type.valueType.getRelativeImportPath(type, generateVersion)»")
 	«ENDIF»
 	import JoynrMap = require("joynr/joynr/types/JoynrMap");
 	/**
@@ -51,8 +51,8 @@ class MapTypeGenerator extends MapTemplate {
 	 «appendJSDocSummaryAndWriteSeeAndDescription(type, "* ")»
 	 */
 	class «type.joynrName» extends JoynrMap<«mapType»> {
-		public static _typeName: string = "«type.joynrTypeName»";
-		public _typeName: string = "«type.joynrTypeName»"; 
+		public static _typeName: string = "«type.getJoynrTypeName(generateVersion)»";
+		public _typeName: string = "«type.getJoynrTypeName(generateVersion)»";
 
 		public constructor(settings?: Record<string, «mapType»>){
 			super(settings);
